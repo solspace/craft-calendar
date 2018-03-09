@@ -1,0 +1,52 @@
+{% set month = craft.calendar.month({
+    date: targetDate,
+    calendarId: calendars
+}) %}
+
+<div class="s-mini-calendar">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th colspan="1">
+                <a id="mini_calendar_prev_month" class="prev" data-date="{{ month.previousDate.format('Y-m-d') }}">&larr;</a>
+            </th>
+            <th colspan="5">
+                <a href="{{ url('calendar/view/month') }}/{{ month.date.format('Y/m/d') }}">
+                    {{ month.date.format('F Y') }}
+                </a>
+            </th>
+            <th colspan="1">
+                <a id="mini_calendar_next_month" class="next" data-date="{{ month.nextDate.format('Y-m-d') }}"> &rarr;</a>
+            </th>
+        </tr>
+        <tr class="mini_calendar_days">
+            {% for day in month|first %}
+                <th>{{ day.date.format('D')|first }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for week in month %}
+            <tr>
+                {% for day in week %}
+                    <td class="
+                            {{ month.containsDate(day.date) ? "mini_calendar_pad"}}
+                            {{ day.eventCount ? "has_events" }}
+                            {{ day.date.isToday ? "today" }}
+                        ">
+                        <div class="mini_calendar_date">
+                            {% if month.containsDate(day.date) %}
+                                <a href="{{ url('calendar/view/day') }}/{{ day.date.format('Y/m/d') }}">
+                                    {{ day.date.format('j') }}
+                                </a>
+                            {% else %}
+                                <strong class="middot">&middot;</strong>
+                            {% endif %}
+                        </div>
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

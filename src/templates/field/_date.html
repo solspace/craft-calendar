@@ -1,0 +1,25 @@
+{% set id = (id ?? 'date'~random())~'-date' -%}
+{% set name = name ?? null -%}
+{% set value = value ?? null -%}
+
+<div class="datewrapper"
+    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+    {%- include "_includes/forms/text" with {
+        name: (name ? name~'[date]'),
+        autocomplete: false,
+        size: 10,
+        placeholder: ' ',
+        value: (value ? value.format(craft.app.locale.getDateFormat('short', 'php')) : '')
+    } -%}
+
+    <div data-icon="date"></div>
+    {% if name -%}
+        <input type="hidden" name="{{ name }}[timezone]" value="UTC">
+    {%- endif -%}
+</div>
+
+{%- js %}
+    $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
+    defaultDate: new Date({% if value %}{{ value|date('Y', 'UTC') }}, {{ value|date('n', 'UTC')-1 }}, {{ value|date('j', 'UTC') }}{% endif %})
+    }, Craft.datepickerOptions));
+{%- endjs %}

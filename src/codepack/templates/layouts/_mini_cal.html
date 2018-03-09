@@ -1,0 +1,73 @@
+<h3>Mini Calendar</h3>
+
+{% set targetDate = "today" %}
+
+{% if segment1 in ["month", "week", "day", "mini_cal"] %}
+    {% if segment2 == "calendar" %}
+        {% if segment4 is not empty %}
+            {% set targetDate = segment4~"-"~segment5~"-01" %}
+        {% endif %}
+    {% elseif segment2 is not empty %}
+        {% set targetDate = segment2~"-"~segment3~"-01" %}
+    {% endif %}
+{% endif %}
+
+{% set month = craft.calendar.month({
+    date: targetDate,
+}) %}
+
+<div id="mini_calendar">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th colspan="1">
+                {% if segment1 != "calendars" %}
+                    <a id="mini_calendar_prev_month" href="{{ siteUrl }}demo/month/{{ month.previousDate.format('Y/m') }}/">&larr;</a>
+                {% endif %}
+            </th>
+            <th colspan="5">
+                {{ month.date.format('F Y') }}
+            </th>
+            <th colspan="1">
+                {% if segment1 != "calendars" %}
+                    <a id="mini_calendar_next_month" href="{{ siteUrl }}demo/month/{{ month.nextDate.format('Y/m') }}/"> &rarr;</a>
+                {% endif %}
+            </th>
+        </tr>
+        <tr class="mini_calendar_days">
+            {% for day in month|first %}
+                <th>{{ day.date.format('D')|first }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for week in month %}
+            <tr>
+                {% for day in week %}
+                    <td class="
+                            {{ month.containsDate(day.date) ? "mini_calendar_pad"}}
+                            {{ day.eventCount ? "has_events" }}
+                            {{ day.date.isToday ? "today" }}
+                        ">
+                        <div class="mini_calendar_date">
+                            {% if month.containsDate(day.date) %}
+                                {% if day.eventCount %}
+                                    <a href="{{ siteUrl }}demo/day/{{ day.date.format('Y/m/d') }}">
+                                {% endif %}
+
+                                {{ day.date.format('j') }}
+
+                                {% if day.eventCount %}
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <strong class="middot">&middot;</strong>
+                            {% endif %}
+                        </div>
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

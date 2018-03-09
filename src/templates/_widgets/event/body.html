@@ -1,0 +1,76 @@
+{% set dateFormat = craft.i18n.localeData.dateFormatter.datepickerPhpFormat %}
+{% set timeFormat = craft.i18n.localeData.dateFormatter.timepickerPhpFormat %}
+
+{% set dateFormat = dateFormat|replace('n', 'm')|replace('j', 'd') %}
+{% set timeFormat = timeFormat|replace('g', 'h')|replace('i', 'mm')|replace('A', 'tt') %}
+
+{% macro dateTimeField(fieldName, label, datePlaceholder, timePlaceholder) %}
+
+    {% import "_includes/forms" as forms %}
+
+    {% set input %}
+        {{ forms.date({
+            id:          fieldName,
+            name:        fieldName,
+            placeholder: datePlaceholder,
+        }) }}
+
+        {{ forms.time({
+            id:          fieldName,
+            name:        fieldName,
+            placeholder: timePlaceholder,
+        }) }}
+    {% endset %}
+
+    {{ forms.field({
+        label:    label,
+        first:    (fieldName == 'startDate'),
+        required: true
+    }, input) }}
+
+{% endmacro %}
+
+{% from _self import dateTimeField %}
+{% import "_includes/forms" as forms %}
+
+{% js %}
+    window.calendarTimeInterval = {{ craft.calendar.settings.timeInterval }};
+    window.calendarEventDuration = {{ craft.calendar.settings.eventDuration }};
+    window.csrfTokenName = "{{ craft.app.config.general..csrfTokenName|e('js') }}";
+    window.csrfTokenValue = "{{ craft.app.request.csrfToken|e('js') }}";
+{% endjs %}
+
+<div class="event-creator">
+    {{ forms.textField({
+        label: "Title"|t,
+        id: 'title',
+        name: 'title',
+        first: true,
+        required: true
+    }) }}
+
+    {{ forms.selectField({
+        label: "Calendar"|t,
+        name: 'calendarId',
+        options: calendarOptions,
+        required: true,
+    }) }}
+
+    {{ dateTimeField('startDate', 'Start Date'|t, dateFormat, timeFormat) }}
+    {{ dateTimeField('endDate', 'End Date'|t, dateFormat, timeFormat) }}
+
+    {{ forms.lightswitchField({
+        label: "All Day"|t,
+        name: 'allDay',
+        on: false,
+    }) }}
+
+    <ul class="errors"></ul>
+
+    <div class="buttons">
+        <div class="btngroup">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+        </div>
+        <div class="spinner hidden"></div>
+    </div>
+</div>

@@ -1,0 +1,102 @@
+[
+  {
+    "urlParts": ["mini_cal\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"]],
+    "urlPattern": "mini_cal/{year}/{month}",
+    "template": "/mini_cal.html"
+  },
+  {
+    "urlParts": ["month\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"]],
+    "urlPattern": "month/{year}/{month}",
+    "template": "/month.html"
+  },
+  {
+    "urlParts": ["month\\/calendar\\/",["slug","[^\\\\\\/]+"]],
+    "urlPattern": "month/calendar/{slug}",
+    "template": "/month.html"
+  },
+  {
+    "urlParts": ["month\\/calendar\\/",["slug","[^\\\\\\/]+"],"\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"]],
+    "urlPattern": "month/calendar/{slug}/{year}/{month}",
+    "template": "/month.html"
+  },
+  {
+    "urlParts": ["week\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
+    "urlPattern": "week/{year}/{month}/{day}",
+    "template": "/week.html"
+  },
+  {
+    "urlParts": ["week\\/calendar\\/",["slug","[^\\\\\\/]+"]],
+    "urlPattern": "week/calendar/{slug}",
+    "template": "/week.html"
+  },
+  {
+    "urlParts": ["week\\/calendar\\/",["slug","[^\\\\\\/]+"],"\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
+    "urlPattern": "week/calendar/{slug}/{year}/{month}/{day}",
+    "template": "/week.html"
+  },
+  {
+    "urlParts": ["day\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
+    "urlPattern": "day/{year}/{month}/{day}",
+    "template": "/day.html"
+  },
+  {
+    "urlParts": ["day\\/calendar\\/",["slug","[^\\\\\\/]+"]],
+    "urlPattern": "day/calendar/{slug}",
+    "template": "/day.html"
+  },
+  {
+    "urlParts": ["day\\/calendar\\/",["slug","[^\\\\\\/]+"],"\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
+    "urlPattern": "day/calendar/{slug}/{year}/{month}/{day}",
+    "template": "/day.html"
+  },
+  {
+    "urlParts": ["calendars\\/",["slug","[^\\\\\\/]+"]],
+    "urlPattern": "calendars/{slug}",
+    "template": "/calendars.html"
+  },
+  {
+    "urlParts": ["event\\/",["number","\\\\d+"]],
+    "urlPattern": "event/{id}",
+    "template": "/event.html"
+  },
+  {
+    "urlParts": ["event\\/",["number","\\\\d+"],"\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
+    "urlPattern": "event/{id}/{year}/{month}/{day}",
+    "template": "/event.html"
+  },
+  {
+    "urlParts": ["events\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
+    "urlPattern": "events/{year}/{month}/{day}",
+    "template": "/events.html"
+  },
+  {
+    "urlParts": ["export\\/event\\/",["number","\\\\d+"]],
+    "urlPattern": "export/event/{id}",
+    "template": "/export.html"
+  },
+  {
+    "urlParts": ["edit\\/event\\/",["number","\\\\d+"]],
+    "urlPattern": "edit/event/{id}",
+    "template": "/edit.html"
+  },
+  {
+    "urlParts": ["edit\\/event\\/new"],
+    "urlPattern": "edit/event/new",
+    "template": "/edit.html"
+  },
+  {
+    "urlParts": ["export\\/calendar\\/",["number","\\\\d+"]],
+    "urlPattern": "export/calendar/{id}",
+    "template": "/export.html"
+  },
+  {
+    "urlParts": ["fullcalendar\\/",["slug","[^\\\\\\/]+"],"\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
+    "urlPattern": "fullcalendar/{slug}/{year}/{month}/{day}",
+    "template": "/fullcalendar.html"
+  },
+  {
+    "urlParts": ["resources\\/event_data\\/",["number","\\\\d+"]],
+    "urlPattern": "resources/event_data/{id}",
+    "template": "/resources/event_data.html"
+  }
+]

@@ -1,0 +1,19 @@
+{% set ID = random() %}
+
+<div class="calendar-mini-cal"
+     id="calendar-mini-cal-{{ ID }}"
+     data-calendars="{{ settings.calendars|join(',') }}"
+></div>
+
+{% js %}
+    window.csrfTokenName = "{{ craft.config.csrfTokenName|e('js') }}";
+    window.csrfTokenValue = "{{ craft.request.csrfToken|e('js') }}";
+
+    window.calendarLocale = '{{ calendarLocale }}';
+    window.calendarOverlapThreshold = {{ craft.calendar.settings.overlapThreshold }};
+    window.calendarFirstDayOfWeek = {{ currentUser is defined and currentUser ? currentUser.weekStartDay : craft.config.defaultWeekStartDay }};
+
+    $(function() {
+        initiateMiniCal($("#calendar-mini-cal-{{ ID }}"));
+    });
+{% endjs %}

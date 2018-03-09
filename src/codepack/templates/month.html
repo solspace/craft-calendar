@@ -1,0 +1,136 @@
+{% extends "demo/layouts/_layout.html" %}
+
+{% set pageTitle = "Month" %}
+{% set page = "month" %}
+
+{% block content %}
+
+    {# Acquire URL segments #}
+    {% set baseUrlSegments = 1 %}
+    {% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
+    {% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
+    {% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+    {% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
+    {% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
+
+    <div class="page-header">
+        <h1>Month View</h1>
+        <p class="lead">Below is full month calendar view, which allows you to see all your event occurrences.</p>
+    </div>
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment2 == "calendar" %}
+        {% set calendarHandle = segment3 %}
+        {% if segment4 %}
+            {% set targetDate = segment4~"-"~segment5~"-01" %}
+        {% endif %}
+    {% elseif segment2 is not empty %}
+        {% set targetDate = segment2~"-"~segment3~"-01" %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-9">
+            {% if segment2 == "calendar" %}
+                {% set calendar = craft.calendar.calendar({handle: segment3}) %}
+                {% if calendar %}
+                    <div class="alert" role="alert" style="background-color: {{ calendar.lighterColor }}; border-color: {{ calendar.color }};">
+                        <p class="lead" style="color: {{ calendar.contrastColor }} !important;">
+                            <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+                            Events for <strong>{{ calendar.name }}</strong> calendar
+                        </p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <div id="month_calendar">
+                {% set month = craft.calendar.month({
+                    date: targetDate,
+                    calendar: calendarHandle,
+                }) %}
+
+                <table id="month_calendar_outer">
+                    <thead>
+                    <tr id="month_year">
+                        <th class="left">
+                            <ul class="pager">
+                                <li>
+                                    <a href="{{ siteUrl }}demo/month/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ month.previousDate.format('Y/m') }}">
+                                        &larr; {{ month.previousDate.format('F') }}
+                                    </a>
+                                </li>
+                            </ul>
+                        </th>
+                        <th class="center" colspan="3">
+                            <h3>
+                                {% include "demo/layouts/_month_heading.html" with {month: month} only %} &nbsp;
+                                <span class="label {{ month.eventCount ? "label-warning" : "label-default" }}">
+								    {{ month.eventCount }} event{{ month.eventCount > 1 or month.eventCount == 0 ? "s" }}
+							    </span>
+                            </h3>
+                        </th>
+                        <th class="right">
+                            <ul class="pager">
+                                <li>
+                                    <a href="{{ siteUrl }}demo/month/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ month.nextDate.format('Y/m') }}">
+                                        {{ month.nextDate.format('F') }} &rarr;
+                                    </a>
+                                </li>
+                            </ul>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <table id="month_calendar_inner" class="table table-bordered">
+                                <thead>
+                                <tr id="days_of_week" class="active">
+                                    {% for day in month|first %}
+                                        <th class="day_of_week">
+                                            {{ day.date.format('l') }}
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for week in month %}
+                                    <tr>
+                                        {% for day in week %}
+                                            {% if month.containsDate(day.date) %}
+                                            <td class="day_cell{{ day.date.isToday ? " today" }}">
+                                                <div class="date{{ day.eventCount ? " has_events" }}">
+                                                    <a class="num" href="{{ siteUrl }}demo/day/{{ segment2 == 'calendar' ? "calendar/"~segment3~"/" }}{{ day.date.format('Y/m/d') }}">
+                                                        {{ day.date.format('j') }}
+                                                    </a>
+                                                </div>
+                                            {% else %}
+                                                <td class="day_cell out_of_range">
+                                                <div class="date">
+                                                        <span class="num">
+                                                            {{ day.date.format('j') }}
+                                                        </span>
+                                                </div>
+                                            {% endif %}
+
+                                            {% for event in day.events %}
+                                                {% include "demo/layouts/_event.html" %}
+                                            {% endfor %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            {% include "demo/layouts/_sidebar.html" %}
+        </div>
+    </div>
+
+{% endblock %}

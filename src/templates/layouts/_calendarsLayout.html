@@ -1,0 +1,14 @@
+{% extends "_layouts/cp" %}
+{% hook "calendar.prepareCpTemplate" %}
+
+{% block actionButton %}
+
+    {% if currentUser.can("calendar-createCalendars") %}
+        <div class="buttons">
+            <a class="btn submit add icon" href="{{ url('calendar/calendars/new') }}">
+                {{ "New Calendar"|t }}
+            </a>
+        </div>
+    {% endif %}
+
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "demo/layouts/_layout.html" %}
+
+{% set pageTitle = "Week" %}
+{% set page = "week" %}
+
+{% block content %}
+
+    {# Acquire URL segments #}
+    {% set baseUrlSegments = 1 %}
+    {% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
+    {% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
+    {% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+    {% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
+    {% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
+    {% set segment6 = craft.app.request.segment(baseUrlSegments + 6) %}
+
+    <div class="page-header">
+        <h1>Week View</h1>
+        <p class="lead">
+            Below is full week calendar view, which allows you to see all your event occurrences in a daily view.
+        </p>
+    </div>
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment2 == "calendar" %}
+        {% set calendarHandle = segment3 %}
+        {% if segment4 %}
+            {% set targetDate = segment4~"-"~segment5~"-"~segment6 %}
+        {% endif %}
+    {% elseif segment2 is not empty %}
+        {% set targetDate = segment2~"-"~segment3~"-"~segment4 %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-9">
+
+            {% include "demo/layouts/_calendar_banner.html" %}
+
+            <div id="week_calendar">
+                {% set week = craft.calendar.week({
+                    date: targetDate,
+                    calendar: calendarHandle,
+                }) %}
+
+                <div class="header clearfix">
+                    <div class="left">
+                        <ul class="pager">
+                            <li>
+                                <a href="{{ siteUrl }}demo/week/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ week.previousDate.format('Y/m/d') }}">
+                                    &larr; Last Week
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="center">
+                        <h3>
+                            Week of {{ week.date.format("F j, Y") }} &nbsp;
+                            <span class="label {{ week.eventCount ? "label-warning" : "label-default" }}">
+								{{ week.eventCount }} event{{ week.eventCount > 1 or week.eventCount == 0 ? "s" }}
+							</span>
+                        </h3>
+                    </div>
+                    <div class="right">
+                        <ul class="pager">
+                            <li>
+                                <a href="{{ siteUrl }}demo/week/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ week.nextDate.format('Y/m/d') }}">
+                                    Next Week &rarr;
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% for day in week %}
+                    <div class="panel {{ day.date.isToday ? "panel-warning" : "panel-default" }}">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <a href="{{ siteUrl }}demo/day/{{ segment2 == "calendar" ? segment2~"/"~segment3~"/" }}{{ day.date.format('Y/m/d') }}">
+                                    {% if day.date.isToday %}
+                                        TODAY
+                                    {% else %}
+                                        {{ day.date.format('l, F j, Y') }}
+                                    {% endif %}
+                                </a> &nbsp;
+                                {% if day.eventCount %}
+                                    <span class="label label-warning">
+										{{ day.eventCount }} event{{ day.eventCount > 1 ? "s" }}
+									</span>
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            {% for event in day.events %}
+                                {% if loop.index == 1 %}<ul class="list-group">{% endif %}
+
+                                <li class="list-group-item" style="border-left: 5px solid {{ event.calendar.color }};">
+                                    <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}" class="badge" style="background-color: {{ event.calendar.color }};">
+                                        {{ event.calendar.name }}
+                                    </a>
+                                    <span class="glyphicon glyphicon-time"></span>
+                                    {% if event.allDay %}
+                                        All Day
+                                    {% else %}
+                                        {% if event.multiDay %}
+                                            {% if day.containsDate(event.startDate) %}
+                                                Starts {{ event.startDate.format("g:ia") }}
+                                            {% elseif day.containsDate(event.endDate) %}
+                                                Ends {{ event.endDate.format("g:ia") }}
+                                            {% else %}
+                                                All Day
+                                            {% endif %}
+                                        {% else %}
+                                            {{ event.startDate.format("g:ia") }} - {{ event.endDate.format("g:ia") }}
+                                        {% endif %}
+                                    {% endif %}
+                                    <b>
+                                        <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? event.startDate.format("Y/m/d") }}"
+                                           class="calendar_event_title">
+                                            {{ event.title }}
+                                        </a>
+                                    </b>
+                                    {% if event['location'] is defined %}
+                                        <i>{{ event.location }}</i>
+                                    {% endif %}
+                                </li>
+
+                                {% if loop.index == day.eventCount %}</ul>{% endif %}
+                            {% else %}
+                                <p>No events for this day.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            {% include "demo/layouts/_sidebar.html" %}
+        </div>
+    </div>
+
+{% endblock %}

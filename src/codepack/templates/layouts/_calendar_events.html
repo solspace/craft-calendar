@@ -1,0 +1,9 @@
+{% for event in events.all %}
+    <li>
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}">{{ event.title }}</a>
+        &nbsp;
+        <small><i>{{ event.startDate.format('F j, Y') }}</i></small>
+    </li>
+{% else %}
+    <li>No events could be found within the specified time range (today until 6 months from today) for this Calendar.</li>
+{% endfor %}

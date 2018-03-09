@@ -1,0 +1,50 @@
+<div class="qtip hidden">
+    <div class="title">
+        {{ event.title }}
+        <span class='event_time'>
+            <span class='glyphicon glyphicon-time'></span>
+            {% if event.allDay %}
+                All Day
+                {% if event.duration.days > 1 %}
+                    ({{ event.duration.days }} days)
+                {% endif %}
+            {% else %}
+                {% if event.multiDay %}
+                    {% if day.containsDate(event.startDate) %}
+                        Starts {{ event.startDate.format('g:ia') }}
+                    {% elseif day.containsDate(event.endDate) %}
+                        Ends {{ event.endDate.format('g:ia') }}
+                    {% else %}
+                        All Day
+                    {% endif %}
+                    ({{ event.duration.days }} days)
+                {% else %}
+                    {{ event.startDate.format('g:ia') }} - {{ event.endDate.format('g:ia') }}
+                    ({{ event.duration.humanReadable }})
+                {% endif %}
+            {% endif %}
+            </span>
+    </div>
+    <div class="content">
+        <span class='glyphicon glyphicon-calendar' style='color: {{ event.calendar.color }};'></span>
+        <span style='color: {{ event.calendar.color }};'>{{ event.calendar.name }}</span>
+        <hr />
+        {% if event.allDay %}
+            {% if event.multiDay %}
+                <b>Starts</b> {{ event.startDate.format('F j, Y') }}<br />
+                <b>Ends</b> {{ event.endDate.format('F j, Y') }}
+            {% else %}
+                {{ event.startDate.format('F j, Y') }} (All Day)
+            {% endif %}
+        {% else %}
+            <b>Starts</b> {{ event.startDate.format('F j, Y \\a\\t g:ia') }}<br />
+            <b>Ends</b> {{ event.endDate.format('F j, Y \\a\\t g:ia') }}
+        {% endif %}
+
+        {% if event.repeating %}
+            <hr />
+            <span class='glyphicon glyphicon-repeat'></span>&nbsp;<b>Repeats</b>
+            {{ event.readableRepeatRule }}
+        {% endif %}
+    </div>
+</div>

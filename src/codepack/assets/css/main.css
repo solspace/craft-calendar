@@ -1,0 +1,315 @@
+/* GLOBAL */
+
+body {
+	margin-top: 30px;
+}
+.ss-pageinfo {
+	margin-top: 30px;
+}
+.ss-pageinfo h2 {
+	margin-top: 5px;
+}
+
+
+/* MONTH CALENDAR */
+
+#month_calendar {
+	margin: 0 auto;
+	padding: 0;
+	width: 100%;
+}
+#month_calendar table, #month_calendar tr, #month_calendar td {
+	padding: 0px;
+}
+#month_calendar_outer {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	table-layout: fixed;
+}
+#month_calendar_inner {
+	width: 100%;
+	table-layout: fixed;
+}
+#month_calendar #month_calendar_inner td {
+	width: 14%;
+	height: 130px;
+	padding: 5px;
+}
+#month_calendar .event {
+	font-size: 12px;
+	overflow: hidden;
+	white-space: nowrap;
+	color: #7f7f7f;
+	padding: 2px 0 0 0;
+}
+#month_calendar .event a {
+	color: #565656;
+	text-decoration: underline;
+}
+#month_calendar .day_cell .all_day, #month_calendar .day_cell .multi_day {
+	padding: 0 6px;
+	line-height: 20px;
+	color: #7f7f7f;
+}
+#month_calendar .day_cell .all_day {
+	margin-bottom: 2px;
+	background-color: #f2f2f2;
+	border: 1px solid;
+	border-color: #c6c6c6;
+}
+#month_calendar .day_cell .multi_day {
+	margin-bottom: 2px;
+	background-color: #f2f2f2;
+	border-top: 1px solid;
+	border-bottom: 1px solid;
+	border-left: none;
+	border-right: none;
+	border-color: #c6c6c6;
+	margin-left: -5px;
+	margin-right: -5px;
+}
+#month_calendar .day_cell .all_day a, #month_calendar .day_cell .multi_day a {
+	color: #565656;
+	text-decoration: none;
+}
+#month_calendar .day_cell .all_day a:hover, #month_calendar .day_cell .multi_day a:hover {
+	color: #565656;
+	text-decoration: underline;
+}
+#month_calendar .first_day {
+	margin-left: 0 !important;
+	border-left: 1px solid !important;
+}
+#month_calendar .last_day {
+	margin-right: 0 !important;
+	border-right: 1px solid !important;
+}
+#month_calendar .day_cell .date {
+	width: 100%;
+	text-align: right;
+	margin: 0;
+	padding: 0 0 3px 0;
+}
+#month_calendar .day_cell .date a {
+	font-weight: normal;
+	color: #000000;
+	text-decoration: none;
+}
+#month_calendar .day_cell .has_events a {
+	color: #d75452;
+	font-weight: bold;
+}
+#month_calendar .day_cell .date .num {
+	font-size: 15px;
+	color: #8a8a8a;
+}
+#month_calendar .day_cell .date a:hover {
+	color: #000000;
+	text-decoration: underline;
+}
+#month_calendar .day_cell .has_events a:hover {
+	color: #000000;
+}
+#month_calendar .day_cell hr {
+	margin-top: 7px;
+	margin-bottom: 7px;
+}
+#month_calendar td.day_cell {
+	padding-top: 30px;
+}
+#month_calendar .out_of_range {
+	background: #fbfbfb;
+}
+#month_calendar .out_of_range .date {
+	color: #aeaeae;
+}
+#month_calendar td.today {
+	background-color: #fcf8e4;
+}
+#month_calendar #days_of_week th {
+	padding: 5px 0;
+	text-align: center;
+}
+#month_calendar #month_year th {
+	padding: 5px;
+	color: #000;
+}
+#month_calendar #month_year th.left {
+	text-align: left;
+}
+#month_calendar #month_year th.center {
+	text-align: center;
+}
+#month_calendar #month_year th.right {
+	text-align: right;
+}
+#month_calendar .popover-title span.event_time {
+	display: block;
+	color: #4f4f4f;
+	font-size: 85%;
+	margin-top: 5px;
+}
+#month_calendar .calendar-color {
+	background-color: #9f9f9f;
+	position: relative;
+	top: 0;
+	display: inline-block;
+	height: 8px;
+	width: 8px;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	border-radius: 50%;
+	text-indent: -9000px;
+}
+
+
+/* WEEK CALENDAR */
+
+#week_calendar .header div {
+	float: left;
+	width: 20%;
+}
+#week_calendar .header div.left {
+	padding-left: 10px;
+}
+#week_calendar .header div.center {
+	width: 55%;
+	text-align: center;
+}
+#week_calendar .header div.right {
+	text-align: right;
+	padding-right: 10px;
+}
+#week_calendar ul.list-group {
+	margin-bottom: 0px;
+}
+
+
+/* DAY CALENDAR */
+
+#day_calendar .header div {
+	float: left;
+	width: 15%;
+}
+#day_calendar .header div.left {
+	padding-left: 10px;
+}
+#day_calendar .header div.center {
+	width: 65%;
+	text-align: center;
+}
+#day_calendar .header div.right {
+	text-align: right;
+	padding-right: 10px;
+}
+#day_calendar ul.list-group {
+	margin-bottom: 0px;
+}
+.list-group-item .calendar_event_title {
+	color: #3a3a3a;
+	text-decoration: underline;
+}
+.list-group-item .calendar_event_title:hover {
+	color: #4f4f4f;
+	text-decoration: none;
+}
+
+
+/* MINI CALENDAR */
+
+#mini_calendar td, #mini_calendar th {
+	padding: 0;
+	margin: 0;
+	text-align: center;
+}
+#mini_calendar th {
+	border: none;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+#mini_calendar .mini_calendar_days th {
+	background: #e5e5e5;
+	border: 1px solid #979797;
+	border-width: 1px 0;
+}
+#mini_calendar th a {
+	color: #000;
+	font-size: 15px;
+}
+#mini_calendar td a {
+	display: block;
+	color: #fff;
+}
+#mini_calendar td div, #mini_calendar td.has_events div #mini_calendar td.mini_calendar_pad div {
+	vertical-align: middle;
+	text-align: center;
+	padding: 6px;
+}
+#mini_calendar td.has_events div {
+	padding: 0;
+}
+#mini_calendar td.has_events div a {
+	font-weight: bold;
+	color: #000000;
+	display: block;
+	padding: 6px;
+	background-color: #f5f5f5;
+}
+#mini_calendar td.has_events .middot {
+	display: block;
+	padding: 6px;
+}
+#mini_calendar .middot {
+	color: #bcbcbc;
+}
+#mini_calendar td.has_events div a:hover {
+	background: #dff0d9;
+	text-decoration: none;
+}
+#mini_calendar td.today div, #mini_calendar td.today div a {
+	background-color: #fcf8e4;
+}
+
+.freq-list input[type=checkbox] {
+	display: none;
+}
+
+.freq-list input[type=checkbox] + label {
+	display: inline-block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+
+	cursor: pointer;
+
+	width: 30px;
+	height: 30px;
+	padding: 5px 0 0;
+
+	border-radius: 4px;
+
+	background: #ebebeb;
+	text-align: center;
+	font-weight: normal;
+}
+
+.freq-list input[type=checkbox]:checked + label {
+	background: #c8c8c8;
+	color: #FFF;
+}
+
+.freq-list.freq-list-large input[type=checkbox] + label {
+	display: block;
+	width: 100%;
+}
+
+.freq-list.freq-list-large > div div.row {
+	margin-left: -2px;
+	margin-right: -2px;
+}
+
+.freq-list.freq-list-large > div div.col-xs-4 {
+	padding-left: 2px;
+	padding-right: 2px;
+}

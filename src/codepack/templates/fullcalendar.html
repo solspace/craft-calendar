@@ -1,0 +1,603 @@
+{% extends "demo/layouts/_layout.html" %}
+
+{% set pageTitle = "Full Calendar" %}
+{% set page = "fullcalendar" %}
+
+{# Acquire URL segments #}
+{% set baseUrlSegments = 1 %}
+{% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
+{% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
+{% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+{% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
+{% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>Full Calendar</h1>
+        <p class="lead">
+            Below is an implementation of the <a href="http://fullcalendar.io">FullCalendar.io</a> JS library.
+            Users with appropriate admistrative priviledges will also be able to modify events.
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+
+            <div id="calendar-wrapper"></div>
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+
+{% block footerJs %}
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.3/fullcalendar.min.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/full-calendar.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.3/fullcalendar.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js" integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
+    <script src="//cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.js"></script>
+    <script>
+        var calendarTimeFormat = "{{ craft.app.locale.getTimeFormat('short', 'php') }}";
+        var qTipsEnabled = true;
+        var $calendar = $("#calendar-wrapper");
+        var canEditEvents = {{ currentUser and currentUser.can('calendar-manageEvents') ? 'true' : 'false' }};
+
+        {% set defaultDate = now|date("Y-m-d") %}
+        {% if segment3 and segment4 and segment5 %}
+            {% set defaultDate = segment3 ~ "-" ~ segment4 ~ "-" ~ segment5 %}
+        {% endif %}
+
+        $(function () {
+            $calendar.fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                defaultDate: "{{ defaultDate }}",
+                defaultView: "{{ segment2 == "week" ? "agendaWeek" : (segment2 == "day" ? "agendaDay" : "month") }}",
+                fixedWeekCount: true,
+                eventLimit: 5,
+                aspectRatio: 1.3,
+                events: getEvents,
+                eventRender: renderEvent,
+                eventClick: eventClick,
+                eventDragStart: closeAllQTips,
+                eventDragStop: enableQTips,
+                eventDrop: eventDateChange,
+                eventResizeStart: closeAllQTips,
+                eventResizeStop: enableQTips,
+                eventResize: eventDurationChange,
+                selectable: canEditEvents,
+                selectHelper: canEditEvents,
+                select: showEventCreator
+            });
+
+
+            $('.fc-button', $calendar).on({
+                click: function () {
+                    var viewType = $calendar.fullCalendar('getView').type;
+                    var date = $calendar.fullCalendar('getDate');
+
+                    var year = date.format('YYYY');
+                    var month = date.format('MM');
+                    var day = date.format('DD');
+
+                    var view = 'month';
+                    switch (viewType) {
+                        case 'agendaDay':
+                            view = 'day';
+                            break;
+
+                        case 'agendaWeek':
+                            view = 'week';
+                            break;
+                    }
+
+                    var url = '{{ siteUrl }}demo/fullcalendar/' + view + '/' + year + '/' + month + '/' + day;
+
+                    history.pushState('data', '', url);
+                }
+            });
+
+            $(".date-picker").datepicker({dateFormat: "yy-mm-dd"});
+            $(".time-picker").timepicker();
+
+            var $creator = $('#event-creator');
+            var $allDay = $('input[name=allDay]', $creator);
+            $allDay.on({
+                click: function () {
+                    var $timeWrapper = $('.timewrapper', $creator);
+
+                    if ($(this).is(":checked")) {
+                        $timeWrapper.fadeOut('fast');
+                    } else {
+                        $timeWrapper.fadeIn('fast');
+                    }
+                }
+            });
+        });
+
+        function getEvents(start, end, timezone, callback) {
+            var data = {
+                rangeStart: start.toISOString(),
+                rangeEnd: end.toISOString(),
+                {{ craft.app.config.general.csrfTokenName }}: '{{ craft.app.request.csrfToken }}',
+            };
+
+            $.ajax({
+                url: '{{ siteUrl }}demo/resources/event.json',
+                data: data,
+                type: 'post',
+                dataType: 'json',
+                success: function (eventList) {
+                    callback(eventList);
+                }
+            });
+        }
+
+        function renderEvent(event, element) {
+            if (event.allDay) {
+                element.addClass('fc-event-all-day');
+            }
+
+            if (!event.end) {
+                return;
+            }
+
+            if (!event.multiDay && !event.allDay) {
+                element.addClass('fc-event-single-day');
+                var colorIcon = $('<span />')
+                        .addClass('fc-color-icon')
+                        .css('background-color', event.backgroundColor)
+                        .css('border-color', event.borderColor);
+                $('.fc-content', element).prepend(colorIcon);
+            } else {
+                element.addClass('fc-event-multi-day');
+            }
+
+            element.addClass('fc-color-' + event.textColor);
+
+            buildEventPopup(event, element);
+        }
+
+        function eventClick(event) {
+            var date = event.start;
+
+            var year = date.format('YYYY');
+            var month = date.format('MM');
+            var day = date.format('DD');
+
+            window.location.href = '{{ siteUrl }}demo/event/' + event.id + '/' + year + '/' + month + '/' + day;
+        }
+
+        /**
+         * Attaches a qTip2 popup on a given event
+         *
+         * @param event
+         * @param element
+         */
+        function buildEventPopup(event, element) {
+            if (!event.calendar) {
+                return;
+            }
+
+            var qtipContent = $('<div>');
+            var calendarData = $('<div>', {
+                class: 'calendar-data',
+                html: '<span class="color-indicator" style="background-color: ' + event.backgroundColor + ';"></span> ' + event.calendar.name
+            });
+
+            var start = moment(event.start);
+            var end = moment(event.end);
+
+            var dateFormat = 'dddd, MMMM D, YYYY';
+            if (event.allDay) {
+                end.subtract(1, 'days');
+            } else {
+                var timeFormat = calendarTimeFormat == "H:i" ? "HH:mm" : "h:mma"
+                dateFormat = dateFormat + ' \\a\\t ' + timeFormat;
+            }
+
+            var eventRange = $('<div>', {
+                class: 'event-date-range separator',
+                html: '<div style="white-space: nowrap;"><label>Starts:</label>' + start.format(dateFormat) + '</div>' +
+                '<div style="white-space: nowrap;"><label>Ends:</label>' + end.format(dateFormat) + '</div>'
+            });
+
+            var eventRepeats = '';
+            if (event.repeats) {
+                eventRepeats = $('<div>', {
+                    class: 'event-repeats separator',
+                    html: '<label>Repeats:</label>' + event.readableRepeatRule
+                });
+            }
+
+            if (event.editable) {
+                var editButton = $('<div>', {
+                    class: 'buttons'
+                });
+
+                editButton.append($('<a>', {
+                    class: 'btn btn-warning btn-xs submit',
+                    href: '{{ siteUrl }}demo/edit/event/' + event.id,
+                    text: '{{ "Edit"|t }}'
+                }));
+
+                editButton.append($('<a>', {
+                    class: 'btn btn-default btn-xs delete-event',
+                    text: "{{ 'Delete'|t }}",
+                    data: {
+                        id: event.id,
+                        action: 'calendar/eventsApi/delete'
+                    }
+                }));
+
+                if (event.repeats) {
+                    editButton.append($('<a>', {
+                        class: 'btn btn-default btn-xs delete-event-occurrence',
+                        text: "{{ 'Delete occurrence'|t }}",
+                        data: {
+                            id: event.id,
+                            date: event.start.toISOString(),
+                            action: 'calendar/eventsApi/deleteOccurrence'
+                        }
+                    }));
+                }
+            }
+
+            element.qtip({
+                content: {
+                    title: event.title,
+                    button: true,
+                    text: qtipContent
+                            .add(calendarData)
+                            .add(eventRange)
+                            .add(eventRepeats)
+                            .add(editButton)
+                },
+                style: {
+                    classes: 'qtip-bootstrap qtip-event',
+                },
+                position: {
+                    my: 'top center',
+                    at: 'bottom center',
+                    viewport: $(window),
+                    adjust: {
+                        method: 'shift flip'
+                    }
+                },
+                show: {
+                    solo: true,
+                    delay: 500
+                },
+                hide: {
+                    fixed: true,
+                    delay: 300
+                },
+                events: {
+                    show: function (e, api) {
+                        if (!qTipsEnabled) {
+                            e.preventDefault();
+                        }
+                    },
+                    render: function (e, api) {
+                        $('a.delete-event-occurrence', api.elements.content).click(function (e) {
+                            var action = $(this).data('action');
+                            var eventId = $(this).data('id');
+                            var date = $(this).data('date');
+
+                            if (confirm("{{ 'Are you sure?'|t }}")) {
+                                var data = {
+                                    eventId: eventId,
+                                    date: date,
+                                    action: action
+                                };
+
+                                data[csrfTokenName] = csrfTokenValue;
+
+                                $.ajax({
+                                    type: 'post',
+                                    dataType: 'json',
+                                    data: data,
+                                    success: function (response) {
+                                        if (!response.error) {
+                                            $calendar.fullCalendar('removeEvents', function (lookupEvent) {
+                                                return lookupEvent.id == event.id && lookupEvent.start.isSame(event.start);
+                                            });
+                                            api.destroy();
+
+                                            return;
+                                        }
+
+                                        alert(response.error);
+                                    }
+                                });
+                            }
+
+                            return false;
+                        });
+
+                        $('a.delete-event', api.elements.content).click(function (e) {
+                            var action = $(this).data('action');
+                            var eventId = $(this).data('id');
+
+                            if (confirm("{{ 'Are you sure you want to delete this event?'|t }}")) {
+                                var data = {
+                                    eventId: eventId,
+                                    action: action
+                                };
+
+                                data[csrfTokenName] = csrfTokenValue;
+
+                                $.ajax({
+                                    type: 'post',
+                                    dataType: 'json',
+                                    data: data,
+                                    success: function (response) {
+                                        if (!response.error) {
+                                            $calendar.fullCalendar('removeEvents', event.id);
+                                            api.destroy();
+
+                                            return;
+                                        }
+
+                                        alert(response.error);
+                                    }
+                                });
+                            }
+
+                            return false;
+                        });
+                    }
+                }
+            });
+        }
+
+        function eventDateChange(event, delta, revertFunc) {
+            eventRepositioned("Date", event, delta, revertFunc);
+        }
+
+        function eventDurationChange(event, delta, revertFunc) {
+            eventRepositioned("Duration", event, delta, revertFunc);
+        }
+
+        function eventRepositioned(modification, event, delta, revertFunc) {
+            var data = {
+                action: "calendar/eventsApi/modify" + modification,
+                eventId: event.id,
+                isAllDay: event.allDay,
+                startDate: event.start.toISOString(),
+                endDate: event.end ? event.end.toISOString() : null,
+                deltaSeconds: delta.as("seconds")
+            };
+
+            data[csrfTokenName] = csrfTokenValue;
+
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                data: data,
+                success: function (response) {
+                    if (response.error) {
+                        revertFunc();
+                    } else {
+                        if (event.repeats) {
+                            $calendar.fullCalendar('refetchEvents');
+                        }
+                    }
+                },
+                error: function () {
+                    revertFunc();
+                }
+            });
+        }
+
+        function closeAllQTips() {
+            qTipsEnabled = false;
+            $('div.qtip:visible').qtip('hide');
+        }
+
+        function enableQTips() {
+            qTipsEnabled = true;
+        }
+
+        function showEventCreator(start, end) {
+            $('<div />').qtip({
+                content: {
+                    text: $('#event-creator'),
+                    title: "{{ "New Event"|t }}"
+                },
+                position: {
+                    my: 'center',
+                    at: 'center',
+                    target: $(window)
+                },
+                show: {
+                    ready: true,
+                    modal: {
+                        on: true,
+                        blur: false
+                    }
+                },
+                hide: false,
+                style: {
+                    classes: 'qtip-bootstrap dialogue',
+                    width: 500
+                },
+                events: {
+                    render: function (event, api) {
+                        var context = api.elements.content;
+
+                        $('ul.errors', context).empty();
+
+                        var startTime = start.utc().format('HHmmss');
+                        var endTime = end.utc().format('HHmmss');
+
+                        var isAllDay = false;
+                        if (startTime === endTime && endTime == "000000") {
+                            end.subtract(1, 'seconds');
+                            isAllDay = true;
+                        }
+
+                        var utcStart = createDateAsUTC(start.toDate());
+                        var utcEnd = createDateAsUTC(end.toDate());
+
+                        $creator = $("#event-creator");
+                        $creator.addClass('shown');
+                        var $startDate = $('input[name=startDate]', $creator);
+                        var $startTime = $('input[name=startTime]', $creator);
+                        var $endDate = $('input[name=endDate]', $creator);
+                        var $endTime = $('input[name=endTime]', $creator);
+
+                        $startDate.datepicker('setDate', utcStart);
+                        $endDate.datepicker('setDate', utcEnd);
+                        $startTime.timepicker('setTime', utcStart);
+                        $endTime.timepicker('setTime', utcEnd);
+
+                        var $allDayInput = $('input[name=allDay]');
+                        $allDayInput.prop("checked", isAllDay);
+
+                        if (isAllDay) {
+                            $('.timewrapper', $creator).hide();
+                        } else {
+                            $('.timewrapper', $creator).show();
+                        }
+
+                        $("button.submit", context).unbind('click').click(function (e) {
+                            var title = $('input[name=title]', context).val();
+                            var calendarId = $('select[name=calendarId]', context).val();
+
+                            var startDateValue = moment($startDate.datepicker('getDate'));
+                            var startTimeValue = moment($startTime.timepicker('getTime'));
+                            var endDateValue = moment($endDate.datepicker('getDate'));
+                            var endTimeValue = moment($endTime.timepicker('getTime'));
+
+                            var data = {
+                                action: 'calendar/eventsApi/create',
+                                startDate: startDateValue.format('YYYY-MM-DD') + ' ' + startTimeValue.format('HH:mm:ss'),
+                                endDate: endDateValue.format('YYYY-MM-DD') + ' ' + endTimeValue.format('HH:mm:ss'),
+                                allDay: $allDayInput.is(":checked") ? 1 : 0,
+                                event: {
+                                    title: title,
+                                    calendarId: calendarId
+                                }
+                            };
+
+                            data[csrfTokenName] = csrfTokenValue;
+
+                            $.ajax({
+                                type: 'post',
+                                dataType: 'json',
+                                data: data,
+                                success: function (response) {
+                                    if (response.error) {
+                                        $('ul.errors', context)
+                                                .empty()
+                                                .append($('<li />', {text: response.error}));
+                                    } else if (response.event) {
+                                        $calendar.fullCalendar('renderEvent', response.event);
+                                        $calendar.fullCalendar('unselect');
+
+                                        api.hide(e);
+                                    }
+                                },
+                                error: function (response) {
+                                    alert(response);
+                                }
+                            });
+                        });
+
+                        $('button.delete', context).unbind('click').click(function (e) {
+                            api.hide();
+                        });
+                    },
+                    hide: function (event, api) {
+                        $('#event-creator').removeClass('shown').insertAfter($calendar);
+                        $calendar.fullCalendar('unselect');
+                        api.destroy();
+                    }
+                }
+            });
+        }
+
+
+        function createDateAsUTC(date) {
+            return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
+        }
+
+    </script>
+
+    <div id="event-creator">
+        <div class="row">
+            <div class="col-md-12">
+                <label>{{ "Title"|t }}</label>
+            </div>
+            <div class="col-md-12">
+                <input class="form-control" type="text" name="title" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <label>{{ "Calendar"|t }}</label>
+            </div>
+            <div class="col-md-12">
+                <select class="form-control" name="calendarId">
+                    {% for calendar in craft.calendar.allowedCalendars %}
+                        <option value="{{ calendar.id }}">
+                            {{ calendar.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <label>{{ "Start Date"|t }}</label>
+            </div>
+            <div class="col-md-7">
+                <input class="form-control date-picker" type="text" name="startDate" />
+            </div>
+            <div class="col-md-5 timewrapper">
+                <input class="form-control time-picker" type="text" name="startTime" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <label>{{ "End Date"|t }}</label>
+            </div>
+            <div class="col-md-7">
+                <input class="form-control date-picker" type="text" name="endDate" />
+            </div>
+            <div class="col-md-5 timewrapper">
+                <input class="form-control time-picker" type="text" name="endTime" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <label>
+                    <input type="checkbox" name="allDay" value="1" />
+                    {{ "All Day"|t }}
+                </label>
+            </div>
+        </div>
+
+        <ul class="errors"></ul>
+
+        <div class="buttons">
+            <button type="button" class="btn btn-success submit">{{ 'Save'|t }}</button>
+            <button type="button" class="btn btn-default delete">{{ 'Cancel'|t }}</button>
+        </div>
+    </div>
+{% endblock %}

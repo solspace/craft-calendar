@@ -1,0 +1,656 @@
+{% extends "demo/layouts/_layout.html" %}
+
+{% set pageTitle = "Event" %}
+{% set page = "edit" %}
+
+{% block content %}
+
+    {% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
+    {% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
+
+    {# Acquire URL segments #}
+    {% set baseUrlSegments = 1 %}
+    {% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
+    {% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
+    {% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+    {% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
+    {% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
+    {% set segment6 = craft.app.request.segment(baseUrlSegments + 6) %}
+
+    <div class="page-header">
+        <h1>Event Edit</h1>
+        <p class="lead">
+            Below is an individual event edit form, which allows you to edit core event details.
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-9">
+            <div id="events_calendar">
+
+                {% if segment3 == "new" or segment3 == "" %}
+                    {% set eventId = "new" %}
+                {% else %}
+                    {% set eventId = segment3 %}
+                {% endif %}
+
+                {% set event = craft.calendar.event(segment3, {
+                loadOccurrences: false
+                }) %}
+
+                {% if event %}
+
+                    {% requireEventEditPermissions event %}
+
+                    <form class="form-horizontal" method="post">
+                        {{ csrfInput() }}
+                        <input type="hidden" name="action" value="calendar/events/save-event" />
+                        <input type="hidden" name="redirect" value="{{ siteUrl }}demo/event/{id}" />
+                        <input type="hidden" name="eventId" value="{{ event.id }}" />
+                        <input type="hidden" name="slug" value="{{ event.slug }}" />
+
+
+                        {% if errors is defined %}
+                            <div class="form-group">
+                                <div class="col-sm-5 col-sm-offset-2">
+                                    {% for fieldErrors in errors %}
+                                        {% for error in fieldErrors %}
+                                            <div style="color: darkred;">&middot; {{ error }}</div>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ "Title"|t }}</label>
+                            <div class="col-sm-10">
+                                <input type="text"
+                                       name="title"
+                                       value="{{ event.title }}"
+                                       placeholder="{{ "Title"|t }}"
+                                       class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ "Calendar"|t }}</label>
+                            <div class="col-sm-10 col-md-5">
+                                <select name="calendarEvent[calendarId]" class="form-control">
+                                    {% for calendar in craft.calendar.allowedCalendars %}
+                                        <option value="{{ calendar.id }}" {{ calendar.id == event.calendar.id ? "selected" }}>
+                                            {{ calendar.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ "Start Date"|t }}</label>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    <div class="col-md-4 col-xs-8">
+                                        <input type="text"
+                                               name="calendarEvent[startDate][date]"
+                                               value="{{ event.startDate.format(dateFormat)|default }}"
+                                               placeholder="{{ dateFormat }}"
+                                               class="form-control date-picker" />
+                                    </div>
+                                    <div class="col-md-2 col-xs-4" data-not-all-day>
+                                        <input type="text"
+                                               value="{{ event.startDate.format('H:i')|default }}"
+                                               name="calendarEvent[startDate][time]"
+                                               placeholder="{{ timeFormat }}"
+                                               class="form-control time-picker" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ "End Date"|t }}</label>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    <div class="col-md-4 col-xs-8">
+                                        <input type="text"
+                                               value="{{ event.endDate.format(dateFormat)|default }}"
+                                               name="calendarEvent[endDate][date]"
+                                               placeholder="{{ dateFormat }}"
+                                               class="form-control date-picker" />
+                                    </div>
+                                    <div class="col-md-2 col-xs-4" data-not-all-day>
+                                        <input type="text"
+                                               value="{{ event.endDate.format('H:i')|default }}"
+                                               name="calendarEvent[endDate][time]"
+                                               placeholder="{{ timeFormat }}"
+                                               class="form-control time-picker" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ "All Day"|t }}</label>
+                            <div class="col-sm-10">
+                                <input type="hidden" id="allDayInput" name="calendarEvent[allDay]" value="{{ event.allDay }}" />
+                                <input type="checkbox"
+                                       id="allDay"
+                                       {{ event.allDay ? "checked" : "" }}
+                                       data-onstyle="success"
+                                       data-toggle="toggle" />
+                            </div>
+                        </div>
+
+
+                        {# =============== #}
+                        {# Repeating rules #}
+                        {# =============== #}
+
+                        <div class="form-group">
+                            <label class="col-sm-2 col-xs-2 control-label">
+                                {{ "Repeats"|t }}
+                            </label>
+                            <label class="col-sm-1 col-sm-push-1 col-xs-10 control-label" data-repeats data-invisible-for="select_dates">
+                                {{ "Every"|t }}
+                            </label>
+
+                            <div class="col-sm-1 col-sm-pull-1 col-xs-2" id="repeats-switch-wrapper">
+                                <input type="hidden" id="repeatsInput" name="calendarEvent[repeats]" value="{{ event.repeating }}" />
+                                <input type="checkbox"
+                                       id="repeats"
+                                       {{ event.repeating ? "checked" : "" }}
+                                       data-onstyle="success"
+                                       data-toggle="toggle" />
+                            </div>
+                            <div class="col-sm-2 col-xs-3" data-repeats data-invisible-for="select_dates">
+                                <input type="text"
+                                       name="calendarEvent[interval]"
+                                       value="{{ event.interval|default(1) }}"
+                                       class="form-control" />
+                            </div>
+                            <div class="col-sm-5 col-xs-7 col-sm-offset-0" data-repeats>
+                                <select name="calendarEvent[frequency]"
+                                        id="freq-selector"
+                                        class="form-control">
+                                    {% for freq, freqTitle in craft.calendar.frequencyOptions %}
+                                        <option value="{{ freq }}"
+                                                {% if freq == event.freq %} selected{% endif %}>
+                                            {{ freqTitle|t }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        {# ======================== #}
+                        {# Frequency-specific rules #}
+                        {# ======================== #}
+
+                        <div class="form-group freq-items freq-list" data-weekly data-repeats>
+                            <div class="col-sm-10 col-sm-offset-2">
+                                {% for day, dayName in craft.calendar.weekDaysShort %}
+                                    <input type="checkbox"
+                                           id="repeats-by-weekday-{{ day }}"
+                                           value="{{ day }}"
+                                            {{ day in event.byDay ? "checked" }}
+                                           name="calendarEvent[weekly][repeatsByWeekDay][]" />
+                                    <label for="repeats-by-weekday-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group freq-items" data-monthly data-repeats>
+                            <div class="col-sm-2 col-sm-offset-2 col-xs-4" style="padding-top: 6px;">
+                                <label>
+                                    {% set checked = event.byMonthDay or not event.byDay ? ' checked' : '' %}
+                                    <input type="radio"
+                                           name="calendarEvent[monthly][repeatsBy]"
+                                           data-toggle-switch
+                                           data-toggle-target="monthly"
+                                            {{ checked }}
+                                           value="byMonthDay">
+                                    {{ "Each"|t }}
+                                </label>
+                            </div>
+                            <div class="col-sm-2 col-xs-4" style="padding-top: 6px; text-align: right;">
+                                <label>
+                                    {% set checked = event.byDay ? ' checked' : '' %}
+                                    <input type="radio"
+                                           name="calendarEvent[monthly][repeatsBy]"
+                                           data-toggle-switch
+                                           data-toggle-target="monthly"
+                                            {{ checked }}
+                                           value="byDay">
+                                    {{ "On the"|t }}
+                                </label>
+                            </div>
+                            <div class="col-sm-2 col-xs-4">
+                                <select name="calendarEvent[monthly][repeatsByDayInterval]" class="form-control">
+                                    {% for interval, intervalTitle in craft.calendar.repeatsByOptions %}
+                                        <option value="{{ interval }}" {{ interval == event.repeatsOnRule ? "selected" }}>
+                                            {{ intervalTitle|t }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group freq-items freq-list"
+                             data-monthly
+                             data-toggled-by="byDay"
+                             data-repeats>
+                            <div class="col-sm-10 col-sm-offset-2">
+                                {% for day, dayName in craft.calendar.weekDaysShort %}
+                                    <input type="checkbox"
+                                           id="repeats-by-month-week-day-{{ day }}"
+                                           value="{{ day }}"
+                                            {{ day in event.byDay ? "checked" }}
+                                           name="calendarEvent[monthly][repeatsByWeekDay][]" />
+                                    <label for="repeats-by-month-week-day-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group freq-items freq-list"
+                             data-monthly
+                             data-toggled-by="byMonthDay"
+                             data-repeats>
+                            <div class="col-sm-10 col-sm-offset-2">
+                                {% for day, dayName in craft.calendar.monthDays %}
+                                    <input type="checkbox"
+                                           id="repeats-by-month-day-{{ day }}"
+                                           value="{{ day }}"
+                                            {{ day in event.byMonthDay ? "checked" }}
+                                           name="calendarEvent[monthly][repeatsByMonthDay][]" />
+                                    <label for="repeats-by-month-day-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group freq-items" data-yearly data-repeats>
+                            <div class="col-sm-2 col-sm-offset-2 col-xs-5" style="padding-top: 6px;">
+                                <label>
+                                    <input type="checkbox"
+                                           name="calendarEvent[yearly][repeatsBy]"
+                                           data-toggle-switch
+                                           data-toggle-target="yearly"
+                                            {{ event.repeatsOnRule != 0 ? 'checked' : '' }}
+                                           value="byDay">
+                                    {{ "On the"|t }}
+                                </label>
+                            </div>
+                            <div class="col-sm-2 col-xs-7">
+                                <select name="calendarEvent[yearly][repeatsByDayInterval]" class="form-control">
+                                    {% for interval, intervalTitle in craft.calendar.repeatsByOptions %}
+                                        <option value="{{ interval }}" {{ interval == event.repeatsOnRule ? "selected" }}>
+                                            {{ intervalTitle|t }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group freq-items freq-list"
+                             data-yearly
+                             data-toggled-by="byDay"
+                             data-repeats>
+                            <div class="col-sm-10 col-sm-offset-2">
+                                {% for day, dayName in craft.calendar.weekDaysShort %}
+                                    <input type="checkbox"
+                                           id="repeats-by-year-week-day-{{ day }}"
+                                           value="{{ day }}"
+                                            {{ day in event.byDay ? "checked" }}
+                                           name="calendarEvent[yearly][repeatsByWeekDay][]" />
+                                    <label for="repeats-by-year-week-day-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group freq-items freq-list freq-list-large"
+                             data-yearly
+                             data-toggled-by="byDay"
+                             data-repeats>
+                            <div class="col-sm-6 col-sm-offset-2 clearfix">
+                                <div class="row">
+                                    {% for month, monthName in craft.calendar.monthNames %}
+                                        <div class="col-xs-4">
+                                            <input type="checkbox"
+                                                   id="repeats-by-month-{{ month }}"
+                                                   value="{{ month }}"
+                                                    {{ month in event.byMonth ? "checked" }}
+                                                   name="calendarEvent[yearly][repeatsByMonth][]" />
+                                            <label for="repeats-by-month-{{ month }}">{{ monthName }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group"
+                             data-hide-for="select_dates"
+                             data-repeats>
+                            <label class="col-sm-2 col-xs-12 control-label">
+                                End Repeat
+                            </label>
+                            <div class="col-sm-2 col-xs-6">
+                                <select name="calendarEvent[untilType]"
+                                        data-toggle-switch
+                                        data-toggle-target="until"
+                                        class="form-control">
+                                    {% set untilTypes = {
+                                    'forever': "Never ends"|t,
+                                    'until': "On date"|t,
+                                    'count': "After"|t
+                                    } %}
+
+                                    {% for key, value in untilTypes %}
+                                        <option value="{{ key }}" {{ key == event.untilType ? "selected" }}>
+                                            {{ value }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-2 col-xs-6" data-toggled-by="until" data-until>
+                                <input type="text"
+                                       name="calendarEvent[untilDate][date]"
+                                       value="{{ event.untilDate.format(dateFormat)|default }}"
+                                       placeholder="{{ dateFormat }}"
+                                       class="date-picker form-control" />
+                            </div>
+                            <div class="col-sm-2 col-xs-6" data-toggled-by="count" data-until>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <input type="text"
+                                               name="calendarEvent[count]"
+                                               value="{{ event.count ? event.count : 1 }}"
+                                               placeholder="1"
+                                               class="form-control" />
+                                    </div>
+                                    <div class="col-xs-6" style="padding-top: 6px;">
+                                        times
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" data-repeats data-hide-for="select_dates">
+                            <label class="col-sm-2 control-label">
+                                Except on
+                            </label>
+                            <div class="col-sm-2">
+                                <input type="text"
+                                       name="calendarEvent[exceptionDate]"
+                                       class="form-control date-picker exception-date-picker"
+                                       placeholder="{{ dateFormat }}" />
+                            </div>
+                        </div>
+
+                        <div class="form-group exception-list" data-repeats data-hide-for="select_dates">
+                            {% for exception in event.exceptions %}
+                                <div class="col-sm-10 col-sm-offset-2 col-xs-12">
+                                    <input type="hidden" name="calendarEvent[exceptions][]" value="{{ exception }}" />
+                                    <a href="javascript:;"
+                                       class="remove-exception"
+                                       style="color: darkred; text-decoration: none; position: relative; top: 1px;">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </a>
+                                    {{ exception|date('l, F j, Y') }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-group" data-repeats data-show-for="select_dates">
+                            <label class="col-sm-2 control-label">
+                                On select dates
+                            </label>
+                            <div class="col-sm-2">
+                                <input type="text"
+                                       name="calendarEvent[selectDate]"
+                                       class="form-control date-picker select-date-picker"
+                                       placeholder="{{ dateFormat }}" />
+                            </div>
+                        </div>
+
+                        <div class="form-group select-dates-list" data-repeats data-show-for="select_dates">
+                            {% for selectDate in event.selectDates %}
+                                <div class="col-sm-10 col-sm-offset-2 col-xs-12">
+                                    <input type="hidden" name="calendarEvent[selectDates][]" value="{{ selectDate }}" />
+                                    <a href="javascript:;"
+                                       class="remove-select-date"
+                                       style="color: darkred; text-decoration: none; position: relative; top: 1px;">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </a>
+                                    {{ selectDate|date('l, F j, Y') }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if event['location'] is defined %}
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">{{ "Location"|t }}</label>
+                                <div class="col-sm-10">
+                                    <input type="text"
+                                           name="fields[location]"
+                                           value="{{ event.location }}"
+                                           placeholder="{{ "Location"|t }}"
+                                           class="form-control" />
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if event['description'] is defined %}
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">{{ "Description"|t }}</label>
+                                <div class="col-sm-10">
+                                    <textarea
+                                        name="fields[description]"
+                                        placeholder="{{ "Description"|t }}"
+                                        class="form-control">{{ event.description }}</textarea>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <div class="col-sm-10 col-sm-offset-2 col-xs-12">
+                                <button type="submit" class="btn btn-success">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                {% else %}
+                    <div class="alert alert-danger" role="alert">
+                        <p class="lead">
+                            Sorry, no event was found.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            {% include "demo/layouts/_sidebar.html" %}
+        </div>
+
+    </div>
+
+{% endblock %}
+
+
+{% block footerJs %}
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js" integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
+
+    {% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
+
+    <script>
+        var calendarTimeFormat = "{{ craft.app.locale.getTimeFormat('short', 'php') }}";
+
+        $(function () {
+            var $allDay = $("#allDay");
+            var $repeats = $("#repeats");
+            var $freq = $("select#freq-selector");
+
+            var $toggleSwitch = $("*[data-toggle-switch]");
+
+            $(".date-picker").datepicker();
+            $(".time-picker").timepicker();
+
+            $toggleSwitch.on({
+                click: function() {
+                    $(this).trigger("change");
+                },
+                change: function() {
+                    var value = $(this).val();
+                    var isSelected = $(this).prop("checked");
+                    var targetId = $(this).data("toggle-target");
+
+                    if ($(this).is(":radio")) {
+                        isSelected = true;
+                        var input = $("input:radio[name='" + $(this).attr("name") + "']:checked");
+                        value = input.val();
+                        targetId = input.data("toggle-target");
+                    }
+
+                    var $target = $("*[data-" + targetId + "][data-toggled-by=" + value + "]");
+                    var $hideTarget = $("*[data-" + targetId + "][data-not-toggled-by=" + value + "]");
+                    var $siblings = $("*[data-" + targetId + "][data-toggled-by]");
+
+                    if ($(this).is("select")) {
+                        isSelected = true;
+                    }
+
+                    $siblings.addClass("hidden");
+                    if (isSelected) {
+                        $target.removeClass("hidden");
+                        $hideTarget.addClass("hidden");
+                    }
+                }
+            });
+
+            $(".exception-list, .select-dates-list").on({
+                click: function() {
+                    $(this).parent().remove();
+                }
+            }, "a.remove-exception, a.remove-select-date");
+
+            $allDay.on({
+                change: function () {
+                    var isChecked = $(this).prop("checked");
+
+                    if (isChecked) {
+                        $("*[data-not-all-day]").addClass("hidden");
+                        $("#allDayInput").val(1);
+                    } else {
+                        $("*[data-not-all-day]").removeClass("hidden");
+                        $("#allDayInput").val(0);
+                    }
+                }
+            });
+
+            $repeats.on({
+                change: function () {
+                    var isChecked = $(this).prop("checked");
+
+                    if (isChecked) {
+                        $("*[data-repeats]:not(.freq-list)").removeClass("hidden");
+                        $("*[data-repeats].freq-list[data-weekly]").removeClass("hidden");
+                        $("#repeatsInput").val(1);
+                        $("#repeats-switch-wrapper")
+                                .removeClass("col-sm-offset-1 col-xs-12")
+                                .addClass("col-xs-2");
+                    } else {
+                        $("*[data-repeats]").addClass("hidden");
+                        $("#repeatsInput").val(0);
+                        $("#repeats-switch-wrapper")
+                                .addClass("col-sm-offset-1 col-xs-12")
+                                .removeClass("col-xs-2");
+                    }
+                }
+            });
+
+            $freq.on({
+                change: function () {
+                    var val = $(this).val().toLowerCase();
+
+                    $(".freq-items").hide();
+                    $(".freq-items[data-" + val + "]").show();
+
+                    if (val == "select_dates") {
+                        $("*[data-hide-for=select_dates]").hide();
+                        $("*[data-invisible-for=select_dates]").css({visibility: "hidden"});
+                        $("*[data-show-for=select_dates]").show();
+                    } else {
+                        $("*[data-hide-for=select_dates]").show();
+                        $("*[data-invisible-for=select_dates]").css({visibility: "visible"});
+                        $("*[data-show-for=select_dates]").hide();
+                    }
+                }
+            });
+
+            $allDay.trigger("change");
+            $repeats.trigger("change");
+            $freq.trigger("change");
+            $toggleSwitch.trigger("change");
+
+            var $exceptionDate = $(".exception-date-picker");
+            $exceptionDate.datepicker('option', 'onSelect', function (dateText) {
+                var date = new moment(dateText, convertDateFormatToMomentFormat("{{ dateFormat }}"));
+
+                var $div = $('<div class="col-sm-10 col-sm-offset-2 col-xs-12" />');
+                var $input = $('<input />');
+                $input
+                        .attr('type', 'hidden')
+                        .attr('name', 'calendarEvent[exceptions][]')
+                        .val(date.format('YYYY-MM-DD'));
+
+                $div
+                        .append('<a href="javascript:;" class="remove-exception" style="color: darkred; text-decoration: none; position: relative; top: 1px;"><span class="glyphicon glyphicon-remove"></span></a>')
+                        .append(' ' + date.format('dddd, MMMM D, YYYY'))
+                        .append($input);
+
+                $(".exception-list").append($div);
+                $exceptionDate.val('');
+            });
+
+            var $selectDate = $(".select-date-picker");
+            $selectDate.datepicker('option', 'onSelect', function (dateText) {
+                var date = new moment(dateText, convertDateFormatToMomentFormat("{{ dateFormat }}"));
+
+                var $div = $('<div class="col-sm-10 col-sm-offset-2 col-xs-12" />');
+                var $input = $('<input />');
+                $input
+                        .attr('type', 'hidden')
+                        .attr('name', 'calendarEvent[selectDates][]')
+                        .val(date.format('YYYY-MM-DD'));
+
+                $div
+                        .append('<a href="javascript:;" class="remove-select-date" style="color: darkred; text-decoration: none; position: relative; top: 1px;"><span class="glyphicon glyphicon-remove"></span></a>')
+                        .append(' ' + date.format('dddd, MMMM D, YYYY'))
+                        .append($input);
+
+                $(".select-dates-list").append($div);
+                $selectDate.val('');
+            });
+        });
+
+        function convertDateFormatToMomentFormat(format)
+        {
+            format = format
+                    .replace(/m/g, 'M')
+                    .replace(/d/g, 'D')
+                    .replace(/yy/g, 'YYYY');
+
+            return format;
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% set events = craft.calendar.events({
+    rangeStart: craft.app.request.post("rangeStart"),
+    rangeEnd: craft.app.request.post("rangeEnd"),
+}) %}
+{{ events.all|json_encode|raw }}

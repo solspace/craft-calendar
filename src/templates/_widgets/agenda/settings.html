@@ -1,0 +1,32 @@
+{% import "_includes/forms" as forms %}
+
+
+{{ forms.textField({
+    label: "Title"|t,
+    instructions: "Customise the widget title. Leave blank for default."|t,
+    id: 'title',
+    name: 'title',
+    value: settings.title,
+    errors: settings.getErrors('title')
+}) }}
+
+{{ forms.selectField({
+    label: "Calendar View"|t,
+    instructions: "Choose which type of calendar view to assign to this widget"|t,
+    id: 'view',
+    name: 'view',
+    options: {month: "Month", agendaWeek: "Week", agendaDay: "Day"},
+    value: settings.view,
+    errors: settings.getErrors('view')
+}) }}
+
+
+{{ forms.checkboxSelectField({
+    label: "Calendars"|t,
+    instructions: "Which calendar entries do you wish to show?"|t,
+    id: 'calendars',
+    name: 'calendars',
+    options: calendars,
+    values: settings.calendars,
+    errors: settings.getErrors('calendars')
+}) }}

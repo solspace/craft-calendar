@@ -1,0 +1,41 @@
+{% extends "calendar/layouts/_settings" %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+
+    <h2>{{ "Guest Access"|t }}</h2>
+
+    <form action="" method="post" accept-charset="UTF-8">
+        <input type="hidden" name="action" value="calendar/settings/save-settings">
+        {{ redirectInput('calendar/settings/guest-access') }}
+        {{ csrfInput() }}
+
+
+        {{ forms.lightswitchField({
+            label: "Allow Guest Access on Front End?"|t,
+            instructions: "Enable this to allow guests to post events to specific calendars on the front end."|t,
+            id: 'guest-access',
+            name: 'allowGuestAccess',
+            on: settings.guestAccess is not null,
+            toggle: 'calendar-list-wrapper',
+        }) }}
+
+        <div id="calendar-list-wrapper"
+             style="margin-bottom: 20px;"
+             class="{{ settings.guestAccess is null ? 'hidden' }}">
+            {{ forms.checkboxSelectField({
+                label: "Allowed Calendars"|t,
+                instructions: "Select which calendars Guests should have access to create events for on the front end."|t,
+                id: 'calendar-list',
+                name: 'settings[guestAccess]',
+                options: calendars,
+                values: settings.guestAccess,
+                errors: settings.getErrors('guestAccess'),
+            }) }}
+        </div>
+
+        <input type="submit" class="btn submit" value="{{ "Save"|t }}">
+    </form>
+
+{% endblock %}

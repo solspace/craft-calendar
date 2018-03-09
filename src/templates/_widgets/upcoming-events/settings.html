@@ -1,0 +1,30 @@
+{% import "_includes/forms" as forms %}
+
+
+{{ forms.textField({
+    label: "Title"|t,
+    instructions: "Customise the widget title. Leave blank for default."|t,
+    id: 'title',
+    name: 'title',
+    value: settings.title,
+    errors: settings.getErrors('title')
+}) }}
+
+{{ forms.checkboxSelectField({
+    label: "Calendars"|t,
+    instructions: "Which calendar entries do you wish to show?"|t,
+    id: 'calendars',
+    name: 'calendars',
+    options: calendars,
+    values: settings.calendars,
+    errors: settings.getErrors('calendars')
+}) }}
+
+{{ forms.textField({
+    label: "Limit"|t,
+    id: 'limit',
+    name: 'limit',
+    value: settings.limit,
+    size: 2,
+    errors: settings.getErrors('limit')
+}) }}

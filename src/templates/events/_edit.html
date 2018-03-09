@@ -1,0 +1,272 @@
+{% extends "calendar/layouts/_layoutWithoutSettings" %}
+{% import "_includes/forms" as forms %}
+
+{% set calendarHandle = calendar.handle|default %}
+{% set selectedSubnavItem = 'events' %}
+{% set saveShortcutRedirect = continueEditingUrl %}
+{% set title = "Calendar: Events - {title}"|t({title: title}) %}
+
+{% set crumbs = [
+    { label: "Calendar"|t, url: url('calendar') },
+    { label: "Events"|t, url: url('calendar/events') },
+    { label: event.title ? event.title : 'New Event'|t, url: '' },
+] %}
+
+{% js %}
+    var calendarTimeInterval = {{ craft.calendar.settings.timeInterval }};
+    var calendarEventDuration = {{ craft.calendar.settings.eventDuration }};
+{% endjs %}
+
+{% set fullPageForm = true %}
+
+{% block header %}
+    {{ block('pageTitle') }}
+    {{ block('contextMenu') }}
+    {#<div class="flex-grow"></div>#}
+    {#{% if showPreviewBtn or shareUrl is defined %}#}
+        {#{% if showPreviewBtn %}#}
+            {#<div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>#}
+        {#{% endif %}#}
+        {#{% if shareUrl is defined %}#}
+            {#<a href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share'|t('app') }}</a>#}
+        {#{% endif %}#}
+        {#<div class="flex-grow"></div>#}
+    {#{% endif %}#}
+    {{ block('actionButton') }}
+{% endblock %}
+
+{% block actionButton %}
+    <div class="buttons">
+        <div class="btngroup submit">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+            <div class="btn submit menubtn"></div>
+            <div class="menu">
+                <ul>
+                    <li>
+                        <a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">
+                            {{ "Save and continue editing"|t }}
+                            <span class="shortcut">⌘S</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="formsubmit"
+                           data-redirect="calendar/events/new/{{ calendarHandle }}">{{ "Save and add another"|t }}</a>
+                    </li>
+                    {% if event.id %}
+                        <li><a class="formsubmit" data-param="eventId"
+                               data-value=""
+                               data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new event"|t }}</a>
+                        </li>
+                        <hr>
+                        <li>
+                            <a class="formsubmit error"
+                               data-action="calendar/events/delete-event"
+                               data-confirm="{{ 'Are you sure you want to delete this event?'|t }}"
+                               data-redirect="{{ 'calendar/events'|hash }}"
+                            >
+                                {{ "Delete"|t }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block tabs %}
+
+    {% if event.fieldLayout and event.fieldLayout.tabs|length %}
+
+        <nav id="tabs">
+            <ul>
+                {% for tab in event.getFieldLayout().getTabs() %}
+                    {% set hasError = false %}
+                    {% if loop.index0 > 0 %}
+                        {% for field in tab.fields %}
+                            {% if event.getErrors(field.handle) %}
+                                {% set hasError = true %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    <li>
+                        <a href="javascript:;"
+                           data-tab-id="{{ tab.id }}"
+                           class="tab{% if loop.first %} sel{% endif %}{{ hasError ? " error" : "" }}">
+                            {{ tab.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+    {% endif %}
+
+{% endblock %}
+
+{% block content %}
+
+    <input type="hidden" name="action" value="calendar/events/save-event">
+    {{ redirectInput('calendar/events') }}
+    {{ csrfInput() }}
+    {% if craft.app.isMultiSite %}<input type="hidden" name="siteId" value="{{ event.siteId }}">{% endif %}
+    {% if event.id %}<input type="hidden" name="eventId" value="{{ event.id }}">{% endif %}
+    <input type="hidden" name="{{ name ~ "[calendarId]" }}" value="{{ event.calendarId }}">
+
+    <div id="fields">
+        {% if event.fieldLayout and event.fieldLayout.tabs|length %}
+            {% for tab in event.fieldLayout.tabs %}
+                <div class="field tab-content{% if not loop.first %} hidden{% endif %}" data-for-tab="{{ tab.id }}">
+
+                    {# ===================================== #}
+                    {# Only show event data in the first tab #}
+                    {# ===================================== #}
+                    {% if loop.first %}
+                        {% include "calendar/events/_event_editor" with {
+                            event: event,
+                            dateFormat: dateFormat,
+                            timeFormat: timeFormat,
+                            name: name,
+                            frequencyOptions: frequencyOptions,
+                            repeatsByOptions: repeatsByOptions,
+                            weekDays: weekDays,
+                            monthDays: monthDays,
+                            monthNames: monthNames,
+                        } only %}
+                    {% endif %}
+
+                    {% include "_includes/fields" with {
+                        fields: tab.fields,
+                        element: event
+                    } only %}
+
+                </div>
+            {% endfor %}
+        {% else %}
+            {% include "calendar/events/_event_editor" %}
+        {% endif %}
+    </div>
+
+{% endblock %}
+
+
+
+{% block contextMenu %}
+
+    <div id="revision-btn"
+         class="btn menubtn"{% if showSites %} data-icon="world"{% endif %}>{{ event.site.name }}</div>
+    {% set baseUrl = "calendar/events/#{event.id}/" %}
+    <div class="menu">
+        {% set siteGroups = craft.app.sites.getAllGroups() %}
+        {% for group in siteGroups %}
+            {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}
+            {% if groupSiteIds %}
+                {% if siteGroups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
+                <ul class="padded">
+                    {% for siteId in groupSiteIds %}
+                        {% set site = craft.app.sites.getSiteById(siteId) %}
+                        {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
+                        <li>
+                            {% if siteId == event.siteId %}
+                                <a class="sel">
+                                    <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                                </a>
+                            {% else %}
+                                {% set url = url(baseUrl~site.handle) %}
+                                <a href="{{ url }}">
+                                    <div class="status {{ status }}"></div>{{ site.name|t('site') }}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endfor %}
+
+    </div>
+
+{% endblock %}
+
+
+
+{% block details %}
+
+    <div id="settings" class="meta">
+
+        {% set calendarStrip %}
+            <span class="color-indicator" style="background-color: {{ calendar.color }}"></span>
+            {{ calendar.name }}
+        {% endset %}
+
+        {{ forms.field({
+            label: "Calendar"|t,
+        }, calendarStrip) }}
+
+        {{ forms.textField({
+            label: "Slug"|t,
+            siteId: event.siteId,
+            id: 'slug',
+            name: 'slug',
+            value: event.slug,
+            placeholder: "Enter slug"|t,
+            errors: event.getErrors('slug')|merge(event.getErrors('uri')),
+        }) }}
+
+        {% if CraftEdition == CraftPro %}
+            {{ forms.elementSelectField({
+                label: "Author"|t,
+                id: 'author',
+                name: 'author',
+                elementType: userElementType,
+                selectionLabel: "Choose"|t,
+                criteria: {},
+                limit: 1,
+                elements: (event.authorId is defined and event.author ? [event.author])
+            }) }}
+        {% endif %}
+
+        {% set statusInput %}
+            <div class="left">
+                {{ forms.lightswitch({
+                    id: 'enabled',
+                    name: 'enabled',
+                    on: event.enabled,
+                }) }}
+            </div>
+        {% endset %}
+
+        {{ forms.field({
+            label: "Enabled"|t,
+            id: 'enabled'
+        }, statusInput) }}
+
+    </div>
+
+    <hr>
+
+    {% if event.id %}
+
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Date Created"|t }}</h5>
+                <div class="value">{{ event.dateCreated|date('short') }} {{ event.dateCreated|time('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Date Updated"|t }}</h5>
+                <div class="value">{{ event.dateUpdated|date('short') }} {{ event.dateUpdated|time('short') }}</div>
+            </div>
+        </div>
+
+        <hr>
+    {% endif %}
+
+{% endblock %}
+
+
+{% if not event.slug %}
+    {% js %}
+        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+    {% endjs %}
+{% endif %}

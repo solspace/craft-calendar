@@ -1,0 +1,56 @@
+{% extends "calendar/layouts/_settings" %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+
+    <h2>{{ "Event Settings"|t }}</h2>
+
+    <form action="" method="post" accept-charset="UTF-8">
+        <input type="hidden" name="action" value="calendar/settings/save-settings">
+        {{ redirectInput('calendar/settings/events') }}
+        {{ csrfInput() }}
+
+
+        {{ forms.selectField({
+            label: "Default Event Duration"|t,
+            instructions: "The default event time duration for fieldtype, in minutes. When event Start Time is selected, this number of minutes will automatically be added to that time for End Time field."|t,
+            id: 'eventDuration',
+            name: 'settings[eventDuration]',
+            options: settings.eventDurations,
+            value: settings.eventDuration,
+            errors: settings.getErrors('eventDuration')
+        }) }}
+
+        {{ forms.selectField({
+            label: "Time Interval"|t,
+            instructions: "The time picker interval for fieldtype, in minutes. The Start Time and End Time field time pickers will contain a list of times of the day by this interval."|t,
+            name: 'settings[timeInterval]',
+            options: settings.timeIntervals,
+            value: settings.timeInterval,
+            errors: settings.getErrors('timeInterval')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Select "All Day" by default?'|t,
+            instructions: "When enabled, when creating new events the 'All Day' option will be selected by default."|t,
+            id: 'allDay',
+            name: 'settings[allDay]',
+            on: settings.allDay,
+            errors: settings.getErrors('allDay')
+        }) }}
+
+        {{ forms.selectField({
+            label: "Date Overlap Threshold"|t,
+            instructions: "Specify the amount of hours in the next day which are still considered as those of the previous day. This prevents late night events from showing up the next day for calendars in control panel and front end."|t,
+            id: 'overlapThreshold',
+            name: 'settings[overlapThreshold]',
+            options: settings.overlapThresholds,
+            value: settings.overlapThreshold,
+            errors: settings.getErrors('overlapThreshold')
+        }) }}
+
+        <input type="submit" class="btn submit" value="{{ "Save"|t }}">
+    </form>
+
+{% endblock %}

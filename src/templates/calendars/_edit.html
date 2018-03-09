@@ -1,0 +1,265 @@
+{% extends "calendar/layouts/_layoutWithoutSettings.html" %}
+{% import "_includes/forms" as forms %}
+
+{% set selectedSubnavItem = "calendars" %}
+{% set saveShortcutRedirect = 'calendar/calendars/{handle}' %}
+{% set title = "Calendar: Calendars - {title}"|t({title: title}) %}
+
+{% set crumbs = [
+    { label: "Calendar"|t, url: url('calendar') },
+    { label: "calendars"|t, url: url('calendar/calendars') },
+    { label: calendar.name ? calendar.name : "New Calendar"|t, url: '' },
+] %}
+
+{% set fullPageForm = true %}
+
+{% block actionButton %}
+    <div class="buttons">
+        <div class="btngroup submit">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+            <div class="btn submit menubtn"></div>
+            <div class="menu">
+                <ul>
+                    <li>
+                        <a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+                            {{ "Save and continue editing"|t }}
+                            <span class="shortcut">⌘S</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="formsubmit" data-redirect="{{ url('calendar/calendars/new') }}">
+                            {{ "Save and add another"|t }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+    <input type="hidden" name="action" value="calendar/calendars/save-calendar">
+    {% if calendar.id %}<input type="hidden" name="calendarId" value="{{ calendar.id }}">{% endif %}
+    {{ redirectInput('calendar/calendars') }}
+    {{ csrfInput() }}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t,
+        instructions: "What this calendar will be called in the CP."|t,
+        id: 'name',
+        name: 'name',
+        value: calendar.name,
+        errors: calendar.getErrors('name'),
+        autofocus: true,
+        required: true,
+        translatable: true
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t,
+        instructions: "How you’ll refer to this calendar in the templates."|t,
+        id: 'handle',
+        class: 'code',
+        name: 'handle',
+        value: calendar.handle,
+        errors: calendar.getErrors('handle'),
+        required: true
+    }) }}
+
+    {{ forms.textareaField({
+        label: "Description"|t,
+        instructions: "A small description describing what this calendar is about"|t,
+        id: 'description',
+        name: 'description',
+        value: calendar.description,
+        errors: calendar.getErrors('description'),
+        required: false
+    }) }}
+
+    <hr>
+
+    {{ forms.colorField({
+        label: "Color"|t,
+        instructions: "Events assigned to this calendar will use this color"|t,
+        id: 'color',
+        name: 'color',
+        value: calendar.color,
+        errors: calendar.getErrors('color'),
+        required: true
+    }) }}
+
+    {% set siteRows = [] %}
+    {% set siteErrors = calendar.getErrors('siteSettings') %}
+
+    <hr>
+
+    {% for site in craft.app.sites.getAllSites() %}
+        {% set siteSettings = calendar.siteSettings[site.id] ?? null %}
+        {% if siteSettings %}
+            {% for attribute, errors in siteSettings.getErrors() %}
+                {% set siteErrors = siteErrors|merge(errors) %}
+            {% endfor %}
+        {% endif %}
+        {% set siteRows = siteRows|merge({
+            (site.handle): {
+                heading: site.name|t('site'),
+                enabled: include('_includes/forms/lightswitch', {
+                    name: 'sites['~site.handle~'][enabled]',
+                    on: not calendar.id or siteSettings,
+                    value: site.id,
+                    small: true
+                }),
+                singleUri: {
+                    value: siteSettings and siteSettings.uriFormat != '__home__' ? siteSettings.uriFormat,
+                    hasErrors: siteSettings ? siteSettings.hasErrors('uriFormat')
+                },
+                uriFormat: {
+                    value: siteSettings ? siteSettings.uriFormat,
+                    hasErrors: siteSettings ? siteSettings.hasErrors('uriFormat')
+                },
+                template: {
+                    value: siteSettings ? siteSettings.template,
+                    hasErrors: siteSettings ? siteSettings.hasErrors('template'),
+                },
+                enabledByDefault: siteSettings ? siteSettings.enabledByDefault : true,
+            }
+        }) %}
+    {% endfor %}
+
+    {{ forms.editableTableField({
+        label: "Site Settings"|t('app'),
+        instructions: "Choose which sites this calendar should be available in, and configure the site-specific settings."|t('calendar'),
+        id: 'sites',
+        name: 'sites',
+        cols: {
+            heading: {
+                type: 'heading',
+                heading: "Site"|t('app'),
+                class: 'thin'
+            },
+            enabled: {
+                type: 'heading',
+                class: 'thin'~(not craft.app.isMultiSite ? ' hidden')
+            },
+            uriFormat: {
+                type: 'singleline',
+                heading: "Event URI Format"|t('calendar'),
+                info: "What event URIs should look like for the site. Leave blank if events don’t have URLs."|t('calendar'),
+                placeholder: "Leave blank if events don’t have URLs"|t('calendar'),
+                code: true,
+            },
+            template: {
+                type: 'singleline',
+                heading: "Template"|t('app'),
+                info: "Which template should be loaded when an event’s URL is requested."|t('calendar'),
+                code: true
+            },
+            enabledByDefault: {
+                type: 'lightswitch',
+                heading: "Default Status"|t('app'),
+                class: 'thin'
+            }
+        },
+        rows: siteRows,
+        staticRows: true,
+        errors: siteErrors|unique
+    }) }}
+
+    <hr>
+
+
+    {{ forms.checkboxField({
+        label: "Show the Title field"|t,
+        name: 'hasTitleField',
+        toggle: 'titleLabel-container',
+        reverseToggle: 'titleFormat-container',
+        checked: calendar.hasTitleField
+    }) }}
+
+    <div id="titleLabel-container"{% if not calendar.hasTitleField %} class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: "Title Field Label"|t,
+            instructions: "What do you want the Title field to be called?"|t,
+            id: 'titleLabel',
+            name: 'titleLabel',
+            value: calendar.titleLabel,
+            errors: calendar.getErrors('titleLabel'),
+            required: true
+        }) }}
+    </div>
+
+    <div id="titleFormat-container"{% if calendar.hasTitleField %} class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: "Title Format"|t,
+            instructions: "What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
+            id: 'titleFormat',
+            name: 'titleFormat',
+            value: calendar.titleFormat,
+            errors: calendar.getErrors('titleFormat'),
+            required: true
+        }) }}
+    </div>
+
+    <hr>
+
+    {{ forms.selectField({
+        label: "ICS Description field"|t,
+        instructions: "Set the field to be used for event description when exporting ICS file."|t,
+        id: 'descriptionFieldHandle',
+        name: 'descriptionFieldHandle',
+        options: calendar.descriptionFieldHandles,
+        value: calendar.descriptionFieldHandle,
+        errors: calendar.getErrors('descriptionFieldHandle')
+    }) }}
+
+    {{ forms.selectField({
+        label: "ICS Location field"|t,
+        instructions: "Set the field to be used for event location when exporting ICS file."|t,
+        id: 'locationFieldHandle',
+        name: 'locationFieldHandle',
+        options: calendar.locationFieldHandles,
+        value: calendar.locationFieldHandle,
+        errors: calendar.getErrors('locationFieldHandle')
+    }) }}
+
+    {% include "_includes/fieldlayoutdesigner" with {
+        fieldLayout: calendar.getFieldLayout()
+    } only %}
+
+{% endblock %}
+
+
+{% js %}
+    var customFieldData = {{ customFields|json_encode|raw }};
+    {% if not calendar.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+
+    var $siteRows = $('#sites').children('tbody').children(),
+    $lightswitches = $siteRows.children('th:nth-child(2)').children('.lightswitch');
+
+    function updateSites() {
+        $lightswitches.each(function() {
+            if ($(this).data('lightswitch').on) {
+                $(this).parent().nextAll('td').removeClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '0');
+            } else {
+                $(this).parent().nextAll('td').addClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '-1');
+            }
+        });
+    }
+
+    $lightswitches.on('change', updateSites);
+
+    Garnish.$doc.ready(function() {
+        updateSites();
+    });
+
+    {% if not calendar.id %}
+        {% for site in craft.app.sites.getAllSites() %}
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]');
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_entry' });
+        {% endfor %}
+    {% endif %}
+{% endjs %}

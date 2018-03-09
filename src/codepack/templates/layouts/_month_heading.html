@@ -1,0 +1,18 @@
+<div class="btn-group">
+	<button type="button" class="btn btn-lg btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		<strong>{{ month.date.format('F Y') }}</strong> <span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu">
+		{% for date in month.dateRange(-6, 6) %}
+			{% if date == month.date %}<li role="separator" class="divider"></li>{% endif %}
+
+			<li>
+				<a href="{{ siteUrl }}demo/month/{{ date.format('Y/m') }}/">
+					{{ date.format('F Y') }}
+				</a>
+			</li>
+
+			{% if date == month.date %}<li role="separator" class="divider"></li>{% endif %}
+		{% endfor %}
+	</ul>
+</div>

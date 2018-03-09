@@ -1,0 +1,132 @@
+{% extends "demo/layouts/_layout.html" %}
+
+{% set pageTitle = "Calendars" %}
+{% set page = "calendars" %}
+
+{% block content %}
+
+	{# Acquire URL segments #}
+	{% set baseUrlSegments = 1 %}
+	{% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
+	{% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
+	{% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+	{% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
+	{% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
+	{% set segment6 = craft.app.request.segment(baseUrlSegments + 6) %}
+
+	<div class="page-header">
+		<h1>Calendars</h1>
+		<p class="lead">Below is an overview over your site's calendars and events.</p>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4 col-md-3">
+
+			<h3>Events by Month</h3>
+			<div class="list-group">
+				{% set month = craft.calendar.month %}
+				{% for date in month.dateRange(6, 6) %}
+					<a href="{{ siteUrl }}demo/month/{{ date.format('Y/m') }}/"
+						class="list-group-item {{ date == month.date ? "list-group-item-warning" }}">
+						{{ date.format('M Y') }}
+					</a>
+				{% endfor %}
+			</div>
+
+		</div>
+
+		<div class="col-sm-8 col-md-6">
+
+			<h3>Events by Calendar</h3>
+			{% set calendarHandle = segment2 ? segment2 : null %}
+			{% set calendars = craft.calendar.calendars({
+				handle: calendarHandle,
+				order: "name",
+				sort: "asc"
+			}) %}
+
+			{% for calendar in calendars %}
+				<div class="panel" style="border-color: {{ calendar.color }};">
+					<div class="panel-heading" style="background-color: {{ calendar.lighterColor }};">
+						<h3 class="panel-title" style="color: {{ calendar.contrastColor }} !important;">
+							<span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>&nbsp;
+							<a href="{{ siteUrl }}demo/calendars/{{ calendar.handle }}">{{ calendar.name }}</a>
+						</h3>
+					</div>
+					<div class="panel-body">
+						{% if calendar.icsUrl %}
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">ICS Subscribe</div>
+									<input type="text" class="form-control" value="{{ calendar.icsUrl }}" onclick="this.select();">
+								</div>
+							</div>
+						{% endif %}
+						<a href="{{ siteUrl }}demo/export/calendar/{{ calendar.id }}" class="btn btn-default btn-sm pull-right" role="button">
+							<span class="glyphicon glyphicon-export" aria-hidden="true"></span>&nbsp;
+							Export Events
+						</a>
+						<h5>Description:</h5>
+						{{ calendar.description }}
+						<h5>
+							View events for this calendar by: &nbsp;
+							<a href="{{ siteUrl }}demo/month/calendar/{{ calendar.handle }}" class="label" style="background-color: {{ calendar.color }}; color: {{ calendar.contrastColor }} !important;">Month</a>
+							<a href="{{ siteUrl }}demo/week/calendar/{{ calendar.handle }}" class="label" style="background-color: {{ calendar.color }}; color: {{ calendar.contrastColor }} !important;">Week</a>
+							<a href="{{ siteUrl }}demo/day/calendar/{{ calendar.handle }}" class="label" style="background-color: {{ calendar.color }}; color: {{ calendar.contrastColor }} !important;">Day</a>
+						</h5>
+						<h5>Upcoming Events:</h5>
+						<ul>
+							{% set events = craft.calendar.events({
+								rangeStart: "today",
+								rangeEnd: "6 months",
+								calendarId: calendar.id,
+								limit: segment2 ? 20 : 5
+							}) %}
+
+							{% include "demo/layouts/_calendar_events.html" %}
+						</ul>
+					</div>
+				</div>
+			{% else %}
+				<div class="alert alert-danger" role="alert">
+					<p class="lead">
+						Sorry, no calendars were found.
+					</p>
+				</div>
+			{% endfor %}
+
+			{% if segment2 %}
+				<div class="list-group">
+					<h3 class="list-group-item">Other Calendars</h3>
+					{% set otherCalendars = craft.calendar.calendars({
+						handle: "!= "~segment2,
+						order: "name",
+						sort: "asc"
+					}) %}
+
+					{% for calendar in otherCalendars %}
+						<span class="list-group-item">
+							<a href="{{ siteUrl }}demo/calendars/{{ calendar.handle }}" style="color: {{ calendar.color }};">
+								<span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>&nbsp;
+								<b>{{ calendar.name }}</b>
+							</a> &nbsp; &nbsp;
+							View events for this calendar by: &nbsp;
+							<a href="{{ siteUrl }}demo/month/calendar/{{ calendar.handle }}" class="label" style="background-color: {{ calendar.color }}; color: {{ calendar.contrastColor }} !important;">Month</a>
+							<a href="{{ siteUrl }}demo/week/calendar/{{ calendar.handle }}" class="label" style="background-color: {{ calendar.color }}; color: {{ calendar.contrastColor }} !important;">Week</a>
+							<a href="{{ siteUrl }}demo/day/calendar/{{ calendar.handle }}" class="label" style="background-color: {{ calendar.color }}; color: {{ calendar.contrastColor }} !important;">Day</a>
+						</span>
+					{% else %}
+						No other Calendars found for this site.
+					{% endfor %}
+				</div>
+			{% endif %}
+
+		</div>
+
+		<div class="col-sm-12 col-md-3">
+			{% include "demo/layouts/_sidebar.html" %}
+		</div>
+
+	</div>
+
+{% endblock %}

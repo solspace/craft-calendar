@@ -1,0 +1,39 @@
+{% set dateFormat = craft.i18n.localeData.dateFormatter.datepickerPhpFormat %}
+{% set timeFormat = craft.i18n.localeData.dateFormatter.timepickerPhpFormat|replace('A', 'a') %}
+{% set dateTimeFormat = dateFormat ~ " \\a\\t " ~ timeFormat %}
+
+{% set events = craft.calendar.events({
+    dateRangeStart: now,
+    limit: settings.limit,
+    calendarId: settings.calendars
+}) %}
+
+<table class="upcoming-events table bordered">
+    <tbody>
+        {% for event in events %}
+            <tr>
+                <td>
+                    {% if settings.calendars|length > 1 or settings.calendars == "*" %}
+                        <span class="color-indicator"
+                              title="{{ event.calendar.name }}"
+                              style="background-color: {{ event.calendar.color }}">
+                        </span>
+                    {% endif %}
+                    <a href="{{ url('calendar/events/'~event.id) }}">{{ event.title }}</a>
+                    <span>
+                        {% if event.allDay %}
+                            {{ event.startDate.format(dateFormat) }}
+                            {% if event.multiDay %}
+                                 - {{ event.endDate.format(dateFormat) }}
+                            {% else %}
+                                ({{ "All Day"|t }})
+                            {% endif %}
+                        {% else %}
+                            {{ event.startDate.format(dateTimeFormat) }}
+                        {% endif %}
+                    </span>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

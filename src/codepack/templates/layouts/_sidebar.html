@@ -1,0 +1,39 @@
+<div id="mini-cal-wrapper">
+    {% include "demo/layouts/_mini_cal" %}
+</div>
+
+<h3>
+    {% if segment1 in ["month", "week", "day"] %}
+	    Filter by Calendar
+    {% else %}
+	    Calendars
+    {% endif %}
+</h3>
+<div class="list-group">
+    {% set calendars = craft.calendar.calendars({
+        limit: 10,
+        order: "name",
+        sort: "asc"
+    }) %}
+
+    {% for calendar in calendars %}
+        {% if segment1 in ["month", "week", "day"] %}
+            {% set urlPart = segment1~"/calendar" %}
+        {% else %}
+            {% set urlPart = "calendars" %}
+        {% endif %}
+
+        {% if segment2 == calendar.handle or segment3 == calendar.handle %}
+            {% set style = "background-color: "~calendar.lighterColor~"; border-left: 5px solid "~calendar.color~"; color: "~calendar.contrastColor~";" %}
+        {% else %}
+            {% set style = "color: "~calendar.color~";" %}
+        {% endif %}
+
+        <a href="{{ siteUrl }}demo/{{ urlPart }}/{{ calendar.handle }}"
+           class="list-group-item" style="{{ style }}">
+            <span class="glyphicon glyphicon-calendar" style="color: {{ calendar.color }};" aria-hidden="true"></span>&nbsp;
+            {{ calendar.name }}
+        </a>
+    {% endfor %}
+
+</div>

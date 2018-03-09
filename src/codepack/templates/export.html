@@ -1,0 +1,22 @@
+{% set baseUrlSegments = 1 %}
+{% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
+{% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
+{% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+
+{% if segment2 == "event" %}
+    {% set options = {
+        id: segment3
+    } %}
+{% elseif segment2 == "calendar" %}
+    {% set options = {
+        calendarId: segment3
+    } %}
+{% endif %}
+
+{% set events = craft.calendar.events(options|merge({
+    rangeStart: "1 year ago",
+    rangeEnd: "5 years",
+    loadOccurrences: false
+})) %}
+
+{{ craft.calendar.export(events) }}

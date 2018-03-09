@@ -1,0 +1,17 @@
+{% import "_includes/forms" as forms %}
+
+{% if event.calendar.hasTitleField %}
+    {{ forms.textField({
+        label: event.calendar.titleLabel|t,
+        id: 'title',
+        name: 'title',
+        siteId: event.siteId,
+        value: event.title,
+        errors: event.getErrors('title'),
+        first: true,
+        autofocus: true,
+        required: true
+    }) }}
+{% endif %}
+
+{% include "calendar/field/_event" %}

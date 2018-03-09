@@ -1,0 +1,11 @@
+{% if segment2 == "calendar" %}
+    {% set calendar = craft.calendar.calendar({handle: segment3}) %}
+    {% if calendar %}
+        <div class="alert" role="alert" style="background-color: {{ calendar.lighterColor }}; border-color: {{ calendar.color }};">
+            <p class="lead" style="color: {{ calendar.contrastColor }} !important;">
+                <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+                Events for <strong>{{ calendar.name }}</strong> calendar
+            </p>
+        </div>
+    {% endif %}
+{% endif %}

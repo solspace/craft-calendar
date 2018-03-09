@@ -1,0 +1,77 @@
+{% extends "calendar/layouts/_settings" %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+
+    <h2>{{ "General Settings"|t }}</h2>
+
+    <form action="" method="post" accept-charset="UTF-8">
+        <input type="hidden" name="action" value="calendar/settings/save-settings">
+        {{ redirectInput('calendar/settings/general') }}
+        {{ csrfInput() }}
+
+        {{ forms.lightswitchField({
+            label: "Display Mini Calendar & Calendars list in Month/Week/Day views?"|t,
+            instructions: "Displays a side menu with mini calendar and list of calendars, allowing you to filter your event results."|t,
+            id: 'showMiniCal',
+            name: 'settings[showMiniCal]',
+            on: settings.showMiniCal,
+            errors: settings.getErrors('showMiniCal')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Include Disabled Events in Month/Week/Day views?"|t,
+            instructions: "Events that are disabled will be displayed in the views with faded styles."|t,
+            id: 'showDisabledEvents',
+            name: 'settings[showDisabledEvents]',
+            on: settings.showDisabledEvents,
+            errors: settings.getErrors('showDisabledEvents')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Allow new events to be created in Month/Week/Day views?"|t,
+            instructions: "Allows all users with event creation privileges to use the Quick Create event feature."|t,
+            id: 'quickCreateEnabled',
+            name: 'settings[quickCreateEnabled]',
+            on: settings.quickCreateEnabled,
+            errors: settings.getErrors('quickCreateEnabled')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Restrict users to editing their own events only?"|t,
+            instructions: "Users (excluding Admins) with event creation privileges will only be able to edit or delete their own events."|t,
+            id: 'authoredEventEditOnly',
+            name: 'settings[authoredEventEditOnly]',
+            on: settings.authoredEventEditOnly,
+            errors: settings.getErrors('authoredEventEditOnly')
+        }) }}
+
+        {{ forms.selectField({
+            label: "Default View"|t,
+            instructions: "The default page to go to when clicking the Calendar nav item."|t,
+            name: "settings[defaultView]",
+            value: settings.defaultView,
+            errors: settings.errors("defaultView"),
+            options: {
+                month: "Month view",
+                week: "Week view",
+                day: "Day view",
+                events: "Events",
+                calendars: "Calendars",
+            },
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Hide 'Install Demo' alert message?"|t,
+            instructions: "Hides the alert message suggesting to install demo templates when this setting is enabled."|t,
+            id: 'demoBannerDisabled',
+            name: 'settings[demoBannerDisabled]',
+            on: settings.demoBannerDisabled,
+            errors: settings.getErrors('demoBannerDisabled')
+        }) }}
+
+        <input type="submit" class="btn submit" value="{{ "Save"|t }}">
+    </form>
+
+{% endblock %}

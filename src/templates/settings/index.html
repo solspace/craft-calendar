@@ -1,0 +1,6 @@
+{% if currentUser.can('calendar-settings') %}
+    {% redirect 'calendar/settings/general' %}
+{% endif %}
+
+{% extends "403" %}
+{% set message = "You don’t have permission to access Calendar Settings."|t %}
