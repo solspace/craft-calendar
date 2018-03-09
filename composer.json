@@ -4,6 +4,12 @@
   "version": "2.0.0-beta.1",
   "type": "craft-plugin",
   "minimum-stability": "dev",
+  "authors": [
+    {
+      "name": "Solspace",
+      "homepage": "https://solspace.com/"
+    }
+  ],
   "require": {
     "php": ">=7.0",
     "rlanvin/php-rrule": "~1.6.0",
@@ -24,10 +30,9 @@
     "class": "Solspace\\Calendar\\Calendar",
     "name": "Calendar",
     "developer": "Solspace",
-    "developerUrl": "https://solspace.com",
-    "documentationUrl": "https://solspace.com",
-    "changelogUrl": "https://solspace.com",
-    "downloadUrl": "https://solspace.com",
+    "developerUrl": "https://solspace.com/craft/calendar",
+    "documentationUrl": "https://solspace.com/craft/calendar/docs",
+    "changelogUrl": "https://raw.githubusercontent.com/solspace/craft3-calendar/master/CHANGELOG.md",
     "hasSettings": true,
     "hasCpSection": true
   }
