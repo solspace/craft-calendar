@@ -79,7 +79,7 @@ class CalendarsController extends BaseController
      * @throws \yii\web\BadRequestHttpException
      * @throws \yii\web\ForbiddenHttpException
      */
-    public function actionSaveCalendar()
+    public function actionSaveCalendar(): Response
     {
         $this->requirePostRequest();
         $request = \Craft::$app->request;
@@ -119,9 +119,9 @@ class CalendarsController extends BaseController
                 continue;
             }
 
-            $siteSettings         = new CalendarSiteSettingsModel();
-            $siteSettings->siteId = $site->id;
-            $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
+            $siteSettings                   = new CalendarSiteSettingsModel();
+            $siteSettings->siteId           = $site->id;
+            $siteSettings->hasUrls          = !empty($postedSettings['uriFormat']);
             $siteSettings->enabledByDefault = (bool) $postedSettings['enabledByDefault'];
 
             if ($siteSettings->hasUrls) {
@@ -139,7 +139,7 @@ class CalendarsController extends BaseController
 
 
         // Set the field layout
-        $fieldLayout = \Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout       = \Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Event::class;
         $calendar->setFieldLayout($fieldLayout);
 

@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Models;
 
 use craft\base\Model;
+use craft\models\Site;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriFormatValidator;
 use Solspace\Calendar\Calendar;
@@ -33,6 +34,14 @@ class CalendarSiteSettingsModel extends Model
 
     /** @var CalendarModel */
     private $calendar;
+
+    /**
+     * @return Site
+     */
+    public function getSite(): Site
+    {
+        return \Craft::$app->sites->getSiteById($this->siteId);
+    }
 
     /**
      * Returns the section.

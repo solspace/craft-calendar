@@ -21,15 +21,15 @@ class ViewController extends BaseController
     {
         $this->requirePostRequest();
 
-        $dateRangeStart = \Craft::$app->request->post('dateRangeStart');
-        $dateRangeEnd   = \Craft::$app->request->post('dateRangeEnd');
-        $calendars      = \Craft::$app->request->post('calendars');
-        $nonEditable    = \Craft::$app->request->post('nonEditable');
-        $siteId         = \Craft::$app->request->post('siteId');
+        $rangeStart  = \Craft::$app->request->post('rangeStart');
+        $rangeEnd    = \Craft::$app->request->post('rangeEnd');
+        $calendars   = \Craft::$app->request->post('calendars');
+        $nonEditable = \Craft::$app->request->post('nonEditable');
+        $siteId      = \Craft::$app->request->post('siteId');
 
         $criteria = [
-            'rangeStart' => $dateRangeStart,
-            'rangeEnd'   => $dateRangeEnd,
+            'rangeStart' => $rangeStart,
+            'rangeEnd'   => $rangeEnd,
         ];
 
         $calendarIds = null;
@@ -68,18 +68,15 @@ class ViewController extends BaseController
         int $year = null,
         int $month = null,
         int $day = null
-    ): Response {
+    ): Response
+    {
         $view         = $view ?? Calendar::VIEW_MONTH;
         $calendarView = $view;
 
-        switch ($calendarView) {
-            case Calendar::VIEW_WEEK:
-                $calendarView = 'agendaWeek';
-                break;
-
-            case Calendar::VIEW_DAY:
-                $calendarView = 'agendaDay';
-                break;
+        if ($calendarView === Calendar::VIEW_WEEK) {
+            $calendarView = 'agendaWeek';
+        } else if ($calendarView === Calendar::VIEW_DAY) {
+            $calendarView = 'agendaDay';
         }
 
         $currentSiteId = \Craft::$app->sites->currentSite->id;

@@ -38,6 +38,7 @@ class EventsService extends Component
     {
         $query = Event::find()
             ->setAllowedCalendarsOnly(false)
+            ->enabledForSite(false)
             ->id($eventId);
 
         if (null !== $siteId) {
@@ -54,13 +55,13 @@ class EventsService extends Component
      * @param string $site
      *
      * @return Event|ElementInterface
-     * @throws \yii\base\Exception
      */
     public function getEventBySlug(string $slug, string $site = null): Event
     {
         return Event::find()
             ->slug($slug)
             ->setAllowedCalendarsOnly(false)
+            ->enabledForSite(false)
             ->site($site)
             ->one();
     }
@@ -199,8 +200,6 @@ class EventsService extends Component
         if (!$event->getCalendar()->hasTitleField) {
             $event->title = \Craft::$app->view->renderObjectTemplate($event->getCalendar()->titleFormat, $event);
         }
-
-        // ElementHelper::setUniqueUri($event);
 
         $saveEvent = new SaveElementEvent($event, $isNewEvent);
         $this->trigger(self::EVENT_BEFORE_SAVE, $saveEvent);

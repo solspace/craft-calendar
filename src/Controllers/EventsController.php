@@ -10,7 +10,6 @@ use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
-use Solspace\Calendar\Library\DatabaseHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Exceptions\EventException;
 use Solspace\Calendar\Library\RecurrenceHelper;
@@ -218,13 +217,8 @@ class EventsController extends BaseController
 
         $event->enabledForSite = (bool) \Craft::$app->request->post('enabledForSite', $event->enabledForSite);
         $event->title          = \Craft::$app->request->post('title', $event->title);
+        $event->slug           = \Craft::$app->request->post('slug', $event->slug);
         $event->setFieldValuesFromRequest('fields');
-
-        $slug = \Craft::$app->request->post('slug', $event->slug);
-        if (!$event->id) {
-            $slug = DatabaseHelper::getSuitableSlug($event->title);
-        }
-        $event->slug = $slug;
 
         if ($this->getEventsService()->saveEvent($event)) {
             $exceptions = $values['exceptions'] ?? [];
@@ -255,7 +249,7 @@ class EventsController extends BaseController
         \Craft::$app->session->setError(Calendar::t('Couldn’t save event.'));
 
         if (\Craft::$app->request->isCpRequest) {
-            return $this->renderEditForm($event, $event->title);
+            return $this->renderEditForm($event, $event->title ?? '');
         } else {
             \Craft::$app->urlManager->setRouteParams(['event' => $event, 'errors' => $event->getErrors()]);
         }

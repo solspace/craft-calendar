@@ -2,73 +2,19 @@
 
 namespace Solspace\Calendar\migrations;
 
-use craft\db\Migration;
-use Solspace\Calendar\Library\Migrations\ForeignKey;
-use Solspace\Calendar\Library\Migrations\Table;
+use Solspace\Commons\Migrations\ForeignKey;
+use Solspace\Commons\Migrations\StreamlinedInstallMigration;
+use Solspace\Commons\Migrations\Table;
 
 /**
  * Install migration.
  */
-class Install extends Migration
+class Install extends StreamlinedInstallMigration
 {
     /**
-     * @inheritdoc
+     * @return array
      */
-    public function safeUp()
-    {
-        foreach ($this->getTableData() as $table) {
-            $table
-                ->addField('dateCreated', $this->dateTime()->notNull()->defaultExpression('NOW()'))
-                ->addField('dateUpdated', $this->dateTime()->notNull()->defaultExpression('NOW()'))
-                ->addField('uid', $this->char(36)->defaultValue(0));
-
-            $this->createTable($table->getName(), $table->getFields());
-        }
-
-        foreach ($this->getTableData() as $table) {
-            foreach ($table->getForeignKeys() as $foreignKey) {
-                $this->addForeignKey(
-                    $foreignKey->generateFullName(),
-                    $table->getName(),
-                    $foreignKey->getColumn(),
-                    $foreignKey->getRefTable(),
-                    $foreignKey->getRefColumn(),
-                    $foreignKey->getOnDelete(),
-                    $foreignKey->getOnUpdate()
-                );
-            }
-
-            foreach ($table->getIndexes() as $index) {
-                $this->createIndex(
-                    $index->getName(),
-                    $table->getName(),
-                    $index->getColumns(),
-                    $index->isUnique()
-                );
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function safeDown()
-    {
-        foreach ($this->getTableData() as $table) {
-            foreach ($table->getForeignKeys() as $foreignKey) {
-                $this->dropForeignKey($foreignKey->generateFullName(), $table->getName());
-            }
-        }
-
-        foreach ($this->getTableData() as $table) {
-            $this->dropTableIfExists($table->getName());
-        }
-    }
-
-    /**
-     * @return Table[]
-     */
-    private function getTableData(): array
+    protected function defineTableData(): array
     {
         return [
             (new Table('calendar_calendars'))

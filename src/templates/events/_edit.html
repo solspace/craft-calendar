@@ -242,6 +242,15 @@
             id: 'enabled'
         }, statusInput) }}
 
+        {% if showSites %}
+            {{ forms.lightswitchField({
+                label: "Enabled for site"|t('app'),
+                id: 'enabledForSite',
+                name: 'enabledForSite',
+                on: event.enabledForSite,
+            }) }}
+        {% endif %}
+
     </div>
 
     <hr>

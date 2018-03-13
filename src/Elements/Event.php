@@ -118,6 +118,14 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * @return bool
+     */
+    public static function hasUris(): bool
+    {
+        return true;
+    }
+
+    /**
      * @param array $config
      *
      * @return EventQuery|ElementQueryInterface

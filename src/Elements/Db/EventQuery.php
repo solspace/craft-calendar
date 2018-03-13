@@ -93,6 +93,13 @@ class EventQuery extends ElementQuery
     /** @var int */
     private $totalCount;
 
+    public function __construct(string $elementType, array $config = [])
+    {
+        $this->orderBy = ['startDate' => SORT_ASC];
+
+        parent::__construct($elementType, $config);
+    }
+
     /**
      * @param int|array $value
      *
@@ -331,11 +338,7 @@ class EventQuery extends ElementQuery
             $this->cutOffExcess($this->eventCache);
 
             $this->cacheToStorage();
-
-            if (!$this->loadOccurrences && $this->shouldOrderByStartDate()) {
-                // Order the events based on strict ordering rules
-                $this->orderEvents($this->events);
-            }
+            $this->orderEvents($this->events);
 
             // Build up an event cache, to be accessed later
             $this->cacheEvents();
@@ -427,22 +430,23 @@ class EventQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        $table         = Event::TABLE_STD;
-        $calendarTable = CalendarRecord::TABLE_STD;
+        $table            = Event::TABLE_STD;
+        $calendarTable    = CalendarRecord::TABLE;
+        $calendarTableStd = CalendarRecord::TABLE_STD;
 
         // join in the products table
         $this->joinElementTable($table);
 
         $hasCalendarJoin = false;
-        if (\is_array($this->join)) {
-            foreach ($this->join as $joinData) {
-                if (isset($joinData[1]) && $joinData[1] === $calendarTable) {
+        if (\is_array($this->subQuery->join)) {
+            foreach ($this->subQuery->join as $joinData) {
+                if (isset($joinData[1]) && $joinData[1] === $calendarTableStd) {
                     $hasCalendarJoin = true;
                 }
             }
         }
         if (!$hasCalendarJoin) {
-            $this->innerJoin($calendarTable, "`$calendarTable`.`id` = `$table`.`calendarId`");
+            $this->subQuery->innerJoin($calendarTable, "$calendarTable.id = $table.calendarId");
         }
 
         // select the price column
@@ -848,10 +852,19 @@ class EventQuery extends ElementQuery
     private function orderEvents(array &$events)
     {
         $modifier = $this->getSortModifier();
+        $orderBy  = $this->getOrderByField();
 
         usort(
             $events,
-            function (Event $eventA, Event $eventB) use ($modifier) {
+            function (Event $eventA, Event $eventB) use ($modifier, $orderBy) {
+                if ($orderBy !== 'startDate') {
+                    if ($modifier > 0) {
+                        return $eventA->{$orderBy} <=> $eventB->{$orderBy};
+                    }
+
+                    return $eventB->{$orderBy} <=> $eventA->{$orderBy};
+                }
+
                 if ($eventA->diffInDays($eventB)) {
                     return $eventA->compareStartDates($eventB) * $modifier;
                 }
@@ -1027,10 +1040,30 @@ class EventQuery extends ElementQuery
         if (\is_array($this->orderBy) && count($this->orderBy)) {
             $sortDirection = reset($this->orderBy);
 
-            return $sortDirection === SORT_ASC ? 1 : -1;
+            if (is_numeric($sortDirection)) {
+                return $sortDirection === SORT_DESC ? -1 : 1;
+            }
+
+            return strtolower($sortDirection) === 'desc' ? -1 : 1;
         }
 
         return 1;
+    }
+
+    /**
+     * Returns the first order by field
+     *
+     * @return string|null
+     */
+    private function getOrderByField()
+    {
+        if (\is_array($this->orderBy) && \count($this->orderBy)) {
+            $keys = array_keys($this->orderBy);
+
+            return reset($keys);
+        }
+
+        return $this->orderBy;
     }
 
     /**

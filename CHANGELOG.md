@@ -1,5 +1,18 @@
 # Solspace Freeform Changelog
 
+## 2.0.0-beta.2 - 2018-03-13
+### Fixed
+- Fixed a bug where the `calendar.events` function was not displaying events in order.
+- Fixed a bug where the `calendar.month` function was not prioritizing multi-day events to be displayed first (to improve overall display of month view).
+- Fixed a bug where the time picker was showing behind the Quick Create feature in CP Month/Week/Day views.
+- Fixed a bug where Calendar wouldn't work correctly with sites using database table prefixes.
+- Fixed a bug where the Quick Create feature would not work with title format option.
+- Fixed a bug where URI and slug generation was not working correctly.
+- Fixed a bug where the 'Enabled for Site' toggle was missing on Event Create/Edit view.
+- Fixed a bug where the `calendar.events` function was not ordering events correctly.
+- Fixed a bug where the `calendar.events` function would display an error when filtering with a calendar handle and searching.
+- Fixed a bug where an error would show when attempting to edit events on the front end templates.
+
 ## 2.0.0-beta.1 - 2018-03-09
 ### Added
 - Added compatibility for Craft 3.x.

@@ -13,10 +13,10 @@ class DatabaseHelper
     const OPERATOR_NOT_IN    = 'not';
     const OPERATOR_IN        = 'in';
 
-    private static $operatorList = array(
+    private static $operatorList = [
         self::OPERATOR_NOT_EQUAL,
         self::OPERATOR_NOT_IN,
-    );
+    ];
 
     /**
      * Looks through the database to see if a given $slug has been used
@@ -33,8 +33,8 @@ class DatabaseHelper
         while ($iterator <= 100) {
             $result = (new Query())
                 ->select(['id'])
-                ->from('elements_sites')
-                ->where(array('slug' => $slug))
+                ->from('{{%elements_sites}}')
+                ->where(['slug' => $slug])
                 ->scalar();
 
             if ($result) {
@@ -59,33 +59,33 @@ class DatabaseHelper
      */
     public static function prepareOperator($value): array
     {
-        if (is_array($value)) {
+        if (\is_array($value)) {
             $firstValue = reset($value);
 
-            if (in_array($firstValue, self::$operatorList, true)) {
+            if (\in_array($firstValue, self::$operatorList, true)) {
                 $operator = array_shift($value);
             } else {
                 $operator = self::OPERATOR_IN;
             }
 
-            return array($operator, $value);
+            return [$operator, $value];
         }
 
         $operator = self::OPERATOR_EQUALS;
         foreach (self::$operatorList as $searchableOperator) {
-            $length = strlen($searchableOperator);
-            if (substr($value, 0, $length) === $searchableOperator) {
+            $length = \strlen($searchableOperator);
+            if (0 === strpos($value, $searchableOperator)) {
                 $operator = $searchableOperator;
-                $value = substr($value, $length + 1);
+                $value    = substr($value, $length + 1);
 
                 if ($operator === self::OPERATOR_NOT_IN) {
                     $value = explode(',', $value);
                 }
 
-                return array($operator, $value);
+                return [$operator, $value];
             }
         }
 
-        return array($operator, $value);
+        return [$operator, $value];
     }
 }
