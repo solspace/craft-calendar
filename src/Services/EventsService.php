@@ -52,17 +52,17 @@ class EventsService extends Component
      * Returns an event by its slug.
      *
      * @param string $slug
-     * @param string $site
+     * @param int    $siteId
      *
      * @return Event|ElementInterface
      */
-    public function getEventBySlug(string $slug, string $site = null): Event
+    public function getEventBySlug(string $slug, int $siteId = null): Event
     {
         return Event::find()
             ->slug($slug)
             ->setAllowedCalendarsOnly(false)
             ->enabledForSite(false)
-            ->site($site)
+            ->siteId($siteId)
             ->one();
     }
 

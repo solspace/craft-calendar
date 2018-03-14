@@ -499,6 +499,22 @@ class EventQuery extends ElementQuery
             );
         }
 
+        if ($this->rangeStart) {
+            $rangeStartString = $this->extractDateAsFormattedString($this->rangeStart);
+            $this->subQuery->andWhere(
+                "($table.rrule IS NULL AND $table.startDate >= :rangeStart) OR ($table.rrule IS NOT NULL)",
+                ['rangeStart' => $rangeStartString]
+            );
+        }
+
+        if ($this->rangeEnd) {
+            $rangeEndString = $this->extractDateAsFormattedString($this->rangeEnd);
+            $this->subQuery->andWhere(
+                "$table.endDate <= :rangeEnd",
+                ['rangeEnd' => $rangeEndString]
+            );
+        }
+
         if ($this->allDay) {
             $this->subQuery->andWhere(Db::parseParam($table . '.allDay', (bool) $this->allDay));
         }
@@ -852,7 +868,7 @@ class EventQuery extends ElementQuery
     private function orderEvents(array &$events)
     {
         $modifier = $this->getSortModifier();
-        $orderBy  = $this->getOrderByField();
+        $orderBy  = $this->getOrderByField() ?? 'startDate';
 
         usort(
             $events,

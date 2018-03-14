@@ -1,5 +1,12 @@
 # Solspace Freeform Changelog
 
+## 2.0.0-beta.3 - 2018-03-14
+### Fixed
+- Fixed a bug where the `calendar.events` function was not correctly filtering events by start and end date ranges.
+- Fixed a bug where the Events service was calling `site` instead of `siteId`.
+- Fixed a bug where CP Month/Week/Day views where events that were disabled for some sites were still being included when filtering by those sites.
+- Fixed a bug where the Quick Create events feature in CP Month/Week/Day views was not correctly creating slugs.
+
 ## 2.0.0-beta.2 - 2018-03-13
 ### Fixed
 - Fixed a bug where the `calendar.events` function was not displaying events in order.

@@ -299,6 +299,26 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * @return array
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    public function getSupportedSites(): array
+    {
+        if (static::isLocalized()) {
+            $siteSettings = $this->getCalendar()->getSiteSettings();
+
+            $supportedSites = [];
+            foreach ($siteSettings as $site) {
+                $supportedSites[] = $site->siteId;
+            }
+
+            return $supportedSites;
+        }
+
+        return [\Craft::$app->getSites()->getPrimarySite()->id];
+    }
+
+    /**
      * Event constructor.
      *
      * @param array $config

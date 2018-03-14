@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
+use craft\helpers\ElementHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
@@ -209,7 +210,7 @@ class EventsApiController extends BaseController
 
         $event           = Event::create($siteId, $calendar->id);
         $event->title    = $eventData['title'];
-        $event->slug     = DatabaseHelper::getSuitableSlug($eventData['title']);
+        $event->slug     = ElementHelper::createSlug($event->title ?? '');
         $event->enabled  = true;
         $event->authorId = \Craft::$app->user->id;
 
