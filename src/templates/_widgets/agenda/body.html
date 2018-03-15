@@ -4,21 +4,13 @@
      id="calendar-agenda-{{ ID }}"
      data-view="{{ settings.view }}"
      data-calendars="{{ settings.calendars|join(',') }}"
+     data-time-format="{{ craft.i18n.timepickerJsFormat }}"
+     data-locale="{{ locale }}"
+     data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
+     data-first-day-of-week="{{ currentUser is defined and currentUser ? currentUser.getPreference('weekStartDay') : craft.config.general.defaultWeekStartDay }}"
 ></div>
 
-{% if calendarLocale != 'en' %}
-    {% includeJsFile resourceUrl('calendar/js/fullcalendar/lang/'~calendarLocale~'.js') %}
-{% endif %}
-
 {% js %}
-    window.csrfTokenName = "{{ craft.config.csrfTokenName|e('js') }}";
-    window.csrfTokenValue = "{{ craft.request.csrfToken|e('js') }}";
-
-    window.calendarTimeFormat = "{{ craft.i18n.timepickerJsFormat }}";
-    window.calendarLocale = '{{ calendarLocale }}';
-    window.calendarOverlapThreshold = {{ craft.calendar.settings.overlapThreshold }};
-    window.calendarFirstDayOfWeek = {{ currentUser is defined and currentUser ? currentUser.weekStartDay : craft.config.defaultWeekStartDay }};
-
     $(function() {
         initiateAgenda($("#calendar-agenda-{{ ID }}"));
     });

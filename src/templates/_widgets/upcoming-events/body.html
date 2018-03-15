@@ -1,9 +1,9 @@
-{% set dateFormat = craft.i18n.localeData.dateFormatter.datepickerPhpFormat %}
-{% set timeFormat = craft.i18n.localeData.dateFormatter.timepickerPhpFormat|replace('A', 'a') %}
+{% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
+{% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
 {% set dateTimeFormat = dateFormat ~ " \\a\\t " ~ timeFormat %}
 
 {% set events = craft.calendar.events({
-    dateRangeStart: now,
+    rangeStart: now,
     limit: settings.limit,
     calendarId: settings.calendars
 }) %}

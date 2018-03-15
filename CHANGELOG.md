@@ -1,5 +1,13 @@
 # Solspace Freeform Changelog
 
+## 2.0.0-beta.4 - 2018-03-15
+### Fixed
+- Added back all Calendar widgets.
+- Fixed a bug where custom fields were not displaying in the Calendar CP area and on front end `calendar.events` function.
+- Fixed a bug where events could not be sorted by calendar name in CP Events list.
+- Fixed a bug where the 'Share this calendar' button for ICS subscriptions was not working inside CP.
+- Fixed a bug where custom fields were not being included in ICS exports.
+
 ## 2.0.0-beta.3 - 2018-03-14
 ### Fixed
 - Fixed a bug where the `calendar.events` function was not correctly filtering events by start and end date ranges.

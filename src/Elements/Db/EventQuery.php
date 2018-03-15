@@ -432,22 +432,10 @@ class EventQuery extends ElementQuery
     {
         $table            = Event::TABLE_STD;
         $calendarTable    = CalendarRecord::TABLE;
-        $calendarTableStd = CalendarRecord::TABLE_STD;
 
         // join in the products table
         $this->joinElementTable($table);
-
-        $hasCalendarJoin = false;
-        if (\is_array($this->subQuery->join)) {
-            foreach ($this->subQuery->join as $joinData) {
-                if (isset($joinData[1]) && $joinData[1] === $calendarTableStd) {
-                    $hasCalendarJoin = true;
-                }
-            }
-        }
-        if (!$hasCalendarJoin) {
-            $this->subQuery->innerJoin($calendarTable, "$calendarTable.id = $table.calendarId");
-        }
+        $this->join = [['INNER JOIN', $calendarTable, "$calendarTable.id = $table.calendarId"]];
 
         // select the price column
         $this->query->select(
@@ -466,6 +454,7 @@ class EventQuery extends ElementQuery
                 $table . '.byYearDay',
                 $table . '.byMonthDay',
                 $table . '.byDay',
+                $calendarTable . '.name',
             ]
         );
 

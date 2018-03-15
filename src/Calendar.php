@@ -3,8 +3,10 @@
 namespace Solspace\Calendar;
 
 use craft\base\Plugin;
+use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\services\Dashboard;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
@@ -27,6 +29,10 @@ use Solspace\Calendar\Services\SettingsService;
 use Solspace\Calendar\Services\ViewDataService;
 use Solspace\Calendar\Twig\Extensions\CalendarTwigExtension;
 use Solspace\Calendar\Variables\CalendarVariable;
+use Solspace\Calendar\Widgets\AgendaWidget;
+use Solspace\Calendar\Widgets\EventWidget;
+use Solspace\Calendar\Widgets\MonthWidget;
+use Solspace\Calendar\Widgets\UpcomingEventsWidget;
 use yii\base\Event;
 
 /**
@@ -61,6 +67,7 @@ class Calendar extends Plugin
     const PERMISSION_SETTINGS         = 'calendar-settings';
 
     const PERMISSIONS_HELP_LINK = 'https://solspace.com/craft/calendar/docs/demo-templates';
+
     /** @var array */
     private static $javascriptTranslationKeys = [
         'Couldn’t save event.',
@@ -79,6 +86,7 @@ class Calendar extends Plugin
         'Are you sure you want to enable ICS sharing for this calendar?',
         'Are you sure you want to disable ICS sharing for this calendar?',
     ];
+
     /** @var bool */
     public $hasCpSettings = true;
 
@@ -125,6 +133,17 @@ class Calendar extends Plugin
             CraftVariable::EVENT_INIT,
             function (Event $event) {
                 $event->sender->set('calendar', CalendarVariable::class);
+            }
+        );
+
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = AgendaWidget::class;
+                $event->types[] = EventWidget::class;
+                $event->types[] = MonthWidget::class;
+                $event->types[] = UpcomingEventsWidget::class;
             }
         );
 

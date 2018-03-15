@@ -46,6 +46,9 @@ class Event extends Element implements \JsonSerializable
     /** @var int */
     public $calendarId;
 
+    /** @var string */
+    public $name;
+
     /** @var int */
     public $authorId;
 
@@ -230,6 +233,19 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * @return array
+     */
+    protected static function defineSortOptions(): array
+    {
+        $sortOptions = parent::defineSortOptions();
+
+        $keys = array_keys($sortOptions);
+        $keys[array_search('calendar', $keys, true)] = 'name';
+
+        return array_combine($keys, $sortOptions);
+    }
+
+    /**
      * @inheritDoc
      */
     protected static function defineDefaultTableAttributes(string $source): array
@@ -293,6 +309,9 @@ class Event extends Element implements \JsonSerializable
             case 'rrule':
                 return $this->repeats() ? Calendar::t('Yes') : Calendar::t('No');
 
+            case 'field:1':
+                return parent::tableAttributeHtml($attribute);
+
             default:
                 return parent::tableAttributeHtml($attribute);
         }
@@ -342,6 +361,9 @@ class Event extends Element implements \JsonSerializable
     public function cloneForDate(\DateTime $date): Event
     {
         $clone = clone $this;
+        foreach ($this->getBehaviors() as $key => $value) {
+            $clone->attachBehavior($key, $value);
+        }
 
         if (null !== $date) {
             $startDate = $this->getStartDate()->copy();

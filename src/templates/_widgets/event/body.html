@@ -1,8 +1,5 @@
-{% set dateFormat = craft.i18n.localeData.dateFormatter.datepickerPhpFormat %}
-{% set timeFormat = craft.i18n.localeData.dateFormatter.timepickerPhpFormat %}
-
-{% set dateFormat = dateFormat|replace('n', 'm')|replace('j', 'd') %}
-{% set timeFormat = timeFormat|replace('g', 'h')|replace('i', 'mm')|replace('A', 'tt') %}
+{% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
+{% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
 
 {% macro dateTimeField(fieldName, label, datePlaceholder, timePlaceholder) %}
 
@@ -33,14 +30,10 @@
 {% from _self import dateTimeField %}
 {% import "_includes/forms" as forms %}
 
-{% js %}
-    window.calendarTimeInterval = {{ craft.calendar.settings.timeInterval }};
-    window.calendarEventDuration = {{ craft.calendar.settings.eventDuration }};
-    window.csrfTokenName = "{{ craft.app.config.general..csrfTokenName|e('js') }}";
-    window.csrfTokenValue = "{{ craft.app.request.csrfToken|e('js') }}";
-{% endjs %}
-
-<div class="event-creator">
+<div class="event-creator"
+     data-time-interval="{{ craft.calendar.settings.timeInterval }}"
+     data-event-duration="{{ craft.calendar.settings.eventDuration }}"
+>
     {{ forms.textField({
         label: "Title"|t,
         id: 'title',

@@ -127,16 +127,11 @@ class CalendarModel extends Model implements \JsonSerializable
             return null;
         }
 
-        static $urlBase;
-        if (null === $urlBase) {
-            $cpTrigger = \Craft::$app->config->general->cpTrigger;
+        $cpTrigger = \Craft::$app->config->general->cpTrigger;
 
-            $urlBase = UrlHelper::actionUrl('calendar/calendars-api/ics');
-            $urlBase = str_replace($cpTrigger . '/', '', $urlBase);
-        }
+        $url = UrlHelper::actionUrl('calendar/api/ics', ['hash' => $this->icsHash . '.ics']);
 
-
-        return $urlBase . '/' . $this->icsHash . '.ics';
+        return str_replace($cpTrigger . '/', '', $url);
     }
 
     /**
@@ -273,7 +268,10 @@ class CalendarModel extends Model implements \JsonSerializable
         ];
     }
 
-    public function rules()
+    /**
+     * @return array
+     */
+    public function rules(): array
     {
         return [
             [['titleFormat'], 'required', 'when' => function (CalendarModel $model) {

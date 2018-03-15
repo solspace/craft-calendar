@@ -8,6 +8,7 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
+use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use Solspace\Commons\Helpers\PermissionHelper;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -29,6 +30,8 @@ class CalendarsController extends BaseController
      */
     public function actionCalendarsIndex(): Response
     {
+        \Craft::$app->view->registerAssetBundle(CalendarIndexBundle::class);
+
         return $this->renderTemplate(
             'calendar/calendars',
             [

@@ -98,14 +98,14 @@
 				</p>
 				<p>
 					Location:
-					{% if event['location'] is defined and event.location is not empty %}
+					{% if event.location is defined and event.location is not empty %}
 						{{ event.location|striptags }}
 					{% else %}
 						N/A
 					{% endif %}
 					<br />
 					Description:
-					{% if event['description'] is defined and event.description is not empty %}
+					{% if event.description is defined and event.description is not empty %}
 						{{ event.description|striptags }}
 					{% else %}
 						N/A

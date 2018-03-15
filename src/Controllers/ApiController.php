@@ -4,38 +4,30 @@ namespace Solspace\Calendar\Controllers;
 
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\DataObjects\EventListOptions;
-use Solspace\Calendar\Library\Events\EventList;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
+use yii\web\NotFoundHttpException;
 
 class ApiController extends BaseController
 {
-    protected $allowAnonymous = true;
+    protected $allowAnonymous = ['actionIcs'];
 
     /**
      * @return null
+     * @throws NotFoundHttpException
      */
     public function actionIcs()
     {
-        $icsHash = \Craft::$app->request->getSegment(5);
+        $icsHash = \Craft::$app->request->get('hash', '');
         $icsHash = str_replace('.ics', '', $icsHash);
 
-        $calendarService = Calendar::getInstance()->calendars;
-        $eventsService   = Calendar::getInstance()->events;
-
-        $calendar = $calendarService->getCalendarByIcsHash($icsHash);
-
+        $calendar = Calendar::getInstance()->calendars->getCalendarByIcsHash($icsHash);
         if (!$calendar) {
-            $eventQuery = Event::find();
-            $eventQuery->setLoadOccurrences(false);
-        } else {
-            $eventQuery = $eventsService->getEventQuery(
-                [
-                    'calendarId'      => $calendar->id,
-                    'loadOccurrences' => false,
-                ]
-            );
+            throw new NotFoundHttpException('Page does not exist');
         }
+
+        $eventQuery = Event::find()
+            ->setLoadOccurrences(false)
+            ->setCalendarId($calendar->id);
 
         $exporter = new ExportCalendarToIcs($eventQuery);
 

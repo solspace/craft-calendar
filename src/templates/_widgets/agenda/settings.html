@@ -20,12 +20,12 @@
     errors: settings.getErrors('view')
 }) }}
 
-
 {{ forms.checkboxSelectField({
     label: "Calendars"|t,
     instructions: "Which calendar entries do you wish to show?"|t,
     id: 'calendars',
     name: 'calendars',
+    showAllOption: true,
     options: calendars,
     values: settings.calendars,
     errors: settings.getErrors('calendars')
