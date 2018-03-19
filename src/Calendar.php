@@ -7,6 +7,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\services\Dashboard;
+use craft\services\Fields;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
@@ -17,6 +18,7 @@ use Solspace\Calendar\Controllers\EventsApiController;
 use Solspace\Calendar\Controllers\EventsController;
 use Solspace\Calendar\Controllers\SettingsController;
 use Solspace\Calendar\Controllers\ViewController;
+use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SettingsModel;
@@ -98,15 +100,17 @@ class Calendar extends Plugin
     {
         parent::init();
 
-        $this->controllerMap = [
-            'api'        => ApiController::class,
-            'codepack'   => CodePackController::class,
-            'calendars'  => CalendarsController::class,
-            'events-api' => EventsApiController::class,
-            'events'     => EventsController::class,
-            'settings'   => SettingsController::class,
-            'view'       => ViewController::class,
-        ];
+        if (!\Craft::$app->request->isConsoleRequest) {
+            $this->controllerMap = [
+                'api'        => ApiController::class,
+                'codepack'   => CodePackController::class,
+                'calendars'  => CalendarsController::class,
+                'events-api' => EventsApiController::class,
+                'events'     => EventsController::class,
+                'settings'   => SettingsController::class,
+                'view'       => ViewController::class,
+            ];
+        }
 
         $this->setComponents(
             [
@@ -144,6 +148,14 @@ class Calendar extends Plugin
                 $event->types[] = EventWidget::class;
                 $event->types[] = MonthWidget::class;
                 $event->types[] = UpcomingEventsWidget::class;
+            }
+        );
+
+        Event::on(
+            Fields::class,
+            Fields::EVENT_REGISTER_FIELD_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = EventFieldType::class;
             }
         );
 

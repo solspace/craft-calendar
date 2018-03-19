@@ -13,6 +13,8 @@ use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Exceptions\EventException;
 use Solspace\Calendar\Library\RecurrenceHelper;
+use Solspace\Calendar\Models\ExceptionModel;
+use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use yii\helpers\FormatConverter;
 use yii\web\HttpException;
@@ -344,7 +346,7 @@ class EventsController extends BaseController
         $showPreviewButton = false;
         if (!\Craft::$app->getRequest()->isMobileBrowser(true) && $this->getCalendarService()->isEventTemplateValid($calendar, $event->siteId)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields'        => '#title-field, #fields > div > div > .field, #fields > div > .field',
+                    'fields'        => '#title-field, #fields .calendar-event-wrapper > .field, #fields > .field > .field',
                     'extraFields'   => '#settings',
                     'previewUrl'    => $event->getUrl(),
                     'previewAction' => 'calendar/events/preview',
@@ -453,25 +455,92 @@ class EventsController extends BaseController
      */
     private function populateEventModel(Event $event)
     {
-        // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $event->slug           = \Craft::$app->getRequest()->getBodyParam('slug', $event->slug);
-        $event->enabled        = (bool) \Craft::$app->getRequest()->getBodyParam('enabled', $event->enabled);
-        $event->enabledForSite = (bool) \Craft::$app->getRequest()->getBodyParam('enabledForSite', $event->enabledForSite);
-        $event->title          = \Craft::$app->getRequest()->getBodyParam('title', $event->title);
+        $request = \Craft::$app->request;
 
-        // Prevent the last entry type's field layout from being used
-        $event->fieldLayoutId = null;
-
-        $fieldsLocation = \Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $event->setFieldValuesFromRequest($fieldsLocation);
-
-        // Author
-        $authorId = \Craft::$app->getRequest()->getBodyParam('author', ($event->authorId ?: \Craft::$app->getUser()->getIdentity()->id));
-        if (is_array($authorId)) {
-            $authorId = $authorId[0] ?? null;
+        $eventId = $event->id;
+        $values  = $request->getBodyParam(self::EVENT_FIELD_NAME);
+        if (null === $values) {
+            throw new HttpException('No event data posted');
         }
 
-        $event->authorId = $authorId;
+        $event->slug           = $request->getBodyParam('slug', $event->slug);
+        $event->enabled        = (bool) $request->getBodyParam('enabled', $event->enabled);
+        $event->enabledForSite = (bool) $request->getBodyParam('enabledForSite', $event->enabledForSite);
+        $event->title          = $request->getBodyParam('title', $event->title);
+
+        $event->fieldLayoutId = null;
+        $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
+        $event->setFieldValuesFromRequest($fieldsLocation);
+
+        $authorId = \Craft::$app->getRequest()->getBodyParam('author', ($event->authorId ?: \Craft::$app->getUser()->getIdentity()->id));
+        if (\is_array($authorId)) {
+            $authorId        = $authorId[0] ?? null;
+            $event->authorId = $authorId;
+        }
+
+        $event->enabled = (bool) $request->post('enabled', $event->enabled);
+
+        if (isset($values['calendarId'])) {
+            $event->calendarId = $values['calendarId'];
+        }
+
+        $isCalendarPublic = Calendar::getInstance()->calendars->isCalendarPublic($event->getCalendar());
+
+        $isNewAndPublic = !$event->id && !$isCalendarPublic;
+        if ($eventId || $isNewAndPublic) {
+            CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+        }
+
+        if (isset($values['startDate'])) {
+            $event->startDate = new Carbon($values['startDate']['date'] . ' ' . $values['startDate']['time'], DateHelper::UTC);
+        }
+
+        if (isset($values['endDate'])) {
+            $event->endDate = new Carbon($values['endDate']['date'] . ' ' . $values['endDate']['time'], DateHelper::UTC);
+        }
+
+        if (isset($values['allDay'])) {
+            $event->allDay = (bool) $values['allDay'];
+        }
+
+        if ($event->allDay && $event->startDate && $event->endDate) {
+            $event->startDate->setTime(0, 0, 0);
+            $event->endDate->setTime(23, 59, 59);
+        }
+
+        $startDate = $event->getStartDate();
+        $endDate   = $event->getEndDate();
+
+        if ($startDate && $endDate && $startDate->eq($endDate)) {
+            $endDate = $endDate->addHour();
+            $event->endDate->setTime(
+                $endDate->hour,
+                $endDate->minute,
+                $endDate->second
+            );
+        }
+
+        $this->handleRepeatRules($event, $values);
+
+        if (isset($values['exceptions'])) {
+            foreach ($values['exceptions'] as $date) {
+                $exception = new ExceptionModel();
+                $exception->eventId = $event->id;
+                $exception->date    = new Carbon($date, DateHelper::UTC);
+
+                $event->addException($exception);
+            }
+        }
+
+        if (isset($values['selectDates'])) {
+            foreach ($values['selectDates'] as $date) {
+                $selectDate = new SelectDateModel();
+                $selectDate->eventId = $event->id;
+                $selectDate->date    = new Carbon($date, DateHelper::UTC);
+
+                $event->addSelectDate($selectDate);
+            }
+        }
     }
 
     /**

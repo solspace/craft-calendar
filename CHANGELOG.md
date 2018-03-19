@@ -1,5 +1,17 @@
 # Solspace Freeform Changelog
 
+## 2.0.0-beta.5 - 2018-03-19
+### Fixed
+- Added Live Preview functionality back.
+- Added Calendar 1.x to 2.x (Craft 2.x to 3.x) migration path.
+- Fixed a bug where the Calendar Event fieldtype was not available.
+- Fixed a bug where the Agenda widget would visually allow you to drag and drop events (locked now).
+- Fixed a bug where the Agenda widget would not correctly display all day and multi-day events.
+- Fixed some deprecation errors with dashboard widgets.
+- Fixed a bug where Quick Creating events with title format option was not working correctly.
+- Fixed a bug where Events function wasn't correctly including multi-day events.
+- Fixed a bug where translations were not being loaded.
+
 ## 2.0.0-beta.4 - 2018-03-15
 ### Fixed
 - Added back all Calendar widgets.

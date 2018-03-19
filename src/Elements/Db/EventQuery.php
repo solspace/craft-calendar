@@ -17,7 +17,7 @@ use Solspace\Calendar\Services\SelectDatesService;
 use Solspace\Commons\Helpers\PermissionHelper;
 use yii\db\Connection;
 
-class EventQuery extends ElementQuery
+class EventQuery extends ElementQuery implements \Countable
 {
     const FORMAT_MONTH = 'Ym';
     const FORMAT_WEEK  = 'YW';
@@ -279,7 +279,7 @@ class EventQuery extends ElementQuery
         $this->all($db);
 
         if (null === $this->totalCount) {
-            $this->totalCount = \count($this->events);
+            $this->totalCount = \count($this->events ?? []);
         }
 
         return $this->totalCount;
@@ -295,7 +295,8 @@ class EventQuery extends ElementQuery
         $configHash = $this->getConfigStateHash();
 
         // Nasty elements index hack
-        if (\Craft::$app->request->post('context') === 'index') {
+        $context = \Craft::$app->request->post('context');
+        if (\in_array($context, ['index', 'modal'], true)) {
             $this->loadOccurrences = false;
         }
 
@@ -430,12 +431,28 @@ class EventQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        $table            = Event::TABLE_STD;
-        $calendarTable    = CalendarRecord::TABLE;
+        $table         = Event::TABLE_STD;
+        $calendarTable = CalendarRecord::TABLE;
 
         // join in the products table
         $this->joinElementTable($table);
-        $this->join = [['INNER JOIN', $calendarTable, "$calendarTable.id = $table.calendarId"]];
+        $hasCalendarsJoined = false;
+
+        if (!empty($this->join)) {
+            foreach ($this->join as $join) {
+                if ($join[1] === $calendarTable) {
+                    $hasCalendarsJoined = true;
+                }
+            }
+        }
+
+        if (!$hasCalendarsJoined) {
+            if (null === $this->join) {
+                $this->join = [];
+            }
+
+            $this->join[] = ['INNER JOIN', $calendarTable, "$calendarTable.id = $table.calendarId"];
+        }
 
         // select the price column
         $this->query->select(
@@ -490,17 +507,34 @@ class EventQuery extends ElementQuery
 
         if ($this->rangeStart) {
             $rangeStartString = $this->extractDateAsFormattedString($this->rangeStart);
+
             $this->subQuery->andWhere(
-                "($table.rrule IS NULL AND $table.startDate >= :rangeStart) OR ($table.rrule IS NOT NULL)",
-                ['rangeStart' => $rangeStartString]
+                "($table.rrule IS NULL AND $table.endDate >= :rangeStart)
+                OR ($table.rrule IS NOT NULL AND $table.until IS NOT NULL AND $table.until >= :rangeStart)
+                OR ($table.rrule IS NOT NULL AND $table.until IS NULL)
+                OR ($table.freq = :freq)",
+                [
+                    'rangeStart' => $rangeStartString,
+                    'freq'       => RecurrenceHelper::SELECT_DATES,
+                ]
             );
         }
 
         if ($this->rangeEnd) {
-            $rangeEndString = $this->extractDateAsFormattedString($this->rangeEnd);
+            $rangeEnd = $this->rangeEnd->copy();
+
+            if ($rangeEnd->format('His') === '000000') {
+                $rangeEnd->setTime(23, 59, 59);
+            }
+
+            $rangeEndString = $this->extractDateAsFormattedString($rangeEnd);
+
             $this->subQuery->andWhere(
-                "$table.endDate <= :rangeEnd",
-                ['rangeEnd' => $rangeEndString]
+                "$table.startDate <= :rangeEnd OR $table.freq = :freq",
+                [
+                    'rangeEnd' => $rangeEndString,
+                    'freq'     => RecurrenceHelper::SELECT_DATES,
+                ]
             );
         }
 
@@ -858,6 +892,10 @@ class EventQuery extends ElementQuery
     {
         $modifier = $this->getSortModifier();
         $orderBy  = $this->getOrderByField() ?? 'startDate';
+
+        if (false !== strpos($orderBy, '.')) {
+            $orderBy = 'startDate';
+        }
 
         usort(
             $events,

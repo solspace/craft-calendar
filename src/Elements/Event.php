@@ -471,6 +471,19 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * @param ExceptionModel $exceptionModel
+     *
+     * @return $this
+     */
+    public function addException(ExceptionModel $exceptionModel): Event
+    {
+        $this->getExceptions();
+        $this->exceptions[] = $exceptionModel;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getExceptionDateStrings(): array
@@ -540,6 +553,22 @@ class Event extends Element implements \JsonSerializable
         }
 
         return $formattedDatesList;
+    }
+
+    /**
+     * @param SelectDateModel $selectDateModel
+     *
+     * @return $this
+     */
+    public function addSelectDate(SelectDateModel $selectDateModel): Event
+    {
+        $this->getSelectDates();
+        $this->selectDatesCache[] = $selectDateModel;
+        usort($this->selectDatesCache, function (SelectDateModel $a, SelectDateModel $b) {
+            return $a->date <=> $b->date;
+        });
+
+        return $this;
     }
 
     /**

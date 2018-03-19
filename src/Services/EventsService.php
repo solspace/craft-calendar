@@ -189,15 +189,18 @@ class EventsService extends Component
      * @param Event     $event
      * @param bool|null $validateContent
      *
+     * @param bool      $bypassTitleGenerator
+     *
      * @return bool
-     * @throws \Exception
      * @throws \Throwable
+     * @throws \yii\base\Exception
+     * @throws \yii\db\Exception
      */
-    public function saveEvent(Event $event, bool $validateContent = true): bool
+    public function saveEvent(Event $event, bool $validateContent = true, bool $bypassTitleGenerator = false): bool
     {
         $isNewEvent = !$event->id;
 
-        if (!$event->getCalendar()->hasTitleField) {
+        if (!$bypassTitleGenerator && !$event->getCalendar()->hasTitleField) {
             $event->title = \Craft::$app->view->renderObjectTemplate($event->getCalendar()->titleFormat, $event);
         }
 

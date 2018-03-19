@@ -4,7 +4,7 @@
      id="calendar-agenda-{{ ID }}"
      data-view="{{ settings.view }}"
      data-calendars="{{ settings.calendars|join(',') }}"
-     data-time-format="{{ craft.i18n.timepickerJsFormat }}"
+     data-time-format="{{ craft.app.locale.getTimeFormat('short', 'php') }}"
      data-locale="{{ locale }}"
      data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
      data-first-day-of-week="{{ currentUser is defined and currentUser ? currentUser.getPreference('weekStartDay') : craft.config.general.defaultWeekStartDay }}"
