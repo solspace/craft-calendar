@@ -26,7 +26,7 @@
                             {% if event.multiDay %}
                                  - {{ event.endDate.format(dateFormat) }}
                             {% else %}
-                                ({{ "All Day"|t }})
+                                ({{ "All Day"|t('calendar') }})
                             {% endif %}
                         {% else %}
                             {{ event.startDate.format(dateTimeFormat) }}

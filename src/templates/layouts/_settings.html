@@ -2,14 +2,14 @@
 
 {% set selectedSubnavItem = 'settings' %}
 
-{% set title = "Calendar Settings"|t %}
+{% set title = "Calendar Settings"|t('calendar') %}
 
 {% set navItems = {
-'hd': { heading: "Settings"|t },
-'general': { title: "General Settings"|t },
-'events': { title: "Event Settings"|t },
-'guest-access': { title: "Guest Access"|t },
-'demo-templates': {title: 'Demo Templates'|t},
+'hd': { heading: "Settings"|t('calendar') },
+'general': { title: "General Settings"|t('calendar') },
+'events': { title: "Event Settings"|t('calendar') },
+'guest-access': { title: "Guest Access"|t('calendar') },
+'demo-templates': {title: 'Demo Templates'|t('calendar')},
 } %}
 
 {% set selectedItem = craft.app.request.getSegment(3)|default %}

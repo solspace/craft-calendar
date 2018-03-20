@@ -175,6 +175,13 @@ $calendars = array(
 
     'Are you sure you want to enable ICS sharing for this calendar?'  => 'Wollen Sie ICS für diesen Kalender wirklich aktivieren?',
     'Are you sure you want to disable ICS sharing for this calendar?' => 'Wollen Sie ICS für diesen Kalender wirklich deaktivieren?',
+
+    'Choose which sites this calendar should be available in, and configure the site-specific settings.'                      => 'Choose which sites this calendar should be available in, and configure the site-specific settings.',
+    'Event URI Format'                                                                                                        => 'Event URI Format',
+    'What event URIs should look like for the site. Leave blank if events don’t have URLs.'                                   => 'What event URIs should look like for the site. Leave blank if events don’t have URLs.',
+    'Leave blank if events don’t have URLs'                                                                                   => 'Leave blank if events don’t have URLs',
+    'Which template should be loaded when an event’s URL is requested.'                                                       => 'Which template should be loaded when an event’s URL is requested.',
+    'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.' => 'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.',
 );
 
 
@@ -220,6 +227,10 @@ $settings = array(
     'Allow new events to be created in Month/Week/Day views?'                                                                                                                                                         => 'Das Erstellen neuer Ereignisse in der Monats-/Wochen-/Tagesansicht zulassen?',
     'Allows all users with event creation privileges to use the Quick Create event feature.'                                                                                                                          => 'Erlaubt autorisierten Benutzern die Verwendung der Schnelleintrags-Funktion.',
     'You don’t have permission to access Calendar Settings.'                                                                                                                                                          => 'Sie sind nicht berechtigt die Einstellungen anzuzeigen.',
+    'Allow Guest Access on Front End?'                                                                                                                                                                                => 'Allow Guest Access on Front End?',
+    'Enable this to allow guests to post events to specific calendars on the front end.'                                                                                                                              => 'Enable this to allow guests to post events to specific calendars on the front end.',
+    'Allowed Calendars'                                                                                                                                                                                               => 'Allowed Calendars',
+    'Select which calendars Guests should have access to create events for on the front end.'                                                                                                                         => 'Select which calendars Guests should have access to create events for on the front end.',
 
     'License'          => 'Lizenz',
     'Event Settings'   => 'Ereignis-Einstellungen',

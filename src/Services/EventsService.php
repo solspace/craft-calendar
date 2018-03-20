@@ -5,15 +5,13 @@ namespace Solspace\Calendar\Services;
 use craft\base\Component;
 use craft\base\ElementInterface;
 use craft\db\Query;
-use craft\helpers\ElementHelper;
+use craft\events\SiteEvent;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
-use Solspace\Calendar\Library\DataObjects\EventListOptions;
 use Solspace\Calendar\Library\DateHelper;
-use Solspace\Calendar\Library\Events\Event as EventObject;
 use Solspace\Calendar\Library\Events\EventList;
 use Solspace\Calendar\Models\EventCriteria;
 use Solspace\Commons\Helpers\PermissionHelper;
@@ -287,28 +285,28 @@ class EventsService extends Component
     }
 
     /**
-     * @param Event $event
+     * @param SiteEvent $event
      *
      * @return bool
      * @throws \yii\db\Exception
      */
-    public function addLocaleHandler(Event $event): bool
+    public function addSiteHandler(SiteEvent $event): bool
     {
-        $localeId      = $event->params['localeId'];
-        $primaryLocale = \Craft::$app->i18n->getPrimarySiteLocaleId();
+        $siteId        = $event->site->id;
+        $primarySiteId = \Craft::$app->sites->getPrimarySite()->id;
 
         $elementRows = (new Query())
             ->select(['ei18n.*'])
-            ->from('elements_i18n ei18n')
-            ->join(Event::TABLE . ' e', 'ei18n.elementId = e.id')
-            ->where(['ei18n.locale' => $primaryLocale])
+            ->from('{{%elements_sites}} ei18n')
+            ->innerJoin(Event::TABLE . ' e', 'ei18n.elementId = e.id')
+            ->where(['ei18n.siteId' => $primarySiteId])
             ->all();
 
         $contentRows = (new Query())
             ->select(['c.*'])
-            ->from('content c')
-            ->join(Event::TABLE . ' e', 'c.elementId = e.id')
-            ->where(['c.locale' => $primaryLocale])
+            ->from('{{%content}} c')
+            ->innerJoin(Event::TABLE . ' e', 'c.elementId = e.id')
+            ->where(['c.siteId' => $primarySiteId])
             ->all();
 
         $elementDataById = [];
@@ -319,7 +317,7 @@ class EventsService extends Component
         $contentDataById = [];
         foreach ($contentRows as $content) {
             unset(
-                $content['locale'],
+                $content['siteId'],
                 $content['id'],
                 $content['dateCreated'],
                 $content['dateUpdated'],
@@ -334,9 +332,9 @@ class EventsService extends Component
             \Craft::$app->db
                 ->createCommand()
                 ->batchInsert(
-                    'elements_i18n',
-                    ['elementId', 'locale', 'slug', 'enabled'],
-                    [[$elementId, $localeId, $elementData['slug'], true]]
+                    '{{%elements_sites}}',
+                    ['elementId', 'siteId', 'slug', 'enabled'],
+                    [[$elementId, $siteId, $elementData['slug'], true]]
                 )
                 ->execute();
 
@@ -346,12 +344,12 @@ class EventsService extends Component
                 $columns = array_keys($content);
                 $values  = array_values($content);
 
-                $columns[] = 'locale';
-                $values[]  = $localeId;
+                $columns[] = 'siteId';
+                $values[]  = $siteId;
 
                 \Craft::$app->db
                     ->createCommand()
-                    ->batchInsert('content', $columns, [$values])
+                    ->batchInsert('{{%content}}', $columns, [$values])
                     ->execute();
             }
         }

@@ -8,6 +8,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\services\Dashboard;
 use craft\services\Fields;
+use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
@@ -161,6 +162,9 @@ class Calendar extends Plugin
 
         // craft()->on('i18n.onAddLocale', [craft()->calendar_events, 'addLocaleHandler']);
         // craft()->on('i18n.onAddLocale', [craft()->calendar_calendars, 'addLocaleHandler']);
+
+        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->events, 'addSiteHandler']);
+        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->calendars, 'addSiteHandler']);
 
         if (\Craft::$app->request->getIsCpRequest() && \Craft::$app->getUser()->getId()) {
             \Craft::$app->view->registerTranslations(self::TRANSLATION_CATEGORY, self::$javascriptTranslationKeys);

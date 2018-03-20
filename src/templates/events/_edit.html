@@ -4,12 +4,12 @@
 {% set calendarHandle = calendar.handle|default %}
 {% set selectedSubnavItem = 'events' %}
 {% set saveShortcutRedirect = continueEditingUrl %}
-{% set title = "Calendar: Events - {title}"|t({title: title}) %}
+{% set title = "Calendar: Events - {title}"|t('calendar', {title: title}) %}
 
 {% set crumbs = [
-    { label: "Calendar"|t, url: url('calendar') },
-    { label: "Events"|t, url: url('calendar/events') },
-    { label: event.title ? event.title : 'New Event'|t, url: '' },
+    { label: "Calendar"|t('calendar'), url: url('calendar') },
+    { label: "Events"|t('calendar'), url: url('calendar/events') },
+    { label: event.title ? event.title : 'New Event'|t('calendar'), url: '' },
 ] %}
 
 {% js %}
@@ -38,34 +38,34 @@
 {% block actionButton %}
     <div class="buttons">
         <div class="btngroup submit">
-            <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t('calendar') }}">
 
             <div class="btn submit menubtn"></div>
             <div class="menu">
                 <ul>
                     <li>
                         <a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">
-                            {{ "Save and continue editing"|t }}
+                            {{ "Save and continue editing"|t('calendar') }}
                             <span class="shortcut">⌘S</span>
                         </a>
                     </li>
                     <li>
                         <a class="formsubmit"
-                           data-redirect="calendar/events/new/{{ calendarHandle }}">{{ "Save and add another"|t }}</a>
+                           data-redirect="calendar/events/new/{{ calendarHandle }}">{{ "Save and add another"|t('calendar') }}</a>
                     </li>
                     {% if event.id %}
                         <li><a class="formsubmit" data-param="eventId"
                                data-value=""
-                               data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new event"|t }}</a>
+                               data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new event"|t('calendar') }}</a>
                         </li>
                         <hr>
                         <li>
                             <a class="formsubmit error"
                                data-action="calendar/events/delete-event"
-                               data-confirm="{{ 'Are you sure you want to delete this event?'|t }}"
+                               data-confirm="{{ 'Are you sure you want to delete this event?'|t('calendar') }}"
                                data-redirect="{{ 'calendar/events'|hash }}"
                             >
-                                {{ "Delete"|t }}
+                                {{ "Delete"|t('calendar') }}
                             </a>
                         </li>
                     {% endif %}
@@ -201,26 +201,26 @@
         {% endset %}
 
         {{ forms.field({
-            label: "Calendar"|t,
+            label: "Calendar"|t('calendar'),
         }, calendarStrip) }}
 
         {{ forms.textField({
-            label: "Slug"|t,
+            label: "Slug"|t('calendar'),
             siteId: event.siteId,
             id: 'slug',
             name: 'slug',
             value: event.slug,
-            placeholder: "Enter slug"|t,
+            placeholder: "Enter slug"|t('calendar'),
             errors: event.getErrors('slug')|merge(event.getErrors('uri')),
         }) }}
 
         {% if CraftEdition == CraftPro %}
             {{ forms.elementSelectField({
-                label: "Author"|t,
+                label: "Author"|t('calendar'),
                 id: 'author',
                 name: 'author',
                 elementType: userElementType,
-                selectionLabel: "Choose"|t,
+                selectionLabel: "Choose"|t('calendar'),
                 criteria: {},
                 limit: 1,
                 elements: (event.authorId is defined and event.author ? [event.author])
@@ -238,7 +238,7 @@
         {% endset %}
 
         {{ forms.field({
-            label: "Enabled"|t,
+            label: "Enabled"|t('calendar'),
             id: 'enabled'
         }, statusInput) }}
 
@@ -259,11 +259,11 @@
 
         <div class="meta read-only">
             <div class="data">
-                <h5 class="heading">{{ "Date Created"|t }}</h5>
+                <h5 class="heading">{{ "Date Created"|t('calendar') }}</h5>
                 <div class="value">{{ event.dateCreated|date('short') }} {{ event.dateCreated|time('short') }}</div>
             </div>
             <div class="data">
-                <h5 class="heading">{{ "Date Updated"|t }}</h5>
+                <h5 class="heading">{{ "Date Updated"|t('calendar') }}</h5>
                 <div class="value">{{ event.dateUpdated|date('short') }} {{ event.dateUpdated|time('short') }}</div>
             </div>
         </div>

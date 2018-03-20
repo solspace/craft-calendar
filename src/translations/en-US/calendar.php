@@ -1,11 +1,11 @@
 <?php
 
-$plugin = array(
+$plugin = [
     'Create full-featured calendars and recurring events with exceptions.' => 'Create full-featured calendars and recurring events with exceptions.',
     'Calendar Events'                                                      => 'Calendar Events',
-);
+];
 
-$titles = array(
+$titles = [
     'Calendar'                      => 'Calendar',
     'Calendar: {view}'              => 'Calendar: {view}',
     'Calendar: Calendars'           => 'Calendar: Calendars',
@@ -22,9 +22,9 @@ $titles = array(
     'Month' => 'Month',
     'Week'  => 'Week',
     'Day'   => 'Day',
-);
+];
 
-$widgets = array(
+$widgets = [
     // Common
     'Title'                                                       => 'Title',
     'Customise the widget title. Leave blank for default.'        => 'Customise the widget title. Leave blank for default.',
@@ -39,15 +39,15 @@ $widgets = array(
     'Quick Event'     => 'Quick Event',
     'Mini Calendar'   => 'Mini Calendar',
     'Upcoming Events' => 'Upcoming Events',
-);
+];
 
-$common = array(
+$common = [
     'Save and continue editing' => 'Save and continue editing',
     'Save and add another'      => 'Save and add another',
     'Save as a new event'       => 'Save as a new event',
-);
+];
 
-$events = array(
+$events = [
     'Title'        => 'Title',
     'Slug'         => 'Slug',
     'Author'       => 'Author',
@@ -130,9 +130,9 @@ $events = array(
     'Th' => 'Th',
     'Fr' => 'Fr',
     'Sa' => 'Sa',
-);
+];
 
-$calendars = array(
+$calendars = [
     'Name'                                                       => 'Name',
     'What this calendar will be called in the CP.'               => 'What this calendar will be called in the CP.',
     'Handle'                                                     => 'Handle',
@@ -161,9 +161,16 @@ $calendars = array(
 
     'Are you sure you want to enable ICS sharing for this calendar?'  => 'Are you sure you want to enable ICS sharing for this calendar?',
     'Are you sure you want to disable ICS sharing for this calendar?' => 'Are you sure you want to disable ICS sharing for this calendar?',
-);
 
-$demoTemplates = array(
+    'Choose which sites this calendar should be available in, and configure the site-specific settings.'                      => 'Choose which sites this calendar should be available in, and configure the site-specific settings.',
+    'Event URI Format'                                                                                                        => 'Event URI Format',
+    'What event URIs should look like for the site. Leave blank if events don’t have URLs.'                                   => 'What event URIs should look like for the site. Leave blank if events don’t have URLs.',
+    'Leave blank if events don’t have URLs'                                                                                   => 'Leave blank if events don’t have URLs',
+    'Which template should be loaded when an event’s URL is requested.'                                                       => 'Which template should be loaded when an event’s URL is requested.',
+    'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.' => 'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.',
+];
+
+$demoTemplates = [
     'Prefix'    => 'Prefix',
     'Install'   => 'Install',
     'Templates' => 'Templates',
@@ -175,9 +182,9 @@ $demoTemplates = array(
     'You can view the templates <a href="{link}">here</a>'                                                                                                      => 'You can view the templates <a href="{link}">here</a>',
     'Install Demo'                                                                                                                                              => 'Install Demo',
     'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>',
-);
+];
 
-$settings = array(
+$settings = [
     'Date Overlap Threshold'                                                                                                                                                                                          => 'Date Overlap Threshold',
     'Specify the amount of hours in the next day which are still considered as those of the previous day. This prevents late night events from showing up the next day for calendars in control panel and front end.' => 'Specify the amount of hours in the next day which are still considered as those of the previous day. This prevents late night events from showing up the next day for calendars in control panel and front end.',
     'Time Interval'                                                                                                                                                                                                   => 'Time Interval',
@@ -204,6 +211,11 @@ $settings = array(
     'Allow new events to be created in Month/Week/Day views?'                                                                                                                                                         => 'Allow new events to be created in Month/Week/Day views?',
     'Allows all users with event creation privileges to use the Quick Create event feature.'                                                                                                                          => 'Allows all users with event creation privileges to use the Quick Create event feature.',
     'You don’t have permission to access Calendar Settings.'                                                                                                                                                          => 'You don’t have permission to access Calendar Settings.',
+    'Allow Guest Access on Front End?'                                                                                                                                                                                => 'Allow Guest Access on Front End?',
+    'Enable this to allow guests to post events to specific calendars on the front end.'                                                                                                                              => 'Enable this to allow guests to post events to specific calendars on the front end.',
+    'Allowed Calendars'                                                                                                                                                                                               => 'Allowed Calendars',
+    'Select which calendars Guests should have access to create events for on the front end.'                                                                                                                         => 'Select which calendars Guests should have access to create events for on the front end.',
+
 
     'License'          => 'License',
     'Event Settings'   => 'Event Settings',
@@ -214,16 +226,16 @@ $settings = array(
 
     'Settings saved successfully.' => 'Settings saved successfully.',
     'Could not save settings.'     => 'Could not save settings.',
-);
+];
 
-$permissions = array(
+$permissions = [
     '"{name}" calendar'      => '"{name}" calendar',
     'Administrate Calendars' => 'Administrate Calendars',
     'Manage events in'       => 'Manage events in',
     'Create Calendars'       => 'Create Calendars',
     'Edit Calendars'         => 'Edit Calendars',
     'Delete Calendars'       => 'Delete Calendars',
-);
+];
 
 return array_merge(
     $plugin,

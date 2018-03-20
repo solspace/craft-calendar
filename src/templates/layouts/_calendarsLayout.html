@@ -6,7 +6,7 @@
     {% if currentUser.can("calendar-createCalendars") %}
         <div class="buttons">
             <a class="btn submit add icon" href="{{ url('calendar/calendars/new') }}">
-                {{ "New Calendar"|t }}
+                {{ "New Calendar"|t('calendar') }}
             </a>
         </div>
     {% endif %}

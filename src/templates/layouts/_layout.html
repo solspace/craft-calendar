@@ -7,14 +7,14 @@
         {% set calendars = craft.calendar.allowedCalendars %}
         {% if calendars|length %}
             {% if calendars|length > 1 %}
-                <div class="btn submit menubtn add icon">{{ "New Event"|t }}</div>
+                <div class="btn submit menubtn add icon">{{ "New Event"|t('calendar') }}</div>
                 <div class="menu">
                     <ul>
                         {% for calendar in calendars %}
                             <li>
                                 <a href="{{ url('calendar/events/new/'~calendar.handle) }}">
                                     <span class="color-indicator" style="background-color: {{ calendar.color }};"></span>
-                                    {{ calendar.name|t }}
+                                    {{ calendar.name|t('calendar') }}
                                 </a>
                             </li>
                         {% endfor %}
@@ -22,7 +22,7 @@
                 </div>
             {% else %}
                 <a class="btn submit add icon" href="{{ url('calendar/events/new/'~(calendars|first).handle|default) }}">
-                    {{ "New Event"|t }}
+                    {{ "New Event"|t('calendar') }}
                 </a>
             {% endif %}
         {% endif %}

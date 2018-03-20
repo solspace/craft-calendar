@@ -731,6 +731,16 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * An alias for getUntil()
+     *
+     * @return Carbon|null
+     */
+    public function getUntilDate()
+    {
+        return $this->getUntil();
+    }
+
+    /**
      * Returns the repeats ON rule, which could be -1, 1, 2, 3 or 4
      * Or 0 if no rule is set
      *
@@ -930,7 +940,7 @@ class Event extends Element implements \JsonSerializable
      */
     public function isAllDay(): bool
     {
-        return $this->allDay;
+        return (bool) $this->allDay;
     }
 
     /**

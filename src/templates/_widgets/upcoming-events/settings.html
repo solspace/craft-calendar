@@ -2,8 +2,8 @@
 
 
 {{ forms.textField({
-    label: "Title"|t,
-    instructions: "Customise the widget title. Leave blank for default."|t,
+    label: "Title"|t('calendar'),
+    instructions: "Customise the widget title. Leave blank for default."|t('calendar'),
     id: 'title',
     name: 'title',
     value: settings.title,
@@ -11,8 +11,8 @@
 }) }}
 
 {{ forms.checkboxSelectField({
-    label: "Calendars"|t,
-    instructions: "Which calendar entries do you wish to show?"|t,
+    label: "Calendars"|t('calendar'),
+    instructions: "Which calendar entries do you wish to show?"|t('calendar'),
     id: 'calendars',
     name: 'calendars',
     showAllOption: true,
@@ -22,7 +22,7 @@
 }) }}
 
 {{ forms.textField({
-    label: "Limit"|t,
+    label: "Limit"|t('calendar'),
     id: 'limit',
     name: 'limit',
     value: settings.limit,

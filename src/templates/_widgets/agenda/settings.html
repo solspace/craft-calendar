@@ -2,8 +2,8 @@
 
 
 {{ forms.textField({
-    label: "Title"|t,
-    instructions: "Customise the widget title. Leave blank for default."|t,
+    label: "Title"|t('calendar'),
+    instructions: "Customise the widget title. Leave blank for default."|t('calendar'),
     id: 'title',
     name: 'title',
     value: settings.title,
@@ -11,8 +11,8 @@
 }) }}
 
 {{ forms.selectField({
-    label: "Calendar View"|t,
-    instructions: "Choose which type of calendar view to assign to this widget"|t,
+    label: "Calendar View"|t('calendar'),
+    instructions: "Choose which type of calendar view to assign to this widget"|t('calendar'),
     id: 'view',
     name: 'view',
     options: {month: "Month", agendaWeek: "Week", agendaDay: "Day"},
@@ -21,8 +21,8 @@
 }) }}
 
 {{ forms.checkboxSelectField({
-    label: "Calendars"|t,
-    instructions: "Which calendar entries do you wish to show?"|t,
+    label: "Calendars"|t('calendar'),
+    instructions: "Which calendar entries do you wish to show?"|t('calendar'),
     id: 'calendars',
     name: 'calendars',
     showAllOption: true,

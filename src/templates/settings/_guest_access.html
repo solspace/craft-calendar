@@ -4,7 +4,7 @@
 
 {% block content %}
 
-    <h2>{{ "Guest Access"|t }}</h2>
+    <h2>{{ "Guest Access"|t('calendar') }}</h2>
 
     <form action="" method="post" accept-charset="UTF-8">
         <input type="hidden" name="action" value="calendar/settings/save-settings">
@@ -13,8 +13,8 @@
 
 
         {{ forms.lightswitchField({
-            label: "Allow Guest Access on Front End?"|t,
-            instructions: "Enable this to allow guests to post events to specific calendars on the front end."|t,
+            label: "Allow Guest Access on Front End?"|t('calendar'),
+            instructions: "Enable this to allow guests to post events to specific calendars on the front end."|t('calendar'),
             id: 'guest-access',
             name: 'allowGuestAccess',
             on: settings.guestAccess is not null,
@@ -25,8 +25,8 @@
              style="margin-bottom: 20px;"
              class="{{ settings.guestAccess is null ? 'hidden' }}">
             {{ forms.checkboxSelectField({
-                label: "Allowed Calendars"|t,
-                instructions: "Select which calendars Guests should have access to create events for on the front end."|t,
+                label: "Allowed Calendars"|t('calendar'),
+                instructions: "Select which calendars Guests should have access to create events for on the front end."|t('calendar'),
                 id: 'calendar-list',
                 name: 'settings[guestAccess]',
                 options: calendars,
@@ -35,7 +35,7 @@
             }) }}
         </div>
 
-        <input type="submit" class="btn submit" value="{{ "Save"|t }}">
+        <input type="submit" class="btn submit" value="{{ "Save"|t('calendar') }}">
     </form>
 
 {% endblock %}

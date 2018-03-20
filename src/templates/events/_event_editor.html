@@ -2,7 +2,7 @@
 
 {% if event.calendar.hasTitleField %}
     {{ forms.textField({
-        label: event.calendar.titleLabel|t,
+        label: event.calendar.titleLabel|t('calendar'),
         id: 'title',
         name: 'title',
         siteId: event.siteId,

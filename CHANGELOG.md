@@ -1,5 +1,15 @@
 # Solspace Freeform Changelog
 
+## 2.0.0-beta.6 - 2018-03-20
+### Fixed
+- Actually added Calendar 1.x to 2.x (Craft 2.x to 3.x) migration path (sorry!).
+- Fixed a bug where Live Preview would show duplicates of some Calendar fields if the calendar layout didn't have any custom fields assigned to it.
+- Fixed a bug where the `calendar.events` function was localizing date ranges.
+- Fixed a bug where translations were not correctly being rendered in some areas.
+- Fixed a bug where reinstalling Demo Templates would generate extra duplicate routes.
+- Fixed a bug where Calendar CP would not respect non-US date formatting.
+- Fixed a bug where adding new Sites wouldn't populate the necessary event and calendar sites tables.
+
 ## 2.0.0-beta.5 - 2018-03-19
 ### Fixed
 - Added Live Preview functionality back.

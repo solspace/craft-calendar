@@ -3,12 +3,12 @@
 
 {% set selectedSubnavItem = "calendars" %}
 {% set saveShortcutRedirect = 'calendar/calendars/{handle}' %}
-{% set title = "Calendar: Calendars - {title}"|t({title: title}) %}
+{% set title = "Calendar: Calendars - {title}"|t('calendar', {title: title}) %}
 
 {% set crumbs = [
-    { label: "Calendar"|t, url: url('calendar') },
-    { label: "calendars"|t, url: url('calendar/calendars') },
-    { label: calendar.name ? calendar.name : "New Calendar"|t, url: '' },
+    { label: "Calendar"|t('calendar'), url: url('calendar') },
+    { label: "calendars"|t('calendar'), url: url('calendar/calendars') },
+    { label: calendar.name ? calendar.name : "New Calendar"|t('calendar'), url: '' },
 ] %}
 
 {% set fullPageForm = true %}
@@ -16,20 +16,20 @@
 {% block actionButton %}
     <div class="buttons">
         <div class="btngroup submit">
-            <input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t('calendar') }}">
 
             <div class="btn submit menubtn"></div>
             <div class="menu">
                 <ul>
                     <li>
                         <a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
-                            {{ "Save and continue editing"|t }}
+                            {{ "Save and continue editing"|t('calendar') }}
                             <span class="shortcut">⌘S</span>
                         </a>
                     </li>
                     <li>
                         <a class="formsubmit" data-redirect="{{ url('calendar/calendars/new') }}">
-                            {{ "Save and add another"|t }}
+                            {{ "Save and add another"|t('calendar') }}
                         </a>
                     </li>
                 </ul>
@@ -47,8 +47,8 @@
 
     {{ forms.textField({
         first: true,
-        label: "Name"|t,
-        instructions: "What this calendar will be called in the CP."|t,
+        label: "Name"|t('calendar'),
+        instructions: "What this calendar will be called in the CP."|t('calendar'),
         id: 'name',
         name: 'name',
         value: calendar.name,
@@ -59,8 +59,8 @@
     }) }}
 
     {{ forms.textField({
-        label: "Handle"|t,
-        instructions: "How you’ll refer to this calendar in the templates."|t,
+        label: "Handle"|t('calendar'),
+        instructions: "How you’ll refer to this calendar in the templates."|t('calendar'),
         id: 'handle',
         class: 'code',
         name: 'handle',
@@ -70,8 +70,8 @@
     }) }}
 
     {{ forms.textareaField({
-        label: "Description"|t,
-        instructions: "A small description describing what this calendar is about"|t,
+        label: "Description"|t('calendar'),
+        instructions: "A small description describing what this calendar is about"|t('calendar'),
         id: 'description',
         name: 'description',
         value: calendar.description,
@@ -82,8 +82,8 @@
     <hr>
 
     {{ forms.colorField({
-        label: "Color"|t,
-        instructions: "Events assigned to this calendar will use this color"|t,
+        label: "Color"|t('calendar'),
+        instructions: "Events assigned to this calendar will use this color"|t('calendar'),
         id: 'color',
         name: 'color',
         value: calendar.color,
@@ -172,7 +172,7 @@
 
 
     {{ forms.checkboxField({
-        label: "Show the Title field"|t,
+        label: "Show the Title field"|t('app'),
         name: 'hasTitleField',
         toggle: 'titleLabel-container',
         reverseToggle: 'titleFormat-container',
@@ -181,8 +181,8 @@
 
     <div id="titleLabel-container"{% if not calendar.hasTitleField %} class="hidden"{% endif %}>
         {{ forms.textField({
-            label: "Title Field Label"|t,
-            instructions: "What do you want the Title field to be called?"|t,
+            label: "Title Field Label"|t('app'),
+            instructions: "What do you want the Title field to be called?"|t('app'),
             id: 'titleLabel',
             name: 'titleLabel',
             value: calendar.titleLabel,
@@ -193,8 +193,8 @@
 
     <div id="titleFormat-container"{% if calendar.hasTitleField %} class="hidden"{% endif %}>
         {{ forms.textField({
-            label: "Title Format"|t,
-            instructions: "What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}."|t({ ex: '<code>{myCustomField}</code>' }),
+            label: "Title Format"|t('app'),
+            instructions: "What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}."|t('calendar', { ex: '<code>{myCustomField}</code>' }),
             id: 'titleFormat',
             name: 'titleFormat',
             value: calendar.titleFormat,
@@ -206,8 +206,8 @@
     <hr>
 
     {{ forms.selectField({
-        label: "ICS Description field"|t,
-        instructions: "Set the field to be used for event description when exporting ICS file."|t,
+        label: "ICS Description field"|t('calendar'),
+        instructions: "Set the field to be used for event description when exporting ICS file."|t('calendar'),
         id: 'descriptionFieldHandle',
         name: 'descriptionFieldHandle',
         options: calendar.descriptionFieldHandles,
@@ -216,8 +216,8 @@
     }) }}
 
     {{ forms.selectField({
-        label: "ICS Location field"|t,
-        instructions: "Set the field to be used for event location when exporting ICS file."|t,
+        label: "ICS Location field"|t('calendar'),
+        instructions: "Set the field to be used for event location when exporting ICS file."|t('calendar'),
         id: 'locationFieldHandle',
         name: 'locationFieldHandle',
         options: calendar.locationFieldHandles,

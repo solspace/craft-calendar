@@ -2,6 +2,9 @@
 
 namespace Solspace\Calendar\Library\CodePack\Components;
 
+use craft\db\Query;
+use craft\helpers\Json;
+
 class RoutesComponent extends AbstractJsonComponent
 {
     /**
@@ -20,7 +23,7 @@ class RoutesComponent extends AbstractJsonComponent
             if (isset($route->urlParts, $route->template) && \is_array($route->urlParts)) {
                 $urlParts = $route->urlParts;
 
-                array_walk_recursive($urlParts, function(&$value) {
+                array_walk_recursive($urlParts, function (&$value) {
                     $value = stripslashes($value);
                 });
 
@@ -29,7 +32,50 @@ class RoutesComponent extends AbstractJsonComponent
                 $pattern  = "/(\/?)(.*)/";
                 $template = preg_replace($pattern, "$1$demoFolder$2", $route->template, 1);
 
-                $routeService->saveRoute($urlParts, $template);
+                // Compile the URI parts into a regex pattern
+                $uriPattern           = '';
+                $uriParts             = array_filter($urlParts);
+                $subpatternNameCounts = [];
+
+                foreach ($uriParts as $part) {
+                    if (\is_string($part)) {
+                        $uriPattern .= preg_quote($part, '/');
+                    } else if (\is_array($part)) {
+                        // Is the name a valid handle?
+                        if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
+                            $subpatternName = $part[0];
+                        } else {
+                            $subpatternName = 'any';
+                        }
+
+                        // Make sure it's unique
+                        if (isset($subpatternNameCounts[$subpatternName])) {
+                            $subpatternNameCounts[$subpatternName]++;
+
+                            // Append the count to the end of the name
+                            $subpatternName .= $subpatternNameCounts[$subpatternName];
+                        } else {
+                            $subpatternNameCounts[$subpatternName] = 1;
+                        }
+
+                        // Add the var as a named subpattern
+                        $uriPattern .= '<' . preg_quote($subpatternName, '/') . ':' . $part[1] . '>';
+                    }
+                }
+
+                $id = (new Query())
+                    ->select('id')
+                    ->from('{{%routes}}')
+                    ->where(
+                        [
+                            'uriParts'   => Json::encode($uriParts),
+                            'uriPattern' => $uriPattern,
+                            'template'   => $template,
+                        ]
+                    )
+                    ->scalar();
+
+                $routeService->saveRoute($urlParts, $template, null, $id ?: null);
             }
         }
     }

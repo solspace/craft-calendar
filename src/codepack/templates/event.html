@@ -73,7 +73,7 @@
                                 </a>
                             </td>
                         </tr>
-                        {% if event.location is defined and event.location is not empty %}
+                        {% if event['location'] is defined and event.location is not empty %}
                             <tr>
                                 <th>Location</th>
                                 <td>
@@ -105,7 +105,7 @@
                                 {{ event.duration.humanReadable }}
                             </td>
                         </tr>
-                        {% if event.description is defined and event.description is not empty %}
+                        {% if event['description'] is defined and event.description is not empty %}
                             <tr>
                                 <th>Details</th>
                                 <td>{{ event.description }}</td>

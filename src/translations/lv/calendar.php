@@ -161,6 +161,13 @@ $calendars = array(
 
     'Are you sure you want to enable ICS sharing for this calendar?'  => 'Vai tiešām vēlaties ieslēgt ICS šim kalendāram?',
     'Are you sure you want to disable ICS sharing for this calendar?' => 'Vai tiešām vēlaties atslēgt ICS šim kalendāram?',
+
+    'Choose which sites this calendar should be available in, and configure the site-specific settings.'                      => 'Izvēlaties, kurās lapās šim kalendāram būtu jābūt pieejamam.',
+    'Event URI Format'                                                                                                        => 'Pasākumu saites formāts',
+    'What event URIs should look like for the site. Leave blank if events don’t have URLs.'                                   => 'Kā pasākuma saitēm būtu jāizskatās. Atstājiet tukšu, ja jums nebūs pasākumu saites.',
+    'Leave blank if events don’t have URLs'                                                                                   => 'Atstājiet tukšu, ja pasākumiem nebūs saites.',
+    'Which template should be loaded when an event’s URL is requested.'                                                       => 'Kuru šablonu jāielādē, kas tiek pieprasīta pasākuma saite.',
+    'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.' => 'Kā jāizskatās autoģenerētiem pasākumu virsrakstiem. Jūs varat pievienot tagus, lai izmantotu pasākuma mainīgos, kā piemēram {ex}.',
 );
 
 $demoTemplates = array(
@@ -204,6 +211,10 @@ $settings = array(
     'Allow new events to be created in Month/Week/Day views?'                                                                                                                                                         => 'Vai atļaut izveidot pasākumus kalendāra mēneša/nedēļas/dienas skatos',
     'Allows all users with event creation privileges to use the Quick Create event feature.'                                                                                                                          => 'Lietotājiem ar pieeju izvedot notikumus būs iespēja izvedot tos no kalendāra skatiem.',
     'You don’t have permission to access Calendar Settings.'                                                                                                                                                          => 'Jums nav pieejas kalendāra iestatījumiem.',
+    'Allow Guest Access on Front End?'                                                                                                                                                                                => 'Atļaut viesu pieeju no frontenda?',
+    'Enable this to allow guests to post events to specific calendars on the front end.'                                                                                                                              => 'Ieslēdziet, lai atļautu viesiem izveidot pasākumus konkrētiem kalendāriem frontendā.',
+    'Allowed Calendars'                                                                                                                                                                                               => 'Atļautie kalendāri',
+    'Select which calendars Guests should have access to create events for on the front end.'                                                                                                                         => 'Izvēlieties, kuriem kalendāriem tiks piešķirta viesu iespēja pievienot pasākumus.',
 
     'License'          => 'Licence',
     'Event Settings'   => 'Pasākumu iestatījumi',

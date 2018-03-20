@@ -2,7 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set selectedSubnavItem = currentView %}
-{% set title = "Calendar: {view}"|t({view: currentView|t|ucfirst}) %}
+{% set title = "Calendar: {view}"|t('calendar', {view: currentView|t('calendar')|ucfirst}) %}
 
 {% block content %}
 
@@ -12,7 +12,7 @@
         <div class="alert alert-info alert-dismissible">
             <a class="close" data-icon="remove"></a>
 
-            {{ 'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>'|t({link: url('calendar/settings/demo-templates')})|raw }}
+            {{ 'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>'|t('calendar', {link: url('calendar/settings/demo-templates')})|raw }}
         </div>
     {% endif %}
 
@@ -52,7 +52,7 @@
 
     <div id="event-creator">
         {{ forms.textField({
-            label: "Title"|t,
+            label: "Title"|t('calendar'),
             id: 'title',
             name: 'title',
             first: true,
@@ -60,17 +60,17 @@
         }) }}
 
         {{ forms.selectField({
-            label: "Calendar"|t,
+            label: "Calendar"|t('calendar'),
             name: 'calendarId',
             options: calendarOptions,
             required: true,
         }) }}
 
-        {{ dateTimeField('startDate', 'Start Date'|t, dateFormat, timeFormat) }}
-        {{ dateTimeField('endDate', 'End Date'|t, dateFormat, timeFormat) }}
+        {{ dateTimeField('startDate', 'Start Date'|t('calendar'), dateFormat, timeFormat) }}
+        {{ dateTimeField('endDate', 'End Date'|t('calendar'), dateFormat, timeFormat) }}
 
         {{ forms.lightswitchField({
-            label: "All Day"|t,
+            label: "All Day"|t('calendar'),
             name: 'allDay',
             on: false,
         }) }}
@@ -78,8 +78,8 @@
         <ul class="errors"></ul>
 
         <div class="buttons">
-            <button type="button" class="btn small submit">{{ 'Save'|t }}</button>
-            <button type="button" class="btn small delete">{{ 'Cancel'|t }}</button>
+            <button type="button" class="btn small submit">{{ 'Save'|t('calendar') }}</button>
+            <button type="button" class="btn small delete">{{ 'Cancel'|t('calendar') }}</button>
         </div>
     </div>
 
@@ -111,9 +111,9 @@
         <nav>
             <ul class="calendar-list">
                 <li class="heading">
-                    <a href="#" class="sel" style="display: none;">{{ "Calendars"|t }}</a>
+                    <a href="#" class="sel" style="display: none;">{{ "Calendars"|t('calendar') }}</a>
                     <span>
-                        {{ "Calendars"|t }}
+                        {{ "Calendars"|t('calendar') }}
                     </span>
                 </li>
                 {% for id, calendar in craft.calendar.calendars %}

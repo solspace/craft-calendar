@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use craft\base\Component;
 use craft\db\Query;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Records\ExceptionRecord;
 
@@ -92,9 +93,16 @@ class ExceptionsService extends Component
             ->execute();
 
         foreach ($exceptions as $exceptionDate) {
+            $exceptionDate = preg_replace('/^(\d{4}\-\d{2}\-\d{2}).*/', '$1', $exceptionDate);
+
             $exceptionRecord          = new ExceptionRecord();
             $exceptionRecord->eventId = $event->id;
-            $exceptionRecord->date    = new \DateTime($exceptionDate);
+            $exceptionRecord->date    = Carbon::createFromFormat(
+                'Y-m-d',
+                $exceptionDate,
+                DateHelper::UTC
+            )
+            ->setTime(0, 0, 0);
 
             $exceptionRecord->save();
         }

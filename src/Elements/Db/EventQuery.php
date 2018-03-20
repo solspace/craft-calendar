@@ -1043,11 +1043,15 @@ class EventQuery extends ElementQuery implements \Countable
             return $value;
         }
 
-        if ($value instanceof \DateTime) {
-            return Carbon::createFromTimestampUTC($value->getTimestamp());
+        if (!$value instanceof \DateTime) {
+            $value = new \DateTime($value);
         }
 
-        return new Carbon($value, DateHelper::UTC);
+        return Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            $value->format('Y-m-d H:i:s'),
+            DateHelper::UTC
+        );
     }
 
     /**

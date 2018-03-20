@@ -35,7 +35,7 @@
     {% from _self import dateTimeField %}
 
     {#{{ forms.selectField({#}
-        {#label: "Calendar"|t,#}
+        {#label: "Calendar"|t('calendar'),#}
         {#name: name~'[calendarId]',#}
         {#value: event.calendarId,#}
         {#options: calendarOptions,#}
@@ -45,14 +45,14 @@
 
     <ul class="cal-group field">
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'startDate', 'startDate', 'Start Date'|t, name, dateFormat, timeFormat) }}
+            {{ dateTimeField(event, 'startDate', 'startDate', 'Start Date'|t('calendar'), name, dateFormat, timeFormat) }}
         </li>
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'endDate', 'endDate', 'End Date'|t, name, dateFormat, timeFormat) }}
+            {{ dateTimeField(event, 'endDate', 'endDate', 'End Date'|t('calendar'), name, dateFormat, timeFormat) }}
         </li>
         <li class="event-all-day">
             {{ forms.lightswitchField({
-                label: "All Day"|t,
+                label: "All Day"|t('calendar'),
                 name: name~'[allDay]',
                 on: event.allDay,
                 errors: event.getErrors('allDay'),
@@ -62,7 +62,7 @@
 
     <div class="recurrence-switch field">
         {{ forms.lightswitchField({
-            label: "Repeats"|t,
+            label: "Repeats"|t('calendar'),
             name: name~'[repeats]',
             class: 'event-repeats',
             on: event.repeats,
@@ -72,7 +72,7 @@
         <ul class="cal-group recurrence-choices">
             <li class="side-label event-interval">
                 {{ forms.textField({
-                    label: 'Every'|t,
+                    label: 'Every'|t('calendar'),
                     size: 3,
                     name: name~'[interval]',
                     value: event.interval ? event.interval : 1,
@@ -96,7 +96,7 @@
                                    name="{{ name }}[monthly][repeatsBy]"
                                     {{ checked }}
                                    value="byMonthDay">
-                            {{ "Each"|t }}
+                            {{ "Each"|t('calendar') }}
                         </label>
                         <label>
                             {% set checked = event.repeatsByWeekDays ? ' checked' : '' %}
@@ -104,7 +104,7 @@
                                    name="{{ name }}[monthly][repeatsBy]"
                                     {{ checked }}
                                    value="byDay">
-                            {{ "On the"|t }}
+                            {{ "On the"|t('calendar') }}
                         </label>
                         {{ forms.selectField({
                             id: 'repeatsOn',
@@ -120,7 +120,7 @@
                                    name="{{ name }}[yearly][repeatsBy]"
                                     {{ event.repeatsOnRule != 0 ? 'checked' : '' }}
                                    value="byDay">
-                            {{ "On the"|t }}
+                            {{ "On the"|t('calendar') }}
                         </label>
                         {{ forms.selectField({
                             id: 'repeatsOn',
@@ -191,13 +191,13 @@
 
         <div class="until-switch field">
             {{ forms.selectField({
-                label: 'End repeat'|t,
+                label: 'End repeat'|t('calendar'),
                 name: name~'[untilType]',
                 id: 'untilChoice',
                 options: {
-                    'forever': "Never ends"|t,
-                    'until': "On date"|t,
-                    'count': "After"|t
+                    'forever': "Never ends"|t('calendar'),
+                    'until': "On date"|t('calendar'),
+                    'count': "After"|t('calendar')
                 },
                 errors: event.getErrors('untilType'),
                 value: event.untilType
@@ -214,7 +214,7 @@
                         placeholder: '1',
                     }) }}
 
-                    <label>{{ "times"|t }}</label>
+                    <label>{{ "times"|t('calendar') }}</label>
                 </li>
                 <li class="side-label until-date">
                     {{ forms.dateField({
@@ -231,7 +231,7 @@
 
         <div class="exception-dates-wrapper">
             {{ forms.dateField({
-                label: 'Except on'|t,
+                label: 'Except on'|t('calendar'),
                 id: name~'exceptionDate',
                 name: name~'[exceptionDate]',
                 class: 'event-exception-date',
@@ -239,7 +239,7 @@
             }) }}
 
             <ul class="exception-list date-list"
-                data-delete-confirm="{{ "Are you sure?"|t }}">
+                data-delete-confirm="{{ "Are you sure?"|t('calendar') }}">
                 {% for exception in event.exceptions %}
                     <li>
                         <a></a>
@@ -252,7 +252,7 @@
 
         <div class="select-dates-wrapper">
             {{ forms.dateField({
-                label: 'On select dates'|t,
+                label: 'On select dates'|t('calendar'),
                 id: name~'selectDate',
                 name: name~'[selectDate]',
                 class: 'event-select-date',
@@ -260,7 +260,7 @@
             }) }}
 
             <ul class="select-date-list date-list"
-                data-delete-confirm="{{ "Are you sure?"|t }}">
+                data-delete-confirm="{{ "Are you sure?"|t('calendar') }}">
                 {% for selectDate in event.selectDates %}
                     <li>
                         <a></a>

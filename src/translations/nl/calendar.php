@@ -162,6 +162,13 @@ $calendars = array(
 
     'Are you sure you want to enable ICS sharing for this calendar?'  => 'Are you sure you want to enable ICS sharing for this calendar?',
     'Are you sure you want to disable ICS sharing for this calendar?' => 'Are you sure you want to disable ICS sharing for this calendar?',
+
+    'Choose which sites this calendar should be available in, and configure the site-specific settings.'                      => 'Choose which sites this calendar should be available in, and configure the site-specific settings.',
+    'Event URI Format'                                                                                                        => 'Event URI Format',
+    'What event URIs should look like for the site. Leave blank if events don’t have URLs.'                                   => 'What event URIs should look like for the site. Leave blank if events don’t have URLs.',
+    'Leave blank if events don’t have URLs'                                                                                   => 'Leave blank if events don’t have URLs',
+    'Which template should be loaded when an event’s URL is requested.'                                                       => 'Which template should be loaded when an event’s URL is requested.',
+    'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.' => 'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.',
 );
 
 $demoTemplates = array(
@@ -205,6 +212,10 @@ $settings = array(
     'Allow new events to be created in Month/Week/Day views?'                                                                                                                                                         => 'Allow new events to be created in Month/Week/Day views?',
     'Allows all users with event creation privileges to use the Quick Create event feature.'                                                                                                                          => 'Allows all users with event creation privileges to use the Quick Create event feature.',
     'You don’t have permission to access Calendar Settings.'                                                                                                                                                          => 'Je hebt geen rechten om de instellingen van Calendar te wijzigen.',
+    'Allow Guest Access on Front End?'                                                                                                                                                                                => 'Allow Guest Access on Front End?',
+    'Enable this to allow guests to post events to specific calendars on the front end.'                                                                                                                              => 'Enable this to allow guests to post events to specific calendars on the front end.',
+    'Allowed Calendars'                                                                                                                                                                                               => 'Allowed Calendars',
+    'Select which calendars Guests should have access to create events for on the front end.'                                                                                                                         => 'Select which calendars Guests should have access to create events for on the front end.',
 
     'License'          => 'Licentie',
     'Event Settings'   => 'Evenementinstellingen',

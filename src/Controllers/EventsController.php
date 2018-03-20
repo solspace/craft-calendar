@@ -7,6 +7,7 @@ use craft\elements\User;
 use craft\events\ElementEvent;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
@@ -186,12 +187,24 @@ class EventsController extends BaseController
             CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
         }
 
+        $dateFormat = \Craft::$app->locale->getDateFormat('short', Locale::FORMAT_PHP);
+        $timeFormat = \Craft::$app->locale->getTimeFormat('short', Locale::FORMAT_PHP);
+        $format     = "$dateFormat $timeFormat";
+
         if (isset($values['startDate'])) {
-            $event->startDate = new Carbon($values['startDate']['date'] . ' ' . $values['startDate']['time'], DateHelper::UTC);
+            $event->startDate = Carbon::createFromFormat(
+                $format,
+                $values['startDate']['date'] . ' ' . $values['startDate']['time'],
+                DateHelper::UTC
+            );
         }
 
         if (isset($values['endDate'])) {
-            $event->endDate = new Carbon($values['endDate']['date'] . ' ' . $values['endDate']['time'], DateHelper::UTC);
+            $event->endDate = Carbon::createFromFormat(
+                $format,
+                $values['endDate']['date'] . ' ' . $values['endDate']['time'],
+                DateHelper::UTC
+            );
         }
 
         if (isset($values['allDay'])) {
@@ -469,7 +482,7 @@ class EventsController extends BaseController
         $event->title          = $request->getBodyParam('title', $event->title);
 
         $event->fieldLayoutId = null;
-        $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
+        $fieldsLocation       = $request->getParam('fieldsLocation', 'fields');
         $event->setFieldValuesFromRequest($fieldsLocation);
 
         $authorId = \Craft::$app->getRequest()->getBodyParam('author', ($event->authorId ?: \Craft::$app->getUser()->getIdentity()->id));
@@ -524,7 +537,7 @@ class EventsController extends BaseController
 
         if (isset($values['exceptions'])) {
             foreach ($values['exceptions'] as $date) {
-                $exception = new ExceptionModel();
+                $exception          = new ExceptionModel();
                 $exception->eventId = $event->id;
                 $exception->date    = new Carbon($date, DateHelper::UTC);
 
@@ -534,7 +547,7 @@ class EventsController extends BaseController
 
         if (isset($values['selectDates'])) {
             foreach ($values['selectDates'] as $date) {
-                $selectDate = new SelectDateModel();
+                $selectDate          = new SelectDateModel();
                 $selectDate->eventId = $event->id;
                 $selectDate->date    = new Carbon($date, DateHelper::UTC);
 
@@ -649,7 +662,11 @@ class EventsController extends BaseController
         if ($untilType === Event::UNTIL_TYPE_UNTIL) {
             $until = null;
             if (isset($postedValues['untilDate']['date']) && $postedValues['untilDate']['date']) {
-                $until = new Carbon($postedValues['untilDate']['date'], DateHelper::UTC);
+                $until = Carbon::createFromFormat(
+                    \Craft::$app->locale->getDateFormat('short', Locale::FORMAT_PHP),
+                    $postedValues['untilDate']['date'],
+                    DateHelper::UTC
+                );
                 $until->setTime(23, 59, 59);
                 $event->until = $until;
             } else {

@@ -3,10 +3,12 @@
 {% set pageTitle = "Event" %}
 {% set page = "edit" %}
 
-{% block content %}
+{% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
+{% set dateFormatJs = craft.app.locale.getDateFormat('short', 'jui') %}
+{% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
+{% set timeFormatJs = craft.app.locale.getTimeFormat('short', 'jui') %}
 
-    {% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
-    {% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
+{% block content %}
 
     {# Acquire URL segments #}
     {% set baseUrlSegments = 1 %}
@@ -45,7 +47,7 @@
                     <form class="form-horizontal" method="post">
                         {{ csrfInput() }}
                         <input type="hidden" name="action" value="calendar/events/save-event" />
-                        <input type="hidden" name="redirect" value="{{ siteUrl }}demo/event/{id}" />
+                        <input type="hidden" name="redirect" value="{{ (siteUrl~"demo/event/{id}")|hash }}" />
                         <input type="hidden" name="eventId" value="{{ event.id }}" />
                         <input type="hidden" name="slug" value="{{ event.slug }}" />
 
@@ -99,7 +101,7 @@
                                     </div>
                                     <div class="col-md-2 col-xs-4" data-not-all-day>
                                         <input type="text"
-                                               value="{{ event.startDate.format('H:i')|default }}"
+                                               value="{{ event.startDate.format(timeFormat)|default }}"
                                                name="calendarEvent[startDate][time]"
                                                placeholder="{{ timeFormat }}"
                                                class="form-control time-picker" />
@@ -121,7 +123,7 @@
                                     </div>
                                     <div class="col-md-2 col-xs-4" data-not-all-day>
                                         <input type="text"
-                                               value="{{ event.endDate.format('H:i')|default }}"
+                                               value="{{ event.endDate.format(timeFormat)|default }}"
                                                name="calendarEvent[endDate][time]"
                                                placeholder="{{ timeFormat }}"
                                                class="form-control time-picker" />
@@ -354,7 +356,7 @@
                             <div class="col-sm-2 col-xs-6" data-toggled-by="until" data-until>
                                 <input type="text"
                                        name="calendarEvent[untilDate][date]"
-                                       value="{{ event.untilDate.format(dateFormat)|default }}"
+                                       value="{{ event.until.format(dateFormat)|default }}"
                                        placeholder="{{ dateFormat }}"
                                        class="date-picker form-control" />
                             </div>
@@ -389,13 +391,13 @@
                         <div class="form-group exception-list" data-repeats data-hide-for="select_dates">
                             {% for exception in event.exceptions %}
                                 <div class="col-sm-10 col-sm-offset-2 col-xs-12">
-                                    <input type="hidden" name="calendarEvent[exceptions][]" value="{{ exception }}" />
+                                    <input type="hidden" name="calendarEvent[exceptions][]" value="{{ exception.date.toDateTimeString }}" />
                                     <a href="javascript:;"
                                        class="remove-exception"
                                        style="color: darkred; text-decoration: none; position: relative; top: 1px;">
                                         <span class="glyphicon glyphicon-remove"></span>
                                     </a>
-                                    {{ exception|date('l, F j, Y') }}
+                                    {{ exception.date|date('l, F j, Y') }}
                                 </div>
                             {% endfor %}
                         </div>
@@ -490,10 +492,9 @@
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js" integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
 
-    {% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
-
     <script>
-        var calendarTimeFormat = "{{ craft.app.locale.getTimeFormat('short', 'php') }}";
+        var dateFormat = "{{ dateFormatJs }}";
+        var timeFormat = "{{ timeFormat }}";
 
         $(function () {
             var $allDay = $("#allDay");
@@ -502,8 +503,12 @@
 
             var $toggleSwitch = $("*[data-toggle-switch]");
 
-            $(".date-picker").datepicker();
-            $(".time-picker").timepicker();
+            $(".date-picker").datepicker({
+              dateFormat: dateFormat,
+            });
+            $(".time-picker").timepicker({
+              timeFormat: timeFormat,
+            });
 
             $toggleSwitch.on({
                 click: function() {
@@ -604,7 +609,7 @@
 
             var $exceptionDate = $(".exception-date-picker");
             $exceptionDate.datepicker('option', 'onSelect', function (dateText) {
-                var date = new moment(dateText, convertDateFormatToMomentFormat("{{ dateFormat }}"));
+                var date = new moment(dateText, convertDateFormatToMomentFormat(dateFormat));
 
                 var $div = $('<div class="col-sm-10 col-sm-offset-2 col-xs-12" />');
                 var $input = $('<input />');
@@ -624,7 +629,7 @@
 
             var $selectDate = $(".select-date-picker");
             $selectDate.datepicker('option', 'onSelect', function (dateText) {
-                var date = new moment(dateText, convertDateFormatToMomentFormat("{{ dateFormat }}"));
+                var date = new moment(dateText, convertDateFormatToMomentFormat(dateFormat));
 
                 var $div = $('<div class="col-sm-10 col-sm-offset-2 col-xs-12" />');
                 var $input = $('<input />');

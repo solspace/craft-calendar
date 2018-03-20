@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Services;
 
 use craft\base\Component;
 use craft\db\Query;
+use craft\events\SiteEvent;
 use craft\queue\jobs\ResaveElements;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -552,6 +553,47 @@ class CalendarsService extends Component
         $view->setTemplateMode($oldTemplateMode);
 
         return $templateExists;
+    }
+
+    /**
+     * @param SiteEvent $event
+     *
+     * @return bool
+     */
+    public function addSiteHandler(SiteEvent $event): bool
+    {
+        $siteId = $event->site->id;
+
+        $rows      = [];
+        $calendars = $this->getAllCalendars();
+        foreach ($calendars as $calendar) {
+            $rows[] = [
+                $calendar->id,
+                $siteId,
+                0,
+                0,
+                null,
+                null,
+            ];
+        }
+
+        (new Query())
+            ->createCommand()
+            ->batchInsert(
+                CalendarSiteSettingsRecord::TABLE,
+                [
+                    'calendarId',
+                    'siteId',
+                    'enabledByDefault',
+                    'hasUrls',
+                    'uriFormat',
+                    'template',
+                ],
+                $rows
+            )
+            ->execute();
+
+        return true;
     }
 
     /**
