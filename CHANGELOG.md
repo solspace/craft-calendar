@@ -1,4 +1,10 @@
-# Solspace Freeform Changelog
+# Solspace Calendar Changelog
+
+## 2.0.0-beta.7 - 2018-03-26
+### Fixed
+- Updated Calendar to work with PostgreSQL.
+- Fixed a bug where Calendar events were not routing correctly.
+- Fixed a bug where some translations were missing in event creation UI.
 
 ## 2.0.0-beta.6 - 2018-03-20
 ### Fixed

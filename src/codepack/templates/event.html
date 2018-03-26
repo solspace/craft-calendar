@@ -40,7 +40,9 @@
                     {% set occurrenceDate = segment3~"-"~segment4~"-"~segment5 %}
                 {% endif %}
 
-                {% set event = craft.calendar.event(segment2, {targetDate: occurrenceDate}) %}
+                {% if event is not defined %}
+                    {% set event = craft.calendar.event(segment2, {targetDate: occurrenceDate}) %}
+                {% endif %}
 
                 {% if event %}
 

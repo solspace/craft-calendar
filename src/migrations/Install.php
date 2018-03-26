@@ -66,6 +66,7 @@ class Install extends StreamlinedInstallMigration
                 ->addForeignKey('id', 'elements', 'id', ForeignKey::CASCADE)
                 ->addForeignKey('calendarId', 'calendar_calendars', 'id', ForeignKey::CASCADE)
                 ->addForeignKey('authorId', 'users', 'id', ForeignKey::SET_NULL)
+                ->addIndex(['id'], true)
                 ->addIndex(['calendarId'])
                 ->addIndex(['authorId'])
                 ->addIndex(['startDate'])
@@ -78,14 +79,14 @@ class Install extends StreamlinedInstallMigration
                 ->addField('date', $this->dateTime()->notNull())
                 ->addField('eventId', $this->integer()->notNull())
                 ->addForeignKey('eventId', 'calendar_events', 'id', ForeignKey::CASCADE)
-                ->addIndex(['eventId', 'date']),
+                ->addIndex(['eventId', 'date'], false, 'exceptions_'),
 
             (new Table('calendar_select_dates'))
                 ->addField('id', $this->primaryKey())
                 ->addField('date', $this->dateTime()->notNull())
                 ->addField('eventId', $this->integer()->notNull())
                 ->addForeignKey('eventId', 'calendar_events', 'id', ForeignKey::CASCADE)
-                ->addIndex(['eventId', 'date']),
+                ->addIndex(['eventId', 'date'], false, 'select_dates_'),
         ];
     }
 }

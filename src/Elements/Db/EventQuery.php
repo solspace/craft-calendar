@@ -451,46 +451,46 @@ class EventQuery extends ElementQuery implements \Countable
                 $this->join = [];
             }
 
-            $this->join[] = ['INNER JOIN', $calendarTable, "$calendarTable.id = $table.calendarId"];
+            $this->join[] = ['INNER JOIN', $calendarTable, "$calendarTable.[[id]] = $table.[[calendarId]]"];
         }
 
         // select the price column
         $this->query->select(
             [
-                $table . '.calendarId',
-                $table . '.authorId',
-                $table . '.startDate',
-                $table . '.endDate',
-                $table . '.allDay',
-                $table . '.rrule',
-                $table . '.freq',
-                $table . '.interval',
-                $table . '.count',
-                $table . '.until',
-                $table . '.byMonth',
-                $table . '.byYearDay',
-                $table . '.byMonthDay',
-                $table . '.byDay',
-                $calendarTable . '.name',
+                $table . '.[[calendarId]]',
+                $table . '.[[authorId]]',
+                $table . '.[[startDate]]',
+                $table . '.[[endDate]]',
+                $table . '.[[allDay]]',
+                $table . '.[[rrule]]',
+                $table . '.[[freq]]',
+                $table . '.[[interval]]',
+                $table . '.[[count]]',
+                $table . '.[[until]]',
+                $table . '.[[byMonth]]',
+                $table . '.[[byYearDay]]',
+                $table . '.[[byMonthDay]]',
+                $table . '.[[byDay]]',
+                $calendarTable . '.[[name]]',
             ]
         );
 
         if ($this->calendarId) {
-            $this->subQuery->andWhere(Db::parseParam($table . '.calendarId', $this->calendarId));
+            $this->subQuery->andWhere(Db::parseParam($table . '.[[calendarId]]', $this->calendarId));
         }
 
         if ($this->calendar) {
-            $this->subQuery->andWhere(Db::parseParam($calendarTable . '.handle', $this->calendar));
+            $this->subQuery->andWhere(Db::parseParam($calendarTable . '.[[handle]]', $this->calendar));
         }
 
         if ($this->authorId) {
-            $this->subQuery->andWhere(Db::parseParam($table . '.authorId', $this->authorId));
+            $this->subQuery->andWhere(Db::parseParam($table . '.[[authorId]]', $this->authorId));
         }
 
         if ($this->startDate) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $table . '.startDate',
+                    $table . '.[[startDate]]',
                     $this->extractDateAsFormattedString($this->startDate)
                 )
             );
@@ -499,7 +499,7 @@ class EventQuery extends ElementQuery implements \Countable
         if ($this->endDate) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $table . '.endDate',
+                    $table . '.[[endDate]]',
                     $this->extractDateAsFormattedString($this->endDate)
                 )
             );
@@ -509,10 +509,10 @@ class EventQuery extends ElementQuery implements \Countable
             $rangeStartString = $this->extractDateAsFormattedString($this->rangeStart);
 
             $this->subQuery->andWhere(
-                "($table.rrule IS NULL AND $table.endDate >= :rangeStart)
-                OR ($table.rrule IS NOT NULL AND $table.until IS NOT NULL AND $table.until >= :rangeStart)
-                OR ($table.rrule IS NOT NULL AND $table.until IS NULL)
-                OR ($table.freq = :freq)",
+                "($table.[[rrule]] IS NULL AND $table.[[endDate]] >= :rangeStart)
+                OR ($table.[[rrule]] IS NOT NULL AND $table.[[until]] IS NOT NULL AND $table.[[until]] >= :rangeStart)
+                OR ($table.[[rrule]] IS NOT NULL AND $table.[[until]] IS NULL)
+                OR ($table.[[freq]] = :freq)",
                 [
                     'rangeStart' => $rangeStartString,
                     'freq'       => RecurrenceHelper::SELECT_DATES,
@@ -530,7 +530,7 @@ class EventQuery extends ElementQuery implements \Countable
             $rangeEndString = $this->extractDateAsFormattedString($rangeEnd);
 
             $this->subQuery->andWhere(
-                "$table.startDate <= :rangeEnd OR $table.freq = :freq",
+                "$table.[[startDate]] <= :rangeEnd OR $table.[[freq]] = :freq",
                 [
                     'rangeEnd' => $rangeEndString,
                     'freq'     => RecurrenceHelper::SELECT_DATES,
@@ -539,13 +539,13 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         if ($this->allDay) {
-            $this->subQuery->andWhere(Db::parseParam($table . '.allDay', (bool) $this->allDay));
+            $this->subQuery->andWhere(Db::parseParam($table . '.[[allDay]]', (bool) $this->allDay));
         }
 
         if ($this->until) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $table . '.until',
+                    $table . '.[[until]]',
                     $this->extractDateAsFormattedString($this->until)
                 )
             );
@@ -560,11 +560,11 @@ class EventQuery extends ElementQuery implements \Countable
                     Calendar::PERMISSION_EVENTS_FOR
                 );
 
-                $this->subQuery->andWhere(Db::parseParam($table . '.calendarId', $allowedCalendarIds));
+                $this->subQuery->andWhere(Db::parseParam($table . '.[[calendarId]]', $allowedCalendarIds));
             }
 
             if (!PermissionHelper::isAdmin() && Calendar::getInstance()->settings->isAuthoredEventEditOnly()) {
-                $this->subQuery->andWhere($table . '.authorId', \Craft::$app->user->id);
+                $this->subQuery->andWhere($table . '.[[authorId]]', \Craft::$app->user->id);
             }
         }
 

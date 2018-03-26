@@ -124,13 +124,26 @@ $events = array(
     'Event interval must be a positive number' => 'Event interval must be a positive number',
     'Event repeat rules not specified'         => 'Event repeat rules not specified',
 
-    'Su' => 'Su',
-    'Mo' => 'Mo',
-    'Tu' => 'Tu',
-    'We' => 'We',
-    'Th' => 'Th',
-    'Fr' => 'Fr',
-    'Sa' => 'Sa',
+    'Su' => 'Zo',
+    'Mo' => 'Ma',
+    'Tu' => 'Di',
+    'We' => 'Wo',
+    'Th' => 'Do',
+    'Fr' => 'Vr',
+    'Sa' => 'Za',
+
+    'January'   => 'Januari',
+    'February'  => 'Februari',
+    'March'     => 'Maart',
+    'April'     => 'April',
+    'May'       => 'Mei',
+    'June'      => 'Juni',
+    'July'      => 'Juli',
+    'August'    => 'Augustus',
+    'September' => 'September',
+    'October'   => 'Oktober',
+    'November'  => 'November',
+    'December'  => 'December',
 );
 
 $calendars = array(

@@ -127,7 +127,7 @@ class CalendarsService extends Component
     public function getLatestModificationDate(): string
     {
         return (new Query())
-            ->select('MAX(dateUpdated)')
+            ->select('MAX([[dateUpdated]])')
             ->from(CalendarRecord::TABLE)
             ->limit(1)
             ->scalar();
@@ -139,7 +139,7 @@ class CalendarsService extends Component
     public function getAllCalendarCount(): string
     {
         return (new Query())
-            ->select('COUNT(id)')
+            ->select('COUNT([[id]])')
             ->from(CalendarRecord::TABLE)
             ->scalar();
     }
@@ -474,22 +474,24 @@ class CalendarsService extends Component
      */
     public function getCalendarSiteSettings(int $calendarId): array
     {
+        $table = '{{%calendar_calendar_sites}}';
+
         $siteSettings = (new Query())
             ->select(
                 [
-                    '[[calendar_calendar_sites.id]]',
-                    '[[calendar_calendar_sites.calendarId]]',
-                    '[[calendar_calendar_sites.siteId]]',
-                    '[[calendar_calendar_sites.enabledByDefault]]',
-                    '[[calendar_calendar_sites.hasUrls]]',
-                    '[[calendar_calendar_sites.uriFormat]]',
-                    '[[calendar_calendar_sites.template]]',
+                    'calendar_calendar_sites.[[id]]',
+                    'calendar_calendar_sites.[[calendarId]]',
+                    'calendar_calendar_sites.[[siteId]]',
+                    'calendar_calendar_sites.[[enabledByDefault]]',
+                    'calendar_calendar_sites.[[hasUrls]]',
+                    'calendar_calendar_sites.[[uriFormat]]',
+                    'calendar_calendar_sites.[[template]]',
                 ]
             )
-            ->from(['{{%calendar_calendar_sites}} calendar_calendar_sites'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[calendar_calendar_sites.siteId]]')
-            ->where(['calendar_calendar_sites.calendarId' => $calendarId])
-            ->orderBy(['sites.sortOrder' => SORT_ASC])
+            ->from([$table . ' calendar_calendar_sites'])
+            ->innerJoin('{{%sites}} sites', 'sites.[[id]] = calendar_calendar_sites.[[siteId]]')
+            ->where(['calendar_calendar_sites.[[calendarId]]' => $calendarId])
+            ->orderBy(['sites.[[sortOrder]]' => SORT_ASC])
             ->all();
 
         foreach ($siteSettings as $key => $value) {
@@ -604,18 +606,18 @@ class CalendarsService extends Component
         return (new Query())
             ->select(
                 [
-                    'calendar.id',
-                    'calendar.name',
-                    'calendar.handle',
-                    'calendar.description',
-                    'calendar.color',
-                    'calendar.fieldLayoutId',
-                    'calendar.titleFormat',
-                    'calendar.titleLabel',
-                    'calendar.hasTitleField',
-                    'calendar.descriptionFieldHandle',
-                    'calendar.locationFieldHandle',
-                    'calendar.icsHash',
+                    'calendar.[[id]]',
+                    'calendar.[[name]]',
+                    'calendar.[[handle]]',
+                    'calendar.[[description]]',
+                    'calendar.[[color]]',
+                    'calendar.[[fieldLayoutId]]',
+                    'calendar.[[titleFormat]]',
+                    'calendar.[[titleLabel]]',
+                    'calendar.[[hasTitleField]]',
+                    'calendar.[[descriptionFieldHandle]]',
+                    'calendar.[[locationFieldHandle]]',
+                    'calendar.[[icsHash]]',
                 ]
             )
             ->from(CalendarRecord::TABLE . ' calendar')

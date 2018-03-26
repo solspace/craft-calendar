@@ -1230,6 +1230,33 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function route()
+    {
+        if (!$this->enabled) {
+            return null;
+        }
+
+        // Make sure the section is set to have URLs for this site
+        $siteId = \Craft::$app->getSites()->getCurrentSite()->id;
+        $siteSettings = $this->getCalendar()->getSiteSettingsForSite($siteId);
+
+        if (!isset($siteSettings) || !$siteSettings->hasUrls) {
+            return null;
+        }
+
+        return [
+            'templates/render', [
+                'template' => $siteSettings->template,
+                'variables' => [
+                    'event' => $this,
+                ]
+            ]
+        ];
+    }
+
+    /**
      * Parses rules like "TU,WE,FR" and returns an array of [TU, WE, FR]
      * Returns NULL if the rule string is empty
      *

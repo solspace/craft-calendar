@@ -1,21 +1,20 @@
 <?php
-    
+
 /**
  *  German translation by Lucas Bares <luke@nehemdia.de>
  *  http://luke.nehemedia.de
  *
- *  @version 1.1
- *  @last_edit 2017-03-17
+ * @version   1.1
+ * @last_edit 2017-03-17
  */
 
-$plugin = array(
+$plugin = [
     'Create full-featured calendars and recurring events with exceptions.' => 'Erstelle voll funktionsfähige Kalender mit wiederkehrenden Ereignissen.',
     'Calendar Events'                                                      => 'Calendar Ereignisse',
-);
+];
 
 
-
-$titles = array(
+$titles = [
     'Calendar'                      => 'Calendar',
     'Calendar: {view}'              => 'Calendar: {view}',
     'Calendar: Calendars'           => 'Calendar: Kalender',
@@ -32,10 +31,10 @@ $titles = array(
     'Month' => 'Monat',
     'Week'  => 'Woche',
     'Day'   => 'Tag',
-);
+];
 
 
-$widgets = array(
+$widgets = [
     // Common
     'Title'                                                       => 'Titel',
     'Customise the widget title. Leave blank for default.'        => 'Widget Titel anpassen. Für den Standardwert leer lassen.',
@@ -50,18 +49,17 @@ $widgets = array(
     'Quick Event'     => 'Schnelleintrag',
     'Mini Calendar'   => 'Mini-Kalender',
     'Upcoming Events' => 'Bevorstehende Ereignisse',
-);
+];
 
 
-$common = array(
+$common = [
     'Save and continue editing' => 'Speichern und mit dem Bearbeiten fortfahren',
     'Save and add another'      => 'Speichern und ein neues Ereignis hinzufügen',
     'Save as a new event'       => 'Als neues Ereignis speichern',
-);
+];
 
 
-
-$events = array(
+$events = [
     'Title'        => 'Titel',
     'Slug'         => 'Slug',
     'Author'       => 'Autor',
@@ -144,9 +142,22 @@ $events = array(
     'Th' => 'Do',
     'Fr' => 'Fr',
     'Sa' => 'Sa',
-);
 
-$calendars = array(
+    'January'   => 'Januar',
+    'February'  => 'Februar',
+    'March'     => 'März',
+    'April'     => 'April',
+    'May'       => 'Mai',
+    'June'      => 'Juni',
+    'July'      => 'Juli',
+    'August'    => 'August',
+    'September' => 'September',
+    'October'   => 'Oktober',
+    'November'  => 'November',
+    'December'  => 'Dezember',
+];
+
+$calendars = [
     'Name'                                                       => 'Name',
     'What this calendar will be called in the CP.'               => 'Name dieses Kalenders im Kontrollzentrum.',
     'Handle'                                                     => 'Kurzname',
@@ -182,10 +193,10 @@ $calendars = array(
     'Leave blank if events don’t have URLs'                                                                                   => 'Leave blank if events don’t have URLs',
     'Which template should be loaded when an event’s URL is requested.'                                                       => 'Which template should be loaded when an event’s URL is requested.',
     'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.' => 'What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}.',
-);
+];
 
 
-$demoTemplates = array(
+$demoTemplates = [
     'Prefix'    => 'Präfix',
     'Install'   => 'Installieren',
     'Templates' => 'Templates',
@@ -197,10 +208,10 @@ $demoTemplates = array(
     'You can view the templates <a href="{link}">here</a>'                                                                                                      => 'Sie können das Template <a href="{link}">hier</a> anschauen',
     'Install Demo'                                                                                                                                              => 'Demo installieren',
     'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Bringen Sie Calendar nur mit ein paar wenigen Klicks zum Laufen! <a href="{link}" class="alert-link">Klicken Sie hier</a> um die Demo-Templates zu installieren.',
-);
+];
 
 
-$settings = array(
+$settings = [
     'Date Overlap Threshold'                                                                                                                                                                                          => 'Datums Überlappungsgrenze',
     'Specify the amount of hours in the next day which are still considered as those of the previous day. This prevents late night events from showing up the next day for calendars in control panel and front end.' => 'Geben Sie die Anzahl der Stunden an, die noch zum Vortag gerechnet werden sollen. Dies verhindert, dass nächtliche Ereignisse auch am nächsten Tag im Kontrollzentrum angezeigt werden.',
     'Time Interval'                                                                                                                                                                                                   => 'Zeitintervall',
@@ -240,16 +251,16 @@ $settings = array(
 
     'Settings saved successfully.' => 'Die Einstellungen wurden erfolgreich gespeichert.',
     'Could not save settings.'     => 'Die Einstellungen konnten nicht gespeichert werden.',
-);
+];
 
-$permissions = array(
+$permissions = [
     '"{name}" calendar'      => '"{name}" Kalender',
     'Administrate Calendars' => 'Kalender verwalten',
     'Manage events in'       => 'Ereignisse verwalten in',
     'Create Calendars'       => 'Kalender erstellen',
     'Edit Calendars'         => 'Kalender editieren',
     'Delete Calendars'       => 'Kalender löschen',
-);
+];
 
 return array_merge(
     $plugin,

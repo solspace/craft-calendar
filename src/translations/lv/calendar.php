@@ -130,6 +130,19 @@ $events = array(
     'Th' => 'C',
     'Fr' => 'Pk',
     'Sa' => 'S',
+
+    'January'   => 'Janvāris',
+    'February'  => 'Februāris',
+    'March'     => 'Marts',
+    'April'     => 'Aprīlis',
+    'May'       => 'Maijs',
+    'June'      => 'Jūnijs',
+    'July'      => 'Jūlijs',
+    'August'    => 'Augusts',
+    'September' => 'Septembris',
+    'October'   => 'Octobris',
+    'November'  => 'Novembris',
+    'December'  => 'Decembris',
 );
 
 $calendars = array(

@@ -166,7 +166,7 @@ class EventsService extends Component
     public function getLatestModificationDate(): string
     {
         return (new Query())
-            ->select(['MAX(dateUpdated)'])
+            ->select(['MAX([[dateUpdated]])'])
             ->from(Event::TABLE)
             ->limit(1)
             ->scalar();
@@ -178,7 +178,7 @@ class EventsService extends Component
     public function getAllEventCount(): int
     {
         return (int) (new Query())
-            ->select(['COUNT(id)'])
+            ->select(['COUNT([[id]])'])
             ->from(Event::TABLE)
             ->scalar();
     }
@@ -298,15 +298,15 @@ class EventsService extends Component
         $elementRows = (new Query())
             ->select(['ei18n.*'])
             ->from('{{%elements_sites}} ei18n')
-            ->innerJoin(Event::TABLE . ' e', 'ei18n.elementId = e.id')
-            ->where(['ei18n.siteId' => $primarySiteId])
+            ->innerJoin(Event::TABLE . ' e', 'ei18n.[[elementId]] = e.id')
+            ->where(['ei18n.[[siteId]]' => $primarySiteId])
             ->all();
 
         $contentRows = (new Query())
             ->select(['c.*'])
             ->from('{{%content}} c')
-            ->innerJoin(Event::TABLE . ' e', 'c.elementId = e.id')
-            ->where(['c.siteId' => $primarySiteId])
+            ->innerJoin(Event::TABLE . ' e', 'c.[[elementId]] = e.id')
+            ->where(['c.[[siteId]]' => $primarySiteId])
             ->all();
 
         $elementDataById = [];

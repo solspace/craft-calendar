@@ -2,7 +2,7 @@
 
 Calendar is the most powerful event management and calendaring plugin on the market for Craft CMS. The intuitive interface allows you to create events with complex recurring event rules and exclusions, while the flexible templating offers a variety of options to satisfy your calendaring needs.
 
-🚨 **IMPORTANT:** *Calendar is becoming more stable now, but we still don't yet recommend using in production environments. If you do use Calendar, please take caution and always backup your site before upgrading, etc. 🐛 Any issues can be reported on [GitHub Issues](https://github.com/solspace/craft3-calendar/issues) only please.* 🚨
+🚨 **IMPORTANT:** *Calendar has become more stable now, but please take caution if using in production environments. Always backup your site before upgrading, etc. 🐛 Any issues during the beta should only be reported on [GitHub Issues](https://github.com/solspace/craft3-calendar/issues) please.* 🚨
 
 ![Screenshot](src/icon.svg)
 
