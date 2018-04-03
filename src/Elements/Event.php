@@ -239,7 +239,7 @@ class Event extends Element implements \JsonSerializable
     {
         $sortOptions = parent::defineSortOptions();
 
-        $keys = array_keys($sortOptions);
+        $keys                                        = array_keys($sortOptions);
         $keys[array_search('calendar', $keys, true)] = 'name';
 
         return array_combine($keys, $sortOptions);
@@ -1239,7 +1239,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         // Make sure the section is set to have URLs for this site
-        $siteId = \Craft::$app->getSites()->getCurrentSite()->id;
+        $siteId       = \Craft::$app->getSites()->getCurrentSite()->id;
         $siteSettings = $this->getCalendar()->getSiteSettingsForSite($siteId);
 
         if (!isset($siteSettings) || !$siteSettings->hasUrls) {
@@ -1247,12 +1247,13 @@ class Event extends Element implements \JsonSerializable
         }
 
         return [
-            'templates/render', [
-                'template' => $siteSettings->template,
+            'templates/render',
+            [
+                'template'  => $siteSettings->template,
                 'variables' => [
                     'event' => $this,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 

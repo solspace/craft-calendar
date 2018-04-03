@@ -2,7 +2,7 @@
 
 <div class="calendar-event-wrapper">
 
-    {% macro dateTimeField(event, fieldName, attribute, label, name, datePlaceholder, timePlaceholder) %}
+    {% macro dateTimeField(event, fieldName, attribute, label, name) %}
 
         {% import "_includes/forms" as forms %}
         {% import "calendar/field" as calendarFields %}
@@ -12,14 +12,12 @@
                 id:          name~fieldName,
                 name:        name~'['~fieldName~']',
                 value:       attribute(event, attribute),
-                placeholder: datePlaceholder,
             }) }}
 
             {{ calendarFields.time({
                 id:          name~fieldName,
                 name:        name~'['~fieldName~']',
                 value:       attribute(event, attribute),
-                placeholder: timePlaceholder,
             }) }}
         {% endset %}
 
@@ -45,10 +43,10 @@
 
     <ul class="cal-group field">
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'startDate', 'startDate', 'Start Date'|t('calendar'), name, dateFormat, timeFormat) }}
+            {{ dateTimeField(event, 'startDate', 'startDate', 'Start Date'|t('calendar'), name) }}
         </li>
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'endDate', 'endDate', 'End Date'|t('calendar'), name, dateFormat, timeFormat) }}
+            {{ dateTimeField(event, 'endDate', 'endDate', 'End Date'|t('calendar'), name) }}
         </li>
         <li class="event-all-day">
             {{ forms.lightswitchField({
@@ -223,7 +221,6 @@
                         class: 'event-until-date',
                         value: event.until,
                         errors: event.getErrors('untilDate'),
-                        placeholder: dateFormat,
                     }) }}
                 </li>
             </ul>
@@ -235,7 +232,6 @@
                 id: name~'exceptionDate',
                 name: name~'[exceptionDate]',
                 class: 'event-exception-date',
-                placeholder: dateFormat,
             }) }}
 
             <ul class="exception-list date-list"
@@ -256,7 +252,6 @@
                 id: name~'selectDate',
                 name: name~'[selectDate]',
                 class: 'event-select-date',
-                placeholder: dateFormat,
             }) }}
 
             <ul class="select-date-list date-list"

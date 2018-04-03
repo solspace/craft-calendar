@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 2.0.0-beta.8 - 2018-04-03
+- Fixed a bug where sorting events in control panel by Post Date would error.
+- Fixed several visual bugs in control panel.
+
 ## 2.0.0-beta.7 - 2018-03-26
 ### Fixed
 - Updated Calendar to work with PostgreSQL.

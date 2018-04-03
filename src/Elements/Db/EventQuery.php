@@ -568,6 +568,13 @@ class EventQuery extends ElementQuery implements \Countable
             }
         }
 
+        if (\is_array($this->orderBy) && isset($this->orderBy['dateCreated'])) {
+            $sortDirection = $this->orderBy['dateCreated'];
+            $this->orderBy['[[calendar_events.dateCreated]]'] = $sortDirection;
+
+            unset($this->orderBy['dateCreated']);
+        }
+
         return parent::beforePrepare();
     }
 

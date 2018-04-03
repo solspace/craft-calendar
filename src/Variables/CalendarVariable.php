@@ -15,6 +15,7 @@ use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\SettingsService;
+use yii\helpers\BaseFormatConverter;
 
 class CalendarVariable
 {
@@ -261,5 +262,60 @@ class CalendarVariable
     public function monthNames(): array
     {
         return DateHelper::getMonthNames();
+    }
+
+    /**
+     * @param string|null $format
+     *
+     * @return string
+     */
+    public function getHumanReadableDateFormat(string $format = null): string
+    {
+        if (null === $format) {
+            $format = \Craft::$app->locale->getDateFormat('short', 'php');
+        }
+
+        return $this->getHumanReadableDateTimeFormat($format);
+    }
+
+    /**
+     * @param string|null $format
+     *
+     * @return string
+     */
+    public function getHumanReadableTimeFormat(string $format = null): string
+    {
+        if (null === $format) {
+            $format = \Craft::$app->locale->getTimeFormat('short', 'php');
+        }
+
+        return $this->getHumanReadableDateTimeFormat($format);
+    }
+
+    /**
+     * @param string|null $format
+     *
+     * @return string
+     */
+    public function getHumanReadableDateTimeFormat(string $format = null): string
+    {
+        if (null === $format) {
+            $format = \Craft::$app->locale->getDateTimeFormat('short', 'php');
+        }
+
+        $replacements = [
+            'n' => 'M',
+            'm' => 'M',
+            'j' => 'D',
+            'd' => 'D',
+            'g' => 'H',
+            'h' => 'H',
+            'G' => 'H',
+            'i' => 'MM',
+            'A' => 'T',
+            'a' => 'T',
+        ];
+
+        return str_replace(array_keys($replacements), $replacements, $format);
     }
 }
