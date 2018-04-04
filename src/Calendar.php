@@ -171,7 +171,7 @@ class Calendar extends Plugin
         }
 
 
-        if (\Craft::$app->getEdition() >= \Craft::Client) {
+        if (\Craft::$app->getEdition() >= \Craft::Pro) {
             Event::on(
                 UserPermissions::class,
                 UserPermissions::EVENT_REGISTER_PERMISSIONS,

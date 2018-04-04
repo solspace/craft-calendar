@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 2.0.0-beta.9 - 2018-04-04
+### Fixed
+- Fixed a bug where Calendar would error about `Client` constant in Craft 3.0.0 GA release, as the Client edition was removed without warning.
+
 ## 2.0.0-beta.8 - 2018-04-03
 - Fixed a bug where sorting events in control panel by Post Date would error.
 - Fixed several visual bugs in control panel.
