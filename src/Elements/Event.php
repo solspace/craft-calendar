@@ -56,7 +56,13 @@ class Event extends Element implements \JsonSerializable
     public $startDate;
 
     /** @var \DateTime */
+    public $startDateLocalized;
+
+    /** @var \DateTime */
     public $endDate;
+
+    /** @var \DateTime */
+    public $endDateLocalized;
 
     /** @var bool */
     public $allDay;
@@ -76,6 +82,9 @@ class Event extends Element implements \JsonSerializable
     /** @var \DateTime */
     public $until;
 
+    /** @var \DateTime */
+    public $untilLocalized;
+
     /** @var string */
     public $byMonth;
 
@@ -87,6 +96,9 @@ class Event extends Element implements \JsonSerializable
 
     /** @var string */
     public $byDay;
+
+    /** @var int */
+    public $sortOrder;
 
     /**
      * @return EventQuery|ElementQueryInterface
@@ -213,15 +225,15 @@ class Event extends Element implements \JsonSerializable
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title'       => ['label' => Calendar::t('Title')],
-            'calendar'    => ['label' => Calendar::t('Calendar')],
-            'startDate'   => ['label' => Calendar::t('Start Date')],
-            'endDate'     => ['label' => Calendar::t('End Date')],
-            'allDay'      => ['label' => Calendar::t('All Day')],
-            'rrule'       => ['label' => Calendar::t('Repeats')],
-            'author'      => ['label' => Calendar::t('Author')],
-            'dateCreated' => ['label' => Calendar::t('Post Date')],
-            'link'        => ['label' => Calendar::t('Link'), 'icon' => 'world'],
+            'title'              => ['label' => Calendar::t('Title')],
+            'calendar'           => ['label' => Calendar::t('Calendar')],
+            'startDateLocalized' => ['label' => Calendar::t('Start Date')],
+            'endDateLocalized'   => ['label' => Calendar::t('End Date')],
+            'allDay'             => ['label' => Calendar::t('All Day')],
+            'rrule'              => ['label' => Calendar::t('Repeats')],
+            'author'             => ['label' => Calendar::t('Author')],
+            'dateCreated'        => ['label' => Calendar::t('Post Date')],
+            'link'               => ['label' => Calendar::t('Link'), 'icon' => 'world'],
         ];
 
         // Hide Author from Craft Personal/Client
@@ -285,16 +297,7 @@ class Event extends Element implements \JsonSerializable
             case 'author':
                 $author = $this->getAuthor();
 
-                if ($author) {
-                    return \Craft::$app->view->render(
-                        '_elements/element',
-                        [
-                            'element' => $author,
-                        ]
-                    );
-                }
-
-                return '';
+                return $author ? \Craft::$app->view->renderTemplate('_elements/element', ['element' => $author]) : '';
 
             case 'calendar':
                 return sprintf(
@@ -346,10 +349,13 @@ class Event extends Element implements \JsonSerializable
     {
         parent::__construct($config);
 
-        $this->startDate = new Carbon($this->startDate, DateHelper::UTC);
-        $this->endDate   = new Carbon($this->endDate, DateHelper::UTC);
+        $this->startDate          = new Carbon($this->startDate, DateHelper::UTC);
+        $this->startDateLocalized = new Carbon($this->startDate);
+        $this->endDate            = new Carbon($this->endDate, DateHelper::UTC);
+        $this->endDateLocalized   = new Carbon($this->endDate);
         if (null !== $this->until) {
-            $this->until = new Carbon($this->until, DateHelper::UTC);
+            $this->until          = new Carbon($this->until, DateHelper::UTC);
+            $this->untilLocalized = new Carbon($this->until);
         }
     }
 
@@ -717,9 +723,25 @@ class Event extends Element implements \JsonSerializable
     /**
      * @return Carbon
      */
+    public function getStartDateLocalized(): Carbon
+    {
+        return $this->startDateLocalized;
+    }
+
+    /**
+     * @return Carbon
+     */
     public function getEndDate(): Carbon
     {
         return $this->endDate;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getEndDateLocalized(): Carbon
+    {
+        return $this->endDateLocalized;
     }
 
     /**
@@ -728,6 +750,14 @@ class Event extends Element implements \JsonSerializable
     public function getUntil()
     {
         return $this->until;
+    }
+
+    /**
+     * @return Carbon|null
+     */
+    public function getUntilLocalized()
+    {
+        return $this->untilLocalized;
     }
 
     /**

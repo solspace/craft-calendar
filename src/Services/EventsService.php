@@ -292,6 +292,10 @@ class EventsService extends Component
      */
     public function addSiteHandler(SiteEvent $event): bool
     {
+        if (!$event->isNew) {
+            return true;
+        }
+
         $siteId        = $event->site->id;
         $primarySiteId = \Craft::$app->sites->getPrimarySite()->id;
 

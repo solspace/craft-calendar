@@ -101,127 +101,18 @@ class Calendar extends Plugin
     {
         parent::init();
 
-        if (!\Craft::$app->request->isConsoleRequest) {
-            $this->controllerMap = [
-                'api'        => ApiController::class,
-                'codepack'   => CodePackController::class,
-                'calendars'  => CalendarsController::class,
-                'events-api' => EventsApiController::class,
-                'events'     => EventsController::class,
-                'settings'   => SettingsController::class,
-                'view'       => ViewController::class,
-            ];
-        }
+        $this->initControllers();
+        $this->initServices();
+        $this->initRoutes();
+        $this->initTemplateVariables();
+        $this->initWidgets();
+        $this->initFieldTypes();
+        $this->initEventListeners();
+        $this->initPermissions();
 
-        $this->setComponents(
-            [
-                'calendars'   => CalendarsService::class,
-                'events'      => EventsService::class,
-                'exceptions'  => ExceptionsService::class,
-                'selectDates' => SelectDatesService::class,
-                'settings'    => SettingsService::class,
-                'viewData'    => ViewDataService::class,
-            ]
-        );
-
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                $routes       = include __DIR__ . '/routes.php';
-                $event->rules = array_merge($event->rules, $routes);
-            }
-        );
-
-        Event::on(
-            CraftVariable::class,
-            CraftVariable::EVENT_INIT,
-            function (Event $event) {
-                $event->sender->set('calendar', CalendarVariable::class);
-            }
-        );
-
-        Event::on(
-            Dashboard::class,
-            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                $event->types[] = AgendaWidget::class;
-                $event->types[] = EventWidget::class;
-                $event->types[] = MonthWidget::class;
-                $event->types[] = UpcomingEventsWidget::class;
-            }
-        );
-
-        Event::on(
-            Fields::class,
-            Fields::EVENT_REGISTER_FIELD_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                $event->types[] = EventFieldType::class;
-            }
-        );
-
-        // craft()->on('i18n.onAddLocale', [craft()->calendar_events, 'addLocaleHandler']);
-        // craft()->on('i18n.onAddLocale', [craft()->calendar_calendars, 'addLocaleHandler']);
-
-        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->events, 'addSiteHandler']);
-        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->calendars, 'addSiteHandler']);
-
-        if (\Craft::$app->request->getIsCpRequest() && \Craft::$app->getUser()->getId()) {
+        if (\Craft::$app->request->getIsCpRequest()) {
             \Craft::$app->view->registerTranslations(self::TRANSLATION_CATEGORY, self::$javascriptTranslationKeys);
         }
-
-
-        if (\Craft::$app->getEdition() >= \Craft::Pro) {
-            Event::on(
-                UserPermissions::class,
-                UserPermissions::EVENT_REGISTER_PERMISSIONS,
-                function (RegisterUserPermissionsEvent $event) {
-                    $calendars = $this->calendars->getAllCalendars();
-
-                    $editEventsPermissions = [
-                        self::PERMISSION_EVENTS_FOR_ALL => [
-                            'label' => self::t('All calendars'),
-                        ],
-                    ];
-                    foreach ($calendars as $calendar) {
-                        $suffix = ':' . $calendar->id;
-
-                        $editEventsPermissions[self::PERMISSION_EVENTS_FOR . $suffix] = [
-                            'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
-                        ];
-                    }
-
-                    $event->permissions[$this->name] = [
-                        self::PERMISSION_CALENDARS => [
-                            'label'  => self::t('Administrate Calendars'),
-                            'nested' => [
-                                self::PERMISSION_CREATE_CALENDARS => [
-                                    'label' => self::t(
-                                        'Create Calendars'
-                                    ),
-                                ],
-                                self::PERMISSION_EDIT_CALENDARS   => [
-                                    'label' => self::t(
-                                        'Edit Calendars'
-                                    ),
-                                ],
-                                self::PERMISSION_DELETE_CALENDARS => [
-                                    'label' => self::t(
-                                        'Delete Calendars'
-                                    ),
-                                ],
-                            ],
-                        ],
-                        self::PERMISSION_EVENTS    => [
-                            'label'  => self::t('Manage events in'),
-                            'nested' => $editEventsPermissions,
-                        ],
-                        self::PERMISSION_SETTINGS  => ['label' => self::t('Settings')],
-                    ];
-                }
-            );
-        }
-
 
         if (\Craft::$app->request->getIsSiteRequest()) {
             $extension = new CalendarTwigExtension();
@@ -313,5 +204,142 @@ class Calendar extends Plugin
                 'settings' => $this->getSettings(),
             ]
         );
+    }
+
+    private function initControllers()
+    {
+        if (!\Craft::$app->request->isConsoleRequest) {
+            $this->controllerMap = [
+                'api'        => ApiController::class,
+                'codepack'   => CodePackController::class,
+                'calendars'  => CalendarsController::class,
+                'events-api' => EventsApiController::class,
+                'events'     => EventsController::class,
+                'settings'   => SettingsController::class,
+                'view'       => ViewController::class,
+            ];
+        }
+    }
+
+    private function initServices()
+    {
+        $this->setComponents(
+            [
+                'calendars'   => CalendarsService::class,
+                'events'      => EventsService::class,
+                'exceptions'  => ExceptionsService::class,
+                'selectDates' => SelectDatesService::class,
+                'settings'    => SettingsService::class,
+                'viewData'    => ViewDataService::class,
+            ]
+        );
+    }
+
+    private function initRoutes()
+    {
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                $routes       = include __DIR__ . '/routes.php';
+                $event->rules = array_merge($event->rules, $routes);
+            }
+        );
+    }
+
+    private function initTemplateVariables()
+    {
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function (Event $event) {
+                $event->sender->set('calendar', CalendarVariable::class);
+            }
+        );
+    }
+
+    private function initWidgets()
+    {
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = AgendaWidget::class;
+                $event->types[] = EventWidget::class;
+                $event->types[] = MonthWidget::class;
+                $event->types[] = UpcomingEventsWidget::class;
+            }
+        );
+    }
+
+    private function initFieldTypes()
+    {
+        Event::on(
+            Fields::class,
+            Fields::EVENT_REGISTER_FIELD_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = EventFieldType::class;
+            }
+        );
+    }
+
+    private function initEventListeners()
+    {
+        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->events, 'addSiteHandler']);
+        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->calendars, 'addSiteHandler']);
+    }
+
+    private function initPermissions()
+    {
+        if (\Craft::$app->getEdition() >= \Craft::Pro) {
+            Event::on(
+                UserPermissions::class,
+                UserPermissions::EVENT_REGISTER_PERMISSIONS,
+                function (RegisterUserPermissionsEvent $event) {
+                    $calendars = $this->calendars->getAllCalendars();
+
+                    $editEventsPermissions = [
+                        self::PERMISSION_EVENTS_FOR_ALL => [
+                            'label' => self::t('All calendars'),
+                        ],
+                    ];
+                    foreach ($calendars as $calendar) {
+                        $suffix = ':' . $calendar->id;
+
+                        $editEventsPermissions[self::PERMISSION_EVENTS_FOR . $suffix] = [
+                            'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
+                        ];
+                    }
+
+                    $event->permissions[$this->name] = [
+                        self::PERMISSION_CALENDARS => [
+                            'label'  => self::t('Administrate Calendars'),
+                            'nested' => [
+                                self::PERMISSION_CREATE_CALENDARS => [
+                                    'label' => self::t(
+                                        'Create Calendars'
+                                    ),
+                                ],
+                                self::PERMISSION_EDIT_CALENDARS   => [
+                                    'label' => self::t(
+                                        'Edit Calendars'
+                                    ),
+                                ],
+                                self::PERMISSION_DELETE_CALENDARS => [
+                                    'label' => self::t(
+                                        'Delete Calendars'
+                                    ),
+                                ],
+                            ],
+                        ],
+                        self::PERMISSION_EVENTS    => [
+                            'label'  => self::t('Manage events in'),
+                            'nested' => $editEventsPermissions,
+                        ],
+                        self::PERMISSION_SETTINGS  => ['label' => self::t('Settings')],
+                    ];
+                }
+            );
+        }
     }
 }

@@ -233,6 +233,26 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
+     * @param Carbon|string $rangeStart
+     *
+     * @return EventQuery
+     */
+    public function setDateRangeStart($rangeStart = null): EventQuery
+    {
+        return $this->setRangeStart($rangeStart);
+    }
+
+    /**
+     * @param Carbon|string $rangeEnd
+     *
+     * @return EventQuery
+     */
+    public function setDateRangeEnd($rangeEnd = null): EventQuery
+    {
+        return $this->setRangeEnd($rangeEnd);
+    }
+
+    /**
      * @param bool $loadOccurrences
      *
      * @return EventQuery
@@ -437,11 +457,16 @@ class EventQuery extends ElementQuery implements \Countable
         // join in the products table
         $this->joinElementTable($table);
         $hasCalendarsJoined = false;
+        $hasRelations = false;
 
         if (!empty($this->join)) {
             foreach ($this->join as $join) {
                 if ($join[1] === $calendarTable) {
                     $hasCalendarsJoined = true;
+                }
+
+                if ($join[1] === '{{%relations}} relations') {
+                    $hasRelations = true;
                 }
             }
         }
@@ -454,9 +479,7 @@ class EventQuery extends ElementQuery implements \Countable
             $this->join[] = ['INNER JOIN', $calendarTable, "$calendarTable.[[id]] = $table.[[calendarId]]"];
         }
 
-        // select the price column
-        $this->query->select(
-            [
+        $select = [
                 $table . '.[[calendarId]]',
                 $table . '.[[authorId]]',
                 $table . '.[[startDate]]',
@@ -472,8 +495,14 @@ class EventQuery extends ElementQuery implements \Countable
                 $table . '.[[byMonthDay]]',
                 $table . '.[[byDay]]',
                 $calendarTable . '.[[name]]',
-            ]
-        );
+            ];
+
+        if ($hasRelations) {
+            $select[] = '[[relations.sortOrder]]';
+        }
+
+        // select the price column
+        $this->query->select($select);
 
         if ($this->calendarId) {
             $this->subQuery->andWhere(Db::parseParam($table . '.[[calendarId]]', $this->calendarId));
@@ -899,6 +928,10 @@ class EventQuery extends ElementQuery implements \Countable
     {
         $modifier = $this->getSortModifier();
         $orderBy  = $this->getOrderByField() ?? 'startDate';
+
+        if ($orderBy === 'relations.sortOrder') {
+            $orderBy = 'sortOrder';
+        }
 
         if (false !== strpos($orderBy, '.')) {
             $orderBy = 'startDate';

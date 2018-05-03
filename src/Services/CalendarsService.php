@@ -424,7 +424,7 @@ class CalendarsService extends Component
 
             $affectedRows = \Craft::$app->db
                 ->createCommand()
-                ->delete('calendar_calendars', ['id' => $calendarId])
+                ->delete(CalendarRecord::TABLE, ['id' => $calendarId])
                 ->execute();
 
             if ($transaction !== null) {
@@ -564,6 +564,10 @@ class CalendarsService extends Component
      */
     public function addSiteHandler(SiteEvent $event): bool
     {
+        if (!$event->isNew) {
+            return true;
+        }
+
         $siteId = $event->site->id;
 
         $rows      = [];

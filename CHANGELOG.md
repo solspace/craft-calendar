@@ -1,10 +1,24 @@
 # Solspace Calendar Changelog
 
+## 2.0.0-beta.10 - 2018-05-03
+### Added
+- Added `startDateLocalized` and `endDateLocalized` workaround properties to Event object for use with `|date` filter, which is compatible with translations.
+
+### Fixed
+- Fixed a bug where deleting calendars would not work.
+- Fixed a bug where adding an Author column in Events list in CP would error.
+- Fixed a bug where references to `dateRangeStart` and `dateRangeEnd` parameters would not work because they were renamed to `rangeStart` and `rangeEnd` for Calendar 2. They are now aliased so both ways work for legacy.
+- Fixed a bug where the Calendar fieldtype (for relating events to Craft Entries) wouldn't let you reorder the events in the list (if you have more than 1).
+- Fixed a bug where the Start Date and End Date columns in the Events list in CP incorrectly showed localized dates/times.
+- Fixed a bug where Calendar's `get userID` could potentially conflict with other plugins.
+- Fixed a bug where editing Sites could trigger a Calendar error.
+
 ## 2.0.0-beta.9 - 2018-04-04
 ### Fixed
 - Fixed a bug where Calendar would error about `Client` constant in Craft 3.0.0 GA release, as the Client edition was removed without warning.
 
 ## 2.0.0-beta.8 - 2018-04-03
+### Fixed
 - Fixed a bug where sorting events in control panel by Post Date would error.
 - Fixed several visual bugs in control panel.
 
