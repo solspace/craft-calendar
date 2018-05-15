@@ -2,27 +2,28 @@
 
 Calendar is the most powerful event management and calendaring plugin on the market for Craft CMS. The intuitive interface allows you to create events with complex recurring event rules and exclusions, while the flexible templating offers a variety of options to satisfy your calendaring needs.
 
-🚨 **NOTE: Calendar has proven to be fairly stable now, but please take caution if using in production environments.** 🚨
-
 ![Screenshot](src/icon.svg)
+
 
 ## Requirements
 
 This plugin requires Craft CMS 3.0.0 or later.
 
+
 ## Installation
 
-To install the plugin, search for `Calendar` in the *Craft Plugin Store*, or install manually with the following instructions:
+To install Calendar, simply:
 
-1. Open your terminal and go to your Craft project:
+1. Go to the **Plugin Store** area inside your Craft control panel and search for *Calendar*.
+2. In the results, click on *Calendar*, and then click on the **Try** button to install a trial copy of Calendar.
+4. Try things out and if Calendar is right for your site, purchase a copy of if through the Plugin Store when you're ready!
 
-        cd /path/to/project
+Calendar can also be installed manually through Composer:
 
-2. Then tell Composer to require the plugin:
+1. Open your terminal and go to your Craft project: `cd /path/to/project`
+2. Then tell Composer to require the plugin: `composer require solspace/craft3-calendar`
+4. In the Craft control panel, go to *Settings → Plugins* and click the **Install** button for Calendar.
 
-        composer require solspace/craft3-calendar
-
-3. In the Control Panel, go to *Settings → Plugins* and click the “Install” button for **Calendar**.
 
 ## Calendar Overview
 

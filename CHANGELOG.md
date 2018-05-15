@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 2.0.0 - 2018-05-15
+### Changed
+- Nothing to report here, other than that Calendar is now officially out of beta!
+
 ## 2.0.0-beta.10 - 2018-05-03
 ### Added
 - Added `startDateLocalized` and `endDateLocalized` workaround properties to Event object for use with `|date` filter, which is compatible with translations.
