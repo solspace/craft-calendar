@@ -157,7 +157,11 @@
 
     <div id="revision-btn"
          class="btn menubtn"{% if showSites %} data-icon="world"{% endif %}>{{ event.site.name }}</div>
-    {% set baseUrl = "calendar/events/#{event.id}/" %}
+    {% if event.id %}
+        {% set baseUrl = "calendar/events/#{event.id}/" %}
+    {% else %}
+        {% set baseUrl = "calendar/events/new/#{event.calendar.handle}/" %}
+    {% endif %}
     <div class="menu">
         {% set siteGroups = craft.app.sites.getAllGroups() %}
         {% for group in siteGroups %}

@@ -66,7 +66,7 @@ class EventsController extends BaseController
         }
 
         if ($siteHandle) {
-            $site = \Craft::$app->sites->getSiteByHandle($handle);
+            $site = \Craft::$app->sites->getSiteByHandle($siteHandle);
             if (!$site) {
                 throw new HttpException(
                     404,
@@ -329,7 +329,6 @@ class EventsController extends BaseController
 
         $dateFormat = FormatConverter::convertDateIcuToPhp($dateFormat);
         $timeFormat = FormatConverter::convertDateIcuToPhp($timeFormat, 'time');
-
 
         $enabledSiteIds = null;
         if (\Craft::$app->getIsMultiSite()) {

@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 2.0.1 - 2018-05-16
+### Fixed
+- Fixed a bug where the Event UI dates and times were being localized while editing an existing event in control panel.
+- Fixed a bug where switching the Site selector while creating a new event would use the wrong CP URL path.
+
 ## 2.0.0 - 2018-05-15
 ### Changed
 - Nothing to report here, other than that Calendar is now officially out of beta!

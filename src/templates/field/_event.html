@@ -43,10 +43,10 @@
 
     <ul class="cal-group field">
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'startDate', 'startDate', 'Start Date'|t('calendar'), name) }}
+            {{ dateTimeField(event, 'startDate', 'startDateLocalized', 'Start Date'|t('calendar'), name) }}
         </li>
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'endDate', 'endDate', 'End Date'|t('calendar'), name) }}
+            {{ dateTimeField(event, 'endDate', 'endDateLocalized', 'End Date'|t('calendar'), name) }}
         </li>
         <li class="event-all-day">
             {{ forms.lightswitchField({
