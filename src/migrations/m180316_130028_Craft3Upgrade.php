@@ -4,6 +4,7 @@ namespace Solspace\Calendar\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Commons\Migrations\ForeignKey;
 use Solspace\Commons\Migrations\Table;
 
@@ -35,6 +36,14 @@ class m180316_130028_Craft3Upgrade extends Migration
         if (version_compare($version, '2.0.0-dev', '>=')) {
             return true;
         }
+
+        $this->update(
+            '{{%fields}}',
+            ['type' => EventFieldType::class],
+            ['type' => 'Calendar_Event'],
+            [],
+            false
+        );
 
         $table = (new Table('calendar_calendar_sites'))
             ->addField('id', $this->primaryKey())

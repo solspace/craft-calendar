@@ -1,5 +1,18 @@
 # Solspace Calendar Changelog
 
+## 2.0.2 - 2018-06-05
+### Added
+- Added `startsBefore`, `endsAfter`, `startsBeforeOrAt`, and `endsAfterOrAt` parameters to `calendar.events` function, for more flexibility to narrow down results.
+
+### Changed
+- Updated Symfony dependencies to avoid conflicting with other plugins.
+
+### Fixed
+- Fixed a bug where the Calendar 1.x to 2.x (Craft 2.x to 3.x) migration was not migrating the Calendar fieldtype for elements.
+- Fixed a bug where the Demo Templates installer would install duplicate routes if they already existed.
+- Fixed a bug where searching on events in the control panel was not always reliable and would sometimes error.
+- Fixed a bug where the EventQuery would not process negative limits properly.
+
 ## 2.0.1 - 2018-05-16
 ### Fixed
 - Fixed a bug where the Event UI dates and times were being localized while editing an existing event in control panel.
@@ -39,7 +52,7 @@
 
 ## 2.0.0-beta.6 - 2018-03-20
 ### Fixed
-- Actually added Calendar 1.x to 2.x (Craft 2.x to 3.x) migration path (sorry!).
+- Actually added Calendar 1.x to 2.x (Craft 2.x to 3.x) migration path.
 - Fixed a bug where Live Preview would show duplicates of some Calendar fields if the calendar layout didn't have any custom fields assigned to it.
 - Fixed a bug where the `calendar.events` function was localizing date ranges.
 - Fixed a bug where translations were not correctly being rendered in some areas.

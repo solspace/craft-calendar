@@ -42,6 +42,18 @@ class EventQuery extends ElementQuery implements \Countable
     /** @var \DateTime */
     private $endDate;
 
+    /** @var \DateTime */
+    private $startsBefore;
+
+    /** @var \DateTime */
+    private $startsBeforeOrAt;
+
+    /** @var \DateTime */
+    private $endsAfter;
+
+    /** @var \DateTime */
+    private $endsAfterOrAt;
+
     /** @var bool */
     private $allDay = false;
 
@@ -168,6 +180,54 @@ class EventQuery extends ElementQuery implements \Countable
     public function setEndDate($value = null): EventQuery
     {
         $this->endDate = $this->parseCarbon($value);
+
+        return $this;
+    }
+
+    /**
+     * @param \DateTime $startsBefore
+     *
+     * @return EventQuery
+     */
+    public function setStartsBefore($startsBefore): EventQuery
+    {
+        $this->startsBefore = $this->parseCarbon($startsBefore);
+
+        return $this;
+    }
+
+    /**
+     * @param \DateTime $startsBeforeOrAt
+     *
+     * @return EventQuery
+     */
+    public function setStartsBeforeOrAt($startsBeforeOrAt): EventQuery
+    {
+        $this->startsBeforeOrAt = $this->parseCarbon($startsBeforeOrAt);
+
+        return $this;
+    }
+
+    /**
+     * @param \DateTime $endsAfter
+     *
+     * @return EventQuery
+     */
+    public function setEndsAfter($endsAfter): EventQuery
+    {
+        $this->endsAfter = $this->parseCarbon($endsAfter);
+
+        return $this;
+    }
+
+    /**
+     * @param \DateTime $endsAfterOrAt
+     *
+     * @return EventQuery
+     */
+    public function setEndsAfterOrAt($endsAfterOrAt): EventQuery
+    {
+        $this->endsAfterOrAt = $this->parseCarbon($endsAfterOrAt);
 
         return $this;
     }
@@ -521,6 +581,46 @@ class EventQuery extends ElementQuery implements \Countable
                 Db::parseParam(
                     $table . '.[[startDate]]',
                     $this->extractDateAsFormattedString($this->startDate)
+                )
+            );
+        }
+
+        if ($this->startsBefore) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[startDate]]',
+                    $this->extractDateAsFormattedString($this->startsBefore),
+                    '<'
+                )
+            );
+        }
+
+        if ($this->startsBeforeOrAt) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[startDate]]',
+                    $this->extractDateAsFormattedString($this->startsBeforeOrAt),
+                    '<='
+                )
+            );
+        }
+
+        if ($this->endsAfter) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[endDate]]',
+                    $this->extractDateAsFormattedString($this->endsAfter),
+                    '>'
+                )
+            );
+        }
+
+        if ($this->endsAfterOrAt) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[endDate]]',
+                    $this->extractDateAsFormattedString($this->endsAfterOrAt),
+                    '>='
                 )
             );
         }
@@ -996,7 +1096,7 @@ class EventQuery extends ElementQuery implements \Countable
      */
     private function cutOffExcess(array &$array)
     {
-        if (null !== $this->limit) {
+        if ($this->limit >= 0) {
             $offset = $this->offset ?: 0;
 
             $array = \array_slice($array, $offset, $this->limit);

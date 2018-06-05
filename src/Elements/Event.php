@@ -100,6 +100,9 @@ class Event extends Element implements \JsonSerializable
     /** @var int */
     public $sortOrder;
 
+    /** @var int */
+    public $score;
+
     /**
      * @return EventQuery|ElementQueryInterface
      */
@@ -249,12 +252,23 @@ class Event extends Element implements \JsonSerializable
      */
     protected static function defineSortOptions(): array
     {
-        $sortOptions = parent::defineSortOptions();
+        return [
+            'title'          => Calendar::t('Title'),
+            'name'           => Calendar::t('Calendar'),
+            'startDate'      => Calendar::t('Start Date'),
+            'endDate'        => Calendar::t('End Date'),
+            'allDay'         => Calendar::t('All Day'),
+            'users.username' => Calendar::t('Author'),
+            'dateCreated'    => Calendar::t('Post Date'),
+        ];
+    }
 
-        $keys                                        = array_keys($sortOptions);
-        $keys[array_search('calendar', $keys, true)] = 'name';
-
-        return array_combine($keys, $sortOptions);
+    /**
+     * @return array
+     */
+    protected static function defineSearchableAttributes(): array
+    {
+        return ['id', 'title', 'startDate', 'endDate'];
     }
 
     /**

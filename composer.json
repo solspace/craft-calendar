@@ -1,7 +1,7 @@
 {
   "name": "solspace/craft3-calendar",
   "description": "The most powerful event management plugin for Craft.",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "type": "craft-plugin",
   "minimum-stability": "dev",
   "authors": [
@@ -13,9 +13,9 @@
   "require": {
     "php": ">=7.0",
     "rlanvin/php-rrule": "~1.6.0",
-    "symfony/property-access": "^3.3",
-    "symfony/finder": "^3.3",
-    "symfony/filesystem": "^3.3",
+    "symfony/property-access": "^2.8|^3.0|^4.0",
+    "symfony/finder": "^2.8|^3.0|^4.0",
+    "symfony/filesystem": "^2.8|^3.0|^4.0",
     "solspace/craft3-commons": "^1.0.8",
     "nesbot/carbon": "^1.22.1"
   },
@@ -25,7 +25,7 @@
     }
   },
   "extra": {
-    "schemaVersion": "2.0.1",
+    "schemaVersion": "2.0.2",
     "handle": "calendar",
     "class": "Solspace\\Calendar\\Calendar",
     "name": "Calendar",
