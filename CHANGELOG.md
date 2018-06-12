@@ -1,5 +1,15 @@
 # Solspace Calendar Changelog
 
+## 2.0.3 - 2018-06-12
+### Changed
+- Updated Demo Templates routes to be extension agnostic (no longer specifically include `.html` in route path).
+
+### Fixed
+- Fixed a bug where default start times would show a localized time when creating new events.
+- Fixed a bug where excluding multiple calendar ID's in the `calendar.calendars` function would not work.
+- Fixed a bug where the CP Events list page was not displaying status indicators.
+- Fixed a bug where Demo Templates would strip dashes from specified URI path.
+
 ## 2.0.2 - 2018-06-05
 ### Added
 - Added `startsBefore`, `endsAfter`, `startsBeforeOrAt`, and `endsAfterOrAt` parameters to `calendar.events` function, for more flexibility to narrow down results.

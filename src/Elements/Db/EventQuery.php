@@ -518,6 +518,7 @@ class EventQuery extends ElementQuery implements \Countable
         $this->joinElementTable($table);
         $hasCalendarsJoined = false;
         $hasRelations = false;
+        $hasUsers = false;
 
         if (!empty($this->join)) {
             foreach ($this->join as $join) {
@@ -528,6 +529,10 @@ class EventQuery extends ElementQuery implements \Countable
                 if ($join[1] === '{{%relations}} relations') {
                     $hasRelations = true;
                 }
+
+                if ($join[1] === '{{%users}}') {
+                    $hasUsers = true;
+                }
             }
         }
 
@@ -537,6 +542,14 @@ class EventQuery extends ElementQuery implements \Countable
             }
 
             $this->join[] = ['INNER JOIN', $calendarTable, "$calendarTable.[[id]] = $table.[[calendarId]]"];
+        }
+
+        if (!$hasUsers) {
+            if (null === $this->join) {
+                $this->join = [];
+            }
+
+            $this->join[] = ['INNER JOIN', '{{%users}}', "{{%users}}.[[id]] = $table.[[authorId]]"];
         }
 
         $select = [
@@ -554,6 +567,7 @@ class EventQuery extends ElementQuery implements \Countable
                 $table . '.[[byYearDay]]',
                 $table . '.[[byMonthDay]]',
                 $table . '.[[byDay]]',
+                '{{%users}}.[[username]]',
                 $calendarTable . '.[[name]]',
             ];
 

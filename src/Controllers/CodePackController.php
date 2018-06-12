@@ -67,7 +67,7 @@ class CodePackController extends BaseController
         $codePack = $this->getCodePack();
         $prefix   = \Craft::$app->request->post('prefix');
 
-        $prefix = preg_replace('/[^a-zA-Z_0-9\/]/', '', $prefix);
+        $prefix = preg_replace('/[^a-zA-Z_0-9-\/]/', '', $prefix);
 
         try {
             $codePack->install($prefix);

@@ -79,6 +79,7 @@ class DatabaseHelper
                 $value    = substr($value, $length + 1);
 
                 if ($operator === self::OPERATOR_NOT_IN) {
+                    $operator = 'NOT IN';
                     $value = explode(',', $value);
                 }
 

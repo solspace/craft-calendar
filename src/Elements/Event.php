@@ -103,6 +103,9 @@ class Event extends Element implements \JsonSerializable
     /** @var int */
     public $score;
 
+    /** @var string */
+    public $username;
+
     /**
      * @return EventQuery|ElementQueryInterface
      */
@@ -139,6 +142,14 @@ class Event extends Element implements \JsonSerializable
      * @return bool
      */
     public static function hasUris(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function hasStatuses(): bool
     {
         return true;
     }
@@ -258,7 +269,7 @@ class Event extends Element implements \JsonSerializable
             'startDate'      => Calendar::t('Start Date'),
             'endDate'        => Calendar::t('End Date'),
             'allDay'         => Calendar::t('All Day'),
-            'users.username' => Calendar::t('Author'),
+            'username'       => Calendar::t('Author'),
             'dateCreated'    => Calendar::t('Post Date'),
         ];
     }
@@ -326,8 +337,8 @@ class Event extends Element implements \JsonSerializable
             case 'rrule':
                 return $this->repeats() ? Calendar::t('Yes') : Calendar::t('No');
 
-            case 'field:1':
-                return parent::tableAttributeHtml($attribute);
+            case 'status':
+                return Calendar::t(ucfirst($this->getStatus()));
 
             default:
                 return parent::tableAttributeHtml($attribute);
@@ -363,13 +374,13 @@ class Event extends Element implements \JsonSerializable
     {
         parent::__construct($config);
 
-        $this->startDate          = new Carbon($this->startDate, DateHelper::UTC);
-        $this->startDateLocalized = new Carbon($this->startDate);
-        $this->endDate            = new Carbon($this->endDate, DateHelper::UTC);
+        $this->startDateLocalized = new Carbon($this->startDate ?? 'now');
+        $this->startDate          = new Carbon($this->startDate ?? 'now', DateHelper::UTC);
         $this->endDateLocalized   = new Carbon($this->endDate);
+        $this->endDate            = new Carbon($this->endDate, DateHelper::UTC);
         if (null !== $this->until) {
-            $this->until          = new Carbon($this->until, DateHelper::UTC);
             $this->untilLocalized = new Carbon($this->until);
+            $this->until          = new Carbon($this->until, DateHelper::UTC);
         }
     }
 
