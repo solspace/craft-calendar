@@ -298,7 +298,7 @@ class EventsApiController extends BaseController
         $isAllDay     = \Craft::$app->request->post('isAllDay') === 'true';
         $deltaSeconds = \Craft::$app->request->post('deltaSeconds');
 
-        $event = $this->getEventsService()->getEventById($eventId, $siteId);
+        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
 
         if ($event) {
             CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());

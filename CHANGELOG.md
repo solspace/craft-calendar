@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 2.0.4 - 2018-07-04
+### Added
+- Added `endsBefore`, `endsBeforeOrAt`, `startsAfter` and `startsAfterOrAt` parameters to `calendar.events` function, for more flexibility to narrow down results.
+
+### Fixed
+- Fixed a bug where editing events would display a localized time in time pickers for start and end dates in recent versions of Craft.
+- Fixed a bug where events with Select Dates rule were not having selected dates show up in calendars.
+- Fixed a bug where the `rangeEnd` parameter was not correctly setting end time to `23:59:59`.
+- Fixed a bug where dragging and dropping disabled events in CP Month/Week/Day views was not working.
+- Fixed a bug where the Calendar 1.x to 2.x (Craft 2.x to 3.x) migration was not correctly fully migrating the Calendar fieldtype.
+
 ## 2.0.3 - 2018-06-12
 ### Changed
 - Updated Demo Templates routes to be extension agnostic (no longer specifically include `.html` in route path).

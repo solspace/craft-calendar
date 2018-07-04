@@ -77,6 +77,11 @@ class EventsController extends BaseController
             $site = \Craft::$app->sites->currentSite;
         }
 
+        $locale = $site->language;
+        $locale = str_replace('_', '-', strtolower($locale));
+
+        EventEditBundle::$locale = $locale;
+
         $event             = Event::create($site->id);
         $event->calendarId = $calendar->id;
 
@@ -109,9 +114,8 @@ class EventsController extends BaseController
             $siteId = $site->id;
             $locale = $site->language;
             $locale = str_replace('_', '-', strtolower($locale));
-            if (file_exists(__DIR__ . '/../Resources/js/lib/moment/locale/' . $locale . '.js')) {
-                \Craft::$app->view->registerJsFile('calendar/js/lib/moment/locale/' . $locale . '.js');
-            }
+
+            EventEditBundle::$locale = $locale;
         }
 
         $event = $this->getEventsService()->getEventById($id, $siteId);

@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Services;
 
 use craft\base\Component;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\events\SiteEvent;
@@ -27,16 +28,18 @@ class EventsService extends Component
     /**
      * Returns an event by its ID.
      *
-     * @param int $eventId
-     * @param int $siteId
+     * @param int  $eventId
+     * @param int  $siteId
+     * @param bool $includeDisabled
      *
      * @return Event|ElementInterface
      */
-    public function getEventById(int $eventId, int $siteId = null): Event
+    public function getEventById(int $eventId, int $siteId = null, bool $includeDisabled = false): Event
     {
         $query = Event::find()
             ->setAllowedCalendarsOnly(false)
             ->enabledForSite(false)
+            ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->id($eventId);
 
         if (null !== $siteId) {
@@ -51,15 +54,17 @@ class EventsService extends Component
      *
      * @param string $slug
      * @param int    $siteId
+     * @param bool   $includeDisabled
      *
      * @return Event|ElementInterface
      */
-    public function getEventBySlug(string $slug, int $siteId = null): Event
+    public function getEventBySlug(string $slug, int $siteId = null, bool $includeDisabled = false): Event
     {
         return Event::find()
             ->slug($slug)
             ->setAllowedCalendarsOnly(false)
             ->enabledForSite(false)
+            ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->siteId($siteId)
             ->one();
     }

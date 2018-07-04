@@ -12,6 +12,8 @@ use Solspace\Calendar\Records\SelectDateRecord;
 
 class SelectDatesService extends Component
 {
+    static private $cachedDates = [];
+
     /**
      * Returns a list of Calendar_SelectDateModel's if any are found
      *
@@ -47,39 +49,38 @@ class SelectDatesService extends Component
             return [];
         }
 
-        $conditions = ['eventId' => $eventId];
+        $hash = $this->getCacheHash($eventId, $rangeStart, $rangeEnd);
+        if (!isset(self::$cachedDates[$hash])) {
+            $query = (new Query())
+                ->select('*')
+                ->from(SelectDateRecord::TABLE)
+                ->where(['eventId' => $eventId])
+                ->orderBy(['date' => SORT_ASC]);
 
-        if ($rangeStart) {
-            $conditions[] = '>=';
-            $conditions[] = 'date';
-            $conditions[] = $rangeStart->format('Y-m-d');
-        }
-
-        if ($rangeEnd) {
-            $conditions[] = '<=';
-            $conditions[] = 'date';
-            $conditions[] = $rangeStart->format('Y-m-d');
-        }
-
-        $selectDateRecords = SelectDateRecord::findAll($conditions);
-        $selectDateModels  = [];
-        foreach ($selectDateRecords as $record) {
-            $model          = new SelectDateModel();
-            $model->id      = $record->id;
-            $model->eventId = $record->eventId;
-            $model->date    = new Carbon($record->date, DateHelper::UTC);
-
-            $selectDateModels[] = $model;
-        }
-
-        usort(
-            $selectDateModels,
-            function (SelectDateModel $dateA, SelectDateModel $dateB) {
-                return $dateA <=> $dateB;
+            if ($rangeStart) {
+                $query->andWhere('date >= :startRange', ['startRange' => $rangeStart->format('Y-m-d')]);
             }
-        );
 
-        return $selectDateModels;
+            if ($rangeEnd) {
+                $query->andWhere('date <= :endRange', ['endRange' => $rangeEnd->format('Y-m-d')]);
+            }
+
+            $dates = $query->all();
+
+            $selectDateModels = [];
+            foreach ($dates as $data) {
+                $model          = new SelectDateModel();
+                $model->id      = (int) $data['id'];
+                $model->eventId = (int) $data['eventId'];
+                $model->date    = new Carbon($data['date'], DateHelper::UTC);
+
+                $selectDateModels[] = $model;
+            }
+
+            self::$cachedDates[$hash] = $selectDateModels;
+        }
+
+        return self::$cachedDates[$hash];
     }
 
     /**
@@ -123,7 +124,7 @@ class SelectDatesService extends Component
         foreach ($dates as $selectDate) {
             $selectDateRecord          = new SelectDateRecord();
             $selectDateRecord->eventId = $event->id;
-            $selectDateRecord->date    = new \DateTime($selectDate);
+            $selectDateRecord->date    = new Carbon($selectDate, DateHelper::UTC);
 
             $selectDateRecord->save();
         }
@@ -145,5 +146,27 @@ class SelectDatesService extends Component
         foreach ($records as $record) {
             $record->delete();
         }
+    }
+
+    /**
+     * @param int       $eventId
+     * @param \DateTime $rangeStart
+     * @param \DateTime $rangeEnd
+     *
+     * @return string
+     */
+    private function getCacheHash(int $eventId, \DateTime $rangeStart = null, \DateTime $rangeEnd = null): string
+    {
+        $string = $eventId;
+
+        if ($rangeStart) {
+            $string .= $rangeStart->format('YmdHis');
+        }
+
+        if ($rangeEnd) {
+            $string .= $rangeEnd->format('YmdHis');
+        }
+
+        return sha1($string);
     }
 }

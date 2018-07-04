@@ -49,7 +49,7 @@
         var $calendar = $("#calendar-wrapper");
         var canEditEvents = {{ currentUser and currentUser.can('calendar-manageEvents') ? 'true' : 'false' }};
 
-        {% set defaultDate = now|date("Y-m-d") %}
+        {% set defaultDate = now.format("Y-m-d") %}
         {% if segment3 and segment4 and segment5 %}
             {% set defaultDate = segment3 ~ "-" ~ segment4 ~ "-" ~ segment5 %}
         {% endif %}

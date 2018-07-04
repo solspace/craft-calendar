@@ -49,10 +49,22 @@ class EventQuery extends ElementQuery implements \Countable
     private $startsBeforeOrAt;
 
     /** @var \DateTime */
+    private $startsAfter;
+
+    /** @var \DateTime */
+    private $startsAfterOrAt;
+
+    /** @var \DateTime */
     private $endsAfter;
 
     /** @var \DateTime */
     private $endsAfterOrAt;
+
+    /** @var \DateTime */
+    private $endsBefore;
+
+    /** @var \DateTime */
+    private $endsBeforeOrAt;
 
     /** @var bool */
     private $allDay = false;
@@ -209,6 +221,30 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
+     * @param \DateTime $startsAfter
+     *
+     * @return EventQuery
+     */
+    public function setStartsAfter($startsAfter): EventQuery
+    {
+        $this->startsAfter = $this->parseCarbon($startsAfter);
+
+        return $this;
+    }
+
+    /**
+     * @param \DateTime $startsAfterOrAt
+     *
+     * @return EventQuery
+     */
+    public function setStartsAfterOrAt($startsAfterOrAt): EventQuery
+    {
+        $this->startsAfterOrAt = $this->parseCarbon($startsAfterOrAt);
+
+        return $this;
+    }
+
+    /**
      * @param \DateTime $endsAfter
      *
      * @return EventQuery
@@ -228,6 +264,30 @@ class EventQuery extends ElementQuery implements \Countable
     public function setEndsAfterOrAt($endsAfterOrAt): EventQuery
     {
         $this->endsAfterOrAt = $this->parseCarbon($endsAfterOrAt);
+
+        return $this;
+    }
+
+    /**
+     * @param \DateTime $endsBefore
+     *
+     * @return EventQuery
+     */
+    public function setEndsBefore($endsBefore): EventQuery
+    {
+        $this->endsBefore = $this->parseCarbon($endsBefore);
+
+        return $this;
+    }
+
+    /**
+     * @param \DateTime $endsBeforeOrAt
+     *
+     * @return EventQuery
+     */
+    public function setEndsBeforeOrAt($endsBeforeOrAt): EventQuery
+    {
+        $this->endsBeforeOrAt = $this->parseCarbon($endsBeforeOrAt);
 
         return $this;
     }
@@ -288,6 +348,9 @@ class EventQuery extends ElementQuery implements \Countable
     public function setRangeEnd($rangeEnd = null): EventQuery
     {
         $this->rangeEnd = $this->parseCarbon($rangeEnd);
+        if ($this->rangeEnd->format('His') === '000000') {
+            $this->rangeEnd->setTime(23, 59, 59);
+        }
 
         return $this;
     }
@@ -619,6 +682,26 @@ class EventQuery extends ElementQuery implements \Countable
             );
         }
 
+        if ($this->startsAfter) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[startDate]]',
+                    $this->extractDateAsFormattedString($this->startsAfter),
+                    '>'
+                )
+            );
+        }
+
+        if ($this->startsAfterOrAt) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[startDate]]',
+                    $this->extractDateAsFormattedString($this->startsAfterOrAt),
+                    '>='
+                )
+            );
+        }
+
         if ($this->endsAfter) {
             $this->subQuery->andWhere(
                 Db::parseParam(
@@ -635,6 +718,26 @@ class EventQuery extends ElementQuery implements \Countable
                     $table . '.[[endDate]]',
                     $this->extractDateAsFormattedString($this->endsAfterOrAt),
                     '>='
+                )
+            );
+        }
+
+        if ($this->endsBefore) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[endDate]]',
+                    $this->extractDateAsFormattedString($this->endsBefore),
+                    '<'
+                )
+            );
+        }
+
+        if ($this->endsBeforeOrAt) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[endDate]]',
+                    $this->extractDateAsFormattedString($this->endsBeforeOrAt),
+                    '<='
                 )
             );
         }
@@ -664,13 +767,7 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         if ($this->rangeEnd) {
-            $rangeEnd = $this->rangeEnd->copy();
-
-            if ($rangeEnd->format('His') === '000000') {
-                $rangeEnd->setTime(23, 59, 59);
-            }
-
-            $rangeEndString = $this->extractDateAsFormattedString($rangeEnd);
+            $rangeEndString = $this->extractDateAsFormattedString($this->rangeEnd);
 
             $this->subQuery->andWhere(
                 "$table.[[startDate]] <= :rangeEnd OR $table.[[freq]] = :freq",
