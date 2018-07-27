@@ -21,6 +21,8 @@
 {% endmacro %}
 {% import _self as dir %}
 
+{% block actionButton %}{% endblock %}
+
 {% block content %}
 
     <h2>{{ "Demo Templates"|t('calendar') }}</h2>
@@ -34,7 +36,7 @@
             <tr>
                 <td width="95%">
                     {{ forms.textField({
-                        label: "Prefix"|t('calendar'),
+                        label: "Install Path"|t('calendar'),
                         id: 'prefix',
                         name: 'prefix',
                         value: prefix,

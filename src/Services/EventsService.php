@@ -32,9 +32,9 @@ class EventsService extends Component
      * @param int  $siteId
      * @param bool $includeDisabled
      *
-     * @return Event|ElementInterface
+     * @return Event|ElementInterface|null
      */
-    public function getEventById(int $eventId, int $siteId = null, bool $includeDisabled = false): Event
+    public function getEventById(int $eventId, int $siteId = null, bool $includeDisabled = false)
     {
         $query = Event::find()
             ->setAllowedCalendarsOnly(false)
@@ -56,9 +56,9 @@ class EventsService extends Component
      * @param int    $siteId
      * @param bool   $includeDisabled
      *
-     * @return Event|ElementInterface
+     * @return Event|ElementInterface|null
      */
-    public function getEventBySlug(string $slug, int $siteId = null, bool $includeDisabled = false): Event
+    public function getEventBySlug(string $slug, int $siteId = null, bool $includeDisabled = false)
     {
         return Event::find()
             ->slug($slug)
@@ -385,7 +385,7 @@ class EventsService extends Component
             $eventModel = $this->getEventById($event);
         }
 
-        if (null === $eventModel && null !== $guestAccess) {
+        if ((null === $eventModel || !$eventModel->id) && null !== $guestAccess) {
             return true;
         }
 

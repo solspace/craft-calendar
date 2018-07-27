@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
+use craft\db\Query;
 use craft\elements\User;
 use craft\events\ElementEvent;
 use craft\helpers\Json;
@@ -28,7 +29,7 @@ class EventsController extends BaseController
     const EVENT_FIELD_NAME    = 'calendarEvent';
     const EVENT_PREVIEW_EVENT = 'previewEvent';
 
-    protected $allowAnonymous = ['actionSaveEvent'];
+    protected $allowAnonymous = ['save-event'];
 
     /**
      * @return Response
@@ -118,7 +119,7 @@ class EventsController extends BaseController
             EventEditBundle::$locale = $locale;
         }
 
-        $event = $this->getEventsService()->getEventById($id, $siteId);
+        $event = $this->getEventsService()->getEventById($id, $siteId, true);
 
         if (!$event) {
             throw new HttpException(
@@ -175,6 +176,16 @@ class EventsController extends BaseController
                 $authorId        = (int) reset($authorList);
                 $event->authorId = $authorId;
             }
+        }
+
+        if (!$event->authorId) {
+            $event->authorId = (int) (new Query())
+                ->select('id')
+                ->from('{{%users}}')
+                ->where(['admin' => 1])
+                ->limit(1)
+                ->orderBy(['id' => SORT_ASC])
+                ->scalar();
         }
 
         $isEnabled      = (bool) \Craft::$app->request->post('enabled', $event->enabled);
@@ -452,7 +463,7 @@ class EventsController extends BaseController
         $calendarId = \Craft::$app->getRequest()->getBodyParam('calendarId');
 
         if ($eventId) {
-            $entry = $this->getEventsService()->getEventById($eventId, $siteId);
+            $entry = $this->getEventsService()->getEventById($eventId, $siteId, true);
 
             if (!$eventId) {
                 throw new NotFoundHttpException('Event not found');
@@ -600,7 +611,7 @@ class EventsController extends BaseController
     private function getExistingOrNewEvent(int $eventId = null, int $siteId = null): Event
     {
         if ($eventId) {
-            $event = $this->getEventsService()->getEventById($eventId, $siteId);
+            $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
 
             if (!$event) {
                 throw new HttpException(

@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 2.0.5 - 2018-07-26
+### Fixed
+- Fixed a bug where disabled events would error when being viewed/edited.
+- Fixed a bug where Guest access for submitting events on front end was broken.
+- Fixed a bug where Live Preview was not correctly showing some repeat rule options.
+
 ## 2.0.4 - 2018-07-04
 ### Added
 - Added `endsBefore`, `endsBeforeOrAt`, `startsAfter` and `startsAfterOrAt` parameters to `calendar.events` function, for more flexibility to narrow down results.

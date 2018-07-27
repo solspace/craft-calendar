@@ -50,7 +50,7 @@ class CodePackController extends BaseController
             'calendar/codepack',
             [
                 'codePack' => $codePack,
-                'prefix'   => 'calendar_demo',
+                'prefix'   => 'calendar-demo',
             ]
         );
     }

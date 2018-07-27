@@ -184,7 +184,7 @@ $calendars = [
 ];
 
 $demoTemplates = [
-    'Prefix'    => 'Prefix',
+    'Install Path'    => 'Install Path',
     'Install'   => 'Install',
     'Templates' => 'Templates',
     'Assets'    => 'Assets',

@@ -1,8 +1,8 @@
 {% extends "calendar/layouts/_layoutWithoutSettings" %}
 
 {% set selectedSubnavItem = 'settings' %}
-
 {% set title = "Calendar Settings"|t('calendar') %}
+{% set fullPageForm = true %}
 
 {% set navItems = {
 'hd': { heading: "Settings"|t('calendar') },
@@ -14,6 +14,14 @@
 
 {% set selectedItem = craft.app.request.getSegment(3)|default %}
 {% set docTitle = navItems[selectedItem].title~' - '~title %}
+
+{% block actionButton %}
+    <div class="buttons">
+        <div class="btngroup submit">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t('freeform') }}">
+        </div>
+    </div>
+{% endblock %}
 
 {% block sidebar %}
     <nav>
