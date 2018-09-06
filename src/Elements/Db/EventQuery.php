@@ -438,9 +438,11 @@ class EventQuery extends ElementQuery implements \Countable
         $configHash = $this->getConfigStateHash();
 
         // Nasty elements index hack
-        $context = \Craft::$app->request->post('context');
-        if (\in_array($context, ['index', 'modal'], true)) {
-            $this->loadOccurrences = false;
+        if (!\Craft::$app->request->isConsoleRequest) {
+            $context = \Craft::$app->request->post('context');
+            if (\in_array($context, ['index', 'modal'], true)) {
+                $this->loadOccurrences = false;
+            }
         }
 
         if (null === $this->events || self::$lastCachedConfigStateHash !== $configHash) {

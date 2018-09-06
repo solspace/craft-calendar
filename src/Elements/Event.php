@@ -56,10 +56,16 @@ class Event extends Element implements \JsonSerializable
     public $startDate;
 
     /** @var \DateTime */
+    public $initialStartDate;
+
+    /** @var \DateTime */
     public $startDateLocalized;
 
     /** @var \DateTime */
     public $endDate;
+
+    /** @var \DateTime */
+    public $initialEndDate;
 
     /** @var \DateTime */
     public $endDateLocalized;
@@ -376,8 +382,10 @@ class Event extends Element implements \JsonSerializable
 
         $this->startDateLocalized = new Carbon($this->startDate ?? 'now');
         $this->startDate          = new Carbon($this->startDate ?? 'now', DateHelper::UTC);
+        $this->initialStartDate   = $this->startDate->copy();
         $this->endDateLocalized   = new Carbon($this->endDate);
         $this->endDate            = new Carbon($this->endDate, DateHelper::UTC);
+        $this->initialEndDate     = $this->endDate->copy();
         if (null !== $this->until) {
             $this->untilLocalized = new Carbon($this->until);
             $this->until          = new Carbon($this->until, DateHelper::UTC);
@@ -594,10 +602,12 @@ class Event extends Element implements \JsonSerializable
     public function addSelectDate(SelectDateModel $selectDateModel): Event
     {
         $this->getSelectDates();
-        $this->selectDatesCache[] = $selectDateModel;
-        usort($this->selectDatesCache, function (SelectDateModel $a, SelectDateModel $b) {
-            return $a->date <=> $b->date;
-        });
+        foreach ($this->selectDatesCache as $index => $value) {
+            $this->selectDatesCache[$index][] = $selectDateModel;
+            usort($this->selectDatesCache[$index], function (SelectDateModel $a, SelectDateModel $b) {
+                return $a->date <=> $b->date;
+            });
+        }
 
         return $this;
     }
@@ -738,33 +748,33 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @return Carbon
+     * @return Carbon|null
      */
-    public function getStartDate(): Carbon
+    public function getStartDate()
     {
         return $this->startDate;
     }
 
     /**
-     * @return Carbon
+     * @return Carbon|null
      */
-    public function getStartDateLocalized(): Carbon
+    public function getStartDateLocalized()
     {
         return $this->startDateLocalized;
     }
 
     /**
-     * @return Carbon
+     * @return Carbon|null
      */
-    public function getEndDate(): Carbon
+    public function getEndDate()
     {
         return $this->endDate;
     }
 
     /**
-     * @return Carbon
+     * @return Carbon|null
      */
-    public function getEndDateLocalized(): Carbon
+    public function getEndDateLocalized()
     {
         return $this->endDateLocalized;
     }
@@ -1047,6 +1057,36 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * @return null|string
+     */
+    public function getSimplifiedRepeatRule()
+    {
+        if (!$this->repeats()) {
+            return null;
+        }
+
+        switch ($this->getFrequency()) {
+            case RecurrenceHelper::YEARLY:
+                return Calendar::t('Yearly');
+
+
+            case RecurrenceHelper::MONTHLY:
+                return Calendar::t('Monthly');
+
+
+            case RecurrenceHelper::WEEKLY:
+                return Calendar::t('Weekly');
+
+
+            case RecurrenceHelper::DAILY:
+                return Calendar::t('Daily');
+
+            default:
+                return null;
+        }
+    }
+
+    /**
      * @param array|null $config
      *
      * @return Event[]
@@ -1261,24 +1301,14 @@ class Event extends Element implements \JsonSerializable
     public function rules()
     {
         $rules   = parent::rules();
-        $rules[] = [
-            ['startDate'],
-            'validateDates',
-        ];
+        $rules[] = [['startDate'], 'validateDates'];
+        $rules[] = [['startDate', 'endDate'], 'required'];
 
         return $rules;
     }
 
     public function validateDates()
     {
-        if (!$this->startDate) {
-            $this->addError('startDate', Calendar::t('Start Date is required'));
-        }
-
-        if (!$this->endDate) {
-            $this->addError('endDate', Calendar::t('End Date is required'));
-        }
-
         if ($this->startDate >= $this->endDate) {
             $this->addError('startDate', Calendar::t('Start Date must be before End Date'));
         }
@@ -1344,7 +1374,7 @@ class Event extends Element implements \JsonSerializable
             [
                 'FREQ'       => $this->getFrequency(),
                 'INTERVAL'   => $this->interval,
-                'DTSTART'    => $this->getStartDate(),
+                'DTSTART'    => $this->initialStartDate,
                 'UNTIL'      => $this->getUntil(),
                 'COUNT'      => $this->count,
                 'BYDAY'      => $this->byDay,

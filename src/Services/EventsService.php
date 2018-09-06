@@ -212,7 +212,7 @@ class EventsService extends Component
 
         $event->validate();
 
-        if ($saveEvent->isValid && !$event->hasErrors()) {
+        if ($saveEvent->isValid) {
             $transaction = \Craft::$app->db->beginTransaction();
 
             try {

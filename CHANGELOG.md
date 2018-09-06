@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 2.0.6 - 2018-09-06
+### Fixed
+- Fixed a bug where the `readableRepeatRule` was using the currently viewed occurrence of the event as the "starting from..." date, and not the original main start date of the event.
+- Fixed a bug where the list of occurrences (`event.occurrences`) was being incorrectly incremented based on the currently viewed occurrence and the number of "times" it's supposed to repeat.
+- Fixed a bug where the list of Select Dates recurrences in CP Edit event view was displaying the previous day when going back to edit an event.
+- Fixed a bug where the Share button in CP Create/Edit event view was not generating a token in URL for disabled events.
+- Fixed a bug where Live Preview template was not correctly showing all date formatting options correctly.
+- Fixed a bug where Live Preview template was not displaying at all when the Select Dates repeat rule was used.
+- Fixed a bug where the `simplifiedRepeatRule` property was not parsing as anything.
+- Fixed a bug where required fields were not being validated when creating/editing events (in main create/edit CP page).
+
 ## 2.0.5 - 2018-07-26
 ### Fixed
 - Fixed a bug where disabled events would error when being viewed/edited.

@@ -1,5 +1,7 @@
 {% import "_includes/forms" as forms %}
 
+{% set dateFormat = craft.app.locale.getDateFormat('medium', 'php') %}
+
 <div class="calendar-event-wrapper">
 
     {% macro dateTimeField(event, fieldName, attribute, label, name) %}
@@ -239,7 +241,7 @@
                 {% for exception in event.exceptions %}
                     <li>
                         <a></a>
-                        <span>{{ exception.date|date('medium') }}</span>
+                        <span>{{ exception.date.format(dateFormat) }}</span>
                         <input type="hidden" name="{{ name }}[exceptions][]" value="{{ exception.date.format('Y-m-d') }}" />
                     </li>
                 {% endfor %}
@@ -259,7 +261,7 @@
                 {% for selectDate in event.selectDates %}
                     <li>
                         <a></a>
-                        <span>{{ selectDate.date|date('medium') }}</span>
+                        <span>{{ selectDate.date.format(dateFormat) }}</span>
                         <input type="hidden" name="{{ name }}[selectDates][]" value="{{ selectDate.date.format('Y-m-d') }}" />
                     </li>
                 {% endfor %}

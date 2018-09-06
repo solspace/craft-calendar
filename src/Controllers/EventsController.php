@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
+use craft\base\Element;
 use craft\db\Query;
 use craft\elements\User;
 use craft\events\ElementEvent;
@@ -18,6 +19,7 @@ use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
+use yii\db\Exception;
 use yii\helpers\FormatConverter;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -207,19 +209,27 @@ class EventsController extends BaseController
         $format     = "$dateFormat $timeFormat";
 
         if (isset($values['startDate'])) {
-            $event->startDate = Carbon::createFromFormat(
-                $format,
-                $values['startDate']['date'] . ' ' . $values['startDate']['time'],
-                DateHelper::UTC
-            );
+            try {
+                $event->startDate = Carbon::createFromFormat(
+                    $format,
+                    $values['startDate']['date'] . ' ' . $values['startDate']['time'],
+                    DateHelper::UTC
+                );
+            } catch (\InvalidArgumentException $exception) {
+                $event->startDate = null;
+            }
         }
 
         if (isset($values['endDate'])) {
-            $event->endDate = Carbon::createFromFormat(
-                $format,
-                $values['endDate']['date'] . ' ' . $values['endDate']['time'],
-                DateHelper::UTC
-            );
+            try {
+                $event->endDate = Carbon::createFromFormat(
+                    $format,
+                    $values['endDate']['date'] . ' ' . $values['endDate']['time'],
+                    DateHelper::UTC
+                );
+            } catch (\InvalidArgumentException $e) {
+                $event->endDate = null;
+            }
         }
 
         if (isset($values['allDay'])) {
@@ -249,6 +259,11 @@ class EventsController extends BaseController
         $event->title          = \Craft::$app->request->post('title', $event->title);
         $event->slug           = \Craft::$app->request->post('slug', $event->slug);
         $event->setFieldValuesFromRequest('fields');
+
+        // Save the entry (finally!)
+        if ($event->enabled && $event->enabledForSite) {
+            $event->setScenario(Element::SCENARIO_LIVE);
+        }
 
         if ($this->getEventsService()->saveEvent($event)) {
             $exceptions = $values['exceptions'] ?? [];
@@ -387,6 +402,19 @@ class EventsController extends BaseController
             $showPreviewButton = true;
         }
 
+        $shareUrl = null;
+        if ($event->enabled) {
+            $shareUrl = $event->getUrl();
+        } else {
+            $shareUrl = UrlHelper::actionUrl(
+                'calendar/events/share-event',
+                [
+                    'eventId' => $event->getId(),
+                    'siteId'  => $event->siteId,
+                ]
+            );
+        }
+
         $variables = [
             'name'               => self::EVENT_FIELD_NAME,
             'event'              => $event,
@@ -407,7 +435,7 @@ class EventsController extends BaseController
             'dateFormat'         => $dateFormat,
             'timeFormat'         => $timeFormat,
             'showPreviewBtn'     => $showPreviewButton,
-            'shareUrl'           => $event->getUrl() ?: null,
+            'shareUrl'           => $shareUrl,
             'crumbs'             => [
                 ['label' => Calendar::t('calendar'), 'url' => UrlHelper::cpUrl('calendar')],
                 ['label' => Calendar::t('Events'), 'url' => UrlHelper::cpUrl('calendar/events')],
@@ -421,6 +449,55 @@ class EventsController extends BaseController
         ];
 
         return $this->renderTemplate('calendar/events/_edit', $variables);
+    }
+
+    /**
+     * @param int $eventId
+     * @param int $siteId
+     *
+     * @return Response
+     * @throws NotFoundHttpException
+     */
+    public function actionShareEvent(int $eventId, int $siteId): Response
+    {
+        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
+        if (!$event) {
+            throw new NotFoundHttpException('Entry not found');
+        }
+
+        $params = ['eventId' => $eventId, 'siteId' => $siteId];
+
+        // Create the token and redirect to the entry URL with the token in place
+        $token = \Craft::$app->getTokens()->createToken(['calendar/events/view-shared-event', $params]);
+
+        if ($token === false) {
+            throw new Exception('There was a problem generating the token.');
+        }
+
+        $url = UrlHelper::urlWithToken($event->getUrl(), $token);
+
+        return \Craft::$app->getResponse()->redirect($url);
+    }
+
+    /**
+     * @param int|null $eventId
+     * @param int|null $siteId
+     *
+     * @return Response
+     * @throws NotFoundHttpException
+     * @throws ServerErrorHttpException
+     * @throws \yii\web\BadRequestHttpException
+     */
+    public function actionViewSharedEvent(int $eventId = null, int $siteId = null): Response
+    {
+        $this->requireToken();
+
+        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
+        if (!$event) {
+            throw new NotFoundHttpException('Event not found');
+        }
+
+        return $this->showEvent($event);
     }
 
     /**
@@ -518,12 +595,33 @@ class EventsController extends BaseController
             CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
         }
 
+
+        $dateFormat = \Craft::$app->locale->getDateFormat('short', Locale::FORMAT_PHP);
+        $timeFormat = \Craft::$app->locale->getTimeFormat('short', Locale::FORMAT_PHP);
+        $format     = "$dateFormat $timeFormat";
+
         if (isset($values['startDate'])) {
-            $event->startDate = new Carbon($values['startDate']['date'] . ' ' . $values['startDate']['time'], DateHelper::UTC);
+            try {
+                $event->startDate = Carbon::createFromFormat(
+                    $format,
+                    $values['startDate']['date'] . ' ' . $values['startDate']['time'],
+                    DateHelper::UTC
+                );
+            } catch (\InvalidArgumentException $exception) {
+                $event->startDate = null;
+            }
         }
 
         if (isset($values['endDate'])) {
-            $event->endDate = new Carbon($values['endDate']['date'] . ' ' . $values['endDate']['time'], DateHelper::UTC);
+            try {
+                $event->endDate = Carbon::createFromFormat(
+                    $format,
+                    $values['endDate']['date'] . ' ' . $values['endDate']['time'],
+                    DateHelper::UTC
+                );
+            } catch (\InvalidArgumentException $e) {
+                $event->endDate = null;
+            }
         }
 
         if (isset($values['allDay'])) {
@@ -550,7 +648,12 @@ class EventsController extends BaseController
         $this->handleRepeatRules($event, $values);
 
         if (isset($values['exceptions'])) {
+            $existingExceptions = $event->getExceptionDateStrings();
             foreach ($values['exceptions'] as $date) {
+                if (\in_array($date, $existingExceptions, true)) {
+                    continue;
+                }
+
                 $exception          = new ExceptionModel();
                 $exception->eventId = $event->id;
                 $exception->date    = new Carbon($date, DateHelper::UTC);
@@ -560,7 +663,12 @@ class EventsController extends BaseController
         }
 
         if (isset($values['selectDates'])) {
+            $existingSelectDates = $event->getSelectDatesAsString();
             foreach ($values['selectDates'] as $date) {
+                if (\in_array($date, $existingSelectDates, true)) {
+                    continue;
+                }
+
                 $selectDate          = new SelectDateModel();
                 $selectDate->eventId = $event->id;
                 $selectDate->date    = new Carbon($date, DateHelper::UTC);
