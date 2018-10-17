@@ -21,6 +21,7 @@ use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
+use yii\base\Model;
 
 class Event extends Element implements \JsonSerializable
 {
@@ -233,6 +234,13 @@ class Event extends Element implements \JsonSerializable
                 'key'      => 'calendar:' . $calendar->id,
                 'label'    => $calendar->name,
                 'criteria' => ['calendarId' => $calendar->id],
+                'sites'    => array_keys($calendar->getSiteSettings()),
+                'data'     => [
+                    'id'     => $calendar->id,
+                    'name'   => $calendar->name,
+                    'handle' => $calendar->handle,
+                    'color'  => $calendar->color,
+                ],
             ];
         }
 
@@ -270,13 +278,13 @@ class Event extends Element implements \JsonSerializable
     protected static function defineSortOptions(): array
     {
         return [
-            'title'          => Calendar::t('Title'),
-            'name'           => Calendar::t('Calendar'),
-            'startDate'      => Calendar::t('Start Date'),
-            'endDate'        => Calendar::t('End Date'),
-            'allDay'         => Calendar::t('All Day'),
-            'username'       => Calendar::t('Author'),
-            'dateCreated'    => Calendar::t('Post Date'),
+            'title'       => Calendar::t('Title'),
+            'name'        => Calendar::t('Calendar'),
+            'startDate'   => Calendar::t('Start Date'),
+            'endDate'     => Calendar::t('End Date'),
+            'allDay'      => Calendar::t('All Day'),
+            'username'    => Calendar::t('Author'),
+            'dateCreated' => Calendar::t('Post Date'),
         ];
     }
 
@@ -450,9 +458,9 @@ class Event extends Element implements \JsonSerializable
             return false;
         }
 
-        $siteHandle = static::isLocalized() ? '/' . $this->getSite()->handle : '';
+        $siteHandle = $this->getSite()->handle;
 
-        return UrlHelper::cpUrl('calendar/events/' . $this->id . $siteHandle);
+        return UrlHelper::cpUrl('calendar/events/' . $this->id . '/' . $siteHandle);
     }
 
     /**
@@ -1295,7 +1303,16 @@ class Event extends Element implements \JsonSerializable
             'textColor'          => $this->getCalendar()->getContrastColor(),
         ];
 
-        return array_merge($object, $this->getFieldValues());
+        $fieldValues = [];
+        foreach ($this->getFieldValues() as $key => $value) {
+            if (is_a($value, 'fruitstudios\linkit\base\Link')) {
+                $value = $value->getLink([], false);
+            }
+
+            $fieldValues[$key] = $value;
+        }
+
+        return array_merge($object, $fieldValues);
     }
 
     public function rules()

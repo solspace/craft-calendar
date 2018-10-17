@@ -14,14 +14,14 @@ class HourDuration extends AbstractDuration
      */
     protected function init(Carbon $targetDate)
     {
-        $startDate         = Carbon::createFromTimestampUTC($targetDate->getTimestamp());
+        $startDate         = Carbon::createFromTimestamp($targetDate->getTimestamp());
         $startDate->minute = 0;
         $startDate->second = 0;
 
         $endDate         = $startDate->copy();
         $endDate->minute = 59;
         $endDate->second = 59;
-        
+
         $this->startDate         = $startDate;
         $this->endDate           = $endDate;
     }

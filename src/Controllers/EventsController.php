@@ -19,6 +19,7 @@ use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
+use Solspace\Calendar\Resources\Bundles\EventIndexBundle;
 use yii\db\Exception;
 use yii\helpers\FormatConverter;
 use yii\web\HttpException;
@@ -39,6 +40,8 @@ class EventsController extends BaseController
     public function actionEventsIndex(): Response
     {
         $this->requireEventPermission();
+
+        \Craft::$app->view->registerAssetBundle(EventIndexBundle::class);
 
         return $this->renderTemplate(
             'calendar/events/_index',
@@ -415,6 +418,8 @@ class EventsController extends BaseController
             );
         }
 
+        $siteHandle = $event->getSite()->handle;
+
         $variables = [
             'name'               => self::EVENT_FIELD_NAME,
             'event'              => $event,
@@ -436,13 +441,14 @@ class EventsController extends BaseController
             'timeFormat'         => $timeFormat,
             'showPreviewBtn'     => $showPreviewButton,
             'shareUrl'           => $shareUrl,
+            'site'               => $event->getSite(),
             'crumbs'             => [
                 ['label' => Calendar::t('calendar'), 'url' => UrlHelper::cpUrl('calendar')],
                 ['label' => Calendar::t('Events'), 'url' => UrlHelper::cpUrl('calendar/events')],
                 [
                     'label' => $title,
                     'url'   => UrlHelper::cpUrl(
-                        'calendar/events/' . ($event->id ?: 'new/' . $calendar->handle)
+                        'calendar/events/' . ($event->id ?: 'new/' . $calendar->handle) . '/' . $siteHandle
                     ),
                 ],
             ],

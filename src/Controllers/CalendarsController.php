@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
@@ -110,6 +111,7 @@ class CalendarsController extends BaseController
         $calendar->titleFormat            = $request->post('titleFormat');
         $calendar->titleLabel             = $request->post('titleLabel');
         $calendar->hasTitleField          = (bool) $request->post('hasTitleField');
+        $calendar->icsTimezone            = $request->post('icsTimezone');
 
         // Site-specific settings
         $allSiteSettings = [];
@@ -285,6 +287,7 @@ class CalendarsController extends BaseController
                 'calendar'           => $calendar,
                 'continueEditingUrl' => 'calendar/calendars/{handle}',
                 'customFields'       => $customFieldData,
+                'timezoneOptions'    => DateHelper::getTimezoneOptions(),
             ]
         );
     }

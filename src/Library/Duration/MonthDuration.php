@@ -11,7 +11,7 @@ class MonthDuration extends AbstractDuration
      */
     protected function init(Carbon $targetDate)
     {
-        $startDate = Carbon::createFromTimestampUTC($targetDate->getTimestamp());
+        $startDate = Carbon::createFromTimestamp($targetDate->getTimestamp());
         $startDate->startOfMonth();
 
         $endDate = $startDate->copy();

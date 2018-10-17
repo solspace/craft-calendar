@@ -106,6 +106,8 @@
     {% if craft.calendar.settings.miniCalEnabled %}
         <div class="calendar-mini-cal"
              id="calendar-mini-cal"
+             data-current-day="{{ currentDay.toDateString }}"
+             data-language="{{ calendarLanguage }}"
         ></div>
 
         <nav>

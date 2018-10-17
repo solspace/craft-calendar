@@ -9,6 +9,7 @@ use craft\models\FieldLayout;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\ColorHelper;
+use Solspace\Calendar\Library\DateHelper;
 
 class CalendarModel extends Model implements \JsonSerializable
 {
@@ -51,6 +52,9 @@ class CalendarModel extends Model implements \JsonSerializable
     /** @var string */
     public $icsHash;
 
+    /** @var string */
+    public $icsTimezone;
+
     /** @var CalendarSiteSettingsModel[] */
     private $siteSettings;
 
@@ -66,6 +70,7 @@ class CalendarModel extends Model implements \JsonSerializable
         $model->color         = ColorHelper::randomColor();
         $model->titleLabel    = 'Title';
         $model->hasTitleField = true;
+        $model->icsTimezone   = DateHelper::FLOATING_TIMEZONE;
 
         return $model;
     }
@@ -132,6 +137,14 @@ class CalendarModel extends Model implements \JsonSerializable
         $url = UrlHelper::actionUrl('calendar/api/ics', ['hash' => $this->icsHash . '.ics']);
 
         return str_replace($cpTrigger . '/', '', $url);
+    }
+
+    /**
+     * @return string
+     */
+    public function getIcsTimezone(): string
+    {
+        return $this->icsTimezone ?: DateHelper::FLOATING_TIMEZONE;
     }
 
     /**

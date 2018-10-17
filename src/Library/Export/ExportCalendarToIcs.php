@@ -32,7 +32,7 @@ class ExportCalendarToIcs extends AbstractExportCalendar
         foreach ($events as $event) {
             $startDate    = $event->getStartDate();
             $exportString .= $this->combineExportString($event, $startDate);
-            
+
             if ($event->getSelectDatesAsDates()) {
                 foreach ($event->getSelectDatesAsDates() as $date) {
                     $dateCarbon = Carbon::createFromTimestampUTC($date->getTimestamp());
@@ -41,7 +41,7 @@ class ExportCalendarToIcs extends AbstractExportCalendar
                         $startDate->minute,
                         $startDate->second
                     );
-                    
+
                     $exportString .= $this->combineExportString($event, $dateCarbon);
                 }
             }
@@ -63,6 +63,7 @@ class ExportCalendarToIcs extends AbstractExportCalendar
         $eventId      = $event->getId();
         $exportString = '';
 
+        $timezone = $this->getOption('timezone', $event->getCalendar()->getIcsTimezone());
         $dateDiff = $event->getStartDate()->diff($event->getEndDate());
 
         $startDate = $date->copy();
@@ -71,15 +72,15 @@ class ExportCalendarToIcs extends AbstractExportCalendar
             $event->getStartDate()->minute,
             $event->getStartDate()->second
         );
-        $endDate   = $startDate->copy()->add($dateDiff);
+        $endDate = $startDate->copy()->add($dateDiff);
 
-        $description = null;
+        $description            = null;
         $descriptionFieldHandle = $event->getCalendar()->descriptionFieldHandle;
         if (isset($event->{$descriptionFieldHandle})) {
             $description = $event->{$descriptionFieldHandle};
         }
 
-        $location = null;
+        $location            = null;
         $locationFieldHandle = $event->getCalendar()->locationFieldHandle;
         if (isset($event->{$locationFieldHandle})) {
             $location = $event->{$locationFieldHandle};
@@ -104,9 +105,15 @@ class ExportCalendarToIcs extends AbstractExportCalendar
                 "DTEND;VALUE=DATE:%s\r\n",
                 $endDate->copy()->addDay()->format(self::DATE_FORMAT)
             );
-        } else {
+        } else if ($timezone === 'UTC') {
+            $exportString .= sprintf("DTSTART:%sZ\r\n", $startDate->format(self::DATE_TIME_FORMAT));
+            $exportString .= sprintf("DTEND:%sZ\r\n", $endDate->format(self::DATE_TIME_FORMAT));
+        } else if ($timezone === DateHelper::FLOATING_TIMEZONE) {
             $exportString .= sprintf("DTSTART:%s\r\n", $startDate->format(self::DATE_TIME_FORMAT));
             $exportString .= sprintf("DTEND:%s\r\n", $endDate->format(self::DATE_TIME_FORMAT));
+        } else {
+            $exportString .= sprintf("DTSTART;TZID=%s:%s\r\n", $timezone, $startDate->format(self::DATE_TIME_FORMAT));
+            $exportString .= sprintf("DTEND;TZID=%s:%s\r\n", $timezone, $endDate->format(self::DATE_TIME_FORMAT));
         }
 
         $selectDates = $event->getSelectDates();
@@ -116,7 +123,7 @@ class ExportCalendarToIcs extends AbstractExportCalendar
 
             $exportString .= sprintf("%s\r\n", $rrule);
 
-            $exceptionDatesValues = array();
+            $exceptionDatesValues = [];
             foreach ($event->getExceptionDateStrings() as $exceptionDate) {
                 $exceptionDate = new Carbon($exceptionDate, DateHelper::UTC);
                 if ($event->isAllDay()) {

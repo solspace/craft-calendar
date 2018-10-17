@@ -11,12 +11,12 @@ class WeekDuration extends AbstractDuration
      */
     protected function init(Carbon $targetDate)
     {
-        $startDate = Carbon::createFromTimestampUTC($targetDate->getTimestamp());
+        $startDate = Carbon::createFromTimestamp($targetDate->getTimestamp());
         $startDate->startOfWeek();
 
         $endDate = $startDate->copy();
         $endDate->endOfWeek();
-        
+
         $this->startDate         = $startDate;
         $this->endDate           = $endDate;
     }

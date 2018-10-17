@@ -6,6 +6,7 @@
      data-locale="{{ locale }}"
      data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
      data-first-day-of-week="{{ currentUser is defined and currentUser ? currentUser.getPreference('weekStartDay') : craft.config.general.defaultWeekStartDay }}"
+     data-current-day="{{ now|date('Y-m-d') }}"
 ></div>
 
 {% js %}

@@ -2,3 +2,8 @@
 
 {% set title = "Calendar: Events"|t('calendar') %}
 {% set selectedSubnavItem = 'events' %}
+
+{% do view.registerTranslations('freeform', [
+    'New Event',
+    'New {calendar} Event',
+]) %}

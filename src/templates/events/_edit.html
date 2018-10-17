@@ -51,7 +51,9 @@
                     </li>
                     <li>
                         <a class="formsubmit"
-                           data-redirect="calendar/events/new/{{ calendarHandle }}">{{ "Save and add another"|t('calendar') }}</a>
+                           data-redirect="{{ ("calendar/events/new/"~calendarHandle~"/"~site.handle)|hash }}">
+                            {{ "Save and add another"|t('calendar') }}
+                        </a>
                     </li>
                     {% if event.id %}
                         <li><a class="formsubmit" data-param="eventId"

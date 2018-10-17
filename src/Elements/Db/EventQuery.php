@@ -582,8 +582,8 @@ class EventQuery extends ElementQuery implements \Countable
         // join in the products table
         $this->joinElementTable($table);
         $hasCalendarsJoined = false;
-        $hasRelations = false;
-        $hasUsers = false;
+        $hasRelations       = false;
+        $hasUsers           = false;
 
         if (!empty($this->join)) {
             foreach ($this->join as $join) {
@@ -618,23 +618,23 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         $select = [
-                $table . '.[[calendarId]]',
-                $table . '.[[authorId]]',
-                $table . '.[[startDate]]',
-                $table . '.[[endDate]]',
-                $table . '.[[allDay]]',
-                $table . '.[[rrule]]',
-                $table . '.[[freq]]',
-                $table . '.[[interval]]',
-                $table . '.[[count]]',
-                $table . '.[[until]]',
-                $table . '.[[byMonth]]',
-                $table . '.[[byYearDay]]',
-                $table . '.[[byMonthDay]]',
-                $table . '.[[byDay]]',
-                '{{%users}}.[[username]]',
-                $calendarTable . '.[[name]]',
-            ];
+            $table . '.[[calendarId]]',
+            $table . '.[[authorId]]',
+            $table . '.[[startDate]]',
+            $table . '.[[endDate]]',
+            $table . '.[[allDay]]',
+            $table . '.[[rrule]]',
+            $table . '.[[freq]]',
+            $table . '.[[interval]]',
+            $table . '.[[count]]',
+            $table . '.[[until]]',
+            $table . '.[[byMonth]]',
+            $table . '.[[byYearDay]]',
+            $table . '.[[byMonthDay]]',
+            $table . '.[[byDay]]',
+            '{{%users}}.[[username]]',
+            $calendarTable . '.[[name]]',
+        ];
 
         if ($hasRelations) {
             $select[] = '[[relations.sortOrder]]';
@@ -811,7 +811,7 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         if (\is_array($this->orderBy) && isset($this->orderBy['dateCreated'])) {
-            $sortDirection = $this->orderBy['dateCreated'];
+            $sortDirection                                    = $this->orderBy['dateCreated'];
             $this->orderBy['[[calendar_events.dateCreated]]'] = $sortDirection;
 
             unset($this->orderBy['dateCreated']);
@@ -1227,11 +1227,20 @@ class EventQuery extends ElementQuery implements \Countable
             $endDate    = $event->getEndDate();
             $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
 
-            $month = $startDate->format(self::FORMAT_MONTH);
+            $month    = $startDate->format(self::FORMAT_MONTH);
+            $endMonth = $endDate->format(self::FORMAT_MONTH);
             $this->addEventToCache($eventsByMonth, $month, $event);
+            if ($month !== $endMonth) {
+                $this->addEventToCache($eventsByMonth, $endMonth, $event);
+            }
+
 
             $week = DateHelper::getCacheWeekNumber($startDate);
+            $endWeek = DateHelper::getCacheWeekNumber($endDate);
             $this->addEventToCache($eventsByWeek, $week, $event);
+            if ($week !== $endWeek) {
+                $this->addEventToCache($eventsByWeek, $endWeek, $event);
+            }
 
             $day = $startDate->copy();
             for ($i = 0; $i <= $diffInDays; $i++) {

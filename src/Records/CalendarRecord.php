@@ -19,6 +19,7 @@ use yii\db\ActiveQuery;
  * @property string $descriptionFieldHandle
  * @property string $locationFieldHandle
  * @property string $icsHash
+ * @property string $icsTimezone
  */
 class CalendarRecord extends ActiveRecord
 {

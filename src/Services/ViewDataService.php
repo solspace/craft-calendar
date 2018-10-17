@@ -110,7 +110,7 @@ class ViewDataService extends Component
             $date = $attributes['date'];
         }
 
-        return new Carbon($date, DateHelper::UTC);
+        return new Carbon($date);
     }
 
     /**
@@ -131,7 +131,7 @@ class ViewDataService extends Component
             }
 
             try {
-                $carbon = new Carbon($firstDay, DateHelper::UTC);
+                $carbon = new Carbon($firstDay);
 
                 return $carbon->dayOfWeek;
             } catch (\Exception $e) {}

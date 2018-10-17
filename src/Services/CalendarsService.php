@@ -259,6 +259,7 @@ class CalendarsService extends Component
         $calendarRecord->descriptionFieldHandle = $calendar->descriptionFieldHandle;
         $calendarRecord->locationFieldHandle    = $calendar->locationFieldHandle;
         $calendarRecord->icsHash                = $calendar->icsHash;
+        $calendarRecord->icsTimezone            = $calendar->icsTimezone;
         $calendarRecord->titleFormat            = $calendar->titleFormat;
         $calendarRecord->titleLabel             = $calendar->titleLabel;
         $calendarRecord->hasTitleField          = $calendar->hasTitleField;
@@ -540,7 +541,7 @@ class CalendarsService extends Component
         $siteSettings = $calendar->getSiteSettingsForSite($siteId);
 
         if (!$siteSettings) {
-            return null;
+            return false;
         }
 
         // Set Craft to the site template mode
@@ -622,6 +623,7 @@ class CalendarsService extends Component
                     'calendar.[[descriptionFieldHandle]]',
                     'calendar.[[locationFieldHandle]]',
                     'calendar.[[icsHash]]',
+                    'calendar.[[icsTimezone]]',
                 ]
             )
             ->from(CalendarRecord::TABLE . ' calendar')

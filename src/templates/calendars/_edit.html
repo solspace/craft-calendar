@@ -206,6 +206,14 @@
     <hr>
 
     {{ forms.selectField({
+        label: "Forced ICS Event Timezone"|t('calendar'),
+        instructions: "Choose a timezone that will be forced upon exported ICS event dates"|t('calendar'),
+        name: 'icsTimezone',
+        value: calendar.icsTimezone,
+        options: timezoneOptions
+    }) }}
+
+    {{ forms.selectField({
         label: "ICS Description field"|t('calendar'),
         instructions: "Set the field to be used for event description when exporting ICS file."|t('calendar'),
         id: 'descriptionFieldHandle',

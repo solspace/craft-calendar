@@ -1,5 +1,20 @@
 # Solspace Calendar Changelog
 
+## 2.0.7 - 2018-10-17
+### Added
+- Added `timezone` parameter for `calendar.export` function, allowing users to simulate a localized timezone, more-so as a workaround for Google Calendar not correctly supporting floating timezones.
+
+### Changed
+- Updated Events list CP page to only show available calendars when switching Sites, and to always append Site handle in URL when creating new events.
+
+### Fixed
+- Fixed a bug where CP and front end templates (month/week/day functions) were not localizing correctly for today's date.
+- Fixed a bug where the End Repeat on Date input was incorrectly localizing the selected date when editing events.
+- Fixed a bug where disabling the "Display Mini Calendar" setting for Calendar Month/Week/Day CP views would gives a JS error on those pages.
+- Fixed a bug where CP Month/Week/Day views were looking for `jquery.qtip.min.map` and resulted in a JS error.
+- Fixed a bug where CP Month/Week/Day views were not loading correctly if Fruit Studios Linkit fields were being used.
+- Fixed a bug where querying manually for a list of events in a month was not always including all events that overlapped before the current month.
+
 ## 2.0.6 - 2018-09-06
 ### Fixed
 - Fixed a bug where the `readableRepeatRule` was using the currently viewed occurrence of the event as the "starting from..." date, and not the original main start date of the event.

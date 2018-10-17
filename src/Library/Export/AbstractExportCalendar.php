@@ -9,12 +9,17 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
     /** @var EventQuery */
     private $eventQuery;
 
+    /** @var array */
+    private $options;
+
     /**
      * @param EventQuery $events
+     * @param array      $options
      */
-    final public function __construct(EventQuery $events)
+    final public function __construct(EventQuery $events, array $options = [])
     {
         $this->eventQuery = $events;
+        $this->options    = $options;
     }
 
     /**
@@ -58,6 +63,17 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
     final protected function getEventQuery(): EventQuery
     {
         return $this->eventQuery;
+    }
+
+    /**
+     * @param string $key
+     * @param mixed  $defaultValue
+     *
+     * @return mixed
+     */
+    final protected function getOption($key, $defaultValue = null)
+    {
+        return $this->options[$key] ?? $defaultValue;
     }
 
     /**

@@ -17,6 +17,7 @@ $titles = [
     'Events'                        => 'Events',
     'New Calendar'                  => 'New Calendar',
     'New Event'                     => 'New Event',
+    'New {calendar} Event'          => 'New {calendar} Event',
     'Demo Templates'                => 'Demo Templates',
 
     'Month' => 'Month',
@@ -146,14 +147,16 @@ $events = [
 ];
 
 $calendars = [
-    'Name'                                                       => 'Name',
-    'What this calendar will be called in the CP.'               => 'What this calendar will be called in the CP.',
-    'Handle'                                                     => 'Handle',
-    'How you’ll refer to this calendar in the templates.'        => 'How you’ll refer to this calendar in the templates.',
-    'Description'                                                => 'Description',
-    'A small description describing what this calendar is about' => 'A small description describing what this calendar is about',
-    'Color'                                                      => 'Color',
-    'Events assigned to this calendar will use this color'       => 'Events assigned to this calendar will use this color',
+    'Name'                                                                => 'Name',
+    'What this calendar will be called in the CP.'                        => 'What this calendar will be called in the CP.',
+    'Handle'                                                              => 'Handle',
+    'How you’ll refer to this calendar in the templates.'                 => 'How you’ll refer to this calendar in the templates.',
+    'Description'                                                         => 'Description',
+    'A small description describing what this calendar is about'          => 'A small description describing what this calendar is about',
+    'Color'                                                               => 'Color',
+    'Events assigned to this calendar will use this color'                => 'Events assigned to this calendar will use this color',
+    'Forced ICS Event Timezone'                                           => 'Forced ICS Event Timezone',
+    'Choose a timezone that will be forced upon exported ICS event dates' => 'Choose a timezone that will be forced upon exported ICS event dates',
 
     'Save'                                                         => 'Save',
     'Delete'                                                       => 'Delete',
@@ -184,11 +187,11 @@ $calendars = [
 ];
 
 $demoTemplates = [
-    'Install Path'    => 'Install Path',
-    'Install'   => 'Install',
-    'Templates' => 'Templates',
-    'Assets'    => 'Assets',
-    'Routes'    => 'Routes',
+    'Install Path' => 'Install Path',
+    'Install'      => 'Install',
+    'Templates'    => 'Templates',
+    'Assets'       => 'Assets',
+    'Routes'       => 'Routes',
 
     'There are no Demo Templates available'                                                                                                                     => 'There are no Demo Templates available',
     'Successfully installed <b>{templates} templates</b> and <b>{assets} assets</b>'                                                                            => 'Successfully installed <b>{templates} templates</b> and <b>{assets} assets</b>',
