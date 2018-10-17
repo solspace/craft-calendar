@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 2.0.8 - 2018-10-17
+### Fixed
+- Fixed a bug where the CP Events list page would not load because of an accidental reference to Freeform.
+
 ## 2.0.7 - 2018-10-17
 ### Added
 - Added `timezone` parameter for `calendar.export` function, allowing users to simulate a localized timezone, more-so as a workaround for Google Calendar not correctly supporting floating timezones.

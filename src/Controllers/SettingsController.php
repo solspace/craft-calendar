@@ -149,7 +149,7 @@ class SettingsController extends BaseController
 
     /**
      * Determines which template has to be rendered based on $template
-     * Adds a Freeform_SettingsModel to template variables
+     * Adds a Calendar_SettingsModel to template variables
      *
      * @param string $template
      * @param array  $variables
