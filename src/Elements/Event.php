@@ -16,12 +16,12 @@ use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\Configurations\Occurrences;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Duration\EventDuration;
+use Solspace\Calendar\Library\Exceptions\CalendarException;
 use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
-use yii\base\Model;
 
 class Event extends Element implements \JsonSerializable
 {
@@ -413,6 +413,10 @@ class Event extends Element implements \JsonSerializable
         }
 
         if (null !== $date) {
+            if (!$this->happensOn($date)) {
+                throw new CalendarException('Invalid event date');
+            }
+
             $startDate = $this->getStartDate()->copy();
             $endDate   = $this->getEndDate()->copy();
 
@@ -429,8 +433,10 @@ class Event extends Element implements \JsonSerializable
             $endDate = $startDate->copy();
             $endDate->addSeconds($diffInSeconds);
 
-            $clone->startDate = $startDate;
-            $clone->endDate   = $endDate;
+            $clone->startDate          = $startDate;
+            $clone->endDate            = $endDate;
+            $clone->startDateLocalized = new Carbon($startDate);
+            $clone->endDateLocalized   = new Carbon($endDate);
         }
 
         return $clone;
@@ -753,6 +759,37 @@ class Event extends Element implements \JsonSerializable
         DateHelper::sortArrayOfDates($occurrences);
 
         return $occurrences;
+    }
+
+    /**
+     * @param \DateTime $date
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function happensOn(\DateTime $date): bool
+    {
+        if (!$date instanceof Carbon) {
+            $date = new Carbon($date->format('Y-m-d'), DateHelper::UTC);
+        }
+        $date->setTime(0, 0, 0);
+
+        if ($date->toDateString() === $this->getStartDate()->toDateString()) {
+            return true;
+        }
+
+        if ($this->repeatsOnSelectDates()) {
+            $dates = $this->getSelectDatesAsString();
+
+            return \in_array($date->toDateString(), $dates, true);
+        }
+
+        $rrule = $this->getRRuleObject();
+        if (null === $rrule) {
+            return false;
+        }
+
+        return $rrule->occursAt($date);
     }
 
     /**
@@ -1391,7 +1428,7 @@ class Event extends Element implements \JsonSerializable
             [
                 'FREQ'       => $this->getFrequency(),
                 'INTERVAL'   => $this->interval,
-                'DTSTART'    => $this->initialStartDate,
+                'DTSTART'    => $this->initialStartDate->copy()->setTime(0, 0, 0),
                 'UNTIL'      => $this->getUntil(),
                 'COUNT'      => $this->count,
                 'BYDAY'      => $this->byDay,

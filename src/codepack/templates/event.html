@@ -139,12 +139,12 @@
                                     <ul class="list-group">
                                         {% for occurrence in occurrences %}
                                             <li class="list-group-item" style="border-left: 5px solid {{ occurrence.calendar.color }};">
-                                                <a href="{{ siteUrl }}calendar_demo/event/{{ occurrence.id }}/{{ occurrence.startDate.format("Y/m/d") }}"
+                                                <a href="{{ siteUrl }}demo/event/{{ occurrence.id }}/{{ occurrence.startDate.format("Y/m/d") }}"
                                                    class="badge"
                                                    style="background-color: {{ occurrence.calendar.color }}; color: {{ occurrence.calendar.contrastColor }} !important;">
                                                     View Recurrence
                                                 </a>
-                                                <a href="{{ siteUrl }}calendar_demo/day/{{ occurrence.startDate.format("Y/m/d") }}" class="badge">
+                                                <a href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format("Y/m/d") }}" class="badge">
                                                     View Day in Calendar
                                                 </a>
                                                 <span class="glyphicon glyphicon-time"></span>&nbsp;

@@ -65,6 +65,8 @@ class CalendarVariable
         $targetDate = null;
         if (isset($options['targetDate'])) {
             $targetDate = new Carbon($options['targetDate'], DateHelper::UTC);
+        } else if (isset($options['occurrenceDate'])) {
+            $targetDate = new Carbon($options['occurrenceDate'], DateHelper::UTC);
         }
 
         $siteId = null;

@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 2.0.9 - 2018-11-01
+### Changed
+- Updated demo templates approach for viewing individual recurrences to validate that the date segments in URL match against an available recurrence.
+
+### Fixed
+- Fixed a bug where `startDateLocalized|date()` was not displaying the correct date when viewing recurrences.
+- Fixed a bug where the `occurrenceDate` parameter was not working (was originally named `targetDate` - aliased now).
+
 ## 2.0.8 - 2018-10-17
 ### Fixed
 - Fixed a bug where the CP Events list page would not load because of an accidental reference to Freeform.
