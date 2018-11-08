@@ -18,4 +18,12 @@ class SelectDateModel extends Model
 
     /** @var \DateTime */
     public $date;
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->date->format('Y-m-d');
+    }
 }

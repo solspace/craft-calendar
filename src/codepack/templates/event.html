@@ -3,32 +3,30 @@
 {% set pageTitle = "Event" %}
 {% set page = "event" %}
 
+{# Acquire URL segments #}
+{% set baseUrlSegments = 1 %}
+{% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
+{% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
+{% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+{% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
+{% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
+{% set segment6 = craft.app.request.segment(baseUrlSegments + 6) %}
+
 {% block content %}
 
-    {# Acquire URL segments #}
-    {% set baseUrlSegments = 1 %}
-    {% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
-    {% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
-    {% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
-    {% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
-    {% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
-    {% set segment6 = craft.app.request.segment(baseUrlSegments + 6) %}
-
-	<div class="page-header">
-		<h1>Event View</h1>
-		<p class="lead">
-			Below is an individual event view, which allows you to see full details and occurrences for the given event.
-		</p>
-	</div>
+	<h1>Event View</h1>
+	<p class="lead">
+		Below is an individual event view, which allows you to see full details and occurrences for the given event.
+	</p>
+    <hr /><br />
 
     {% set eventSaved = craft.app.session.getFlash('calendar_event_saved') %}
     {% if eventSaved %}
         <div class="alert alert-success alert-dismissible" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <p class="lead">
-                Event saved successfully
-            </p>
+            Event saved successfully!
         </div>
+		<br />
     {% endif %}
 
 	<div class="row">
@@ -46,11 +44,11 @@
 
                 {% if event %}
 
-                    <div class="btn-group pull-right" role="group" aria-label="actions">
+                    <div class="btn-group float-right" role="group" aria-label="actions">
                         <a href="{{ siteUrl }}demo/export/event/{{ segment2 }}"
-                           class="btn btn-default btn-sm"
+                           class="btn btn-primary btn-sm"
                            role="button">
-                            <span class="glyphicon glyphicon-export" aria-hidden="true"></span>
+                            <span class="fas fa-file-export" aria-hidden="true"></span>
                             &nbsp;Export Event
                         </a>
 
@@ -58,18 +56,19 @@
                             <a href="{{ siteUrl }}demo/edit/event/{{ segment2 }}"
                                class="btn btn-warning btn-sm"
                                role="button">
-                                <span class="glyphicon glyphicon-edit"></span>
+                                <span class="fas fa-edit"></span>
                                 &nbsp;Edit
                             </a>
                         {% endif %}
                     </div>
 
                     <h3>{{ event.title }}</h3>
-                    <table class="table table-striped" style="margin-top: 20px;">
+
+                    <table class="table table-striped mt-3">
                         <tr>
                             <th style="width: 20%;">Calendar</th>
                             <td>
-                                <span class="glyphicon glyphicon-calendar" style="color: {{ event.calendar.color }};"></span>&nbsp;
+                                <span class="fas fa-calendar-alt" style="color: {{ event.calendar.color }};"></span>&nbsp;
                                 <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}" style="color: {{ event.calendar.color }};">
                                     {{ event.calendar.name }}
                                 </a>
@@ -103,7 +102,7 @@
                         <tr>
                             <th>Duration</th>
                             <td>
-                                <span class="glyphicon glyphicon-time"></span>&nbsp;
+                                <span class="far fa-clock"></span>&nbsp;
                                 {{ event.duration.humanReadable }}
                             </td>
                         </tr>
@@ -117,7 +116,7 @@
                             <th>Repeats?</th>
                             <td>
                                 {% if event.repeating %}
-                                    <span class="glyphicon glyphicon-repeat"></span>&nbsp;
+                                    <span class="fas fa-redo"></span>&nbsp;
                                     Repeats {{ event.readableRepeatRule }}
                                 {% else %}
                                     No
@@ -138,27 +137,31 @@
                                 {% if occurrences %}
                                     <ul class="list-group">
                                         {% for occurrence in occurrences %}
-                                            <li class="list-group-item" style="border-left: 5px solid {{ occurrence.calendar.color }};">
-                                                <a href="{{ siteUrl }}demo/event/{{ occurrence.id }}/{{ occurrence.startDate.format("Y/m/d") }}"
-                                                   class="badge"
+                                            <li class="list-group-item d-flex align-items-center" style="border-left: 5px solid {{ occurrence.calendar.color }};">
+                                                <small class="mr-auto">
+                                                    <span class="far fa-clock"></span>&nbsp;
+                                                    {{ occurrence.startDate.format("l, F j, Y") }}
+
+                                                    {% if occurrence.allDay %}
+                                                        (all day)
+                                                    {% else %}
+                                                        at {{ occurrence.startDate.format("g:ia") }}
+                                                        {% if occurrence.multiDay %}
+                                                            <br />{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
+                                                        {% else %}
+                                                            {{ occurrence.endDate.format("g:ia") }}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </small>
+
+                                                <a href="{{ siteUrl }}demo/event/{{ occurrence.id }}/{{ occurrence.startDate.format("Y/m/d") }}" class="badge mr-2"
                                                    style="background-color: {{ occurrence.calendar.color }}; color: {{ occurrence.calendar.contrastColor }} !important;">
                                                     View Recurrence
                                                 </a>
-                                                <a href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format("Y/m/d") }}" class="badge">
+                                                <a class="badge badge-primary"
+                                                   href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format("Y/m/d") }}">
                                                     View Day in Calendar
                                                 </a>
-                                                <span class="glyphicon glyphicon-time"></span>&nbsp;
-                                                {{ occurrence.startDate.format("l, F j, Y") }}
-                                                {% if occurrence.allDay %}
-                                                    (all day)
-                                                {% else %}
-                                                    at {{ occurrence.startDate.format("g:ia") }}
-                                                    {% if occurrence.multiDay %}
-                                                        <br />{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
-                                                    {% else %}
-                                                        {{ occurrence.endDate.format("g:ia") }}
-                                                    {% endif %}
-                                                {% endif %}
                                             </li>
                                         {% endfor %}
                                     </ul>

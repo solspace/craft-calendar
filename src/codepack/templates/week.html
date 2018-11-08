@@ -14,12 +14,11 @@
     {% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
     {% set segment6 = craft.app.request.segment(baseUrlSegments + 6) %}
 
-    <div class="page-header">
-        <h1>Week View</h1>
-        <p class="lead">
-            Below is full week calendar view, which allows you to see all your event occurrences in a daily view.
-        </p>
-    </div>
+    <h1>Week View</h1>
+    <p class="lead">
+        Below is full week calendar view, which allows you to see all your event occurrences in a daily view.
+    </p>
+    <hr /><br />
 
     {% set targetDate = "today" %}
     {% set calendarHandle = null %}
@@ -43,101 +42,102 @@
                     calendar: calendarHandle,
                 }) %}
 
-                <div class="header clearfix">
-                    <div class="left">
-                        <ul class="pager">
-                            <li>
-                                <a href="{{ siteUrl }}demo/week/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ week.previousDate.format('Y/m/d') }}">
-                                    &larr; Last Week
-                                </a>
-                            </li>
-                        </ul>
+                <div class="row justify-content-between mb-3">
+                    <div class="col-2">
+                        <a class="btn btn-outline-secondary"
+                           href="{{ siteUrl }}demo/week/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ week.previousDate.format('Y/m/d') }}">
+                            <span class="fas fa-arrow-left"></span> Last Week
+                        </a>
                     </div>
-                    <div class="center">
+
+                    <div class="col-auto">
                         <h3>
                             Week of {{ week.date.format("F j, Y") }} &nbsp;
-                            <span class="label {{ week.eventCount ? "label-warning" : "label-default" }}">
-								{{ week.eventCount }} event{{ week.eventCount > 1 or week.eventCount == 0 ? "s" }}
-							</span>
+                            <span class="badge {{ week.eventCount ? "badge-warning" : "badge-secondary" }}">
+                            {{ week.eventCount }} event{{ week.eventCount > 1 or week.eventCount == 0 ? "s" }}
+                        </span>
                         </h3>
                     </div>
-                    <div class="right">
-                        <ul class="pager">
-                            <li>
-                                <a href="{{ siteUrl }}demo/week/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ week.nextDate.format('Y/m/d') }}">
-                                    Next Week &rarr;
-                                </a>
-                            </li>
-                        </ul>
+
+                    <div class="col-2 clearfix">
+                        <a class="btn btn-outline-secondary float-right"
+                           href="{{ siteUrl }}demo/week/{{ segment2 == "calendar" ? "calendar/"~segment3~"/" }}{{ week.nextDate.format('Y/m/d') }}">
+                            Next Week <span class="fas fa-arrow-right"></span>
+                        </a>
                     </div>
                 </div>
+
                 {% for day in week %}
-                    <div class="panel {{ day.date.isToday ? "panel-warning" : "panel-default" }}">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                <a href="{{ siteUrl }}demo/day/{{ segment2 == "calendar" ? segment2~"/"~segment3~"/" }}{{ day.date.format('Y/m/d') }}">
-                                    {% if day.date.isToday %}
-                                        TODAY
-                                    {% else %}
-                                        {{ day.date.format('l, F j, Y') }}
-                                    {% endif %}
-                                </a> &nbsp;
-                                {% if day.eventCount %}
-                                    <span class="label label-warning">
-										{{ day.eventCount }} event{{ day.eventCount > 1 ? "s" }}
-									</span>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item list-group-item-{{ day.date.isToday ? "warning" : "secondary" }}">
+                            <a class="text-dark font-weight-bold"
+                               href="{{ siteUrl }}demo/day/{{ segment2 == "calendar" ? segment2~"/"~segment3~"/" }}{{ day.date.format('Y/m/d') }}">
+                                {% if day.date.isToday %}
+                                    TODAY
+                                {% else %}
+                                    {{ day.date.format('l, F j, Y') }}
                                 {% endif %}
-                            </h3>
-                        </div>
-                        <div class="panel-body">
-                            {% for event in day.events %}
-                                {% if loop.index == 1 %}<ul class="list-group">{% endif %}
+                            </a> &nbsp;
+                            {% if day.eventCount %}
+                                <span class="badge badge-warning">
+                                    {{ day.eventCount }} event{{ day.eventCount > 1 ? "s" }}
+                                </span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            {% if day.events %}
+                                <ul class="list-group">
+                                    {% for event in day.events %}
+                                        <li class="list-group-item d-flex align-items-center justify-content-between"
+                                            style="border-left: 5px solid {{ event.calendar.color }};">
+                                            <div>
+                                                <span class="far fa-clock"></span>
+                                                {% if event.allDay %}
+                                                    All Day
+                                                {% else %}
+                                                    {% if event.multiDay %}
+                                                        {% if day.containsDate(event.startDate) %}
+                                                            Starts {{ event.startDate.format("g:ia") }}
+                                                        {% elseif day.containsDate(event.endDate) %}
+                                                            Ends {{ event.endDate.format("g:ia") }}
+                                                        {% else %}
+                                                            All Day
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {{ event.startDate.format("g:ia") }} - {{ event.endDate.format("g:ia") }}
+                                                    {% endif %}
+                                                {% endif %}
+                                                <b>
+                                                    <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? event.startDate.format("Y/m/d") }}"
+                                                       class="calendar_event_title">
+                                                        {{ event.title }}</a>
+                                                </b>
+                                                {% if event['location'] is defined %}
+                                                    &nbsp;&nbsp;<i>{{ event.location }}</i>
+                                                {% endif %}
+                                            </div>
 
-                                <li class="list-group-item" style="border-left: 5px solid {{ event.calendar.color }};">
-                                    <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}" class="badge" style="background-color: {{ event.calendar.color }};">
-                                        {{ event.calendar.name }}
-                                    </a>
-                                    <span class="glyphicon glyphicon-time"></span>
-                                    {% if event.allDay %}
-                                        All Day
-                                    {% else %}
-                                        {% if event.multiDay %}
-                                            {% if day.containsDate(event.startDate) %}
-                                                Starts {{ event.startDate.format("g:ia") }}
-                                            {% elseif day.containsDate(event.endDate) %}
-                                                Ends {{ event.endDate.format("g:ia") }}
-                                            {% else %}
-                                                All Day
-                                            {% endif %}
-                                        {% else %}
-                                            {{ event.startDate.format("g:ia") }} - {{ event.endDate.format("g:ia") }}
-                                        {% endif %}
-                                    {% endif %}
-                                    <b>
-                                        <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? event.startDate.format("Y/m/d") }}"
-                                           class="calendar_event_title">
-                                            {{ event.title }}
-                                        </a>
-                                    </b>
-                                    {% if event['location'] is defined %}
-                                        <i>{{ event.location }}</i>
-                                    {% endif %}
-                                </li>
-
-                                {% if loop.index == day.eventCount %}</ul>{% endif %}
+                                            <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
+                                               class="badge"
+                                               style="background-color: {{ event.calendar.color }}; color: {{ event.calendar.contrastColor }};">
+                                                {{ event.calendar.name }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
                             {% else %}
-                                <p>No events for this day.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
+                                No events for this day.
+                            {% endif %}
+                        </li>
+                    </ul>
                 {% endfor %}
             </div>
-
         </div>
 
         <div class="col-md-3">
             {% include "demo/layouts/_sidebar.html" %}
         </div>
+
     </div>
 
 {% endblock %}

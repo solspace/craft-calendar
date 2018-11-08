@@ -3,7 +3,7 @@
 {% if event.multiDay %}
     {% set classes = classes ~ " multi_day" %}
     {% set classes = classes ~ (day.containsDate(event.startDate) ? " first_day") %}
-    {% set classes = classes ~ (day.containsDate(event.endDate) ? " last_day") %}
+    {% set classes = classes ~ (day.containsDate(event.endDate.copy.minute(-1)) ? " last_day") %}
 {% endif %}
 
 {% set style = "" %}

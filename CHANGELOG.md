@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 2.0.10 - 2018-11-08
+### Changed
+- Updated demo templates to use Bootstrap 4.1 and made some general improvements.
+- Updated event validation to no longer allow multi-day events to span longer than 365 days to prevent performance issues.
+
+### Fixed
+- Fixed a bug where editing events on the front end with Select Dates rule enabled would result in an error.
+- Fixed a bug where the `.one()` method was not working correctly for Event query.
+
 ## 2.0.9 - 2018-11-01
 ### Changed
 - Updated demo templates approach for viewing individual recurrences to validate that the date segments in URL match against an available recurrence.

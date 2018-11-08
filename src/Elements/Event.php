@@ -32,6 +32,8 @@ class Event extends Element implements \JsonSerializable
     const UNTIL_TYPE_UNTIL   = 'until';
     const UNTIL_TYPE_COUNT   = 'count';
 
+    const SPAN_LIMIT_DAYS = 365;
+
     /** @var int */
     private static $overlapThreshold;
 
@@ -1365,6 +1367,10 @@ class Event extends Element implements \JsonSerializable
     {
         if ($this->startDate >= $this->endDate) {
             $this->addError('startDate', Calendar::t('Start Date must be before End Date'));
+        }
+
+        if ($this->startDate->diffInDays($this->endDate, true) > self::SPAN_LIMIT_DAYS) {
+            $this->addError('startDate', Calendar::t('The maximum time span of an event is 365 days'));
         }
     }
 

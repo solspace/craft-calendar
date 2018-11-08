@@ -30,8 +30,8 @@
         {% endif %}
 
         <a href="{{ siteUrl }}demo/{{ urlPart }}/{{ calendar.handle }}"
-           class="list-group-item" style="{{ style }}">
-            <span class="glyphicon glyphicon-calendar" style="color: {{ calendar.color }};" aria-hidden="true"></span>&nbsp;
+           class="list-group-item list-group-item-action" style="{{ style }}">
+            <span class="fas fa-calendar-alt" style="color: {{ calendar.color }};" aria-hidden="true"></span>&nbsp;
             {{ calendar.name }}
         </a>
     {% endfor %}

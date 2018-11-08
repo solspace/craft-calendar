@@ -12,42 +12,43 @@
 {% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
 
 {% block content %}
-    <div class="page-header">
-        <h1>Full Calendar</h1>
-        <p class="lead">
-            Below is an implementation of the <a href="http://fullcalendar.io">FullCalendar.io</a> JS library.
-            Users with appropriate admistrative priviledges will also be able to modify events.
-        </p>
-    </div>
+
+    <h1>Full Calendar</h1>
+    <p class="lead">
+        Below is an implementation of the <a href="http://fullcalendar.io">FullCalendar.io</a> JS library.
+        Users with appropriate admistrative priviledges will also be able to modify events.
+    </p>
+    <hr /><br />
 
     <div class="row">
         <div class="col-sm-12 col-md-12">
-
             <div id="calendar-wrapper"></div>
-
         </div>
-
     </div>
 
 {% endblock %}
 
 
 {% block footerJs %}
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.3/fullcalendar.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/full-calendar.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.3/fullcalendar.min.js"></script>
-    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js" integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.min.js"></script>
     <script src="//cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-3.0.0.min.js"></script>
     <script>
         var calendarTimeFormat = "{{ craft.app.locale.getTimeFormat('short', 'php') }}";
         var qTipsEnabled = true;
         var $calendar = $("#calendar-wrapper");
         var canEditEvents = {{ currentUser and currentUser.can('calendar-manageEvents') ? 'true' : 'false' }};
+
+        window.csrfTokenName = '{{ craft.app.config.general.csrfTokenName }}';
+        window.csrfTokenValue = '{{ craft.app.request.csrfToken }}';
 
         {% set defaultDate = now.format("Y-m-d") %}
         {% if segment3 and segment4 and segment5 %}
@@ -138,7 +139,17 @@
                 type: 'post',
                 dataType: 'json',
                 success: function (eventList) {
-                    callback(eventList);
+                  // All day events have to actually go into the next day
+                  // So we pad them with 2 seconds to go from 23:59:59 same day
+                  // Into 00:00:01 the next day
+                  for (var i = 0; i < eventList.length; i++) {
+                    var event = eventList[i];
+                    if (event.allDay) {
+                      eventList[i].end = moment(event.end).add(2, 's').utc().format();
+                    }
+                  }
+
+                  callback(eventList);
                 }
             });
         }
@@ -203,7 +214,7 @@
                 end.subtract(1, 'days');
             } else {
                 var timeFormat = calendarTimeFormat == "H:i" ? "HH:mm" : "h:mma"
-                dateFormat = dateFormat + ' \\a\\t ' + timeFormat;
+                dateFormat = dateFormat + ' [at] ' + timeFormat;
             }
 
             var eventRange = $('<div>', {
@@ -226,28 +237,28 @@
                 });
 
                 editButton.append($('<a>', {
-                    class: 'btn btn-warning btn-xs submit',
+                    class: 'btn btn-outline-warning btn-sm submit',
                     href: '{{ siteUrl }}demo/edit/event/' + event.id,
                     text: '{{ "Edit"|t }}'
                 }));
 
                 editButton.append($('<a>', {
-                    class: 'btn btn-default btn-xs delete-event',
+                    class: 'btn btn-outline-danger text-danger btn-sm delete-event',
                     text: "{{ 'Delete'|t }}",
                     data: {
                         id: event.id,
-                        action: 'calendar/eventsApi/delete'
+                        action: 'calendar/events-api/delete'
                     }
                 }));
 
                 if (event.repeats) {
                     editButton.append($('<a>', {
-                        class: 'btn btn-default btn-xs delete-event-occurrence',
-                        text: "{{ 'Delete occurrence'|t }}",
+                        class: 'btn btn-outline-secondary btn-sm delete-event-occurrence',
+                        text: "{{ 'Delete Occurrence'|t }}",
                         data: {
                             id: event.id,
                             date: event.start.toISOString(),
-                            action: 'calendar/eventsApi/deleteOccurrence'
+                            action: 'calendar/events-api/delete-occurrence'
                         }
                     }));
                 }
@@ -371,7 +382,7 @@
 
         function eventRepositioned(modification, event, delta, revertFunc) {
             var data = {
-                action: "calendar/eventsApi/modify" + modification,
+                action: "calendar/events-api/modify-" + modification.toLowerCase(),
                 eventId: event.id,
                 isAllDay: event.allDay,
                 startDate: event.start.toISOString(),
@@ -481,7 +492,7 @@
                             var endTimeValue = moment($endTime.timepicker('getTime'));
 
                             var data = {
-                                action: 'calendar/eventsApi/create',
+                                action: 'calendar/events-api/create',
                                 startDate: startDateValue.format('YYYY-MM-DD') + ' ' + startTimeValue.format('HH:mm:ss'),
                                 endDate: endDateValue.format('YYYY-MM-DD') + ' ' + endTimeValue.format('HH:mm:ss'),
                                 allDay: $allDayInput.is(":checked") ? 1 : 0,

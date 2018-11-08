@@ -123,6 +123,9 @@ $events = array(
     'Event interval must be a positive number' => 'Pasākuma intervālam jābūt pozitīvam skaitlim',
     'Event repeat rules not specified'         => 'Event repeat rules not specified',
 
+    'The maximum time span of an event is 365 days' => 'Maksimālais pasākuma ilgums ir 365 dienas',
+    'Start Date must be before End Date'            => 'Sākuma datumam ir jāsākas pirms beigu datuma',
+
     'Su' => 'Sv',
     'Mo' => 'P',
     'Tu' => 'O',

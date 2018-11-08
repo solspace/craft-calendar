@@ -1,8 +1,8 @@
-<div class="qtip hidden">
+<div class="qtip d-none">
     <div class="title">
         {{ event.title }}
         <span class='event_time'>
-            <span class='glyphicon glyphicon-time'></span>
+            <span class='far fa-clock'></span>
             {% if event.allDay %}
                 All Day
                 {% if event.duration.days > 1 %}
@@ -26,7 +26,7 @@
             </span>
     </div>
     <div class="content">
-        <span class='glyphicon glyphicon-calendar' style='color: {{ event.calendar.color }};'></span>
+        <span class='fas fa-calendar-alt' style='color: {{ event.calendar.color }};'></span>
         <span style='color: {{ event.calendar.color }};'>{{ event.calendar.name }}</span>
         <hr />
         {% if event.allDay %}
@@ -43,7 +43,7 @@
 
         {% if event.repeating %}
             <hr />
-            <span class='glyphicon glyphicon-repeat'></span>&nbsp;<b>Repeats</b>
+            <span class='fas fa-redo'></span>&nbsp;<b>Repeats</b>
             {{ event.readableRepeatRule }}
         {% endif %}
     </div>

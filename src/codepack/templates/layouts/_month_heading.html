@@ -1,18 +1,24 @@
-<div class="btn-group">
-	<button type="button" class="btn btn-lg btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		<strong>{{ month.date.format('F Y') }}</strong> <span class="caret"></span>
-	</button>
-	<ul class="dropdown-menu">
-		{% for date in month.dateRange(-6, 6) %}
-			{% if date == month.date %}<li role="separator" class="divider"></li>{% endif %}
+<div class="btn-group" role="group" aria-label="Month navigation">
+    <button id="calendar-month-menu"
+            type="button"
+            class="btn btn-secondary dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+    >
+        <strong>{{ month.date.format('F Y') }}</strong> <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu">
+        {% for date in month.dateRange(-6, 6) %}
+            {% if date == month.date %}
+                <div class="dropdown-divider"></div>{% endif %}
 
-			<li>
-				<a href="{{ siteUrl }}demo/month/{{ date.format('Y/m') }}/">
-					{{ date.format('F Y') }}
-				</a>
-			</li>
+            <a class="dropdown-item" href="{{ siteUrl }}demo/month/{{ date.format('Y/m') }}/">
+                {{ date.format('F Y') }}
+            </a>
 
-			{% if date == month.date %}<li role="separator" class="divider"></li>{% endif %}
-		{% endfor %}
-	</ul>
+            {% if date == month.date %}
+                <div class="dropdown-divider"></div>{% endif %}
+        {% endfor %}
+    </div>
 </div>

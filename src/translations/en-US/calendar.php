@@ -124,6 +124,9 @@ $events = [
     'Event interval must be a positive number' => 'Event interval must be a positive number',
     'Event repeat rules not specified'         => 'Event repeat rules not specified',
 
+    'The maximum time span of an event is 365 days' => 'The maximum time span of an event is 365 days',
+    'Start Date must be before End Date'            => 'Start Date must be before End Date',
+
     'Su' => 'Su',
     'Mo' => 'Mo',
     'Tu' => 'Tu',

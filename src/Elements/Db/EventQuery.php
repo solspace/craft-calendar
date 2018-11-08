@@ -19,6 +19,8 @@ use yii\db\Connection;
 
 class EventQuery extends ElementQuery implements \Countable
 {
+    const MAX_EVENT_LENGTH_DAYS = 365;
+
     const FORMAT_MONTH = 'Ym';
     const FORMAT_WEEK  = 'YW';
     const FORMAT_DAY   = 'Ymd';
@@ -426,6 +428,27 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         return $this->totalCount;
+    }
+
+    /**
+     * @param null $db
+     *
+     * @return array|\craft\base\ElementInterface|null
+     */
+    public function one($db = null)
+    {
+        $oldLimit = $this->limit;
+        $this->limit = 1;
+
+        $events = $this->all($db);
+
+        $this->limit = $oldLimit;
+
+        if (\count($events) >= 1) {
+            return reset($events);
+        }
+
+        return null;
     }
 
     /**
@@ -1243,7 +1266,7 @@ class EventQuery extends ElementQuery implements \Countable
             }
 
             $day = $startDate->copy();
-            for ($i = 0; $i <= $diffInDays; $i++) {
+            for ($i = 0; $i <= $diffInDays && $i <= self::MAX_EVENT_LENGTH_DAYS; $i++) {
                 if ($this->overlapThreshold && $i !== 0 && $i === $diffInDays) {
                     if (DateHelper::isDateBeforeOverlap($endDate, $this->overlapThreshold)) {
                         break;

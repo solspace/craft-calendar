@@ -1,8 +1,5 @@
 /* GLOBAL */
 
-body {
-	margin-top: 30px;
-}
 .ss-pageinfo {
 	margin-top: 30px;
 }
@@ -19,7 +16,7 @@ body {
 	width: 100%;
 }
 #month_calendar table, #month_calendar tr, #month_calendar td {
-	padding: 0px;
+	padding: 0;
 }
 #month_calendar_outer {
 	width: 100%;
@@ -144,7 +141,7 @@ body {
 #month_calendar #month_year th.right {
 	text-align: right;
 }
-#month_calendar .popover-title span.event_time {
+.popover-header span.event_time {
 	display: block;
 	color: #4f4f4f;
 	font-size: 85%;
@@ -285,7 +282,7 @@ body {
 
 	width: 30px;
 	height: 30px;
-	padding: 5px 0 0;
+	padding: 3px 0 0;
 
 	border-radius: 4px;
 
@@ -302,6 +299,7 @@ body {
 .freq-list.freq-list-large input[type=checkbox] + label {
 	display: block;
 	width: 100%;
+	padding: 3px 10px 0;
 }
 
 .freq-list.freq-list-large > div div.row {
