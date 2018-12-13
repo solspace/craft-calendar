@@ -170,7 +170,7 @@ class ExceptionsService extends Component
     private function createModel(array $data): ExceptionModel
     {
         if ($data['date']) {
-            $data['date'] = new Carbon($data['date']);
+            $data['date'] = new Carbon($data['date'], DateHelper::UTC);
         }
 
         return new ExceptionModel($data);

@@ -120,6 +120,7 @@ class EventsApiController extends BaseController
                         $date = new \DateTime();
                         $date->setTimestamp($exception->date->getTimestamp());
                         $date->add($daysInterval);
+                        $date->setTime(0, 0, 0);
 
                         $this->getExceptionsService()->saveException($event, $date);
                     }

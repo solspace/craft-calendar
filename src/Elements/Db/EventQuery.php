@@ -119,6 +119,9 @@ class EventQuery extends ElementQuery implements \Countable
     /** @var int */
     private $totalCount;
 
+    /** @var int */
+    private $firstDay;
+
     public function __construct(string $elementType, array $config = [])
     {
         $this->orderBy = ['startDate' => SORT_ASC];
@@ -414,6 +417,18 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
+     * @param int $firstDay
+     *
+     * @return EventQuery
+     */
+    public function setFirstDay(int $firstDay): EventQuery
+    {
+        DateHelper::updateWeekStartDate(new Carbon(), $firstDay);
+
+        return $this;
+    }
+
+    /**
      * @param string $q
      * @param null   $db
      *
@@ -475,6 +490,7 @@ class EventQuery extends ElementQuery implements \Countable
             $this->offset = null;
 
             $ids = parent::ids($db);
+            $this->totalCount = \count($ids);
 
             $this->limit  = $limit;
             $this->offset = $offset;

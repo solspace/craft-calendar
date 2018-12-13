@@ -1,5 +1,15 @@
 # Solspace Calendar Changelog
 
+## 2.0.11 - 2018-12-13
+### Changed
+- Updated the Full Calendar JS demo templates to have a limit of 500 events to allow websites with many events to work more reliably by default.
+
+### Fixed
+- Fixed a bug where `status: null` was not working for displaying disabled events for `calendar.event`.
+- Fixed a bug where `firstDay` parameter was not working correctly for front end templating.
+- Fixed a bug where pagination was not working at all for `calendar.events`. An upcoming update will include a fix where pagination may show extra pages in some cases.
+- Fixed a bug where exclusions might not save reliably in some cases.
+
 ## 2.0.10 - 2018-11-08
 ### Changed
 - Updated demo templates to use Bootstrap 4.1 and made some general improvements.

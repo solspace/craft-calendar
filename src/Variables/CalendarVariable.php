@@ -15,7 +15,6 @@ use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\SettingsService;
-use yii\helpers\BaseFormatConverter;
 
 class CalendarVariable
 {
@@ -82,13 +81,14 @@ class CalendarVariable
             $siteId = (int) $options['siteId'];
         }
 
-        $eventsService = Calendar::getInstance()->events;
+        $eventsService   = Calendar::getInstance()->events;
+        $includeDisabled = array_key_exists('status', $options) && $options['status'] === null;
 
         $event = null;
         if (is_numeric($id)) {
-            $event = $eventsService->getEventById($id, $siteId);
+            $event = $eventsService->getEventById($id, $siteId, $includeDisabled);
         } else if (\is_string($id)) {
-            $event = $eventsService->getEventBySlug($id, $siteId);
+            $event = $eventsService->getEventBySlug($id, $siteId, $includeDisabled);
         }
 
         if ($event) {
