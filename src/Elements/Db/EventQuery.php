@@ -490,7 +490,6 @@ class EventQuery extends ElementQuery implements \Countable
             $this->offset = null;
 
             $ids = parent::ids($db);
-            $this->totalCount = \count($ids);
 
             $this->limit  = $limit;
             $this->offset = $offset;
@@ -518,6 +517,8 @@ class EventQuery extends ElementQuery implements \Countable
             if ($this->shuffle) {
                 shuffle($this->eventCache);
             }
+
+            $this->totalCount = \count($this->eventCache);
 
             // Remove excess dates based on ::$limit and ::$offset
             $this->cutOffExcess($this->eventCache);

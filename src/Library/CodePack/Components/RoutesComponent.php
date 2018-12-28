@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Library\CodePack\Components;
 
 use craft\db\Query;
 use craft\helpers\Json;
+use craft\services\ProjectConfig;
 
 class RoutesComponent extends AbstractJsonComponent
 {
@@ -15,6 +16,13 @@ class RoutesComponent extends AbstractJsonComponent
     public function install(string $prefix = null)
     {
         $routeService = \Craft::$app->routes;
+
+        $existingRoutes = [];
+        if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
+            /** @var ProjectConfig $config */
+            $config         = \Craft::$app->getProjectConfig();
+            $existingRoutes = $config->get('routes');
+        }
 
         $data       = $this->getData();
         $demoFolder = $prefix . '/';
@@ -63,13 +71,18 @@ class RoutesComponent extends AbstractJsonComponent
                     }
                 }
 
-                $id = (new Query())
-                    ->select('id')
-                    ->from('{{%routes}}')
-                    ->where(['uriParts' => Json::encode($uriParts)])
-                    ->scalar();
+                if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
+                    $uuid = $this->findExistingRoute($uriParts, $existingRoutes);
+                    $routeService->saveRoute($urlParts, $template, null, $uuid);
+                } else {
+                    $id = (new Query())
+                        ->select('id')
+                        ->from('{{%routes}}')
+                        ->where(['uriParts' => Json::encode($uriParts)])
+                        ->scalar();
 
-                $routeService->saveRoute($urlParts, $template, null, $id ?: null);
+                    $routeService->saveRoute($urlParts, $template, null, $id ?: null);
+                }
             }
         }
     }
@@ -81,5 +94,26 @@ class RoutesComponent extends AbstractJsonComponent
     protected function setProperties()
     {
         $this->fileName = 'routes.json';
+    }
+
+    /**
+     * @param array      $uriParts
+     * @param array|null $existingRoutes
+     *
+     * @return int|string|null
+     */
+    private function findExistingRoute(array $uriParts, array $existingRoutes = null)
+    {
+        if (!$existingRoutes) {
+            return null;
+        }
+
+        foreach ($existingRoutes as $uuid => $route) {
+            if (Json::encode($route['uriParts']) === Json::encode($uriParts)) {
+                return $uuid;
+            }
+        }
+
+        return null;
     }
 }

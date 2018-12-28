@@ -394,7 +394,7 @@ class EventsController extends BaseController
                     'fields'        => '#title-field, #fields .calendar-event-wrapper > .field, #fields > .field > .field',
                     'extraFields'   => '#settings',
                     'previewUrl'    => $event->getUrl(),
-                    'previewAction' => 'calendar/events/preview',
+                    'previewAction' => \Craft::$app->getSecurity()->hashData('calendar/events/preview'),
                     'previewParams' => [
                         'eventId'    => $event->id,
                         'siteId'     => $event->siteId,

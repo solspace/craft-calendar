@@ -420,13 +420,13 @@
                         <div class="form-group row select-dates-list" data-repeats data-show-for="select_dates">
                             {% for selectDate in event.selectDatesAsDates %}
                                 <div class="col-12 col-sm-10 offset-sm-2">
-                                    <input type="hidden" name="calendarEvent[selectDates][]" value="{{ selectDate.date.toDateTimeString }}" />
+                                    <input type="hidden" name="calendarEvent[selectDates][]" value="{{ selectDate.toDateTimeString }}" />
                                     <a href="javascript:;"
                                        class="remove-select-date"
                                        style="color: darkred; text-decoration: none; position: relative; top: 1px;">
                                         <span class="far fa-times-circle"></span>
                                     </a>
-                                    {{ selectDate.date.format('l, F j, Y') }}
+                                    {{ selectDate.format('l, F j, Y') }}
                                 </div>
                             {% endfor %}
                         </div>

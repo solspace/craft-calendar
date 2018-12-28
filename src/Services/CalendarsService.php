@@ -549,8 +549,11 @@ class CalendarsService extends Component
         $oldTemplateMode = $view->getTemplateMode();
         $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
 
-        // Does the template exist?
-        $templateExists = \Craft::$app->getView()->doesTemplateExist((string) $siteSettings->template);
+        $templateExists = false;
+        if ($siteSettings->template) {
+            // Does the template exist?
+            $templateExists = \Craft::$app->getView()->doesTemplateExist((string) $siteSettings->template);
+        }
 
         // Restore the original template mode
         $view->setTemplateMode($oldTemplateMode);

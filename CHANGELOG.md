@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 2.0.12 - 2018-12-28
+### Changed
+- Updated Demo Templates installer to be compatible with Craft 3.1.
+- Updated Live Preview feature to be compatible with Craft 3.1.
+
+### Fixed
+- Fixed a bug where pagination was not working reliably for `calendar.events`.
+- Fixed a bug where editing events with Select Dates repeat rule via front end could trigger some errors or was showing blank.
+
 ## 2.0.11 - 2018-12-13
 ### Changed
 - Updated the Full Calendar JS demo templates to have a limit of 500 events to allow websites with many events to work more reliably by default.
