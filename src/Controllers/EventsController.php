@@ -387,6 +387,11 @@ class EventsController extends BaseController
             $siteIds = [\Craft::$app->getSites()->getPrimarySite()->id];
         }
 
+        $previewActionUrl = 'calendar/events/preview';
+        if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
+            $previewActionUrl = \Craft::$app->getSecurity()->hashData($previewActionUrl);
+        }
+
         // Enable Live Preview?
         $showPreviewButton = false;
         if (!\Craft::$app->getRequest()->isMobileBrowser(true) && $this->getCalendarService()->isEventTemplateValid($calendar, $event->siteId)) {
@@ -394,7 +399,7 @@ class EventsController extends BaseController
                     'fields'        => '#title-field, #fields .calendar-event-wrapper > .field, #fields > .field > .field',
                     'extraFields'   => '#settings',
                     'previewUrl'    => $event->getUrl(),
-                    'previewAction' => \Craft::$app->getSecurity()->hashData('calendar/events/preview'),
+                    'previewAction' => $previewActionUrl,
                     'previewParams' => [
                         'eventId'    => $event->id,
                         'siteId'     => $event->siteId,

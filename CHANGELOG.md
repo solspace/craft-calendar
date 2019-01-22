@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 2.0.13 - 2019-01-22
+### Fixed
+- Fixed a bug where Live Preview was not working correctly in Craft 3.0.
+- Fixed a bug where Craft 2 to 3 migration was incorrectly migrating the Calendar Event Element type.
+
 ## 2.0.12 - 2018-12-28
 ### Changed
 - Updated Demo Templates installer to be compatible with Craft 3.1.

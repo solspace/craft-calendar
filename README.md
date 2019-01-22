@@ -42,4 +42,4 @@ Last but not least, included with Solspace Calendar is a set of Demo Templates t
 
 ## Using Calendar
 
-Full documentation for Calendar can be found on the [Solspace website](https://solspace.com/craft/calendar/docs).
+Full documentation for Calendar can be found on the [Solspace documentation website](http://docs.solspace.com/craft/calendar/v2/).

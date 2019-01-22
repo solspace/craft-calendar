@@ -4,6 +4,7 @@ namespace Solspace\Calendar\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 
 /**
@@ -18,7 +19,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
     {
         $this->update(
             '{{%elements}}',
-            ['type' => EventFieldType::class],
+            ['type' => Event::class],
             ['type' => 'Calendar_Event'],
             [],
             false
@@ -26,7 +27,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
 
         $this->update(
             '{{%fieldlayouts}}',
-            ['type' => EventFieldType::class],
+            ['type' => Event::class],
             ['type' => 'Calendar_Event'],
             [],
             false
