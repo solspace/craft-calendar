@@ -48,7 +48,11 @@
 
     {% from _self import dateTimeField %}
 
-
+    <script>
+      if (Craft && Craft.datepickerOptions) {
+        Craft.datepickerOptions.firstDay = {{ weekStartDay ?? 0 }};
+      }
+    </script>
 
     <div id="event-creator">
         {{ forms.textField({
@@ -108,6 +112,7 @@
              id="calendar-mini-cal"
              data-current-day="{{ currentDay.toDateString }}"
              data-language="{{ calendarLanguage }}"
+             data-first-day-of-week="{{ currentUser is defined and currentUser ? currentUser.preference('weekStartDay') : craft.config.defaultWeekStartDay }}"
         ></div>
 
         <nav>

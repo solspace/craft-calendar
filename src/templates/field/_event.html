@@ -2,6 +2,12 @@
 
 {% set dateFormat = craft.app.locale.getDateFormat('medium', 'php') %}
 
+<script>
+    if (Craft && Craft.datepickerOptions) {
+      Craft.datepickerOptions.firstDay = {{ weekStartDay ?? 0 }};
+    }
+</script>
+
 <div class="calendar-event-wrapper">
 
     {% macro dateTimeField(event, fieldName, attribute, label, name) %}

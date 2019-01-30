@@ -425,6 +425,8 @@ class EventsController extends BaseController
 
         $siteHandle = $event->getSite()->handle;
 
+        $weekStartDay = $this->getSettingsService()->getWeekStartDay();
+
         $variables = [
             'name'               => self::EVENT_FIELD_NAME,
             'event'              => $event,
@@ -437,9 +439,10 @@ class EventsController extends BaseController
             'userElementType'    => User::class,
             'frequencyOptions'   => RecurrenceHelper::getFrequencyOptions(),
             'repeatsByOptions'   => RecurrenceHelper::getRepeatsByOptions(),
-            'weekDays'           => DateHelper::getWeekDaysShort(0, 2, true),
+            'weekDays'           => DateHelper::getWeekDaysShort($weekStartDay, 2, true),
             'monthDays'          => DateHelper::getMonthDays(),
             'monthNames'         => DateHelper::getMonthNames(true),
+            'weekStartDay'       => $weekStartDay,
             'continueEditingUrl' => 'calendar/events/{id}/{site.handle}',
             'exceptions'         => $exceptions,
             'dateFormat'         => $dateFormat,

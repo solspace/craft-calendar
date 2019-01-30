@@ -125,6 +125,7 @@ class ViewController extends BaseController
                 'isMultisite'          => \Craft::$app->getIsMultiSite(),
                 'dateFormat'           => $dateFormat,
                 'timeFormat'           => $timeFormat,
+                'weekStartDay'         => $this->getSettingsService()->getWeekStartDay(),
             ]
         );
     }

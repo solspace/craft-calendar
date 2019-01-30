@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 2.0.14 - 2019-01-30
+### Fixed
+- Fixed a bug where the mini calendar and date pickers in Month/Week/Day CP views was not respecting the 'First Day of Week' user account setting.
+- Fixed some potential visual issues in create/edit event CP page.
+
 ## 2.0.13 - 2019-01-22
 ### Fixed
 - Fixed a bug where Live Preview was not working correctly in Craft 3.0.
