@@ -256,6 +256,11 @@ class EventsController extends BaseController
             );
         }
 
+        $event->startDateLocalized = new Carbon($event->getStartDate()->toDateTimeString());
+        $event->endDateLocalized = new Carbon($event->getEndDate()->toDateTimeString());
+        $event->initialStartDate = $event->getStartDate()->copy();
+        $event->initialEndDate   = $event->getEndDate()->copy();
+
         $this->handleRepeatRules($event, $values);
 
         $event->enabledForSite = (bool) \Craft::$app->request->post('enabledForSite', $event->enabledForSite);
@@ -298,9 +303,9 @@ class EventsController extends BaseController
 
         if (\Craft::$app->request->isCpRequest) {
             return $this->renderEditForm($event, $event->title ?? '');
-        } else {
-            \Craft::$app->urlManager->setRouteParams(['event' => $event, 'errors' => $event->getErrors()]);
         }
+
+        \Craft::$app->urlManager->setRouteParams(['event' => $event, 'errors' => $event->getErrors()]);
     }
 
     /**
@@ -808,14 +813,12 @@ class EventsController extends BaseController
             } else {
                 $event->addError('untilType', Calendar::t('End repeat date must be specified'));
             }
-        } else {
-            if ($untilType === Event::UNTIL_TYPE_COUNT) {
-                $count = isset($postedValues['count']) ? (int) $postedValues['count'] : 0;
-                if ($count) {
-                    $event->count = $count;
-                } else {
-                    $event->addError('untilType', Calendar::t('End repeat count must be specified'));
-                }
+        } else if ($untilType === Event::UNTIL_TYPE_COUNT) {
+            $count = isset($postedValues['count']) ? (int) $postedValues['count'] : 0;
+            if ($count) {
+                $event->count = $count;
+            } else {
+                $event->addError('untilType', Calendar::t('End repeat count must be specified'));
             }
         }
 
@@ -855,11 +858,9 @@ class EventsController extends BaseController
                     );
 
                     $event->byDay = !empty($repeatsByWeekDay) ? implode(',', $repeatsByWeekDay) : null;
-                } else {
-                    if ($repeatsBy === 'byMonthDay') {
-                        $repeatsByMonthDay = $postedValues['monthly']['repeatsByMonthDay'];
-                        $event->byMonthDay = !empty($repeatsByMonthDay) ? implode(',', $repeatsByMonthDay) : null;
-                    }
+                } else if ($repeatsBy === 'byMonthDay') {
+                    $repeatsByMonthDay = $postedValues['monthly']['repeatsByMonthDay'];
+                    $event->byMonthDay = !empty($repeatsByMonthDay) ? implode(',', $repeatsByMonthDay) : null;
                 }
 
                 break;

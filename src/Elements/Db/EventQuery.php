@@ -452,7 +452,7 @@ class EventQuery extends ElementQuery implements \Countable
      */
     public function one($db = null)
     {
-        $oldLimit = $this->limit;
+        $oldLimit    = $this->limit;
         $this->limit = 1;
 
         $events = $this->all($db);
@@ -1064,6 +1064,8 @@ class EventQuery extends ElementQuery implements \Countable
         $byYearDay  = $eventMetadata['byYearDay'];
         $until      = $eventMetadata['until'];
 
+        $startDate = new Carbon($startDate, DateHelper::UTC);
+
         try {
             return new RRule(
                 [
@@ -1275,7 +1277,7 @@ class EventQuery extends ElementQuery implements \Countable
             }
 
 
-            $week = DateHelper::getCacheWeekNumber($startDate);
+            $week    = DateHelper::getCacheWeekNumber($startDate);
             $endWeek = DateHelper::getCacheWeekNumber($endDate);
             $this->addEventToCache($eventsByWeek, $week, $event);
             if ($week !== $endWeek) {

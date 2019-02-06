@@ -52,7 +52,7 @@ class EventsApiController extends BaseController
         $endDate->add($endDateDiff);
 
         $postedStartDateString  = \Craft::$app->request->post('startDate');
-        $postedStartDate        = new \DateTime($postedStartDateString);
+        $postedStartDate        = new Carbon($postedStartDateString, DateHelper::UTC);
         $originalOccurrenceDate = $postedStartDate->sub($interval);
 
         $isOriginalEvent = $originalOccurrenceDate->format('Y-m-d') === $event->getStartDate()->toDateString();

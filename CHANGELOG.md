@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 2.0.15 - 2019-02-06
+### Fixed
+- Fixed a bug where dragging and dropping events in CP Month/Week/Day views weren't working correctly (would shuffle by several days) in Craft 3.1+.
+
 ## 2.0.14 - 2019-01-30
 ### Fixed
 - Fixed a bug where the mini calendar and date pickers in Month/Week/Day CP views was not respecting the 'First Day of Week' user account setting.
