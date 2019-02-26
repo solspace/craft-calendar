@@ -7,7 +7,6 @@ use craft\helpers\ElementHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
-use Solspace\Calendar\Library\DatabaseHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Records\SelectDateRecord;
 use yii\web\HttpException;
@@ -33,18 +32,18 @@ class EventsApiController extends BaseController
         $this->requirePostRequest();
 
         /**
-         * @var Event         $event
-         * @var \DateInterval $interval
-         * @var bool          $isAllDay
+         * @var Event $event
+         * @var int   $deltaSeconds
+         * @var bool  $isAllDay
          */
-        list($event, $interval, $isAllDay) = $this->validateAndReturnModificationData();
+        list($event, $deltaSeconds, $isAllDay) = $this->validateAndReturnModificationData();
 
         $eventsService = $this->getEventsService();
 
         $wasAllDay    = $event->allDay;
         $oldStartDate = $event->getStartDate()->copy();
         $startDate    = $event->getStartDate();
-        $startDate->add($interval);
+        $startDate->addSeconds($deltaSeconds);
 
         $endDateDiff = $oldStartDate->diff($event->getEndDate());
 
@@ -53,7 +52,7 @@ class EventsApiController extends BaseController
 
         $postedStartDateString  = \Craft::$app->request->post('startDate');
         $postedStartDate        = new Carbon($postedStartDateString, DateHelper::UTC);
-        $originalOccurrenceDate = $postedStartDate->sub($interval);
+        $originalOccurrenceDate = $postedStartDate->subSeconds($deltaSeconds);
 
         $isOriginalEvent = $originalOccurrenceDate->format('Y-m-d') === $event->getStartDate()->toDateString();
 
@@ -149,9 +148,9 @@ class EventsApiController extends BaseController
          * @var Event         $event
          * @var \DateInterval $interval
          */
-        list($event, $interval) = $this->validateAndReturnModificationData();
+        list($event, $deltaSeconds) = $this->validateAndReturnModificationData();
 
-        $event->getEndDate()->add($interval);
+        $event->getEndDate()->addSeconds($deltaSeconds);
 
         $this->getEventsService()->saveEvent($event);
 
@@ -303,9 +302,8 @@ class EventsApiController extends BaseController
 
         if ($event) {
             CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
-            $interval = DateHelper::getDateIntervalFromSeconds($deltaSeconds);
 
-            return [$event, $interval, $isAllDay];
+            return [$event, $deltaSeconds, $isAllDay];
         }
 
         throw new HttpException(sprintf('No event with ID [%d] found', $eventId));

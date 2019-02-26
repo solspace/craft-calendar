@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 2.0.16 - 2019-02-26
+### Changed
+- Improved Calendar for better compatibility with other third party plugins such as Smart Maps.
+
+### Fixed
+- Fixed a bug where 'today' would highlight the wrong date in some edge cases in CP Month/Week/Day views.
+- Fixed a bug where events were not able to be restored (from soft delete) in Craft 3.1+.
+- Fixed a bug where upgrading from Craft 2 to Craft 3 version of Calendar could possibly trigger an error in the `AddIcsTimezoneToCalendar` migration.
+- Fixed a bug where dragging and dropping events in CP Month/Week/Day views skipping a month in some edge cases in Craft 3.1+.
+- Fixed a bug where saving recurring events with multiple sites enabled could cause an issue if the event is far enough in the future.
+
 ## 2.0.15 - 2019-02-06
 ### Fixed
 - Fixed a bug where dragging and dropping events in CP Month/Week/Day views weren't working correctly (would shuffle by several days) in Craft 3.1+.

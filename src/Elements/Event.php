@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\Element;
+use craft\elements\actions\Restore;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
@@ -318,7 +319,7 @@ class Event extends Element implements \JsonSerializable
      */
     protected static function defineActions(string $source = null): array
     {
-        return [
+        $actions = [
             \Craft::$app->elements->createAction(
                 [
                     'type'                => DeleteEventAction::class,
@@ -327,6 +328,17 @@ class Event extends Element implements \JsonSerializable
                 ]
             ),
         ];
+
+        if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
+            $actions[] = \Craft::$app->elements->createAction([
+                'type'                  => Restore::class,
+                'successMessage'        => \Craft::t('app', 'Events restored.'),
+                'partialSuccessMessage' => \Craft::t('app', 'Some events restored.'),
+                'failMessage'           => \Craft::t('app', 'Events not restored.'),
+            ]);
+        }
+
+        return $actions;
     }
 
     /**

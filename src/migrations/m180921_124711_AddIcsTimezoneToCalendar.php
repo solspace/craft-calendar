@@ -18,11 +18,16 @@ class m180921_124711_AddIcsTimezoneToCalendar extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(
-            '{{%calendar_calendars}}',
-            'icsTimezone',
-            $this->string(200)->null()
-        );
+        $table = $this->getDb()->getTableSchema('{{%calendar_calendars}}');
+        if (!$table->getColumn('icsTimezone')) {
+            $this->addColumn(
+                '{{%calendar_calendars}}',
+                'icsTimezone',
+                $this->string(200)->null()
+            );
+        }
+
+        return true;
     }
 
     /**

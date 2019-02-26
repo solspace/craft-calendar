@@ -965,8 +965,20 @@ class EventQuery extends ElementQuery implements \Countable
                     continue;
                 }
 
-                $paddedRangeStart = $this->getPaddedRangeStart($rruleObject->isInfinite() ? $startDate : null);
-                $paddedRangeEnd   = $this->getPaddedRangeEnd($rruleObject->isInfinite() ? $freq : null);
+                $isInfinite       = $rruleObject->isInfinite();
+                $paddedRangeStart = $this->getPaddedRangeStart($isInfinite ? $startDate : null);
+                $paddedRangeEnd   = $this->getPaddedRangeEnd(
+                    $isInfinite ? $startDate : null,
+                    $isInfinite ? $freq : null
+                );
+
+                if ($paddedRangeStart) {
+                    $paddedRangeStart->setTime(0, 0, 0);
+                }
+
+                if ($paddedRangeEnd) {
+                    $paddedRangeEnd->setTime(23, 59, 59);
+                }
 
                 $occurrences = $rruleObject->getOccurrencesBetween($paddedRangeStart, $paddedRangeEnd);
                 $exceptions  = $this->getExceptionService()->getExceptionDatesForEventId($eventId);
@@ -1017,17 +1029,20 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
-     * @param string $recurrenceFrequency
+     * @param Carbon|string|null $relativeDate
+     * @param string      $recurrenceFrequency
      *
      * @return Carbon|null
      */
-    private function getPaddedRangeEnd($recurrenceFrequency = null)
+    private function getPaddedRangeEnd($relativeDate = null, $recurrenceFrequency = null)
     {
-        $paddedRangeEnd = null;
         if ($this->rangeEnd) {
-            $paddedRangeEnd = $this->rangeEnd->copy()->addWeek();
-        } else if ($recurrenceFrequency) {
-            $paddedRangeEnd = new Carbon(DateHelper::UTC);
+            return $this->rangeEnd->copy()->addWeek();
+        }
+
+        $paddedRangeEnd = null;
+        if ($recurrenceFrequency) {
+            $paddedRangeEnd = $this->parseCarbon($relativeDate) ?? new Carbon(DateHelper::UTC);
 
             switch ($recurrenceFrequency) {
                 case RecurrenceHelper::DAILY:
@@ -1190,6 +1205,11 @@ class EventQuery extends ElementQuery implements \Countable
 
         if (false !== strpos($orderBy, '.')) {
             $orderBy = 'startDate';
+        }
+
+        $firstEvent = reset($events);
+        if (!$firstEvent || !isset($firstEvent->{$orderBy})) {
+            return;
         }
 
         usort(
