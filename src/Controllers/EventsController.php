@@ -32,7 +32,7 @@ class EventsController extends BaseController
     const EVENT_FIELD_NAME    = 'calendarEvent';
     const EVENT_PREVIEW_EVENT = 'previewEvent';
 
-    protected $allowAnonymous = ['save-event'];
+    protected $allowAnonymous = ['save-event', 'view-shared-event'];
 
     /**
      * @return Response

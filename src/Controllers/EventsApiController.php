@@ -116,12 +116,12 @@ class EventsApiController extends BaseController
 
                     $exceptions = $this->getExceptionsService()->getExceptionsForEventId($event->id);
                     foreach ($exceptions as $exception) {
-                        $date = new \DateTime();
+                        $date = new Carbon('today', DateHelper::UTC);
                         $date->setTimestamp($exception->date->getTimestamp());
                         $date->add($daysInterval);
-                        $date->setTime(0, 0, 0);
+                        $date->setTime(0, 0);
 
-                        $this->getExceptionsService()->saveException($event, $date);
+                        $this->getExceptionsService()->saveException($event, $date, $exception->id);
                     }
                 }
             }

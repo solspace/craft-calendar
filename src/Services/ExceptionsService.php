@@ -102,7 +102,7 @@ class ExceptionsService extends Component
                 $exceptionDate,
                 DateHelper::UTC
             )
-            ->setTime(0, 0, 0);
+                ->setTime(0, 0, 0);
 
             $exceptionRecord->save();
         }
@@ -111,10 +111,19 @@ class ExceptionsService extends Component
     /**
      * @param Event     $event
      * @param \DateTime $date
+     * @param int|null  $id
      */
-    public function saveException(Event $event, \DateTime $date)
+    public function saveException(Event $event, \DateTime $date, int $id = null)
     {
-        $exceptionRecord          = new ExceptionRecord();
+        $exceptionRecord = null;
+        if ($id) {
+            $exceptionRecord = ExceptionRecord::findOne(['id' => $id]);
+        }
+
+        if (!$exceptionRecord) {
+            $exceptionRecord = new ExceptionRecord();
+        }
+
         $exceptionRecord->eventId = $event->id;
         $exceptionRecord->date    = $date;
 

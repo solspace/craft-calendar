@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 2.0.17 - 2019-03-13
+### Fixed
+- Fixed a bug where the Share button token feature was not working on disabled events for logged out users.
+- Fixed a bug where the CP Month/Week/Day views were not correctly adjusting exclude dates when dragging and dropping events to different days.
+
 ## 2.0.16 - 2019-02-26
 ### Changed
 - Improved Calendar for better compatibility with other third party plugins such as Smart Maps.
