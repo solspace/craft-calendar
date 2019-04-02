@@ -129,6 +129,16 @@ class EventQuery extends ElementQuery implements \Countable
         parent::__construct($elementType, $config);
     }
 
+    public function __set($propertyName, $value)
+    {
+        if ($propertyName === 'calendarId' && $value === '*') {
+            // Ignore the "all" value
+            return;
+        }
+
+        parent::__set($propertyName, $value);
+    }
+
     /**
      * @param int|array $value
      *

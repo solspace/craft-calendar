@@ -177,8 +177,8 @@ class Event extends Element implements \JsonSerializable
             $propertyAccessor = new PropertyAccessor();
 
             foreach ($config as $key => $value) {
-                if ($propertyAccessor->isWritable($query, $key)) {
-                    $propertyAccessor->setValue($query, $key, $value);
+                if ($value && $propertyAccessor->isWritable($query, $key)) {
+                    $query->$key = $value;
                 }
             }
         }
