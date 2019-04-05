@@ -2,8 +2,8 @@
 {% set classes = classes ~ (event.allDay ? " all_day") %}
 {% if event.multiDay %}
     {% set classes = classes ~ " multi_day" %}
-    {% set classes = classes ~ (day.containsDate(event.startDate) ? " first_day") %}
-    {% set classes = classes ~ (day.containsDate(event.endDate.copy.minute(-1)) ? " last_day") %}
+    {% set classes = classes ~ (day.containsDate(event.startDateLocalized) ? " first_day") %}
+    {% set classes = classes ~ (day.containsDate(event.endDateLocalized) ? " last_day") %}
 {% endif %}
 
 {% set style = "" %}
@@ -19,7 +19,7 @@
         <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? event.startDate.format('Y/m/d') }}"
            style="color: {{ event.calendar.contrastColor }} !important;">
             {% autoescape false %}
-                {{ day.containsDate(event.startDate) or day.containsDate(event.endDate) ? event.title : "&nbsp;"|raw }}
+                {{ day.containsDate(event.startDateLocalized) or day.containsDate(event.endDateLocalized) ? event.title : "&nbsp;"|raw }}
             {% endautoescape %}
         </a>
     {% else %}

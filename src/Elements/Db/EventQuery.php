@@ -684,7 +684,12 @@ class EventQuery extends ElementQuery implements \Countable
         $this->query->select($select);
 
         if ($this->calendarId) {
-            $this->subQuery->andWhere(Db::parseParam($table . '.[[calendarId]]', $this->calendarId));
+            $isWildcard = $this->calendarId === '*' ||
+                (is_array($this->calendarId) && count($this->calendarId) === 1 && $this->calendarId[0] === '*');
+
+            if (!$isWildcard) {
+                $this->subQuery->andWhere(Db::parseParam($table . '.[[calendarId]]', $this->calendarId));
+            }
         }
 
         if ($this->calendar) {
@@ -1030,7 +1035,7 @@ class EventQuery extends ElementQuery implements \Countable
 
     /**
      * @param Carbon|string|null $relativeDate
-     * @param string      $recurrenceFrequency
+     * @param string             $recurrenceFrequency
      *
      * @return Carbon|null
      */
@@ -1080,6 +1085,9 @@ class EventQuery extends ElementQuery implements \Countable
         $until      = $eventMetadata['until'];
 
         $startDate = new Carbon($startDate, DateHelper::UTC);
+        if ($until) {
+            $until = new Carbon($until, DateHelper::UTC);
+        }
 
         try {
             return new RRule(

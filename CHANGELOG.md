@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 2.0.18 - 2019-04-05
+### Fixed
+- Fixed a bug where events that started early in day but repeated daily and ended on a specific date would error due to timezone issues.
+- Fixed a bug where an error would be triggered by Postgres when creating an Upcoming Events widget.
+- Fixed a bug where demo templates were not correctly handling multi-day all-day events in the Month view.
+
 ## 2.0.17 - 2019-03-13
 ### Fixed
 - Fixed a bug where the Share button token feature was not working on disabled events for logged out users.
