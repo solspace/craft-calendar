@@ -1173,7 +1173,7 @@ class Event extends Element implements \JsonSerializable
             if ($this->getRRuleObject()) {
                 $occurrenceDates = $this->getOccurrenceDatesBetween($rangeStart, $rangeEnd);
             } else if ($this->getSelectDates()) {
-                $occurrenceDates = $this->getSelectDatesAsDates();
+                $occurrenceDates = $this->getSelectDatesAsDates($rangeStart, $rangeEnd);
             }
 
             $occurrences = [];

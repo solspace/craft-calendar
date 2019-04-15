@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 2.0.19 - 2019-04-15
+### Fixed
+- Fixed a bug where the `occurrences` object date ranges were not working correctly with events using the Select Dates repeat rule type.
+- Fixed a bug where Calendar would hard error for events attempting to be created without times.
+- Fixed a bug where events couldn't be ordered by `RAND()`.
+
 ## 2.0.18 - 2019-04-05
 ### Fixed
 - Fixed a bug where events that started early in day but repeated daily and ended on a specific date would error due to timezone issues.

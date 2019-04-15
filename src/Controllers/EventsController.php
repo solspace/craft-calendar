@@ -256,10 +256,15 @@ class EventsController extends BaseController
             );
         }
 
-        $event->startDateLocalized = new Carbon($event->getStartDate()->toDateTimeString());
-        $event->endDateLocalized = new Carbon($event->getEndDate()->toDateTimeString());
-        $event->initialStartDate = $event->getStartDate()->copy();
-        $event->initialEndDate   = $event->getEndDate()->copy();
+        if ($event->getStartDate()) {
+            $event->startDateLocalized = new Carbon($event->getStartDate()->toDateTimeString());
+            $event->initialStartDate   = $event->getStartDate()->copy();
+        }
+
+        if ($event->getEndDate()) {
+            $event->endDateLocalized = new Carbon($event->getEndDate()->toDateTimeString());
+            $event->initialEndDate   = $event->getEndDate()->copy();
+        }
 
         $this->handleRepeatRules($event, $values);
 

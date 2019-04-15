@@ -514,6 +514,10 @@ class EventQuery extends ElementQuery implements \Countable
                 $this->orderDates($this->eventCache);
             }
 
+            if ($this->shouldRandomize()) {
+                $this->randomizeDates($this->eventCache);
+            }
+
             if ($this->shuffle) {
                 shuffle($this->eventCache);
             }
@@ -855,11 +859,13 @@ class EventQuery extends ElementQuery implements \Countable
             }
         }
 
-        if (\is_array($this->orderBy) && isset($this->orderBy['dateCreated'])) {
-            $sortDirection                                    = $this->orderBy['dateCreated'];
-            $this->orderBy['[[calendar_events.dateCreated]]'] = $sortDirection;
+        if (\is_array($this->orderBy)) {
+            if (isset($this->orderBy['dateCreated'])) {
+                $sortDirection                                    = $this->orderBy['dateCreated'];
+                $this->orderBy['[[calendar_events.dateCreated]]'] = $sortDirection;
 
-            unset($this->orderBy['dateCreated']);
+                unset($this->orderBy['dateCreated']);
+            }
         }
 
         return parent::beforePrepare();
@@ -1198,6 +1204,14 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
+     * @param array $dates
+     */
+    private function randomizeDates(array &$dates)
+    {
+        shuffle($dates);
+    }
+
+    /**
      * Orders events by their start dates
      *
      * @param Event[] $events
@@ -1406,6 +1420,20 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         return false;
+    }
+
+    /**
+     * Checks whether the events should be randomized
+     *
+     * @return bool
+     */
+    private function shouldRandomize(): bool
+    {
+        if (\is_array($this->orderBy)) {
+            return array_key_exists('RAND()', $this->orderBy);
+        }
+
+        return null !== $this->orderBy && $this->orderBy === 'RAND()';
     }
 
     /**
