@@ -134,6 +134,7 @@
                             frequencyOptions: frequencyOptions,
                             repeatsByOptions: repeatsByOptions,
                             weekDays: weekDays,
+                            weekStartDay: weekStartDay,
                             monthDays: monthDays,
                             monthNames: monthNames,
                         } only %}
@@ -276,6 +277,9 @@
 
         <hr>
     {% endif %}
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.solspace.calendar.events.edit.details" %}
 
 {% endblock %}
 

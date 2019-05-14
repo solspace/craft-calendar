@@ -2,9 +2,11 @@
 
 namespace Solspace\Calendar\Controllers;
 
+use Craft;
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Commons\Helpers\PermissionHelper;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 class SettingsController extends BaseController
@@ -159,6 +161,13 @@ class SettingsController extends BaseController
     private function provideTemplate($template, array $variables = []): Response
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
+
+        if (
+            version_compare(Craft::$app->getVersion(), '3.1', '>=') &&
+            !\Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
 
         return $this->renderTemplate(
             'calendar/settings/_' . $template,

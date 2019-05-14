@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 2.0.20 - 2019-05-14
+### Changed
+- Updated plugin icon.
+
+### Fixed
+- Fixed a bug where date pickers in the Create/Edit event CP page were not respecting the Week Start Day setting.
+- Fixed a bug where Settings area in CP was still visible when the `allowAdminChanges` setting is disabled for Project Config.
+- Fixed a bug where users/groups could still delete events in calendars they don't have permission to.
+
 ## 2.0.19 - 2019-04-15
 ### Fixed
 - Fixed a bug where the `occurrences` object date ranges were not working correctly with events using the Select Dates repeat rule type.

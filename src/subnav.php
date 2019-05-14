@@ -23,7 +23,12 @@ if (PermissionHelper::checkPermission(Calendar::PERMISSION_CALENDARS)) {
     ];
 }
 
-if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS)) {
+$canViewSettings = true;
+if (version_compare(Craft::$app->getVersion(), '3.1', '>=')) {
+    $canViewSettings = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+}
+
+if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS) && $canViewSettings) {
     $subnav['settings'] = [
         'label' => Calendar::t('Settings'),
         'url'   => 'calendar/settings',

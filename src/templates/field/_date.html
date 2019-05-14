@@ -19,6 +19,8 @@
 </div>
 
 {%- js %}
+    Craft.datepickerOptions['firstDay'] = {{ weekStartDay ?? 0 }};
+
     $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
     defaultDate: new Date({% if value %}{{ value|date('Y', 'UTC') }}, {{ value|date('n', 'UTC')-1 }}, {{ value|date('j', 'UTC') }}{% endif %})
     }, Craft.datepickerOptions));

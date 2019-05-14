@@ -10,7 +10,7 @@
 
 <div class="calendar-event-wrapper">
 
-    {% macro dateTimeField(event, fieldName, attribute, label, name) %}
+    {% macro dateTimeField(event, fieldName, attribute, label, name, weekStartDay) %}
 
         {% import "_includes/forms" as forms %}
         {% import "calendar/field" as calendarFields %}
@@ -20,6 +20,7 @@
                 id:          name~fieldName,
                 name:        name~'['~fieldName~']',
                 value:       attribute(event, attribute),
+                weekStartDay: weekStartDay,
             }) }}
 
             {{ calendarFields.time({
@@ -51,10 +52,10 @@
 
     <ul class="cal-group field">
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'startDate', 'startDate', 'Start Date'|t('calendar'), name) }}
+            {{ dateTimeField(event, 'startDate', 'startDate', 'Start Date'|t('calendar'), name, weekStartDay) }}
         </li>
         <li class="cal-date-row" data-affected-by="all-day-toggle">
-            {{ dateTimeField(event, 'endDate', 'endDate', 'End Date'|t('calendar'), name) }}
+            {{ dateTimeField(event, 'endDate', 'endDate', 'End Date'|t('calendar'), name, weekStartDay) }}
         </li>
         <li class="event-all-day">
             {{ forms.lightswitchField({

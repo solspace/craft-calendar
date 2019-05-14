@@ -116,7 +116,13 @@ class SettingsService extends Component
      */
     public function getWeekStartDay(): int
     {
-        return (int) \Craft::$app->getUsers()->getUserPreference(\Craft::$app->getUser()->id, 'weekStartDay', 0);
+        return (int) \Craft::$app
+            ->getUsers()
+            ->getUserPreference(
+                \Craft::$app->getUser()->id,
+                'weekStartDay',
+                0
+            );
     }
 
     /**
