@@ -39,6 +39,6 @@ class CalendarRecord extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::class, ['fieldLayoutId' => 'id']);
+        return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }
 }
