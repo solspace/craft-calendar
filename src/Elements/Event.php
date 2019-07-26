@@ -1188,7 +1188,10 @@ class Event extends Element implements \JsonSerializable
                     break;
                 }
 
-                $occurrences[] = $this->cloneForDate($date);
+                try {
+                    $occurrences[] = $this->cloneForDate($date);
+                } catch (CalendarException $e) {
+                }
             }
 
             $this->occurrenceCache[$configHash] = $occurrences;

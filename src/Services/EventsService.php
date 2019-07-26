@@ -21,9 +21,9 @@ use yii\web\HttpException;
 class EventsService extends Component
 {
     const EVENT_BEFORE_SAVE   = 'beforeSave';
-    const EVENT_AFTER_SAVE    = 'beforeSave';
+    const EVENT_AFTER_SAVE    = 'afterSave';
     const EVENT_BEFORE_DELETE = 'beforeDelete';
-    const EVENT_AFTER_DELETE  = 'beforeDelete';
+    const EVENT_AFTER_DELETE  = 'afterDelete';
 
     /**
      * Returns an event by its ID.

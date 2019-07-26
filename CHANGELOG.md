@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 2.0.21 - 2019-07-26
+### Changed
+- Updated `carbon` dependency to `^1.22.1|^2.19` for better compatibility with other plugins, and to reduce the chances of seeing deprecation notice.
+- Updated event fetching to prevent from crashing when events have invalid dates.
+
+### Fixed
+- Fixed a bug in the database relation for the Calendar record.
+- Fixed a bug where the developer event names were wrong for the Calendars and Events service files.
+
 ## 2.0.20 - 2019-05-14
 ### Changed
 - Updated plugin icon.

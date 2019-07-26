@@ -69,7 +69,7 @@ class Calendar extends Plugin
     const PERMISSION_EVENTS_FOR_ALL   = 'calendar-manageEventsFor:all';
     const PERMISSION_SETTINGS         = 'calendar-settings';
 
-    const PERMISSIONS_HELP_LINK = 'https://solspace.com/craft/calendar/docs/demo-templates';
+    const PERMISSIONS_HELP_LINK = 'https://docs.solspace.com/craft/calendar/v2/setup/demo-templates.html';
 
     /** @var array */
     private static $javascriptTranslationKeys = [

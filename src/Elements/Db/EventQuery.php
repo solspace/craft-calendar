@@ -9,6 +9,7 @@ use RRule\RRule;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Exceptions\CalendarException;
 use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Services\EventsService;
@@ -1174,7 +1175,10 @@ class EventQuery extends ElementQuery implements \Countable
      */
     private function storeEventOnDate(Event $event, Carbon $date)
     {
-        $this->events[] = $event->cloneForDate($date);
+        try {
+            $this->events[] = $event->cloneForDate($date);
+        } catch (CalendarException $e) {
+        }
     }
 
     /**
