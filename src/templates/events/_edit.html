@@ -254,7 +254,7 @@
                 label: "Enabled for site"|t('app'),
                 id: 'enabledForSite',
                 name: 'enabledForSite',
-                on: event.enabledForSite,
+                on: event.siteId in enabledSiteIds,
             }) }}
         {% endif %}
 

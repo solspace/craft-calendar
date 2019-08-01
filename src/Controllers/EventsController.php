@@ -268,7 +268,9 @@ class EventsController extends BaseController
 
         $this->handleRepeatRules($event, $values);
 
-        $event->enabledForSite = (bool) \Craft::$app->request->post('enabledForSite', $event->enabledForSite);
+        $enabledForSite = (bool) \Craft::$app->request->post('enabledForSite', $event->enabledForSite);
+
+        $event->enabledForSite = $enabledForSite ? '1' : '0';
         $event->title          = \Craft::$app->request->post('title', $event->title);
         $event->slug           = \Craft::$app->request->post('slug', $event->slug);
         $event->setFieldValuesFromRequest('fields');

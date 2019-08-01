@@ -246,7 +246,7 @@ class EventsService extends Component
      */
     public function deleteEventById(int $eventId): bool
     {
-        $event = $this->getEventById($eventId);
+        $event = $this->getEventById($eventId, null, true);
 
         if (!$event) {
             return false;

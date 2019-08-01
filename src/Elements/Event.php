@@ -213,6 +213,11 @@ class Event extends Element implements \JsonSerializable
 
         if ($siteId) {
             $element->siteId = $siteId;
+
+            $siteSettings = $element->getCalendar()->getSiteSettingsForSite($siteId);
+            if ($siteSettings) {
+                $element->enabledForSite = $siteSettings->enabledByDefault;
+            }
         }
 
         return $element;
@@ -384,7 +389,10 @@ class Event extends Element implements \JsonSerializable
 
             $supportedSites = [];
             foreach ($siteSettings as $site) {
-                $supportedSites[] = $site->siteId;
+                $supportedSites[] = [
+                    'siteId'           => $site->siteId,
+                    'enabledByDefault' => $site->enabledByDefault,
+                ];
             }
 
             return $supportedSites;

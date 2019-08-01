@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 2.0.22 - 2019-07-31
+### Fixed
+- Fixed a bug where newly created events were not respecting the default site status setting in each calendar.
+- Fixed a bug where events that were disabled couldn't be deleted from inside the edit event page.
+
 ## 2.0.21 - 2019-07-26
 ### Changed
 - Updated `carbon` dependency to `^1.22.1|^2.19` for better compatibility with other plugins, and to reduce the chances of seeing deprecation notice.
