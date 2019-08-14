@@ -105,11 +105,13 @@ class CalendarVariable
     /**
      * @param EventQuery $events
      * @param array      $options
+     *
+     * @return string
      */
     public function export(EventQuery $events, array $options = [])
     {
         $exporter = new ExportCalendarToIcs($events, $options);
-        $exporter->export();
+        $exporter->export(true, false);
     }
 
     /**

@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 2.0.24 - 2019-08-14
+### Fixed
+- Fixed a bug where ICS export was not exporting correctly for Safari.
+- Fixed a bug where ICS subscription URL's were no longer working at all.
+
 ## 2.0.23 - 2019-08-13
 ### Fixed
 - Fixed a bug where ICS export was not working correctly when `devMode` was disabled.

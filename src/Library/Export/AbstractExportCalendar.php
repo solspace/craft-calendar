@@ -26,25 +26,32 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
      * Collects the exportable string and outputs it
      * Sets headers to file download and content-type to text/calendar
      *
+     * @param bool $asFileUpload
+     * @param bool $shouldExit
+     *
      * @return string
      */
-    final public function export()
+    final public function export(bool $asFileUpload = true, bool $shouldExit = true)
     {
         $exportString = $this->prepareStringForExport();
 
         header('Content-Type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . time() . '.ics"');
-
-        header('Content-Description: File Transfer');
-        header('Content-Type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . time() . '.ics"');
-        header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Pragma: public');
         header('Content-Length: ' . strlen($exportString));
 
+        if ($asFileUpload) {
+            header('Content-Description: File Transfer');
+            header('Content-Disposition: attachment; filename="' . time() . '.ics"');
+            header('Content-Transfer-Encoding: binary');
+        }
+
         echo $exportString;
+
+        if ($shouldExit) {
+            exit();
+        }
     }
 
     /**

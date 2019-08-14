@@ -9,7 +9,7 @@ use yii\web\NotFoundHttpException;
 
 class ApiController extends BaseController
 {
-    protected $allowAnonymous = ['actionIcs'];
+    protected $allowAnonymous = ['ics'];
 
     /**
      * @return null
@@ -29,11 +29,16 @@ class ApiController extends BaseController
             ->setLoadOccurrences(false)
             ->setCalendarId($calendar->id);
 
-        $exporter = new ExportCalendarToIcs($eventQuery);
+        $exporter     = new ExportCalendarToIcs($eventQuery);
+        $exportString = $exporter->output();
 
         header('Content-type: text/calendar; charset=utf-8');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: ' . strlen($exportString));
 
-        echo $exporter->output();
+        echo $exportString;
         exit();
     }
 }
