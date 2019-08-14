@@ -30,13 +30,21 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
      */
     final public function export()
     {
-        header('Content-type: text/calendar; charset=utf-8');
-        header('Content-Disposition: attachment; filename=' . time() . '.ics');
-
         $exportString = $this->prepareStringForExport();
 
+        header('Content-Type: text/calendar; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . time() . '.ics"');
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: text/calendar; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . time() . '.ics"');
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: ' . strlen($exportString));
+
         echo $exportString;
-        exit();
     }
 
     /**

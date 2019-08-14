@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 2.0.23 - 2019-08-13
+### Fixed
+- Fixed a bug where ICS export was not working correctly when `devMode` was disabled.
+
 ## 2.0.22 - 2019-07-31
 ### Fixed
 - Fixed a bug where newly created events were not respecting the default site status setting in each calendar.
