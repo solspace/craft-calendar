@@ -3,7 +3,7 @@
 namespace Solspace\Calendar\FieldTypes;
 
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\ElementQuery;
 use craft\fields\BaseRelationField;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
@@ -28,6 +28,14 @@ class EventFieldType extends BaseRelationField
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return EventQuery::class;
+    }
+
+    /**
      * @return string
      */
     protected static function elementType(): string
@@ -35,6 +43,32 @@ class EventFieldType extends BaseRelationField
         return Event::class;
     }
 
+    /**
+     * @param mixed            $value
+     * @param ElementInterface $element
+     *
+     * @return string
+     */
+    public function getTableAttributeHtml($value, ElementInterface $element): string
+    {
+        if (is_array($value)) {
+            $html = '';
+            foreach ($value as $event) {
+                $html .= parent::getTableAttributeHtml([$event], $element);
+            }
+
+            return $html;
+        }
+
+        return parent::getTableAttributeHtml($value, $element);
+    }
+
+    /**
+     * @param mixed                 $value
+     * @param ElementInterface|null $element
+     *
+     * @return ElementQuery|mixed
+     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
         $query = parent::normalizeValue($value, $element);

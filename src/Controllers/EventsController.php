@@ -399,6 +399,10 @@ class EventsController extends BaseController
             $siteIds = [\Craft::$app->getSites()->getPrimarySite()->id];
         }
 
+        if (!$event->enabled) {
+            $enabledSiteIds = [];
+        }
+
         $previewActionUrl = 'calendar/events/preview';
         if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
             $previewActionUrl = \Craft::$app->getSecurity()->hashData($previewActionUrl);
@@ -435,10 +439,7 @@ class EventsController extends BaseController
             );
         }
 
-        $siteHandle = $event->getSite()->handle;
-
         $weekStartDay = $this->getSettingsService()->getWeekStartDay();
-
         $variables = [
             'name'               => self::EVENT_FIELD_NAME,
             'event'              => $event,
@@ -462,16 +463,6 @@ class EventsController extends BaseController
             'showPreviewBtn'     => $showPreviewButton,
             'shareUrl'           => $shareUrl,
             'site'               => $event->getSite(),
-            'crumbs'             => [
-                ['label' => Calendar::t('calendar'), 'url' => UrlHelper::cpUrl('calendar')],
-                ['label' => Calendar::t('Events'), 'url' => UrlHelper::cpUrl('calendar/events')],
-                [
-                    'label' => $title,
-                    'url'   => UrlHelper::cpUrl(
-                        'calendar/events/' . ($event->id ?: 'new/' . $calendar->handle) . '/' . $siteHandle
-                    ),
-                ],
-            ],
         ];
 
         return $this->renderTemplate('calendar/events/_edit', $variables);

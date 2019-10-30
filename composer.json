@@ -1,7 +1,7 @@
 {
   "name": "solspace/craft3-calendar",
-  "description": "The most powerful event management plugin for Craft.",
-  "version": "2.0.24",
+  "description": "The most reliable and powerful event management plugin for Craft.",
+  "version": "2.0.25",
   "type": "craft-plugin",
   "authors": [
     {
@@ -25,7 +25,7 @@
     }
   },
   "extra": {
-    "schemaVersion": "2.0.5",
+    "schemaVersion": "2.0.6",
     "handle": "calendar",
     "class": "Solspace\\Calendar\\Calendar",
     "name": "Calendar",

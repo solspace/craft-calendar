@@ -3,12 +3,10 @@
 
 {% set selectedSubnavItem = "calendars" %}
 {% set saveShortcutRedirect = 'calendar/calendars/{handle}' %}
-{% set title = "Calendar: Calendars - {title}"|t('calendar', {title: title}) %}
 
 {% set crumbs = [
     { label: "Calendar"|t('calendar'), url: url('calendar') },
-    { label: "calendars"|t('calendar'), url: url('calendar/calendars') },
-    { label: calendar.name ? calendar.name : "New Calendar"|t('calendar'), url: '' },
+    { label: "Calendars"|t('calendar'), url: url('calendar/calendars') },
 ] %}
 
 {% set fullPageForm = true %}

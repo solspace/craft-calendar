@@ -474,6 +474,12 @@ class EventQuery extends ElementQuery implements \Countable
      */
     public function all($db = null): array
     {
+        // If an array data is requested - return it as is, without
+        // fetching occurrences
+        if ($this->asArray) {
+            return parent::all();
+        }
+
         $configHash = $this->getConfigStateHash();
 
         // Nasty elements index hack
@@ -1151,6 +1157,10 @@ class EventQuery extends ElementQuery implements \Countable
 
         $eventsById = [];
         foreach ($events as $event) {
+            if (is_array($event)) {
+                $event = new Event($event);
+            }
+
             $eventsById[$event->getId()] = $event;
         }
 

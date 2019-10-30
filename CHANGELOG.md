@@ -1,5 +1,18 @@
 # Solspace Calendar Changelog
 
+## 2.0.25 - 2019-10-30
+### Changed
+- Updated all Calendar CP page headings to be cleaner (removal of `Calendar: `, etc) and translatable.
+- Updated the plugin icon.
+
+### Fixed
+- Fixed a bug where the Craft 3.2+ Element Export feature on Events index page would error.
+- Fixed a bug where Calendar event data was not being included for all Sites in the Craft search index.
+- Fixed a bug where including a Calendar Event field type in another Craft element CP index page's visible columns would error.
+- Fixed a bug where the Calendar Event field type in another Craft element CP index page would only display 1 related event.
+- Fixed a bug where the `Today` button in Month/Week/Day CP views wasn't translatable.
+- Fixed a bug where the `calendar.calendars` function did not work with `orderBy` parameter.
+
 ## 2.0.24 - 2019-08-14
 ### Fixed
 - Fixed a bug where ICS export was not exporting correctly for Safari.

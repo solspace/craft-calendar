@@ -218,6 +218,9 @@ class EventsService extends Component
             try {
                 $isSaved = \Craft::$app->elements->saveElement($event, $validateContent);
                 if ($isSaved) {
+
+                    $this->reindexSearchForAllSites($event);
+
                     if ($transaction !== null) {
                         $transaction->commit();
                     }
@@ -405,5 +408,21 @@ class EventsService extends Component
         }
 
         return true;
+    }
+
+    /**
+     * @param Event $event
+     *
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    private function reindexSearchForAllSites(Event $event) {
+
+        foreach (\Craft::$app->getSites()->getAllSites() as $site) {
+            $event->siteId = $site->id;
+            $searchService = \Craft::$app->getSearch();
+            $searchService->indexElementAttributes($event);
+        }
+
+        return;
     }
 }

@@ -2,7 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set selectedSubnavItem = currentView %}
-{% set title = "Calendar: {view}"|t('calendar', {view: currentView|t('calendar')|ucfirst}) %}
+{% set title = currentView|ucfirst|t('calendar') %}
 
 {% block content %}
 

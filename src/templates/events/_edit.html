@@ -4,12 +4,10 @@
 {% set calendarHandle = calendar.handle|default %}
 {% set selectedSubnavItem = 'events' %}
 {% set saveShortcutRedirect = continueEditingUrl %}
-{% set title = "Calendar: Events - {title}"|t('calendar', {title: title}) %}
 
 {% set crumbs = [
     { label: "Calendar"|t('calendar'), url: url('calendar') },
     { label: "Events"|t('calendar'), url: url('calendar/events') },
-    { label: event.title ? event.title : 'New Event'|t('calendar'), url: '' },
 ] %}
 
 {% js %}

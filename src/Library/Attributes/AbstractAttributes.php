@@ -122,9 +122,10 @@ abstract class AbstractAttributes
                 continue;
             }
 
-            if (in_array($attribute, array('order', 'limit', 'sort'), true)) {
+            if (in_array($attribute, ['order', 'orderBy', 'limit', 'sort'], true)) {
                 switch ($attribute) {
                     case 'order':
+                    case 'orderBy':
                         $this->setOrder($value);
                         break;
 

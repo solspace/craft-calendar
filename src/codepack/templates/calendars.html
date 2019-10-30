@@ -26,7 +26,7 @@
 			{% set calendarHandle = segment2 ? segment2 : null %}
 			{% set calendars = craft.calendar.calendars({
 				handle: calendarHandle,
-				order: "name",
+				orderBy: "name",
 				sort: "asc"
 			}) %}
 

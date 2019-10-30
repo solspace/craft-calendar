@@ -88,6 +88,7 @@ class Calendar extends Plugin
         'Couldn’t save event.',
         'Are you sure you want to enable ICS sharing for this calendar?',
         'Are you sure you want to disable ICS sharing for this calendar?',
+        'Today',
     ];
 
     /** @var bool */
