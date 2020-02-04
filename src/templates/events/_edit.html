@@ -6,7 +6,7 @@
 {% set saveShortcutRedirect = continueEditingUrl %}
 
 {% set crumbs = [
-    { label: "Calendar"|t('calendar'), url: url('calendar') },
+    { label: craft.calendar.name, url: url('calendar') },
     { label: "Events"|t('calendar'), url: url('calendar/events') },
 ] %}
 
@@ -18,19 +18,26 @@
 {% set fullPageForm = true %}
 
 {% block header %}
-    {{ block('pageTitle') }}
-    {{ block('contextMenu') }}
-    <div class="flex-grow"></div>
-    {% if showPreviewBtn or shareUrl is defined %}
-        {% if showPreviewBtn %}
-            <div class="btn livepreviewbtn">{{ "Live Preview"|t('app') }}</div>
+    <div class="flex flex-nowrap">
+        {{ block('pageTitle') }}
+        {{ block('contextMenu') }}
+    </div>
+
+    <div class="flex">
+        {% if showPreviewBtn or shareUrl is defined %}
+            <div class="btngroup">
+                {% if showPreviewBtn %}
+                    <div class="btn livepreviewbtn" data-icon="view">{{ "Preview"|t('app') }}</div>
+                {% endif %}
+                {% if shareUrl is defined %}
+                    <a href="{{ shareUrl }}" class="btn sharebtn" data-icon="share" rel="noopener" target="_blank">
+                        {{ 'Share'|t('app') }}
+                    </a>
+                {% endif %}
+            </div>
         {% endif %}
-        {% if shareUrl is defined %}
-            <a href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share'|t('app') }}</a>
-        {% endif %}
-        <div class="flex-grow"></div>
-    {% endif %}
-    {{ block('actionButton') }}
+        {{ block('actionButton') }}
+    </div>
 {% endblock %}
 
 {% block actionButton %}
@@ -100,6 +107,10 @@
                     </li>
                 {% endfor %}
             </ul>
+            <a id="overflow-tab-btn" data-icon="ellipsis" class="btn menubtn hidden" role="button"></a>
+            <div id="overflow-tab-menu" class="menu">
+                <ul role="listbox"></ul>
+            </div>
         </nav>
 
     {% endif %}
@@ -115,6 +126,20 @@
     {% if event.id %}<input type="hidden" name="eventId" value="{{ event.id }}">{% endif %}
     <input type="hidden" name="{{ name ~ "[calendarId]" }}" value="{{ event.calendarId }}">
 
+    {% if event.calendar.hasTitleField %}
+        {{ forms.textField({
+            label: event.calendar.titleLabel|t('calendar'),
+            id: 'title',
+            name: 'title',
+            siteId: event.siteId,
+            value: event.title,
+            errors: event.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true
+        }) }}
+    {% endif %}
+
     <div id="fields">
         {% if event.fieldLayout and event.fieldLayout.tabs|length %}
             {% for tab in event.fieldLayout.tabs %}
@@ -126,21 +151,15 @@
                     {% if loop.first %}
                         {% include "calendar/events/_event_editor" with {
                             event: event,
-                            dateFormat: dateFormat,
-                            timeFormat: timeFormat,
                             name: name,
-                            frequencyOptions: frequencyOptions,
-                            repeatsByOptions: repeatsByOptions,
-                            weekDays: weekDays,
-                            weekStartDay: weekStartDay,
-                            monthDays: monthDays,
-                            monthNames: monthNames,
+                            eventData: eventData,
+                            eventConfig: eventConfig,
                         } only %}
                     {% endif %}
 
                     {% include "_includes/fields" with {
                         fields: tab.fields,
-                        element: event
+                        element: event,
                     } only %}
 
                 </div>
@@ -232,24 +251,24 @@
             }) }}
         {% endif %}
 
-        {% set statusInput %}
-            <div class="left">
-                {{ forms.lightswitch({
-                    id: 'enabled',
-                    name: 'enabled',
-                    on: event.enabled,
-                }) }}
-            </div>
-        {% endset %}
+        {{ forms.dateTimeField({
+            label: "Post Date"|t('app'),
+            id: 'postDate',
+            name: 'postDate',
+            value: (event.postDate ? event.postDate : null),
+            errors: event.getErrors('postDate'),
+        }) }}
 
-        {{ forms.field({
-            label: "Enabled"|t('calendar'),
-            id: 'enabled'
-        }, statusInput) }}
+        {{ forms.lightswitchField({
+            label: showSites ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: event.enabled,
+        }) }}
 
         {% if showSites %}
             {{ forms.lightswitchField({
-                label: "Enabled for site"|t('app'),
+                label: "Enabled for {site}"|t('app', { site: event.site.name }),
                 id: 'enabledForSite',
                 name: 'enabledForSite',
                 on: event.siteId in enabledSiteIds,
@@ -258,22 +277,19 @@
 
     </div>
 
-    <hr>
-
     {% if event.id %}
 
         <div class="meta read-only">
             <div class="data">
-                <h5 class="heading">{{ "Date Created"|t('calendar') }}</h5>
-                <div class="value">{{ event.dateCreated|date('short') }} {{ event.dateCreated|time('short') }}</div>
+                <h5 class="heading">{{ "Created at"|t('app') }}</h5>
+                <div class="value">{{ event.dateCreated|date('short') }}, {{ event.dateCreated|time('short') }}</div>
             </div>
             <div class="data">
-                <h5 class="heading">{{ "Date Updated"|t('calendar') }}</h5>
-                <div class="value">{{ event.dateUpdated|date('short') }} {{ event.dateUpdated|time('short') }}</div>
+                <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
+                <div class="value">{{ event.dateUpdated|date('short') }}, {{ event.dateUpdated|time('short') }}</div>
             </div>
         </div>
 
-        <hr>
     {% endif %}
 
     {# Give plugins a chance to add other things here #}

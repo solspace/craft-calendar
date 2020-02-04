@@ -1,17 +1,20 @@
 {% import "_includes/forms" as forms %}
 
-{% if event.calendar.hasTitleField %}
-    {{ forms.textField({
-        label: event.calendar.titleLabel|t('calendar'),
-        id: 'title',
-        name: 'title',
-        siteId: event.siteId,
-        value: event.title,
-        errors: event.getErrors('title'),
-        first: true,
-        autofocus: true,
-        required: true
-    }) }}
-{% endif %}
+<script>
+  var existingEventData = {{ eventData|json_encode|raw }};
+  var eventConfig = {{ eventConfig|json_encode|raw }};
+</script>
 
-{% include "calendar/field/_event" %}
+<input
+        id="event-builder-data"
+        type="hidden"
+        name="event_builder_data"
+        value="{{ eventData|json_encode|e('html') }}"
+/>
+<div id="event-builder"
+     {{ craft.calendar.pro ? 'data-pro' }}
+     {{ event.calendar.allowRepeatingEvents ? 'data-repeat-rules-enabled' }}
+     data-locale="{{ craft.app.sites.currentSite.language }}"
+     data-event-duration="{{ craft.calendar.settings.eventDuration }}"
+     data-time-interval="{{ craft.calendar.settings.timeInterval }}"
+></div>

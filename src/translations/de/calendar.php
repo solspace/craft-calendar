@@ -206,6 +206,16 @@ $settings      = [
     'General Settings'                                                                                                                                                                                                => 'Allgemeine Einstellungen',
     'Settings saved successfully.'                                                                                                                                                                                    => 'Die Einstellungen wurden erfolgreich gespeichert.',
     'Could not save settings.'                                                                                                                                                                                        => 'Die Einstellungen konnten nicht gespeichert werden.',
+    'Week Start Day'                                                                                                                                                                                                  => 'Week Start Day',
+    'The starting day of the week when viewing front end and control panel Month and Week views as well as datepickers.'                                                                                              => 'The starting day of the week when viewing front end and control panel Month and Week views as well as datepickers.',
+    "Current user's Locale"                                                                                                                                                                                           => "Current user's Locale",
+    "Sunday"                                                                                                                                                                                                          => "Sunday",
+    "Monday"                                                                                                                                                                                                          => "Monday",
+    "Tuesday"                                                                                                                                                                                                         => "Tuesday",
+    "Wednesday"                                                                                                                                                                                                       => "Wednesday",
+    "Thursday"                                                                                                                                                                                                        => "Thursday",
+    "Friday"                                                                                                                                                                                                          => "Friday",
+    "Saturday"                                                                                                                                                                                                        => "Saturday",
 ];
 $permissions   = [
     '"{name}" calendar'      => '"{name}" Kalender',

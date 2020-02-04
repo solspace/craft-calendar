@@ -137,14 +137,7 @@ class ViewDataService extends Component
             } catch (\Exception $e) {}
         }
 
-        if (\Craft::$app->user) {
-            $user = \Craft::$app->getUsers()->getUserById((int) \Craft::$app->user->id);
-            if ($user) {
-                return (int) $user->getPreference('weekStartDay');
-            }
-        }
-
-        return (int) \Craft::$app->config->getGeneral()->defaultWeekStartDay;
+        return Calendar::getInstance()->settings->getFirstDayOfWeek();
     }
 
     /**

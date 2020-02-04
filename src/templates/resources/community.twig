@@ -1,0 +1,58 @@
+{% extends "calendar/resources/_layout" %}
+
+{% set title = "Community"|t("calendar") %}
+{% set crumbs = [
+    { label: craft.calendar.name, url: url("calendar") },
+    { label: "Resources"|t("calendar"), url: url("calendar/resources") },
+] %}
+
+{% block content %}
+
+    <p>
+        {{ "The Craft community is diverse, inclusive, and amazingly helpful. You can interact with others in the Craft community in a couple of different ways:"|t("calendar") }}
+    </p>
+
+    {% set items = [
+        {
+            icon: icons.so,
+            label: "Stack Exchange",
+            description: "Craft's Stack Exchange Q&A site is a great place to get help and help others. Tag questions with 'plugin-calendar'.",
+            link: "https://craftcms.stackexchange.com/questions/tagged/plugin-calendar",
+            linkText: "Visit"
+        },
+        {
+            icon: icons.discord,
+            label: "Craft Discord",
+            description: "If you have a quick question about something, Craft Discord group will likely get you a quick response.",
+            link: "https://craftcms.com/discord",
+            linkText: "Get an Invite",
+        }
+    ] %}
+
+    <ul class="cards">
+        {% for item in items %}
+            <li>
+                <div class="community-card">
+                    <div class="icon">
+                        {{ item.icon|raw }}
+                    </div>
+                    <h3>
+                        <a href="{{ item.link }}" target="_blank">
+                            {{ item.label }}
+                        </a>
+                    </h3>
+                    <p class="description">
+                        {{ item.description|t('calendar') }}
+                    </p>
+                </div>
+
+                <div class="card-footer centered">
+                    <a href="{{ item.link }}" class="btn submit" target="_blank">
+                        {{ item.linkText|t("calendar") }}
+                    </a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}

@@ -1,5 +1,30 @@
 # Solspace Calendar Changelog
 
+## 3.0.0 - 2020-02-04
+
+> {warning} This major version introduces editions support ('Lite' edition introduced - existing customers 'Standard' licenses become 'Pro' licenses) and requires Craft 3.4+ as well. Please ensure you have a recent database backup, and we recommend you test the update on a local/staging environment before updating your production server. [Please follow the upgrading guide available here](https://docs.solspace.com/craft/calendar/v3/setup/updating-calendar-2.html)!
+
+### Added
+- Added Lite edition for Calendar for simpler setups. The key differences are no ICS export/subscriptions, repeating rules, dashboard widgets and renaming of plugin name.
+- Added ability to group a list of upcoming events by day, week or month, and display a heading for each.
+- Added ability to show a list of upcoming events, but only display one (or a specified amount) of the next upcoming recurrences for repeating events, instead of all available ones.
+- Added setting to disable (hide) the repeat rule options per calendar when editing/creating events.
+- Added a 'Calendars' fieldtype, which allows for relating an entire calendar (ID) to other Craft elements.
+- Added a setting that allows you to force a first day of week (overriding anything else in current locale-based behavior) for all users.
+- Added ability to rename the plugin (Pro).
+
+### Changed
+- Overhauled the Create/Edit event UI to be more intuitive and also match Craft 3.4 styling.
+- Updated dashboard widgets to be able to display data from other Craft sites, not just the current site.
+- Improved demo templates to be a bit cleaner and easier to understand.
+
+### Fixed
+- Fixed a bug where the "Restrict users to editing their own events only?" feature was not working.
+- Fixed a bug where if you use the Select Dates repeat rule and there's a required field that is empty, when you attempt to save the event, it'll return a hard error.
+- Fixed a bug where clicking on any day number in the mini calendar in CP Month/Week/Day views and Dashboard Widget return an `Invalid data received for parameter "month".` error.
+- Fixed a bug where using the 'Save and continue editing' option while creating a new event would advance to a different Site instead of staying on the current one.
+- Fixed various IE11 display issues.
+
 ## 2.0.25 - 2019-10-30
 ### Changed
 - Updated all Calendar CP page headings to be cleaner (removal of `Calendar: `, etc) and translatable.

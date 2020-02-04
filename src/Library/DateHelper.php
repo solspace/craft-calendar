@@ -39,6 +39,18 @@ class DateHelper
     ];
 
     /**
+     * @param Carbon $date
+     *
+     * @return string
+     */
+    public static function getCurrentWeekDay(Carbon $date)
+    {
+        $weekDays = array_keys(self::$weekDays);
+
+        return $weekDays[$date->dayOfWeek];
+    }
+
+    /**
      * @param int $dayOffset
      *
      * @return array

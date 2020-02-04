@@ -5,7 +5,8 @@
 {% set events = craft.calendar.events({
     rangeStart: now,
     limit: settings.limit,
-    calendarId: settings.calendars
+    calendarId: settings.calendars,
+    siteId: settings.siteId ?: currentSite.id,
 }) %}
 
 <table class="upcoming-events table bordered">

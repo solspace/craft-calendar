@@ -1,7 +1,6 @@
 {% extends "calendar/layouts/_layoutWithoutSettings" %}
 
 {% set selectedSubnavItem = 'settings' %}
-{% set title = "Settings"|t('calendar') %}
 {% set fullPageForm = true %}
 
 {% set navItems = {
@@ -13,6 +12,12 @@
 } %}
 
 {% set selectedItem = craft.app.request.getSegment(3)|default %}
+
+{% set crumbs = [
+    { label: craft.calendar.name, url: url("calendar") },
+    { label: "Settings"|t("calendar"), url: url("calendar/settings") },
+] %}
+
 {% set docTitle = navItems[selectedItem].title~' - '~title %}
 
 {% block actionButton %}

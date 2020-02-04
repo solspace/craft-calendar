@@ -87,7 +87,7 @@ div.fc.fc-unthemed {
       cursor: pointer;
       text-decoration: none; }
   div.fc.fc-unthemed .fc-day-number.fc-today > a {
-    background-color: #D85B4C;
+    background-color: #E5422B;
     font-weight: bold;
     color: white; }
   div.fc.fc-unthemed .fc-day-header.fc-widget-header > a {
@@ -115,7 +115,7 @@ div.fc.fc-unthemed {
       text-align: center; }
     div.fc.fc-unthemed .fc-day-header.fc-widget-header > a.fc-title-today > span {
       color: #FFFFFF;
-      background: #D85B4C; }
+      background: #E5422B; }
   div.fc.fc-unthemed .fc-agendaDay-view .fc-widget-content {
     border-left: none; }
   div.fc.fc-unthemed .fc-month-view .fc-bg .fc-day, div.fc.fc-unthemed .fc-agendaWeek-view .fc-bg .fc-day {

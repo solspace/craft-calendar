@@ -14,7 +14,9 @@
             <th scope="col">{{ "Name"|t('calendar') }}</th>
             <th scope="col">{{ "Handle"|t('calendar') }}</th>
             <th scope="col">{{ "Description"|t('calendar') }}</th>
-            <th scope="col">{{ "ICS sharing"|t('calendar') }}</th>
+            {% if craft.calendar.pro %}
+                <th scope="col">{{ "ICS sharing"|t('calendar') }}</th>
+            {% endif %}
             <td class="thin"></td>
             </thead>
             <tbody>
@@ -38,29 +40,31 @@
                     <td style="width: 50%;">
                         {{ calendar.description }}
                     </td>
-                    <td style="width: 200px;">
-                        {% if calendar.icsHash %}
-                            <a href="javascript:;"
-                               data-link="{{ calendar.icsUrl }}"
-                               class="copy-ics-link btn small"
-                            >
-                                {{ "Copy link"|t('calendar') }}
-                            </a>
-                            <a href="javascript:;"
-                               data-calendar-id="{{ calendar.id }}"
-                               class="disable-ics btn submit small"
-                            >
-                                {{ "Disable ICS"|t('calendar') }}
-                            </a>
-                        {% else %}
-                            <a href="javascript:;"
-                               data-calendar-id="{{ calendar.id }}"
-                               class="enable-ics btn small"
-                            >
-                                {{ "Share this calendar"|t('calendar') }}
-                            </a>
-                        {% endif %}
-                    </td>
+                    {% if craft.calendar.pro %}
+                        <td style="width: 200px;">
+                            {% if calendar.icsHash %}
+                                <a href="javascript:;"
+                                   data-link="{{ calendar.icsUrl }}"
+                                   class="copy-ics-link btn small"
+                                >
+                                    {{ "Copy link"|t('calendar') }}
+                                </a>
+                                <a href="javascript:;"
+                                   data-calendar-id="{{ calendar.id }}"
+                                   class="disable-ics btn submit small"
+                                >
+                                    {{ "Disable ICS"|t('calendar') }}
+                                </a>
+                            {% else %}
+                                <a href="javascript:;"
+                                   data-calendar-id="{{ calendar.id }}"
+                                   class="enable-ics btn small"
+                                >
+                                    {{ "Share this calendar"|t('calendar') }}
+                                </a>
+                            {% endif %}
+                        </td>
+                    {% endif %}
                     <td class="thin">
                         {% if currentUser.can("calendar-deleteCalendars") %}
                             <a class="delete icon" title="{{ 'Delete'|t('calendar') }}" role="button"></a>
@@ -73,6 +77,9 @@
     {% endif %}
 {% endset %}
 
+{% css %}
+    #content { padding: 0; }
+{% endcss %}
 
 {% js %}
     var adminTable = new Craft.AdminTable({

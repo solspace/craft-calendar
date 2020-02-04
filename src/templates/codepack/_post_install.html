@@ -2,12 +2,10 @@
 {% import "_includes/forms" as forms %}
 
 {% set selectedSubnavItem = "settings" %}
-{% set title = "Demo Templates" %}
+{% set title = "Demo Templates"|t("calendar") %}
 {% block actionButton %}{% endblock %}
 
 {% block content %}
-
-    <h2>{{ "Demo Templates"|t('calendar') }}</h2>
 
     <div>
         {% set stats = {

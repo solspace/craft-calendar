@@ -16,6 +16,7 @@ class SettingsModel extends Model
     const DEFAULT_VIEW                     = Calendar::VIEW_MONTH;
     const DEFAULT_ALLOW_QUICK_CREATE       = true;
     const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
+    const DEFAULT_FIRST_DAY_OF_WEEK        = -1;
 
     private static $overlapThresholds = [
         0 => 0,
@@ -77,6 +78,12 @@ class SettingsModel extends Model
     /** @var bool */
     public $authoredEventEditOnly;
 
+    /** @var string */
+    public $pluginName;
+
+    /** @var int */
+    public $firstDayOfWeek;
+
     /**
      * Setting default values upon construction
      *
@@ -97,6 +104,7 @@ class SettingsModel extends Model
         $this->quickCreateEnabled    = self::DEFAULT_ALLOW_QUICK_CREATE;
         $this->showDisabledEvents    = self::DEFAULT_SHOW_DISABLED_EVENTS;
         $this->authoredEventEditOnly = self::DEFAULT_AUTHORED_EVENT_EDIT_ONLY;
+        $this->firstDayOfWeek        = self::DEFAULT_FIRST_DAY_OF_WEEK;
     }
 
     /**
@@ -137,5 +145,13 @@ class SettingsModel extends Model
     public function isMiniCalEnabled(): string
     {
         return (bool) $this->showMiniCal;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFirstDayOfWeek(): int
+    {
+        return (int) $this->firstDayOfWeek;
     }
 }

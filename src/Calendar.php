@@ -7,6 +7,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\services\Dashboard;
+use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Sites;
 use craft\services\UserPermissions;
@@ -17,8 +18,11 @@ use Solspace\Calendar\Controllers\CalendarsController;
 use Solspace\Calendar\Controllers\CodePackController;
 use Solspace\Calendar\Controllers\EventsApiController;
 use Solspace\Calendar\Controllers\EventsController;
+use Solspace\Calendar\Controllers\LegacyEventsController;
+use Solspace\Calendar\Controllers\ResourcesController;
 use Solspace\Calendar\Controllers\SettingsController;
 use Solspace\Calendar\Controllers\ViewController;
+use Solspace\Calendar\FieldTypes\CalendarFieldType;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
@@ -37,6 +41,7 @@ use Solspace\Calendar\Widgets\EventWidget;
 use Solspace\Calendar\Widgets\MonthWidget;
 use Solspace\Calendar\Widgets\UpcomingEventsWidget;
 use yii\base\Event;
+use yii\web\ForbiddenHttpException;
 
 /**
  * Class Calendar
@@ -59,6 +64,7 @@ class Calendar extends Plugin
     const VIEW_DAY       = 'day';
     const VIEW_EVENTS    = 'events';
     const VIEW_CALENDARS = 'calendars';
+    const VIEW_RESOURCES = 'resources';
 
     const PERMISSION_CALENDARS        = 'calendar-manageCalendars';
     const PERMISSION_CREATE_CALENDARS = 'calendar-createCalendars';
@@ -68,8 +74,12 @@ class Calendar extends Plugin
     const PERMISSION_EVENTS_FOR       = 'calendar-manageEventsFor';
     const PERMISSION_EVENTS_FOR_ALL   = 'calendar-manageEventsFor:all';
     const PERMISSION_SETTINGS         = 'calendar-settings';
+    const PERMISSION_RESOURCES        = 'calendar-resources';
 
     const PERMISSIONS_HELP_LINK = 'https://docs.solspace.com/craft/calendar/v2/setup/demo-templates.html';
+
+    const EDITION_LITE = 'lite';
+    const EDITION_PRO  = 'pro';
 
     /** @var array */
     private static $javascriptTranslationKeys = [
@@ -111,6 +121,12 @@ class Calendar extends Plugin
         $this->initEventListeners();
         $this->initPermissions();
 
+        if ($this->isPro() && $this->settings->getPluginName()) {
+            $this->name = $this->settings->getPluginName();
+        } else {
+            $this->name = 'Calendar';
+        }
+
         if (\Craft::$app->request->getIsCpRequest()) {
             \Craft::$app->view->registerTranslations(self::TRANSLATION_CATEGORY, self::$javascriptTranslationKeys);
         }
@@ -126,6 +142,17 @@ class Calendar extends Plugin
     }
 
     /**
+     * @inheritDoc
+     */
+    public static function editions(): array
+    {
+        return [
+            self::EDITION_LITE,
+            self::EDITION_PRO,
+        ];
+    }
+
+    /**
      * @param string $message
      * @param array  $params
      * @param string $language
@@ -135,6 +162,32 @@ class Calendar extends Plugin
     public static function t(string $message, array $params = [], string $language = null): string
     {
         return \Craft::t(self::TRANSLATION_CATEGORY, $message, $params, $language);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPro(): bool
+    {
+        return $this->edition === self::EDITION_PRO;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLite(): bool
+    {
+        return !$this->isPro();
+    }
+
+    /**
+     * @throws ForbiddenHttpException
+     */
+    public function requirePro()
+    {
+        if (!$this->isPro()) {
+            throw new ForbiddenHttpException(self::t('Requires Calendar Pro'));
+        }
     }
 
     /**
@@ -211,13 +264,15 @@ class Calendar extends Plugin
     {
         if (!\Craft::$app->request->isConsoleRequest) {
             $this->controllerMap = [
-                'api'        => ApiController::class,
-                'codepack'   => CodePackController::class,
-                'calendars'  => CalendarsController::class,
-                'events-api' => EventsApiController::class,
-                'events'     => EventsController::class,
-                'settings'   => SettingsController::class,
-                'view'       => ViewController::class,
+                'api'           => ApiController::class,
+                'codepack'      => CodePackController::class,
+                'calendars'     => CalendarsController::class,
+                'events-api'    => EventsApiController::class,
+                'events'        => EventsController::class,
+                'legacy-events' => LegacyEventsController::class,
+                'settings'      => SettingsController::class,
+                'view'          => ViewController::class,
+                'resources'     => ResourcesController::class,
             ];
         }
     }
@@ -261,16 +316,18 @@ class Calendar extends Plugin
 
     private function initWidgets()
     {
-        Event::on(
-            Dashboard::class,
-            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                $event->types[] = AgendaWidget::class;
-                $event->types[] = EventWidget::class;
-                $event->types[] = MonthWidget::class;
-                $event->types[] = UpcomingEventsWidget::class;
-            }
-        );
+        if ($this->isPro()) {
+            Event::on(
+                Dashboard::class,
+                Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+                function (RegisterComponentTypesEvent $event) {
+                    $event->types[] = AgendaWidget::class;
+                    $event->types[] = EventWidget::class;
+                    $event->types[] = MonthWidget::class;
+                    $event->types[] = UpcomingEventsWidget::class;
+                }
+            );
+        }
     }
 
     private function initFieldTypes()
@@ -280,6 +337,7 @@ class Calendar extends Plugin
             Fields::EVENT_REGISTER_FIELD_TYPES,
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = EventFieldType::class;
+                $event->types[] = CalendarFieldType::class;
             }
         );
     }
@@ -288,6 +346,7 @@ class Calendar extends Plugin
     {
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->events, 'addSiteHandler']);
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->calendars, 'addSiteHandler']);
+        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, [$this->events, 'transferUserEvents']);
     }
 
     private function initPermissions()
@@ -338,6 +397,7 @@ class Calendar extends Plugin
                             'nested' => $editEventsPermissions,
                         ],
                         self::PERMISSION_SETTINGS  => ['label' => self::t('Settings')],
+                        self::PERMISSION_RESOURCES => ['label' => self::t('Access Resources')],
                     ];
                 }
             );

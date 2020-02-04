@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Widgets;
 
+use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Resources\Bundles\WidgetAgendaBundle;
 use Solspace\Calendar\Resources\Bundles\WidgetUpcomingEventsBundle;
@@ -16,6 +17,9 @@ class UpcomingEventsWidget extends AbstractWidget
 
     /** @var array */
     public $calendars = '*';
+
+    /** @var int */
+    public $siteId;
 
     /**
      * @return string
@@ -42,6 +46,13 @@ class UpcomingEventsWidget extends AbstractWidget
      */
     public function getBodyHtml(): string
     {
+        if (!Calendar::getInstance()->isPro()) {
+            return Calendar::t(
+                "Requires <a href='{link}'>Pro</a> edition",
+                ['link' => UrlHelper::cpUrl('plugin-store/calendar')]
+            );
+        }
+
         \Craft::$app->view->registerAssetBundle(WidgetUpcomingEventsBundle::class);
 
         return \Craft::$app->view->renderTemplate(
@@ -57,11 +68,17 @@ class UpcomingEventsWidget extends AbstractWidget
      */
     public function getSettingsHtml(): string
     {
+        $siteOptions = [];
+        foreach (\Craft::$app->sites->getAllSites() as $site) {
+            $siteOptions[$site->id] = $site->name;
+        }
+
         return \Craft::$app->view->renderTemplate(
             'calendar/_widgets/upcoming-events/settings',
             [
                 'calendars' => Calendar::getInstance()->calendars->getAllCalendarTitles(),
                 'settings'  => $this,
+                'siteOptions' => $siteOptions,
             ]
         );
     }

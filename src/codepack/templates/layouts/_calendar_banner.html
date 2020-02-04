@@ -1,5 +1,5 @@
-{% if segment2 == "calendar" %}
-    {% set calendar = craft.calendar.calendar({handle: segment3}) %}
+{% if segment3 == "calendar" %}
+    {% set calendar = craft.calendar.calendar({handle: segment4}) %}
     {% if calendar %}
         <div class="alert" role="alert"
              style="color: {{ calendar.contrastColor }}; background-color: {{ calendar.lighterColor }}; border-color: {{ calendar.color }};">

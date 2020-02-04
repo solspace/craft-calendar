@@ -30,3 +30,17 @@
     values: settings.calendars,
     errors: settings.getErrors('calendars')
 }) }}
+
+{% if craft.app.isMultisite %}
+
+    {{ forms.selectField({
+        label: "Site"|t('calendar'),
+        instructions: "Choose which site's events to load for this widget"|t('calendar'),
+        id: 'site',
+        name: 'siteId',
+        options: siteOptions,
+        value: settings.siteId,
+        errors: settings.getErrors('siteId')
+    }) }}
+
+{% endif %}

@@ -1,10 +1,26 @@
-/* GLOBAL */
+/* Calendar Demo Styles */
 
-.ss-pageinfo {
-	margin-top: 30px;
+body {
+	margin-top: 100px !important;
 }
-.ss-pageinfo h2 {
-	margin-top: 5px;
+footer {
+	margin-top: 50px;
+	padding: 25px 0;
+}
+footer p {
+	margin-bottom: 0;
+}
+
+.navbar-brand {
+	margin-right: 25px;
+}
+.navbar-brand img {
+	width: 30px;
+	height: 30px;
+	margin-right: 10px;
+}
+.navbar-nav .nav-item {
+	margin-right: 10px;
 }
 
 

@@ -15,22 +15,22 @@ class OccurrenceLoader
     /** @var Carbon */
     private $rangeEnd;
 
-    /** @var bool */
+    /** @var bool|int|string */
     private $loadOccurrences;
 
     /**
      * OccurrenceLoader constructor.
      *
-     * @param Carbon|null $rangeStart
-     * @param Carbon|null $rangeEnd
-     * @param int|null    $limit
-     * @param bool        $loadOccurrences
+     * @param Carbon|null     $rangeStart
+     * @param Carbon|null     $rangeEnd
+     * @param int|null        $limit
+     * @param bool|int|string $loadOccurrences
      */
     public function __construct(
         Carbon $rangeStart = null,
         Carbon $rangeEnd = null,
         int $limit = null,
-        bool $loadOccurrences = true
+        $loadOccurrences = true
     ) {
         if ($rangeStart) {
             $rangeStart->setTime(0, 0, 0);
@@ -71,9 +71,9 @@ class OccurrenceLoader
     }
 
     /**
-     * @return bool
+     * @return bool|int|string|null
      */
-    public function getLoadOccurrences(): bool
+    public function getLoadOccurrences()
     {
         return $this->loadOccurrences;
     }

@@ -5,11 +5,11 @@
 
 {# Acquire URL segments #}
 {% set baseUrlSegments = 1 %}
-{% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
-{% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
-{% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
-{% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
-{% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
+{% set segment1 = craft.app.request.segment(2) %}
+{% set segment2 = craft.app.request.segment(3) %}
+{% set segment3 = craft.app.request.segment(4) %}
+{% set segment4 = craft.app.request.segment(5) %}
+{% set segment5 = craft.app.request.segment(6) %}
 
 {% block content %}
 
@@ -65,6 +65,7 @@
                 defaultDate: "{{ defaultDate }}",
                 defaultView: "{{ segment2 == "week" ? "agendaWeek" : (segment2 == "day" ? "agendaDay" : "month") }}",
                 fixedWeekCount: true,
+                firstDay: {{ craft.calendar.settings.firstDayOfWeek }},
                 eventLimit: 5,
                 aspectRatio: 1.3,
                 events: getEvents,

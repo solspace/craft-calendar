@@ -22,7 +22,7 @@ class EventListOptions
     /** @var int */
     private $offset;
 
-    /** @var bool */
+    /** @var bool|int|string */
     private $loadOccurrences;
 
     /** @var int */
@@ -222,7 +222,7 @@ class EventListOptions
     }
 
     /**
-     * @return bool|null
+     * @return bool|int|string|null
      */
     public function loadOccurrences()
     {
@@ -230,11 +230,11 @@ class EventListOptions
     }
 
     /**
-     * @param bool $loadOccurrences
+     * @param bool|int|string|null $loadOccurrences
      *
      * @return $this
      */
-    public function setLoadOccurrences(bool $loadOccurrences = null): EventListOptions
+    public function setLoadOccurrences($loadOccurrences = null): EventListOptions
     {
         $this->loadOccurrences = $loadOccurrences;
 

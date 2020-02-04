@@ -93,7 +93,7 @@
          data-time-format="{{ craft.app.locale.getTimeFormat('short', 'php') }}"
          data-language="{{ calendarLanguage }}"
          data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
-         data-first-day-of-week="{{ currentUser is defined and currentUser ? currentUser.preference('weekStartDay') : craft.config.defaultWeekStartDay }}"
+         data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
          data-current-site-id="{{ currentSiteId }}"
          data-current-day="{{ currentDay.toDateString }}"
          data-site-map="{{ siteMap|json_encode }}"
@@ -112,7 +112,7 @@
              id="calendar-mini-cal"
              data-current-day="{{ currentDay.toDateString }}"
              data-language="{{ calendarLanguage }}"
-             data-first-day-of-week="{{ currentUser is defined and currentUser ? currentUser.preference('weekStartDay') : craft.config.defaultWeekStartDay }}"
+             data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
         ></div>
 
         <nav>

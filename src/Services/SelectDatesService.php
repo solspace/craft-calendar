@@ -108,23 +108,20 @@ class SelectDatesService extends Component
     }
 
     /**
-     * @param Event $event
-     * @param array $dates
+     * @param Event    $event
+     * @param Carbon[] $dates
      */
     public function saveDates(Event $event, array $dates)
     {
         \Craft::$app->db
             ->createCommand()
-            ->delete(
-                SelectDateRecord::TABLE,
-                ['eventId' => $event->id]
-            )
+            ->delete(SelectDateRecord::TABLE, ['eventId' => $event->id])
             ->execute();
 
-        foreach ($dates as $selectDate) {
+        foreach ($dates as $date) {
             $selectDateRecord          = new SelectDateRecord();
             $selectDateRecord->eventId = $event->id;
-            $selectDateRecord->date    = new Carbon($selectDate, DateHelper::UTC);
+            $selectDateRecord->date    = $date;
 
             $selectDateRecord->save();
         }

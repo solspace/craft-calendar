@@ -31,7 +31,7 @@ class Event extends Element implements \JsonSerializable
 
     const UNTIL_TYPE_FOREVER = 'forever';
     const UNTIL_TYPE_UNTIL   = 'until';
-    const UNTIL_TYPE_COUNT   = 'count';
+    const UNTIL_TYPE_AFTER   = 'after';
 
     const SPAN_LIMIT_DAYS = 365;
 
@@ -581,7 +581,7 @@ class Event extends Element implements \JsonSerializable
      */
     public function getSelectDates(\DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
     {
-        if ($this->freq !== RecurrenceHelper::SELECT_DATES) {
+        if ($this->freq !== RecurrenceHelper::SELECT_DATES || !$this->id) {
             return [];
         }
 
@@ -882,8 +882,12 @@ class Event extends Element implements \JsonSerializable
     {
         $weekDays = $this->getRepeatsByWeekDays();
         if (
-            !empty($weekDays)
-            && \in_array($this->getFrequency(), [RecurrenceHelper::MONTHLY, RecurrenceHelper::YEARLY], true)
+            !empty($weekDays) &&
+            \in_array(
+                $this->getFrequency(),
+                [RecurrenceHelper::MONTHLY, RecurrenceHelper::YEARLY],
+                true
+            )
         ) {
             $firstSymbol = $weekDays[0][0];
             if ($firstSymbol === '-') {
@@ -1010,7 +1014,7 @@ class Event extends Element implements \JsonSerializable
     public function getUntilType(): string
     {
         if ($this->count) {
-            return self::UNTIL_TYPE_COUNT;
+            return self::UNTIL_TYPE_AFTER;
         }
 
         if ($this->until) {
@@ -1037,17 +1041,17 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getDateCreated(): \DateTime
+    public function getDateCreated()
     {
         return $this->dateCreated;
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getPostDate(): \DateTime
+    public function getPostDate()
     {
         return $this->getDateCreated();
     }
@@ -1080,29 +1084,29 @@ class Event extends Element implements \JsonSerializable
      */
     public function isRepeating(): bool
     {
-        return $this->repeats();
+        return Calendar::getInstance()->isPro() && $this->repeats();
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getInterval(): int
+    public function getInterval()
     {
         return $this->interval;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getFreq(): string
+    public function getFreq()
     {
         return $this->freq;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getCount(): int
+    public function getCount()
     {
         return $this->count;
     }

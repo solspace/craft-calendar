@@ -5,15 +5,6 @@
 
 {% block content %}
 
-	{# Acquire URL segments #}
-	{% set baseUrlSegments = 1 %}
-	{% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
-	{% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
-	{% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
-	{% set segment4 = craft.app.request.segment(baseUrlSegments + 4) %}
-	{% set segment5 = craft.app.request.segment(baseUrlSegments + 5) %}
-	{% set segment6 = craft.app.request.segment(baseUrlSegments + 6) %}
-
 	<h1>Calendars</h1>
 	<p class="lead">Below is an overview over your site's calendars and events.</p>
 	<hr /><br />
@@ -23,9 +14,8 @@
 		<div class="col-md-9">
 
 			<h3>Events by Calendar</h3>
-			{% set calendarHandle = segment2 ? segment2 : null %}
 			{% set calendars = craft.calendar.calendars({
-				handle: calendarHandle,
+				handle: segment3 ? segment3 : null,
 				orderBy: "name",
 				sort: "asc"
 			}) %}
@@ -39,13 +29,15 @@
 							<span class="fas fa-calendar-alt" aria-hidden="true"></span>&nbsp;
 							{{ calendar.name }}
 						</span>
-						<a href="{{ siteUrl }}demo/export/calendar/{{ calendar.id }}" class="btn btn-light btn-sm border-light border border-dark">
-							<span class="fas fa-file-export"></span>&nbsp;
-							Export Events
-						</a>
+						{% if craft.calendar.exportEnabled %}
+							<a href="{{ siteUrl }}demo/export/calendar/{{ calendar.id }}" class="btn btn-light btn-sm border-light border border-dark">
+								<span class="fas fa-file-export"></span>&nbsp;
+								Export Events
+							</a>
+						{% endif %}
 					</h4>
 					<ul class="list-group list-group-flush">
-					{% if calendar.icsUrl %}
+					{% if craft.calendar.exportEnabled and calendar.icsUrl %}
 						<li class="list-group-item">
 							<div class="input-group">
 								<div class="input-group-prepend">
@@ -72,7 +64,7 @@
 									rangeStart: "today",
 									rangeEnd: "6 months",
 									calendarId: calendar.id,
-									limit: segment2 ? 20 : 5
+									limit: segment3 ? 20 : 5
 								}) %}
 								{% include "demo/layouts/_calendar_events.html" %}
 							</div>

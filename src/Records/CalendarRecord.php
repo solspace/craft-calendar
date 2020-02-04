@@ -20,6 +20,7 @@ use yii\db\ActiveQuery;
  * @property string $locationFieldHandle
  * @property string $icsHash
  * @property string $icsTimezone
+ * @property bool   $allowRepeatingEvents;
  */
 class CalendarRecord extends ActiveRecord
 {

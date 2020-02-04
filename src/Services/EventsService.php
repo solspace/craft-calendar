@@ -6,15 +6,16 @@ use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\elements\User;
 use craft\events\SiteEvent;
+use craft\events\DeleteElementEvent as CraftDeleteElementEvent;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
 use Solspace\Calendar\Library\DateHelper;
-use Solspace\Calendar\Library\Events\EventList;
-use Solspace\Calendar\Models\EventCriteria;
+use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Commons\Helpers\PermissionHelper;
 use yii\web\HttpException;
 
@@ -141,25 +142,28 @@ class EventsService extends Component
         return (new Query())
             ->select(
                 [
-                    'id',
-                    'startDate',
-                    'endDate',
-                    'freq',
-                    'count',
-                    'interval',
-                    'byDay',
-                    'byMonthDay',
-                    'byMonth',
-                    'byYearDay',
-                    'until',
+                    'event.[[id]]',
+                    'event.[[calendarId]]',
+                    'event.[[startDate]]',
+                    'event.[[endDate]]',
+                    'event.[[freq]]',
+                    'event.[[count]]',
+                    'event.[[interval]]',
+                    'event.[[byDay]]',
+                    'event.[[byMonthDay]]',
+                    'event.[[byMonth]]',
+                    'event.[[byYearDay]]',
+                    'event.[[until]]',
+                    'calendar.[[allowRepeatingEvents]]',
                 ]
             )
-            ->from(Event::TABLE)
+            ->from(Event::TABLE . ' event')
+            ->innerJoin(CalendarRecord::TABLE . ' calendar', 'calendar.[[id]] = event.[[calendarId]]')
             ->where(
                 [
                     'and',
-                    'freq IS NOT NULL',
-                    ['in', 'id', $ids],
+                    'event.freq IS NOT NULL',
+                    ['in', 'event.id', $ids],
                 ]
             )
             ->all();
@@ -254,10 +258,22 @@ class EventsService extends Component
         if (!$event) {
             return false;
         }
+
+        return $this->deleteEvent($event);
+    }
+
+    /**
+     * @param Event $event
+     *
+     * @return bool
+     * @throws \Throwable
+     */
+    public function deleteEvent(Event $event): bool
+    {
         $deleteEvent = new DeleteElementEvent($event);
         $this->trigger(self::EVENT_BEFORE_DELETE, $deleteEvent);
 
-        if ($deleteEvent->isValid && \Craft::$app->elements->deleteElementById($eventId)) {
+        if ($deleteEvent->isValid && \Craft::$app->elements->deleteElementById($event->getId())) {
             $this->trigger(self::EVENT_AFTER_DELETE, new DeleteElementEvent($event));
 
             return true;
@@ -411,11 +427,52 @@ class EventsService extends Component
     }
 
     /**
+     * Transfers one User's events to another upon User delete
+     *
+     * @param CraftDeleteElementEvent $event
+     *
+     * @throws \Throwable
+     * @throws \yii\db\Exception
+     */
+    public function transferUserEvents(CraftDeleteElementEvent $event)
+    {
+        /** @var User $user */
+        $user = $event->element;
+        if (!$user instanceof User) {
+            return;
+        }
+
+        if ($user->inheritorOnDelete) {
+            \Craft::$app->db
+                ->createCommand()
+                ->update(
+                    Event::TABLE,
+                    ['authorId' => $user->inheritorOnDelete->id],
+                    ['authorId' => $user->id],
+                    [],
+                    false
+                )
+                ->execute();
+        } else {
+            $eventIds = (new Query())
+                ->select(['id'])
+                ->from(Event::TABLE)
+                ->where(['authorId' => $user->id])
+                ->column();
+
+            foreach ($eventIds as $id) {
+                \Craft::$app->elements->deleteElementById($id, Event::class);
+            }
+        }
+    }
+
+    /**
      * @param Event $event
      *
      * @throws \craft\errors\SiteNotFoundException
      */
-    private function reindexSearchForAllSites(Event $event) {
+    private function reindexSearchForAllSites(Event $event)
+    {
 
         foreach (\Craft::$app->getSites()->getAllSites() as $site) {
             $event->siteId = $site->id;

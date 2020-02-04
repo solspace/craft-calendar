@@ -4,8 +4,9 @@
      id="calendar-mini-cal-{{ ID }}"
      data-calendars="{{ settings.calendars|join(',') }}"
      data-locale="{{ locale }}"
+     data-site-id="{{ settings.siteId ?: currentSite.id }}"
      data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
-     data-first-day-of-week="{{ currentUser is defined and currentUser ? currentUser.getPreference('weekStartDay') : craft.config.general.defaultWeekStartDay }}"
+     data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
      data-current-day="{{ now|date('Y-m-d') }}"
 ></div>
 

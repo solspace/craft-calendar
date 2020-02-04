@@ -1,12 +1,10 @@
 {% extends "calendar/layouts/_settings" %}
 
 {% set selectedSubnavItem = "settings" %}
-{% set title = "Demo Templates" %}
+{% set title = "Demo Templates"|t("calendar") %}
 {% block actionButton %}{% endblock %}
 
 {% block content %}
-
-    <h2>{{ "Demo Templates"|t('calendar') }}</h2>
 
     {{ "There are no Demo Templates available"|t('calendar') }}
 

@@ -2,14 +2,48 @@
 
 {% import "_includes/forms" as forms %}
 
-{% block content %}
+{% set title = "General Settings"|t("calendar") %}
 
-    <h2>{{ "General Settings"|t('calendar') }}</h2>
+{% block content %}
 
     <form action="" method="post" accept-charset="UTF-8">
         <input type="hidden" name="action" value="calendar/settings/save-settings">
         {{ redirectInput('calendar/settings/general') }}
         {{ csrfInput() }}
+
+        {% if craft.calendar.pro %}
+
+            {{ forms.textField({
+                first: true,
+                class: "code",
+                label: "Custom Plugin Name"|t('calendar'),
+                instructions: "Override the plugin name by specifying your own here."|t('calendar'),
+                placeholder: craft.calendar.name,
+                id: "pluginName",
+                name: "settings[pluginName]",
+                value: settings.pluginName,
+                errors: settings.getErrors("pluginName"),
+            }) }}
+
+        {% endif %}
+
+        {{ forms.selectField({
+            label: "Week Starting Day"|t('calendar'),
+            instructions: "The starting day of the week when viewing front end and control panel Month and Week views as well as datepickers."|t('calendar'),
+            name: "settings[firstDayOfWeek]",
+            value: settings.firstDayOfWeek,
+            errors: settings.errors("firstDayOfWeek"),
+            options: {
+                "-1": "Current user's Locale"|t('calendar'),
+                0: "Sunday"|t('calendar'),
+                1: "Monday"|t('calendar'),
+                2: "Tuesday"|t('calendar'),
+                3: "Wednesday"|t('calendar'),
+                4: "Thursday"|t('calendar'),
+                5: "Friday"|t('calendar'),
+                6: "Saturday"|t('calendar'),
+            },
+        }) }}
 
         {{ forms.lightswitchField({
             label: "Display Mini Calendar & Calendars list in Month/Week/Day views?"|t('calendar'),

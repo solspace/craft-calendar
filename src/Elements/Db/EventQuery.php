@@ -9,6 +9,9 @@ use RRule\RRule;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Duration\DayDuration;
+use Solspace\Calendar\Library\Duration\MonthDuration;
+use Solspace\Calendar\Library\Duration\WeekDuration;
 use Solspace\Calendar\Library\Exceptions\CalendarException;
 use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -84,7 +87,7 @@ class EventQuery extends ElementQuery implements \Countable
     /** @var Carbon|string */
     private $rangeEnd;
 
-    /** @var bool */
+    /** @var bool|string|int */
     private $loadOccurrences = true;
 
     /** @var int */
@@ -123,9 +126,13 @@ class EventQuery extends ElementQuery implements \Countable
     /** @var int */
     private $firstDay;
 
+    /** @var bool */
+    private $noMultiDayGroup;
+
     public function __construct(string $elementType, array $config = [])
     {
-        $this->orderBy = ['startDate' => SORT_ASC];
+        $this->orderBy  = ['startDate' => SORT_ASC];
+        $this->firstDay = Calendar::getInstance()->settings->getFirstDayOfWeek();
 
         parent::__construct($elementType, $config);
     }
@@ -382,11 +389,11 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
-     * @param bool $loadOccurrences
+     * @param bool|string|int $loadOccurrences
      *
      * @return EventQuery
      */
-    public function setLoadOccurrences(bool $loadOccurrences): EventQuery
+    public function setLoadOccurrences($loadOccurrences): EventQuery
     {
         $this->loadOccurrences = $loadOccurrences;
 
@@ -571,6 +578,26 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
+     * @return Event[]
+     */
+    public function getGroupedByMonth(): array
+    {
+        Carbon::setWeekStartsAt($this->firstDay ?? 1);
+        $initialGrouping = $this->noMultiDayGroup;
+        $this->noMultiDayGroup = true;
+        $this->all();
+        $this->noMultiDayGroup = $initialGrouping;
+
+        $grouped = [];
+        foreach ($this->eventsByMonth as $events) {
+            $firstEvent = reset($events);
+            $grouped[]  = new MonthDuration($firstEvent->getStartDate(), $events);
+        }
+
+        return $grouped;
+    }
+
+    /**
      * @param Carbon $date
      *
      * @return Event[]
@@ -584,6 +611,26 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
+     * @return Event[]
+     */
+    public function getGroupedByWeek(): array
+    {
+        Carbon::setWeekStartsAt($this->firstDay ?? 1);
+        $initialGrouping = $this->noMultiDayGroup;
+        $this->noMultiDayGroup = true;
+        $this->all();
+        $this->noMultiDayGroup = $initialGrouping;
+
+        $grouped = [];
+        foreach ($this->eventsByWeek as $events) {
+            $firstEvent = reset($events);
+            $grouped[]  = new WeekDuration($firstEvent->getStartDate(), $events);
+        }
+
+        return $grouped;
+    }
+
+    /**
      * @param Carbon $date
      *
      * @return Event[]
@@ -594,6 +641,27 @@ class EventQuery extends ElementQuery implements \Countable
         $week = DateHelper::getCacheWeekNumber($date);
 
         return $this->eventsByWeek[$week] ?? [];
+    }
+
+    /**
+     * @return Event[]
+     */
+    public function getGroupedByDay(): array
+    {
+        Carbon::setWeekStartsAt($this->firstDay ?? 1);
+        $initialGrouping = $this->noMultiDayGroup;
+        $this->noMultiDayGroup = true;
+        $this->all();
+        $this->noMultiDayGroup = $initialGrouping;
+
+        $grouped = [];
+        foreach ($this->eventsByDay as $events) {
+            /** @var Event $firstEvent */
+            $firstEvent = reset($events);
+            $grouped[]  = new DayDuration($firstEvent->getStartDate(), $events);
+        }
+
+        return $grouped;
     }
 
     /**
@@ -695,8 +763,9 @@ class EventQuery extends ElementQuery implements \Countable
         $this->query->select($select);
 
         if ($this->calendarId) {
-            $isWildcard = $this->calendarId === '*' ||
-                (is_array($this->calendarId) && count($this->calendarId) === 1 && $this->calendarId[0] === '*');
+            $isWildcard = $this->calendarId === '*' || (is_array($this->calendarId) && count(
+                        $this->calendarId
+                    ) === 1 && $this->calendarId[0] === '*');
 
             if (!$isWildcard) {
                 $this->subQuery->andWhere(Db::parseParam($table . '.[[calendarId]]', $this->calendarId));
@@ -923,7 +992,19 @@ class EventQuery extends ElementQuery implements \Countable
     {
         $recurringEventMetadata = $this->getEventService()->getRecurringEventMetadata($foundIds);
 
+        if (Calendar::getInstance()->isLite()) {
+            $this->loadOccurrences = false;
+        }
+
+        $loadOccurrences = $this->loadOccurrences;
+
+        if (is_string($loadOccurrences) && !is_numeric($loadOccurrences) && strtolower($loadOccurrences) === 'next') {
+            $loadOccurrences = 1;
+        }
+
         foreach ($recurringEventMetadata as $metadata) {
+            $occurrencesLoaded = 0;
+
             $eventId         = $metadata['id'];
             $startDate       = $metadata['startDate'];
             $endDate         = $metadata['endDate'];
@@ -934,7 +1015,7 @@ class EventQuery extends ElementQuery implements \Countable
             // If we're not loading occurrences,
             // We must check the first event to see if it matches the given range
             // And add it accordingly
-            if (!$this->loadOccurrences) {
+            if (!$loadOccurrences || !(bool) $metadata['allowRepeatingEvents']) {
                 $isOutsideStartRange = $this->rangeStart && $startDateCarbon->lt($this->rangeStart);
                 $isOutsideEndRange   = $this->rangeEnd && $endDateCarbon->gt($this->rangeEnd);
 
@@ -950,13 +1031,19 @@ class EventQuery extends ElementQuery implements \Countable
                 $paddedRangeStart = $this->getPaddedRangeStart();
                 $paddedRangeEnd   = $this->getPaddedRangeEnd();
 
-                $selectDates = $this
-                    ->getSelectDatesService()
-                    ->getSelectDatesAsCarbonsForEventId($eventId, $paddedRangeStart, $paddedRangeEnd);
+                $selectDates = $this->getSelectDatesService()->getSelectDatesAsCarbonsForEventId(
+                    $eventId,
+                    $paddedRangeStart,
+                    $paddedRangeEnd
+                );
 
                 array_unshift($selectDates, new Carbon($metadata['startDate'], DateHelper::UTC));
 
                 foreach ($selectDates as $date) {
+                    if (is_int($loadOccurrences) && $loadOccurrences <= $occurrencesLoaded) {
+                        break;
+                    }
+
                     /**
                      * @var Carbon $occurrenceStartDate
                      * @var Carbon $occurrenceEndDate
@@ -975,6 +1062,7 @@ class EventQuery extends ElementQuery implements \Countable
                     }
 
                     $this->cacheEvent($eventId, $occurrenceStartDate);
+                    $occurrencesLoaded++;
                 }
             } else {
                 $rruleObject = $this->getRRuleFromEventMetadata($metadata);
@@ -1001,7 +1089,12 @@ class EventQuery extends ElementQuery implements \Countable
                 $occurrences = $rruleObject->getOccurrencesBetween($paddedRangeStart, $paddedRangeEnd);
                 $exceptions  = $this->getExceptionService()->getExceptionDatesForEventId($eventId);
 
+                /** @var \DateTime $occurrence */
                 foreach ($occurrences as $occurrence) {
+                    if (is_int($loadOccurrences) && $loadOccurrences <= $occurrencesLoaded) {
+                        break;
+                    }
+
                     if (\in_array($occurrence->format('Y-m-d'), $exceptions, true)) {
                         continue;
                     }
@@ -1024,6 +1117,7 @@ class EventQuery extends ElementQuery implements \Countable
                     }
 
                     $this->cacheEvent($eventId, $occurrenceStartDate);
+                    $occurrencesLoaded++;
                 }
             }
         }
@@ -1332,7 +1426,6 @@ class EventQuery extends ElementQuery implements \Countable
                 $this->addEventToCache($eventsByMonth, $endMonth, $event);
             }
 
-
             $week    = DateHelper::getCacheWeekNumber($startDate);
             $endWeek = DateHelper::getCacheWeekNumber($endDate);
             $this->addEventToCache($eventsByWeek, $week, $event);
@@ -1349,6 +1442,9 @@ class EventQuery extends ElementQuery implements \Countable
                 }
                 $this->addEventToCache($eventsByDay, $day->format(self::FORMAT_DAY), $event);
                 $day->addDay();
+                if ($this->noMultiDayGroup) {
+                    break;
+                }
             }
 
             if (!$event->isAllDay()) {

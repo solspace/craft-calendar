@@ -2,9 +2,9 @@
 
 {% import "_includes/forms" as forms %}
 
-{% block content %}
+{% set title = "Event Settings"|t("calendar") %}
 
-    <h2>{{ "Event Settings"|t('calendar') }}</h2>
+{% block content %}
 
     <form action="" method="post" accept-charset="UTF-8">
         <input type="hidden" name="action" value="calendar/settings/save-settings">
@@ -13,6 +13,7 @@
 
 
         {{ forms.selectField({
+            first: true,
             label: "Default Event Duration"|t('calendar'),
             instructions: "The default event time duration for fieldtype, in minutes. When event Start Time is selected, this number of minutes will automatically be added to that time for End Time field."|t('calendar'),
             id: 'eventDuration',

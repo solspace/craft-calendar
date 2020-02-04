@@ -112,6 +112,7 @@ class CalendarsController extends BaseController
         $calendar->titleLabel             = $request->post('titleLabel');
         $calendar->hasTitleField          = (bool) $request->post('hasTitleField');
         $calendar->icsTimezone            = $request->post('icsTimezone');
+        $calendar->allowRepeatingEvents   = (bool) $request->post('allowRepeatingEvents');
 
         // Site-specific settings
         $allSiteSettings = [];
@@ -191,6 +192,7 @@ class CalendarsController extends BaseController
     public function actionEnableIcsSharing(): Response
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
+        Calendar::getInstance()->requirePro();
 
         $this->requirePostRequest();
 
@@ -220,6 +222,7 @@ class CalendarsController extends BaseController
     public function actionDisableIcsSharing(): Response
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
+        Calendar::getInstance()->requirePro();
 
         $this->requirePostRequest();
 

@@ -263,6 +263,7 @@ class CalendarsService extends Component
         $calendarRecord->titleFormat            = $calendar->titleFormat;
         $calendarRecord->titleLabel             = $calendar->titleLabel;
         $calendarRecord->hasTitleField          = $calendar->hasTitleField;
+        $calendarRecord->allowRepeatingEvents   = $calendar->allowRepeatingEvents;
 
         $fieldLayout = $calendar->getFieldLayout();
         if ($fieldLayout) {
@@ -627,6 +628,7 @@ class CalendarsService extends Component
                     'calendar.[[locationFieldHandle]]',
                     'calendar.[[icsHash]]',
                     'calendar.[[icsTimezone]]',
+                    'calendar.[[allowRepeatingEvents]]',
                 ]
             )
             ->from(CalendarRecord::TABLE . ' calendar')

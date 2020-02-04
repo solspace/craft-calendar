@@ -2,9 +2,9 @@
 
 {% import "_includes/forms" as forms %}
 
-{% block content %}
+{% set title = "Guest Access"|t("calendar") %}
 
-    <h2>{{ "Guest Access"|t('calendar') }}</h2>
+{% block content %}
 
     <form action="" method="post" accept-charset="UTF-8">
         <input type="hidden" name="action" value="calendar/settings/save-settings">
@@ -13,6 +13,7 @@
 
 
         {{ forms.lightswitchField({
+            first: true,
             label: "Allow Guest Access on Front End?"|t('calendar'),
             instructions: "Enable this to allow guests to post events to specific calendars on the front end."|t('calendar'),
             id: 'guest-access',

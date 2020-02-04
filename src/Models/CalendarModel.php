@@ -55,6 +55,9 @@ class CalendarModel extends Model implements \JsonSerializable
     /** @var string */
     public $icsTimezone;
 
+    /** @var bool */
+    public $allowRepeatingEvents;
+
     /** @var CalendarSiteSettingsModel[] */
     private $siteSettings;
 
@@ -66,11 +69,12 @@ class CalendarModel extends Model implements \JsonSerializable
      */
     public static function create(): CalendarModel
     {
-        $model                = new self();
-        $model->color         = ColorHelper::randomColor();
-        $model->titleLabel    = 'Title';
-        $model->hasTitleField = true;
-        $model->icsTimezone   = DateHelper::FLOATING_TIMEZONE;
+        $model                       = new self();
+        $model->color                = ColorHelper::randomColor();
+        $model->titleLabel           = 'Title';
+        $model->hasTitleField        = true;
+        $model->icsTimezone          = DateHelper::FLOATING_TIMEZONE;
+        $model->allowRepeatingEvents = true;
 
         return $model;
     }

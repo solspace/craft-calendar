@@ -37,10 +37,10 @@ class EventDuration
         $this->seconds = $interval->s;
 
         if ($interval->invert) {
-            $this->years *= -1;
-            $this->months *= -1;
-            $this->days *= -1;
-            $this->hours *= -1;
+            $this->years   *= -1;
+            $this->months  *= -1;
+            $this->days    *= -1;
+            $this->hours   *= -1;
             $this->minutes *= -1;
             $this->seconds *= -1;
         }
@@ -73,7 +73,7 @@ class EventDuration
         if ($this->minutes) {
             $timeString = $timeString . sprintf(' %dm', $this->minutes);
         }
-        
+
         if ($this->seconds) {
             $timeString = $timeString . sprintf(' %ds', $this->seconds);
         }

@@ -35,4 +35,8 @@ if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS) && $canView
     ];
 }
 
+if (PermissionHelper::checkPermission(Calendar::PERMISSION_RESOURCES)) {
+    $subnav['resources'] = ['label' => Calendar::t('Resources'), 'url' => 'calendar/resources'];
+}
+
 return $subnav;

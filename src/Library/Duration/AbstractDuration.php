@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
+use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Exceptions\DurationException;
 
 abstract class AbstractDuration implements DurationInterface
@@ -13,15 +14,20 @@ abstract class AbstractDuration implements DurationInterface
     /** @var Carbon */
     protected $endDate;
 
+    /** @var Event[] */
+    protected $events;
+
     /**
      * AbstractDuration constructor.
      *
-     * @param Carbon $targetDate
+     * @param Carbon  $targetDate
+     * @param Event[] $events
      *
      * @throws DurationException
      */
-    final public function __construct(Carbon $targetDate)
+    final public function __construct(Carbon $targetDate, array $events = [])
     {
+        $this->events = $events;
         $this->init($targetDate);
 
         if (null === $this->startDate) {
@@ -54,6 +60,14 @@ abstract class AbstractDuration implements DurationInterface
     final public function getEndDate(): Carbon
     {
         return $this->endDate;
+    }
+
+    /**
+     * @return Event[]
+     */
+    public function getEvents(): array
+    {
+        return $this->events;
     }
 
     /**

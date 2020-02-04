@@ -15,28 +15,9 @@ class EventEditBundle extends CalendarAssetBundle
      */
     public function getScripts(): array
     {
-        $scripts = [
-            'js/lib/fullcalendar/lib/moment.min.js',
+        return [
             'js/src/event-edit.js',
+            'js/event-builder/app.js',
         ];
-
-        if (self::$locale) {
-            $locale = self::$locale;
-
-            $localeJsPath = __DIR__ . '/../Resources/js/lib/moment/locale/' . $locale . '.js';
-            if (file_exists($localeJsPath)) {
-                $scripts[] = 'js/lib/moment/locale/' . $locale . '.js';
-            }
-        }
-
-        return $scripts;
-    }
-
-    /**
-     * @return array
-     */
-    public function getStylesheets(): array
-    {
-        return ['css/src/event-edit.css'];
     }
 }

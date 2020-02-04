@@ -1,9 +1,10 @@
 <div id="mini-cal-wrapper">
+    {# Use include because we're using AJAX #}
     {% include "demo/layouts/_mini_cal" %}
 </div>
 
 <h3>
-    {% if segment1 in ["month", "week", "day"] %}
+    {% if segment2 in ["month", "week", "day"] %}
 	    Filter by Calendar
     {% else %}
 	    Calendars
@@ -17,13 +18,13 @@
     }) %}
 
     {% for calendar in calendars %}
-        {% if segment1 in ["month", "week", "day"] %}
-            {% set urlPart = segment1~"/calendar" %}
+        {% if segment2 in ["month", "week", "day"] %}
+            {% set urlPart = segment2~"/calendar" %}
         {% else %}
             {% set urlPart = "calendars" %}
         {% endif %}
 
-        {% if segment2 == calendar.handle or segment3 == calendar.handle %}
+        {% if segment3 == calendar.handle or segment4 == calendar.handle %}
             {% set style = "background-color: "~calendar.lighterColor~"; border-left: 5px solid "~calendar.color~"; color: "~calendar.contrastColor~";" %}
         {% else %}
             {% set style = "color: "~calendar.color~";" %}

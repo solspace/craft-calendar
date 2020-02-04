@@ -51,8 +51,8 @@ class DeleteEventAction extends ElementAction
     {
         /** @var Event $element */
         foreach ($query->all() as $element) {
-            if (CalendarPermissionHelper::canEditCalendar($element->getCalendar())) {
-                \Craft::$app->getElements()->deleteElement($element);
+            if (CalendarPermissionHelper::canEditEvent($element)) {
+                Calendar::getInstance()->events->deleteEvent($element);
             }
         }
 

@@ -65,9 +65,9 @@ class ViewController extends BaseController
      */
     public function actionTargetTime(
         string $view = null,
-        int $year = null,
-        int $month = null,
-        int $day = null
+        $year = null,
+        $month = null,
+        $day = null
     ): Response
     {
         $view         = $view ?? Calendar::VIEW_MONTH;
@@ -125,7 +125,7 @@ class ViewController extends BaseController
                 'isMultisite'          => \Craft::$app->getIsMultiSite(),
                 'dateFormat'           => $dateFormat,
                 'timeFormat'           => $timeFormat,
-                'weekStartDay'         => $this->getSettingsService()->getWeekStartDay(),
+                'weekStartDay'         => $this->getSettingsService()->getFirstDayOfWeek(),
             ]
         );
     }

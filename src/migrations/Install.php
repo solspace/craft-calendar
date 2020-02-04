@@ -31,6 +31,7 @@ class Install extends StreamlinedInstallMigration
                 ->addField('locationFieldHandle', $this->string())
                 ->addField('icsHash', $this->string())
                 ->addField('icsTimezone', $this->string()->null())
+                ->addField('allowRepeatingEvents', $this->boolean()->notNull()->defaultValue(true))
                 ->addForeignKey('fieldLayoutId', 'fieldlayouts', 'id', ForeignKey::SET_NULL)
                 ->addIndex(['name'], true)
                 ->addIndex(['handle'], true)

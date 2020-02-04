@@ -5,7 +5,7 @@
 {% set saveShortcutRedirect = 'calendar/calendars/{handle}' %}
 
 {% set crumbs = [
-    { label: "Calendar"|t('calendar'), url: url('calendar') },
+    { label: craft.calendar.name, url: url('calendar') },
     { label: "Calendars"|t('calendar'), url: url('calendar/calendars') },
 ] %}
 
@@ -203,6 +203,14 @@
 
     <hr>
 
+    <div class="field" style="{{ craft.calendar.lite ? "display: none;" }}">
+        {{ forms.lightswitchField({
+            label: "Allow Repeating Events"|t("calendar"),
+            instructions: "Disable this option to allow only single occurrence events for this calendar."|t("calendar"),
+            name: "allowRepeatingEvents",
+            on: calendar.allowRepeatingEvents,
+        }) }}
+
     {{ forms.selectField({
         label: "Forced ICS Event Timezone"|t('calendar'),
         instructions: "Choose a timezone that will be forced upon exported ICS event dates"|t('calendar'),
@@ -230,6 +238,8 @@
         value: calendar.locationFieldHandle,
         errors: calendar.getErrors('locationFieldHandle')
     }) }}
+
+    </div>
 
     {% include "_includes/fieldlayoutdesigner" with {
         fieldLayout: calendar.getFieldLayout()

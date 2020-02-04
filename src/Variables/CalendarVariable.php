@@ -37,6 +37,30 @@ class CalendarVariable
     }
 
     /**
+     * @return bool
+     */
+    public function isPro(): bool
+    {
+        return Calendar::getInstance()->isPro();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLite(): bool
+    {
+        return Calendar::getInstance()->isLite();
+    }
+
+    /**
+     * @return string
+     */
+    public function name(): string
+    {
+        return Calendar::getInstance()->name;
+    }
+
+    /**
      * @param array|null $attributes
      *
      * @return EventQuery
@@ -103,6 +127,14 @@ class CalendarVariable
     }
 
     /**
+     * @return bool
+     */
+    public function isExportEnabled(): bool
+    {
+        return Calendar::getInstance()->isPro();
+    }
+
+    /**
      * @param EventQuery $events
      * @param array      $options
      *
@@ -110,6 +142,8 @@ class CalendarVariable
      */
     public function export(EventQuery $events, array $options = [])
     {
+        Calendar::getInstance()->requirePro();
+
         $exporter = new ExportCalendarToIcs($events, $options);
         $exporter->export(true, false);
     }
@@ -250,7 +284,7 @@ class CalendarVariable
      */
     public function weekDaysShort(): array
     {
-        return DateHelper::getWeekDaysShort();
+        return DateHelper::getWeekDaysShort($this->settings()->getFirstDayOfWeek());
     }
 
     /**

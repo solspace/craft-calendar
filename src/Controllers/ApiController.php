@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
 class ApiController extends BaseController
@@ -17,6 +18,8 @@ class ApiController extends BaseController
      */
     public function actionIcs()
     {
+        Calendar::getInstance()->requirePro();
+
         $icsHash = \Craft::$app->request->get('hash', '');
         $icsHash = str_replace('.ics', '', $icsHash);
 

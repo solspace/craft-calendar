@@ -1,7 +1,6 @@
-{% set baseUrlSegments = 1 %}
-{% set segment1 = craft.app.request.segment(baseUrlSegments + 1) %}
-{% set segment2 = craft.app.request.segment(baseUrlSegments + 2) %}
-{% set segment3 = craft.app.request.segment(baseUrlSegments + 3) %}
+{% set segment1 = craft.app.request.segment(2) %}
+{% set segment2 = craft.app.request.segment(3) %}
+{% set segment3 = craft.app.request.segment(4) %}
 
 {%- if segment2 == "event" -%}
     {% set options = {

@@ -82,27 +82,20 @@ class ExceptionsService extends Component
     }
 
     /**
-     * @param Event $event
-     * @param array $exceptions
+     * @param Event    $event
+     * @param Carbon[] $exceptions
      */
     public function saveExceptions(Event $event, array $exceptions)
     {
-        $query = \Craft::$app->db
+        \Craft::$app->db
             ->createCommand()
             ->delete(ExceptionRecord::TABLE, ['eventId' => $event->id])
             ->execute();
 
-        foreach ($exceptions as $exceptionDate) {
-            $exceptionDate = preg_replace('/^(\d{4}\-\d{2}\-\d{2}).*/', '$1', $exceptionDate);
-
+        foreach ($exceptions as $exception) {
             $exceptionRecord          = new ExceptionRecord();
             $exceptionRecord->eventId = $event->id;
-            $exceptionRecord->date    = Carbon::createFromFormat(
-                'Y-m-d',
-                $exceptionDate,
-                DateHelper::UTC
-            )
-                ->setTime(0, 0, 0);
+            $exceptionRecord->date    = $exception;
 
             $exceptionRecord->save();
         }
