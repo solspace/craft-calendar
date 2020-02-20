@@ -15,7 +15,7 @@ class DayDuration extends AbstractDuration
      */
     protected function init(Carbon $targetDate)
     {
-        $startDate = Carbon::createFromTimestamp($targetDate->getTimestamp(), DateHelper::UTC);
+        $startDate = new Carbon($targetDate->toDateTimeString(), DateHelper::UTC);
         $startDate->setTime(0, 0, 0);
 
         $endDate = $startDate->copy();

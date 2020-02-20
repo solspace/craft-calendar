@@ -396,7 +396,7 @@ class Calendar extends Plugin
                             'label'  => self::t('Manage events in'),
                             'nested' => $editEventsPermissions,
                         ],
-                        self::PERMISSION_SETTINGS  => ['label' => self::t('Settings')],
+                        self::PERMISSION_SETTINGS  => ['label' => self::t('Access Settings')],
                         self::PERMISSION_RESOURCES => ['label' => self::t('Access Resources')],
                     ];
                 }
