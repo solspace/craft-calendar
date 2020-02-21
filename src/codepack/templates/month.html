@@ -71,7 +71,7 @@
                         <tr>
                             {% for day in week %}
                                 {% if month.containsDate(day.date) %}
-                                <td class="day_cell{{ day.date.isToday ? " today" }}">
+                                <td class="day_cell{{ day.dateLocalized.isToday ? " today" }}">
                                     <div class="date{{ day.eventCount ? " has_events" }}">
                                         <a class="num"
                                            href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? "calendar/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">

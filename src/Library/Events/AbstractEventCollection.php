@@ -70,6 +70,16 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     }
 
     /**
+     * Returns the localized start date of the event collection
+     *
+     * @return Carbon
+     */
+    final public function getDateLocalized(): Carbon
+    {
+        return $this->duration->getStartDateLocalized()->copy();
+    }
+
+    /**
      * @return Carbon
      */
     final public function getStartDate(): Carbon

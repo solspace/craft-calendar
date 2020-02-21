@@ -1,5 +1,12 @@
 # Solspace Calendar Changelog
 
+## 3.0.2 - 2020-02-21
+### Added
+- Added `dateLocalized` property as a more reliable replacement for `date` when needing to use `|date` filter on `month`/`week`/`day` objects to display translatable date headings or highlight 'today' in calendar views.
+
+### Fixed
+- Fixed a bug where `startDateLocalized` and `endDateLocalized` were not working correctly.
+
 ## 3.0.1 - 2020-02-20
 ### Fixed
 - Fixed a bug where some timezones would see incorrect behaviour with Month/Week/Day template functions.

@@ -60,10 +60,10 @@
 
                 {% for day in week %}
                     <ul class="list-group mb-4">
-                        <li class="list-group-item list-group-item-{{ day.date.isToday ? "warning" : "secondary" }}">
+                        <li class="list-group-item list-group-item-{{ day.dateLocalized.isToday ? "warning" : "secondary" }}">
                             <a class="text-dark font-weight-bold"
                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? segment3~"/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
-                                {% if day.date.isToday %}
+                                {% if day.dateLocalized.isToday %}
                                     TODAY
                                 {% else %}
                                     {{ day.date.format('l, F j, Y') }}

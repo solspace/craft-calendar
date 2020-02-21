@@ -12,7 +12,13 @@ abstract class AbstractDuration implements DurationInterface
     protected $startDate;
 
     /** @var Carbon */
+    protected $startDateLocalized;
+
+    /** @var Carbon */
     protected $endDate;
+
+    /** @var Carbon */
+    protected $endDateLocalized;
 
     /** @var Event[] */
     protected $events;
@@ -29,6 +35,9 @@ abstract class AbstractDuration implements DurationInterface
     {
         $this->events = $events;
         $this->init($targetDate);
+
+        $this->startDateLocalized = new Carbon($this->startDate->toDateTimeString());
+        $this->endDateLocalized   = new Carbon($this->endDate->toDateTimeString());
 
         if (null === $this->startDate) {
             throw new DurationException('Init method hasn\'t instantiated a startDate');
@@ -57,9 +66,25 @@ abstract class AbstractDuration implements DurationInterface
     /**
      * @return Carbon
      */
+    final public function getStartDateLocalized(): Carbon
+    {
+        return $this->startDateLocalized;
+    }
+
+    /**
+     * @return Carbon
+     */
     final public function getEndDate(): Carbon
     {
         return $this->endDate;
+    }
+
+    /**
+     * @return Carbon
+     */
+    final public function getEndDateLocalized(): Carbon
+    {
+        return $this->endDateLocalized;
     }
 
     /**

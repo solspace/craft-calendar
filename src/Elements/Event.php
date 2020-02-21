@@ -410,15 +410,30 @@ class Event extends Element implements \JsonSerializable
     {
         parent::__construct($config);
 
-        $this->startDateLocalized = new Carbon($this->startDate ?? 'now');
-        $this->startDate          = new Carbon($this->startDate ?? 'now', DateHelper::UTC);
+        $startDate = $this->startDate;
+        if ($startDate instanceof \DateTime) {
+            $startDate = $startDate->format('Y-m-d H:i:s');
+        }
+
+        $endDate = $this->endDate;
+        if ($endDate instanceof \DateTime) {
+            $endDate = $endDate->format('Y-m-d H:i:s');
+        }
+
+        $this->startDateLocalized = new Carbon($startDate ?? 'now');
+        $this->startDate          = new Carbon($startDate ?? 'now', DateHelper::UTC);
         $this->initialStartDate   = $this->startDate->copy();
-        $this->endDateLocalized   = new Carbon($this->endDate);
-        $this->endDate            = new Carbon($this->endDate, DateHelper::UTC);
+        $this->endDateLocalized   = new Carbon($endDate);
+        $this->endDate            = new Carbon($endDate, DateHelper::UTC);
         $this->initialEndDate     = $this->endDate->copy();
         if (null !== $this->until) {
-            $this->untilLocalized = new Carbon($this->until);
-            $this->until          = new Carbon($this->until, DateHelper::UTC);
+            $until = $this->until;
+            if ($until instanceof \DateTime) {
+                $until = $until->format('Y-m-d H:i:s');
+            }
+
+            $this->untilLocalized = new Carbon($until);
+            $this->until          = new Carbon($until, DateHelper::UTC);
         }
     }
 
@@ -457,8 +472,8 @@ class Event extends Element implements \JsonSerializable
 
             $clone->startDate          = $startDate;
             $clone->endDate            = $endDate;
-            $clone->startDateLocalized = new Carbon($startDate);
-            $clone->endDateLocalized   = new Carbon($endDate);
+            $clone->startDateLocalized = new Carbon($startDate->toDateTimeString());
+            $clone->endDateLocalized   = new Carbon($endDate->toDateTimeString());
         }
 
         return $clone;
