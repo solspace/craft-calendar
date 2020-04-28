@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Elements\Db;
 
 use Carbon\Carbon;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use RRule\RRule;
@@ -20,6 +21,7 @@ use Solspace\Calendar\Services\ExceptionsService;
 use Solspace\Calendar\Services\SelectDatesService;
 use Solspace\Commons\Helpers\PermissionHelper;
 use yii\db\Connection;
+use yii\db\Expression;
 
 class EventQuery extends ElementQuery implements \Countable
 {
@@ -583,7 +585,7 @@ class EventQuery extends ElementQuery implements \Countable
     public function getGroupedByMonth(): array
     {
         Carbon::setWeekStartsAt($this->firstDay ?? 1);
-        $initialGrouping = $this->noMultiDayGroup;
+        $initialGrouping       = $this->noMultiDayGroup;
         $this->noMultiDayGroup = true;
         $this->all();
         $this->noMultiDayGroup = $initialGrouping;
@@ -616,7 +618,7 @@ class EventQuery extends ElementQuery implements \Countable
     public function getGroupedByWeek(): array
     {
         Carbon::setWeekStartsAt($this->firstDay ?? 1);
-        $initialGrouping = $this->noMultiDayGroup;
+        $initialGrouping       = $this->noMultiDayGroup;
         $this->noMultiDayGroup = true;
         $this->all();
         $this->noMultiDayGroup = $initialGrouping;
@@ -649,7 +651,7 @@ class EventQuery extends ElementQuery implements \Countable
     public function getGroupedByDay(): array
     {
         Carbon::setWeekStartsAt($this->firstDay ?? 1);
-        $initialGrouping = $this->noMultiDayGroup;
+        $initialGrouping       = $this->noMultiDayGroup;
         $this->noMultiDayGroup = true;
         $this->all();
         $this->noMultiDayGroup = $initialGrouping;
@@ -763,9 +765,12 @@ class EventQuery extends ElementQuery implements \Countable
         $this->query->select($select);
 
         if ($this->calendarId) {
-            $isWildcard = $this->calendarId === '*' || (is_array($this->calendarId) && count(
-                        $this->calendarId
-                    ) === 1 && $this->calendarId[0] === '*');
+            if (is_array($this->calendarId)) {
+                $firstCalendar = reset($this->calendarId);
+                $isWildcard = $firstCalendar === '*';
+            } else {
+                $isWildcard = $this->calendarId === '*';
+            }
 
             if (!$isWildcard) {
                 $this->subQuery->andWhere(Db::parseParam($table . '.[[calendarId]]', $this->calendarId));
@@ -1243,6 +1248,12 @@ class EventQuery extends ElementQuery implements \Countable
         $offset         = $this->offset;
         $this->limit    = null;
         $this->offset   = null;
+
+        // Introducing a hotfix for when Craft tries to get the count of rows
+        $firstColumn = reset($this->select);
+        if ($firstColumn && $firstColumn instanceof Expression && $firstColumn->expression === '1') {
+            $this->select(Table::ELEMENTS . '.[[id]]');
+        }
 
         $events = parent::all();
 

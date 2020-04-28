@@ -1,5 +1,12 @@
 # Solspace Calendar Changelog
 
+## 3.0.3 - 2020-04-28
+### Fixed
+- Fixed a bug where pagination and element results count was not displaying on CP Events index page.
+- Fixed a bug where adding multi-day events to FullCal JS demo template were not displaying correctly when first added.
+- Fixed a bug where creating new events that started late at night and needed to end after midnight were not correctly being accounted for.
+- Fixed a bug where the main asset bundle wasn't loaded for action requests anymore.
+
 ## 3.0.2 - 2020-02-21
 ### Added
 - Added `dateLocalized` property as a more reliable replacement for `date` when needing to use `|date` filter on `month`/`week`/`day` objects to display translatable date headings or highlight 'today' in calendar views.

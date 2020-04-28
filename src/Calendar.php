@@ -136,7 +136,7 @@ class Calendar extends Plugin
             \Craft::$app->view->registerTwigExtension($extension);
         }
 
-        if (\Craft::$app->request->isCpRequest) {
+        if (\Craft::$app->request->isCpRequest && !\Craft::$app->request->isActionRequest) {
             \Craft::$app->view->registerAssetBundle(MainAssetBundle::class);
         }
     }

@@ -515,7 +515,12 @@
                                                 .empty()
                                                 .append($('<li />', {text: response.error}));
                                     } else if (response.event) {
-                                        $calendar.fullCalendar('renderEvent', response.event);
+                                        const event = response.event;
+                                        if (event.allDay) {
+                                          event.end = moment(event.end).add(2, 's').utc().format();
+                                        }
+
+                                        $calendar.fullCalendar('renderEvent', event);
                                         $calendar.fullCalendar('unselect');
 
                                         api.hide(e);
