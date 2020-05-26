@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 3.0.4 - 2020-05-27
+### Fixed
+- Updated fullcalendar.js to v3.10.2 to fix jQuery 3.5+ compatibility errors that occured since Craft 3.4.18
+
 ## 3.0.3 - 2020-04-28
 ### Fixed
 - Fixed a bug where pagination and element results count was not displaying on CP Events index page.
