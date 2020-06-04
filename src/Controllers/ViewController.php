@@ -122,7 +122,7 @@ class ViewController extends BaseController
                 'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
                 'currentSiteId'        => $currentSiteId,
                 'siteMap'              => $siteMap,
-                'isMultisite'          => \Craft::$app->getIsMultiSite(),
+                'isMultiSite'          => (bool) \Craft::$app->getIsMultiSite(),
                 'dateFormat'           => $dateFormat,
                 'timeFormat'           => $timeFormat,
                 'weekStartDay'         => $this->getSettingsService()->getFirstDayOfWeek(),

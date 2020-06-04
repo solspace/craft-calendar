@@ -98,7 +98,7 @@
          data-current-day="{{ currentDay.toDateString }}"
          data-site-map="{{ siteMap|json_encode }}"
          {% if isQuickCreateEnabled %}data-can-quick-create{% endif %}
-         {% if isMultisite %}data-is-multi-site{% endif %}
+         {% if isMultiSite %}data-is-multi-site{% endif %}
          {% if currentUser and currentUser.can('calendar-manageEvents') and calendarOptions is not empty %}
              data-can-edit-events
          {% endif %}

@@ -274,6 +274,8 @@ class Calendar extends Plugin
                 'view'          => ViewController::class,
                 'resources'     => ResourcesController::class,
             ];
+        } else {
+            $this->controllerNamespace = 'Solspace\\Calendar\\Console\\Controllers';
         }
     }
 

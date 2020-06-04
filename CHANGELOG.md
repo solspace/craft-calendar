@@ -1,5 +1,17 @@
 # Solspace Calendar Changelog
 
+## 3.0.4 - 2020-06-04
+### Added
+- Added `./craft calendar/events/resave` console command for the ability to resave all Calendar events. Most of the arguments available to `resave/entries` are available too, so if you need to also update the Craft Search Index, be sure to add `--update-search-index`.
+
+### Changed
+- Updated ICS subscriptions to allow passing of `site=siteHandle` into the URL to specify a certain site's translation of the data.
+
+### Fixed
+- Fixed a bug where some CP Month/Week/Day views didn't work correctly with Craft 3.4.18+ update to jQuery.
+- Fixed a bug where saving "late night" events that overflow into the next day might not load correctly in the UI when editing.
+- Fixed a bug where clicking the EDIT button inside the CP Month/Week/Day views on an event was not being linked correctly to include the site handle.
+
 ## 3.0.3 - 2020-04-28
 ### Fixed
 - Fixed a bug where pagination and element results count was not displaying on CP Events index page.

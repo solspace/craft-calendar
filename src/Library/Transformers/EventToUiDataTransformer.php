@@ -39,7 +39,7 @@ class EventToUiDataTransformer
             ],
             'allDay'        => $event->isAllDay() ?? false,
             'interval'      => (int) ($event->getInterval() ?? 1),
-            'multiDay'      => $event->isMultiDay() ?? false,
+            'multiDay'      => $this->isMultiDay(),
             'repeats'       => $event->isRepeating() ?? false,
             'freq'          => $event->getFreq() ?? 'DAILY',
             'byDayInterval' => $this->getByDayInterval(),
@@ -54,6 +54,19 @@ class EventToUiDataTransformer
             'selectDates'   => $this->getSelectDateTimestamps(),
             'exceptions'    => $this->getExceptionTimestamps(),
         ];
+    }
+
+    /**
+     * @return bool
+     */
+    private function isMultiDay(): bool
+    {
+        $event = $this->event;
+
+        $startDate = $event->getStartDate();
+        $endDate = $event->getEndDate();
+
+        return !$startDate->isSameDay($endDate);
     }
 
     /**
