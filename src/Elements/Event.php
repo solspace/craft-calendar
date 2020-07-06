@@ -47,6 +47,9 @@ class Event extends Element implements \JsonSerializable
     /** @var Event[] */
     private $occurrenceCache = [];
 
+    /** @var \DateTime */
+    public $postDate;
+
     /** @var int */
     public $calendarId;
 
@@ -204,6 +207,7 @@ class Event extends Element implements \JsonSerializable
         $date->setTime($date->hour, 0, 0);
 
         $element             = new self();
+        $element->postDate   = new Carbon();
         $element->allDay     = $settings->isAllDayDefault();
         $element->authorId   = \Craft::$app->user->getId();
         $element->enabled    = true;
@@ -268,7 +272,7 @@ class Event extends Element implements \JsonSerializable
             'allDay'             => ['label' => Calendar::t('All Day')],
             'rrule'              => ['label' => Calendar::t('Repeats')],
             'author'             => ['label' => Calendar::t('Author')],
-            'dateCreated'        => ['label' => Calendar::t('Post Date')],
+            'postDate'           => ['label' => Calendar::t('Post Date')],
             'link'               => ['label' => Calendar::t('Link'), 'icon' => 'world'],
         ];
 
@@ -292,7 +296,7 @@ class Event extends Element implements \JsonSerializable
             'endDate'     => Calendar::t('End Date'),
             'allDay'      => Calendar::t('All Day'),
             'username'    => Calendar::t('Author'),
-            'dateCreated' => Calendar::t('Post Date'),
+            'postDate'    => Calendar::t('Post Date'),
         ];
     }
 
@@ -315,7 +319,7 @@ class Event extends Element implements \JsonSerializable
             'startDate',
             'endDate',
             'allDay',
-            'dateCreated',
+            'postDate',
         ];
     }
 
@@ -426,6 +430,7 @@ class Event extends Element implements \JsonSerializable
         $this->endDateLocalized   = new Carbon($endDate);
         $this->endDate            = new Carbon($endDate, DateHelper::UTC);
         $this->initialEndDate     = $this->endDate->copy();
+        $this->postDate           = $this->postDate ? new Carbon($this->postDate) : null;
         if (null !== $this->until) {
             $until = $this->until;
             if ($until instanceof \DateTime) {
@@ -1068,7 +1073,7 @@ class Event extends Element implements \JsonSerializable
      */
     public function getPostDate()
     {
-        return $this->getDateCreated();
+        return $this->postDate;
     }
 
     /**
@@ -1335,6 +1340,7 @@ class Event extends Element implements \JsonSerializable
             'byYearDay'  => $this->byYearDay,
             'byMonthDay' => $this->byMonthDay,
             'byDay'      => $this->byDay,
+            'postDate'   => $this->postDate ? $this->postDate->format('Y-m-d H:i:s') : null,
         ];
 
         if ($isNew) {

@@ -213,6 +213,7 @@ class EventsApiController extends BaseController
         $event->slug     = ElementHelper::createSlug($event->title ?? '');
         $event->enabled  = true;
         $event->authorId = \Craft::$app->user->id;
+        $event->postDate = new \DateTime();
 
         $event->startDate = $startDate;
         $event->endDate   = $endDate;

@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Controllers;
 
+use Carbon\Carbon;
 use craft\base\Element;
 use craft\db\Query;
 use craft\elements\User;
@@ -157,9 +158,10 @@ class EventsController extends BaseController
     {
         $this->requirePostRequest();
 
-        $eventId = (int) \Craft::$app->request->post('eventId');
-        $siteId  = (int) \Craft::$app->request->post('siteId') ?: \Craft::$app->sites->currentSite->id;
-        $event   = $this->getExistingOrNewEvent($eventId, $siteId);
+        $eventId  = (int) \Craft::$app->request->post('eventId');
+        $siteId   = (int) \Craft::$app->request->post('siteId') ?: \Craft::$app->sites->currentSite->id;
+        $postDate = \Craft::$app->request->post('postDate');
+        $event    = $this->getExistingOrNewEvent($eventId, $siteId);
 
         $values = \Craft::$app->request->post(self::EVENT_FIELD_NAME);
         if (!$values) {
@@ -217,6 +219,16 @@ class EventsController extends BaseController
         $event->slug           = \Craft::$app->request->post('slug', $event->slug);
         $event->setFieldValuesFromRequest('fields');
 
+        if ($postDate) {
+            $date = $postDate['date'];
+            $time = $postDate['time'];
+
+            if ($date) {
+                $event->postDate = new Carbon($date.' '.$time);
+            } else {
+                $event->postDate = new Carbon();
+            }
+        }
 
         // Save the entry (finally!)
         if ($event->enabled && $event->enabledForSite) {

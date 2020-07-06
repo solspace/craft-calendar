@@ -45,6 +45,9 @@ class EventQuery extends ElementQuery implements \Countable
     private $authorId;
 
     /** @var \DateTime */
+    private $postDate;
+
+    /** @var \DateTime */
     private $startDate;
 
     /** @var \DateTime */
@@ -753,6 +756,7 @@ class EventQuery extends ElementQuery implements \Countable
             $table . '.[[byYearDay]]',
             $table . '.[[byMonthDay]]',
             $table . '.[[byDay]]',
+            $table . '.[[postDate]]',
             '{{%users}}.[[username]]',
             $calendarTable . '.[[name]]',
         ];
@@ -946,6 +950,12 @@ class EventQuery extends ElementQuery implements \Countable
                 $this->orderBy['[[calendar_events.dateCreated]]'] = $sortDirection;
 
                 unset($this->orderBy['dateCreated']);
+            }
+            if (isset($this->orderBy['postDate'])) {
+                $sortDirection                                 = $this->orderBy['postDate'];
+                $this->orderBy['[[calendar_events.postDate]]'] = $sortDirection;
+
+                unset($this->orderBy['postDate']);
             }
         }
 
@@ -1628,6 +1638,7 @@ class EventQuery extends ElementQuery implements \Countable
             'id'             => $this->id,
             'status'         => $this->status,
             'archived'       => $this->archived,
+            'postDate'       => $this->postDate,
             'dateCreated'    => $this->dateCreated,
             'dateUpdated'    => $this->dateUpdated,
             'siteId'         => $this->siteId,

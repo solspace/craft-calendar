@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 3.0.5 - 2020-07-06
+### Fixed
+- Fixed a bug where Post Dates were not being recorded correctly for events.
+
 ## 3.0.4 - 2020-06-04
 ### Added
 - Added `./craft calendar/events/resave` console command for the ability to resave all Calendar events. Most of the arguments available to `resave/entries` are available too, so if you need to also update the Craft Search Index, be sure to add `--update-search-index`.
