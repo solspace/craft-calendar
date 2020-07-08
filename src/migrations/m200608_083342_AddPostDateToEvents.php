@@ -23,7 +23,7 @@ class m200608_083342_AddPostDateToEvents extends Migration
                 $this->dateTime()
             );
 
-            $this->createIndex(null, 'calendar_events', 'postDate');
+            $this->createIndex(null, '{{%calendar_events}}', 'postDate');
 
             $this->update('{{%calendar_events}}', ['postDate' => new Expression('[[dateCreated]]')]);
         }
@@ -38,7 +38,7 @@ class m200608_083342_AddPostDateToEvents extends Migration
     {
         $table = $this->getDb()->getTableSchema('{{%calendar_events}}');
         if (!$table->getColumn('postDate')) {
-            $this->dropIndex('calendar_events_postDate_idx', 'calendar_events');
+            $this->dropIndex('calendar_events_postDate_idx', '{{%calendar_events}}');
             $this->dropColumn('{{%calendar_events}}', 'postDate');
         }
 
