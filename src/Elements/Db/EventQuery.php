@@ -191,6 +191,18 @@ class EventQuery extends ElementQuery implements \Countable
     }
 
     /**
+     * @param null $value
+     *
+     * @return $this
+     */
+    public function setPostDate($value = null): EventQuery
+    {
+        $this->postDate = $value;
+
+        return $this;
+    }
+
+    /**
      * @param string|\DateTime|Carbon|null $value
      *
      * @return EventQuery
@@ -789,6 +801,15 @@ class EventQuery extends ElementQuery implements \Countable
             $this->subQuery->andWhere(Db::parseParam($table . '.[[authorId]]', $this->authorId));
         }
 
+        if ($this->postDate) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $table . '.[[postDate]]',
+                    $this->extractDateAsFormattedString($this->postDate)
+                )
+            );
+        }
+
         if ($this->startDate) {
             $this->subQuery->andWhere(
                 Db::parseParam(
@@ -1063,7 +1084,7 @@ class EventQuery extends ElementQuery implements \Countable
                      * @var Carbon $occurrenceStartDate
                      * @var Carbon $occurrenceEndDate
                      */
-                    list($occurrenceStartDate, $occurrenceEndDate) = DateHelper::getRelativeEventDates(
+                    [$occurrenceStartDate, $occurrenceEndDate] = DateHelper::getRelativeEventDates(
                         $startDateCarbon,
                         $endDateCarbon,
                         $date
@@ -1118,7 +1139,7 @@ class EventQuery extends ElementQuery implements \Countable
                      * @var Carbon $occurrenceStartDate
                      * @var Carbon $occurrenceEndDate
                      */
-                    list($occurrenceStartDate, $occurrenceEndDate) = DateHelper::getRelativeEventDates(
+                    [$occurrenceStartDate, $occurrenceEndDate] = DateHelper::getRelativeEventDates(
                         $startDateCarbon,
                         $endDateCarbon,
                         $occurrence
@@ -1285,7 +1306,7 @@ class EventQuery extends ElementQuery implements \Countable
          * @var Carbon $date
          * @var int    $eventId
          */
-        foreach ($this->eventCache as list($date, $eventId)) {
+        foreach ($this->eventCache as [$date, $eventId]) {
             if (!isset($eventsById[$eventId])) {
                 continue;
             }

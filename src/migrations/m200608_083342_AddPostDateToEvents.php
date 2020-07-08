@@ -25,7 +25,7 @@ class m200608_083342_AddPostDateToEvents extends Migration
 
             $this->createIndex(null, 'calendar_events', 'postDate');
 
-            $this->update('{{%calendar_events}}', ['postDate' => new Expression('dateCreated')]);
+            $this->update('{{%calendar_events}}', ['postDate' => new Expression('[[dateCreated]]')]);
         }
 
         return true;

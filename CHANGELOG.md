@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 3.0.6 - 2020-07-08
+### Fixed
+- Fixed a bug where attempting to filter event results on `postDate` in front end templates was not working.
+- Fixed a bug where the 3.0.5 Post Date migration would fail for PostgreSQL users.
+
 ## 3.0.5 - 2020-07-06
 ### Fixed
 - Fixed a bug where Post Dates were not being recorded correctly for events.
