@@ -7,6 +7,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\elements\User;
 use craft\events\ElementEvent;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
@@ -224,7 +225,7 @@ class EventsController extends BaseController
             $time = $postDate['time'];
 
             if ($date) {
-                $event->postDate = new Carbon($date.' '.$time);
+                $event->postDate = DateTimeHelper::toDateTime(['date' => $date, 'time' => $time], true);
             } else {
                 $event->postDate = new Carbon();
             }

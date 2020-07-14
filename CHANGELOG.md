@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 3.0.8 - 2020-07-14
+### Fixed
+- Fixed a bug where saving events in some time formats would error about the Post Date.
+
 ## 3.0.7 - 2020-07-08
 ### Fixed
 - Fixed a bug where the 3.0.5 Post Date migration would fail for sites with a custom table prefix.
