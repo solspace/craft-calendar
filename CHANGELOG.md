@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 3.0.9 - 2020-07-17
+### Fixed
+- Fixed a bug where Calendar was no longer compatible with PHP 7.0.
+
 ## 3.0.8 - 2020-07-14
 ### Fixed
 - Fixed a bug where saving events in some time formats would error about the Post Date.

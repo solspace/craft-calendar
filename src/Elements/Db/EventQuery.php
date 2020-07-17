@@ -1084,7 +1084,7 @@ class EventQuery extends ElementQuery implements \Countable
                      * @var Carbon $occurrenceStartDate
                      * @var Carbon $occurrenceEndDate
                      */
-                    [$occurrenceStartDate, $occurrenceEndDate] = DateHelper::getRelativeEventDates(
+                    list($occurrenceStartDate, $occurrenceEndDate) = DateHelper::getRelativeEventDates(
                         $startDateCarbon,
                         $endDateCarbon,
                         $date
@@ -1139,7 +1139,7 @@ class EventQuery extends ElementQuery implements \Countable
                      * @var Carbon $occurrenceStartDate
                      * @var Carbon $occurrenceEndDate
                      */
-                    [$occurrenceStartDate, $occurrenceEndDate] = DateHelper::getRelativeEventDates(
+                    list($occurrenceStartDate, $occurrenceEndDate) = DateHelper::getRelativeEventDates(
                         $startDateCarbon,
                         $endDateCarbon,
                         $occurrence
@@ -1306,7 +1306,7 @@ class EventQuery extends ElementQuery implements \Countable
          * @var Carbon $date
          * @var int    $eventId
          */
-        foreach ($this->eventCache as [$date, $eventId]) {
+        foreach ($this->eventCache as list($date, $eventId)) {
             if (!isset($eventsById[$eventId])) {
                 continue;
             }
