@@ -1,5 +1,12 @@
 # Solspace Calendar Changelog
 
+## 3.0.10 - 2020-07-24
+### Changed
+- Updated Calendar field layouts to now include support for Craft 3.5+ layout column improvements.
+
+### Fixed
+- Fixed some compatibility issues with Craft 3.5+.
+
 ## 3.0.9 - 2020-07-17
 ### Fixed
 - Fixed a bug where Calendar was no longer compatible with PHP 7.0.

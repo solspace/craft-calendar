@@ -17,15 +17,6 @@
 
 {% set fullPageForm = true %}
 
-{% set fieldLayout = event.getFieldLayout() %}
-
-{% set form = null %}
-{% set tabs = [] %}
-{% if fieldLayout %}
-    {% set form = fieldLayout.createForm(event, false) %}
-    {% set tabs = form.getTabMenu() %}
-{% endif %}
-
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
@@ -91,6 +82,41 @@
     </div>
 {% endblock %}
 
+{% block tabs %}
+
+    {% if event.fieldLayout and event.fieldLayout.tabs|length %}
+
+        <nav id="tabs">
+            <ul>
+                {% for tab in event.getFieldLayout().getTabs() %}
+                    {% set hasError = false %}
+                    {% if loop.index0 > 0 %}
+                        {% for field in tab.fields %}
+                            {% if event.getErrors(field.handle) %}
+                                {% set hasError = true %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    <li>
+                        <a href="javascript:;"
+                           data-tab-id="{{ tab.id }}"
+                           class="tab{% if loop.first %} sel{% endif %}{{ hasError ? " error" : "" }}">
+                            {{ tab.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+            <a id="overflow-tab-btn" data-icon="ellipsis" class="btn menubtn hidden" role="button"></a>
+            <div id="overflow-tab-menu" class="menu">
+                <ul role="listbox"></ul>
+            </div>
+        </nav>
+
+    {% endif %}
+
+{% endblock %}
+
 {% block content %}
 
     <input type="hidden" name="action" value="calendar/events/save-event">
@@ -114,13 +140,34 @@
         }) }}
     {% endif %}
 
-    {% include "calendar/events/_event_editor" %}
+    <div id="fields">
+        {% if event.fieldLayout and event.fieldLayout.tabs|length %}
+            {% for tab in event.fieldLayout.tabs %}
+                <div class="field tab-content{% if not loop.first %} hidden{% endif %}" data-for-tab="{{ tab.id }}">
 
-    {% if form %}
-        <div id="fields">
-            {{ form.render()|raw }}
-        </div>
-    {% endif %}
+                    {# ===================================== #}
+                    {# Only show event data in the first tab #}
+                    {# ===================================== #}
+                    {% if loop.first %}
+                        {% include "calendar/events/_event_editor" with {
+                            event: event,
+                            name: name,
+                            eventData: eventData,
+                            eventConfig: eventConfig,
+                        } only %}
+                    {% endif %}
+
+                    {% include "_includes/fields" with {
+                        fields: tab.fields,
+                        element: event,
+                    } only %}
+
+                </div>
+            {% endfor %}
+        {% else %}
+            {% include "calendar/events/_event_editor" %}
+        {% endif %}
+    </div>
 
 {% endblock %}
 

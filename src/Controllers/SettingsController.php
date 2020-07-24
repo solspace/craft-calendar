@@ -16,6 +16,8 @@ class SettingsController extends BaseController
      */
     public function init()
     {
+        parent::init();
+
         if (!\Craft::$app->request->getIsConsoleRequest()) {
             $this->requireLogin();
         }

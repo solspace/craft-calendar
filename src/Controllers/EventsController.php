@@ -420,8 +420,13 @@ class EventsController extends BaseController
             );
         }
 
+        $template = 'calendar/events/_edit';
+        if (version_compare(\Craft::$app->getVersion(), '3.5', '<')) {
+            $template = 'calendar/events/_edit_legacy';
+        }
+
         return $this->renderTemplate(
-            'calendar/events/_edit',
+            $template,
             [
                 'name'               => self::EVENT_FIELD_NAME,
                 'event'              => $event,
