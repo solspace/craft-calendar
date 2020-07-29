@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 3.0.11 - 2020-07-29
+### Fixed
+- Fixed an issue where creating and editing events would trigger a deprecation notice about `enabledForSite`.
+
 ## 3.0.10 - 2020-07-24
 ### Changed
 - Updated Calendar field layouts to now include support for Craft 3.5+ layout column improvements.

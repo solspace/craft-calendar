@@ -39,7 +39,6 @@ class EventsService extends Component
     {
         $query = Event::find()
             ->setAllowedCalendarsOnly(false)
-            ->enabledForSite(false)
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->id($eventId);
 
@@ -64,7 +63,6 @@ class EventsService extends Component
         return Event::find()
             ->slug($slug)
             ->setAllowedCalendarsOnly(false)
-            ->enabledForSite(false)
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->siteId($siteId)
             ->one();
