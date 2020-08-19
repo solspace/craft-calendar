@@ -731,6 +731,10 @@ class EventQuery extends ElementQuery implements \Countable
                     $hasRelations = true;
                 }
 
+                if (isset($join[1]['relations']) && $join[1]['relations'] === '{{%relations}}') {
+                    $hasRelations = true;
+                }
+
                 if ($join[1] === '{{%users}}') {
                     $hasUsers = true;
                 }

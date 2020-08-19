@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 3.0.12 - 2020-08-19
+### Added
+- Added a datepicker to the CP Month/Week/Day views to allow for much quicker navigating to months/weeks/days in the distant past or future.
+- Added ability to set 5 and 10 minute time picker increments in addition to the previous 15, 30 and 60 minute increments.
+
+### Fixed
+- Fixed a bug where manually editing an end time was not possible at times.
+- Fixed a bug where Calendar event elements could not be reordered inside the element fieldtype.
+
 ## 3.0.11 - 2020-07-29
 ### Fixed
 - Fixed an issue where creating and editing events would trigger a deprecation notice about `enabledForSite`.

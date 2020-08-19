@@ -28,6 +28,8 @@ class SettingsModel extends Model
     ];
 
     private static $timeIntervals = [
+        5 => 5,
+        10 => 10,
         15 => 15,
         30 => 30,
         60 => 60,
