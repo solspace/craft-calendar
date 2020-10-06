@@ -1286,8 +1286,11 @@ class EventQuery extends ElementQuery implements \Countable
 
         // Introducing a hotfix for when Craft tries to get the count of rows
         $firstColumn = reset($this->select);
-        if ($firstColumn && $firstColumn instanceof Expression && $firstColumn->expression === '1') {
-            $this->select(Table::ELEMENTS . '.[[id]]');
+        if ($firstColumn) {
+            $isExpression = $firstColumn instanceof Expression && $firstColumn->expression === '1';
+            if ($isExpression) {
+                $this->select('elements.[[id]]');
+            }
         }
 
         $events = parent::all();

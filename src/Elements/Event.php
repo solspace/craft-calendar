@@ -1194,7 +1194,7 @@ class Event extends Element implements \JsonSerializable
 
             $rangeStart = $occurrencesConfig->getRangeStart();
             if (null === $rangeStart) {
-                $rangeStart = $this->isInfinite() ? new \DateTime('today') : $this->getStartDate();
+                $rangeStart = new Carbon('today', DateHelper::UTC);
             }
 
             $rangeEnd = $occurrencesConfig->getRangeEnd();

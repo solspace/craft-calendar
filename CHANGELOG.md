@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 3.0.13 - 2020-10-06
+### Fixed
+- Fixed a bug where the Occurrences object's default was not loading correctly for some recurring events.
+- Fixed a bug where the Events CP index could trigger errors after upgrading from Craft 2 for installs that use database table prefixes.
+- Fixed a bug where calendars on single-site installs were not taking into account the event enabled/disabled state in calendar site settings when creating new events.
+
 ## 3.0.12 - 2020-08-19
 ### Added
 - Added a datepicker to the CP Month/Week/Day views to allow for much quicker navigating to months/weeks/days in the distant past or future.

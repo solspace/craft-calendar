@@ -88,6 +88,17 @@ class EventsController extends BaseController
         $event             = Event::create($site->id);
         $event->calendarId = $calendar->id;
 
+        if (!\Craft::$app->getIsMultiSite()) {
+            $enabledSiteIds = [];
+            foreach ($calendar->getSiteSettings() as $siteSettings) {
+                if ($siteSettings->enabledByDefault) {
+                    $enabledSiteIds[] = $siteSettings->siteId;
+                }
+            }
+
+            $event->enabled = in_array(\Craft::$app->sites->currentSite->id, $enabledSiteIds, false);
+        }
+
         return $this->renderEditForm($event, Calendar::t('Create a new event'));
     }
 
@@ -325,17 +336,15 @@ class EventsController extends BaseController
         \Craft::$app->view->registerAssetBundle(EventEditBundle::class);
 
         $enabledSiteIds = null;
-        if (\Craft::$app->getIsMultiSite()) {
-            if ($event->id !== null) {
-                $enabledSiteIds = \Craft::$app->getElements()->getEnabledSiteIdsForElement($event->id);
-            } else {
-                // Set defaults based on the section settings
-                $enabledSiteIds = [];
+        if ($event->id !== null) {
+            $enabledSiteIds = \Craft::$app->getElements()->getEnabledSiteIdsForElement($event->id);
+        } else {
+            // Set defaults based on the section settings
+            $enabledSiteIds = [];
 
-                foreach ($calendar->getSiteSettings() as $siteSettings) {
-                    if ($siteSettings->enabledByDefault) {
-                        $enabledSiteIds[] = $siteSettings->siteId;
-                    }
+            foreach ($calendar->getSiteSettings() as $siteSettings) {
+                if ($siteSettings->enabledByDefault) {
+                    $enabledSiteIds[] = $siteSettings->siteId;
                 }
             }
         }
