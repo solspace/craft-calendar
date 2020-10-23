@@ -371,7 +371,7 @@ class EventsController extends BaseController
         if (!\Craft::$app->getRequest()->isMobileBrowser(true) && $this->getCalendarService()->isEventTemplateValid($calendar, $event->siteId)) {
             $previewUrl = $event->getUrl();
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields'        => '#title-field, #event-builder-data, #event-builder, #fields .calendar-event-wrapper > .field, #fields > .field > .field',
+                    'fields'        => '#title-field, #event-builder-data, #event-builder, #fields .calendar-event-wrapper > .field, #fields > .field > .field, #fields > .flex-fields > .field',
                     'extraFields'   => '#settings',
                     'previewUrl'    => $previewUrl,
                     'previewAction' => $previewActionUrl,

@@ -1,5 +1,12 @@
 # Solspace Calendar Changelog
 
+## 3.0.14 - 2020-10-23
+### Added
+- Added `previousDateLocalized` and `nextDateLocalized` property as a more reliable replacement for `previousDate` and `nextDate` when needing to use `|date` filter on `month`/`week`/`day` objects to display translatable dates in calendar views.
+
+### Fixed
+- Fixed a bug where Live Preview was not working correctly for non-Calendar fields in Craft 3.5+.
+
 ## 3.0.13 - 2020-10-06
 ### Fixed
 - Fixed a bug where the Occurrences object's default was not loading correctly for some recurring events.

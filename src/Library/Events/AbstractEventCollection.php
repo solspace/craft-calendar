@@ -106,6 +106,14 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     }
 
     /**
+     * @return Carbon
+     */
+    final public function getPreviousDateLocalized(): Carbon
+    {
+        return $this->getDateLocalized()->copy()->sub($this->getInterval());
+    }
+
+    /**
      * Returns a Carbon object with the duration interval set forward by 1 iteration
      *
      * @return Carbon
@@ -113,6 +121,14 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     final public function getNextDate(): Carbon
     {
         return $this->getDate()->copy()->add($this->getInterval());
+    }
+
+    /**
+     * @return Carbon
+     */
+    final public function getNextDateLocalized(): Carbon
+    {
+        return $this->getDateLocalized()->copy()->add($this->getInterval());
     }
 
     /**
