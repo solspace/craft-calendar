@@ -1,5 +1,9 @@
 # Solspace Calendar Changelog
 
+## 3.0.15 - 2020-11-24
+### Fixed
+- Fixed a bug where the front end Guest Access feature could error in some cases.
+
 ## 3.0.14 - 2020-10-23
 ### Added
 - Added `previousDateLocalized` and `nextDateLocalized` property as a more reliable replacement for `previousDate` and `nextDate` when needing to use `|date` filter on `month`/`week`/`day` objects to display translatable dates in calendar views.

@@ -82,7 +82,7 @@ class CalendarsService extends Component
         if (null === $this->allowedCalendarCache) {
             $allowedCalendarIds = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
 
-            if (is_array($publicCalendarIds)) {
+            if (is_array($publicCalendarIds) && is_array($allowedCalendarIds)) {
                 $publicCalendarIds  = array_map('intval', $publicCalendarIds);
                 $allowedCalendarIds = array_merge($allowedCalendarIds, $publicCalendarIds);
             }
