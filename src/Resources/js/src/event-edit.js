@@ -1,1 +1,0 @@
-"use strict";$(function(){var a=$("#tabs a.tab");a.on({click:function(){var a=$(this);return a.parent().siblings().find(".tab.sel").removeClass("sel"),a.addClass("sel"),$(".tab-content").addClass("hidden"),$(".tab-content[data-for-tab="+a.data("tab-id")+"]").removeClass("hidden"),!1}})});

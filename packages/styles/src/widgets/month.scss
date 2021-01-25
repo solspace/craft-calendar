@@ -1,0 +1,183 @@
+@import '../shared/mixins';
+
+/* MINI CALENDAR */
+
+.calendar-mini-cal {
+  .fc-toolbar {
+    .fc-left,
+    .fc-right {
+      button {
+        padding: 0;
+      }
+    }
+  }
+
+  td {
+    border: 0 !important;
+    padding: 0 !important;
+
+    &.fc-other-month {
+      visibility: hidden !important;
+    }
+  }
+
+  th {
+    border: 0 !important;
+    padding: 0 !important;
+  }
+
+  .fc-row.fc-widget-header {
+    border-bottom: 1px solid #9ca5b0;
+
+    .fc-day-header {
+      text-align: center;
+      color: #9aa5b1 !important;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 0px;
+      border: none !important;
+    }
+  }
+
+  .fc-basic-view .fc-body .fc-row {
+    min-height: 23px;
+  }
+
+  &.widget-cal {
+    .fc-basic-view .fc-body .fc-row {
+      min-height: 18px;
+    }
+  }
+
+  .fc-bg td {
+    background: none !important;
+  }
+
+  .fc-row {
+    margin-bottom: 1px;
+  }
+
+  .fc-content-skeleton {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+
+    td {
+      text-align: center;
+      cursor: pointer;
+      padding: 0;
+      border: 1px solid #e6edf5;
+
+      &.fc-day-top {
+        text-align: center;
+        padding: 2px 0 !important;
+
+        span {
+          font-size: 13px;
+          float: none !important;
+        }
+      }
+
+      $color: #777e8a;
+
+      &.fc-has-event {
+        background-color: #cfd8e3;
+        @include border-radius(1px);
+      }
+
+      &:hover {
+        background-color: darken($color, 10%);
+        color: #fff;
+      }
+
+      &.fc-today {
+        $color: #e5422b;
+        color: #ffffff;
+        background-color: $color;
+
+        &:hover {
+          background-color: darken($color, 10%);
+          color: #ffffff;
+        }
+      }
+
+      &:hover {
+        background-color: #f4f7fc;
+        color: #424242;
+      }
+    }
+
+    > table {
+      height: 100%;
+    }
+  }
+
+  &#calendar-mini-cal {
+    .fc-content-skeleton {
+      td {
+        border: {
+          right: 1px solid #e6edf5 !important;
+          bottom: 1px solid #e6edf5 !important;
+        }
+      }
+    }
+  }
+
+  .fc-toolbar {
+    margin: 0;
+
+    h2 {
+      position: relative;
+      top: 4px;
+
+      font-weight: normal !important;
+      font-size: 15px;
+    }
+
+    button.fc-button {
+      background: transparent none;
+      text-shadow: none;
+      @include box-shadow(none);
+      border: none;
+
+      &,
+      &:active {
+        outline: none;
+      }
+
+      .fc-icon {
+        width: auto;
+
+        &:after {
+          margin: 0;
+        }
+
+        &.fc-icon-left-single-arrow {
+          &:after {
+            content: '←';
+          }
+        }
+
+        &.fc-icon-right-single-arrow {
+          &:after {
+            content: '→';
+          }
+        }
+      }
+    }
+  }
+}
+
+.fc-button-group {
+  .fc-next-button,
+  .fc-Today-button {
+    border-left: 1px solid white !important;
+
+    &:hover {
+      border-left: 1px solid white !important;
+    }
+  }
+}

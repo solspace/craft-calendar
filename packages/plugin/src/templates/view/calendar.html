@@ -1,0 +1,144 @@
+{% extends "calendar/layouts/_layout.html" %}
+{% import "_includes/forms" as forms %}
+
+{% set selectedSubnavItem = currentView %}
+{% set title = currentView|ucfirst|t('calendar') %}
+
+{% block content %}
+
+    {% set showBanner = craft.calendar.showDemoTemplateBanner %}
+
+    {% if calendarView == "month" and showBanner and currentUser is defined and currentUser.admin %}
+        <div class="alert alert-info alert-dismissible">
+            <a class="close" data-icon="remove"></a>
+
+            {{ 'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>'|t('calendar', {link: url('calendar/settings/demo-templates')})|raw }}
+        </div>
+    {% endif %}
+
+
+    {% set dateFormat = dateFormat|replace('n', 'm')|replace('j', 'd') %}
+    {% set timeFormat = timeFormat|replace('g', 'h')|replace('i', 'mm')|replace('A', 'tt') %}
+
+    {% macro dateTimeField(fieldName, label, datePlaceholder, timePlaceholder) %}
+
+        {% import "_includes/forms" as forms %}
+
+        {% set input %}
+            {{ forms.date({
+                id:          fieldName,
+                name:        fieldName,
+                placeholder: datePlaceholder,
+            }) }}
+
+            {{ forms.time({
+                id:          fieldName,
+                name:        fieldName,
+                placeholder: timePlaceholder,
+            }) }}
+        {% endset %}
+
+        {{ forms.field({
+            label:    label,
+            first:    (fieldName == 'startDate'),
+            required: true
+        }, input) }}
+
+    {% endmacro %}
+
+    {% from _self import dateTimeField %}
+
+    <script>
+      if (Craft && Craft.datepickerOptions) {
+        Craft.datepickerOptions.firstDay = {{ weekStartDay ?? 0 }};
+      }
+    </script>
+
+    <div id="event-creator">
+        {{ forms.textField({
+            label: "Title"|t('calendar'),
+            id: 'title',
+            name: 'title',
+            first: true,
+            required: true
+        }) }}
+
+        {{ forms.selectField({
+            label: "Calendar"|t('calendar'),
+            name: 'calendarId',
+            options: calendarOptions,
+            required: true,
+        }) }}
+
+        {{ dateTimeField('startDate', 'Start Date'|t('calendar'), dateFormat, timeFormat) }}
+        {{ dateTimeField('endDate', 'End Date'|t('calendar'), dateFormat, timeFormat) }}
+
+        {{ forms.lightswitchField({
+            label: "All Day"|t('calendar'),
+            name: 'allDay',
+            on: false,
+        }) }}
+
+        <ul class="errors"></ul>
+
+        <div class="buttons">
+            <button type="button" class="btn small submit">{{ 'Save'|t('calendar') }}</button>
+            <button type="button" class="btn small delete">{{ 'Cancel'|t('calendar') }}</button>
+        </div>
+    </div>
+
+    <div id="solspace-calendar"
+         class="calendar-agenda"
+         data-calendar-instance
+         data-view="{{ calendarView }}"
+         data-time-format="{{ craft.app.locale.getTimeFormat('short', 'php') }}"
+         data-language="{{ calendarLanguage }}"
+         data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
+         data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
+         data-current-site-id="{{ currentSiteId }}"
+         data-current-day="{{ currentDay.toDateString }}"
+         data-site-map="{{ siteMap|json_encode }}"
+         {% if isQuickCreateEnabled %}data-can-quick-create{% endif %}
+         {% if isMultiSite %}data-is-multi-site{% endif %}
+         {% if currentUser and currentUser.can('calendar-manageEvents') and calendarOptions is not empty %}
+             data-can-edit-events
+         {% endif %}
+    ></div>
+
+{% endblock %}
+
+{% block sidebar %}
+    {% if craft.calendar.settings.miniCalEnabled %}
+        <div class="calendar-mini-cal"
+             data-calendar-instance
+             data-mini-cal
+             data-current-day="{{ currentDay.toDateString }}"
+             data-language="{{ calendarLanguage }}"
+             data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
+        ></div>
+
+        <nav>
+            <ul class="calendar-list">
+                <li class="heading">
+                    <a href="#" class="sel" style="display: none;">{{ "Calendars"|t('calendar') }}</a>
+                    <span>
+                        {{ "Calendars"|t('calendar') }}
+                    </span>
+                </li>
+                {% for id, calendar in craft.calendar.calendars %}
+                    <li class="item">
+                        <input type="checkbox"
+                               name="calendar[]"
+                               id="calendar-item-{{ calendar.id }}"
+                               value="{{ calendar.id }}"
+                               checked />
+                        <label for="calendar-item-{{ calendar.id }}">
+                            <span style="background: {{ calendar.color }}; color: {{ calendar.contrastColor }}; border-color: {{ calendar.darkerColor }};"></span>
+                            {{ calendar.name }}
+                        </label>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,335 @@
+@import '../shared/flexbox';
+@import '../shared/mixins';
+@import '../shared/locales';
+@import '../shared/timepickerCustomization';
+
+$emphasizedBlockBackground: #f9f9f9;
+$gutter: 10px;
+
+.hasDatepicker,
+.ui-timepicker-input {
+  &::placeholder {
+    padding-left: 20px;
+  }
+}
+
+.cal-grid {
+  @include clearfix;
+
+  *[class^='cal-row-'] {
+    display: block;
+    float: left;
+  }
+
+  @for $i from 1 to 12 {
+    .cal-row-#{$i} {
+      width: (100% / 12) * $i;
+    }
+  }
+}
+
+ul.cal-group {
+  @include clearfix;
+  margin: auto (-$gutter);
+
+  > li {
+    display: block;
+    float: left;
+
+    margin: 0 $gutter;
+
+    &.side-label {
+      margin-top: 20px;
+
+      .field {
+        @include clearfix;
+
+        .heading {
+          float: left;
+          margin: 6px 10px 0 0;
+        }
+
+        .input {
+          float: left;
+        }
+      }
+
+      &.radio-group {
+        .field .input {
+          @include clearfix;
+
+          > div {
+            float: left;
+            margin: 5px 0 0 0;
+
+            &:first-child {
+              margin-right: 25px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.event-interval .heading label {
+  font-weight: normal;
+}
+
+.event-all-day {
+  .input {
+    margin-top: 8px;
+  }
+}
+
+.cal-date-row {
+  width: 260px;
+  //height: 53px;
+  //overflow: hidden;
+  //white-space: nowrap;
+  @include transition(width 0.3s ease-out);
+
+  &.short {
+    width: 150px;
+  }
+}
+
+.datewrapper {
+  width: 11em;
+}
+
+.recurrence-switch {
+  position: relative;
+  display: flex;
+
+  .lightswitch {
+    margin-bottom: -20px !important;
+  }
+
+  .recurrence-choices {
+    display: flex;
+    align-content: flex-start;
+    flex-wrap: wrap;
+
+    @include transition(all 0.2s ease-out);
+
+    > li {
+      float: none;
+
+      white-space: nowrap;
+    }
+
+    &.no-show {
+      left: 200px;
+      @include opacity(0);
+      pointer-events: none;
+    }
+
+    .recurrence-choice-monthly {
+      display: flex;
+
+      > * {
+        float: none;
+      }
+    }
+  }
+}
+
+.until-switch {
+  position: relative;
+
+  .cal-group {
+    position: absolute;
+    top: 5px;
+    left: 170px;
+
+    @include transition(all 0.2s ease-out);
+
+    li.until-count {
+      @include clearfix;
+      display: none;
+
+      > * {
+        float: left;
+      }
+
+      > label {
+        margin: 6px 0 0 10px;
+      }
+    }
+
+    &.no-show {
+      left: 200px;
+      @include opacity(0);
+      pointer-events: none;
+    }
+  }
+}
+
+#untilChoice {
+  width: 154px;
+  max-width: 154px;
+}
+
+.recurrence-choices-specific {
+  > li {
+    @extend %clearfix;
+    display: none;
+
+    > * {
+      display: block;
+      float: left;
+    }
+
+    > label {
+      margin: 7px 10px 0 0;
+
+      &.spaced {
+        margin: 7px 30px 0 0;
+      }
+    }
+
+    > .field {
+      margin: 0;
+    }
+  }
+}
+
+.recurrence-wrapper {
+  display: none;
+}
+
+.recurrence-block {
+  $buttonSize: 25px;
+  $buttonBackground: #ffffff;
+  $buttonActiveBackground: #727f8b;
+  $darkenMultiplier: 10;
+
+  @include border-radius(2px);
+  padding: 15px 15px 8px;
+  background: $emphasizedBlockBackground;
+
+  div.checkbox-group {
+    @include clearfix;
+
+    > div {
+      float: left;
+      margin: 0 7px 7px 0;
+
+      input[type='checkbox'] {
+        display: none;
+      }
+
+      input[type='checkbox'] + label {
+        @include box-sizing;
+        @include border-radius(2px);
+
+        display: block;
+        width: $buttonSize;
+        height: $buttonSize;
+        white-space: nowrap;
+
+        padding: 4px 0 0 !important;
+
+        background: $buttonBackground;
+        text-align: center;
+
+        &:before {
+          display: none;
+        }
+
+        &:hover {
+          background-color: darken($buttonBackground, $darkenMultiplier);
+        }
+
+        @include transition(all 0.3s ease-out);
+      }
+
+      input[type='checkbox']:checked + label {
+        color: #ffffff;
+        background-color: $buttonActiveBackground;
+
+        &:hover {
+          background-color: darken($buttonActiveBackground, $darkenMultiplier);
+        }
+      }
+    }
+
+    &.month-days {
+      max-width: 530px;
+    }
+  }
+
+  .months {
+    width: 330px;
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+
+      > div {
+        flex: 0 0 30%;
+
+        label {
+          width: auto !important;
+        }
+      }
+    }
+  }
+}
+
+ul.date-list {
+  > li {
+    $borderRadius: 3px;
+
+    position: relative;
+
+    background: $emphasizedBlockBackground;
+    padding: 5px 10px 5px 30px;
+
+    &:first-child {
+      padding-top: 10px;
+      @include border-top-radius($borderRadius);
+
+      > a {
+        top: 10px;
+      }
+    }
+
+    &:last-child {
+      padding-bottom: 10px;
+      @include border-bottom-radius($borderRadius);
+    }
+
+    > a {
+      position: absolute;
+      top: 5px;
+      left: 10px;
+
+      display: block;
+      width: 13px;
+      height: 20px;
+
+      color: #cccccc;
+      @include transition(color 0.2s ease-out);
+
+      &:hover {
+        color: #da5a47;
+        text-decoration: none;
+      }
+
+      &:before {
+        content: 'remove';
+        font-family: Craft, sans-serif;
+      }
+    }
+  }
+}
+
+.select-dates-wrapper {
+  display: none;
+}
+
+.ui-datepicker {
+  z-index: 102 !important;
+}

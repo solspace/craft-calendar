@@ -1,0 +1,41 @@
+$distance: 100px;
+$items: (
+  'normal': 57px,
+  'labelless-two-row': 69px,
+);
+
+@each $item, $height in $items {
+  .calendar-item-row-#{$item} {
+    &-enter {
+      opacity: 0;
+      height: 1px;
+      margin: 0 -10px 0;
+      transform: translate3d(-$distance, 0, 0) scaleY(0);
+
+      &-active {
+        opacity: 1;
+        height: $height;
+        margin: 0 -10px 24px;
+        transform: translate3d(0, 0, 0) scaleY(1);
+
+        transition: all 200ms ease-out;
+      }
+    }
+
+    &-exit {
+      opacity: 1;
+      height: $height;
+      margin: 0 -10px 24px;
+      transform: translate3d(0, 0, 0) scaleY(1);
+
+      &-active {
+        opacity: 0;
+        height: 1px;
+        margin: 0 -10px 0;
+        transform: translate3d(-$distance, 0, 0) scaleY(0);
+
+        transition: all 200ms ease-out;
+      }
+    }
+  }
+}

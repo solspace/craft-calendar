@@ -1,0 +1,63 @@
+@import 'variables';
+@import 'mixins';
+
+#qtip-overlay {
+  > div {
+    background: rgba(255, 255, 255, 0.75) !important;
+    @include opacity(1);
+  }
+}
+
+.qtip {
+  padding: 0;
+
+  @include border-radius(4px);
+  @include box-shadow(0 10px 100px rgba(0, 0, 0, 0.5));
+  border: 1px solid transparent;
+
+  .qtip-titlebar {
+    padding: 11px 14px;
+
+    background: $titlebarColor;
+    border-bottom: none;
+    @include border-radius(4px 4px 0 0);
+    @include box-shadow(0 2px 1px -2px rgba(0, 0, 0, 0.2));
+
+    .qtip-title {
+      font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif;
+      font-size: 120%;
+      color: $headerColor;
+    }
+
+    .qtip-close {
+      top: 50%;
+    }
+  }
+
+  div.buttons {
+    position: relative;
+    top: 10px;
+
+    margin: 0px -14px !important;
+    padding: 11px 14px 3px;
+
+    text-align: right;
+
+    background: $buttonContainerColor;
+    background-image: -webkit-linear-gradient(#ecedef, #e9eaec);
+    background-image: -moz-linear-gradient(#ecedef, #e9eaec);
+    background-image: -ms-linear-gradient(#ecedef, #e9eaec);
+    background-image: -o-linear-gradient(#ecedef, #e9eaec);
+    background-image: linear-gradient(#ecedef, #e9eaec);
+    @include border-radius(0 0 4px 4px);
+    @include box-shadow(inset 0 2px 1px -2px rgba(0, 0, 0, 0.2));
+
+    a,
+    button {
+      float: right !important;
+
+      font-family: HelveticaNeue, sans-serif;
+      font-size: 12px;
+    }
+  }
+}

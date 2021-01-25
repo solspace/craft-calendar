@@ -1,0 +1,33 @@
+$size: 174px;
+
+.date-list-item {
+  &-enter {
+    opacity: 0;
+    width: 1px;
+    padding: 0 !important;
+
+    &-active,
+    &-done {
+      opacity: 1;
+      width: $size;
+      padding: 0 5px 10px !important;
+
+      transition: all 200ms ease-out;
+    }
+  }
+
+  &-exit {
+    opacity: 1;
+    width: $size;
+    padding: 0 5px 10px !important;
+
+    &-active,
+    &-done {
+      opacity: 0;
+      width: 1px;
+      padding: 0 !important;
+
+      transition: all 200ms ease-out;
+    }
+  }
+}

@@ -1,0 +1,132 @@
+@import 'mixins';
+@import '../widgets/month';
+
+$distance: 5px;
+$size: 15px;
+
+#sidebar {
+  ul.calendar-list {
+    padding: 24px;
+
+    li.heading {
+      margin: 0 0 2px;
+    }
+
+    li.item {
+      margin-bottom: 1px;
+
+      > input {
+        display: none;
+      }
+
+      > label {
+        position: relative;
+        padding-left: $size + $distance;
+
+        cursor: pointer;
+        @include no-select;
+
+        > span {
+          position: absolute;
+          left: 0;
+          top: 0;
+
+          @include box-sizing;
+          width: $size;
+          height: $size;
+
+          @include border-radius(2px);
+          border: 1px solid white;
+          background: white;
+
+          text-align: center;
+
+          &:before {
+            position: relative;
+            top: -4px;
+
+            content: '';
+
+            font-family: Craft, sans-serif;
+            font-size: 10px;
+            color: inherit;
+          }
+        }
+      }
+
+      > input:checked + label {
+        > span {
+          &:before {
+            content: 'check';
+          }
+        }
+      }
+    }
+  }
+}
+
+#mini-cal-wrapper {
+  .s-mini-calendar {
+    > table {
+      width: auto;
+
+      th {
+        color: #a0a7b1 !important;
+        font-weight: normal;
+        font-size: 12px;
+      }
+      td {
+        border: none;
+        padding: 1px 1px 0 0;
+
+        a {
+          display: block;
+          @include box-sizing;
+
+          width: 24px;
+          height: 24px;
+
+          padding: 3px 4px;
+          font-weight: normal;
+
+          @include border-radius(1px);
+
+          &:hover {
+            background-color: #d9d9d9;
+          }
+        }
+
+        .middot {
+          display: none;
+        }
+
+        &.has_events {
+          div {
+            a {
+              background-color: #eeeeee;
+
+              &:hover {
+                background-color: #d9d9d9;
+                color: #424242;
+              }
+            }
+          }
+        }
+
+        &.today {
+          div {
+            a {
+              background-color: #d65c50;
+              @include border-radius(24px);
+
+              &:hover {
+                background-color: darken(#d65c50, 10);
+                color: #fff;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
