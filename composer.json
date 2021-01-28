@@ -6,7 +6,7 @@
   "authors": [
     {
       "name": "Solspace",
-      "homepage": "https://docs.solspace.com"
+      "homepage": "https://solspace.com"
     }
   ],
   "require": {
@@ -44,7 +44,7 @@
     "class": "Solspace\\Calendar\\Calendar",
     "name": "Calendar",
     "developer": "Solspace",
-    "developerUrl": "https://docs.solspace.com/craft/calendar/v3/",
+    "developerUrl": "https://docs.solspace.com/",
     "documentationUrl": "https://docs.solspace.com/craft/calendar/v3/",
     "changelogUrl": "https://raw.githubusercontent.com/solspace/craft3-calendar/master/CHANGELOG.md",
     "hasSettings": true,

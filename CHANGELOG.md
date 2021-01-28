@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 3.1.0 - 2021-01-28
+
+### Changed
+- Updated the file structure of the Calendar plugin and updated Resources areas to show latest support options, etc.
+
 ## 3.0.15 - 2020-11-24
 
 ### Fixed
