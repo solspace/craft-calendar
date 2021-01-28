@@ -21,7 +21,7 @@ class ResourcesController extends BaseController
         return $this->renderTemplate(
             'calendar/resources/community',
             [
-                'icons' => $this->getIcons(['so', 'discord']),
+                'icons' => $this->getIcons(['so', 'discord', 'feedback']),
             ]
         );
     }
