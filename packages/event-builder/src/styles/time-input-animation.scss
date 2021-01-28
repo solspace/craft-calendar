@@ -1,0 +1,44 @@
+$items: (
+  'time': 85px,
+  'date': 120px,
+  'dash': 14px,
+  'count': 120px,
+  'event-interval': 55px,
+  'options': 180px,
+);
+
+@each $item, $size in $items {
+  .#{$item}-input {
+    width: ($size) px;
+
+    &-enter {
+      opacity: 0;
+      width: 1px;
+      padding: 0 !important;
+
+      &-active,
+      &-done {
+        opacity: 1;
+        width: $size;
+        padding: 0 2.5px !important;
+
+        transition: all 200ms ease-out;
+      }
+    }
+
+    &-exit {
+      opacity: 1;
+      width: $size;
+      padding: 0 2.5px !important;
+
+      &-active,
+      &-done {
+        opacity: 0;
+        width: 1px;
+        padding: 0 !important;
+
+        transition: all 200ms ease-out;
+      }
+    }
+  }
+}

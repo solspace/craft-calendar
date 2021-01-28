@@ -1,0 +1,372 @@
+$timeSize: 10px;
+$titleSize: 12px;
+
+$color-otherMonthDays: #f4f7fc;
+$color-weekEnds: #fbfdff;
+$color-title: #606060;
+$color-time: #ffffff;
+$color-timeSingleDay: #929292;
+$color-border: #e9e9e9;
+$color-borderThick: #d0d0d0;
+$color-today: #fffedd;
+$color-day: #fffffe;
+$color-todayHighlight: #e5422b;
+
+.calendar-agenda.fc.fc-unthemed {
+  td {
+    padding: 0 !important;
+  }
+
+  .fc-toolbar {
+    .fc-button {
+      color: #29323d;
+      background: rgba(96, 125, 159, 0.25);
+
+      box-shadow: none;
+      outline: none;
+      text-shadow: none !important;
+
+      display: inline-block;
+      padding: 7px 14px;
+      border: none;
+
+      text-align: center;
+      white-space: nowrap;
+      cursor: pointer;
+      -webkit-appearance: none;
+
+      &:active {
+        outline: none;
+      }
+
+      &.fc-state-hover {
+        background-position: inherit;
+        background: #bac6d6;
+      }
+
+      .fc-icon {
+        top: -1px;
+
+        &.fc-icon-left-single-arrow,
+        &.fc-icon-right-single-arrow,
+        &.fc-icon-calendar {
+          font-family: Craft, sans-serif;
+
+          &:after {
+            font-size: 100%;
+            font-weight: normal;
+            left: 0 !important;
+          }
+        }
+
+        &.fc-icon-left-single-arrow:after {
+          content: 'larr';
+        }
+
+        &.fc-icon-right-single-arrow:after {
+          content: 'rarr';
+        }
+
+        &.fc-icon-calendar {
+          display: block;
+
+          &:after {
+            content: 'date';
+          }
+        }
+      }
+    }
+  }
+
+  /* ========== */
+  /* Month view */
+  /* ========== */
+  .fc-left h2 {
+    font-size: 28px;
+  }
+
+  th,
+  td,
+  tbody,
+  .fc-divider,
+  .fc-row,
+  .fc-popover {
+    border-color: $color-border;
+  }
+
+  .fc-head {
+    .fc-head-container {
+      &,
+      .fc-row,
+      thead,
+      .fc-day-header {
+        border: none !important;
+      }
+
+      .fc-row {
+        border-bottom: 1px solid $color-borderThick;
+      }
+    }
+  }
+
+  .fc-body {
+    > tr > td.fc-widget-content {
+      border-color: transparent;
+      border-top-color: $color-borderThick;
+      padding-top: 0px;
+    }
+  }
+
+  .fc-day-header {
+    padding: 5px 7px;
+
+    text-align: right;
+    font-size: 18px;
+    font-weight: normal;
+    color: #000;
+  }
+
+  .fc-day-grid {
+    .fc-other-month {
+      background-color: $color-otherMonthDays !important;
+    }
+  }
+
+  .fc-day-top {
+    padding: 2px;
+
+    > a {
+      $size: 25px;
+
+      @include box-sizing;
+      display: inline-block;
+      float: right;
+      width: 27px;
+      height: 27px;
+      padding-top: 4px;
+
+      @include border-radius($size);
+      font-size: 16px;
+      color: inherit;
+      text-align: center;
+
+      &:hover {
+        cursor: pointer;
+        text-decoration: none;
+      }
+    }
+
+    &.fc-today > a {
+      background-color: $color-todayHighlight;
+
+      font-weight: bold;
+      color: white;
+    }
+
+    .fc-day-number {
+      float: none;
+    }
+  }
+
+  /* ========= */
+  /* Week view */
+  /* ========= */
+  .fc-day-header.fc-widget-header {
+    > a {
+      $size: 30px;
+
+      position: relative;
+      display: block;
+
+      padding-right: $size + 5px;
+
+      color: #000000;
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      > span > span {
+        position: absolute;
+        right: 0;
+        top: -4px;
+
+        display: inline-block;
+        width: $size;
+        height: $size;
+        @include box-sizing;
+
+        padding-top: 3px;
+
+        border: 1px solid transparent;
+        @include border-radius($size);
+
+        text-align: center;
+      }
+
+      &.fc-title-today {
+        > span > span {
+          color: #ffffff;
+          background: $color-todayHighlight;
+        }
+      }
+    }
+  }
+
+  /* ======== */
+  /* Day view */
+  /* ======== */
+  .fc-agendaDay-view {
+    .fc-widget-content {
+      border-left: none;
+    }
+  }
+
+  /* ================ */
+  /* Common for views */
+  /* ================ */
+  .fc-month-view,
+  .fc-agendaWeek-view {
+    .fc-bg {
+      .fc-day {
+        background-color: $color-day;
+
+        &.fc-today {
+          background-color: $color-today;
+        }
+      }
+
+      .fc-sun,
+      .fc-sat {
+        background-color: $color-weekEnds;
+      }
+    }
+  }
+
+  .fc-agendaWeek-view,
+  .fc-agendaDay-view {
+    .fc-time-grid-event {
+      padding: 3px 5px;
+
+      border: none !important;
+      @include border-radius(0);
+      opacity: 0.8;
+
+      &.fc-event-disabled {
+        opacity: 0.3 !important;
+      }
+    }
+
+    .fc-content {
+      .fc-time {
+        font-size: 10px;
+      }
+
+      .fc-title {
+        font-size: 12px;
+        font-weight: bold;
+      }
+    }
+
+    .fc-axis {
+      border-color: transparent !important;
+      padding-right: 4px !important;
+    }
+  }
+
+  .fc-agendaDay-view {
+    .fc-bg {
+      .fc-day {
+        &.fc-today.fc-state-highlight {
+          background-color: $color-day;
+        }
+      }
+    }
+  }
+
+  .fc-month-view {
+    &.fc-event-single-day {
+      .fc-time {
+        color: $color-timeSingleDay;
+      }
+    }
+  }
+
+  /* ====== */
+  /* Events */
+  /* ====== */
+  td.fc-event-container {
+    padding: 0 !important;
+
+    a.fc-event {
+      margin: 1px 5px 0;
+
+      &.fc-event-all-day,
+      &.fc-event-multi-day {
+        padding: 2px 4px 1px;
+
+        border: none !important;
+        @include border-radius(0);
+      }
+
+      &.fc-color-black {
+        .fc-time {
+          color: #000000;
+        }
+      }
+
+      &.fc-color-white {
+        .fc-time {
+          color: #ffffff;
+        }
+      }
+
+      .fc-time {
+        font-size: $timeSize;
+        font-weight: normal;
+        color: $color-time;
+      }
+
+      .fc-title {
+        font-size: $titleSize;
+      }
+
+      &.fc-event-single-day {
+        background-color: transparent !important;
+        border-color: transparent !important;
+
+        .fc-color-icon {
+          $size: 6px;
+
+          display: inline-block;
+          width: $size;
+          height: $size;
+          margin: 0 5px 0 0;
+
+          @include border-radius($size);
+          border: 1px solid transparent;
+        }
+
+        .fc-title {
+          color: $color-title;
+        }
+
+        .fc-time {
+          color: $color-timeSingleDay;
+        }
+      }
+
+      &.fc-event-disabled {
+        opacity: 0.3 !important;
+
+        .fc-time {
+          color: black;
+        }
+      }
+    }
+  }
+}
+
+.spinner {
+  height: 28px !important;
+}

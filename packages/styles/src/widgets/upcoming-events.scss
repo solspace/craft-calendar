@@ -1,0 +1,27 @@
+.upcoming-events {
+  width: 100%;
+  border-collapse: collapse;
+
+  tbody {
+    td {
+      padding: 7px 0;
+      border: {
+        top: 1px dotted #e3e5e8;
+        bottom: 1px dotted #e3e5e8;
+      }
+
+      span {
+        color: #8f98a3 !important;
+        font-weight: normal;
+      }
+    }
+
+    tr:first-child td {
+      border-top: 1px solid transparent;
+    }
+
+    tr:last-child td {
+      border-bottom: 1px solid transparent;
+    }
+  }
+}

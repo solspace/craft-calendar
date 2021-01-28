@@ -1,0 +1,48 @@
+{
+  "name": "@cal/event-builder",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm run clean && npm run watch",
+    "build": "npm run clean && NODE_ENV=production npm run compile",
+    "watch": "webpack --watch",
+    "clean": "rm -rf ../plugin/src/Resources/js/event-builder",
+    "lint": "eslint -c .eslintrc.json .",
+    "compile": "webpack",
+    "test": "jest --maxWorkers=4"
+  },
+  "author": "Solspace Inc.",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "@babel/plugin-proposal-decorators": "^7.12.1",
+    "@babel/preset-env": "^7.12.1",
+    "@babel/preset-react": "^7.12.5",
+    "babel-loader": "^8.1.0",
+    "babel-plugin-styled-components": "^1.12.0",
+    "core-js": "^3.7.0",
+    "css-loader": "^4.3.0",
+    "node-sass": "^4.12.0",
+    "prop-types": "^15.7.2",
+    "regenerator-runtime": "^0.13.7",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.2.1",
+    "terser-webpack-plugin": "^4.2.0",
+    "url-loader": "^4.1.0",
+    "webpack": "^5.16.0",
+    "webpack-cli": "^4.4.0"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.5.0",
+    "date-fns": "^2.4.1",
+    "date-fns-tz": "^1.0.8",
+    "react": "^16.14.0",
+    "react-datepicker": "^3.4.1",
+    "react-dom": "^16.14.0",
+    "react-redux": "^7.2.2",
+    "react-transition-group": "^4.4.1",
+    "redux": "^4.0.5",
+    "styled-components": "^5.2.1",
+    "underscore.string": "^3.3.5"
+  }
+}

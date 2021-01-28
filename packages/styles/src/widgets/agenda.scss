@@ -1,0 +1,15 @@
+@import '../shared/mixins';
+@import '../calendars/calendar';
+
+div.fc.fc-unthemed {
+  .fc-left h2 {
+    position: relative;
+    top: 3px;
+
+    font-size: 15px !important;
+  }
+
+  .fc-day-header {
+    font-size: 15px !important;
+  }
+}

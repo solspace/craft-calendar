@@ -1,0 +1,21 @@
+$distanceY: 50%;
+$distanceX: 0;
+
+.block {
+  &-enter {
+    opacity: 0;
+    transform: translate3d($distanceX, $distanceY, 0);
+
+    &-active {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+
+      transition: all 200ms ease-out;
+    }
+  }
+
+  &-exit {
+    position: absolute;
+    opacity: 0;
+  }
+}

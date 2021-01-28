@@ -1,0 +1,394 @@
+@charset "UTF-8";
+.recurrence-choices-specific > li:after {
+  content: '';
+  display: table;
+  clear: both; }
+
+body.ltr #locales {
+  padding: 0 0 0 24px; }
+
+body.rtl #locales {
+  padding: 0 24px 0 0; }
+
+#locales li {
+  position: relative; }
+
+body.ltr #locales li {
+  padding: 7px 45px 7px 0; }
+
+body.rtl #locales li {
+  padding: 7px 0 7px 45px; }
+
+#locales li + li {
+  border-top: 1px solid rgba(115, 127, 140, 0.15); }
+
+#locales li.sel {
+  color: #8f98a3;
+  cursor: default; }
+
+#locales li.sel:before {
+  font-size: 11px;
+  color: #8f98a3 !important;
+  font-family: 'Craft';
+  speak: none;
+  -webkit-font-feature-settings: 'liga', 'dlig';
+  -moz-font-feature-settings: 'liga=1, dlig=1';
+  -moz-font-feature-settings: 'liga', 'dlig';
+  -ms-font-feature-settings: 'liga', 'dlig';
+  -o-font-feature-settings: 'liga', 'dlig';
+  font-feature-settings: 'liga', 'dlig';
+  text-rendering: optimizeLegibility;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  text-align: center;
+  font-style: normal;
+  vertical-align: middle;
+  word-wrap: normal !important;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  content: 'check'; }
+
+body.ltr #locales li.sel:before {
+  float: left; }
+
+body.rtl #locales li.sel:before {
+  float: right; }
+
+body.ltr #locales li.sel:before {
+  margin: 3px 0 0 -16px; }
+
+body.rtl #locales li.sel:before {
+  margin: 3px -16px 0 0; }
+
+#locales li a {
+  color: #29323d; }
+
+#locales li a:hover {
+  color: #0d78f2;
+  cursor: pointer; }
+
+#locales li .lightswitch {
+  position: absolute;
+  top: 50%;
+  margin-top: -9px; }
+
+body.ltr #locales li .lightswitch {
+  right: 9px; }
+
+body.rtl #locales li .lightswitch {
+  left: 9px; }
+
+#locales li .status {
+  display: block;
+  position: absolute;
+  top: 50%;
+  margin: -5px 0 0; }
+
+body.ltr #locales li .status {
+  right: 16px; }
+
+body.rtl #locales li .status {
+  left: 16px; }
+
+#settings .select,
+#settings .select select {
+  width: 100%; }
+
+.recurrence-choices-specific > li:after {
+  content: '';
+  display: table;
+  clear: both; }
+
+.ui-timepicker-with-duration .ui-timepicker-list {
+  width: 14em; }
+
+.ui-datepicker-calendar .ui-datepicker-unselectable > span {
+  display: block;
+  width: 26px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  line-height: 26px;
+  text-align: center;
+  color: #cdcdcd; }
+
+.hasDatepicker::placeholder,
+.ui-timepicker-input::placeholder {
+  padding-left: 20px; }
+
+.cal-grid:after {
+  content: '';
+  display: table;
+  clear: both; }
+
+.cal-grid *[class^='cal-row-'] {
+  display: block;
+  float: left; }
+
+.cal-grid .cal-row-1 {
+  width: 8.33333%; }
+
+.cal-grid .cal-row-2 {
+  width: 16.66667%; }
+
+.cal-grid .cal-row-3 {
+  width: 25%; }
+
+.cal-grid .cal-row-4 {
+  width: 33.33333%; }
+
+.cal-grid .cal-row-5 {
+  width: 41.66667%; }
+
+.cal-grid .cal-row-6 {
+  width: 50%; }
+
+.cal-grid .cal-row-7 {
+  width: 58.33333%; }
+
+.cal-grid .cal-row-8 {
+  width: 66.66667%; }
+
+.cal-grid .cal-row-9 {
+  width: 75%; }
+
+.cal-grid .cal-row-10 {
+  width: 83.33333%; }
+
+.cal-grid .cal-row-11 {
+  width: 91.66667%; }
+
+ul.cal-group {
+  margin: auto -10px; }
+  ul.cal-group:after {
+    content: '';
+    display: table;
+    clear: both; }
+  ul.cal-group > li {
+    display: block;
+    float: left;
+    margin: 0 10px; }
+    ul.cal-group > li.side-label {
+      margin-top: 20px; }
+      ul.cal-group > li.side-label .field:after {
+        content: '';
+        display: table;
+        clear: both; }
+      ul.cal-group > li.side-label .field .heading {
+        float: left;
+        margin: 6px 10px 0 0; }
+      ul.cal-group > li.side-label .field .input {
+        float: left; }
+      ul.cal-group > li.side-label.radio-group .field .input:after {
+        content: '';
+        display: table;
+        clear: both; }
+      ul.cal-group > li.side-label.radio-group .field .input > div {
+        float: left;
+        margin: 5px 0 0 0; }
+        ul.cal-group > li.side-label.radio-group .field .input > div:first-child {
+          margin-right: 25px; }
+
+.event-interval .heading label {
+  font-weight: normal; }
+
+.event-all-day .input {
+  margin-top: 8px; }
+
+.cal-date-row {
+  width: 260px;
+  -webkit-transition: width 0.3s ease-out;
+  -moz-transition: width 0.3s ease-out;
+  -ms-transition: width 0.3s ease-out;
+  -o-transition: width 0.3s ease-out;
+  transition: width 0.3s ease-out; }
+  .cal-date-row.short {
+    width: 150px; }
+
+.datewrapper {
+  width: 11em; }
+
+.recurrence-switch {
+  position: relative;
+  display: flex; }
+  .recurrence-switch .lightswitch {
+    margin-bottom: -20px !important; }
+  .recurrence-switch .recurrence-choices {
+    display: flex;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    -webkit-transition: all 0.2s ease-out;
+    -moz-transition: all 0.2s ease-out;
+    -ms-transition: all 0.2s ease-out;
+    -o-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out; }
+    .recurrence-switch .recurrence-choices > li {
+      float: none;
+      white-space: nowrap; }
+    .recurrence-switch .recurrence-choices.no-show {
+      left: 200px;
+      opacity: 0;
+      -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=” $value * 100 “)';
+      filter: alpha(opacity=0);
+      zoom: 1;
+      pointer-events: none; }
+    .recurrence-switch .recurrence-choices .recurrence-choice-monthly {
+      display: flex; }
+      .recurrence-switch .recurrence-choices .recurrence-choice-monthly > * {
+        float: none; }
+
+.until-switch {
+  position: relative; }
+  .until-switch .cal-group {
+    position: absolute;
+    top: 5px;
+    left: 170px;
+    -webkit-transition: all 0.2s ease-out;
+    -moz-transition: all 0.2s ease-out;
+    -ms-transition: all 0.2s ease-out;
+    -o-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out; }
+    .until-switch .cal-group li.until-count {
+      display: none; }
+      .until-switch .cal-group li.until-count:after {
+        content: '';
+        display: table;
+        clear: both; }
+      .until-switch .cal-group li.until-count > * {
+        float: left; }
+      .until-switch .cal-group li.until-count > label {
+        margin: 6px 0 0 10px; }
+    .until-switch .cal-group.no-show {
+      left: 200px;
+      opacity: 0;
+      -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=” $value * 100 “)';
+      filter: alpha(opacity=0);
+      zoom: 1;
+      pointer-events: none; }
+
+#untilChoice {
+  width: 154px;
+  max-width: 154px; }
+
+.recurrence-choices-specific > li {
+  display: none; }
+  .recurrence-choices-specific > li > * {
+    display: block;
+    float: left; }
+  .recurrence-choices-specific > li > label {
+    margin: 7px 10px 0 0; }
+    .recurrence-choices-specific > li > label.spaced {
+      margin: 7px 30px 0 0; }
+  .recurrence-choices-specific > li > .field {
+    margin: 0; }
+
+.recurrence-wrapper {
+  display: none; }
+
+.recurrence-block {
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  padding: 15px 15px 8px;
+  background: #f9f9f9; }
+  .recurrence-block div.checkbox-group:after {
+    content: '';
+    display: table;
+    clear: both; }
+  .recurrence-block div.checkbox-group > div {
+    float: left;
+    margin: 0 7px 7px 0; }
+    .recurrence-block div.checkbox-group > div input[type='checkbox'] {
+      display: none; }
+    .recurrence-block div.checkbox-group > div input[type='checkbox'] + label {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      -webkit-border-radius: 2px;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+      display: block;
+      width: 25px;
+      height: 25px;
+      white-space: nowrap;
+      padding: 4px 0 0 !important;
+      background: #ffffff;
+      text-align: center;
+      -webkit-transition: all 0.3s ease-out;
+      -moz-transition: all 0.3s ease-out;
+      -ms-transition: all 0.3s ease-out;
+      -o-transition: all 0.3s ease-out;
+      transition: all 0.3s ease-out; }
+      .recurrence-block div.checkbox-group > div input[type='checkbox'] + label:before {
+        display: none; }
+      .recurrence-block div.checkbox-group > div input[type='checkbox'] + label:hover {
+        background-color: #e6e6e6; }
+    .recurrence-block div.checkbox-group > div input[type='checkbox']:checked + label {
+      color: #ffffff;
+      background-color: #727f8b; }
+      .recurrence-block div.checkbox-group > div input[type='checkbox']:checked + label:hover {
+        background-color: #5b656f; }
+  .recurrence-block div.checkbox-group.month-days {
+    max-width: 530px; }
+  .recurrence-block .months {
+    width: 330px; }
+    .recurrence-block .months .checkbox-group {
+      display: flex;
+      flex-wrap: wrap; }
+      .recurrence-block .months .checkbox-group > div {
+        flex: 0 0 30%; }
+        .recurrence-block .months .checkbox-group > div label {
+          width: auto !important; }
+
+ul.date-list > li {
+  position: relative;
+  background: #f9f9f9;
+  padding: 5px 10px 5px 30px; }
+  ul.date-list > li:first-child {
+    padding-top: 10px;
+    -webkit-border-top-right-radius: 3px;
+    border-top-right-radius: 3px;
+    -webkit-border-top-left-radius: 3px;
+    border-top-left-radius: 3px;
+    background-clip: padding-box; }
+    ul.date-list > li:first-child > a {
+      top: 10px; }
+  ul.date-list > li:last-child {
+    padding-bottom: 10px;
+    -webkit-border-bottom-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    background-clip: padding-box; }
+  ul.date-list > li > a {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    display: block;
+    width: 13px;
+    height: 20px;
+    color: #cccccc;
+    -webkit-transition: color 0.2s ease-out;
+    -moz-transition: color 0.2s ease-out;
+    -ms-transition: color 0.2s ease-out;
+    -o-transition: color 0.2s ease-out;
+    transition: color 0.2s ease-out; }
+    ul.date-list > li > a:hover {
+      color: #da5a47;
+      text-decoration: none; }
+    ul.date-list > li > a:before {
+      content: 'remove';
+      font-family: Craft, sans-serif; }
+
+.select-dates-wrapper {
+  display: none; }
+
+.ui-datepicker {
+  z-index: 102 !important; }
