@@ -35,7 +35,7 @@ class CalendarFieldType extends Field
     }
 
     /**
-     * {@inheritDoc IFieldType::getInputHtml()}
+     * {@inheritDoc IFieldType::getInputHtml()}.
      *
      * @param mixed $value
      */

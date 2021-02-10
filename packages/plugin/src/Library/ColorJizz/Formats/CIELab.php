@@ -179,9 +179,9 @@ class CIELab extends ColorJizz
         $var_H = atan2($this->b_dimension, $this->a_dimension);
 
         if ($var_H > 0) {
-            $var_H = ($var_H / M_PI) * 180;
+            $var_H = ($var_H / \M_PI) * 180;
         } else {
-            $var_H = 360 - (abs($var_H) / M_PI) * 180;
+            $var_H = 360 - (abs($var_H) / \M_PI) * 180;
         }
 
         $lightness = $this->lightness;

@@ -137,7 +137,7 @@ class CIELCh extends ColorJizz
      */
     public function toCIELab()
     {
-        $hradi = $this->hue * (M_PI / 180);
+        $hradi = $this->hue * (\M_PI / 180);
         $a_dimension = cos($hradi) * $this->chroma;
         $b_dimension = sin($hradi) * $this->chroma;
 

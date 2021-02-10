@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar;
 
+use Composer\Autoload\ClassMapGenerator;
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -24,6 +25,7 @@ use Solspace\Calendar\Controllers\SettingsController;
 use Solspace\Calendar\Controllers\ViewController;
 use Solspace\Calendar\FieldTypes\CalendarFieldType;
 use Solspace\Calendar\FieldTypes\EventFieldType;
+use Solspace\Calendar\Library\Bundles\BundleInterface;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SettingsModel;
@@ -120,6 +122,7 @@ class Calendar extends Plugin
         $this->initFieldTypes();
         $this->initEventListeners();
         $this->initPermissions();
+        $this->initBundles();
 
         if ($this->isPro() && $this->settings->getPluginName()) {
             $this->name = $this->settings->getPluginName();
@@ -389,6 +392,27 @@ class Calendar extends Plugin
                     ];
                 }
             );
+        }
+    }
+
+    private function initBundles()
+    {
+        static $initialized;
+
+        if (null === $initialized) {
+            $classMap = ClassMapGenerator::createMap(__DIR__.'/Bundles');
+            foreach ($classMap as $class => $path) {
+                $reflectionClass = new \ReflectionClass($class);
+                if (
+                    $reflectionClass->implementsInterface(BundleInterface::class)
+                    && !$reflectionClass->isAbstract()
+                    && !$reflectionClass->isInterface()
+                ) {
+                    $reflectionClass->newInstance();
+                }
+            }
+
+            $initialized = true;
         }
     }
 }
