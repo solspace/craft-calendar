@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 3.2.0 - Unreleased
+
+### Added
+- Added official support for importing data to events via the Craft Feed Me plugin.
+
 ## 3.1.0 - 2021-01-28
 
 ### Changed
