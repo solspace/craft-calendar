@@ -1,12 +1,12 @@
 $(function () {
-  const $tabs = $('#fieldlayoutform').find('> .fld-tabs');
+  const $tabs = $('#fieldlayoutform').find('.fld-tabs');
   const $descriptionSelect = $('#descriptionFieldHandle');
   const $locationSelect = $('#locationFieldHandle');
   let lastUsedFieldCount = null;
 
   setInterval(function () {
     const fieldsUsed = [];
-    const fields = $('.fld-tab .fld-field[data-id]', $tabs);
+    const fields = $('.fld-tab .fld-element[data-id]', $tabs);
 
     if (fields.length === lastUsedFieldCount) {
       return;
