@@ -12,7 +12,6 @@ use craft\feedme\Plugin;
 use craft\feedme\services\Process;
 use RRule\RfcParser;
 use Solspace\Calendar\Calendar;
-use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Elements\Event as EventElement;
 use Solspace\Calendar\Library\DateHelper;
 use yii\base\Event;
@@ -33,7 +32,7 @@ if (class_exists('craft\feedme\base\Element')) {
 
         public static $name = 'Solspace Calendar Event (official)';
 
-        public static $class = CalendarEvent::class;
+        public static $class = EventElement::class;
 
         public $element;
 
@@ -174,6 +173,11 @@ if (class_exists('craft\feedme\base\Element')) {
         protected function parseRrule($feedData, $fieldInfo)
         {
             $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            if (empty($value)) {
+                $this->rruleInfo = null;
+
+                return;
+            }
 
             try {
                 $rules = RfcParser::parseRRule($value);
@@ -219,6 +223,22 @@ if (class_exists('craft\feedme\base\Element')) {
 
         private function _onBeforeElementSave($event)
         {
+            if (null === $this->rruleInfo) {
+                /** @var EventElement $element */
+                $element = $event->element;
+                $element->rrule = null;
+                $element->freq = null;
+                $element->interval = null;
+                $element->count = null;
+                $element->until = null;
+                $element->byMonth = null;
+                $element->byYearDay = null;
+                $element->byMonthDay = null;
+                $element->byDay = null;
+
+                return;
+            }
+
             // We prepare rrule info earlier on
             foreach ($this->rruleInfo as $key => $value) {
                 $event->element->{$key} = $value;
