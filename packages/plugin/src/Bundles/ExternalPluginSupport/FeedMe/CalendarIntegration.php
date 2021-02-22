@@ -11,6 +11,7 @@ use craft\feedme\events\FeedProcessEvent;
 use craft\feedme\Plugin;
 use craft\feedme\services\Process;
 use RRule\RfcParser;
+use RRule\RRule as RRuleObject;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event as EventElement;
 use Solspace\Calendar\Library\DateHelper;
@@ -176,7 +177,7 @@ if (class_exists('craft\feedme\base\Element')) {
             if (empty($value)) {
                 $this->rruleInfo = null;
 
-                return;
+                return null;
             }
 
             try {
@@ -223,29 +224,52 @@ if (class_exists('craft\feedme\base\Element')) {
 
         private function _onBeforeElementSave($event)
         {
+            /** @var EventElement $element */
+            $element = $event->element;
+
+            foreach (self::RRULE_MAP as $key) {
+                if (empty($element->{$key})) {
+                    $element->{$key} = null;
+                }
+            }
+
             if (null === $this->rruleInfo) {
-                /** @var EventElement $element */
-                $element = $event->element;
                 $element->rrule = null;
-                $element->freq = null;
-                $element->interval = null;
-                $element->count = null;
-                $element->until = null;
-                $element->byMonth = null;
-                $element->byYearDay = null;
-                $element->byMonthDay = null;
-                $element->byDay = null;
 
                 return;
             }
 
+            if ($element->interval < 1) {
+                $element->interval = 1;
+            }
+
             // We prepare rrule info earlier on
             foreach ($this->rruleInfo as $key => $value) {
+                if (empty($value)) {
+                    $value = null;
+                }
+
                 $event->element->{$key} = $value;
 
                 // Also update it in our debug info
                 $event->contentData[$key] = $value;
             }
+
+            $rrule = new RRuleObject(
+                [
+                    'FREQ' => $element->getFrequency(),
+                    'INTERVAL' => $element->interval,
+                    'DTSTART' => $element->getStartDate()->copy()->setTime(0, 0, 0),
+                    'UNTIL' => $element->getUntil(),
+                    'COUNT' => $element->count,
+                    'BYDAY' => $element->byDay,
+                    'BYMONTHDAY' => $element->byMonthDay,
+                    'BYMONTH' => $element->byMonth,
+                    'BYYEARDAY' => $element->byYearDay,
+                ]
+            );
+
+            $element->rrule = $rrule->rfcString();
         }
 
         private function _onAfterElementSave($event)

@@ -32,6 +32,9 @@ class EventQuery extends ElementQuery implements \Countable
     const FORMAT_DAY = 'Ymd';
     const FORMAT_HOUR = 'YmdH';
 
+    /** @var int */
+    public $typeId;
+
     /** @var string */
     private static $lastCachedConfigStateHash;
 
