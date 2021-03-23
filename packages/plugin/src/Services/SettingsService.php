@@ -110,4 +110,13 @@ class SettingsService extends Component
 
         return self::$settingsModel;
     }
+
+    public function isAdminChangesAllowed(): bool
+    {
+        if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
+            return \Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        }
+
+        return true;
+    }
 }

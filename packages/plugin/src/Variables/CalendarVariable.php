@@ -20,6 +20,10 @@ class CalendarVariable
 {
     public function showDemoTemplateBanner(): bool
     {
+        if (!$this->settings()->isAdminChangesAllowed()) {
+            return false;
+        }
+
         return !$this->settings()->isDemoBannerDisabled();
     }
 
