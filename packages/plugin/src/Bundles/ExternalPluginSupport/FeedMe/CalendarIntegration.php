@@ -255,21 +255,26 @@ if (class_exists('craft\feedme\base\Element')) {
                 $event->contentData[$key] = $value;
             }
 
-            $rrule = new RRuleObject(
-                [
-                    'FREQ' => $element->getFrequency(),
-                    'INTERVAL' => $element->interval,
-                    'DTSTART' => $element->getStartDate()->copy()->setTime(0, 0, 0),
-                    'UNTIL' => $element->getUntil(),
-                    'COUNT' => $element->count,
-                    'BYDAY' => $element->byDay,
-                    'BYMONTHDAY' => $element->byMonthDay,
-                    'BYMONTH' => $element->byMonth,
-                    'BYYEARDAY' => $element->byYearDay,
-                ]
-            );
+            $freq = $element->getFrequency();
+            if ($freq) {
+                $rrule = new RRuleObject(
+                    [
+                        'FREQ' => $element->getFrequency(),
+                        'INTERVAL' => $element->interval,
+                        'DTSTART' => $element->getStartDate()->copy()->setTime(0, 0, 0),
+                        'UNTIL' => $element->getUntil(),
+                        'COUNT' => $element->count,
+                        'BYDAY' => $element->byDay,
+                        'BYMONTHDAY' => $element->byMonthDay,
+                        'BYMONTH' => $element->byMonth,
+                        'BYYEARDAY' => $element->byYearDay,
+                    ]
+                );
 
-            $element->rrule = $rrule->rfcString();
+                $element->rrule = $rrule->rfcString();
+            } else {
+                $element->rrule = null;
+            }
         }
 
         private function _onAfterElementSave($event)
