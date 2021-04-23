@@ -895,7 +895,7 @@ class Event extends Element implements \JsonSerializable
         return $this->count;
     }
 
-    public function getRRule(): string
+    public function getRRule()
     {
         return $this->rrule;
     }

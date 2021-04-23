@@ -5,6 +5,12 @@ namespace Solspace\Calendar\FieldTypes;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\fields\BaseRelationField;
+use craft\helpers\Gql as GqlHelper;
+use craft\services\Gql as GqlService;
+use GraphQL\Type\Definition\Type;
+use Solspace\Calendar\Bundles\GraphQL\Arguments\EventArguments;
+use Solspace\Calendar\Bundles\GraphQL\Interfaces\EventInterface;
+use Solspace\Calendar\Bundles\GraphQL\Resolvers\EventResolver;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
@@ -44,6 +50,22 @@ class EventFieldType extends BaseRelationField
         }
 
         return parent::getTableAttributeHtml($value, $element);
+    }
+
+    public function getContentGqlType()
+    {
+        $gqlType = [
+            'name' => $this->handle,
+            'type' => Type::listOf(EventInterface::getType()),
+            'args' => EventArguments::getArguments(),
+            'resolve' => EventResolver::class.'::resolve',
+        ];
+
+        if (version_compare(\Craft::$app->getVersion(), '3.6', '>=')) {
+            $gqlType['complexity'] = GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD);
+        }
+
+        return $gqlType;
     }
 
     /**

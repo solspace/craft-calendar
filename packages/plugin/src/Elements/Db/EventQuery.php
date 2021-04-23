@@ -42,6 +42,9 @@ class EventQuery extends ElementQuery implements \Countable
     private $calendarId;
 
     /** @var array */
+    private $calendarUid;
+
+    /** @var array */
     private $calendar;
 
     /** @var int */
@@ -157,6 +160,22 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         $this->calendarId = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param array|string $value
+     *
+     * @return $this
+     */
+    public function setCalendarUid($value = null): self
+    {
+        if (null !== $value && !\is_array($value)) {
+            $value = [$value];
+        }
+
+        $this->calendarUid = $value;
 
         return $this;
     }
@@ -732,6 +751,10 @@ class EventQuery extends ElementQuery implements \Countable
             if (!$isWildcard) {
                 $this->subQuery->andWhere(Db::parseParam($table.'.[[calendarId]]', $this->calendarId));
             }
+        }
+
+        if ($this->calendarUid) {
+            $this->subQuery->andWhere(Db::parseParam($calendarTable.'.[[uid]]', $this->calendarUid));
         }
 
         if ($this->calendar) {

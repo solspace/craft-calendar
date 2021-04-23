@@ -587,12 +587,43 @@ class CalendarsService extends Component
         return true;
     }
 
+    public function getResolvedCalendars(array $arguments): array
+    {
+        $limit = $arguments['limit'] ?? null;
+        $sort = strtolower($arguments['sort'] ?? 'asc');
+        $sort = 'desc' === $sort ? \SORT_DESC : \SORT_ASC;
+
+        $orderBy = $arguments['orderBy'] ?? 'id';
+        $orderBy = [$orderBy => $sort];
+
+        $offset = $arguments['offset'] ?? null;
+
+        unset($arguments['limit'], $arguments['orderBy'], $arguments['sort'], $arguments['offset']);
+
+        $query = $this->getQuery()
+            ->where($arguments)
+            ->orderBy($orderBy)
+            ->limit($limit)
+            ->offset($offset)
+        ;
+
+        $results = $query->all();
+
+        $calendars = [];
+        foreach ($results as $result) {
+            $calendars[] = $this->createModel($result);
+        }
+
+        return $calendars;
+    }
+
     private function getQuery(): Query
     {
         return (new Query())
             ->select(
                 [
                     'calendar.[[id]]',
+                    'calendar.[[uid]]',
                     'calendar.[[name]]',
                     'calendar.[[handle]]',
                     'calendar.[[description]]',

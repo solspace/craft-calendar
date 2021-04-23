@@ -20,6 +20,9 @@ class CalendarModel extends Model implements \JsonSerializable
     public $id;
 
     /** @var string */
+    public $uid;
+
+    /** @var string */
     public $name;
 
     /** @var string */

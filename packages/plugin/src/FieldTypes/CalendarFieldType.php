@@ -4,6 +4,11 @@ namespace Solspace\Calendar\FieldTypes;
 
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\helpers\Gql as GqlHelper;
+use craft\services\Gql as GqlService;
+use Solspace\Calendar\Bundles\GraphQL\Arguments\CalendarArguments;
+use Solspace\Calendar\Bundles\GraphQL\Interfaces\CalendarInterface;
+use Solspace\Calendar\Bundles\GraphQL\Resolvers\CalendarResolver;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Models\CalendarModel;
 use yii\db\Schema;
@@ -65,6 +70,22 @@ class CalendarFieldType extends Field
                 'selectedCalendar' => $value instanceof CalendarModel ? $value->id : null,
             ]
         );
+    }
+
+    public function getContentGqlType()
+    {
+        $gqlType = [
+            'name' => $this->handle,
+            'type' => CalendarInterface::getType(),
+            'args' => CalendarArguments::getArguments(),
+            'resolve' => CalendarResolver::class.'::resolveOne',
+        ];
+
+        if (version_compare(\Craft::$app->getVersion(), '3.6', '>=')) {
+            $gqlType['complexity'] = GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD);
+        }
+
+        return $gqlType;
     }
 
     public static function supportedTranslationMethods(): array
