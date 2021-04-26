@@ -70,7 +70,20 @@ class EventsController extends BaseController
                 );
             }
         } else {
-            $site = \Craft::$app->sites->currentSite;
+            // Set defaults based on the section settings
+            $enabledSiteIds = [];
+            foreach ($calendar->getSiteSettings() as $siteSettings) {
+                if ($siteSettings->enabledByDefault) {
+                    $enabledSiteIds[] = $siteSettings->siteId;
+                }
+            }
+
+            if ($enabledSiteIds) {
+                $siteId = reset($enabledSiteIds);
+                $site = \Craft::$app->sites->getSiteById($siteId);
+            } else {
+                $site = \Craft::$app->sites->currentSite;
+            }
         }
 
         $locale = $site->language;
@@ -389,7 +402,6 @@ class EventsController extends BaseController
 
         \Craft::$app->view->registerAssetBundle(EventEditBundle::class);
 
-        $enabledSiteIds = null;
         if (null !== $event->id) {
             $enabledSiteIds = \Craft::$app->getElements()->getEnabledSiteIdsForElement($event->id);
         } else {
