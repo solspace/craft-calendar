@@ -1,4 +1,5 @@
 let eventCreatorShown = false;
+const $calendar = $('#solspace-calendar');
 
 /**
  * qTip2 Modal window of "Event Create"
@@ -42,6 +43,7 @@ export const showEventCreator = (start, end) => {
     events: {
       render: function (event, api) {
         const context = api.elements.content;
+        let { currentSiteId: siteId } = $calendar.data();
 
         $('ul.errors', context).empty();
 
@@ -122,6 +124,7 @@ export const showEventCreator = (start, end) => {
               type: 'post',
               dataType: 'json',
               data: {
+                siteId,
                 startDate: startDateValue.format('YYYY-MM-DD') + ' ' + startTimeValue.format('HH:mm:ss'),
                 endDate: endDateValue.format('YYYY-MM-DD') + ' ' + endTimeValue.format('HH:mm:ss'),
                 allDay: $allDayInput.val(),
@@ -131,7 +134,7 @@ export const showEventCreator = (start, end) => {
                 },
                 [Craft.csrfTokenName]: Craft.csrfTokenValue,
               },
-              success: function (response) {
+              success: (response) => {
                 if (response.error) {
                   $('ul.errors', context)
                     .empty()
@@ -147,15 +150,13 @@ export const showEventCreator = (start, end) => {
 
                   api.hide(e);
                 }
-
+              },
+              error: ({ responseJSON }) => {
+                Craft.cp.displayNotification('error', responseJSON.error);
+              },
+              complete: () => {
                 self.prop('disabled', false).removeClass('disabled');
                 self.text(Craft.t('app', 'Save'));
-              },
-              error: function () {
-                Craft.cp.displayNotification('error', JSON.parse(message));
-
-                self.prop('disabled', false).removeClass('disabled');
-                self.text(Craft.t('app', 'Saving...'));
               },
             });
           });
