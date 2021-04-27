@@ -2,18 +2,18 @@
   "name": "@cal/styles",
   "version": "1.0.0",
   "scripts": {
-    "dev": "npm run clean && npm run build && node-sass -r --watch src -o ../plugin/src/Resources/css",
-    "build": "npm run clean && node-sass -r src -o ../plugin/src/Resources/css",
+    "dev": "npm run clean && npm run build && sass --no-source-map --watch src/:../plugin/src/Resources/css",
+    "build": "npm run clean && sass --no-source-map src/:../plugin/src/Resources/css",
     "clean": "rm -rf ../plugin/src/Resources/css",
     "test": ""
   },
   "author": "Solspace Inc.",
   "license": "MIT",
   "devDependencies": {
-    "node-sass": "^5.0.0"
+    "sass": "^1.32.11"
   },
   "dependencies": {
-    "craftcms-sass": "^3.5.1",
+    "craftcms-sass": "^3.5.7",
     "react-tippy": "^1.4.0"
   }
 }

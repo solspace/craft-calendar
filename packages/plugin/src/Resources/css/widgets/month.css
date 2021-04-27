@@ -2,110 +2,131 @@
 /* MINI CALENDAR */
 .calendar-mini-cal .fc-toolbar .fc-left button,
 .calendar-mini-cal .fc-toolbar .fc-right button {
-  padding: 0; }
-
+  padding: 0;
+}
 .calendar-mini-cal td {
   border: 0 !important;
-  padding: 0 !important; }
-  .calendar-mini-cal td.fc-other-month {
-    visibility: hidden !important; }
-
+  padding: 0 !important;
+}
+.calendar-mini-cal td.fc-other-month {
+  visibility: hidden !important;
+}
 .calendar-mini-cal th {
   border: 0 !important;
-  padding: 0 !important; }
-
+  padding: 0 !important;
+}
 .calendar-mini-cal .fc-row.fc-widget-header {
-  border-bottom: 1px solid #9ca5b0; }
-  .calendar-mini-cal .fc-row.fc-widget-header .fc-day-header {
-    text-align: center;
-    color: #9aa5b1 !important;
-    font-weight: bold;
-    font-size: 12px;
-    padding: 0px;
-    border: none !important; }
-
+  border-bottom: 1px solid #9ca5b0;
+}
+.calendar-mini-cal .fc-row.fc-widget-header .fc-day-header {
+  text-align: center;
+  color: #9aa5b1 !important;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 0px;
+  border: none !important;
+}
 .calendar-mini-cal .fc-basic-view .fc-body .fc-row {
-  min-height: 23px; }
-
+  min-height: 23px;
+}
 .calendar-mini-cal.widget-cal .fc-basic-view .fc-body .fc-row {
-  min-height: 18px; }
-
+  min-height: 18px;
+}
 .calendar-mini-cal .fc-bg td {
-  background: none !important; }
-
+  background: none !important;
+}
 .calendar-mini-cal .fc-row {
-  margin-bottom: 1px; }
-
+  margin-bottom: 1px;
+}
 .calendar-mini-cal .fc-content-skeleton {
   position: absolute;
   left: 0;
   top: 0;
   right: 0;
   bottom: 0;
-  padding: 0; }
-  .calendar-mini-cal .fc-content-skeleton td {
-    text-align: center;
-    cursor: pointer;
-    padding: 0;
-    border: 1px solid #e6edf5; }
-    .calendar-mini-cal .fc-content-skeleton td.fc-day-top {
-      text-align: center;
-      padding: 2px 0 !important; }
-      .calendar-mini-cal .fc-content-skeleton td.fc-day-top span {
-        font-size: 13px;
-        float: none !important; }
-    .calendar-mini-cal .fc-content-skeleton td.fc-has-event {
-      background-color: #cfd8e3;
-      -webkit-border-radius: 1px;
-      -moz-border-radius: 1px;
-      border-radius: 1px; }
-    .calendar-mini-cal .fc-content-skeleton td:hover {
-      background-color: #5f656f;
-      color: #fff; }
-    .calendar-mini-cal .fc-content-skeleton td.fc-today {
-      color: #ffffff;
-      background-color: #e5422b; }
-      .calendar-mini-cal .fc-content-skeleton td.fc-today:hover {
-        background-color: #c52e18;
-        color: #ffffff; }
-    .calendar-mini-cal .fc-content-skeleton td:hover {
-      background-color: #f4f7fc;
-      color: #424242; }
-  .calendar-mini-cal .fc-content-skeleton > table {
-    height: 100%; }
-
+  padding: 0;
+}
+.calendar-mini-cal .fc-content-skeleton td {
+  text-align: center;
+  cursor: pointer;
+  padding: 0;
+  border: 1px solid #e6edf5;
+}
+.calendar-mini-cal .fc-content-skeleton td.fc-day-top {
+  text-align: center;
+  padding: 2px 0 !important;
+}
+.calendar-mini-cal .fc-content-skeleton td.fc-day-top span {
+  font-size: 13px;
+  float: none !important;
+}
+.calendar-mini-cal .fc-content-skeleton td.fc-has-event {
+  background-color: #cfd8e3;
+  -webkit-border-radius: 1px;
+  -moz-border-radius: 1px;
+  border-radius: 1px;
+}
+.calendar-mini-cal .fc-content-skeleton td:hover {
+  background-color: #5f656f;
+  color: #fff;
+}
+.calendar-mini-cal .fc-content-skeleton td.fc-today {
+  color: #ffffff;
+  background-color: #e5422b;
+}
+.calendar-mini-cal .fc-content-skeleton td.fc-today:hover {
+  background-color: #c52e18;
+  color: #ffffff;
+}
+.calendar-mini-cal .fc-content-skeleton td:hover {
+  background-color: #f4f7fc;
+  color: #424242;
+}
+.calendar-mini-cal .fc-content-skeleton > table {
+  height: 100%;
+}
 .calendar-mini-cal#calendar-mini-cal .fc-content-skeleton td {
   border-right: 1px solid #e6edf5 !important;
-  border-bottom: 1px solid #e6edf5 !important; }
-
+  border-bottom: 1px solid #e6edf5 !important;
+}
 .calendar-mini-cal .fc-toolbar {
-  margin: 0; }
-  .calendar-mini-cal .fc-toolbar h2 {
-    position: relative;
-    top: 4px;
-    font-weight: normal !important;
-    font-size: 15px; }
-  .calendar-mini-cal .fc-toolbar button.fc-button {
-    background: transparent none;
-    text-shadow: none;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-    border: none; }
-    .calendar-mini-cal .fc-toolbar button.fc-button, .calendar-mini-cal .fc-toolbar button.fc-button:active {
-      outline: none; }
-    .calendar-mini-cal .fc-toolbar button.fc-button .fc-icon {
-      width: auto; }
-      .calendar-mini-cal .fc-toolbar button.fc-button .fc-icon:after {
-        margin: 0; }
-      .calendar-mini-cal .fc-toolbar button.fc-button .fc-icon.fc-icon-left-single-arrow:after {
-        content: '←'; }
-      .calendar-mini-cal .fc-toolbar button.fc-button .fc-icon.fc-icon-right-single-arrow:after {
-        content: '→'; }
+  margin: 0;
+}
+.calendar-mini-cal .fc-toolbar h2 {
+  position: relative;
+  top: 4px;
+  font-weight: normal !important;
+  font-size: 15px;
+}
+.calendar-mini-cal .fc-toolbar button.fc-button {
+  background: transparent none;
+  text-shadow: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  border: none;
+}
+.calendar-mini-cal .fc-toolbar button.fc-button, .calendar-mini-cal .fc-toolbar button.fc-button:active {
+  outline: none;
+}
+.calendar-mini-cal .fc-toolbar button.fc-button .fc-icon {
+  width: auto;
+}
+.calendar-mini-cal .fc-toolbar button.fc-button .fc-icon:after {
+  margin: 0;
+}
+.calendar-mini-cal .fc-toolbar button.fc-button .fc-icon.fc-icon-left-single-arrow:after {
+  content: "←";
+}
+.calendar-mini-cal .fc-toolbar button.fc-button .fc-icon.fc-icon-right-single-arrow:after {
+  content: "→";
+}
 
 .fc-button-group .fc-next-button,
 .fc-button-group .fc-Today-button {
-  border-left: 1px solid white !important; }
-  .fc-button-group .fc-next-button:hover,
-  .fc-button-group .fc-Today-button:hover {
-    border-left: 1px solid white !important; }
+  border-left: 1px solid white !important;
+}
+.fc-button-group .fc-next-button:hover,
+.fc-button-group .fc-Today-button:hover {
+  border-left: 1px solid white !important;
+}

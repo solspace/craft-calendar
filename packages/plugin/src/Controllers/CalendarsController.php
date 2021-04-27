@@ -2,15 +2,19 @@
 
 namespace Solspace\Calendar\Controllers;
 
+use craft\db\Query;
+use craft\models\FieldLayout;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
+use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use Solspace\Commons\Helpers\PermissionHelper;
+use Solspace\Commons\Helpers\StringHelper;
 use yii\web\HttpException;
 use yii\web\Response;
 
@@ -66,6 +70,67 @@ class CalendarsController extends BaseController
         PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
 
         return $this->renderEditTemplate($calendar, $calendar->name);
+    }
+
+    public function actionDuplicate(): Response
+    {
+        $this->requirePostRequest();
+
+        $id = \Craft::$app->request->post('id');
+        $calendar = $this->getCalendarService()->getCalendarById($id);
+
+        if (!$calendar) {
+            return $this->asErrorJson('Could not find calendar');
+        }
+
+        $data = $calendar->toArray();
+        unset($data['id'], $data['uid'], $data['icsHash']);
+
+        $clone = new CalendarModel($data);
+        $clone->setSiteSettings($calendar->getSiteSettings());
+
+        $oldLayout = $calendar->getFieldLayout();
+        if ($oldLayout) {
+            $layoutData = $oldLayout->toArray();
+            unset($layoutData['id'], $layoutData['uid']);
+
+            $fieldService = \Craft::$app->fields;
+
+            $newLayout = new FieldLayout($layoutData);
+            $newLayout->setTabs($fieldService->getLayoutTabsById($oldLayout->id));
+            $newLayout->setFields($fieldService->getFieldsByLayoutId($oldLayout->id));
+
+            $fieldService->saveLayout($newLayout);
+
+            $clone->setFieldLayout($newLayout);
+        }
+
+        $handleBase = preg_replace('/^(.*)-\d+/', '$1', $calendar->handle);
+
+        $handles = (new Query())
+            ->select('handle')
+            ->from(CalendarRecord::TABLE)
+            ->where(['like', 'handle', $handleBase])
+            ->column()
+        ;
+
+        $iterator = 0;
+        foreach ($handles as $handle) {
+            if (preg_match('/-(\d+)$/', $handle, $matches)) {
+                $iterator = max($iterator, (int) $matches[1]);
+            }
+        }
+
+        ++$iterator;
+
+        $clone->name = preg_replace('/^(.*) \d+$/', '$1', $clone->name).' '.$iterator;
+        $clone->handle = preg_replace('/^(.*)-\d+$/', '$1', $clone->handle).'-'.$iterator;
+
+        if ($this->getCalendarService()->saveCalendar($clone)) {
+            return $this->asJson(['success' => true]);
+        }
+
+        return $this->asErrorJson(StringHelper::implodeRecursively('. ', $clone->getErrorSummary(true)));
     }
 
     /**

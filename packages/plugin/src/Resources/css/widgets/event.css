@@ -1,5 +1,6 @@
 .ui-timepicker-with-duration .ui-timepicker-list {
-  width: 14em; }
+  width: 14em;
+}
 
 .ui-datepicker-calendar .ui-datepicker-unselectable > span {
   display: block;
@@ -9,4 +10,5 @@
   border-radius: 2px;
   line-height: 26px;
   text-align: center;
-  color: #cdcdcd; }
+  color: #cdcdcd;
+}

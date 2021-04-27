@@ -55,4 +55,26 @@ $(function () {
       });
     },
   });
+
+  $('a.icon.clone[data-id]').on({
+    click: function () {
+      const id = $(this).data('id');
+
+      $.ajax({
+        url: Craft.getCpUrl('calendar/calendars/duplicate'),
+        type: 'post',
+        dataType: 'json',
+        data: {
+          [Craft.csrfTokenName]: Craft.csrfTokenValue,
+          id,
+        },
+        success: () => {
+          window.location.reload();
+        },
+        error: ({ responseJSON }) => {
+          Craft.cp.displayError(responseJSON.error);
+        },
+      });
+    },
+  });
 });

@@ -1,0 +1,16 @@
+a.icon.clone {
+  color: rgba(123, 135, 147, 0.5);
+
+  svg {
+    position: relative;
+    top: 3px;
+
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    color: #0b69a3;
+    text-decoration: none;
+  }
+}
