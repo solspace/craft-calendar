@@ -1194,6 +1194,7 @@ class Event extends Element implements \JsonSerializable
     {
         $attributes = [
             'title' => ['label' => Calendar::t('Title')],
+            'slug' => ['label' => Calendar::t('Slug')],
             'calendar' => ['label' => Calendar::t('Calendar')],
             'startDateLocalized' => ['label' => Calendar::t('Start Date')],
             'endDateLocalized' => ['label' => Calendar::t('End Date')],
