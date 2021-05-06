@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Elements;
 use Carbon\Carbon;
 use craft\base\Element;
 use craft\elements\actions\Restore;
+use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
@@ -1257,6 +1258,7 @@ class Event extends Element implements \JsonSerializable
                     'successMessage' => Calendar::t('Events deleted.'),
                 ]
             ),
+            SetStatus::class,
         ];
 
         if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
