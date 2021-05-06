@@ -7,6 +7,7 @@ use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\StringHelper;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\Fields;
@@ -30,6 +31,7 @@ use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Resources\Bundles\MainAssetBundle;
+use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\CalendarsService;
 use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\ExceptionsService;
@@ -48,12 +50,13 @@ use yii\web\ForbiddenHttpException;
 /**
  * Class Calendar.
  *
- * @property CalendarsService   $calendars
- * @property EventsService      $events
- * @property ExceptionsService  $exceptions
- * @property SelectDatesService $selectDates
- * @property SettingsService    $settings
- * @property ViewDataService    $viewData
+ * @property CalendarsService     $calendars
+ * @property CalendarSitesService $calendarSites
+ * @property EventsService        $events
+ * @property ExceptionsService    $exceptions
+ * @property SelectDatesService   $selectDates
+ * @property SettingsService      $settings
+ * @property ViewDataService      $viewData
  */
 class Calendar extends Plugin
 {
@@ -82,6 +85,10 @@ class Calendar extends Plugin
 
     const EDITION_LITE = 'lite';
     const EDITION_PRO = 'pro';
+
+    const CONFIG_PATH_ROOT = 'solspace.calendar';
+    const CONFIG_CALENDAR_PATH = 'solspace.calendar.calendars';
+    const CONFIG_CALENDAR_SITES_PATH = 'solspace.calendar.calendar-sites';
 
     /** @var bool */
     public $hasCpSettings = true;
@@ -193,16 +200,8 @@ class Calendar extends Plugin
     public function afterInstall()
     {
         $calendarsService = self::getInstance()->calendars;
+        $calendarSitesService = self::getInstance()->calendarSites;
         $siteIds = \Craft::$app->sites->getAllSiteIds();
-
-        $siteSettings = [];
-        foreach ($siteIds as $siteId) {
-            $siteSetting = new CalendarSiteSettingsModel();
-            $siteSetting->siteId = $siteId;
-            $siteSetting->enabledByDefault = true;
-
-            $siteSettings[] = $siteSetting;
-        }
 
         $defaultCalendar = CalendarModel::create();
         $defaultCalendar->name = 'Default';
@@ -210,9 +209,18 @@ class Calendar extends Plugin
         $defaultCalendar->description = 'The default calendar';
         $defaultCalendar->hasTitleField = true;
         $defaultCalendar->titleLabel = 'Title';
-        $defaultCalendar->setSiteSettings($siteSettings);
 
         $calendarsService->saveCalendar($defaultCalendar, false);
+
+        foreach ($siteIds as $siteId) {
+            $siteSetting = new CalendarSiteSettingsModel();
+            $siteSetting->uid = StringHelper::UUID();
+            $siteSetting->calendarId = $defaultCalendar->id;
+            $siteSetting->siteId = $siteId;
+            $siteSetting->enabledByDefault = true;
+
+            $calendarSitesService->save($defaultCalendar, $siteSetting);
+        }
     }
 
     /**
@@ -232,6 +240,11 @@ class Calendar extends Plugin
         $navItem['subnav'] = include __DIR__.'/subnav.php';
 
         return $navItem;
+    }
+
+    protected function afterUninstall()
+    {
+        \Craft::$app->projectConfig->remove(self::CONFIG_PATH_ROOT);
     }
 
     protected function createSettingsModel(): SettingsModel
@@ -273,6 +286,7 @@ class Calendar extends Plugin
         $this->setComponents(
             [
                 'calendars' => CalendarsService::class,
+                'calendarSites' => CalendarSitesService::class,
                 'events' => EventsService::class,
                 'exceptions' => ExceptionsService::class,
                 'selectDates' => SelectDatesService::class,

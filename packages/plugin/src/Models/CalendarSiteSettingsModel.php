@@ -14,6 +14,9 @@ class CalendarSiteSettingsModel extends Model
     /** @var int */
     public $id;
 
+    /** @var string */
+    public $uid;
+
     /** @var int */
     public $calendarId;
 

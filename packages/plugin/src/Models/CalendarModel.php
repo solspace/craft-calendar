@@ -200,7 +200,7 @@ class CalendarModel extends Model implements \JsonSerializable
             return [];
         }
 
-        $this->setSiteSettings(Calendar::getInstance()->calendars->getCalendarSiteSettings($this->id));
+        $this->setSiteSettings(Calendar::getInstance()->calendarSites->getSiteSettingsForCalendar($this));
 
         return $this->siteSettings;
     }

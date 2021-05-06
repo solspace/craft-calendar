@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Controllers;
 
 use craft\web\Controller;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\CalendarsService;
 use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\ExceptionsService;
@@ -14,6 +15,11 @@ class BaseController extends Controller
     protected function getCalendarService(): CalendarsService
     {
         return Calendar::getInstance()->calendars;
+    }
+
+    protected function getCalendarSitesService(): CalendarSitesService
+    {
+        return Calendar::getInstance()->calendarSites;
     }
 
     protected function getEventsService(): EventsService

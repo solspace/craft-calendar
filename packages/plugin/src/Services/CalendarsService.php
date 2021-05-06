@@ -4,14 +4,15 @@ namespace Solspace\Calendar\Services;
 
 use craft\base\Component;
 use craft\db\Query;
+use craft\db\Table;
 use craft\events\SiteEvent;
-use craft\queue\jobs\ResaveElements;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteModelEvent;
 use Solspace\Calendar\Events\SaveModelEvent;
 use Solspace\Calendar\Library\Attributes\CalendarAttributes;
-use Solspace\Calendar\Library\Exceptions\CalendarException;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -169,6 +170,22 @@ class CalendarsService extends Component
     }
 
     /**
+     * @param int   $calendarId
+     * @param mixed $uid
+     *
+     * @return null|CalendarModel
+     */
+    public function getCalendarByUid($uid)
+    {
+        $data = $this->getQuery()->where(['uid' => $uid])->one();
+        if (!$data) {
+            return null;
+        }
+
+        return $this->createModel($data);
+    }
+
+    /**
      * @return null|CalendarModel
      */
     public function getCalendarByHandle(string $handle)
@@ -216,6 +233,12 @@ class CalendarsService extends Component
     {
         $isNew = !$calendar->id;
 
+        if ($isNew) {
+            $calendar->uid = StringHelper::UUID();
+        } elseif (!$calendar->uid) {
+            $calendar->uid = Db::uidById(CalendarRecord::TABLE, $calendar->id);
+        }
+
         // Fire a 'beforeSaveSection' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE)) {
             $this->trigger(self::EVENT_BEFORE_SAVE, new SaveModelEvent($calendar, $isNew));
@@ -227,147 +250,38 @@ class CalendarsService extends Component
             return false;
         }
 
-        if (!$isNew) {
-            $calendarRecord = CalendarRecord::find()
-                ->where(['id' => $calendar->id])
-                ->one()
-            ;
-
-            if (!$calendarRecord) {
-                throw new CalendarException("No calendar exists with the ID '{$calendar->id}'");
-            }
-        } else {
-            $calendarRecord = new CalendarRecord();
-        }
-
-        $calendarRecord->name = $calendar->name;
-        $calendarRecord->handle = $calendar->handle;
-        $calendarRecord->description = $calendar->description;
-        $calendarRecord->color = $calendar->color;
-        $calendarRecord->descriptionFieldHandle = $calendar->descriptionFieldHandle;
-        $calendarRecord->locationFieldHandle = $calendar->locationFieldHandle;
-        $calendarRecord->icsHash = $calendar->icsHash;
-        $calendarRecord->icsTimezone = $calendar->icsTimezone;
-        $calendarRecord->titleFormat = $calendar->titleFormat;
-        $calendarRecord->titleLabel = $calendar->titleLabel;
-        $calendarRecord->hasTitleField = $calendar->hasTitleField;
-        $calendarRecord->allowRepeatingEvents = $calendar->allowRepeatingEvents;
-
         $fieldLayout = $calendar->getFieldLayout();
         if ($fieldLayout) {
             \Craft::$app->getFields()->saveLayout($fieldLayout);
-
             $calendar->fieldLayoutId = $fieldLayout->id;
-            $calendarRecord->fieldLayoutId = $fieldLayout->id;
         }
 
-        $allSiteSettings = $calendar->getSiteSettings();
+        $projectConfig = \Craft::$app->projectConfig;
 
-        if (empty($allSiteSettings)) {
-            throw new CalendarException('Tried to save a calendar without any site settings');
-        }
+        $path = Calendar::CONFIG_CALENDAR_PATH.'.'.$calendar->uid;
+        $projectConfig
+            ->set(
+                $path,
+                [
+                    'name' => $calendar->name,
+                    'handle' => $calendar->handle,
+                    'description' => $calendar->description,
+                    'color' => $calendar->color,
+                    'descriptionFieldHandle' => $calendar->descriptionFieldHandle,
+                    'locationFieldHandle' => $calendar->locationFieldHandle,
+                    'icsHash' => $calendar->icsHash,
+                    'icsTimezone' => $calendar->icsTimezone,
+                    'titleFormat' => $calendar->titleFormat,
+                    'titleLabel' => $calendar->titleLabel,
+                    'hasTitleField' => $calendar->hasTitleField,
+                    'allowRepeatingEvents' => $calendar->allowRepeatingEvents,
+                    'fieldLayoutId' => $fieldLayout->uid ?? null,
+                ]
+            )
+        ;
 
-        $db = \Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
-
-        try {
-            $calendarRecord->save(false);
-
-            // Now that we have a section ID, save it on the model
-            if ($isNew) {
-                $calendar->id = $calendarRecord->id;
-            }
-
-            // Might as well update our cache of the section while we have it. (It's possible that the URL format
-            //includes {section.handle} or something...)
-            $this->calendarCache[$calendar->id] = $calendar;
-
-            if (!$isNew) {
-                // Get the old section site settings
-                $allOldSiteSettingsRecords = CalendarSiteSettingsRecord::find()
-                    ->where(['calendarId' => $calendar->id])
-                    ->indexBy('siteId')
-                    ->all()
-                ;
-            } else {
-                $allOldSiteSettingsRecords = [];
-            }
-
-            foreach ($allSiteSettings as $siteId => $siteSettings) {
-                // Was this already selected?
-                if (!$isNew && isset($allOldSiteSettingsRecords[$siteId])) {
-                    $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
-                } else {
-                    $siteSettingsRecord = new CalendarSiteSettingsRecord();
-                    $siteSettingsRecord->calendarId = $calendar->id;
-                    $siteSettingsRecord->siteId = $siteId;
-                }
-
-                $siteSettingsRecord->enabledByDefault = $siteSettings->enabledByDefault;
-                $siteSettingsRecord->hasUrls = $siteSettings->hasUrls;
-                $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
-                $siteSettingsRecord->template = $siteSettings->template;
-
-                $siteSettingsRecord->save(false);
-
-                // Set the ID on the model
-                $siteSettings->id = $siteSettingsRecord->id;
-            }
-
-            if (!$isNew) {
-                // Drop any sites that are no longer being used, as well as the associated entry/element site
-                // rows
-                $siteIds = array_keys($allSiteSettings);
-
-                // @noinspection PhpUndefinedVariableInspection
-                foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!\in_array($siteId, $siteIds, false)) {
-                        $siteSettingsRecord->delete();
-                    }
-                }
-            }
-
-            if (!$isNew) {
-                // Get the most-primary site that this section was already enabled in
-                $siteIds = array_values(
-                    array_intersect(
-                        \Craft::$app->getSites()->getAllSiteIds(),
-                        array_keys($allOldSiteSettingsRecords)
-                    )
-                );
-
-                if (!empty($siteIds)) {
-                    // Resave entries for each site
-                    foreach ($allSiteSettings as $siteId => $siteSettings) {
-                        \Craft::$app->getQueue()->push(
-                            new ResaveElements(
-                                [
-                                    'description' => \Craft::t(
-                                        'app',
-                                        'Resaving {calendar} events ({site})',
-                                        ['calendar' => $calendar->name, 'site' => $siteSettings->getSite()->name]
-                                    ),
-                                    'elementType' => Event::class,
-                                    'criteria' => [
-                                        'siteId' => $siteId,
-                                        'calendarId' => $calendar->id,
-                                        'loadOccurrences' => false,
-                                        'status' => null,
-                                        'enabledForSite' => false,
-                                        'limit' => null,
-                                    ],
-                                ]
-                            )
-                        );
-                    }
-                }
-            }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
+        if ($isNew) {
+            $calendar->id = Db::idByUid(CalendarRecord::TABLE, $calendar->uid);
         }
 
         // Fire an 'afterSaveSection' event
@@ -389,7 +303,6 @@ class CalendarsService extends Component
     public function deleteCalendarById($calendarId)
     {
         $calendar = $this->getCalendarById($calendarId);
-
         if (!$calendar) {
             return false;
         }
@@ -401,41 +314,31 @@ class CalendarsService extends Component
             return false;
         }
 
-        $transaction = \Craft::$app->db->beginTransaction();
+        $projectConfig = \Craft::$app->projectConfig;
 
-        try {
-            // Grab the event ids so we can clean the elements table.
-            $eventIds = (new Query())
-                ->select(['id'])
-                ->from(Event::TABLE)
-                ->where(['calendarId' => $calendarId])
-                ->column()
-            ;
+        // Grab the event ids so we can clean the elements table.
+        $eventIds = (new Query())
+            ->select(['id'])
+            ->from(Event::TABLE)
+            ->where(['calendarId' => $calendarId])
+            ->column()
+        ;
 
-            foreach ($eventIds as $eventId) {
-                \Craft::$app->elements->deleteElementById($eventId);
-            }
-
-            $affectedRows = \Craft::$app->db
-                ->createCommand()
-                ->delete(CalendarRecord::TABLE, ['id' => $calendarId])
-                ->execute()
-            ;
-
-            if (null !== $transaction) {
-                $transaction->commit();
-            }
-
-            $this->trigger(self::EVENT_AFTER_DELETE, new DeleteModelEvent($calendar));
-
-            return (bool) $affectedRows;
-        } catch (\Exception $exception) {
-            if (null !== $transaction) {
-                $transaction->rollBack();
-            }
-
-            throw $exception;
+        foreach ($eventIds as $eventId) {
+            \Craft::$app->elements->deleteElementById($eventId);
         }
+
+        foreach ($calendar->getSiteSettings() as $siteSetting) {
+            $path = Calendar::CONFIG_CALENDAR_SITES_PATH.'.'.$siteSetting->uid;
+            $projectConfig->remove($path);
+        }
+
+        $path = Calendar::CONFIG_CALENDAR_PATH.'.'.$calendar->uid;
+        $projectConfig->remove($path);
+
+        $this->trigger(self::EVENT_AFTER_DELETE, new DeleteModelEvent($calendar));
+
+        return true;
     }
 
     /**
