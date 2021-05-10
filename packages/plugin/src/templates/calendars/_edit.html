@@ -20,7 +20,7 @@
             <div class="menu">
                 <ul>
                     <li>
-                        <a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+                        <a class="formsubmit" data-redirect="{{ continueEditingUrl | hash }}">
                             {{ "Save and continue editing"|t('calendar') }}
                             <span class="shortcut">⌘S</span>
                         </a>
