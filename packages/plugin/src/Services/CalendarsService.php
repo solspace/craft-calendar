@@ -251,9 +251,27 @@ class CalendarsService extends Component
         }
 
         $fieldLayout = $calendar->getFieldLayout();
-        if ($fieldLayout) {
-            \Craft::$app->getFields()->saveLayout($fieldLayout);
+        $fieldLayoutConfig = null;
+        if ($fieldLayout && $fieldLayout->getConfig()) {
             $calendar->fieldLayoutId = $fieldLayout->id;
+
+            $fieldLayoutConfig = array_merge(
+                ['uid' => $fieldLayout->uid],
+                $fieldLayout->getConfig()
+            );
+        } else {
+            $calendar->fieldLayoutId = null;
+        }
+
+        $siteSettings = [];
+        foreach ($calendar->getSiteSettings() as $setting) {
+            $siteSettings[$setting->uid] = [
+                'siteId' => Db::uidById(Table::SITES, $setting->siteId),
+                'enabledByDefault' => $setting->enabledByDefault,
+                'hasUrls' => $setting->hasUrls,
+                'uriFormat' => $setting->uriFormat,
+                'template' => $setting->template,
+            ];
         }
 
         $projectConfig = \Craft::$app->projectConfig;
@@ -275,7 +293,8 @@ class CalendarsService extends Component
                     'titleLabel' => $calendar->titleLabel,
                     'hasTitleField' => $calendar->hasTitleField,
                     'allowRepeatingEvents' => $calendar->allowRepeatingEvents,
-                    'fieldLayoutId' => $fieldLayout->uid ?? null,
+                    'fieldLayout' => $fieldLayoutConfig,
+                    'siteSettings' => $siteSettings,
                 ]
             )
         ;

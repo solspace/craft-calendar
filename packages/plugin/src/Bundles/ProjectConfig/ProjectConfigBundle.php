@@ -2,12 +2,12 @@
 
 namespace Solspace\Calendar\Bundles\ProjectConfig;
 
+use craft\db\Query;
 use craft\db\Table;
 use craft\events\RebuildConfigEvent;
 use craft\helpers\Db;
 use craft\services\ProjectConfig;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
-use Solspace\Calendar\Records\CalendarRecord;
 use yii\base\Event;
 
 class ProjectConfigBundle implements BundleInterface
@@ -30,7 +30,6 @@ class ProjectConfigBundle implements BundleInterface
     {
         return [
             'calendars' => $this->buildCalendarConfig(),
-            'calendar-sites' => $this->buildCalendarSitesConfig(),
         ];
     }
 
@@ -58,6 +57,7 @@ class ProjectConfigBundle implements BundleInterface
             )
             ->from('{{%calendar_calendars}} calendar')
             ->orderBy(['name' => \SORT_ASC])
+            ->all()
         ;
 
         $config = [];
@@ -67,7 +67,7 @@ class ProjectConfigBundle implements BundleInterface
                 'handle' => $calendar['handle'],
                 'description' => $calendar['description'],
                 'color' => $calendar['color'],
-                'fieldLayoutId' => $calendar['fieldLayoutId'] ? Db::uidById(Table::FIELDLAYOUTS, $calendar['fieldLayoutId']) : null,
+                'fieldLayout' => $this->buildFieldLayoutConfig($calendar['fieldLayoutId'] ?? null),
                 'titleFormat' => $calendar['titleFormat'],
                 'titleLabel' => $calendar['titleLabel'],
                 'hasTitleField' => (bool) $calendar['hasTitleField'],
@@ -76,13 +76,31 @@ class ProjectConfigBundle implements BundleInterface
                 'icsHash' => $calendar['icsHash'],
                 'icsTimezone' => $calendar['icsTimezone'],
                 'allowRepeatingEvents' => (bool) $calendar['allowRepeatingEvents'],
+                'siteSettings' => $this->buildCalendarSitesConfig((int) $calendar['id']),
             ];
         }
 
         return $config;
     }
 
-    private function buildCalendarSitesConfig(): array
+    private function buildFieldLayoutConfig(int $fieldLayoutId = null)
+    {
+        if (!$fieldLayoutId) {
+            return null;
+        }
+
+        $fieldLayout = \Craft::$app->fields->getLayoutById($fieldLayoutId);
+        if (!$fieldLayout) {
+            return null;
+        }
+
+        $config = $fieldLayout->getConfig();
+        $config['uid'] = $fieldLayout->uid;
+
+        return $config;
+    }
+
+    private function buildCalendarSitesConfig(int $calendarId): array
     {
         $siteSettings = (new Query())
             ->select(
@@ -98,13 +116,14 @@ class ProjectConfigBundle implements BundleInterface
                 ]
             )
             ->from('{{%calendar_calendar_sites}} calendarSites')
+            ->where(['calendarId' => $calendarId])
             ->orderBy(['id' => \SORT_ASC])
+            ->all()
         ;
 
         $config = [];
         foreach ($siteSettings as $setting) {
             $config[$setting['uid']] = [
-                'calendarId' => Db::uidById(CalendarRecord::TABLE, $setting['calendarId']),
                 'siteId' => Db::uidById(Table::SITES, $setting['siteId']),
                 'enabledByDefault' => (bool) $setting['enabledByDefault'],
                 'hasUrls' => (bool) $setting['hasUrls'],

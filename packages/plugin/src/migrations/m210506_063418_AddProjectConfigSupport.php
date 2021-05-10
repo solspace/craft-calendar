@@ -7,7 +7,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
-use Solspace\Calendar\Records\CalendarRecord;
 
 /**
  * m210506_063418_AddProjectConfigSupport migration.
@@ -45,7 +44,6 @@ class m210506_063418_AddProjectConfigSupport extends Migration
     {
         return [
             'calendars' => $this->buildCalendarConfig(),
-            'calendar-sites' => $this->buildCalendarSitesConfig(),
         ];
     }
 
@@ -83,7 +81,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
                 'handle' => $calendar['handle'],
                 'description' => $calendar['description'],
                 'color' => $calendar['color'],
-                'fieldLayoutId' => $calendar['fieldLayoutId'] ? Db::uidById(Table::FIELDLAYOUTS, $calendar['fieldLayoutId']) : null,
+                'fieldLayout' => $this->buildFieldLayoutConfig($calendar['fieldLayoutId'] ?? null),
                 'titleFormat' => $calendar['titleFormat'],
                 'titleLabel' => $calendar['titleLabel'],
                 'hasTitleField' => (bool) $calendar['hasTitleField'],
@@ -92,20 +90,20 @@ class m210506_063418_AddProjectConfigSupport extends Migration
                 'icsHash' => $calendar['icsHash'],
                 'icsTimezone' => $calendar['icsTimezone'],
                 'allowRepeatingEvents' => (bool) $calendar['allowRepeatingEvents'],
+                'siteSettings' => $this->buildCalendarSitesConfig((int) $calendar['id']),
             ];
         }
 
         return $config;
     }
 
-    private function buildCalendarSitesConfig(): array
+    private function buildCalendarSitesConfig(int $calendarId): array
     {
         $siteSettings = (new Query())
             ->select(
                 [
                     'calendarSites.[[id]]',
                     'calendarSites.[[uid]]',
-                    'calendarSites.[[calendarId]]',
                     'calendarSites.[[siteId]]',
                     'calendarSites.[[enabledByDefault]]',
                     'calendarSites.[[hasUrls]]',
@@ -114,6 +112,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
                 ]
             )
             ->from('{{%calendar_calendar_sites}} calendarSites')
+            ->where(['calendarId' => $calendarId])
             ->orderBy(['id' => \SORT_ASC])
             ->all()
         ;
@@ -121,7 +120,6 @@ class m210506_063418_AddProjectConfigSupport extends Migration
         $config = [];
         foreach ($siteSettings as $setting) {
             $config[$setting['uid']] = [
-                'calendarId' => Db::uidById(CalendarRecord::TABLE, $setting['calendarId']),
                 'siteId' => Db::uidById(Table::SITES, $setting['siteId']),
                 'enabledByDefault' => (bool) $setting['enabledByDefault'],
                 'hasUrls' => (bool) $setting['hasUrls'],
@@ -129,6 +127,23 @@ class m210506_063418_AddProjectConfigSupport extends Migration
                 'template' => $setting['template'],
             ];
         }
+
+        return $config;
+    }
+
+    private function buildFieldLayoutConfig($fieldLayoutId)
+    {
+        if (!$fieldLayoutId) {
+            return null;
+        }
+
+        $fieldLayout = Craft::$app->fields->getLayoutById($fieldLayoutId);
+        if (!$fieldLayout) {
+            return null;
+        }
+
+        $config = $fieldLayout->getConfig();
+        $config['uid'] = $fieldLayout->uid;
 
         return $config;
     }

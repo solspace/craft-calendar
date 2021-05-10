@@ -3,6 +3,8 @@
 namespace Solspace\Calendar\Controllers;
 
 use craft\db\Query;
+use craft\db\Table;
+use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
@@ -96,13 +98,21 @@ class CalendarsController extends BaseController
             $fieldService = \Craft::$app->fields;
 
             $newLayout = new FieldLayout($layoutData);
+            $newLayout->uid = \craft\helpers\StringHelper::UUID();
             $newLayout->setTabs($fieldService->getLayoutTabsById($oldLayout->id));
             $newLayout->setFields($fieldService->getFieldsByLayoutId($oldLayout->id));
 
-            $fieldService->saveLayout($newLayout);
-
             $clone->setFieldLayout($newLayout);
         }
+
+        $clonedSiteSettings = [];
+        foreach ($calendar->getSiteSettings() as $siteSetting) {
+            $clonedSiteSetting = new CalendarSiteSettingsModel($siteSetting->toArray());
+            $clonedSiteSetting->uid = \craft\helpers\StringHelper::UUID();
+
+            $clonedSiteSettings[] = $clonedSiteSetting;
+        }
+        $clone->setSiteSettings($clonedSiteSettings);
 
         $handleBase = preg_replace('/^(.*)-\d+/', '$1', $calendar->handle);
 
@@ -126,14 +136,6 @@ class CalendarsController extends BaseController
         $clone->handle = preg_replace('/^(.*)-\d+$/', '$1', $clone->handle).'-'.$iterator;
 
         if ($this->getCalendarService()->saveCalendar($clone)) {
-            foreach ($calendar->getSiteSettings() as $siteSetting) {
-                $clonedSiteSetting = new CalendarSiteSettingsModel($siteSetting->toArray());
-                $clonedSiteSetting->uid = \craft\helpers\StringHelper::UUID();
-                $clonedSiteSetting->calendarId = $clone->id;
-
-                $this->getCalendarSitesService()->save($clone, $clonedSiteSetting);
-            }
-
             return $this->asJson(['success' => true]);
         }
 
@@ -179,6 +181,7 @@ class CalendarsController extends BaseController
 
         // Set the field layout
         $fieldLayout = \Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : \craft\helpers\StringHelper::UUID();
         $fieldLayout->type = Event::class;
         $calendar->setFieldLayout($fieldLayout);
 
@@ -201,45 +204,40 @@ class CalendarsController extends BaseController
             }
         }
 
+        // Set site settings
+        $previousSiteSettings = $this->getCalendarSitesService()->getSiteSettingsForCalendar($calendar);
+        $newSiteSettings = [];
+        foreach (\Craft::$app->getSites()->getAllSites() as $site) {
+            $postedSettings = $request->getBodyParam('sites.'.$site->handle);
+
+            // Skip disabled sites if this is a multi-site install
+            if (empty($postedSettings['enabled']) && \Craft::$app->getIsMultiSite()) {
+                continue;
+            }
+
+            if (isset($previousSiteSettings[$site->id])) {
+                $siteSettings = $previousSiteSettings[$site->id];
+            } else {
+                $siteSettings = new CalendarSiteSettingsModel();
+                $siteSettings->uid = \craft\helpers\StringHelper::UUID();
+                $siteSettings->calendarId = $calendar->id;
+                $siteSettings->siteId = $site->id;
+            }
+
+            $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
+            $siteSettings->enabledByDefault = (bool) $postedSettings['enabledByDefault'];
+
+            $siteSettings->uriFormat = $siteSettings->hasUrls ? $postedSettings['uriFormat'] : null;
+            $siteSettings->template = $siteSettings->hasUrls ? $postedSettings['template'] : null;
+
+            $newSiteSettings[] = $siteSettings;
+        }
+
+        $calendar->setSiteSettings($newSiteSettings);
+
         // Save it
         if ($this->getCalendarService()->saveCalendar($calendar)) {
             \Craft::$app->session->setNotice(Calendar::t('Calendar saved.'));
-
-            $previousSiteSettings = $this->getCalendarSitesService()->getSiteSettingsForCalendar($calendar);
-            $usedSiteSettingIds = [];
-            foreach (\Craft::$app->getSites()->getAllSites() as $site) {
-                $postedSettings = $request->getBodyParam('sites.'.$site->handle);
-
-                // Skip disabled sites if this is a multi-site install
-                if (empty($postedSettings['enabled']) && \Craft::$app->getIsMultiSite()) {
-                    continue;
-                }
-
-                if (isset($previousSiteSettings[$site->id])) {
-                    $siteSettings = $previousSiteSettings[$site->id];
-                } else {
-                    $siteSettings = new CalendarSiteSettingsModel();
-                    $siteSettings->uid = \craft\helpers\StringHelper::UUID();
-                    $siteSettings->calendarId = $calendar->id;
-                    $siteSettings->siteId = $site->id;
-                }
-
-                $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
-                $siteSettings->enabledByDefault = (bool) $postedSettings['enabledByDefault'];
-
-                $siteSettings->uriFormat = $siteSettings->hasUrls ? $postedSettings['uriFormat'] : null;
-                $siteSettings->template = $siteSettings->hasUrls ? $postedSettings['template'] : null;
-
-                $this->getCalendarSitesService()->save($calendar, $siteSettings);
-
-                $usedSiteSettingIds[] = $siteSettings->id;
-            }
-
-            foreach ($previousSiteSettings as $siteSetting) {
-                if (!\in_array($siteSetting->id, $usedSiteSettingIds, false)) {
-                    $this->getCalendarSitesService()->delete($siteSetting);
-                }
-            }
 
             return $this->redirectToPostedUrl($calendar);
         }

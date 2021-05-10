@@ -200,7 +200,6 @@ class Calendar extends Plugin
     public function afterInstall()
     {
         $calendarsService = self::getInstance()->calendars;
-        $calendarSitesService = self::getInstance()->calendarSites;
         $siteIds = \Craft::$app->sites->getAllSiteIds();
 
         $defaultCalendar = CalendarModel::create();
@@ -210,8 +209,7 @@ class Calendar extends Plugin
         $defaultCalendar->hasTitleField = true;
         $defaultCalendar->titleLabel = 'Title';
 
-        $calendarsService->saveCalendar($defaultCalendar, false);
-
+        $siteSettings = [];
         foreach ($siteIds as $siteId) {
             $siteSetting = new CalendarSiteSettingsModel();
             $siteSetting->uid = StringHelper::UUID();
@@ -219,8 +217,12 @@ class Calendar extends Plugin
             $siteSetting->siteId = $siteId;
             $siteSetting->enabledByDefault = true;
 
-            $calendarSitesService->save($defaultCalendar, $siteSetting);
+            $siteSettings[] = $siteSetting;
         }
+
+        $defaultCalendar->setSiteSettings($siteSettings);
+
+        $calendarsService->saveCalendar($defaultCalendar, false);
     }
 
     /**
@@ -245,6 +247,7 @@ class Calendar extends Plugin
     protected function afterUninstall()
     {
         \Craft::$app->projectConfig->remove(self::CONFIG_PATH_ROOT);
+        \Craft::$app->fields->deleteLayoutsByType(\Solspace\Calendar\Elements\Event::class);
     }
 
     protected function createSettingsModel(): SettingsModel
