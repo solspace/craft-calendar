@@ -171,6 +171,7 @@ class CalendarsController extends BaseController
         $calendar->handle = $request->post('handle');
         $calendar->description = $request->post('description');
         $calendar->color = $request->post('color');
+        $calendar->color = preg_replace('/^([a-z0-9]{6})$/i', '#$1', $calendar->color);
         $calendar->descriptionFieldHandle = $request->post('descriptionFieldHandle');
         $calendar->locationFieldHandle = $request->post('locationFieldHandle');
         $calendar->titleFormat = $request->post('titleFormat');
