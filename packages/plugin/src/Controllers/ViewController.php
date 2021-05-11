@@ -3,10 +3,10 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
+use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Resources\Bundles\CalendarViewBundle;
-use yii\helpers\FormatConverter;
 use yii\web\Response;
 
 class ViewController extends BaseController
@@ -22,7 +22,6 @@ class ViewController extends BaseController
         $rangeStart = \Craft::$app->request->post('rangeStart');
         $rangeEnd = \Craft::$app->request->post('rangeEnd');
         $calendars = \Craft::$app->request->post('calendars');
-        $nonEditable = \Craft::$app->request->post('nonEditable');
         $siteId = \Craft::$app->request->post('siteId');
 
         $criteria = [
@@ -30,7 +29,6 @@ class ViewController extends BaseController
             'rangeEnd' => $rangeEnd,
         ];
 
-        $calendarIds = null;
         if ($calendars) {
             if ('*' !== $calendars) {
                 $criteria['calendarId'] = explode(',', $calendars);
@@ -87,12 +85,8 @@ class ViewController extends BaseController
             $currentDay = new Carbon(DateHelper::UTC);
         }
 
-        $dateTimeFormats = \Craft::$app->locale->getFormatter()->dateTimeFormats;
-        $dateFormat = $dateTimeFormats[\Craft::$app->locale->getFormatter()->dateFormat]['date'];
-        $timeFormat = $dateTimeFormats[\Craft::$app->locale->getFormatter()->timeFormat]['time'];
-
-        $dateFormat = FormatConverter::convertDateIcuToPhp($dateFormat);
-        $timeFormat = FormatConverter::convertDateIcuToPhp($timeFormat, 'time');
+        $dateFormat = Calendar::getInstance()->formats->getDateFormat(null, Locale::FORMAT_PHP);
+        $timeFormat = Calendar::getInstance()->formats->getTimeFormat(null, Locale::FORMAT_PHP);
 
         $language = \Craft::$app->sites->currentSite->language;
         $language = str_replace('_', '-', strtolower($language));

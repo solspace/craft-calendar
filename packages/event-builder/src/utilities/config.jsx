@@ -17,7 +17,7 @@ const getDateFnsLocale = (locale) => {
   return 'enUS';
 };
 
-export const { timeInterval, eventDuration, locale, firstDayOfWeek, isNewEvent } = eventConfig;
+export const { timeInterval, eventDuration, locale, firstDayOfWeek, isNewEvent, timeFormat, dateFormat } = eventConfig;
 export const timeIntervalSeconds = timeInterval * 60;
 export const eventDurationSeconds = eventDuration * 60;
 export const dateFnsLocale = getDateFnsLocale(locale);

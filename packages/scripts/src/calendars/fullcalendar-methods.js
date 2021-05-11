@@ -10,7 +10,7 @@ let $solspaceCalendarSpinner = null;
  * @param event
  * @param element
  */
-export const renderEvent = (event, element) => {
+export const renderEvent = (event, element, api) => {
   if (event.allDay) {
     element.addClass('fc-event-all-day');
   }
@@ -36,7 +36,7 @@ export const renderEvent = (event, element) => {
 
   element.addClass('fc-color-' + event.textColor);
 
-  buildEventPopup(event, element);
+  buildEventPopup(event, element, api.options.timeFormat);
 };
 
 export const today = new moment();

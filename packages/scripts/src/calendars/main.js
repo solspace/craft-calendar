@@ -1,21 +1,6 @@
 import * as Methods from '@cal/scripts/calendars/fullcalendar-methods';
 import { showEventCreator } from './popups';
 
-const viewSpecificOptions = {
-  week: {
-    titleFormat: 'MMMM D, YYYY',
-    columnFormat: 'ddd D',
-    timeFormat: 'LT',
-    slotLabelFormat: 'LT',
-  },
-  day: {
-    titleFormat: 'dddd, MMMM D, YYYY',
-    columnFormat: '',
-    timeFormat: 'LT',
-    slotLabelFormat: 'LT',
-  },
-};
-
 window.qTipsEnabled = true;
 const selectedCalendarsStorageKey = 'calendar-selectedCalendars';
 const $calendar = $('#solspace-calendar');
@@ -24,12 +9,27 @@ const $miniCal = $('#calendar-mini-cal');
 $(() => {
   'use strict';
 
-  const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek } = $calendar.data();
+  const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek, timeFormat } = $calendar.data();
   let { currentSiteId, canEditEvents, canQuickCreate, isMultiSite } = $calendar.data();
 
   canEditEvents = canEditEvents !== undefined;
   canQuickCreate = canQuickCreate !== undefined;
   isMultiSite = isMultiSite !== undefined;
+
+  const viewSpecificOptions = {
+    week: {
+      titleFormat: 'MMMM D, YYYY',
+      columnFormat: 'ddd D',
+      timeFormat,
+      slotLabelFormat: timeFormat,
+    },
+    day: {
+      titleFormat: 'dddd, MMMM D, YYYY',
+      columnFormat: '',
+      timeFormat,
+      slotLabelFormat: timeFormat,
+    },
+  };
 
   let customButtons = {
     datepicker: {
@@ -152,7 +152,8 @@ $(() => {
     selectHelper: canQuickCreate && canEditEvents,
     select: showEventCreator,
     unselectAuto: false,
-    customButtons: customButtons,
+    customButtons,
+    timeFormat,
     header: {
       right: 'siteButton refresh datepicker prev,Today,next',
       left: 'title',

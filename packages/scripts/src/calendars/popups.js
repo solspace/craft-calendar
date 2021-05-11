@@ -211,8 +211,7 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
   if (event.allDay) {
     end.subtract(1, 'days');
   } else {
-    const timeFormat = calendarTimeFormat === 'H:i' ? 'HH:mm' : 'h:mma';
-    dateFormat = dateFormat + ' [at] ' + timeFormat;
+    dateFormat = dateFormat + ' [at] ' + calendarTimeFormat;
   }
 
   const eventRange = $('<div>', {

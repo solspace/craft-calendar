@@ -91,7 +91,7 @@
          class="calendar-agenda"
          data-calendar-instance
          data-view="{{ calendarView }}"
-         data-time-format="{{ craft.app.locale.getTimeFormat('short', 'php') }}"
+         data-time-format="{{ craft.calendar.formats.timeFormat('short') }}"
          data-language="{{ calendarLanguage }}"
          data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
          data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"

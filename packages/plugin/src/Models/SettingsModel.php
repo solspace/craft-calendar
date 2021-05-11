@@ -18,6 +18,10 @@ class SettingsModel extends Model
     const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
     const DEFAULT_FIRST_DAY_OF_WEEK = -1;
 
+    const TIME_FORMAT_AUTO = 'auto';
+    const TIME_FORMAT_12_HOUR = '12-hour';
+    const TIME_FORMAT_24_HOUR = '24-hour';
+
     /** @var int */
     public $overlapThreshold;
 
@@ -63,6 +67,9 @@ class SettingsModel extends Model
     /** @var int */
     public $firstDayOfWeek;
 
+    /** @var int */
+    public $timeFormat;
+
     private static $overlapThresholds = [
         0 => 0,
         1 => 1,
@@ -107,6 +114,7 @@ class SettingsModel extends Model
         $this->showDisabledEvents = self::DEFAULT_SHOW_DISABLED_EVENTS;
         $this->authoredEventEditOnly = self::DEFAULT_AUTHORED_EVENT_EDIT_ONLY;
         $this->firstDayOfWeek = self::DEFAULT_FIRST_DAY_OF_WEEK;
+        $this->timeFormat = self::TIME_FORMAT_AUTO;
     }
 
     public static function getOverlapThresholds(): array

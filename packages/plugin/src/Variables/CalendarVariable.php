@@ -14,6 +14,7 @@ use Solspace\Calendar\Library\Events\EventWeek;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Services\FormatsService;
 use Solspace\Calendar\Services\SettingsService;
 
 class CalendarVariable
@@ -56,6 +57,11 @@ class CalendarVariable
     public function events($attributes = null): EventQuery
     {
         return Event::buildQuery($attributes);
+    }
+
+    public function formats(): FormatsService
+    {
+        return Calendar::getInstance()->formats;
     }
 
     /**

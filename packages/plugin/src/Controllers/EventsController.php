@@ -10,6 +10,7 @@ use craft\events\ElementEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
@@ -518,6 +519,8 @@ class EventsController extends BaseController
                 'site' => $event->getSite(),
                 'eventData' => (new EventToUiDataTransformer($event))->transform(),
                 'eventConfig' => [
+                    'timeFormat' => Calendar::getInstance()->formats->getTimeFormat(Locale::LENGTH_SHORT),
+                    'dateFormat' => Calendar::getInstance()->formats->getDateFormat(Locale::LENGTH_SHORT),
                     'timeInterval' => Calendar::getInstance()->settings->getTimeInterval(),
                     'eventDuration' => Calendar::getInstance()->settings->getEventDuration(),
                     'locale' => \Craft::$app->getSites()->getCurrentSite()->language,

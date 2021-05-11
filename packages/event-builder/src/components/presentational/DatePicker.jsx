@@ -2,7 +2,7 @@ import { StyledInput } from '@cal/event-builder/components/presentational/Input'
 import { isSameDay } from 'date-fns';
 import { fromUnixTimeUTC } from '@cal/event-builder/utilities/date';
 import * as locales from 'date-fns/locale';
-import { dateFnsLocale, timeInterval, firstDayOfWeek } from '@cal/event-builder/utilities/config';
+import { dateFnsLocale, timeInterval, firstDayOfWeek, timeFormat } from '@cal/event-builder/utilities/config';
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDatePicker, { registerLocale } from 'react-datepicker';
@@ -77,8 +77,9 @@ class DatePicker extends React.Component {
         onChange={onChangeHandler}
         customInput={<StyledInput />}
         className="datepicker-time"
-        dateFormat="p"
+        dateFormat={timeFormat}
         timeIntervals={timeInterval}
+        timeFormat={timeFormat}
         showTimeSelect
         showTimeSelectOnly
         {...extraProps}

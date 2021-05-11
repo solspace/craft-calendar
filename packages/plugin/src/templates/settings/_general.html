@@ -28,6 +28,7 @@
         {% endif %}
 
         {{ forms.selectField({
+            first: not craft.calendar.pro,
             label: "Week Starting Day"|t('calendar'),
             instructions: "The starting day of the week when viewing front end and control panel Month and Week views as well as datepickers."|t('calendar'),
             name: "settings[firstDayOfWeek]",
@@ -42,6 +43,19 @@
                 4: "Thursday"|t('calendar'),
                 5: "Friday"|t('calendar'),
                 6: "Saturday"|t('calendar'),
+            },
+        }) }}
+
+        {{ forms.selectField({
+            label: "Time Format"|t('calendar'),
+            instructions: "Time format for date pickers."|t('calendar'),
+            name: "settings[timeFormat]",
+            value: settings.timeFormat,
+            errors: settings.errors("timeFormat"),
+            options: {
+                "auto": "Current user's Locale"|t('calendar'),
+                "12-hour": "12-hour format"|t('calendar'),
+                "24-hour": "24-hour format"|t('calendar'),
             },
         }) }}
 
