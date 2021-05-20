@@ -17,6 +17,7 @@ use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use Solspace\Commons\Helpers\PermissionHelper;
 use Solspace\Commons\Helpers\StringHelper;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\Response;
 
@@ -28,6 +29,13 @@ class CalendarsController extends BaseController
     public function init()
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_CALENDARS);
+
+        if (
+            version_compare(\Craft::$app->getVersion(), '3.1', '>=')
+            && !\Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
 
         parent::init();
     }
