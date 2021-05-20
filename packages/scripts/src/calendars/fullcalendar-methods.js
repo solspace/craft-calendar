@@ -36,7 +36,9 @@ export const renderEvent = (event, element) => {
 
   element.addClass('fc-color-' + event.textColor);
 
-  buildEventPopup(event, element, $solspaceCalendar.data('timeFormat'));
+  const { timeFormat, isMultiSite } = $solspaceCalendar.data();
+
+  buildEventPopup(event, element, timeFormat, isMultiSite !== undefined);
 };
 
 export const today = new moment();
