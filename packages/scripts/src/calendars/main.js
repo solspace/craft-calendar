@@ -9,10 +9,8 @@ const $miniCal = $('#calendar-mini-cal');
 $(() => {
   'use strict';
 
-  const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek } = $calendar.data();
-  let { currentSiteId, canEditEvents, canQuickCreate, isMultiSite, timeFormat } = $calendar.data();
-
-  timeFormat = timeFormat.replace('h:mm a', 'h(:mm) a');
+  const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek, timeFormat } = $calendar.data();
+  let { currentSiteId, canEditEvents, canQuickCreate, isMultiSite } = $calendar.data();
 
   canEditEvents = canEditEvents !== undefined;
   canQuickCreate = canQuickCreate !== undefined;
@@ -155,7 +153,7 @@ $(() => {
     select: showEventCreator,
     unselectAuto: false,
     customButtons,
-    timeFormat,
+    timeFormat: timeFormat.replace('h:mm a', 'h(:mm)t'),
     header: {
       right: 'siteButton refresh datepicker prev,Today,next',
       left: 'title',
