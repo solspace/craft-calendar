@@ -57,10 +57,10 @@ class EventInterface extends AbstractInterface
                 'type' => CalendarInterface::getType(),
                 'description' => "The event's Calendar",
             ],
-            'name' => [
-                'name' => 'name',
+            'title' => [
+                'name' => 'title',
                 'type' => Type::string(),
-                'description' => "The event's name",
+                'description' => "The event's title",
             ],
             'authorId' => [
                 'name' => 'authorId',
