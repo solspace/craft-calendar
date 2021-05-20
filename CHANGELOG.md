@@ -1,5 +1,23 @@
 # Solspace Calendar Changelog
 
+## 3.3.0 - 2021-05-20
+
+> {warning} Calendar 3.3+ introduces support for Project Config on calendar settings and layouts. This means that if you have the `allowAdminChanges` Craft config setting set to `false`, that environment will no longer be able to add or modify calendars.
+
+### Added
+- Added support for GraphQL.
+- Added support for Project Config on calendar settings and layouts.
+- Added a Time Format setting to optionally override formatting of times in the Calendar control panel for all users.
+- Added the ability to duplicate calendars.
+- Added ability to set/change the status of multiple events from the CP Event index page.
+
+### Fixed
+- Fixed a bug where using the quick create event feature for an event that belongs to a calendar that is NOT enabled for the primary Craft site would not work.
+- Fixed a bug where creating new events using the "New Event" dropdown from the CP Month/Week/Day views for calendars that don't have the primary Craft site enabled would run into issues.
+- Fixed a bug where not specifying the `FREQ` setting for Calendar Feed Me mapping would cause the import to fail.
+- Fixed a bug where saving and continuing a calendar would give a "Request contained an invalid body param" error.
+- Fixed a bug where "Slug" was missing from the column options in the CP Events list index view.
+
 ## 3.2.1 - 2021-02-25
 
 ### Fixed
