@@ -9,8 +9,10 @@ const $miniCal = $('#calendar-mini-cal');
 $(() => {
   'use strict';
 
-  const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek, timeFormat } = $calendar.data();
-  let { currentSiteId, canEditEvents, canQuickCreate, isMultiSite } = $calendar.data();
+  const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek } = $calendar.data();
+  let { currentSiteId, canEditEvents, canQuickCreate, isMultiSite, timeFormat } = $calendar.data();
+
+  timeFormat = timeFormat.replace('h:mm a', 'h(:mm) a');
 
   canEditEvents = canEditEvents !== undefined;
   canQuickCreate = canQuickCreate !== undefined;
