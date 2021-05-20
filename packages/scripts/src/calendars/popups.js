@@ -238,7 +238,6 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
   }
 
   if (event.editable) {
-    console.log(event, isMultiSite);
     editButton.append(
       $('<a>', {
         class: 'btn small submit',
