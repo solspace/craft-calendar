@@ -1,6 +1,6 @@
 # Solspace Calendar Changelog
 
-## 3.3.0 - 2021-05-20
+## 3.3.0 - 2021-05-26
 
 > {warning} Calendar 3.3+ introduces support for Project Config on calendar settings and layouts. This means that if you have the `allowAdminChanges` Craft config setting set to `false`, that environment will no longer be able to add or modify calendars.
 
