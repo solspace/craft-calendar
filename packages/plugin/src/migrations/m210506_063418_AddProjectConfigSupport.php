@@ -52,21 +52,21 @@ class m210506_063418_AddProjectConfigSupport extends Migration
         $calendars = (new Query())
             ->select(
                 [
-                    'calendar.[[id]]',
-                    'calendar.[[uid]]',
-                    'calendar.[[name]]',
-                    'calendar.[[handle]]',
-                    'calendar.[[description]]',
-                    'calendar.[[color]]',
-                    'calendar.[[fieldLayoutId]]',
-                    'calendar.[[titleFormat]]',
-                    'calendar.[[titleLabel]]',
-                    'calendar.[[hasTitleField]]',
-                    'calendar.[[descriptionFieldHandle]]',
-                    'calendar.[[locationFieldHandle]]',
-                    'calendar.[[icsHash]]',
-                    'calendar.[[icsTimezone]]',
-                    'calendar.[[allowRepeatingEvents]]',
+                    '[[calendar]].[[id]]',
+                    '[[calendar]].[[uid]]',
+                    '[[calendar]].[[name]]',
+                    '[[calendar]].[[handle]]',
+                    '[[calendar]].[[description]]',
+                    '[[calendar]].[[color]]',
+                    '[[calendar]].[[fieldLayoutId]]',
+                    '[[calendar]].[[titleFormat]]',
+                    '[[calendar]].[[titleLabel]]',
+                    '[[calendar]].[[hasTitleField]]',
+                    '[[calendar]].[[descriptionFieldHandle]]',
+                    '[[calendar]].[[locationFieldHandle]]',
+                    '[[calendar]].[[icsHash]]',
+                    '[[calendar]].[[icsTimezone]]',
+                    '[[calendar]].[[allowRepeatingEvents]]',
                 ]
             )
             ->from('{{%calendar_calendars}} calendar')
@@ -102,13 +102,13 @@ class m210506_063418_AddProjectConfigSupport extends Migration
         $siteSettings = (new Query())
             ->select(
                 [
-                    'calendarSites.[[id]]',
-                    'calendarSites.[[uid]]',
-                    'calendarSites.[[siteId]]',
-                    'calendarSites.[[enabledByDefault]]',
-                    'calendarSites.[[hasUrls]]',
-                    'calendarSites.[[uriFormat]]',
-                    'calendarSites.[[template]]',
+                    '[[calendarSites]].[[id]]',
+                    '[[calendarSites]].[[uid]]',
+                    '[[calendarSites]].[[siteId]]',
+                    '[[calendarSites]].[[enabledByDefault]]',
+                    '[[calendarSites]].[[hasUrls]]',
+                    '[[calendarSites]].[[uriFormat]]',
+                    '[[calendarSites]].[[template]]',
                 ]
             )
             ->from('{{%calendar_calendar_sites}} calendarSites')
