@@ -134,7 +134,7 @@ class SettingsModel extends Model
 
     public function isDemoBannerDisabled(): bool
     {
-        return true === $this->demoBannerDisabled;
+        return (bool) $this->demoBannerDisabled;
     }
 
     public function isMiniCalEnabled(): string
