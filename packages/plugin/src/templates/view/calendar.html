@@ -95,7 +95,7 @@
          data-language="{{ calendarLanguage }}"
          data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
          data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
-         data-current-site-id="{{ currentSiteId }}"
+         data-current-site-id="{{ selectedSiteId }}"
          data-current-day="{{ currentDay.toDateString }}"
          data-site-map="{{ siteMap|json_encode }}"
          {% if isQuickCreateEnabled %}data-can-quick-create{% endif %}

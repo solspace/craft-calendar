@@ -26,6 +26,18 @@ class CalendarSitesService extends Component
         return $models;
     }
 
+    public function getAllEnabledSiteIds(): array
+    {
+        $rows = $this->getQuery()->all();
+
+        $sites = [];
+        foreach ($rows as $row) {
+            $sites[] = (int) $row['siteId'];
+        }
+
+        return array_unique($sites);
+    }
+
     /**
      * @return CalendarSiteSettingsModel[]
      */

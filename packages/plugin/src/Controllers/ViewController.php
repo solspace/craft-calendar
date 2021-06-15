@@ -71,11 +71,32 @@ class ViewController extends BaseController
             $calendarView = 'agendaDay';
         }
 
+        $enabledSiteIds = Calendar::getInstance()->calendarSites->getAllEnabledSiteIds();
+
         $currentSiteId = \Craft::$app->sites->currentSite->id;
+        $selectedSiteId = null;
+
         $siteMap = [];
         if (\Craft::$app->getIsMultiSite()) {
             foreach (\Craft::$app->sites->getAllSites() as $site) {
+                if (!\in_array($site->id, $enabledSiteIds)) {
+                    continue;
+                }
+
+                if ($site->id === $currentSiteId) {
+                    $selectedSiteId = $currentSiteId;
+                }
+
                 $siteMap[$site->id] = $site->name;
+            }
+        }
+
+        if (null === $selectedSiteId) {
+            if (empty($siteMap)) {
+                $selectedSiteId = $currentSiteId;
+            } else {
+                $siteIds = array_keys($siteMap);
+                $selectedSiteId = reset($siteIds);
             }
         }
 
@@ -110,6 +131,7 @@ class ViewController extends BaseController
                 'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
                 'currentSiteId' => $currentSiteId,
                 'siteMap' => $siteMap,
+                'selectedSiteId' => $selectedSiteId,
                 'isMultiSite' => (bool) \Craft::$app->getIsMultiSite(),
                 'dateFormat' => $dateFormat,
                 'timeFormat' => $timeFormat,
