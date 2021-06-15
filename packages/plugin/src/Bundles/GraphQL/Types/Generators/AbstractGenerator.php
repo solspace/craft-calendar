@@ -2,12 +2,13 @@
 
 namespace Solspace\Calendar\Bundles\GraphQL\Types\Generators;
 
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\GqlEntityRegistry;
 use Solspace\Calendar\Bundles\GraphQL\Types\AbstractObjectType;
 
-abstract class AbstractGenerator implements GeneratorInterface
+abstract class AbstractGenerator extends Generator implements GeneratorInterface
 {
     abstract public static function getTypeClass(): string;
 

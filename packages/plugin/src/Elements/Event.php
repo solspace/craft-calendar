@@ -309,6 +309,20 @@ class Event extends Element implements \JsonSerializable
         return CalendarPermissionHelper::canEditEvent($this);
     }
 
+    public static function gqlTypeNameByContext($context): string
+    {
+        if ($context instanceof CalendarModel) {
+            return $context->handle.'_Event';
+        }
+
+        return parent::gqlTypeNameByContext($context);
+    }
+
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getCalendar());
+    }
+
     /**
      * Returns the element's CP edit URL.
      *

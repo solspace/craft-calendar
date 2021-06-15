@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Models;
 
 use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -85,6 +86,20 @@ class CalendarModel extends Model implements \JsonSerializable
         $model->allowRepeatingEvents = true;
 
         return $model;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Event::class,
+        ];
+
+        return $behaviors;
     }
 
     /**
