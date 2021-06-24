@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 3.3.1 - 2021-06-16
+
+### Fixed
+- Fixed a bug where GraphQL support did not work with regular fields.
+- Fixed a bug where the Site dropdown menu for the CP Month/Week/Day views would not filter out sites without calendars.
+- Fixed a bug where sites with PostgreSQL could fail while running the update migration.
+- Fixed a bug where the "Install Demo Templates" banner would re-appear after updates.
+
 ## 3.3.0 - 2021-05-26
 
 > {warning} Calendar 3.3+ introduces support for Project Config on calendar settings and layouts. This means that if you have the `allowAdminChanges` Craft config setting set to `false`, that environment will no longer be able to add or modify calendars.
