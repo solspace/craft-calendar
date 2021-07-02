@@ -322,7 +322,7 @@
                              data-hide-for="select_dates"
                              data-repeats>
                             <label class="col-12 col-sm-2 col-form-label">
-                                End Repeat
+                                {{ "End Repeat"|t }}
                             </label>
                             <div class="col-6 col-sm-2">
                                 <select name="calendarEvent[untilType]"
@@ -359,7 +359,7 @@
                                                class="form-control" />
                                     </div>
                                     <div class="col-6" style="padding-top: 6px;">
-                                        times
+                                        {{ "times"|t }}
                                     </div>
                                 </div>
                             </div>
@@ -367,7 +367,7 @@
 
                         <div class="form-group row" data-repeats data-hide-for="select_dates">
                             <label class="col-sm-2 col-form-label">
-                                Except on
+                                {{ "Except on"|t }}
                             </label>
                             <div class="col-sm-2">
                                 <input type="text"
@@ -394,7 +394,7 @@
 
                         <div class="form-group row" data-repeats data-show-for="select_dates">
                             <label class="col-sm-2 col-form-label">
-                                On select dates
+                                {{ "On select dates"|t }}
                             </label>
                             <div class="col-sm-2">
                                 <input type="text"
