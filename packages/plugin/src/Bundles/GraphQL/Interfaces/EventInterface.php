@@ -97,6 +97,11 @@ class EventInterface extends AbstractInterface
                 'type' => DateTime::getType(),
                 'description' => "The event's initial end date",
             ],
+            'slug' => [
+                'name' => 'slug',
+                'type' => Type::string(),
+                'description' => 'The slug of the event',
+            ],
             'duration' => [
                 'name' => 'duration',
                 'type' => DurationInterface::getType(),
