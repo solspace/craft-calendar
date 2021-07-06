@@ -476,6 +476,8 @@ class EventsController extends BaseController
                     'On the Fourth',
                     'On the Last',
                     'On the same day',
+                    'End repeat',
+                    'Except on',
                     'Date',
                     'Today',
                     'All Day',
