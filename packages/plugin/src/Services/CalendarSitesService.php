@@ -69,14 +69,14 @@ class CalendarSitesService extends Component
         return (new Query())
             ->select(
                 [
-                    'calendarSites.[[id]]',
-                    'calendarSites.[[uid]]',
-                    'calendarSites.[[calendarId]]',
-                    'calendarSites.[[siteId]]',
-                    'calendarSites.[[enabledByDefault]]',
-                    'calendarSites.[[hasUrls]]',
-                    'calendarSites.[[uriFormat]]',
-                    'calendarSites.[[template]]',
+                    '[[calendarSites]].[[id]]',
+                    '[[calendarSites]].[[uid]]',
+                    '[[calendarSites]].[[calendarId]]',
+                    '[[calendarSites]].[[siteId]]',
+                    '[[calendarSites]].[[enabledByDefault]]',
+                    '[[calendarSites]].[[hasUrls]]',
+                    '[[calendarSites]].[[uriFormat]]',
+                    '[[calendarSites]].[[template]]',
                 ]
             )
             ->from(CalendarSiteSettingsRecord::TABLE.' calendarSites')
