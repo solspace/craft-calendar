@@ -97,10 +97,25 @@ class EventInterface extends AbstractInterface
                 'type' => DateTime::getType(),
                 'description' => "The event's initial end date",
             ],
+            'duration' => [
+                'name' => 'duration',
+                'type' => DurationInterface::getType(),
+                'description' => 'The duration of the event',
+            ],
+            'url' => [
+                'name' => 'url',
+                'type' => Type::string(),
+                'description' => 'The url of the event',
+            ],
             'allDay' => [
                 'name' => 'allDay',
                 'type' => Type::boolean(),
                 'description' => 'Is event an all day event',
+            ],
+            'multiDay' => [
+                'name' => 'multiDay',
+                'type' => Type::boolean(),
+                'description' => 'Is event a multi-day event',
             ],
             'rrule' => [
                 'name' => 'rrule',

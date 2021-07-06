@@ -7,6 +7,7 @@ use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\services\Gql;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\CalendarInterface;
+use Solspace\Calendar\Bundles\GraphQL\Interfaces\DurationInterface;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\EventInterface;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\SolspaceCalendarInterface;
 use Solspace\Calendar\Bundles\GraphQL\Queries\SolspaceCalendarQuery;
@@ -26,6 +27,7 @@ class GraphQLBundle implements BundleInterface
             Gql::class,
             Gql::EVENT_REGISTER_GQL_TYPES,
             function (RegisterGqlTypesEvent $event) {
+                $event->types[] = DurationInterface::class;
                 $event->types[] = SolspaceCalendarInterface::class;
                 $event->types[] = CalendarInterface::class;
                 $event->types[] = EventInterface::class;

@@ -46,34 +46,32 @@ class EventDuration
 
     /**
      * Converts the duration to a human readable string.
-     *
-     * @return string
      */
-    public function humanReadable()
+    public function humanReadable(): string
     {
         $timeString = '';
         if ($this->years) {
-            $timeString = $timeString.sprintf(' %dy', $this->years);
+            $timeString .= sprintf(' %dy', $this->years);
         }
 
         if ($this->months) {
-            $timeString = $timeString.sprintf(' %dmon', $this->months);
+            $timeString .= sprintf(' %dmon', $this->months);
         }
 
         if ($this->days) {
-            $timeString = $timeString.sprintf(' %dd', $this->days);
+            $timeString .= sprintf(' %dd', $this->days);
         }
 
         if ($this->hours) {
-            $timeString = $timeString.sprintf(' %dh', $this->hours);
+            $timeString .= sprintf(' %dh', $this->hours);
         }
 
         if ($this->minutes) {
-            $timeString = $timeString.sprintf(' %dm', $this->minutes);
+            $timeString .= sprintf(' %dm', $this->minutes);
         }
 
         if ($this->seconds) {
-            $timeString = $timeString.sprintf(' %ds', $this->seconds);
+            $timeString .= sprintf(' %ds', $this->seconds);
         }
 
         return trim($timeString);
