@@ -1,5 +1,17 @@
 # Solspace Calendar Changelog
 
+## 3.3.2 - 2021-07-06
+
+### Added
+- Added `url`, `slug`, `multiDay` and `duration` GraphQL variables to the event query.
+
+### Changed
+- Adjusted the `z-index` of date and time pickers for better compatibility with other plugins.
+
+### Fixed
+- Fixed a bug where sites with PostgreSQL could fail while running the update migration.
+- Fixed a bug where some field labels were not translatable in the event editor.
+
 ## 3.3.1 - 2021-06-16
 
 ### Fixed
