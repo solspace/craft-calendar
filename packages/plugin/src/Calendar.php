@@ -201,6 +201,13 @@ class Calendar extends Plugin
      */
     public function afterInstall()
     {
+        $installed = null !== \Craft::$app->projectConfig->get('plugins.calendar', true);
+        $configExists = null !== \Craft::$app->projectConfig->get('solspace.calendar', true);
+
+        if ($installed || $configExists) {
+            return;
+        }
+
         $calendarsService = self::getInstance()->calendars;
         $siteIds = \Craft::$app->sites->getAllSiteIds();
 
