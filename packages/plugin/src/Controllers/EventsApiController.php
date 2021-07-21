@@ -235,7 +235,7 @@ class EventsApiController extends BaseController
         $this->requirePostRequest();
 
         $eventId = \Craft::$app->request->post('eventId');
-        $event = $this->getEventsService()->getEventById($eventId);
+        $event = $this->getEventsService()->getEventById($eventId, null, true);
 
         if (!$event) {
             return $this->asErrorJson(Calendar::t('Event could not be found'));
