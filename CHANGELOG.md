@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 3.3.3 - 2021-07-30
+
+### Fixed
+- Fixed a bug where installing Craft with Calendar via Project Config would trigger an error about the default calendar.
+- Fixed a bug where disabled events could not be deleted from the CP Month/Week/Day views.
+
 ## 3.3.2 - 2021-07-06
 
 ### Added
