@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Bundles\GraphQL\Arguments;
 
 use craft\gql\base\ElementArguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 class EventArguments extends ElementArguments
@@ -20,7 +21,7 @@ class EventArguments extends ElementArguments
                 ],
                 'loadOccurrences' => [
                     'name' => 'loadOccurrences',
-                    'type' => Type::boolean(),
+                    'type' => QueryArgument::getType(),
                     'description' => 'Should occurrences be loaded',
                 ],
                 'calendarId' => [
