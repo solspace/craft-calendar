@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 3.3.4 - 2021-09-15
+
+### Fixed
+- Fixed a bug where some native Element query arguments would not work with Calendar in GraphQL.
+- Fixed a bug where `loadOccurrences` in GraphQL would not allow `int` values.
+
 ## 3.3.3 - 2021-07-30
 
 ### Fixed
