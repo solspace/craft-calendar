@@ -33,7 +33,7 @@ const store = configureStore({
 });
 
 store.subscribe(() => {
-  document.getElementById('event-builder-data').value = JSON.stringify(store.getState());
+  document.querySelector('[data-event-builder-data]').value = JSON.stringify(store.getState());
 });
 
 export default store;

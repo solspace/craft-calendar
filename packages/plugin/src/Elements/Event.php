@@ -9,6 +9,7 @@ use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
@@ -20,9 +21,12 @@ use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Duration\EventDuration;
 use Solspace\Calendar\Library\Exceptions\CalendarException;
 use Solspace\Calendar\Library\RecurrenceHelper;
+use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
+use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
+use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 class Event extends Element implements \JsonSerializable
@@ -153,6 +157,14 @@ class Event extends Element implements \JsonSerializable
             $this->untilLocalized = new Carbon($until);
             $this->until = new Carbon($until, DateHelper::UTC);
         }
+    }
+
+    public function setEvent_builder_data($test)
+    {
+        $eventBuilderData = json_decode($test, true);
+
+        $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
+        $transformer->transform();
     }
 
     /**
@@ -1167,6 +1179,30 @@ class Event extends Element implements \JsonSerializable
         if ($this->startDate->diffInDays($this->endDate, true) > self::SPAN_LIMIT_DAYS) {
             $this->addError('startDate', Calendar::t('The maximum time span of an event is 365 days'));
         }
+    }
+
+    public function getEditorHtml(): string
+    {
+        $plugin = Calendar::getInstance();
+        $view = \Craft::$app->getView();
+
+        $view->registerAssetBundle(EventEditBundle::class);
+        $output = $view->renderTemplate('calendar/events/_event_editor', [
+            'event' => $this,
+            'eventData' => (new EventToUiDataTransformer($this))->transform(),
+            'eventConfig' => [
+                'timeFormat' => $plugin->formats->getTimeFormat(Locale::LENGTH_SHORT),
+                'dateFormat' => $plugin->formats->getDateFormat(Locale::LENGTH_SHORT),
+                'timeInterval' => $plugin->settings->getTimeInterval(),
+                'eventDuration' => $plugin->settings->getEventDuration(),
+                'locale' => \Craft::$app->getSites()->getCurrentSite()->language,
+                'firstDayOfWeek' => $plugin->settings->getFirstDayOfWeek(),
+                'isNewEvent' => !$this->id,
+            ],
+        ]);
+        $output .= parent::getEditorHtml();
+
+        return $output;
     }
 
     /**

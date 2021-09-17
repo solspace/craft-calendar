@@ -19,10 +19,25 @@ class App extends React.Component {
   }
 }
 
-const wrapper = document.getElementById('event-builder');
+const wrapper = document.querySelector('#event-builder, [data-event-builder]');
 export const isPro = 'pro' in wrapper.dataset;
 export const isRepeatRulesEnabled = 'repeatRulesEnabled' in wrapper.dataset;
 
 wrapper ? ReactDOM.render(<App />, wrapper) : false;
 
 export default App;
+
+// Enable re-loading of builder for slideouts
+const observer = new MutationObserver((mutationsList) => {
+  for (const mutation of mutationsList) {
+    const { target, previousSibling } = mutation;
+
+    if (target?.classList?.contains('edit-entry') && previousSibling?.classList?.contains('slideout-container')) {
+      const wrapper = document.querySelector('#event-builder, [data-event-builder]');
+      wrapper ? ReactDOM.render(<App />, wrapper) : false;
+    }
+  }
+});
+
+console.log('observer :>> ');
+observer.observe(document.querySelector('body'), { childList: true });

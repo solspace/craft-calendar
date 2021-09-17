@@ -7,11 +7,13 @@
 
 <input
         id="event-builder-data"
+        data-event-builder-data
         type="hidden"
         name="event_builder_data"
         value="{{ eventData|json_encode|e('html') }}"
 />
 <div id="event-builder"
+     data-event-builder
      {{ craft.calendar.pro ? 'data-pro' }}
      {{ event.calendar.allowRepeatingEvents ? 'data-repeat-rules-enabled' }}
      data-locale="{{ craft.app.sites.currentSite.language }}"
