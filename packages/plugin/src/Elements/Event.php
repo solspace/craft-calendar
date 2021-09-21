@@ -1205,6 +1205,14 @@ class Event extends Element implements \JsonSerializable
         return $output;
     }
 
+    public function metaFieldsHtml(): string
+    {
+        return implode('', [
+            $this->slugFieldHtml(),
+            parent::metaFieldsHtml(),
+        ]);
+    }
+
     /**
      * {@inheritDoc}
      */
