@@ -556,9 +556,14 @@ class EventQuery extends ElementQuery implements \Countable
      */
     public function ids($db = null): array
     {
-        $this->all($db);
+        $events = $this->all($db);
 
-        return $this->eventIds ?? [];
+        $eventIds = [];
+        foreach ($events as $event) {
+            $eventIds[] = $event->id;
+        }
+
+        return array_unique($eventIds);
     }
 
     /**
