@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 3.3.5 - 2021-09-21
+
+### Added
+- Added support for Craft 3.7+ element Slideout Editor.
+
+### Fixed
+- Fixed a bug where reordering events in the Calendar Events relation field would not work.
+
 ## 3.3.4 - 2021-09-15
 
 ### Fixed
