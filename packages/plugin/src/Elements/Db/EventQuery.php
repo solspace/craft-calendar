@@ -578,8 +578,7 @@ class EventQuery extends ElementQuery implements \Countable
         $this->noMultiDayGroup = $initialGrouping;
 
         $grouped = [];
-        if($this->eventsByMonth)
-        {
+        if($this->eventsByMonth) {
             foreach ($this->eventsByMonth as $events) {
                 $firstEvent = reset($events);
                 $grouped[] = new MonthDuration($firstEvent->getStartDate(), $events);
@@ -612,8 +611,7 @@ class EventQuery extends ElementQuery implements \Countable
         $this->noMultiDayGroup = $initialGrouping;
 
         $grouped = [];
-        if($this->eventsByWeek)
-        {
+        if($this->eventsByWeek) {
             foreach ($this->eventsByWeek as $events) {
                 $firstEvent = reset($events);
                 $grouped[] = new WeekDuration($firstEvent->getStartDate(), $events);
@@ -646,8 +644,7 @@ class EventQuery extends ElementQuery implements \Countable
         $this->noMultiDayGroup = $initialGrouping;
 
         $grouped = [];
-        if($this->eventsByDay)
-        {
+        if($this->eventsByDay) {
             foreach ($this->eventsByDay as $events) {
                 /** @var Event $firstEvent */
                 $firstEvent = reset($events);
