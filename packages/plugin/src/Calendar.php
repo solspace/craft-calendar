@@ -382,7 +382,7 @@ class Calendar extends Plugin
                         ],
                     ];
                     foreach ($calendars as $calendar) {
-                        $suffix = ':'.$calendar->id;
+                        $suffix = ':'.$calendar->uid;
 
                         $editEventsPermissions[self::PERMISSION_EVENTS_FOR.$suffix] = [
                             'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
