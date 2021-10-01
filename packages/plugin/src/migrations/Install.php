@@ -47,6 +47,7 @@ class Install extends StreamlinedInstallMigration
                 ->addIndex(['calendarId', 'siteId'], true),
 
             (new Table('calendar_events'))
+                ->addField('internalId', $this->primaryKey())
                 ->addField('id', $this->integer()->notNull())
                 ->addField('calendarId', $this->integer())
                 ->addField('authorId', $this->integer())
