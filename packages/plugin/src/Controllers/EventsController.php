@@ -149,7 +149,7 @@ class EventsController extends BaseController
             CalendarPermissionHelper::requirePermission(
                 CalendarPermissionHelper::prepareNestedPermission(
                     Calendar::PERMISSION_EVENTS_FOR,
-                    $event->getCalendar()->id
+                    $event->getCalendar()->uid
                 )
             );
         }

@@ -44,7 +44,7 @@ class CalendarPermissionHelper extends PermissionHelper
         return self::checkPermission(
             self::prepareNestedPermission(
                 Calendar::PERMISSION_EVENTS_FOR,
-                $calendar->id
+                $calendar->uid
             )
         );
     }

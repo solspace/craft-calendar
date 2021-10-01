@@ -928,11 +928,12 @@ class EventQuery extends ElementQuery implements \Countable
             $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
 
             if (!$isAdmin && !$canManageAll) {
-                $allowedCalendarIds = PermissionHelper::getNestedPermissionIds(
-                    Calendar::PERMISSION_EVENTS_FOR
-                );
+                $allowedUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
+                $allowedIds = array_map(function ($uid) {
+                    return Db::idByUid(CalendarRecord::TABLE, $uid);
+                }, $allowedUids);
 
-                $this->subQuery->andWhere(Db::parseParam($table.'.[[calendarId]]', $allowedCalendarIds));
+                $this->subQuery->andWhere(Db::parseParam($table.'.[[calendarId]]', $allowedIds));
             }
 
             if (!PermissionHelper::isAdmin() && Calendar::getInstance()->settings->isAuthoredEventEditOnly()) {
