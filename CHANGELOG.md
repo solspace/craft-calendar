@@ -1,5 +1,15 @@
 # Solspace Calendar Changelog
 
+## 3.3.6.1 - 2021-11-XX
+
+### Changed
+- Updated minimum Craft version requirement to 3.6+ to account for supporting GraphQL features.
+
+### Fixed
+- Fixed a bug where the `calendar_events` table did not have a primary key column for MySQL 8 support.
+- Fixed a bug where Calendar permissions were using IDs instead of UIDs.
+- Fixed a bug where `groupedByMonth()` and others were display an error when no events were found.
+
 ## 3.3.5 - 2021-09-21
 
 ### Added
