@@ -16,6 +16,7 @@ use RRule\RRule;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Actions\DeleteEventAction;
 use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Events\JsonValueTransformerEvent;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\Configurations\Occurrences;
 use Solspace\Calendar\Library\DateHelper;
@@ -40,6 +41,8 @@ class Event extends Element implements \JsonSerializable
     const UNTIL_TYPE_AFTER = 'after';
 
     const SPAN_LIMIT_DAYS = 365;
+
+    const EVENT_TRANSFORM_JSON_VALUE = 'transform-json-value';
 
     /** @var \DateTime */
     public $postDate;
@@ -1152,12 +1155,17 @@ class Event extends Element implements \JsonSerializable
 
         $fieldValues = [];
         foreach ($this->getFieldValues() as $key => $value) {
+            $event = new JsonValueTransformerEvent($key, $value);
+            $this->trigger(self::EVENT_TRANSFORM_JSON_VALUE, $event);
+
+            $value = $event->getValue();
+
             if (is_a($value, 'fruitstudios\linkit\base\Link')) {
                 $value = $value->getLink([], false);
             }
 
             if ($value instanceof ElementQuery) {
-                $value = $value->all();
+                $value = $value->ids();
             }
 
             $fieldValues[$key] = $value;
