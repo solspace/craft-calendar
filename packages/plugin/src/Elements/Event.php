@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\UrlHelper;
@@ -1153,6 +1154,10 @@ class Event extends Element implements \JsonSerializable
         foreach ($this->getFieldValues() as $key => $value) {
             if (is_a($value, 'fruitstudios\linkit\base\Link')) {
                 $value = $value->getLink([], false);
+            }
+
+            if ($value instanceof ElementQuery) {
+                $value = $value->all();
             }
 
             $fieldValues[$key] = $value;
