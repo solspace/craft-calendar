@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 3.3.7.1 - 2021-11-30
+
+### Fixed
+- Adjusted the 3.3.7 migration for primary key column in the `calendar_events` table to check if one already exists.
+
 ## 3.3.7 - 2021-11-09
 
 ### Changed
