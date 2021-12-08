@@ -247,6 +247,12 @@ class EventsController extends BaseController
             }
         }
 
+        if ($event->repeatsOnSelectDates()) {
+            $event->selectDates = $transformer->getSelectDates();
+        } else {
+            $event->selectDates = [];
+        }
+
         // Save the entry (finally!)
         if ($event->enabled && $event->enabledForSite) {
             $event->setScenario(Element::SCENARIO_LIVE);
@@ -257,12 +263,6 @@ class EventsController extends BaseController
 
             $exceptions = $transformer->getExceptions();
             $this->getExceptionsService()->saveExceptions($event, $exceptions);
-
-            $selectDates = [];
-            if ($event->repeatsOnSelectDates()) {
-                $selectDates = $transformer->getSelectDates();
-            }
-            Calendar::getInstance()->selectDates->saveDates($event, $selectDates);
 
             // Return JSON response if the request is an AJAX request
             if (\Craft::$app->request->isAjax) {

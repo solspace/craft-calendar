@@ -156,6 +156,12 @@ class LegacyEventsController extends EventsController
         $event->slug = \Craft::$app->request->post('slug', $event->slug);
         $event->setFieldValuesFromRequest('fields');
 
+        if ($event->repeatsOnSelectDates()) {
+            $event->selectDates = $values['selectDates'] ?? [];
+        } else {
+            $event->selectDates = [];
+        }
+
         // Save the entry (finally!)
         if ($event->enabled && $event->enabledForSite) {
             $event->setScenario(Element::SCENARIO_LIVE);
@@ -166,12 +172,6 @@ class LegacyEventsController extends EventsController
 
             $exceptions = $values['exceptions'] ?? [];
             $this->getExceptionsService()->saveExceptions($event, $exceptions);
-
-            $selectDates = [];
-            if ($event->repeatsOnSelectDates()) {
-                $selectDates = $values['selectDates'] ?? [];
-            }
-            Calendar::getInstance()->selectDates->saveDates($event, $selectDates);
 
             // Return JSON response if the request is an AJAX request
             if (\Craft::$app->request->isAjax) {

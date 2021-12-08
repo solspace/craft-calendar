@@ -28,6 +28,7 @@ use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
+use Solspace\Calendar\Records\SelectDateRecord;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
@@ -121,6 +122,9 @@ class Event extends Element implements \JsonSerializable
 
     /** @var ExceptionModel[] */
     private $exceptions;
+
+    /** @var SelectEventModel[] */
+    private $_selectDates;
 
     /** @var array */
     private $selectDatesCache;
@@ -432,6 +436,19 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * @param Carbon[] $dates
+     */
+    public function setSelectDates(array $dates)
+    {
+        $this->_selectDates = array_map(function (Carbon $date) {
+            $selectDate = new SelectDateModel();
+            $selectDate->date = $date->toDateTime();
+            return $selectDate;
+        }, $dates);
+        $this->selectDatesCache = [];
+    }
+
+    /**
      * @param \DateTime $rangeStart
      * @param \DateTime $rangeEnd
      *
@@ -439,6 +456,12 @@ class Event extends Element implements \JsonSerializable
      */
     public function getSelectDates(\DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
     {
+        if (isset($this->_selectDates)) {
+            return array_filter($this->_selectDates, function (SelectDateModel $selectDate) use ($rangeStart, $rangeEnd) {
+                return ($rangeStart === null || $selectDate->date >= $rangeStart) && ($rangeEnd === null || $selectDate->date <= $rangeEnd);
+            });
+        }
+
         if (RecurrenceHelper::SELECT_DATES !== $this->freq || !$this->id) {
             return [];
         }
@@ -1121,6 +1144,21 @@ class Event extends Element implements \JsonSerializable
                 ->update(self::TABLE, $insertData, ['id' => $this->id])
                 ->execute()
             ;
+        }
+
+        if (isset($this->_selectDates)) {
+            \Craft::$app->db
+                ->createCommand()
+                ->delete(SelectDateRecord::TABLE, ['eventId' => $this->id])
+                ->execute();
+
+            foreach ($this->_selectDates as $selectDate) {
+                $selectDateRecord = new SelectDateRecord();
+                $selectDateRecord->eventId = $this->id;
+                $selectDateRecord->date = $selectDate->date;
+
+                $selectDateRecord->save();
+            }
         }
 
         parent::afterSave($isNew);
