@@ -1575,10 +1575,13 @@ class EventQuery extends ElementQuery implements \Countable
 
     private function extractDateFromCacheKey(int $key): Carbon
     {
-        preg_match('/^(\\d{4})(\\d{2})$/', $key, $matches);
-        list($_, $year, $month) = $matches;
+        preg_match('/^(\\d{4})(\\d{2})(\\d{2})?$/', $key, $matches);
 
-        return Carbon::createFromDate($year, $month, 1, DateHelper::UTC);
+        $year = $matches[1] ?? null;
+        $month = $matches[2] ?? null;
+        $day = $matches[3] ?? 1;
+
+        return Carbon::createFromDate($year, $month, $day, DateHelper::UTC);
     }
 
     private function getEventService(): EventsService
