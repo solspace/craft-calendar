@@ -76,6 +76,9 @@ class UiDataToEventTransformer
 
         $event->freq = $freq;
         if (RecurrenceHelper::SELECT_DATES === $freq) {
+            $event->setSelectDates($this->getSelectDates());
+            $event->setExceptions([]);
+
             return;
         }
 
@@ -112,6 +115,7 @@ class UiDataToEventTransformer
         }
 
         $event->rrule = $event->getRRuleRFCString();
+        $event->setExceptions($this->getExceptions());
     }
 
     /**

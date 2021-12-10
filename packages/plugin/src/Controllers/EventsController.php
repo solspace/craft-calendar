@@ -221,20 +221,13 @@ class EventsController extends BaseController
             CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
         }
 
-        $eventBuilderData = \GuzzleHttp\json_decode(
-            \Craft::$app->request->post('event_builder_data', '[]'),
-            true
-        );
-
-        $transformer = new UiDataToEventTransformer($event, $eventBuilderData);
-        $transformer->transform();
-
         $enabledForSite = (bool) \Craft::$app->request->post('enabledForSite', $event->enabledForSite);
 
         $event->enabledForSite = $enabledForSite ? '1' : '0';
         $event->title = \Craft::$app->request->post('title', $event->title);
         $event->slug = \Craft::$app->request->post('slug', $event->slug);
         $event->setFieldValuesFromRequest('fields');
+        $event->setEvent_builder_data(\Craft::$app->request->post('event_builder_data', '[]'));
 
         if ($postDate) {
             $date = $postDate['date'];
@@ -250,13 +243,6 @@ class EventsController extends BaseController
         // Save the entry (finally!)
         if ($event->enabled && $event->enabledForSite) {
             $event->setScenario(Element::SCENARIO_LIVE);
-        }
-
-        if ($event->repeatsOnSelectDates()) {
-            $event->setSelectDates($transformer->getSelectDates());
-            $event->setExceptions([]);
-        } else {
-            $event->setExceptions($transformer->getExceptions());
         }
 
         if ($this->getEventsService()->saveEvent($event)) {

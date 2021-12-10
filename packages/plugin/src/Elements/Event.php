@@ -169,9 +169,9 @@ class Event extends Element implements \JsonSerializable
         }
     }
 
-    public function setEvent_builder_data($test)
+    public function setEvent_builder_data($builderJson)
     {
-        $eventBuilderData = json_decode($test, true);
+        $eventBuilderData = json_decode($builderJson, true);
 
         $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
         $transformer->transform();
