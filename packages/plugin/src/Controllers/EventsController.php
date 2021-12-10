@@ -252,17 +252,15 @@ class EventsController extends BaseController
             $event->setScenario(Element::SCENARIO_LIVE);
         }
 
+        if ($event->repeatsOnSelectDates()) {
+            $event->setSelectDates($transformer->getSelectDates());
+            $event->setExceptions([]);
+        } else {
+            $event->setExceptions($transformer->getExceptions());
+        }
+
         if ($this->getEventsService()->saveEvent($event)) {
             $event->siteId = $siteId;
-
-            $exceptions = $transformer->getExceptions();
-            $this->getExceptionsService()->saveExceptions($event, $exceptions);
-
-            $selectDates = [];
-            if ($event->repeatsOnSelectDates()) {
-                $selectDates = $transformer->getSelectDates();
-            }
-            Calendar::getInstance()->selectDates->saveDates($event, $selectDates);
 
             // Return JSON response if the request is an AJAX request
             if (\Craft::$app->request->isAjax) {

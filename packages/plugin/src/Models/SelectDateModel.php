@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Models;
 
+use Carbon\Carbon;
 use craft\base\Model;
 
 /**
@@ -16,7 +17,7 @@ class SelectDateModel extends Model
     /** @var int */
     public $eventId;
 
-    /** @var \DateTime */
+    /** @var Carbon|\DateTime */
     public $date;
 
     public function __toString(): string

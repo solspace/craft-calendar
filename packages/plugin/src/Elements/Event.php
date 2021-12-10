@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\Element;
+use craft\db\Query;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQuery;
@@ -28,6 +29,8 @@ use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
+use Solspace\Calendar\Records\ExceptionRecord;
+use Solspace\Calendar\Records\SelectDateRecord;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
@@ -122,7 +125,10 @@ class Event extends Element implements \JsonSerializable
     /** @var ExceptionModel[] */
     private $exceptions;
 
-    /** @var array */
+    /** @var SelectDateModel[] */
+    private $selectDates;
+
+    /** @var SelectDateModel[] */
     private $selectDatesCache;
 
     /** @var Event[] */
@@ -408,6 +414,25 @@ class Event extends Element implements \JsonSerializable
         return $this->exceptions;
     }
 
+    public function setExceptions(array $exceptions): self
+    {
+        $this->exceptions = [];
+
+        foreach ($exceptions as $date) {
+            if ($date instanceof ExceptionModel) {
+                $this->exceptions[] = $date;
+            } elseif ($date instanceof \DateTime) {
+                $model = new ExceptionModel();
+                $model->date = Carbon::createFromTimestampUTC($date->getTimestamp());
+                $model->eventId = $this->id;
+
+                $this->exceptions[] = $model;
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * @return $this
      */
@@ -443,21 +468,47 @@ class Event extends Element implements \JsonSerializable
             return [];
         }
 
+        if (null === $this->selectDates) {
+            $this->hydrateSelectDates();
+        }
+
         $cacheHash = md5(($rangeStart ? $rangeStart->getTimestamp() : 0).($rangeEnd ? $rangeEnd->getTimestamp() : 0));
         if (!isset($this->selectDatesCache[$cacheHash])) {
-            $this->selectDatesCache[$cacheHash] = Calendar::getInstance()
-                ->selectDates
-                ->getSelectDatesForEvent($this, $rangeStart, $rangeEnd)
-            ;
+            $this->selectDatesCache[$cacheHash] = array_filter(
+                $this->selectDates,
+                function (SelectDateModel $selectDate) use ($rangeStart, $rangeEnd) {
+                    $isAfterRangeStart = null === $rangeStart || $selectDate->date >= $rangeStart;
+                    $isBeforeRangeEnd = null === $rangeEnd || $selectDate->date <= $rangeEnd;
+
+                    return $isAfterRangeStart && $isBeforeRangeEnd;
+                }
+            );
         }
 
         return $this->selectDatesCache[$cacheHash];
     }
 
+    public function setSelectDates(array $selectDates = []): self
+    {
+        $this->selectDates = [];
+        $this->selectDatesCache = [];
+
+        foreach ($selectDates as $date) {
+            if ($date instanceof SelectDateModel) {
+                $this->selectDates[] = $date;
+            } elseif ($date instanceof \DateTime) {
+                $model = new SelectDateModel();
+                $model->date = Carbon::createFromTimestampUTC($date->getTimestamp());
+                $model->eventId = $this->id;
+
+                $this->selectDates[] = $model;
+            }
+        }
+
+        return $this;
+    }
+
     /**
-     * @param \DateTime $rangeStart
-     * @param \DateTime $rangeEnd
-     *
      * @return \DateTime[]
      */
     public function getSelectDatesAsDates(\DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
@@ -472,10 +523,7 @@ class Event extends Element implements \JsonSerializable
         return $dates;
     }
 
-    /**
-     * @param string $format
-     */
-    public function getSelectDatesAsString($format = 'Y-m-d'): array
+    public function getSelectDatesAsString(string $format = 'Y-m-d'): array
     {
         $selectDates = $this->getSelectDates();
 
@@ -493,12 +541,8 @@ class Event extends Element implements \JsonSerializable
     public function addSelectDate(SelectDateModel $selectDateModel): self
     {
         $this->getSelectDates();
-        foreach ($this->selectDatesCache as $index => $value) {
-            $this->selectDatesCache[$index][] = $selectDateModel;
-            usort($this->selectDatesCache[$index], function (SelectDateModel $a, SelectDateModel $b) {
-                return $a->date <=> $b->date;
-            });
-        }
+        $this->selectDates[] = $selectDateModel;
+        $this->selectDatesCache = [];
 
         return $this;
     }
@@ -826,14 +870,12 @@ class Event extends Element implements \JsonSerializable
         $locale = preg_replace('/^(\\w+)_.*$/', '$1', $locale);
 
         if ($rruleObject) {
-            $string = $rruleObject->humanReadable(
-                [
-                    'locale' => $locale,
-                    'date_formatter' => function (\DateTime $date) use ($format) {
-                        return $date->format($format);
-                    },
-                ]
-            );
+            $string = $rruleObject->humanReadable([
+                'locale' => $locale,
+                'date_formatter' => function (\DateTime $date) use ($format) {
+                    return $date->format($format);
+                },
+            ]);
 
             return ucfirst($string);
         }
@@ -967,8 +1009,8 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @throws \ReflectionException
      * @throws \Solspace\Commons\Exceptions\Configurations\ConfigurationException
+     * @throws \ReflectionException
      *
      * @return Event[]
      */
@@ -1107,20 +1149,83 @@ class Event extends Element implements \JsonSerializable
             'postDate' => $this->postDate ? $this->postDate->format('Y-m-d H:i:s') : null,
         ];
 
+        $db = \Craft::$app->db;
         if ($isNew) {
             $insertData['id'] = $this->id;
 
-            \Craft::$app->db
-                ->createCommand()
+            $db->createCommand()
                 ->insert(self::TABLE, $insertData)
                 ->execute()
             ;
         } else {
-            \Craft::$app->db
-                ->createCommand()
+            $db->createCommand()
                 ->update(self::TABLE, $insertData, ['id' => $this->id])
                 ->execute()
             ;
+        }
+
+        if (\is_array($this->selectDates)) {
+            $existingDates = (new Query())
+                ->select(['id', 'date'])
+                ->from(SelectDateRecord::TABLE)
+                ->where(['eventId' => $this->id])
+                ->pairs()
+            ;
+
+            $currentDates = [];
+            foreach ($this->selectDates as $selectDate) {
+                $currentDates[] = $selectDate->date->toDateTimeString();
+            }
+
+            $toDelete = array_keys(array_diff($existingDates, $currentDates));
+            $toInsert = array_diff($currentDates, $existingDates);
+
+            if ($toDelete) {
+                $db->createCommand()
+                    ->delete(SelectDateRecord::TABLE, ['eventId' => $this->id, 'id' => $toDelete])
+                    ->execute()
+                ;
+            }
+
+            foreach ($toInsert as $selectDate) {
+                $record = new SelectDateRecord();
+                $record->eventId = $this->id;
+                $record->date = new Carbon($selectDate, DateHelper::UTC);
+
+                $record->save();
+            }
+        }
+
+        if (\is_array($this->exceptions)) {
+            $existingDates = (new Query())
+                ->select(['id', 'date'])
+                ->from(ExceptionRecord::TABLE)
+                ->where(['eventId' => $this->id])
+                ->pairs()
+            ;
+
+            $currentDates = [];
+            foreach ($this->exceptions as $exception) {
+                $currentDates[] = $exception->date->toDateTimeString();
+            }
+
+            $toDelete = array_keys(array_diff($existingDates, $currentDates));
+            $toInsert = array_diff($currentDates, $existingDates);
+
+            if ($toDelete) {
+                $db->createCommand()
+                    ->delete(ExceptionRecord::TABLE, ['eventId' => $this->id, 'id' => $toDelete])
+                    ->execute()
+                ;
+            }
+
+            foreach ($toInsert as $exception) {
+                $record = new ExceptionRecord();
+                $record->eventId = $this->id;
+                $record->date = new Carbon($exception, DateHelper::UTC);
+
+                $record->save();
+            }
         }
 
         parent::afterSave($isNew);
@@ -1323,13 +1428,11 @@ class Event extends Element implements \JsonSerializable
     protected static function defineActions(string $source = null): array
     {
         $actions = [
-            \Craft::$app->elements->createAction(
-                [
-                    'type' => DeleteEventAction::class,
-                    'confirmationMessage' => Calendar::t('Are you sure you want to delete the selected events?'),
-                    'successMessage' => Calendar::t('Events deleted.'),
-                ]
-            ),
+            \Craft::$app->elements->createAction([
+                'type' => DeleteEventAction::class,
+                'confirmationMessage' => Calendar::t('Are you sure you want to delete the selected events?'),
+                'successMessage' => Calendar::t('Events deleted.'),
+            ]),
             SetStatus::class,
         ];
 
@@ -1405,6 +1508,11 @@ class Event extends Element implements \JsonSerializable
         ];
     }
 
+    private function hydrateSelectDates()
+    {
+        $this->selectDates = Calendar::getInstance()->selectDates->getSelectDatesForEvent($this);
+    }
+
     /**
      * Parses rules like "TU,WE,FR" and returns an array of [TU, WE, FR]
      * Returns NULL if the rule string is empty.
@@ -1433,18 +1541,16 @@ class Event extends Element implements \JsonSerializable
             return null;
         }
 
-        return new RRule(
-            [
-                'FREQ' => $this->getFrequency(),
-                'INTERVAL' => $this->interval,
-                'DTSTART' => $this->initialStartDate->copy()->setTime(0, 0, 0),
-                'UNTIL' => $this->getUntil(),
-                'COUNT' => $this->count,
-                'BYDAY' => $this->byDay,
-                'BYMONTHDAY' => $this->byMonthDay,
-                'BYMONTH' => $this->byMonth,
-                'BYYEARDAY' => $this->byYearDay,
-            ]
-        );
+        return new RRule([
+            'FREQ' => $this->getFrequency(),
+            'INTERVAL' => $this->interval,
+            'DTSTART' => $this->initialStartDate->copy()->setTime(0, 0, 0),
+            'UNTIL' => $this->getUntil(),
+            'COUNT' => $this->count,
+            'BYDAY' => $this->byDay,
+            'BYMONTHDAY' => $this->byMonthDay,
+            'BYMONTH' => $this->byMonth,
+            'BYYEARDAY' => $this->byYearDay,
+        ]);
     }
 }

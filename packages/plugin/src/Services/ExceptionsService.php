@@ -75,26 +75,6 @@ class ExceptionsService extends Component
         return $dates;
     }
 
-    /**
-     * @param Carbon[] $exceptions
-     */
-    public function saveExceptions(Event $event, array $exceptions)
-    {
-        \Craft::$app->db
-            ->createCommand()
-            ->delete(ExceptionRecord::TABLE, ['eventId' => $event->id])
-            ->execute()
-    ;
-
-        foreach ($exceptions as $exception) {
-            $exceptionRecord = new ExceptionRecord();
-            $exceptionRecord->eventId = $event->id;
-            $exceptionRecord->date = $exception;
-
-            $exceptionRecord->save();
-        }
-    }
-
     public function saveException(Event $event, \DateTime $date, int $id = null)
     {
         $exceptionRecord = null;

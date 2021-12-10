@@ -69,16 +69,6 @@ if (class_exists('craft\feedme\base\Element')) {
                     }
                 }
             );
-
-            Event::on(
-                Process::class,
-                Process::EVENT_STEP_AFTER_ELEMENT_SAVE,
-                function (FeedProcessEvent $event) {
-                    if (EventElement::class === $event->feed['elementType']) {
-                        $this->_onAfterElementSave($event);
-                    }
-                }
-            );
         }
 
         public function getGroups()
@@ -203,8 +193,7 @@ if (class_exists('craft\feedme\base\Element')) {
 
         protected function parseSelectDates($feedData, $fieldInfo)
         {
-            $value = $this->fetchArrayValue($feedData, $fieldInfo);
-            $this->selectDates = $value;
+            return $this->fetchArrayValue($feedData, $fieldInfo);
         }
 
         private function _parseDate($feedData, $fieldInfo)
@@ -274,14 +263,6 @@ if (class_exists('craft\feedme\base\Element')) {
                 $element->rrule = $rrule->rfcString();
             } else {
                 $element->rrule = null;
-            }
-        }
-
-        private function _onAfterElementSave($event)
-        {
-            if (\count($this->selectDates)) {
-                $EventElement = EventElement::find()->id($event->element->id)->one();
-                Calendar::getInstance()->selectDates->saveDates($EventElement, $this->selectDates);
             }
         }
     }

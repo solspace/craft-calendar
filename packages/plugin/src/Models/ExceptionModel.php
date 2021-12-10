@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Models;
 
+use Carbon\Carbon;
 use craft\base\Model;
 
 /**
@@ -16,6 +17,6 @@ class ExceptionModel extends Model
     /** @var int */
     public $eventId;
 
-    /** @var \DateTime */
+    /** @var Carbon|\DateTime */
     public $date;
 }
