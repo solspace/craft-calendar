@@ -579,9 +579,8 @@ class EventQuery extends ElementQuery implements \Countable
 
         $grouped = [];
         if ($this->eventsByMonth) {
-            foreach ($this->eventsByMonth as $events) {
-                $firstEvent = reset($events);
-                $grouped[] = new MonthDuration($firstEvent->getStartDate(), $events);
+            foreach ($this->eventsByMonth as $key => $events) {
+                $grouped[] = new MonthDuration($this->extractDateFromCacheKey($key), $events);
             }
         }
 
@@ -612,9 +611,8 @@ class EventQuery extends ElementQuery implements \Countable
 
         $grouped = [];
         if ($this->eventsByWeek) {
-            foreach ($this->eventsByWeek as $events) {
-                $firstEvent = reset($events);
-                $grouped[] = new WeekDuration($firstEvent->getStartDate(), $events);
+            foreach ($this->eventsByWeek as $key => $events) {
+                $grouped[] = new WeekDuration($this->extractDateFromCacheKey($key), $events);
             }
         }
 
@@ -645,10 +643,8 @@ class EventQuery extends ElementQuery implements \Countable
 
         $grouped = [];
         if ($this->eventsByDay) {
-            foreach ($this->eventsByDay as $events) {
-                /** @var Event $firstEvent */
-                $firstEvent = reset($events);
-                $grouped[] = new DayDuration($firstEvent->getStartDate(), $events);
+            foreach ($this->eventsByDay as $key => $events) {
+                $grouped[] = new DayDuration($this->extractDateFromCacheKey($key), $events);
             }
         }
 
@@ -1575,6 +1571,14 @@ class EventQuery extends ElementQuery implements \Countable
         }
 
         return $this->orderBy;
+    }
+
+    private function extractDateFromCacheKey(int $key): Carbon
+    {
+        preg_match('/^(\\d{4})(\\d{2})$/', $key, $matches);
+        list($_, $year, $month) = $matches;
+
+        return Carbon::createFromDate($year, $month, 1, DateHelper::UTC);
     }
 
     private function getEventService(): EventsService
