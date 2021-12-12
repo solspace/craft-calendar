@@ -268,27 +268,4 @@ class DateHelperTest extends TestCase
             ['2016-06-05', Carbon::MONDAY, 201622],
         ];
     }
-
-    /**
-     * @dataProvider cacheWeekNumberDataProvider
-     */
-    public function testCacheWeekNumber(string $dateString, int $startOfWeek, int $expectedWeekNumber): void
-    {
-        $date = new Carbon($dateString, 'UTC');
-        DateHelper::updateWeekStartDate($date, $startOfWeek);
-
-        $weekNumber = DateHelper::getCacheWeekNumber($date);
-
-        self::assertSame(
-            $expectedWeekNumber,
-            $weekNumber,
-            sprintf(
-                '%s starting %d should be week #%d but is #%d instead',
-                $dateString,
-                $startOfWeek,
-                $expectedWeekNumber,
-                $weekNumber
-            )
-        );
-    }
 }

@@ -333,20 +333,6 @@ class DateHelper
     }
 
     /**
-     * Calculates a "week number" by diving the date's day of year with 7
-     * And ceil()'ing the result.
-     * This is meant for looking up dates cached by week number
-     * The real week number calculation is too complex for what is needed.
-     */
-    public static function getCacheWeekNumber(Carbon $date): int
-    {
-        $startOfWeek = $date->copy()->startOfWeek();
-        $weekNumber = $startOfWeek->weekOfYear;
-
-        return $date->year.$weekNumber;
-    }
-
-    /**
      * Returns an array of [relativeStartDate, relativeEndDate]
      * The start date will acquire the date from $occurrence, but retain it's time
      * The end date will adjust accordingly.

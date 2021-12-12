@@ -11,6 +11,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Duration\DayDuration;
+use Solspace\Calendar\Library\Duration\DurationInterface;
 use Solspace\Calendar\Library\Duration\MonthDuration;
 use Solspace\Calendar\Library\Duration\WeekDuration;
 use Solspace\Calendar\Library\Exceptions\CalendarException;
@@ -27,10 +28,9 @@ class EventQuery extends ElementQuery implements \Countable
 {
     const MAX_EVENT_LENGTH_DAYS = 365;
 
-    const FORMAT_MONTH = 'Ym';
-    const FORMAT_WEEK = 'YW';
-    const FORMAT_DAY = 'Ymd';
-    const FORMAT_HOUR = 'YmdH';
+    const TARGET_MONTH = 'Month';
+    const TARGET_WEEK = 'Week';
+    const TARGET_DAY = 'Day';
 
     /** @var int */
     public $typeId;
@@ -566,36 +566,14 @@ class EventQuery extends ElementQuery implements \Countable
         return array_unique($eventIds);
     }
 
-    /**
-     * @return Event[]
-     */
     public function getGroupedByMonth(): array
     {
-        Carbon::setWeekStartsAt($this->firstDay ?? 1);
-        $initialGrouping = $this->noMultiDayGroup;
-        $this->noMultiDayGroup = true;
-        $this->all();
-        $this->noMultiDayGroup = $initialGrouping;
-
-        $grouped = [];
-        if ($this->eventsByMonth) {
-            foreach ($this->eventsByMonth as $key => $events) {
-                $grouped[] = new MonthDuration($this->extractDateFromCacheKey($key), $events);
-            }
-        }
-
-        return $grouped;
+        return $this->extractGroupedEvents(MonthDuration::class, self::TARGET_MONTH);
     }
 
-    /**
-     * @return Event[]
-     */
     public function getEventsByMonth(Carbon $date): array
     {
-        $this->all();
-        $month = $date->format(self::FORMAT_MONTH);
-
-        return $this->eventsByMonth[$month] ?? [];
+        return $this->extractSpecificDurationEvents($this->resetMonth($date), self::TARGET_MONTH);
     }
 
     /**
@@ -603,20 +581,7 @@ class EventQuery extends ElementQuery implements \Countable
      */
     public function getGroupedByWeek(): array
     {
-        Carbon::setWeekStartsAt($this->firstDay ?? 1);
-        $initialGrouping = $this->noMultiDayGroup;
-        $this->noMultiDayGroup = true;
-        $this->all();
-        $this->noMultiDayGroup = $initialGrouping;
-
-        $grouped = [];
-        if ($this->eventsByWeek) {
-            foreach ($this->eventsByWeek as $key => $events) {
-                $grouped[] = new WeekDuration($this->extractDateFromCacheKey($key), $events);
-            }
-        }
-
-        return $grouped;
+        return $this->extractGroupedEvents(WeekDuration::class, self::TARGET_WEEK);
     }
 
     /**
@@ -624,10 +589,7 @@ class EventQuery extends ElementQuery implements \Countable
      */
     public function getEventsByWeek(Carbon $date): array
     {
-        $this->all();
-        $week = DateHelper::getCacheWeekNumber($date);
-
-        return $this->eventsByWeek[$week] ?? [];
+        return $this->extractSpecificDurationEvents($this->resetWeek($date), self::TARGET_WEEK);
     }
 
     /**
@@ -635,20 +597,7 @@ class EventQuery extends ElementQuery implements \Countable
      */
     public function getGroupedByDay(): array
     {
-        Carbon::setWeekStartsAt($this->firstDay ?? 1);
-        $initialGrouping = $this->noMultiDayGroup;
-        $this->noMultiDayGroup = true;
-        $this->all();
-        $this->noMultiDayGroup = $initialGrouping;
-
-        $grouped = [];
-        if ($this->eventsByDay) {
-            foreach ($this->eventsByDay as $key => $events) {
-                $grouped[] = new DayDuration($this->extractDateFromCacheKey($key), $events);
-            }
-        }
-
-        return $grouped;
+        return $this->extractGroupedEvents(DayDuration::class, self::TARGET_DAY);
     }
 
     /**
@@ -656,10 +605,7 @@ class EventQuery extends ElementQuery implements \Countable
      */
     public function getEventsByDay(Carbon $date): array
     {
-        $this->all();
-        $day = $date->format(self::FORMAT_DAY);
-
-        return $this->eventsByDay[$day] ?? [];
+        return $this->extractSpecificDurationEvents($this->resetDay($date), self::TARGET_DAY);
     }
 
     /**
@@ -668,9 +614,9 @@ class EventQuery extends ElementQuery implements \Countable
     public function getEventsByHour(Carbon $date): array
     {
         $this->all();
-        $hour = $date->format(self::FORMAT_HOUR);
+        $hour = $date->setMinutes(0)->setSeconds(0);
 
-        return $this->eventsByHour[$hour] ?? [];
+        return $this->eventsByHour[$hour->getTimestamp()] ?? [];
     }
 
     protected function beforePrepare(): bool
@@ -1419,28 +1365,26 @@ class EventQuery extends ElementQuery implements \Countable
             $endDate = $event->getEndDate();
             $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
 
-            $month = $startDate->format(self::FORMAT_MONTH);
-            $endMonth = $endDate->format(self::FORMAT_MONTH);
-            $this->addEventToCache($eventsByMonth, $month, $event);
-            if ($month !== $endMonth) {
-                $this->addEventToCache($eventsByMonth, $endMonth, $event);
+            $month = $this->resetMonth($startDate->clone());
+            while ($month->lessThanOrEqualTo($endDate)) {
+                $this->addEventToCache($eventsByMonth, $month, $event);
+                $month->addMonth();
             }
 
-            $week = DateHelper::getCacheWeekNumber($startDate);
-            $endWeek = DateHelper::getCacheWeekNumber($endDate);
-            $this->addEventToCache($eventsByWeek, $week, $event);
-            if ($week !== $endWeek) {
-                $this->addEventToCache($eventsByWeek, $endWeek, $event);
+            $week = $this->resetWeek($startDate->clone());
+            while ($week->lessThanOrEqualTo($endDate)) {
+                $this->addEventToCache($eventsByWeek, $week, $event);
+                $week->addWeek();
             }
 
-            $day = $startDate->copy();
+            $day = $this->resetDay($startDate->copy());
             for ($i = 0; $i <= $diffInDays && $i <= self::MAX_EVENT_LENGTH_DAYS; ++$i) {
                 if ($this->overlapThreshold && 0 !== $i && $i === $diffInDays) {
                     if (DateHelper::isDateBeforeOverlap($endDate, $this->overlapThreshold)) {
                         break;
                     }
                 }
-                $this->addEventToCache($eventsByDay, $day->format(self::FORMAT_DAY), $event);
+                $this->addEventToCache($eventsByDay, $day, $event);
                 $day->addDay();
                 if ($this->noMultiDayGroup) {
                     break;
@@ -1448,10 +1392,15 @@ class EventQuery extends ElementQuery implements \Countable
             }
 
             if (!$event->isAllDay()) {
-                $hour = $startDate->format(self::FORMAT_HOUR);
+                $hour = $startDate
+                    ->clone()
+                    ->setMinute(0)
+                    ->setSecond(0)
+                ;
+
                 $this->addEventToCache($eventsByHour, $hour, $event);
                 if ($diffInDays && !DateHelper::isDateBeforeOverlap($endDate, $this->overlapThreshold ?? 0)) {
-                    $this->addEventToCache($eventsByHour, $endDate->format(self::FORMAT_HOUR), $event);
+                    $this->addEventToCache($eventsByHour, $endDate, $event);
                 }
             }
         }
@@ -1469,8 +1418,9 @@ class EventQuery extends ElementQuery implements \Countable
     /**
      * Warms up the cache if needed, adds event to it.
      */
-    private function addEventToCache(array &$cache, string $key, Event $event)
+    private function addEventToCache(array &$cache, Carbon $date, Event $event)
     {
+        $key = $date->getTimestamp();
         if (!isset($cache[$key])) {
             $cache[$key] = [];
         }
@@ -1582,6 +1532,53 @@ class EventQuery extends ElementQuery implements \Countable
         $day = $matches[3] ?? 1;
 
         return Carbon::createFromDate($year, $month, $day, DateHelper::UTC);
+    }
+
+    /**
+     * @param class-string<DurationInterface> $extractableClass
+     *
+     * @return DurationInterface[]
+     */
+    private function extractGroupedEvents(string $extractableClass, string $targetTimeframe): array
+    {
+        Carbon::setWeekStartsAt($this->firstDay ?? 1);
+        $initialGrouping = $this->noMultiDayGroup;
+        $this->noMultiDayGroup = true;
+        $this->all();
+        $this->noMultiDayGroup = $initialGrouping;
+
+        $grouped = [];
+        $groupedEvents = $this->{'eventsBy'.$targetTimeframe};
+        if ($groupedEvents) {
+            foreach ($groupedEvents as $timestamp => $events) {
+                $date = Carbon::createFromTimestampUTC($timestamp);
+                $grouped[] = new $extractableClass($date, $events);
+            }
+        }
+
+        return $grouped;
+    }
+
+    private function extractSpecificDurationEvents(Carbon $date, array $groupedEvents): array
+    {
+        $this->all();
+
+        return $groupedEvents[$date->getTimestamp()] ?? [];
+    }
+
+    private function resetMonth(Carbon $date): Carbon
+    {
+        return $date->setDay(1)->setTime(0, 0);
+    }
+
+    private function resetWeek(Carbon $date): Carbon
+    {
+        return $date->startOfWeek($this->firstDay)->setTime(0, 0);
+    }
+
+    private function resetDay(Carbon $date): Carbon
+    {
+        return $date->setTime(0, 0);
     }
 
     private function getEventService(): EventsService
