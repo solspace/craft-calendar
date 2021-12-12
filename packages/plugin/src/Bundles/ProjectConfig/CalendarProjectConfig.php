@@ -6,6 +6,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\ConfigEvent;
 use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -28,6 +29,8 @@ class CalendarProjectConfig implements BundleInterface
     {
         $uid = $event->tokenMatches[0];
         $id = Db::idByUid(CalendarRecord::TABLE, $uid);
+
+        ProjectConfigHelper::ensureAllFieldsProcessed();
 
         $fieldLayoutId = $this->handleFieldLayout($id, $event->newValue['fieldLayout']);
 
