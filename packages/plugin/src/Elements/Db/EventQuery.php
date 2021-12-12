@@ -1559,11 +1559,11 @@ class EventQuery extends ElementQuery implements \Countable
         return $grouped;
     }
 
-    private function extractSpecificDurationEvents(Carbon $date, array $groupedEvents): array
+    private function extractSpecificDurationEvents(Carbon $date, string $targetTimeframe): array
     {
         $this->all();
 
-        return $groupedEvents[$date->getTimestamp()] ?? [];
+        return $this->{'eventsBy'.$targetTimeframe}[$date->getTimestamp()] ?? [];
     }
 
     private function resetMonth(Carbon $date): Carbon
