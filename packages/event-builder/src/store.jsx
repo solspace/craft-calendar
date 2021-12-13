@@ -33,7 +33,8 @@ const store = configureStore({
 });
 
 store.subscribe(() => {
-  document.querySelector('[data-event-builder-data]').value = JSON.stringify(store.getState());
+  const builderDataInputs = document.querySelectorAll('[data-event-builder-data]');
+  builderDataInputs.forEach((input) => (input.value = JSON.stringify(store.getState())));
 });
 
 export default store;

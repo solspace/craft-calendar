@@ -32,12 +32,23 @@ const observer = new MutationObserver((mutationsList) => {
   for (const mutation of mutationsList) {
     const { target, previousSibling } = mutation;
 
-    if (target?.classList?.contains('edit-entry') && previousSibling?.classList?.contains('slideout-container')) {
-      const wrapper = document.querySelector('#event-builder, [data-event-builder]');
-      wrapper ? ReactDOM.render(<App />, wrapper) : false;
+    const isEditingEntry = target?.classList?.contains('edit-entry');
+
+    const isPreview = previousSibling?.classList?.contains('lp-preview-container');
+    const isSlideOut = previousSibling?.classList?.contains('slideout-container');
+
+    if (isEditingEntry) {
+      if (isPreview) {
+        const wrapper = document.querySelector('.lp-editor-container [data-event-builder]');
+        wrapper ? ReactDOM.render(<App />, wrapper) : false;
+      }
+
+      if (isSlideOut) {
+        const wrapper = document.querySelector('#event-builder, [data-event-builder]');
+        wrapper ? ReactDOM.render(<App />, wrapper) : false;
+      }
     }
   }
 });
 
-console.log('observer :>> ');
 observer.observe(document.querySelector('body'), { childList: true });
