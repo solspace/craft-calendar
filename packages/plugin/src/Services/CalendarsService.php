@@ -7,7 +7,9 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\SiteEvent;
 use craft\helpers\Db;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\queue\jobs\ResaveElements;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteModelEvent;
@@ -304,6 +306,18 @@ class CalendarsService extends Component
 
         if ($isNew) {
             $calendar->id = Db::idByUid(CalendarRecord::TABLE, $calendar->uid);
+        } else {
+            Queue::push(new ResaveElements([
+                'description' => \Craft::t('app', 'Resaving {calendar} events', [
+                    'section' => $calendar->name,
+                ]),
+                'elementType' => Event::class,
+                'criteria' => [
+                    'calendarId' => $calendar->id,
+                    'status' => null,
+                ],
+                'updateSearchIndex' => false,
+            ]));
         }
 
         // Fire an 'afterSaveSection' event
