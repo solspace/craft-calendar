@@ -1362,7 +1362,15 @@ class EventQuery extends ElementQuery implements \Countable
         $eventsByMonth = $eventsByWeek = $eventsByDay = $eventsByHour = [];
         foreach ($this->events as $event) {
             $startDate = $event->getStartDate();
+            if ($this->rangeStart && $this->rangeStart->gt($startDate)) {
+                $startDate = $this->rangeStart;
+            }
+
             $endDate = $event->getEndDate();
+            if ($this->rangeEnd && $this->rangeEnd->lt($endDate)) {
+                $endDate = $this->rangeEnd;
+            }
+
             $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
 
             $month = $this->resetMonth($startDate->clone());
