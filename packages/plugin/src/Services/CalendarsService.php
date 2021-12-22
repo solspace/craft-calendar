@@ -309,7 +309,7 @@ class CalendarsService extends Component
         } else {
             Queue::push(new ResaveElements([
                 'description' => \Craft::t('app', 'Resaving {calendar} events', [
-                    'section' => $calendar->name,
+                    'calendar' => $calendar->name,
                 ]),
                 'elementType' => Event::class,
                 'criteria' => [
