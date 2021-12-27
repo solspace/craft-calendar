@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 3.3.8 - 2021-12-27
+
+### Fixed
+- Fixed a bug where updates to Calendar via Project Config wouldn't always work on the first attempt.
+- Fixed a bug where Calendar was not automatically resaving Event URI paths in the database when making changes to the path in the calendar settings.
+- Fixed a bug where events that spanned multiple days/weeks/months could potentially cause issues with the month/week/day groupedBy methods.
+- Fixed a bug where editing the "Select Dates" and "Exceptions" of events in the Element editor slideout were not working.
+- Fixed a bug where attempting to edit any event data in Live Preview mode would make no difference at all.
+
 ## 3.3.7.1 - 2021-11-30
 
 ### Fixed
