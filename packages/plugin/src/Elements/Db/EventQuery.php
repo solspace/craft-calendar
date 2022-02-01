@@ -1373,13 +1373,13 @@ class EventQuery extends ElementQuery implements \Countable
 
             $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
 
-            $month = $this->resetMonth($startDate->clone());
+            $month = $this->resetMonth($startDate->copy());
             while ($month->lessThanOrEqualTo($endDate)) {
                 $this->addEventToCache($eventsByMonth, $month, $event);
                 $month->addMonth();
             }
 
-            $week = $this->resetWeek($startDate->clone());
+            $week = $this->resetWeek($startDate->copy());
             while ($week->lessThanOrEqualTo($endDate)) {
                 $this->addEventToCache($eventsByWeek, $week, $event);
                 $week->addWeek();
@@ -1401,7 +1401,7 @@ class EventQuery extends ElementQuery implements \Countable
 
             if (!$event->isAllDay()) {
                 $hour = $startDate
-                    ->clone()
+                    ->copy()
                     ->setMinute(0)
                     ->setSecond(0)
                 ;
