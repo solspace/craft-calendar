@@ -14,9 +14,9 @@ use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
+use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Records\CalendarRecord;
-use Solspace\Commons\Helpers\PermissionHelper;
 use yii\web\HttpException;
 
 class EventsService extends Component
@@ -380,7 +380,7 @@ class EventsService extends Component
             return true;
         }
 
-        return PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS, true);
+        return CalendarPermissionHelper::canEditEvent($event);
     }
 
     /**
