@@ -102,20 +102,22 @@ class ProjectConfigBundle implements BundleInterface
 
     private function buildCalendarSitesConfig(int $calendarId): array
     {
+        $table = '{{%calendar_calendar_sites}}';
+
         $siteSettings = (new Query())
             ->select(
                 [
-                    'calendarSites.[[id]]',
-                    'calendarSites.[[uid]]',
-                    'calendarSites.[[calendarId]]',
-                    'calendarSites.[[siteId]]',
-                    'calendarSites.[[enabledByDefault]]',
-                    'calendarSites.[[hasUrls]]',
-                    'calendarSites.[[uriFormat]]',
-                    'calendarSites.[[template]]',
+                    "{$table}.[[id]]",
+                    "{$table}.[[uid]]",
+                    "{$table}.[[calendarId]]",
+                    "{$table}.[[siteId]]",
+                    "{$table}.[[enabledByDefault]]",
+                    "{$table}.[[hasUrls]]",
+                    "{$table}.[[uriFormat]]",
+                    "{$table}.[[template]]",
                 ]
             )
-            ->from('{{%calendar_calendar_sites}} calendarSites')
+            ->from($table)
             ->where(['calendarId' => $calendarId])
             ->orderBy(['id' => \SORT_ASC])
             ->all()
