@@ -31,6 +31,8 @@ class CalendarProjectConfig implements BundleInterface
         $id = Db::idByUid(CalendarRecord::TABLE, $uid);
 
         ProjectConfigHelper::ensureAllFieldsProcessed();
+        ProjectConfigHelper::ensureAllUserGroupsProcessed();
+        ProjectConfigHelper::ensureAllSitesProcessed();
 
         $fieldLayoutId = $this->handleFieldLayout($id, $event->newValue['fieldLayout']);
 
