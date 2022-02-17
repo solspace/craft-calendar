@@ -429,6 +429,7 @@ class EventQuery extends ElementQuery implements \Countable
      * @param string $q
      * @param null   $db
      */
+    #[\ReturnTypeWillChange]
     public function count($q = '*', $db = null): int
     {
         $this->all($db);
