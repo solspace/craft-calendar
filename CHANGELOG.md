@@ -1,5 +1,15 @@
 # Solspace Calendar Changelog
 
+## 3.3.9 - 2022-03-01
+
+### Fixed
+- Fixed a bug where user groups and sites were not always being processed before performing project config updates.
+- Fixed a bug where a database table alias in a query could break on some sites.
+- Fixed a bug where passing GraphQL field definitions through `TypeManager` to fetch custom fields wouldn't always work.
+- Fixed a bug where the "Restrict users to editing their own events only?" would not apply correctly on the front end templates.
+- Fixed an issue where calling `Carbon::clone()` did not work for some sites.
+- Fixed a bug where `EventQuery::count()` was not being compatible with the interface signature for PHP 8.1.
+
 ## 3.3.8 - 2021-12-27
 
 ### Fixed
