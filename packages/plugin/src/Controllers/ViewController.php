@@ -163,6 +163,6 @@ class ViewController extends BaseController
             return $this->asJson('success');
         }
 
-        return $this->asErrorJson('Could not save plugin settings. Plugin not enabled.');
+        return $this->asFailure('Could not save plugin settings. Plugin not enabled.');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Solspace\Calendar\Library;
 
-use Craft\DateTime;
+use DateTime;
 
 class DateTimeUTC extends DateTime
 {

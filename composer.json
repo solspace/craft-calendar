@@ -1,7 +1,7 @@
 {
   "name": "solspace/craft3-calendar",
   "description": "The most reliable and powerful event management plugin for Craft.",
-  "version": "3.3.9",
+  "version": "4.0.0-beta.1",
   "type": "craft-plugin",
   "authors": [
     {
@@ -10,8 +10,8 @@
     }
   ],
   "require": {
-    "craftcms/cms": "3.7.35",
-    "php": "^8.0",
+    "craftcms/cms": "^4.0.0-alpha",
+    "php": "^8.0.2",
     "rlanvin/php-rrule": "~1.6.0",
     "symfony/property-access": "^2.8|^3.0|^4.0|^5.0",
     "symfony/finder": "^2.8|^3.0|^4.0|^5.0",
@@ -21,9 +21,7 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^9.3.0",
-    "friendsofphp/php-cs-fixer": "^2.16",
-    "brainmaestro/composer-git-hooks": "^2.8",
-    "craftcms/rector": "dev-main"
+    "brainmaestro/composer-git-hooks": "^2.8"
   },
   "autoload": {
     "psr-4": {
@@ -33,8 +31,6 @@
   },
   "scripts": {
     "test:unit": "vendor/bin/phpunit --configuration ./phpunit.xml",
-    "fix": "vendor/bin/php-cs-fixer fix --diff",
-    "fix:dry-run": "vendor/bin/php-cs-fixer fix --dry-run --diff",
     "cghooks": "vendor/bin/cghooks",
     "post-install-cmd": "cghooks add --ignore-lock",
     "post-update-cmd": "cghooks update"
@@ -46,21 +42,17 @@
     "name": "Calendar",
     "developer": "Solspace",
     "developerUrl": "https://docs.solspace.com/",
-    "documentationUrl": "https://docs.solspace.com/craft/calendar/v3/",
-    "changelogUrl": "https://raw.githubusercontent.com/solspace/craft3-calendar/master/CHANGELOG.md",
+    "documentationUrl": "https://docs.solspace.com/craft/calendar/v4/",
+    "changelogUrl": "https://raw.githubusercontent.com/solspace/craft3-calendar/v4/master/CHANGELOG.md",
     "hasSettings": true,
     "hasCpSection": true,
     "hooks": {
       "pre-commit": [
         "set -e",
-        "npm -v",
-        "php -v",
         "printf '\\n\\e[32m######### Linting Scripts #########\\e[0m\\n\\n'",
         "npm run lint",
         "printf '\\n\\e[32m######### Running Unit Tests #########\\e[0m\\n\\n'",
-        "composer run test:unit",
-        "printf '\\n\\e[32m######### Running CS Fixer dry run #########\\e[0m\\n\\n'",
-        "composer run fix:dry-run || (printf \"\\e[41mCS Fixer found issues\\e[0m\\n\" && exit 1)"
+        "composer run test:unit"
       ]
     }
   },

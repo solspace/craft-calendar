@@ -8,9 +8,6 @@ use Solspace\Calendar\Models\SettingsModel;
 
 class SettingsService extends Component
 {
-    /** @var SettingsModel */
-    private static $settingsModel;
-
     public function getOverlapThreshold(): int
     {
         return $this->getSettingsModel()->overlapThreshold;
@@ -102,13 +99,7 @@ class SettingsService extends Component
 
     public function getSettingsModel(): SettingsModel
     {
-        if (null === self::$settingsModel) {
-            /** @var Calendar $plugin */
-            $plugin = Calendar::getInstance();
-            self::$settingsModel = $plugin->getSettings();
-        }
-
-        return self::$settingsModel;
+        return Calendar::getInstance()->getSettings();
     }
 
     public function isAdminChangesAllowed(): bool

@@ -16,7 +16,7 @@ class EventsApiController extends BaseController
 {
     const EVENT_FIELD_NAME = 'calendarEvent';
 
-    public $allowAnonymous = true;
+    public array|bool|int $allowAnonymous = true;
 
     /**
      * Modifies an event.
@@ -173,17 +173,17 @@ class EventsApiController extends BaseController
         $siteId = \Craft::$app->request->post('siteId', \Craft::$app->sites->currentSite->id);
 
         if (!isset($eventData['title']) || empty($eventData['title'])) {
-            return $this->asErrorJson(Calendar::t('Event title is required'));
+            return $this->asFailure(Calendar::t('Event title is required'));
         }
 
         if (!isset($eventData['calendarId']) || empty($eventData['calendarId'])) {
-            return $this->asErrorJson(Calendar::t('Calendar not specified'));
+            return $this->asFailure(Calendar::t('Calendar not specified'));
         }
 
         $calendar = Calendar::getInstance()->calendars->getCalendarById($eventData['calendarId']);
 
         if (!$calendar) {
-            return $this->asErrorJson(Calendar::t('The specified calendar does not exist'));
+            return $this->asFailure(Calendar::t('The specified calendar does not exist'));
         }
 
         // Check permissions for the calendar
@@ -193,11 +193,11 @@ class EventsApiController extends BaseController
         $endDate = new Carbon($endDate, DateHelper::UTC);
 
         if (!$startDate) {
-            return $this->asErrorJson(Calendar::t('Event start date is required'));
+            return $this->asFailure(Calendar::t('Event start date is required'));
         }
 
         if (!$endDate) {
-            return $this->asErrorJson(Calendar::t('Event end date is required'));
+            return $this->asFailure(Calendar::t('Event end date is required'));
         }
 
         if ($isAllDay) {
@@ -207,7 +207,7 @@ class EventsApiController extends BaseController
 
         $event = Event::create($siteId, $calendar->id);
         $event->title = $eventData['title'];
-        $event->slug = ElementHelper::createSlug($event->title ?? '');
+        $event->slug = ElementHelper::normalizeSlug($event->title ?? '');
         $event->enabled = true;
         $event->authorId = \Craft::$app->user->id;
         $event->postDate = new \DateTime();
@@ -220,7 +220,7 @@ class EventsApiController extends BaseController
             return $this->asJson(['event' => $event]);
         }
 
-        return $this->asErrorJson(Calendar::t('Could not save event'));
+        return $this->asFailure(Calendar::t('Could not save event'));
     }
 
     /**
@@ -238,7 +238,7 @@ class EventsApiController extends BaseController
         $event = $this->getEventsService()->getEventById($eventId, null, true);
 
         if (!$event) {
-            return $this->asErrorJson(Calendar::t('Event could not be found'));
+            return $this->asFailure(Calendar::t('Event could not be found'));
         }
 
         CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
@@ -247,7 +247,7 @@ class EventsApiController extends BaseController
             return $this->asJson('success');
         }
 
-        return $this->asErrorJson(Calendar::t('Couldn’t delete event.'));
+        return $this->asFailure(Calendar::t('Couldn’t delete event.'));
     }
 
     /**
@@ -266,7 +266,7 @@ class EventsApiController extends BaseController
         $event = Calendar::getInstance()->events->getEventById($eventId);
 
         if (!$event) {
-            return $this->asErrorJson(Calendar::t('Event could not be found'));
+            return $this->asFailure(Calendar::t('Event could not be found'));
         }
 
         CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());

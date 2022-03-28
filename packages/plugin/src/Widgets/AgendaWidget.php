@@ -28,7 +28,7 @@ class AgendaWidget extends AbstractWidget
     /**
      * {@inheritDoc}
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -37,7 +37,7 @@ class AgendaWidget extends AbstractWidget
         }
     }
 
-    public function getBodyHtml(): string
+    public function getBodyHtml(): ?string
     {
         if (!Calendar::getInstance()->isPro()) {
             return Calendar::t(
@@ -64,7 +64,7 @@ class AgendaWidget extends AbstractWidget
         );
     }
 
-    public function getSettingsHtml(): string
+    public function getSettingsHtml(): ?string
     {
         $siteOptions = [];
         foreach (\Craft::$app->sites->getAllSites() as $site) {

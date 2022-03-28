@@ -26,7 +26,7 @@ abstract class AbstractGenerator extends Generator implements GeneratorInterface
         return $class::getName();
     }
 
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $typeName = static::getName();
 

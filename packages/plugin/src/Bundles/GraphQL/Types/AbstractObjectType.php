@@ -27,7 +27,7 @@ abstract class AbstractObjectType extends ObjectType
 
     abstract public static function getTypeDefinition(): Type;
 
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         return self::getPropertyAccess()->getValue($source, $resolveInfo->fieldName);
     }

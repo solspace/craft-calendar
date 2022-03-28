@@ -96,9 +96,9 @@ class SettingsModel extends Model
     /**
      * Setting default values upon construction.
      *
-     * @param null $attributes
+     * @param array $attributes
      */
-    public function __construct($attributes = null)
+    public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 

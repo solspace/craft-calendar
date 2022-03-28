@@ -331,7 +331,7 @@ class Event extends Element implements \JsonSerializable
         return CalendarPermissionHelper::canEditEvent($this);
     }
 
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         if ($context instanceof CalendarModel) {
             return $context->handle.'_Event';
@@ -352,7 +352,7 @@ class Event extends Element implements \JsonSerializable
      *
      * @return false|string
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
         if (!$this->isEditable()) {
             return false;
@@ -368,7 +368,7 @@ class Event extends Element implements \JsonSerializable
      *
      * @return null|FieldLayout
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?\craft\models\FieldLayout
     {
         if ($this->calendarId) {
             return $this->getCalendar()->getFieldLayout();
@@ -397,7 +397,7 @@ class Event extends Element implements \JsonSerializable
     /**
      * @return null|string
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         return $this->getCalendar()->getUriFormat($this->siteId);
     }
@@ -1129,7 +1129,7 @@ class Event extends Element implements \JsonSerializable
         return DateHelper::carbonDiffInDays($this->getStartDate(), $event->getStartDate());
     }
 
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         $insertData = [
             'calendarId' => $this->calendarId,
@@ -1279,7 +1279,7 @@ class Event extends Element implements \JsonSerializable
         return array_merge($object, $fieldValues);
     }
 
-    public function rules()
+    public function rules(): array
     {
         $rules = parent::rules();
         $rules[] = [['startDate'], 'validateDates'];
@@ -1323,11 +1323,11 @@ class Event extends Element implements \JsonSerializable
         return $output;
     }
 
-    public function metaFieldsHtml(): string
+    public function metaFieldsHtml(bool $static): string
     {
         return implode('', [
             $this->slugFieldHtml(),
-            parent::metaFieldsHtml(),
+            parent::metaFieldsHtml($static),
         ]);
     }
 
@@ -1483,7 +1483,7 @@ class Event extends Element implements \JsonSerializable
     /**
      * {@inheritdoc}
      */
-    protected function route()
+    protected function route(): array|string|null
     {
         if (!$this->enabled) {
             return null;

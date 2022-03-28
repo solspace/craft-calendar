@@ -20,7 +20,7 @@ class EventWidget extends AbstractWidget
     /**
      * {@inheritDoc}
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -29,7 +29,7 @@ class EventWidget extends AbstractWidget
         }
     }
 
-    public function getBodyHtml(): string
+    public function getBodyHtml(): ?string
     {
         if (!Calendar::getInstance()->isPro()) {
             return Calendar::t(

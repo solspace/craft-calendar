@@ -81,7 +81,7 @@ if (class_exists('craft\feedme\base\Element')) {
         public function getQuery($settings, $params = [])
         {
             $query = EventElement::find()
-                ->anyStatus()
+                ->status(null)
                 ->setCalendarId($settings['elementGroup'][EventElement::class])
                 ->siteId(Hash::get($settings, 'siteId') ?: Craft::$app->getSites()->getPrimarySite()->id)
             ;

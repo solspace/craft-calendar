@@ -6,7 +6,7 @@ use craft\base\Widget;
 
 class AbstractWidget extends Widget
 {
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title ?: static::displayName();
     }

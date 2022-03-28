@@ -8,7 +8,7 @@ use Solspace\Calendar\Calendar;
 
 class SolspaceCalendarResolver extends Resolver
 {
-    public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         return (object) [
             'version' => Calendar::getInstance()->getVersion(),

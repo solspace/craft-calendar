@@ -25,7 +25,7 @@ class DatabaseHelper
      */
     public static function getSuitableSlug($slug): string
     {
-        $baseSlug = $slug = ElementHelper::createSlug($slug ?? '');
+        $baseSlug = $slug = ElementHelper::normalizeSlug($slug ?? '');
         $iterator = 1;
         while ($iterator <= 100) {
             $result = (new Query())

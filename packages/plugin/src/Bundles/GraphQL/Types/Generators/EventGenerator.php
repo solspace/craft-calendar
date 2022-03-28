@@ -34,7 +34,7 @@ class EventGenerator extends AbstractGenerator
         return 'The Calendar Event entity';
     }
 
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $calendars = Calendar::getInstance()->calendars->getAllCalendars();
         $gqlTypes = [];

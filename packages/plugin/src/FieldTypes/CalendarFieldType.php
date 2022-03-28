@@ -34,7 +34,7 @@ class CalendarFieldType extends Field
     /**
      * {@inheritDoc}
      */
-    public function getContentColumnType(): string
+    public function getContentColumnType(): array|string
     {
         return Schema::TYPE_INTEGER;
     }
@@ -44,7 +44,7 @@ class CalendarFieldType extends Field
      *
      * @param mixed $value
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?\craft\base\ElementInterface $element = null): string
     {
         $calendars = Calendar::getInstance()->calendars->getAllAllowedCalendars();
 
@@ -72,7 +72,7 @@ class CalendarFieldType extends Field
         );
     }
 
-    public function getContentGqlType()
+    public function getContentGqlType(): array|\GraphQL\Type\Definition\Type
     {
         $gqlType = [
             'name' => $this->handle,
@@ -93,7 +93,7 @@ class CalendarFieldType extends Field
         return [];
     }
 
-    public function getIsTranslatable(ElementInterface $element = null): bool
+    public function getIsTranslatable(?\craft\base\ElementInterface $element = null): bool
     {
         return false;
     }
@@ -101,7 +101,7 @@ class CalendarFieldType extends Field
     /**
      * {@inheritDoc}
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?\craft\base\ElementInterface $element = null): mixed
     {
         if ($value instanceof CalendarModel) {
             return $value->id;
@@ -113,7 +113,7 @@ class CalendarFieldType extends Field
     /**
      * {@inheritDoc}
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?\craft\base\ElementInterface $element = null): mixed
     {
         if ($value instanceof CalendarModel) {
             return $value;

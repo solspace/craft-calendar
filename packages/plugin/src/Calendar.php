@@ -93,7 +93,7 @@ class Calendar extends Plugin
     const CONFIG_CALENDAR_SITES_PATH = 'solspace.calendar.calendar-sites';
 
     /** @var bool */
-    public $hasCpSettings = true;
+    public bool $hasCpSettings = true;
 
     /** @var array */
     private static $javascriptTranslationKeys = [
@@ -199,7 +199,7 @@ class Calendar extends Plugin
     /**
      * On install - insert a default calendar.
      */
-    public function afterInstall()
+    public function afterInstall(): void
     {
         $installed = null !== \Craft::$app->projectConfig->get('plugins.calendar', true);
         $configExists = null !== \Craft::$app->projectConfig->get('solspace.calendar', true);
@@ -245,7 +245,7 @@ class Calendar extends Plugin
     /**
      * @return null|array
      */
-    public function getCpNavItem()
+    public function getCpNavItem(): ?array
     {
         $navItem = parent::getCpNavItem();
         $navItem['subnav'] = include __DIR__.'/subnav.php';
@@ -253,18 +253,18 @@ class Calendar extends Plugin
         return $navItem;
     }
 
-    protected function afterUninstall()
+    protected function afterUninstall(): void
     {
         \Craft::$app->projectConfig->remove(self::CONFIG_PATH_ROOT);
         \Craft::$app->fields->deleteLayoutsByType(\Solspace\Calendar\Elements\Event::class);
     }
 
-    protected function createSettingsModel(): SettingsModel
+    protected function createSettingsModel(): ?\craft\base\Model
     {
         return new SettingsModel();
     }
 
-    protected function settingsHtml(): string
+    protected function settingsHtml(): ?string
     {
         return \Craft::$app->getView()->renderTemplate(
             'calendar/settings',
@@ -389,7 +389,7 @@ class Calendar extends Plugin
                         ];
                     }
 
-                    $event->permissions[$this->name] = [
+                    $permissions = [
                         self::PERMISSION_CALENDARS => [
                             'label' => self::t('Administrate Calendars'),
                             'nested' => [
@@ -416,6 +416,11 @@ class Calendar extends Plugin
                         ],
                         self::PERMISSION_SETTINGS => ['label' => self::t('Access Settings')],
                         self::PERMISSION_RESOURCES => ['label' => self::t('Access Resources')],
+                    ];
+
+                    $event->permissions[] = [
+                        'heading' => $this->name,
+                        'permissions' => $permissions,
                     ];
                 }
             );

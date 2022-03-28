@@ -2,11 +2,11 @@
 
 namespace Solspace\Calendar\Twig\Extensions;
 
-use Twig_Compiler;
+use Twig\Compiler;
 
-class RequireEventEditPermissions_Node extends \Twig_Node
+class RequireEventEditPermissions_Node extends \Twig\Node\Node
 {
-    public function compile(Twig_Compiler $compiler)
+    public function compile(\Twig\Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)

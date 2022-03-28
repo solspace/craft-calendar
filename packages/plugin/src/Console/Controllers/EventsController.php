@@ -56,7 +56,7 @@ class EventsController extends Controller
      */
     public $updateSearchIndex = false;
 
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'elementId';
@@ -100,7 +100,7 @@ class EventsController extends Controller
         }
 
         if ('any' === $this->status) {
-            $query->anyStatus();
+            $query->status(null);
         } elseif ($this->status) {
             $query->status(explode(',', $this->status));
         }

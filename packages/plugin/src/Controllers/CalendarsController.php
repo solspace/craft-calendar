@@ -6,9 +6,11 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\ColorHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
@@ -26,7 +28,7 @@ class CalendarsController extends BaseController
     /**
      * @throws \yii\web\ForbiddenHttpException
      */
-    public function init()
+    public function init(): void
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_CALENDARS);
 
@@ -90,7 +92,7 @@ class CalendarsController extends BaseController
         $calendar = $this->getCalendarService()->getCalendarById($id);
 
         if (!$calendar) {
-            return $this->asErrorJson('Could not find calendar');
+            return $this->asFailure('Could not find calendar');
         }
 
         $data = $calendar->toArray();
@@ -103,12 +105,24 @@ class CalendarsController extends BaseController
             $layoutData = $oldLayout->toArray();
             unset($layoutData['id'], $layoutData['uid']);
 
-            $fieldService = \Craft::$app->fields;
-
             $newLayout = new FieldLayout($layoutData);
             $newLayout->uid = \craft\helpers\StringHelper::UUID();
-            $newLayout->setTabs($fieldService->getLayoutTabsById($oldLayout->id));
-            $newLayout->setFields($fieldService->getFieldsByLayoutId($oldLayout->id));
+
+            $newLayoutTabs = [];
+
+            $oldLayoutTabs = $oldLayout->getTabs();
+
+            foreach ($oldLayoutTabs as $oldLayoutTab) {
+		            $newLayoutTab = new FieldLayoutTab();
+		            $newLayoutTab->name = $oldLayoutTab->name;
+		            $newLayoutTab->sortOrder = $oldLayoutTab->sortOrder;
+		            $newLayoutTab->setLayout($newLayout);
+		            $newLayoutTab->setElements($oldLayoutTab->getElements());
+
+		            $newLayoutTabs[] = $newLayoutTab;
+            }
+
+            $newLayout->setTabs($newLayoutTabs);
 
             $clone->setFieldLayout($newLayout);
         }
@@ -147,7 +161,7 @@ class CalendarsController extends BaseController
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asErrorJson(StringHelper::implodeRecursively('. ', $clone->getErrorSummary(true)));
+        return $this->asFailure(StringHelper::implodeRecursively('. ', $clone->getErrorSummary(true)));
     }
 
     /**
@@ -197,7 +211,7 @@ class CalendarsController extends BaseController
         if ($fieldLayout) {
             $fieldHandles = [];
             /** @var Field $field */
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
                 $fieldHandles[] = $field->handle;
             }
 
@@ -276,7 +290,7 @@ class CalendarsController extends BaseController
         $calendar = $this->getCalendarService()->getCalendarById($calendarId);
 
         if (!$calendar) {
-            return $this->asErrorJson(Calendar::t('No calendar exists with the ID "{id}"', ['id' => $calendarId]));
+            return $this->asFailure(Calendar::t('No calendar exists with the ID "{id}"', ['id' => $calendarId]));
         }
 
         $icsHash = $calendar->regenerateIcsHash();
@@ -305,7 +319,7 @@ class CalendarsController extends BaseController
         $calendar = $this->getCalendarService()->getCalendarById($calendarId);
 
         if (!$calendar) {
-            return $this->asErrorJson(Calendar::t('No calendar exists with the ID "{id}"', ['id' => $calendarId]));
+            return $this->asFailure(Calendar::t('No calendar exists with the ID "{id}"', ['id' => $calendarId]));
         }
 
         $calendar->icsHash = null;

@@ -429,7 +429,7 @@ class EventQuery extends ElementQuery implements \Countable
      * @param string $q
      * @param null   $db
      */
-    public function count($q = '*', $db = null)
+    public function count($q = '*', $db = null): string|int|bool|null
     {
         $this->all($db);
 
@@ -445,7 +445,7 @@ class EventQuery extends ElementQuery implements \Countable
      *
      * @return null|array|\craft\base\ElementInterface
      */
-    public function one($db = null)
+    public function one($db = null): array|null|\yii\base\Model
     {
         $oldLimit = $this->limit;
         $this->limit = 1;
@@ -539,10 +539,12 @@ class EventQuery extends ElementQuery implements \Countable
         return $this->events;
     }
 
-    /**
-     * @return null|Event
-     */
-    public function nth(int $n, Connection $db = null)
+	/**
+	 * @param int $n
+	 * @param Connection|null $db
+	 * @return array|\yii\base\Model|null
+	 */
+    public function nth(int $n, ?\yii\db\Connection $db = null): array|null|\yii\base\Model
     {
         $this->all($db);
 
@@ -554,7 +556,7 @@ class EventQuery extends ElementQuery implements \Countable
      *
      * @return int[]
      */
-    public function ids($db = null): array
+    public function ids(?\yii\db\Connection $db = null): array
     {
         $events = $this->all($db);
 
@@ -1615,7 +1617,6 @@ class EventQuery extends ElementQuery implements \Countable
             'dateCreated' => $this->dateCreated,
             'dateUpdated' => $this->dateUpdated,
             'siteId' => $this->siteId,
-            'enabledForSite' => $this->enabledForSite,
             'title' => $this->title,
             'slug' => $this->slug,
             'uri' => $this->uri,

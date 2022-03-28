@@ -16,7 +16,7 @@ class CodePackController extends BaseController
     /**
      * @throws \yii\web\ForbiddenHttpException
      */
-    public function init()
+    public function init(): void
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
 

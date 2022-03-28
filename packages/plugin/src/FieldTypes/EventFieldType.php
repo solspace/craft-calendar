@@ -38,7 +38,7 @@ class EventFieldType extends BaseRelationField
     /**
      * @param mixed $value
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (\is_array($value)) {
             $html = '';
@@ -52,7 +52,7 @@ class EventFieldType extends BaseRelationField
         return parent::getTableAttributeHtml($value, $element);
     }
 
-    public function getContentGqlType()
+    public function getContentGqlType(): array|\GraphQL\Type\Definition\Type
     {
         $gqlType = [
             'name' => $this->handle,
@@ -73,7 +73,7 @@ class EventFieldType extends BaseRelationField
      *
      * @return ElementQuery|mixed
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?\craft\base\ElementInterface $element = null): mixed
     {
         $query = parent::normalizeValue($value, $element);
 
@@ -84,7 +84,7 @@ class EventFieldType extends BaseRelationField
         return $query;
     }
 
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Event::class;
     }

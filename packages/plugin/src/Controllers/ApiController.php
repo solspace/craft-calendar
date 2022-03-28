@@ -9,7 +9,7 @@ use yii\web\NotFoundHttpException;
 
 class ApiController extends BaseController
 {
-    protected $allowAnonymous = ['ics'];
+    protected array|bool|int $allowAnonymous = ['ics'];
 
     /**
      * @throws NotFoundHttpException

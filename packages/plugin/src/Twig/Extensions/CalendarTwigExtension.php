@@ -2,7 +2,7 @@
 
 namespace Solspace\Calendar\Twig\Extensions;
 
-class CalendarTwigExtension extends \Twig_Extension
+class CalendarTwigExtension extends \Twig\Extension\AbstractExtension
 {
     /**
      * @deprecated since 1.26 (to be removed in 2.0), not used anymore internally
@@ -13,7 +13,7 @@ class CalendarTwigExtension extends \Twig_Extension
     }
 
     /**
-     * @return \Twig_TokenParser[]
+     * @return \Twig\TokenParser\AbstractTokenParser[]
      */
     public function getTokenParsers()
     {

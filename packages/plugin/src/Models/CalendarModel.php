@@ -91,7 +91,7 @@ class CalendarModel extends Model implements \JsonSerializable
     /**
      * {@inheritdoc}
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -160,7 +160,7 @@ class CalendarModel extends Model implements \JsonSerializable
     {
         $fieldList = [Calendar::t('None')];
         if ($this->getFieldLayout()) {
-            foreach ($this->getFieldLayout()->getFields() as $field) {
+            foreach ($this->getFieldLayout()->getCustomFields() as $field) {
                 $fieldList[$field->handle] = $field->name;
             }
         }
