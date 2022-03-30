@@ -36,7 +36,7 @@ ul.directory-structure li.dir {
 }
 ul.directory-structure li.dir:before {
   font-weight: normal;
-  content: "categories";
+  content: "folder";
 }
 ul.directory-structure li.file {
   font-weight: normal;
@@ -89,12 +89,12 @@ ul.section-structure > li > div > table tr:last-child td {
 
 ul.directory-structure, ul.section-structure > li > div, ul.section-structure > li {
   padding: 8px;
-  border: 1px solid rgba(115, 127, 140, 0.15);
+  border: 1px solid #e0e5ea;
   border-radius: 2px;
 }
 
 ul.directory-structure, ul.section-structure > li > div {
-  background-image: linear-gradient(#f7f7f8, #f4f5f6);
+  background: #f4f7fc;
 }
 
 #add-demo-template {
