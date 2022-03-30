@@ -1,7 +1,7 @@
 {
   "name": "solspace/craft3-calendar",
   "description": "The most reliable and powerful event management plugin for Craft.",
-  "version": "4.0.0-alpha.1",
+  "version": "4.0.0-beta.1",
   "type": "craft-plugin",
   "authors": [
     {
@@ -11,7 +11,7 @@
   ],
   "require": {
     "php": "^8.0.2",
-    "craftcms/cms": "^4.0.0-beta",
+    "craftcms/cms": "^4.0.0-beta.1",
     "rlanvin/php-rrule": "~1.6.0",
     "symfony/property-access": "^2.8|^3.0|^4.0|^5.0",
     "symfony/finder": "^2.8|^3.0|^4.0|^5.0",
@@ -36,7 +36,7 @@
     "post-update-cmd": "cghooks update"
   },
   "extra": {
-    "schemaVersion": "3.3.2",
+    "schemaVersion": "4.0.0",
     "handle": "calendar",
     "class": "Solspace\\Calendar\\Calendar",
     "name": "Calendar",

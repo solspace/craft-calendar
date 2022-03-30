@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 4.0.0-beta.1 - 2022-03-30
+
+### Added
+- Added compatibility with Craft 4.x.
+
 ## 3.3.9 - 2022-03-01
 
 ### Fixed
@@ -557,22 +562,3 @@
 
 ### Added
 - Added compatibility for Craft 3.x.
-
-## 4.0.0-beta.1 - 2022-03-28
-
-### Added
-- Added compatibility for Craft 4.x.
-- Upgraded existing composer packages
-- Added required PHP 8 type declarations to meet Craft 4 plugin requirements
-- Added `allowAdd`, `allowReorder` and `allowDelete` to `forms.editableTableField`
-- Replaced undefined `Craft\DateTime` with `DateTime`
-- Replaced deprecated `asErrorJson` with `asFailure`
-- Replaced deprecated `anyStatus` with `status(null)`
-- Replaced deprecated `createSlug` with `normalizeSlug`
-- Replaced `$event->permissions` with required heding and permission key/values
-- Replaced `getFieldLayout()->getFields()` with `getFieldLayout()->getCustomFields()`
-- Replaced `Craft.postActionRequest` with `Craft.sendActionRequest`
-- Updated duplicate calendar to support new field layout structure
-- Removed redundent reference to `self::$settingsModel` in `SettingsService`
-- Removed deprecated `enabledForSite` (replaced by `status`)
-- Removed PHP CS Fixer v2 since it doesnt play nicely with PHP 8
