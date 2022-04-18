@@ -150,6 +150,7 @@
 }
 .qtip div.buttons a,
 .qtip div.buttons button {
+  margin-right: 5px;
   float: right !important;
   font-family: HelveticaNeue, sans-serif;
   font-size: 12px;
