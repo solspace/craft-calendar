@@ -1,4 +1,5 @@
 a.icon.clone {
+  display: inline-block;
   color: rgba(123, 135, 147, 0.5);
 }
 a.icon.clone svg {
