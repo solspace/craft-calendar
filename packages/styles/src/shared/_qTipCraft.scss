@@ -54,11 +54,13 @@
 
     a,
     button {
-      margin-right: 5px;
+      height: 34px;
+      margin-left: 5px;
+      padding: 7px 14px !important;
       float: right !important;
 
       font-family: HelveticaNeue, sans-serif;
-      font-size: 12px;
+      font-size: inherit;
     }
   }
 }
