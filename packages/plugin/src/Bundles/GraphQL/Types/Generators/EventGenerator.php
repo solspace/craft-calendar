@@ -59,7 +59,7 @@ class EventGenerator extends AbstractGenerator
         $typeName = Event::gqlTypeNameByContext($context);
         $contentFieldGqlTypes = self::getContentFields($context);
 
-        $eventFields = TypeManager::prepareFieldDefinitions(
+        $eventFields = \Craft::$app->getGql()->prepareFieldDefinitions(
             array_merge(
                 EventInterface::getFieldDefinitions(),
                 $contentFieldGqlTypes

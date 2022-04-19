@@ -3,7 +3,6 @@
 namespace Solspace\Calendar\Bundles\GraphQL\Interfaces;
 
 use craft\gql\types\DateTime;
-use craft\gql\base\GqlTypeTrait;
 use GraphQL\Type\Definition\Type;
 use Solspace\Calendar\Bundles\GraphQL\Types\EventType;
 use Solspace\Calendar\Bundles\GraphQL\Types\Generators\EventGenerator;
@@ -35,7 +34,7 @@ class EventInterface extends AbstractInterface
         return \Craft::$app->getGql()->prepareFieldDefinitions(
             array_merge(
                 parent::getFieldDefinitions(),
-                GqlTypeTrait::getConditionalFields(),
+                self::getConditionalFields(),
                 [
                     'id' => [
                         'name' => 'id',
