@@ -31,7 +31,7 @@ class EventInterface extends AbstractInterface
 
     public static function getFieldDefinitions(): array
     {
-        return Craft::$app->getGql()->prepareFieldDefinitions(
+        return \Craft::$app->getGql()->prepareFieldDefinitions(
             array_merge(
                 parent::getFieldDefinitions(),
                 self::getConditionalFields(),
