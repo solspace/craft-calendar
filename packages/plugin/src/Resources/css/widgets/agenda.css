@@ -110,52 +110,30 @@
   box-shadow: 0 10px 100px rgba(0, 0, 0, 0.5);
   border: 1px solid transparent;
 }
-.qtip .qtip-titlebar {
+.qtip .qtip-content {
+  padding: 24px 14px 0;
+}
+.qtip .qtip-content .qtip-titlebar {
   padding: 11px 14px;
-  background: #fbfcfc;
-  border-bottom: none;
-  -webkit-border-radius: 4px 4px 0 0;
-  -moz-border-radius: 4px 4px 0 0;
-  border-radius: 4px 4px 0 0;
-  -webkit-box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 1px -2px rgba(0, 0, 0, 0.2);
 }
-.qtip .qtip-titlebar .qtip-title {
-  font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif;
-  font-size: 120%;
-  color: #da5a47;
-}
-.qtip .qtip-titlebar .qtip-close {
+.qtip .qtip-content .qtip-titlebar .qtip-close {
   top: 50%;
 }
-.qtip div.buttons {
-  position: relative;
+.qtip .qtip-content div.buttons {
+  margin: 24px -24px 0 !important;
   top: 10px;
-  margin: 0px -14px !important;
-  padding: 11px 14px 3px;
-  text-align: right;
   background: #ebebed;
   background-image: -webkit-linear-gradient(#ecedef, #e9eaec);
   background-image: -moz-linear-gradient(#ecedef, #e9eaec);
   background-image: -ms-linear-gradient(#ecedef, #e9eaec);
   background-image: -o-linear-gradient(#ecedef, #e9eaec);
   background-image: linear-gradient(#ecedef, #e9eaec);
-  -webkit-border-radius: 0 0 4px 4px;
-  -moz-border-radius: 0 0 4px 4px;
-  border-radius: 0 0 4px 4px;
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
   -webkit-box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
-}
-.qtip div.buttons a,
-.qtip div.buttons button {
-  height: 34px;
-  margin-left: 5px;
-  padding: 7px 14px !important;
-  float: right !important;
-  font-family: HelveticaNeue, sans-serif;
-  font-size: inherit;
 }
 
 /* MINI CALENDAR */
@@ -668,25 +646,53 @@
 }
 
 .qtip {
+  border-radius: 6px !important;
+  max-width: 1200px !important;
   z-index: 101 !important;
 }
 .qtip-event {
   max-width: 400px !important;
 }
+.qtip .qtip-titlebar {
+  border-radius: 6px 6px 0 0;
+  padding: 24px;
+  border-bottom: 1px solid #dbdbdb;
+  background-color: #e4edf6;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: block;
+}
+.qtip .qtip-titlebar .qtip-title {
+  float: left;
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.2;
+}
 .qtip .qtip-content {
-  padding: 9px 14px 0;
+  padding: 24px 24px 0;
 }
 .qtip .qtip-content div > label {
   font-weight: bold;
 }
 .qtip .qtip-content div.buttons {
+  display: block;
   position: relative;
   top: 0;
+  text-align: right !important;
   padding: 11px 14px;
-  margin: 14px -14px 0 !important;
+  margin: 24px -24px 0 !important;
 }
 .qtip .qtip-content div.buttons .btn {
-  float: none !important;
+  height: 34px;
+  margin-left: 6px;
+  padding: 7px 14px !important;
+  font-family: HelveticaNeue, sans-serif;
+  font-size: inherit;
+}
+.qtip .qtip-content div.buttons.create-event .btn {
+  margin-left: 1px;
 }
 .qtip .qtip-content div.separator {
   margin-top: 5px;
@@ -705,7 +711,19 @@
   visibility: visible;
 }
 #event-creator .field {
-  margin: 9px 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 14px !important;
+  margin-top: 14px !important;
+}
+#event-creator .field.first, #event-creator .field:first-child {
+  margin-top: 0 !important;
+}
+#event-creator .field.last, #event-creator .field:last-child {
+  margin-bottom: 0 !important;
+}
+#event-creator .field .datetimewrapper {
+  display: inline-block;
 }
 
 #sidebar nav {
