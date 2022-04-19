@@ -28,7 +28,7 @@ const Container = styled.div`
 
   border: none;
   border-radius: 11px;
-  width: 34px;
+  width: 36px;
 
   transition: all 0.2s ease-in-out;
   user-select: none;
