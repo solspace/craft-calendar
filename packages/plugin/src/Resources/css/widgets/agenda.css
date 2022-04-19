@@ -122,12 +122,6 @@
 .qtip .qtip-content div.buttons {
   margin: 24px -24px 0 !important;
   top: 10px;
-  background: #ebebed;
-  background-image: -webkit-linear-gradient(#ecedef, #e9eaec);
-  background-image: -moz-linear-gradient(#ecedef, #e9eaec);
-  background-image: -ms-linear-gradient(#ecedef, #e9eaec);
-  background-image: -o-linear-gradient(#ecedef, #e9eaec);
-  background-image: linear-gradient(#ecedef, #e9eaec);
   -webkit-border-radius: 0 0 6px 6px;
   -moz-border-radius: 0 0 6px 6px;
   border-radius: 0 0 6px 6px;
@@ -681,6 +675,18 @@
   position: relative;
   top: 0;
   text-align: right !important;
+  background: #e4edf6;
+  background-image: -webkit-linear-gradient(#e4edf6, #e4edf6);
+  background-image: -moz-linear-gradient(#e4edf6, #e4edf6);
+  background-image: -ms-linear-gradient(#e4edf6, #e4edf6);
+  background-image: -o-linear-gradient(#e4edf6, #e4edf6);
+  background-image: linear-gradient(#e4edf6, #e4edf6);
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
+  -webkit-box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 1px -2px rgba(0, 0, 0, 0.2);
   padding: 11px 14px;
   margin: 24px -24px 0 !important;
 }
