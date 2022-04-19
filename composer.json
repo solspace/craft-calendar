@@ -43,7 +43,7 @@
     "developer": "Solspace",
     "developerUrl": "https://docs.solspace.com/",
     "documentationUrl": "https://docs.solspace.com/craft/calendar/v4/",
-    "changelogUrl": "https://raw.githubusercontent.com/solspace/craft3-calendar/v4/master/CHANGELOG.md",
+    "changelogUrl": "https://raw.githubusercontent.com/solspace/craft-calendar/v4/master/CHANGELOG.md",
     "hasSettings": true,
     "hasCpSection": true,
     "hooks": {

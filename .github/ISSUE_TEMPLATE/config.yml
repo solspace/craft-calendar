@@ -1,10 +1,10 @@
 blank_issues_enabled: false
 contact_links:
   - name: Feature Requests
-    url: https://github.com/solspace/craft3-calendar/discussions
+    url: https://github.com/solspace/craft-calendar/discussions
     about: Share an idea you have for Calendar.
   - name: Ask a Question
-    url: https://github.com/solspace/craft3-calendar/discussions
+    url: https://github.com/solspace/craft-calendar/discussions
     about: Ask a question about Calendar (e.g. whether or not ____ can be done, etc).
   - name: Private Support Ticket
     url: https://docs.solspace.com/craft/calendar/v3/support.html
