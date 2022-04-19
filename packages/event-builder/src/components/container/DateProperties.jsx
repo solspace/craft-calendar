@@ -86,11 +86,11 @@ class DateProperties extends React.Component {
           </CSSTransition>
         </Block>
 
-        <Block label={'All Day'} width={48}>
+        <Block label={'All Day'} width={70}>
           <Lightswitch name={'allDay'} on={allDay} toggleHandler={toggleAllDay} />
         </Block>
 
-        <Block label={'Multi-Day'} width={64}>
+        <Block label={'Multi-Day'} width={86}>
           <Lightswitch on={multiDay} toggleHandler={toggleMultiDay} />
         </Block>
       </Row>

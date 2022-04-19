@@ -32,7 +32,7 @@ export const StyledInput = styled.input`
 `;
 
 const Input = ({ name, value = '', type = 'text', inputSize = size.normal, onChangeHandler }) => (
-  <div>
+  <div className={'input-wrapper'}>
     <StyledInput
       type={type}
       name={name}

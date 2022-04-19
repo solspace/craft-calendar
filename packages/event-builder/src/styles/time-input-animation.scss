@@ -13,13 +13,11 @@ $items: (
 
     &-enter {
       opacity: 0;
-      width: 1px;
       padding: 0 !important;
 
       &-active,
       &-done {
         opacity: 1;
-        width: $size;
         padding: 0 2.5px !important;
 
         transition: all 200ms ease-out;
@@ -28,13 +26,11 @@ $items: (
 
     &-exit {
       opacity: 1;
-      width: $size;
       padding: 0 2.5px !important;
 
       &-active,
       &-done {
         opacity: 0;
-        width: 1px;
         padding: 0 !important;
 
         transition: all 200ms ease-out;

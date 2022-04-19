@@ -12,8 +12,33 @@ const Children = styled.div`
   flex-wrap: wrap;
   margin: 0 -2.5px;
 
-  > * {
+  .react-datepicker-wrapper {
     padding: 0 2.5px !important;
+  }
+
+  .input-wrapper {
+    padding: 0 17px 0 2.5px !important;
+  }
+
+  .select-wrapper {
+    padding: 0 0 0 2.5px !important;
+  }
+
+  .select-wrapper + .select-wrapper {
+    padding: 0 0 0 17px !important;
+  }
+
+  .select-wrapper + .react-datepicker-wrapper {
+    padding: 0 0 0 21px !important;
+    margin-right: -2px;
+  }
+
+  .select-wrapper + .count-input-enter-done {
+    padding: 0 17px 0 21px !important;
+
+    .input-wrapper {
+      padding: 0 !important;
+    }
   }
 `;
 

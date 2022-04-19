@@ -58,7 +58,7 @@ const StyledSelect = styled.select`
 `;
 
 const Select = ({ name, value = '', options = [], inputSize = size.normal, onChangeHandler }) => (
-  <div>
+  <div className={'select-wrapper'}>
     <SelectWrapper>
       <StyledSelect
         type="text"
