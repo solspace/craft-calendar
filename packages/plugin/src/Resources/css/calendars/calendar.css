@@ -729,7 +729,7 @@
   margin-bottom: 0 !important;
 }
 #event-creator .field .datetimewrapper {
-  display: inline-block;
+  display: inline-flex;
 }
 
 #sidebar nav {
