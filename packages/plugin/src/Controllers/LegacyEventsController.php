@@ -125,6 +125,11 @@ class LegacyEventsController extends EventsController
             $event->endDate->setTime(23, 59, 59);
         }
 
+        if (empty($values['multiDay'])) {
+            $event->endDate->setDate($event->startDate->year, $event->startDate->month, $event->startDate->day);
+            $event->endDate->setTime(23, 59, 59);
+        }
+
         $startDateCarbon = $event->getStartDate();
         $endDateCarbon = $event->getEndDate();
 

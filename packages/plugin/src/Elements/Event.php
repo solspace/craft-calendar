@@ -429,7 +429,7 @@ class Event extends Element implements \JsonSerializable
                 $this->exceptions[] = $model;
             } elseif (is_string($date)) {
                 $model = new ExceptionModel();
-                $model->date = Carbon::createFromTimestampUTC(strtotime($date));
+                $model->date = Carbon::createFromDate($date);
                 $model->eventId = $this->id;
 
                 $this->exceptions[] = $model;
