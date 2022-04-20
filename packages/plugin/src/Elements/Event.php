@@ -476,6 +476,11 @@ class Event extends Element implements \JsonSerializable
 
         if (null === $this->selectDates) {
             $this->hydrateSelectDates();
+            $this->addOriginalEventToSelectDates($this->selectDates);
+        } else {
+            $this->removeOriginalEventFromSelectDates($this->selectDates);
+            $this->hydrateSelectDates();
+            $this->addOriginalEventToSelectDates($this->selectDates);
         }
 
         $cacheHash = md5(($rangeStart ? $rangeStart->getTimestamp() : 0).($rangeEnd ? $rangeEnd->getTimestamp() : 0));
@@ -523,9 +528,13 @@ class Event extends Element implements \JsonSerializable
     /**
      * @return \DateTime[]
      */
-    public function getSelectDatesAsDates(\DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
+    public function getSelectDatesAsDates(bool $includeOriginalEventStartDate = false, \DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
     {
         $models = $this->getSelectDates($rangeStart, $rangeEnd);
+
+        if (! $includeOriginalEventStartDate) {
+            $this->removeOriginalEventFromSelectDates($models);
+        }
 
         $dates = [];
         foreach ($models as $model) {
@@ -1047,7 +1056,9 @@ class Event extends Element implements \JsonSerializable
             if ($this->getRRuleObject()) {
                 $occurrenceDates = $this->getOccurrenceDatesBetween($rangeStart, $rangeEnd);
             } elseif ($this->getSelectDates()) {
-                $occurrenceDates = $this->getSelectDatesAsDates($rangeStart, $rangeEnd);
+                $includeOriginalEventStartDate = true;
+
+                $occurrenceDates = $this->getSelectDatesAsDates($includeOriginalEventStartDate, $rangeStart, $rangeEnd);
             }
 
             $occurrences = [];
@@ -1523,26 +1534,6 @@ class Event extends Element implements \JsonSerializable
     private function hydrateSelectDates()
     {
         $this->selectDates = Calendar::getInstance()->selectDates->getSelectDatesForEvent($this);
-
-        /**
-         * https://github.com/solspace/craft-calendar/issues/122
-         *
-         * Adds original event date as an occurrence
-         *
-         * Notes:
-         *  The id value is from the id column on the calendar_events table,
-         *  not the id column from the calendar_select_dates table as per other select dates
-         */
-        if (is_array($this->selectDates) && array_key_exists(0, $this->selectDates) && ! empty($this->selectDates[0])  && ! empty($this->selectDates[0]->eventId)) {
-            $event = Calendar::getInstance()->events->getEventById($this->selectDates[0]->eventId);
-
-            $originalEventDate = new SelectDateModel();
-            $originalEventDate->id = (int) $event->getId();
-            $originalEventDate->eventId = (int) $event->getId();
-            $originalEventDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
-
-            array_unshift($this->selectDates, $originalEventDate);
-        }
     }
 
     /**
@@ -1584,5 +1575,43 @@ class Event extends Element implements \JsonSerializable
             'BYMONTH' => $this->byMonth,
             'BYYEARDAY' => $this->byYearDay,
         ]);
+    }
+
+    /**
+     * https://github.com/solspace/craft-calendar/issues/122
+     *
+     * Adds original event date as an occurrence
+     *
+     * @return array
+     */
+    public function addOriginalEventToSelectDates(array &$selectDates)
+    {
+        if (array_key_exists(0, $selectDates) && ! empty($selectDates[0])  && ! empty($selectDates[0]->eventId)) {
+            $event = Calendar::getInstance()->events->getEventById($selectDates[0]->eventId);
+
+            $originalEventDate = new SelectDateModel();
+            $originalEventDate->id = (int) $event->getId();
+            $originalEventDate->eventId = (int) $event->getId();
+            $originalEventDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
+
+            array_unshift($selectDates, $originalEventDate);
+        }
+    }
+
+    /**
+     * Removes original event date as an occurrence
+     *
+     * @return array
+     */
+    public function removeOriginalEventFromSelectDates(array &$selectDates)
+    {
+        if (array_key_exists(0, $selectDates) && ! empty($selectDates[0])  && ! empty($selectDates[0]->eventId)) {
+            $event = Calendar::getInstance()->events->getEventById($selectDates[0]->eventId);
+
+            // Only remove if it matches the original event
+            if ($event->getId() == $selectDates[0]->id && $event->getId() == $selectDates[0]->eventId && $event->getStartDate() == $selectDates[0]->date) {
+                    array_shift($selectDates);
+            }
+        }
     }
 }
