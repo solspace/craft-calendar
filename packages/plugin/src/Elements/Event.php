@@ -427,6 +427,12 @@ class Event extends Element implements \JsonSerializable
                 $model->eventId = $this->id;
 
                 $this->exceptions[] = $model;
+            } elseif (is_string($date)) {
+                $model = new ExceptionModel();
+                $model->date = Carbon::createFromTimestampUTC(strtotime($date));
+                $model->eventId = $this->id;
+
+                $this->exceptions[] = $model;
             }
         }
 

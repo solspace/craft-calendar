@@ -332,7 +332,7 @@
                                     {% set untilTypes = {
                                         'forever': "Never ends"|t,
                                         'until': "On date"|t,
-                                        'count': "After"|t
+                                        'after': "After"|t
                                     } %}
 
                                     {% for key, value in untilTypes %}
@@ -349,7 +349,7 @@
                                        placeholder="{{ dateFormat }}"
                                        class="date-picker form-control" />
                             </div>
-                            <div class="col-6 col-sm-2" data-toggled-by="count" data-until>
+                            <div class="col-6 col-sm-2" data-toggled-by="after" data-until>
                                 <div class="row">
                                     <div class="col-6">
                                         <input type="text"
