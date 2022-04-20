@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 4.0.0-beta.2 - 2022-04-20
+
+### Fixed
+- Fixed various display and styling issues inside the control panel.
+- Fixed a bug where various repeat rules were no longer working correctly when creating and editing events in the front end.
+- Fixed a bug where events that repeat on "Select Dates" do not include the original event date as an occurrence in some areas of Calendar.
+- Fixed a compatibility issue with GraphQL.
+
 ## 4.0.0-beta.1 - 2022-03-30
 
 ### Added
