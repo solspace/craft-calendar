@@ -502,6 +502,12 @@ class Event extends Element implements \JsonSerializable
                 $model->eventId = $this->id;
 
                 $this->selectDates[] = $model;
+            } elseif (is_string($date)) {
+                $model = new SelectDateModel();
+                $model->date = Carbon::createFromTimestampUTC(strtotime($date));
+                $model->eventId = $this->id;
+
+                $this->selectDates[] = $model;
             }
         }
 
