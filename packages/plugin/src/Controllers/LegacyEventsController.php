@@ -413,7 +413,7 @@ class LegacyEventsController extends EventsController
 
                 $exception = new ExceptionModel();
                 $exception->eventId = $event->id;
-                $exception->date = new Carbon($date, DateHelper::UTC);
+                $exception->date = Carbon::createFromTimestampUTC(strtotime($date));
 
                 $event->addException($exception);
             }
@@ -428,7 +428,7 @@ class LegacyEventsController extends EventsController
 
                 $selectDate = new SelectDateModel();
                 $selectDate->eventId = $event->id;
-                $selectDate->date = new Carbon($date, DateHelper::UTC);
+                $selectDate->date = Carbon::createFromTimestampUTC(strtotime($date));
 
                 $event->addSelectDate($selectDate);
             }
