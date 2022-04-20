@@ -1511,6 +1511,26 @@ class Event extends Element implements \JsonSerializable
     private function hydrateSelectDates()
     {
         $this->selectDates = Calendar::getInstance()->selectDates->getSelectDatesForEvent($this);
+
+        /**
+         * https://github.com/solspace/craft-calendar/issues/122
+         *
+         * Adds original event date as an occurrence
+         *
+         * Notes:
+         *  The id value is from the id column on the calendar_events table,
+         *  not the id column from the calendar_select_dates table as per other select dates
+         */
+        if (is_array($this->selectDates) && array_key_exists(0, $this->selectDates) && ! empty($this->selectDates[0])  && ! empty($this->selectDates[0]->eventId)) {
+            $event = Calendar::getInstance()->events->getEventById($this->selectDates[0]->eventId);
+
+            $originalEventDate = new SelectDateModel();
+            $originalEventDate->id = (int) $event->getId();
+            $originalEventDate->eventId = (int) $event->getId();
+            $originalEventDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
+
+            array_unshift($this->selectDates, $originalEventDate);
+        }
     }
 
     /**
