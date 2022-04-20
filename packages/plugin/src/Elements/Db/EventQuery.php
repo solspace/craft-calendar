@@ -990,6 +990,7 @@ class EventQuery extends ElementQuery implements \Countable
                     $paddedRangeEnd
                 );
 
+                // Adds original event date as an occurrence
                 array_unshift($selectDates, new Carbon($metadata['startDate'], DateHelper::UTC));
 
                 foreach ($selectDates as $date) {
