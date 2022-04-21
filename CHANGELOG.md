@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 3.3.10 - 2022-04-21
+
+### Fixed
+- Fixed a bug where various repeat rules were no longer working correctly when creating and editing events in the front end.
+- Fixed a bug where events that repeat on "Select Dates" do not include the original event date as an occurrence in some areas of Calendar.
+
 ## 3.3.9 - 2022-03-01
 
 ### Fixed
