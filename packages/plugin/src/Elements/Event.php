@@ -667,7 +667,8 @@ class Event extends Element implements \JsonSerializable
                     $occurrences[] = $startDate->setTime(0, 0, 0);
                 }
 
-                $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($rangeStart, $rangeEnd));
+                $includeOriginalEventStartDate = false;
+                $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($includeOriginalEventStartDate, $rangeStart, $rangeEnd));
             } else {
                 $rrule = $this->getRRuleObject();
                 if (null !== $rrule) {
