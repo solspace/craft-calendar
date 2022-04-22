@@ -13,6 +13,21 @@
 ### Added
 - Added compatibility with Craft 4.x.
 
+## 3.3.11 - Unreleased
+
+### Changed
+- Updated the Preview button to only be visible for saved events. Live Preview will only work with saved elements or ones with a saved draft, which is not currently available.
+
+### Fixed
+- Fixed a bug where deleting an event from inside the event edit page would not work.
+- Fixed a bug where an error would show when using the "Save and add another" feature while creating a new calendar.
+
+## 3.3.10 - 2022-04-21
+
+### Fixed
+- Fixed a bug where various repeat rules were no longer working correctly when creating and editing events in the front end.
+- Fixed a bug where events that repeat on "Select Dates" do not include the original event date as an occurrence in some areas of Calendar.
+
 ## 3.3.9 - 2022-03-01
 
 ### Fixed
