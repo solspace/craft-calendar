@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 3.3.11 - Unreleased
+
+### Changed
+- Updated the Preview button to only be visible for saved events. Live Preview will only work with saved elements or ones with a saved draft, which is not currently available.
+
+### Fixed
+- Fixed a bug where deleting an event from inside the event edit page would not work.
+- Fixed a bug where an error would show when using the "Save and add another" feature while creating a new calendar.
+
 ## 3.3.10 - 2022-04-21
 
 ### Fixed
