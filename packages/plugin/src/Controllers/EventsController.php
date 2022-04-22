@@ -285,7 +285,14 @@ class EventsController extends BaseController
         $this->requirePostRequest();
 
         $eventId = \Craft::$app->request->post('eventId');
-        $eventWasDeleted = $this->getEventsService()->deleteEventById($eventId);
+
+        $event = $this->getEventsService()->getEventById($eventId, null, true);
+
+        if (! $event) {
+            return false;
+        }
+
+        $eventWasDeleted = $this->getEventsService()->deleteEvent($event);
 
         if ($eventWasDeleted) {
             // Return JSON response if the request is an AJAX request
@@ -295,7 +302,7 @@ class EventsController extends BaseController
 
             \Craft::$app->session->setNotice(Calendar::t('Event deleted.'));
 
-            return $this->redirectToPostedUrl();
+            return $this->redirectToPostedUrl($event);
         }
 
         // Return JSON response if the request is an AJAX request
@@ -304,6 +311,8 @@ class EventsController extends BaseController
         }
 
         \Craft::$app->session->setError(Calendar::t('Couldn’t delete event.'));
+
+        return false;
     }
 
     /**

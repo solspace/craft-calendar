@@ -250,10 +250,30 @@ class EventsService extends Component
         $deleteEvent = new DeleteElementEvent($event);
         $this->trigger(self::EVENT_BEFORE_DELETE, $deleteEvent);
 
-        if ($deleteEvent->isValid && \Craft::$app->elements->deleteElementById($event->getId())) {
-            $this->trigger(self::EVENT_AFTER_DELETE, new DeleteElementEvent($event));
+        $event->validate();
 
-            return true;
+        if ($deleteEvent->isValid) {
+            $transaction = \Craft::$app->db->beginTransaction();
+
+            try {
+                $isDeleted = \Craft::$app->elements->deleteElementById($event->id, Event::class);
+
+                if ($isDeleted) {
+                    if (null !== $transaction) {
+                        $transaction->commit();
+                    }
+
+                    $this->trigger(self::EVENT_AFTER_DELETE, new DeleteElementEvent($event));
+
+                    return true;
+                }
+            } catch (\Exception $e) {
+                if (null !== $transaction) {
+                    $transaction->rollBack();
+                }
+
+                throw $e;
+            }
         }
 
         return false;
