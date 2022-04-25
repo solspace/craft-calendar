@@ -1589,13 +1589,14 @@ class Event extends Element implements \JsonSerializable
     {
         if (array_key_exists(0, $selectDates) && ! empty($selectDates[0])  && ! empty($selectDates[0]->eventId)) {
             $event = Calendar::getInstance()->events->getEventById($selectDates[0]->eventId);
+            if ($event) {
+                $originalEventDate = new SelectDateModel();
+                $originalEventDate->id = (int)$event->getId();
+                $originalEventDate->eventId = (int)$event->getId();
+                $originalEventDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
 
-            $originalEventDate = new SelectDateModel();
-            $originalEventDate->id = (int) $event->getId();
-            $originalEventDate->eventId = (int) $event->getId();
-            $originalEventDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
-
-            array_unshift($selectDates, $originalEventDate);
+                array_unshift($selectDates, $originalEventDate);
+            }
         }
     }
 
@@ -1610,8 +1611,8 @@ class Event extends Element implements \JsonSerializable
             $event = Calendar::getInstance()->events->getEventById($selectDates[0]->eventId);
 
             // Only remove if it matches the original event
-            if ($event->getId() == $selectDates[0]->id && $event->getId() == $selectDates[0]->eventId && $event->getStartDate() == $selectDates[0]->date) {
-                    array_shift($selectDates);
+            if ($event && $event->getId() == $selectDates[0]->id && $event->getId() == $selectDates[0]->eventId && $event->getStartDate() == $selectDates[0]->date) {
+                array_shift($selectDates);
             }
         }
     }
