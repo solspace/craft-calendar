@@ -14,3 +14,5 @@ npm-debug.log
 .php_cs.cache
 cghooks.lock
 
+
+.php-cs-fixer.cache

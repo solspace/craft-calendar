@@ -288,7 +288,7 @@ class EventsController extends BaseController
 
         $event = $this->getEventsService()->getEventById($eventId, null, true);
 
-        if (! $event) {
+        if (!$event) {
             return false;
         }
 
@@ -428,7 +428,7 @@ class EventsController extends BaseController
 
         // Enable Live Preview?
         $showPreviewButton = false;
-        if (!\Craft::$app->getRequest()->isMobileBrowser(true) && $this->getCalendarService()->isEventTemplateValid($calendar, $event->siteId) && ! is_null($event->id)) {
+        if (!\Craft::$app->getRequest()->isMobileBrowser(true) && $this->getCalendarService()->isEventTemplateValid($calendar, $event->siteId) && null !== $event->id) {
             $previewUrl = $event->getUrl();
             $this->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                 'fields' => '#title-field, #event-builder-data, #event-builder, #fields .calendar-event-wrapper > .field, #fields > .field > .field, #fields > .flex-fields > .field',

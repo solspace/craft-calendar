@@ -42,9 +42,9 @@ class CIELab extends ColorJizz
     public function __construct($lightness, $a_dimension, $b_dimension)
     {
         $this->toSelf = 'toCIELab';
-        $this->lightness = $lightness; //$this->roundDec($l, 3);
-        $this->a_dimension = $a_dimension; //$this->roundDec($a, 3);
-        $this->b_dimension = $b_dimension; //$this->roundDec($b, 3);
+        $this->lightness = $lightness; // $this->roundDec($l, 3);
+        $this->a_dimension = $a_dimension; // $this->roundDec($a, 3);
+        $this->b_dimension = $b_dimension; // $this->roundDec($b, 3);
     }
 
     /**

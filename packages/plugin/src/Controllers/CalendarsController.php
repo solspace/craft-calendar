@@ -196,6 +196,7 @@ class CalendarsController extends BaseController
 
         if ($fieldLayout) {
             $fieldHandles = [];
+
             /** @var Field $field */
             foreach ($fieldLayout->getFields() as $field) {
                 $fieldHandles[] = $field->handle;
