@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Bundles\ExternalPluginSupport\FeedMe;
 use Cake\Utility\Hash;
 use Carbon\Carbon;
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\User as UserElement;
 use craft\feedme\base\Element;
 use craft\feedme\events\FeedProcessEvent;
@@ -56,7 +57,7 @@ if (class_exists('craft\feedme\base\Element')) {
             return 'feed-me/_includes/elements/calendar-events/map';
         }
 
-        public function init()
+        public function init(): void
         {
             parent::init();
 
@@ -71,14 +72,16 @@ if (class_exists('craft\feedme\base\Element')) {
             );
         }
 
-        public function getGroups()
+        public function getGroups(): array
         {
             if (Calendar::getInstance()) {
                 return Calendar::getInstance()->calendars->getAllAllowedCalendars();
             }
+
+            return [];
         }
 
-        public function getQuery($settings, $params = [])
+        public function getQuery($settings, $params = []): mixed
         {
             $query = EventElement::find()
                 ->status(null)
@@ -90,7 +93,7 @@ if (class_exists('craft\feedme\base\Element')) {
             return $query;
         }
 
-        public function setModel($settings)
+        public function setModel($settings): ElementInterface
         {
             $siteId = (int) Hash::get($settings, 'siteId');
             $calendarId = $settings['elementGroup'][EventElement::class];
@@ -105,17 +108,17 @@ if (class_exists('craft\feedme\base\Element')) {
             return $this->_parseDate($feedData, $fieldInfo);
         }
 
-        protected function parseEndDate($feedData, $fieldInfo)
+        protected function parseEndDate($feedData, $fieldInfo): ?Carbon
         {
             return $this->_parseDate($feedData, $fieldInfo);
         }
 
-        protected function parseUntil($feedData, $fieldInfo)
+        protected function parseUntil($feedData, $fieldInfo): ?Carbon
         {
             return $this->_parseDate($feedData, $fieldInfo);
         }
 
-        protected function parseAuthorId($feedData, $fieldInfo)
+        protected function parseAuthorId($feedData, $fieldInfo): ?int
         {
             $value = $this->fetchSimpleValue($feedData, $fieldInfo);
             $match = Hash::get($fieldInfo, 'options.match');

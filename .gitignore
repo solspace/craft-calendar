@@ -15,3 +15,5 @@ npm-debug.log
 cghooks.lock
 
 /Craft3 Calendar.iml
+
+.php-cs-fixer.cache
