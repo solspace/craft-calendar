@@ -24,8 +24,8 @@ use yii\db\ActiveQuery;
  */
 class CalendarRecord extends ActiveRecord
 {
-    const TABLE = '{{%calendar_calendars}}';
-    const TABLE_STD = 'calendar_calendars';
+    public const TABLE = '{{%calendar_calendars}}';
+    public const TABLE_STD = 'calendar_calendars';
 
     public static function tableName(): string
     {

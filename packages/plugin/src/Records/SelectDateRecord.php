@@ -13,7 +13,7 @@ use Solspace\Calendar\Elements\Event;
  */
 class SelectDateRecord extends ActiveRecord
 {
-    const TABLE = '{{%calendar_select_dates}}';
+    public const TABLE = '{{%calendar_select_dates}}';
 
     public static function tableName(): string
     {

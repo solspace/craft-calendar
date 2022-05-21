@@ -6,7 +6,7 @@ use craft\helpers\Gql;
 
 class GqlPermissions extends Gql
 {
-    const CATEGORY_CALENDARS = 'Calendars';
+    public const CATEGORY_CALENDARS = 'Calendars';
 
     public static function canQueryCalendars(): bool
     {

@@ -62,7 +62,7 @@ class ViewController extends BaseController
         $month = null,
         $day = null
     ): Response {
-        $view = $view ?? Calendar::VIEW_MONTH;
+        $view ??= Calendar::VIEW_MONTH;
         $calendarView = $view;
 
         if (Calendar::VIEW_WEEK === $calendarView) {

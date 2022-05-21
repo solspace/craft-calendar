@@ -41,10 +41,8 @@ class CalendarFieldType extends Field
 
     /**
      * {@inheritDoc IFieldType::getInputHtml()}.
-     *
-     * @param mixed $value
      */
-    public function getInputHtml(mixed $value, ?\craft\base\ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $calendars = Calendar::getInstance()->calendars->getAllAllowedCalendars();
 
@@ -93,7 +91,7 @@ class CalendarFieldType extends Field
         return [];
     }
 
-    public function getIsTranslatable(?\craft\base\ElementInterface $element = null): bool
+    public function getIsTranslatable(?ElementInterface $element = null): bool
     {
         return false;
     }
@@ -101,7 +99,7 @@ class CalendarFieldType extends Field
     /**
      * {@inheritDoc}
      */
-    public function serializeValue(mixed $value, ?\craft\base\ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof CalendarModel) {
             return $value->id;
@@ -113,7 +111,7 @@ class CalendarFieldType extends Field
     /**
      * {@inheritDoc}
      */
-    public function normalizeValue(mixed $value, ?\craft\base\ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof CalendarModel) {
             return $value;

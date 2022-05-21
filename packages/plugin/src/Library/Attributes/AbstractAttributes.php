@@ -8,8 +8,8 @@ use Solspace\Calendar\Library\Exceptions\AttributeException;
 
 abstract class AbstractAttributes
 {
-    const SORT_ASC = 'ASC';
-    const SORT_DESC = 'DESC';
+    public const SORT_ASC = 'ASC';
+    public const SORT_DESC = 'DESC';
 
     /** @var array */
     protected $validAttributes;
@@ -58,7 +58,7 @@ abstract class AbstractAttributes
         $query = $this->query;
 
         foreach ($this->attributes as $name => $value) {
-            list($operator, $value) = DatabaseHelper::prepareOperator($value);
+            [$operator, $value] = DatabaseHelper::prepareOperator($value);
 
             $query->andWhere([$operator, $name, $value]);
         }

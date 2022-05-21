@@ -62,37 +62,36 @@ use yii\web\ForbiddenHttpException;
  */
 class Calendar extends Plugin
 {
-    const TRANSLATION_CATEGORY = 'calendar';
+    public const TRANSLATION_CATEGORY = 'calendar';
 
-    const FIELD_LAYOUT_TYPE = 'Calendar_Event';
+    public const FIELD_LAYOUT_TYPE = 'Calendar_Event';
 
-    const VIEW_MONTH = 'month';
-    const VIEW_WEEK = 'week';
-    const VIEW_DAY = 'day';
-    const VIEW_EVENTS = 'events';
-    const VIEW_CALENDARS = 'calendars';
-    const VIEW_RESOURCES = 'resources';
+    public const VIEW_MONTH = 'month';
+    public const VIEW_WEEK = 'week';
+    public const VIEW_DAY = 'day';
+    public const VIEW_EVENTS = 'events';
+    public const VIEW_CALENDARS = 'calendars';
+    public const VIEW_RESOURCES = 'resources';
 
-    const PERMISSION_CALENDARS = 'calendar-manageCalendars';
-    const PERMISSION_CREATE_CALENDARS = 'calendar-createCalendars';
-    const PERMISSION_EDIT_CALENDARS = 'calendar-editCalendars';
-    const PERMISSION_DELETE_CALENDARS = 'calendar-deleteCalendars';
-    const PERMISSION_EVENTS = 'calendar-manageEvents';
-    const PERMISSION_EVENTS_FOR = 'calendar-manageEventsFor';
-    const PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
-    const PERMISSION_SETTINGS = 'calendar-settings';
-    const PERMISSION_RESOURCES = 'calendar-resources';
+    public const PERMISSION_CALENDARS = 'calendar-manageCalendars';
+    public const PERMISSION_CREATE_CALENDARS = 'calendar-createCalendars';
+    public const PERMISSION_EDIT_CALENDARS = 'calendar-editCalendars';
+    public const PERMISSION_DELETE_CALENDARS = 'calendar-deleteCalendars';
+    public const PERMISSION_EVENTS = 'calendar-manageEvents';
+    public const PERMISSION_EVENTS_FOR = 'calendar-manageEventsFor';
+    public const PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
+    public const PERMISSION_SETTINGS = 'calendar-settings';
+    public const PERMISSION_RESOURCES = 'calendar-resources';
 
-    const PERMISSIONS_HELP_LINK = 'https://docs.solspace.com/craft/calendar/v2/setup/demo-templates.html';
+    public const PERMISSIONS_HELP_LINK = 'https://docs.solspace.com/craft/calendar/v2/setup/demo-templates.html';
 
-    const EDITION_LITE = 'lite';
-    const EDITION_PRO = 'pro';
+    public const EDITION_LITE = 'lite';
+    public const EDITION_PRO = 'pro';
 
-    const CONFIG_PATH_ROOT = 'solspace.calendar';
-    const CONFIG_CALENDAR_PATH = 'solspace.calendar.calendars';
-    const CONFIG_CALENDAR_SITES_PATH = 'solspace.calendar.calendar-sites';
+    public const CONFIG_PATH_ROOT = 'solspace.calendar';
+    public const CONFIG_CALENDAR_PATH = 'solspace.calendar.calendars';
+    public const CONFIG_CALENDAR_SITES_PATH = 'solspace.calendar.calendar-sites';
 
-    /** @var bool */
     public bool $hasCpSettings = true;
 
     /** @var array */
@@ -242,9 +241,6 @@ class Calendar extends Plugin
         return parent::getInstance();
     }
 
-    /**
-     * @return null|array
-     */
     public function getCpNavItem(): ?array
     {
         $navItem = parent::getCpNavItem();

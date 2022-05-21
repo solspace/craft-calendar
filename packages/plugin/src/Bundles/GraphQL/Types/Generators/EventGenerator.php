@@ -3,7 +3,6 @@
 namespace Solspace\Calendar\Bundles\GraphQL\Types\Generators;
 
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeManager;
 use craft\helpers\Gql;
 use Solspace\Calendar\Bundles\GraphQL\Arguments\EventArguments;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\EventInterface;

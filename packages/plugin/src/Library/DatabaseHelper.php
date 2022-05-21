@@ -7,10 +7,10 @@ use craft\helpers\ElementHelper;
 
 class DatabaseHelper
 {
-    const OPERATOR_EQUALS = '=';
-    const OPERATOR_NOT_EQUAL = '!=';
-    const OPERATOR_NOT_IN = 'not';
-    const OPERATOR_IN = 'in';
+    public const OPERATOR_EQUALS = '=';
+    public const OPERATOR_NOT_EQUAL = '!=';
+    public const OPERATOR_NOT_IN = 'not';
+    public const OPERATOR_IN = 'in';
 
     private static $operatorList = [
         self::OPERATOR_NOT_EQUAL,

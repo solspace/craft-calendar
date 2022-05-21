@@ -14,7 +14,7 @@ use yii\web\Response;
 
 class EventsApiController extends BaseController
 {
-    const EVENT_FIELD_NAME = 'calendarEvent';
+    public const EVENT_FIELD_NAME = 'calendarEvent';
 
     public array|bool|int $allowAnonymous = true;
 
@@ -35,7 +35,7 @@ class EventsApiController extends BaseController
          * @var int   $deltaSeconds
          * @var bool  $isAllDay
          */
-        list($event, $deltaSeconds, $isAllDay) = $this->validateAndReturnModificationData();
+        [$event, $deltaSeconds, $isAllDay] = $this->validateAndReturnModificationData();
 
         $eventsService = $this->getEventsService();
 
@@ -146,7 +146,7 @@ class EventsApiController extends BaseController
          * @var Event         $event
          * @var \DateInterval $interval
          */
-        list($event, $deltaSeconds) = $this->validateAndReturnModificationData();
+        [$event, $deltaSeconds] = $this->validateAndReturnModificationData();
 
         $event->getEndDate()->addSeconds($deltaSeconds);
 

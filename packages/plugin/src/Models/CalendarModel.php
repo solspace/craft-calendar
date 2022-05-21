@@ -14,8 +14,8 @@ use Solspace\Calendar\Library\DateHelper;
 
 class CalendarModel extends Model implements \JsonSerializable
 {
-    const COLOR_LIGHTEN_MULTIPLIER = 0.2;
-    const COLOR_DARKEN_MULTIPLIER = -0.2;
+    public const COLOR_LIGHTEN_MULTIPLIER = 0.2;
+    public const COLOR_DARKEN_MULTIPLIER = -0.2;
 
     /** @var int */
     public $id;

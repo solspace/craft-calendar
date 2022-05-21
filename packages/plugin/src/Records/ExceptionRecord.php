@@ -11,7 +11,7 @@ use craft\db\ActiveRecord;
  */
 class ExceptionRecord extends ActiveRecord
 {
-    const TABLE = '{{%calendar_exceptions}}';
+    public const TABLE = '{{%calendar_exceptions}}';
 
     public static function tableName(): string
     {

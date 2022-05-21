@@ -9,7 +9,7 @@ use Solspace\Calendar\Library\CodePack\Exceptions\CodePackException;
 
 class CodePack
 {
-    const MANIFEST_NAME = 'manifest.json';
+    public const MANIFEST_NAME = 'manifest.json';
 
     /** @var string */
     private $location;

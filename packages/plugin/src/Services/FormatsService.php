@@ -12,7 +12,7 @@ class FormatsService extends Component
 {
     public function getDateFormat($length = null, string $format = Locale::FORMAT_ICU): string
     {
-        $length = $length ?? \Craft::$app->locale->getFormatter()->dateFormat;
+        $length ??= \Craft::$app->locale->getFormatter()->dateFormat;
 
         $dateTimeFormats = \Craft::$app->locale->getFormatter()->dateTimeFormats;
         $dateFormat = $dateTimeFormats[$length]['date'];
@@ -42,7 +42,7 @@ class FormatsService extends Component
 
     private function getSettingsTimeFormat(string $length = null)
     {
-        $length = $length ?? \Craft::$app->locale->getFormatter()->timeFormat;
+        $length ??= \Craft::$app->locale->getFormatter()->timeFormat;
 
         switch (Calendar::getInstance()->settings->getSettingsModel()->timeFormat) {
             case SettingsModel::TIME_FORMAT_12_HOUR:

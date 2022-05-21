@@ -7,20 +7,20 @@ use Solspace\Calendar\Calendar;
 
 class SettingsModel extends Model
 {
-    const DEFAULT_DATE_OVERLAP_THRESHOLD = 5;
-    const DEFAULT_TIME_INTERVAL = 30;
-    const DEFAULT_DURATION = 60;
-    const DEFAULT_ALL_DAY = false;
-    const DEFAULT_SHOW_MINI_CAL = true;
-    const DEFAULT_SHOW_DISABLED_EVENTS = true;
-    const DEFAULT_VIEW = Calendar::VIEW_MONTH;
-    const DEFAULT_ALLOW_QUICK_CREATE = true;
-    const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
-    const DEFAULT_FIRST_DAY_OF_WEEK = -1;
+    public const DEFAULT_DATE_OVERLAP_THRESHOLD = 5;
+    public const DEFAULT_TIME_INTERVAL = 30;
+    public const DEFAULT_DURATION = 60;
+    public const DEFAULT_ALL_DAY = false;
+    public const DEFAULT_SHOW_MINI_CAL = true;
+    public const DEFAULT_SHOW_DISABLED_EVENTS = true;
+    public const DEFAULT_VIEW = Calendar::VIEW_MONTH;
+    public const DEFAULT_ALLOW_QUICK_CREATE = true;
+    public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
+    public const DEFAULT_FIRST_DAY_OF_WEEK = -1;
 
-    const TIME_FORMAT_AUTO = 'auto';
-    const TIME_FORMAT_12_HOUR = '12-hour';
-    const TIME_FORMAT_24_HOUR = '24-hour';
+    public const TIME_FORMAT_AUTO = 'auto';
+    public const TIME_FORMAT_12_HOUR = '12-hour';
+    public const TIME_FORMAT_24_HOUR = '24-hour';
 
     /** @var int */
     public $overlapThreshold;
@@ -95,8 +95,6 @@ class SettingsModel extends Model
 
     /**
      * Setting default values upon construction.
-     *
-     * @param array $attributes
      */
     public function __construct(array $attributes = [])
     {

@@ -7,8 +7,8 @@ use Solspace\Calendar\Library\DateHelper;
 
 class EventListOptions
 {
-    const SORT_ASC = 'ASC';
-    const SORT_DESC = 'DESC';
+    public const SORT_ASC = 'ASC';
+    public const SORT_DESC = 'DESC';
 
     /** @var Carbon */
     private $rangeStart;

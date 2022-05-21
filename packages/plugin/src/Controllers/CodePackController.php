@@ -11,7 +11,7 @@ use yii\web\Response;
 
 class CodePackController extends BaseController
 {
-    const FLASH_VAR_KEY = 'codepack_prefix';
+    public const FLASH_VAR_KEY = 'codepack_prefix';
 
     /**
      * @throws \yii\web\ForbiddenHttpException

@@ -32,7 +32,7 @@ class DatabaseHelperTest extends TestCase
      */
     public function testOperators($input, string $expectedOperator, $expectedValue): void
     {
-        list($operator, $value) = DatabaseHelper::prepareOperator($input);
+        [$operator, $value] = DatabaseHelper::prepareOperator($input);
 
         self::assertSame($expectedOperator, $operator);
         self::assertSame($expectedValue, $value);

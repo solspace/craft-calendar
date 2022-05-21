@@ -6,7 +6,7 @@ use Twig\Compiler;
 
 class RequireEventEditPermissions_Node extends \Twig\Node\Node
 {
-    public function compile(\Twig\Compiler $compiler)
+    public function compile(Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)

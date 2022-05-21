@@ -8,8 +8,8 @@ use Solspace\Calendar\Library\Exceptions\DateHelperException;
 
 class DateHelper
 {
-    const FLOATING_TIMEZONE = 'floating';
-    const UTC = 'utc';
+    public const FLOATING_TIMEZONE = 'floating';
+    public const UTC = 'utc';
 
     /** @var array */
     private static $weekDays = [

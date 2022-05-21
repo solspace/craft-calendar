@@ -21,7 +21,7 @@ use yii\base\Event;
 if (class_exists('craft\feedme\base\Element')) {
     class CalendarIntegration extends Element
     {
-        const RRULE_MAP = [
+        public const RRULE_MAP = [
             'BYMONTH' => 'byMonth',
             'BYYEARDAY' => 'byYearDay',
             'BYMONTHDAY' => 'byMonthDay',

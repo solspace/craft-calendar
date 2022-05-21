@@ -48,9 +48,7 @@ abstract class AbstractInterface extends BaseInterfaceType
 
     /**
      * Return conditional fields for this type.
-     *
-	   * @return array
-	   */
+     */
     protected static function getConditionalFields(): array
     {
         return [];

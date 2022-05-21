@@ -6,11 +6,11 @@ use Solspace\Calendar\Calendar;
 
 class RecurrenceHelper
 {
-    const DAILY = 'DAILY';
-    const WEEKLY = 'WEEKLY';
-    const MONTHLY = 'MONTHLY';
-    const YEARLY = 'YEARLY';
-    const SELECT_DATES = 'SELECT_DATES';
+    public const DAILY = 'DAILY';
+    public const WEEKLY = 'WEEKLY';
+    public const MONTHLY = 'MONTHLY';
+    public const YEARLY = 'YEARLY';
+    public const SELECT_DATES = 'SELECT_DATES';
 
     /**
      * @var array

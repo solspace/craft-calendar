@@ -10,7 +10,6 @@ use craft\models\FieldLayoutTab;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\ColorHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
@@ -113,13 +112,13 @@ class CalendarsController extends BaseController
             $oldLayoutTabs = $oldLayout->getTabs();
 
             foreach ($oldLayoutTabs as $oldLayoutTab) {
-		            $newLayoutTab = new FieldLayoutTab();
-		            $newLayoutTab->name = $oldLayoutTab->name;
-		            $newLayoutTab->sortOrder = $oldLayoutTab->sortOrder;
-		            $newLayoutTab->setLayout($newLayout);
-		            $newLayoutTab->setElements($oldLayoutTab->getElements());
+                $newLayoutTab = new FieldLayoutTab();
+                $newLayoutTab->name = $oldLayoutTab->name;
+                $newLayoutTab->sortOrder = $oldLayoutTab->sortOrder;
+                $newLayoutTab->setLayout($newLayout);
+                $newLayoutTab->setElements($oldLayoutTab->getElements());
 
-		            $newLayoutTabs[] = $newLayoutTab;
+                $newLayoutTabs[] = $newLayoutTab;
             }
 
             $newLayout->setTabs($newLayoutTabs);
@@ -210,6 +209,7 @@ class CalendarsController extends BaseController
 
         if ($fieldLayout) {
             $fieldHandles = [];
+
             /** @var Field $field */
             foreach ($fieldLayout->getCustomFields() as $field) {
                 $fieldHandles[] = $field->handle;

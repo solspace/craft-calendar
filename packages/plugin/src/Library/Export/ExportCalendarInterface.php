@@ -6,8 +6,8 @@ use Solspace\Calendar\Elements\Db\EventQuery;
 
 interface ExportCalendarInterface
 {
-    const DATE_TIME_FORMAT = 'Ymd\THis';
-    const DATE_FORMAT = 'Ymd';
+    public const DATE_TIME_FORMAT = 'Ymd\THis';
+    public const DATE_FORMAT = 'Ymd';
 
     /**
      * ExportCalendarInterface constructor.

@@ -6,7 +6,7 @@ use Twig\Token;
 
 class RequireEventEditPermissions_TokenParser extends \Twig\TokenParser\AbstractTokenParser
 {
-    public function parse(\Twig\Token $token)
+    public function parse(Token $token)
     {
         $lineNumber = $token->getLine();
         $parser = $this->parser;
