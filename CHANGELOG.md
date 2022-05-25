@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 3.3.12 - 2022-05-25
+
+### Fixed
+- Fixed a bug where editing existing events could trigger an error if using multiple sites in Craft 3.7.42+.
+
 ## 3.3.11 - 2022-04-25
 
 ### Changed
