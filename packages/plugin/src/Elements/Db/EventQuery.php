@@ -24,7 +24,7 @@ use Solspace\Commons\Helpers\PermissionHelper;
 use yii\db\Connection;
 use yii\db\Expression;
 
-class EventQuery extends ElementQuery implements \Countable
+class EventQuery extends ElementQuery
 {
     const MAX_EVENT_LENGTH_DAYS = 365;
 
