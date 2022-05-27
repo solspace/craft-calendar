@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 4.0.0-beta.5 - 2022-05-27
+
+### Fixed
+- Fixed a bug where editing existing events could trigger an error if using multiple sites.
+- Fixed a potential PHP 8.1 compatibility issue.
+
 ## 4.0.0-beta.4 - 2022-05-25
 
 ### Fixed
