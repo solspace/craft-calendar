@@ -487,13 +487,16 @@ class EventQuery extends ElementQuery
         if (null === $this->events || self::$lastCachedConfigStateHash !== $configHash) {
             $limit = $this->limit;
             $offset = $this->offset;
+            $indexBy = $this->indexBy;
             $this->limit = null;
             $this->offset = null;
+            $this->indexBy = null;
 
             $ids = parent::ids($db);
 
             $this->limit = $limit;
             $this->offset = $offset;
+            $this->indexBy = $indexBy;
 
             if (empty($ids)) {
                 return [];
