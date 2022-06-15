@@ -30,6 +30,7 @@
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
         {{ block('contextMenu') }}
+        {{ block('autosave') }}
     </div>
 
     <div class="flex">
@@ -103,10 +104,18 @@
     {% include "calendar/events/_event_editor" %}
 
     {% if form %}
+        <style>
+            input:disabled,
+            textarea:disabled {
+                color: #AAAAAA;
+                pointer-events: none;
+                background-color: #F5F5F5;
+            }
+        </style>
         <div id="fields">
-            {{ form.render()|raw }}
+            <div class="update-spinner spinner"></div>
         </div>
-    {% endif %}
+{% endif %}
 
 {% endblock %}
 
@@ -236,6 +245,10 @@
 
 {% endblock %}
 
+{% block autosave %}
+    <div class="update-spinner auto-save-spinner spinner" title="Saving" style="display: none;"></div>
+    <div class="auto-save-status checkmark-icon" title="Your changes have been stored." style="margin-left: 7px; display: none;"></div>
+{% endblock %}
 
 {% if not event.slug %}
     {% js %}

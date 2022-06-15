@@ -250,7 +250,7 @@ class EventsController extends BaseController
 
             // Return JSON response if the request is an AJAX request
             if (\Craft::$app->request->isAjax) {
-                return $this->asJson(['success' => true]);
+	            return $this->asJson(['success' => true]);
             }
 
             \Craft::$app->session->setNotice(Calendar::t('Event saved.'));
@@ -381,6 +381,69 @@ class EventsController extends BaseController
 
         return $this->showEvent($event);
     }
+
+	/**
+	 * Renders FieldLayout Form
+	 *
+	 * @return Response
+	 * @throws NotFoundHttpException
+	 * @throws \yii\base\ExitException
+	 * @throws \yii\web\BadRequestHttpException
+	 */
+    public function actionRenderFieldLayout(): Response
+    {
+	    $this->requirePostRequest();
+
+	    $eventId = \Craft::$app->request->post('eventId');
+
+	    $event = $this->getEventsService()->getEventById($eventId, null, true);
+
+	    if (! $event) {
+		    return $this->asJson([
+			    'success' => false,
+			    'fieldsRendered' => '',
+			    'fieldsSelectors' => ''
+		    ]);
+	    }
+
+	    $fieldLayout = $event->getFieldLayout();
+
+	    if (! $fieldLayout) {
+		    return $this->asJson([
+			    'success' => false,
+			    'fieldsRendered' => '',
+			    'fieldsSelectors' => ''
+		    ]);
+	    }
+
+	    $form = $fieldLayout->createForm($event, false);
+
+	    if (! $form) {
+		    return $this->asJson([
+			    'success' => false,
+			    'fieldsRendered' => '',
+			    'fieldsSelectors' => ''
+		    ]);
+	    }
+
+		// Track all field handles
+	    $fieldsSelectors = [];
+
+	    $customFields = $fieldLayout->getCustomFields();
+
+	    foreach ($customFields as $customField) {
+	        $fieldsSelectors[] = $customField->handle;
+	    }
+
+		// Our form fields HTML
+	    $fieldsRendered = $form->render();
+
+	    return $this->asJson([
+	        'success' => true,
+		    'fieldsRendered' => $fieldsRendered,
+		    'fieldsSelectors' => $fieldsSelectors
+	    ]);
+	}
 
     /**
      * @throws \craft\errors\SiteNotFoundException
