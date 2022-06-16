@@ -18,7 +18,7 @@ import {
   yearRepeatOptions,
   byDayIntervalEnum,
 } from '@cal/event-builder/constants/rules';
-import { getUnixTimeUTC } from '@cal/event-builder/utilities/date';
+import { compareDates, getUnixTimeUTC, resetTimestampToDayEnd } from '@cal/event-builder/utilities/date';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -32,6 +32,7 @@ import { actions as repeatsActions } from '@cal/event-builder/reducers/repeats';
 import { actions as selectDatesActions } from '@cal/event-builder/reducers/selectDates';
 import { actions as byMonthActions } from '@cal/event-builder/reducers/byMonth';
 import { actions as byMonthDayActions } from '@cal/event-builder/reducers/byMonthDay';
+import { actions as errorMessageActions } from '@cal/event-builder/reducers/errorMessage';
 import '@cal/event-builder/styles/time-input-animation.scss';
 import translate from '@cal/event-builder/utilities/translations';
 import { isPro, isRepeatRulesEnabled } from '@cal/event-builder/app';
@@ -48,20 +49,60 @@ import { isPro, isRepeatRulesEnabled } from '@cal/event-builder/app';
     byDayInterval: state.byDayInterval,
     byMonth: state.byMonth,
     byMonthDay: state.byMonthDay,
+    errorMessage: state.errorMessage,
   }),
   (dispatch) => ({
-    toggleRepeats: (isRepeating) => dispatch(repeatsActions.toggle(isRepeating)),
-    changeInterval: (event) => dispatch(intervalActions.change(event.target.value)),
-    changeFreq: (event) => dispatch(freqActions.change(event.target.value)),
-    changeEndRepeatType: (event) => dispatch(endRepeatActions.changeType(event.target.value)),
-    changeEndRepeatDate: (date) => dispatch(endRepeatActions.changeDate(getUnixTimeUTC(date))),
-    changeEndRepeatCount: (value) => dispatch(endRepeatActions.changeCount(value)),
-    removeSelectDate: (index) => dispatch(selectDatesActions.remove(index)),
-    addException: (date) => dispatch(exceptionActions.add(getUnixTimeUTC(date))),
-    removeException: (index) => dispatch(exceptionActions.remove(index)),
-    changeByDayInterval: (event) => dispatch(byDayIntervalActions.change(event.target.value)),
-    changeByMonth: (event) => dispatch(byMonthActions.change(parseInt(event.target.dataset.value))),
-    changeByMonthDay: (event) => dispatch(byMonthDayActions.change(parseInt(event.target.dataset.value))),
+    toggleRepeats: (isRepeating) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(repeatsActions.toggle(isRepeating));
+    },
+    changeInterval: (event) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(intervalActions.change(event.target.value));
+    },
+    changeFreq: (event) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(freqActions.change(event.target.value));
+    },
+    changeEndRepeatType: (event) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(endRepeatActions.changeType(event.target.value));
+    },
+    changeEndRepeatDate: (date) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(endRepeatActions.changeDate(getUnixTimeUTC(date)));
+    },
+    changeEndRepeatCount: (value) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(endRepeatActions.changeCount(value));
+    },
+    removeSelectDate: (index) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(selectDatesActions.remove(index));
+    },
+    addException: (date) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(exceptionActions.add(getUnixTimeUTC(date)));
+    },
+    removeException: (index) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(exceptionActions.remove(index));
+    },
+    changeByDayInterval: (event) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(byDayIntervalActions.change(event.target.value));
+    },
+    changeByMonth: (event) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(byMonthActions.change(parseInt(event.target.dataset.value)));
+    },
+    changeByMonthDay: (event) => {
+      dispatch(errorMessageActions.set(''));
+      dispatch(byMonthDayActions.change(parseInt(event.target.dataset.value)));
+    },
+    setErrorMessage: (errorMessage) => {
+      dispatch(errorMessageActions.set(errorMessage))
+    },
   })
 )
 class RepeatRuleProperties extends React.Component {
@@ -88,6 +129,39 @@ class RepeatRuleProperties extends React.Component {
     changeByDayInterval: PropTypes.func,
     changeByMonth: PropTypes.func,
     changeByMonthDay: PropTypes.func,
+    errorMessage: PropTypes.string,
+    setErrorMessage: PropTypes.func,
+  };
+
+  validateException = (date) => {
+    const { endRepeat, addException, setErrorMessage } = this.props;
+
+    // We only want to validate the Exception date against the End Repeat date if the End Repeat type is Until
+    if (endRepeat.type == 'until' && compareDates({ dateOne: date, dateTwo: endRepeat.date }) === 0) {
+      setErrorMessage(translate('Exception date cannot be the same as the End Repeat date'));
+
+      return false;
+    }
+
+    // Clear any previous errors and add new Exception date
+    setErrorMessage('');
+
+    return addException(date);
+  };
+
+  validateEndRepeatDate = (date) => {
+    const { exceptions, removeException, changeEndRepeatDate } = this.props;
+
+    // If the user selects an End Repeat date that already exists as an Exception date, we need to remove the Exception date
+    for (let i = 0; i < exceptions.length; i++) {
+      const exceptionDate = resetTimestampToDayEnd(exceptions[i]);
+
+      if (compareDates({ dateOne: date, dateTwo: exceptionDate }) === 0) {
+        removeException(exceptions[i]);
+      }
+    }
+
+    return changeEndRepeatDate(date);
   };
 
   render() {
@@ -98,9 +172,9 @@ class RepeatRuleProperties extends React.Component {
     const { dates, repeats, toggleRepeats } = this.props;
     const { interval, changeInterval } = this.props;
     const { freq, changeFreq } = this.props;
-    const { endRepeat, changeEndRepeatType, changeEndRepeatDate, changeEndRepeatCount } = this.props;
+    const { endRepeat, changeEndRepeatType, changeEndRepeatCount } = this.props;
     const { selectDates, removeSelectDate } = this.props;
-    const { exceptions, addException, removeException } = this.props;
+    const { exceptions, removeException } = this.props;
     const { byDayInterval, changeByDayInterval } = this.props;
     const { byMonth, changeByMonth } = this.props;
     const { byMonthDay, changeByMonthDay } = this.props;
@@ -112,6 +186,9 @@ class RepeatRuleProperties extends React.Component {
     const showYearly = repeats && freq === frequencies.yearly;
     const showByDay = showWeekly || (showMonthly && !byDayIntervalEach) || (showYearly && !byDayIntervalEach);
     const showSelectDates = repeats && freq === frequencies.selectDates;
+    const validateEndRepeatDate = this.validateEndRepeatDate;
+    const validateException = this.validateException;
+    const { errorMessage } = this.props;
 
     return (
       <>
@@ -198,7 +275,7 @@ class RepeatRuleProperties extends React.Component {
               <DatePicker
                 dateTimestamp={endRepeat.date}
                 minDateTimestamp={dates.start}
-                onChangeHandler={changeEndRepeatDate}
+                onChangeHandler={validateEndRepeatDate}
               />
             </CSSTransition>
 
@@ -221,8 +298,12 @@ class RepeatRuleProperties extends React.Component {
           </Block>
 
           <Block label="Except On">
-            <DatePicker excludeDates={exceptions} minDateTimestamp={dates.start} onChangeHandler={addException} />
+            <DatePicker excludeDates={exceptions} minDateTimestamp={dates.start} onChangeHandler={validateException} />
           </Block>
+        </Row>
+
+        <Row show={(errorMessage !== '')}>
+          <div className={'errorMessage'}>{translate(errorMessage)}</div>
         </Row>
 
         <Row show={repeats && freq === frequencies.selectDates}>
