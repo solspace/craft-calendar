@@ -1,4 +1,4 @@
-import { setHours, setMinutes, setSeconds, fromUnixTime } from 'date-fns';
+import { isDate, startOfDay, compareAsc, setHours, setMinutes, setSeconds, fromUnixTime } from 'date-fns';
 
 export const resetToDayStart = (date) => setHours(setMinutes(setSeconds(date, 0), 0), 0);
 
@@ -37,4 +37,17 @@ export const fromUnixTimeUTC = (timestamp) => {
     date.getUTCMinutes(),
     date.getUTCSeconds()
   );
+};
+
+export const compareDates = ({ dateOne, dateTwo }) => {
+  // Make sure both dates are in the same format
+  dateOne = (isDate(dateOne))
+    ? resetToDayEnd(startOfDay(dateOne))
+    : fromUnixTimeUTC(dateOne);
+
+  dateTwo = (isDate(dateTwo))
+    ? resetToDayEnd(startOfDay(dateTwo))
+    : fromUnixTimeUTC(dateTwo);
+
+  return compareAsc(dateOne, dateTwo);
 };

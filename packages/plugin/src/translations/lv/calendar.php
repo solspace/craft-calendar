@@ -119,6 +119,7 @@ $events = [
     'October' => 'Octobris',
     'November' => 'Novembris',
     'December' => 'Decembris',
+	'Exception date cannot be the same as our End Repeat date' => 'Izņēmuma datums nevar būt tāds pats kā atkārtošanās beigu datums',
 ];
 $calendars = [
     'Name' => 'Nosaukums',

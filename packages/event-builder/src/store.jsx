@@ -11,6 +11,7 @@ import byDayInterval from '@cal/event-builder/reducers/byDayInterval';
 import multiDay from '@cal/event-builder/reducers/multiDay';
 import repeats from '@cal/event-builder/reducers/repeats';
 import selectDates from '@cal/event-builder/reducers/selectDates';
+import errorMessage from '@cal/event-builder/reducers/errorMessage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
 const store = configureStore({
@@ -29,6 +30,7 @@ const store = configureStore({
     endRepeat,
     selectDates,
     exceptions,
+    errorMessage,
   }),
 });
 
