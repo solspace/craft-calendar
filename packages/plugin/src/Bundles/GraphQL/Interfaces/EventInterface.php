@@ -52,6 +52,11 @@ class EventInterface extends AbstractInterface
                         'type' => Type::string(),
                         'description' => "The event's Post Date",
                     ],
+	                'siteId' => [
+		                'name' => 'siteId',
+		                'type' => Type::int(),
+		                'description' => "The event's Calendar Site ID",
+	                ],
                     'calendarId' => [
                         'name' => 'calendarId',
                         'type' => Type::int(),
