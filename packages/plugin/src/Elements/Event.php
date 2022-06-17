@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\db\Query;
 use craft\elements\actions\Restore;
-use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
@@ -15,6 +14,7 @@ use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Actions\SetStatusAction;
 use Solspace\Calendar\Elements\Actions\DeleteEventAction;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
@@ -1496,7 +1496,9 @@ class Event extends Element implements \JsonSerializable
                 'confirmationMessage' => Calendar::t('Are you sure you want to delete the selected events?'),
                 'successMessage' => Calendar::t('Events deleted.'),
             ]),
-            SetStatus::class,
+	        \Craft::$app->elements->createAction([
+		        'type' => SetStatusAction::class,
+	        ]),
         ];
 
         if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
