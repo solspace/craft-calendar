@@ -148,6 +148,9 @@
                     if (event.allDay) {
                       eventList[i].end = moment(event.end).add(2, 's').utc().format();
                     }
+                    if (event.repeats) {
+                      eventList[i].url = '{{ siteUrl }}calendar-demo/event/' + event.id + '/' + moment(event.start).utc().format('YYYY/MM/DD');
+                    }
                   }
 
                   callback(eventList);
