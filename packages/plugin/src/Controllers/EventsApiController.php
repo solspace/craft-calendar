@@ -271,8 +271,7 @@ class EventsApiController extends BaseController
 
         CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
-        $date = new \DateTime($date);
-        $date->setTime(0, 0, 0);
+        $date = new Carbon($date, DateHelper::UTC);
 
         if ($event->repeatsOnSelectDates()) {
             Calendar::getInstance()->selectDates->removeDate($event, $date);
