@@ -9,6 +9,8 @@ use craft\db\Query;
 use craft\elements\User;
 use craft\events\DeleteElementEvent as CraftDeleteElementEvent;
 use craft\events\SiteEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
@@ -205,6 +207,7 @@ class EventsService extends Component
 
             try {
                 $isSaved = \Craft::$app->elements->saveElement($event, $validateContent, $isNewEvent);
+	            $isSaved = $this->_respectNonTranslatableFields($event, $isSaved);
                 if ($isSaved) {
                     $this->reindexSearchForAllSites($event);
 
@@ -467,5 +470,64 @@ class EventsService extends Component
             $searchService = \Craft::$app->getSearch();
             $searchService->indexElementAttributes($event);
         }
+    }
+
+	/**
+	 * If we have an event with multi-site enabled and a non-translatable fields, we need to respect the non-translatable field values
+	 *
+	 * @param Event $event
+	 * @param bool $isSaved
+	 * @return bool
+	 * @throws \Throwable
+	 * @throws \craft\errors\ElementNotFoundException
+	 * @throws \yii\base\Exception
+	 */
+    private function _respectNonTranslatableFields(Event $event, bool $isSaved): bool {
+        if ($event::isLocalized() && \Craft::$app->getIsMultiSite()) {
+		    $otherSiteEvents = [];
+
+		    $hasNonTranslatableFields = false;
+
+		    // Grab the other sites ids using the supported site ids for $event.
+		    // So if $event siteId is 1 and $event supports site ids in 1, 2 and 3, we want to grab 2 and 3...
+		    $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($event), 'siteId');
+		    $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $event->siteId);
+
+		    if (! empty($otherSiteIds)) {
+			    $otherSiteEvents = Event::find()->id($event->id)->siteId($otherSiteIds)->status(null)->all();
+		    }
+
+		    foreach ($event->getFieldLayout()->getTabs() as $fieldLayoutTab) {
+			    foreach ($fieldLayoutTab->getElements() as $element) {
+				    if ($element instanceof \craft\fieldlayoutelements\CustomField && $element->getField()->translationMethod === \craft\base\Field::TRANSLATION_METHOD_NONE) {
+					    // We've found a field that is non-translatable in $event
+					    $hasNonTranslatableFields = true;
+
+					    // Lets grab the field handle and value
+					    $fieldHandle = $element->getField()->handle;
+					    $fieldValue = $event->getFieldValue($fieldHandle);
+
+					    // Loop over the same event in the other site ids and update the non-translatable field value
+					    foreach ($otherSiteEvents as $otherSiteEvent) {
+						    $otherSiteEvent->setFieldValue($fieldHandle, $fieldValue);
+					    }
+				    }
+			    }
+		    }
+
+		    // Save the same event in the other sites
+		    if ($hasNonTranslatableFields) {
+			    foreach ($otherSiteEvents as $otherSiteEvent) {
+				    $isSaved = \Craft::$app->elements->saveElement($otherSiteEvent, false, false, false);
+
+					// If any of the other site events didn't save, we want to bail out and throw an error
+				    if (! $isSaved) {
+					    return false;
+				    }
+			    }
+		    }
+	    }
+
+	    return $isSaved;
     }
 }
