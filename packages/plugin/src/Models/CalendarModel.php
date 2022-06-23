@@ -273,13 +273,29 @@ class CalendarModel extends Model implements \JsonSerializable
 
     public function rules(): array
     {
-        return [
-            [['titleFormat'], 'required', 'when' => function (self $model) {
+        return $this->defineRules();
+    }
+
+    public function defineRules(): array
+    {
+	    $rules = parent::defineRules();
+
+        $rules[] = [
+            ['titleFormat'],
+            'required',
+            'when' => function (self $model) {
                 return !$model->hasTitleField;
-            }],
-            [['titleLabel'], 'required', 'when' => function (self $model) {
-                return $model->hasTitleField;
-            }],
+            }
         ];
+
+	    $rules[] = [
+	        ['titleLabel'],
+	        'required',
+	        'when' => function (self $model) {
+                return $model->hasTitleField;
+            }
+        ];
+
+        return $rules;
     }
 }
