@@ -498,13 +498,13 @@ class EventsService extends Component
 		    }
 
 		    foreach ($event->getFieldLayout()->getTabs() as $fieldLayoutTab) {
-			    foreach ($fieldLayoutTab->getElements() as $element) {
-				    if ($element instanceof \craft\fieldlayoutelements\CustomField && $element->getField()->translationMethod === \craft\base\Field::TRANSLATION_METHOD_NONE) {
+		        foreach ($fieldLayoutTab->getFields() as $element) {
+			        if ($element->translationMethod === \craft\base\Field::TRANSLATION_METHOD_NONE) {
 					    // We've found a field that is non-translatable in $event
 					    $hasNonTranslatableFields = true;
 
 					    // Lets grab the field handle and value
-					    $fieldHandle = $element->getField()->handle;
+					    $fieldHandle = $element->handle;
 					    $fieldValue = $event->getFieldValue($fieldHandle);
 
 					    // Loop over the same event in the other site ids and update the non-translatable field value
