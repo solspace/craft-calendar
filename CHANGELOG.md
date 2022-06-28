@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 3.3.13.1 - 2022-06-28
+
+### Fixed
+- Fixed a bug where fields that are not translatable were still being translated per site.
+- Fixed a bug where the End Repeat date was overriding the Start Date (in 3.3.13 only).
+
 ## 3.3.13 - 2022-06-28
 
 ### Added
