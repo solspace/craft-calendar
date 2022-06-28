@@ -494,7 +494,13 @@ class EventsService extends Component
 		    $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $event->siteId);
 
 		    if (! empty($otherSiteIds)) {
-			    $otherSiteEvents = Event::find()->id($event->id)->siteId($otherSiteIds)->status(null)->all();
+		        foreach ($otherSiteIds as $otherSiteId) {
+			        $otherSiteEvent = $this->getEventById($event->id, $otherSiteId);
+
+			        if ($otherSiteEvent) {
+				        $otherSiteEvents[] = $otherSiteEvent;
+			        }
+		        }
 		    }
 
 		    foreach ($event->getFieldLayout()->getTabs() as $fieldLayoutTab) {
