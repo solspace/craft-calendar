@@ -1,6 +1,6 @@
 # Solspace Calendar Changelog
 
-## 4.0.0-beta.6 - Unreleased
+## 4.0.0-beta.6 - 2022-06-28
 
 ### Added
 - Added `defineRules` to `CalendarModel` so users can define their validation rulesets.
@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where removing event occurrences from the CP Month/Week/Day view pages would sometimes use the day before, depending on your timezone.
+- Fixed a bug where fields that are not translatable were still being translated per site.
 - Fixed a bug where events that had exceptions for all occurrences would throw an error in the CP.
 - Fixed a bug where mass changing of event statuses was allowed when the user did not have the correct permissions.
 - Fixed a bug where `siteId` was not available in the GraphQL Event Interface.
@@ -47,6 +48,12 @@
 
 ### Added
 - Added compatibility with Craft 4.x.
+
+## 3.3.13.1 - 2022-06-28
+
+### Fixed
+- Fixed a bug where fields that are not translatable were still being translated per site.
+- Fixed a bug where the End Repeat date was overriding the Start Date (in 3.3.13 only).
 
 ## 3.3.13 - 2022-06-28
 
