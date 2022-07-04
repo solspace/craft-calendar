@@ -1,5 +1,5 @@
 $(function () {
-  const $tabs = $('#fieldlayoutform').find('.fld-tabs');
+  const $tabs = $('.layoutdesigner').find('.fld-tabs');
   const $descriptionSelect = $('#descriptionFieldHandle');
   const $locationSelect = $('#locationFieldHandle');
   let lastUsedFieldCount = null;
