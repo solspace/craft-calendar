@@ -478,8 +478,8 @@ class Event extends Element implements \JsonSerializable
             $this->hydrateSelectDates();
             $this->addOriginalEventToSelectDates($this->selectDates);
         } else {
+            // Remove duplicates...
             $this->removeOriginalEventFromSelectDates($this->selectDates);
-            $this->hydrateSelectDates();
             $this->addOriginalEventToSelectDates($this->selectDates);
         }
 
