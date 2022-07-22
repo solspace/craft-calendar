@@ -233,7 +233,7 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
   if (event.repeats) {
     eventRepeats = $('<div>', {
       class: 'event-repeats separator',
-      html: '<label>' + Craft.t('calendar', 'Repeats') + ':</label> ' + event.readableRepeatRule,
+      html: '<div id="solspace-calendar-spinner" class="spinner"></div>',
     });
   }
 
@@ -304,6 +304,24 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
       show: function (e) {
         if (!window.qTipsEnabled) {
           e.preventDefault();
+        }
+
+        if (event.repeats) {
+          $.ajax({
+            cache: false,
+            url: Craft.getCpUrl('calendar/events/api/first-occurrence-date'),
+            type: 'post',
+            dataType: 'json',
+            data: {
+              eventId: event.id,
+              [Craft.csrfTokenName]: Craft.csrfTokenValue,
+            },
+            success: function (response) {
+              if (response.success && response.event && response.event.hasOwnProperty('readableRepeatRule')) {
+                $('.event-repeats').html('<label>' + Craft.t('calendar', 'Repeats') + ':</label> ' + response.event.readableRepeatRule);
+              }
+            },
+          });
         }
       },
       render: function (e, api) {

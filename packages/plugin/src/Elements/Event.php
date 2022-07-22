@@ -475,13 +475,8 @@ class Event extends Element implements \JsonSerializable
         }
 
         if (null === $this->selectDates) {
-            $this->hydrateSelectDates();
-            $this->addOriginalEventToSelectDates($this->selectDates);
-        } else {
-            // Remove duplicates...
-            $this->removeOriginalEventFromSelectDates($this->selectDates);
-            $this->addOriginalEventToSelectDates($this->selectDates);
-        }
+	        $this->hydrateSelectDates();
+	    }
 
         $cacheHash = md5(($rangeStart ? $rangeStart->getTimestamp() : 0).($rangeEnd ? $rangeEnd->getTimestamp() : 0));
         if (!isset($this->selectDatesCache[$cacheHash])) {
@@ -528,13 +523,9 @@ class Event extends Element implements \JsonSerializable
     /**
      * @return \DateTime[]
      */
-    public function getSelectDatesAsDates(bool $includeOriginalEventStartDate = false, \DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
+    public function getSelectDatesAsDates(\DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
     {
         $models = $this->getSelectDates($rangeStart, $rangeEnd);
-
-        if (!$includeOriginalEventStartDate) {
-            $this->removeOriginalEventFromSelectDates($models);
-        }
 
         $dates = [];
         foreach ($models as $model) {
@@ -667,8 +658,7 @@ class Event extends Element implements \JsonSerializable
                     $occurrences[] = $startDate->setTime(0, 0, 0);
                 }
 
-                $includeOriginalEventStartDate = false;
-                $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($includeOriginalEventStartDate, $rangeStart, $rangeEnd));
+                $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($rangeStart, $rangeEnd));
             } else {
                 $rrule = $this->getRRuleObject();
                 if (null !== $rrule) {
@@ -1057,9 +1047,7 @@ class Event extends Element implements \JsonSerializable
             if ($this->getRRuleObject()) {
                 $occurrenceDates = $this->getOccurrenceDatesBetween($rangeStart, $rangeEnd);
             } elseif ($this->getSelectDates()) {
-                $includeOriginalEventStartDate = true;
-
-                $occurrenceDates = $this->getSelectDatesAsDates($includeOriginalEventStartDate, $rangeStart, $rangeEnd);
+                $occurrenceDates = $this->getSelectDatesAsDates($rangeStart, $rangeEnd);
             }
 
             $occurrences = [];
@@ -1353,45 +1341,6 @@ class Event extends Element implements \JsonSerializable
             $this->slugFieldHtml(),
             parent::metaFieldsHtml(),
         ]);
-    }
-
-    /**
-     * https://github.com/solspace/craft-calendar/issues/122.
-     *
-     * Adds original event date as an occurrence
-     *
-     * @return array
-     */
-    public function addOriginalEventToSelectDates(array &$selectDates)
-    {
-        if (\array_key_exists(0, $selectDates) && !empty($selectDates[0]) && !empty($selectDates[0]->eventId)) {
-            $event = Calendar::getInstance()->events->getEventById($selectDates[0]->eventId);
-            if ($event) {
-                $originalEventDate = new SelectDateModel();
-                $originalEventDate->id = (int) $event->getId();
-                $originalEventDate->eventId = (int) $event->getId();
-                $originalEventDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
-
-                array_unshift($selectDates, $originalEventDate);
-            }
-        }
-    }
-
-    /**
-     * Removes original event date as an occurrence.
-     *
-     * @return array
-     */
-    public function removeOriginalEventFromSelectDates(array &$selectDates)
-    {
-        if (\array_key_exists(0, $selectDates) && !empty($selectDates[0]) && !empty($selectDates[0]->eventId)) {
-            $event = Calendar::getInstance()->events->getEventById($selectDates[0]->eventId);
-
-            // Only remove if it matches the original event
-            if ($event && $event->getId() == $selectDates[0]->id && $event->getId() == $selectDates[0]->eventId && $event->getStartDate() == $selectDates[0]->date) {
-                array_shift($selectDates);
-            }
-        }
     }
 
     /**

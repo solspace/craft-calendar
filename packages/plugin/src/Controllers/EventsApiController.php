@@ -283,6 +283,36 @@ class EventsApiController extends BaseController
         return $this->asJson('success');
     }
 
+	/**
+	 * https://github.com/solspace/craft-calendar/issues/122.
+	 *
+	 * Adds the first occurrence date to the list of select dates
+	 *
+	 * @return Response
+	 */
+    public function actionFirstOccurrenceDate(): Response
+    {
+	    $this->requirePostRequest();
+
+	    $eventId = \Craft::$app->request->post('eventId');
+
+	    $event = Calendar::getInstance()->events->getEventById($eventId, null, true);
+
+	    if (! $event) {
+		    return $this->asErrorJson([
+			    'success' => false,
+			    'event' => Calendar::t('Event could not be found'),
+		    ]);
+	    }
+
+	    $event->selectDates = Calendar::getInstance()->events->addFirstOccurrenceDate($event->selectDates);
+
+	    return $this->asJson([
+	        'success' => true,
+	        'event' => $event,
+	    ]);
+    }
+
     /**
      * @throws HttpException
      */

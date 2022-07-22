@@ -18,6 +18,7 @@ return [
     'calendar/events/<id:\d+>/<siteHandle:[\w\-]+>' => 'calendar/events/edit-event',
     'calendar/events/view-shared-event' => 'calendar/events/view-shared-event',
     // API calls
+	'calendar/events/api/first-occurrence-date' => 'calendar/events-api/first-occurrence-date',
     'calendar/events/api/modify-date' => 'calendar/events-api/modify-date',
     'calendar/events/api/modify-duration' => 'calendar/events-api/modify-duration',
     'calendar/events/api/create' => 'calendar/events-api/create',

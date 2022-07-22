@@ -228,7 +228,7 @@
             if (event.repeats) {
                 eventRepeats = $('<div>', {
                     class: 'event-repeats separator',
-                    html: '<label>Repeats:</label>' + event.readableRepeatRule
+                    html: '',
                 });
             }
 
@@ -298,6 +298,27 @@
                     show: function (e, api) {
                         if (!qTipsEnabled) {
                             e.preventDefault();
+                        }
+
+                        if (event.repeats) {
+                            var data = {
+                                eventId: event.id,
+                                action: 'calendar/events-api/first-occurrence-date'
+                            };
+
+                            data[csrfTokenName] = csrfTokenValue;
+
+                            $.ajax({
+                                cache: false,
+                                type: 'post',
+                                dataType: 'json',
+                                data: data,
+                                success: function (response) {
+                                    if (response.success && response.event && response.event.hasOwnProperty('readableRepeatRule')) {
+                                        $('.event-repeats').html('<label>Repeats:</label> ' + response.event.readableRepeatRule);
+                                    }
+                                },
+                            });
                         }
                     },
                     render: function (e, api) {
