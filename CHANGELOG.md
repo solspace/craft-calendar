@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 4.0.0-beta.7 - 2022-07-27
+
+### Added
+- Added an on-demand option (`addFirstOccurrenceDate()`) to display the first occurrence date result in an occurrences list of events that use the "Select Dates" repeat rule.
+
+### Fixed
+- Fixed a bug where the ICS Location and Description mapping settings for each calendar were not working.
+- Fixed a bug where some sites making heavy use of the "Select Dates" repeat rule could experience performance issues.
+
 ## 4.0.0-beta.6 - 2022-06-28
 
 ### Added
@@ -48,6 +57,14 @@
 
 ### Added
 - Added compatibility with Craft 4.x.
+
+## 3.3.14 - 2022-07-27
+
+### Added
+- Added an on-demand option (`addFirstOccurrenceDate()`) to display the first occurrence date result in an occurrences list of events that use the "Select Dates" repeat rule.
+
+### Fixed
+- Fixed a bug where some sites making heavy use of the "Select Dates" repeat rule could experience performance issues.
 
 ## 3.3.13.1 - 2022-06-28
 
