@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 3.3.14 - 2022-07-27
+
+### Added
+- Added and on-demand option (`addFirstOccurrenceDate()`) to display the first occurrence date result in an occurrences list of events that use the "Select Dates" repeat rule.
+
+### Fixed
+- Fixed a bug where some sites making heavy use of the "Select Dates" repeat rule could experience performance issues.
+
 ## 3.3.13.1 - 2022-06-28
 
 ### Fixed
