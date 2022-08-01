@@ -209,18 +209,24 @@ class EventsService extends Component
 
             try {
                 $isSaved = \Craft::$app->elements->saveElement($event, $validateContent, $isNewEvent);
-	            $isSaved = $this->_respectNonTranslatableFields($event, $isSaved);
-                if ($isSaved) {
-                    $this->reindexSearchForAllSites($event);
+	            if (! $isSaved) {
+		            return false;
+	            }
 
-                    if (null !== $transaction) {
-                        $transaction->commit();
-                    }
+		        $isSaved = $this->_respectNonTranslatableFields($event);
+		        if (! $isSaved) {
+			        return false;
+		        }
 
-                    $this->trigger(self::EVENT_AFTER_SAVE, new SaveElementEvent($event, $isNewEvent));
+				$this->reindexSearchForAllSites($event);
 
-                    return true;
-                }
+	            if (null !== $transaction) {
+		            $transaction->commit();
+	            }
+
+	            $this->trigger(self::EVENT_AFTER_SAVE, new SaveElementEvent($event, $isNewEvent));
+
+	            return true;
             } catch (\Exception $e) {
                 if (null !== $transaction) {
                     $transaction->rollBack();
@@ -504,14 +510,14 @@ class EventsService extends Component
 	 * If we have an event with multi-site enabled and a non-translatable fields, we need to respect the non-translatable field values
 	 *
 	 * @param Event $event
-	 * @param bool $isSaved
 	 * @return bool
 	 * @throws \Throwable
 	 * @throws \craft\errors\ElementNotFoundException
 	 * @throws \yii\base\Exception
 	 */
-    private function _respectNonTranslatableFields(Event $event, bool $isSaved): bool {
-        if ($event::isLocalized() && \Craft::$app->getIsMultiSite()) {
+    private function _respectNonTranslatableFields(Event $event): bool
+    {
+        if ($event->id && $event::isLocalized() && \Craft::$app->getIsMultiSite()) {
 		    $otherSiteEvents = [];
 
 		    $hasNonTranslatableFields = false;
@@ -562,6 +568,6 @@ class EventsService extends Component
 		    }
 	    }
 
-	    return $isSaved;
+	    return true;
     }
 }
