@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 3.3.15 - 2022-08-02
+
+### Changed
+- Changed the package name from `solspace/craft3-calendar` to `solspace/craft-calendar`.
+
+### Fixed
+- Fixed a bug where calendar handles could have dashes in them.
+- Fixed a bug where saving an event with required fields in a multi-site environment could miss some error validation.
+
 ## 3.3.14 - 2022-07-27
 
 ### Added
