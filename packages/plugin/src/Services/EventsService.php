@@ -537,7 +537,21 @@ class EventsService extends Component
 		        }
 		    }
 
-		    foreach ($event->getFieldLayout()->getTabs() as $fieldLayoutTab) {
+		    $fieldLayout = $event->getFieldLayout();
+
+		    // If no field layout, there is nothing to process
+		    if (! $fieldLayout) {
+		        return true;
+		    }
+
+		    $fieldLayoutTabs = $fieldLayout->getTabs();
+
+		    // If no field layout tabs (which shouldn't be possible if no fields), there is nothing to process
+		    if (! $fieldLayoutTabs) {
+		        return true;
+		    }
+
+		    foreach ($fieldLayoutTabs as $fieldLayoutTab) {
 		        foreach ($fieldLayoutTab->getFields() as $element) {
 			        if ($element->translationMethod === \craft\base\Field::TRANSLATION_METHOD_NONE) {
 					    // We've found a field that is non-translatable in $event
