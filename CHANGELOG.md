@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 3.3.16 - 2022-09-12
+
+### Fixed
+- Fixed a bug where calendars with no fields in the layout would error when attempting to create new events.
+
 ## 3.3.15 - 2022-08-02
 
 ### Changed
