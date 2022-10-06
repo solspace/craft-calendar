@@ -9,5 +9,7 @@ class CalendarAttributes extends AbstractAttributes
         'name',
         'handle',
         'color',
+        'titleTranslationMethod',
+        'titleTranslationKeyFormat',
     ];
 }

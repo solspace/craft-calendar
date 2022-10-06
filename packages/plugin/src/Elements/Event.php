@@ -4,12 +4,14 @@ namespace Solspace\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\Element;
+use craft\base\Field;
 use craft\db\Query;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\events\RegisterElementActionsEvent;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
@@ -178,6 +180,80 @@ class Event extends Element implements \JsonSerializable
 
         $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
         $transformer->transform();
+    }
+
+    public static function displayName(): string
+    {
+        return \Craft::t('app', 'Event');
+    }
+
+    public static function lowerDisplayName(): string
+    {
+        return \Craft::t('app', 'event');
+    }
+
+    public static function pluralDisplayName(): string
+    {
+        return \Craft::t('app', 'Events');
+    }
+
+    public static function pluralLowerDisplayName(): string
+    {
+        return \Craft::t('app', 'events');
+    }
+
+    public static function refHandle(): string
+    {
+        return 'event';
+    }
+
+    public static function trackChanges(): bool
+    {
+        return false;
+    }
+
+    public function getIsTitleTranslatable(): bool
+    {
+        $type = $this->getCalendar();
+        return ($type->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+    }
+
+    public function getTitleTranslationDescription(): null|string
+    {
+        $type = $this->getCalendar();
+        return ElementHelper::translationDescription($type->titleTranslationMethod);
+    }
+
+    public function getTitleTranslationKey(): string
+    {
+        $type = $this->getCalendar();
+        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
+    }
+
+    /**
+     * Updates the entry's title, if its entry type has a dynamic title format.
+     */
+    public function updateTitle()
+    {
+        $type = $this->getCalendar();
+
+        if (! $type->hasTitleField) {
+            // Make sure that the locale has been loaded in case the title format has any Date/Time fields
+            \Craft::$app->getLocale();
+
+            // Set Craft to the entry's site's language, in case the title format has any static translations
+            $language = \Craft::$app->language;
+
+            \Craft::$app->language = $this->getSite()->language;
+
+            $title = \Craft::$app->getView()->renderObjectTemplate($type->titleFormat, $this);
+
+            if ($title !== '') {
+                $this->title = $title;
+            }
+
+            \Craft::$app->language = $language;
+        }
     }
 
     /**
