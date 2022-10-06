@@ -17,7 +17,7 @@ class ExportCalendarToIcs extends AbstractExportCalendar
      */
     protected function prepareStringForExport(): string
     {
-        $events = $this->getEventQuery()->all();
+        $events = $this->getEventQuery()->_all();
 
         $exportString = "BEGIN:VCALENDAR\r\n";
         $exportString .= "PRODID:-//Solspace/Calendar//EN\r\n";

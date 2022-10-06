@@ -18,12 +18,12 @@ class SetStatusAction extends SetStatus
 	{
 		$failCount = 0;
 
-		$totalElements = $query->count();
+		$totalElements = $query->_count();
 
 		$isLocalized = Event::isLocalized() && \Craft::$app->getIsMultiSite();
 
 		/** @var Event $element */
-		foreach ($query->all() as $element) {
+		foreach ($query->_all() as $element) {
 			if (CalendarPermissionHelper::canEditEvent($element)) {
 				switch ($this->status) {
 					case self::ENABLED:

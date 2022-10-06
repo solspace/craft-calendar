@@ -88,15 +88,26 @@ class CalendarFieldType extends Field
         return $gqlType;
     }
 
-    public static function supportedTranslationMethods(): array
-    {
-        return [];
-    }
+	/**
+	 * @inheritdoc
+	 */
+	public static function supportedTranslationMethods(): array
+	{
+		return [
+			self::TRANSLATION_METHOD_SITE,
+			self::TRANSLATION_METHOD_SITE_GROUP,
+			self::TRANSLATION_METHOD_LANGUAGE,
+			self::TRANSLATION_METHOD_CUSTOM,
+		];
+	}
 
-    public function getIsTranslatable(ElementInterface $element = null): bool
-    {
-        return false;
-    }
+	/**
+	 * @inheritdoc
+	 */
+	public function getIsTranslatable(ElementInterface $element = null): bool
+	{
+		return true;
+	}
 
     /**
      * {@inheritDoc}

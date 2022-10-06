@@ -172,7 +172,11 @@
             siteId: event.siteId,
             id: 'slug',
             name: 'slug',
-            value: event.slug,
+            status: event.getAttributeStatus('slug'),
+            value: '__temp_' in event.slug ? '' : event.slug,
+            autocorrect: false,
+            autocapitalize: false,
+            translationDescription: 'This field is translated for each site.'|t('app'),
             placeholder: "Enter slug"|t('calendar'),
             errors: event.getErrors('slug')|merge(event.getErrors('uri')),
         }) }}
@@ -236,9 +240,10 @@
 
 {% endblock %}
 
-
-{% if not event.slug %}
+{% if not event.slug or '__temp_' in event.slug %}
     {% js %}
-        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
+        window.slugGenerator = new Craft.SlugGenerator('#title', '#slug', {
+            charMap: {{ craft.cp.getAsciiCharMap(event.site.language)|json_encode|raw }}
+        });
     {% endjs %}
 {% endif %}

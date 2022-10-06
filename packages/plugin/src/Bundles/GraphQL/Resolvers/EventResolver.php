@@ -22,14 +22,14 @@ class EventResolver extends Resolver
             return $source->{$fieldName};
         }
 
-        return Calendar::getInstance()->events->getEventQuery($arguments)->all();
+        return Calendar::getInstance()->events->getEventQuery($arguments)->_all();
     }
 
     public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $arguments = self::getArguments($arguments);
 
-        return Calendar::getInstance()->events->getEventQuery($arguments)->one();
+        return Calendar::getInstance()->events->getEventQuery($arguments)->_one();
     }
 
     private static function getArguments(array $arguments)

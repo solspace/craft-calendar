@@ -429,9 +429,9 @@ class EventQuery extends ElementQuery
      * @param string $q
      * @param null   $db
      */
-    public function count($q = '*', $db = null)
+    public function _count($q = '*', $db = null)
     {
-        $this->all($db);
+        $this->_all($db);
 
         if (null === $this->totalCount) {
             $this->totalCount = \count($this->events ?? []);
@@ -445,12 +445,12 @@ class EventQuery extends ElementQuery
      *
      * @return null|array|\craft\base\ElementInterface
      */
-    public function one($db = null)
+    public function _one($db = null)
     {
         $oldLimit = $this->limit;
         $this->limit = 1;
 
-        $events = $this->all($db);
+        $events = $this->_all($db);
 
         $this->limit = $oldLimit;
 
@@ -466,7 +466,7 @@ class EventQuery extends ElementQuery
      *
      * @return Event[]
      */
-    public function all($db = null): array
+    public function _all($db = null): array
     {
         // If an array data is requested - return it as is, without
         // fetching occurrences
@@ -547,7 +547,7 @@ class EventQuery extends ElementQuery
      */
     public function nth(int $n, Connection $db = null)
     {
-        $this->all($db);
+        $this->_all($db);
 
         return $this->events[$n] ?? null;
     }
@@ -559,7 +559,7 @@ class EventQuery extends ElementQuery
      */
     public function ids($db = null): array
     {
-        $events = $this->all($db);
+        $events = $this->_all($db);
 
         $eventIds = [];
         foreach ($events as $event) {
@@ -616,7 +616,7 @@ class EventQuery extends ElementQuery
      */
     public function getEventsByHour(Carbon $date): array
     {
-        $this->all();
+        $this->_all();
         $hour = $date->setMinutes(0)->setSeconds(0);
 
         return $this->eventsByHour[$hour->getTimestamp()] ?? [];
@@ -1556,7 +1556,7 @@ class EventQuery extends ElementQuery
         Carbon::setWeekStartsAt($this->firstDay ?? 1);
         $initialGrouping = $this->noMultiDayGroup;
         $this->noMultiDayGroup = true;
-        $this->all();
+        $this->_all();
         $this->noMultiDayGroup = $initialGrouping;
 
         $grouped = [];
@@ -1573,7 +1573,7 @@ class EventQuery extends ElementQuery
 
     private function extractSpecificDurationEvents(Carbon $date, string $targetTimeframe): array
     {
-        $this->all();
+        $this->_all();
 
         return $this->{'eventsBy'.$targetTimeframe}[$date->getTimestamp()] ?? [];
     }
