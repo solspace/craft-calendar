@@ -514,7 +514,7 @@ class EventQuery extends ElementQuery
             $this->cacheRecurringEvents($ids);
 
             // Order the dates in a chronological order
-            if ($this->shouldOrderByStartDate()) {
+            if ($this->shouldOrderByStartDate() || $this->shouldOrderByEndDate()) {
                 $this->orderDates($this->eventCache);
             }
 
@@ -1480,6 +1480,26 @@ class EventQuery extends ElementQuery
             }
         } else {
             return null === $this->orderBy || preg_match('/\\.?startDate$/', $this->orderBy);
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks whether an order parameter has been set
+     * If it hasn't - return false, since we sort by start date by default
+     * If it has - check if is set to end date.
+     */
+    private function shouldOrderByEndDate(): bool
+    {
+        if (\is_array($this->orderBy)) {
+            foreach ($this->orderBy as $key => $sortDirection) {
+                if (preg_match('/\\.?endDate$/', $key)) {
+                    return true;
+                }
+            }
+        } else {
+            return null === $this->orderBy || preg_match('/\\.?endDate$/', $this->orderBy);
         }
 
         return false;
