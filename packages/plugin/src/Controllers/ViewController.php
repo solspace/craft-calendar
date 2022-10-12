@@ -23,14 +23,18 @@ class ViewController extends BaseController
         $rangeEnd = \Craft::$app->request->post('rangeEnd');
         $calendars = \Craft::$app->request->post('calendars');
         $siteId = \Craft::$app->request->post('siteId');
+        $extraCriteria = \Craft::$app->request->post('criteria', []);
 
-        $criteria = [
+        $criteria = array_merge([
             'rangeStart' => $rangeStart,
             'rangeEnd' => $rangeEnd,
-        ];
+        ], $extraCriteria);
 
         if ($calendars) {
-            if ('*' !== $calendars) {
+            // calendars may be form array or comma-separated values
+            if (is_array($calendars)) {
+                $criteria['calendarId'] = $calendars;
+            } elseif ('*' !== $calendars) {
                 $criteria['calendarId'] = explode(',', $calendars);
             }
         } elseif (null !== $calendars) {
