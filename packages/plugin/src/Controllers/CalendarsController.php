@@ -154,7 +154,7 @@ class CalendarsController extends BaseController
         ++$iterator;
 
         $clone->name = preg_replace('/^(.*) \d+$/', '$1', $clone->name).' '.$iterator;
-        $clone->handle = preg_replace('/^(.*)-\d+$/', '$1', $clone->handle).'-'.$iterator;
+        $clone->handle = preg_replace('/^(.*)-\d+$/', '$1', $clone->handle).$iterator;
 
         if ($this->getCalendarService()->saveCalendar($clone)) {
             return $this->asJson(['success' => true]);
