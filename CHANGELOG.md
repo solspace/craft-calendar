@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 4.0.0 - 2022-12-27
+
+### Changed
+- Updated Symfony dependencies to allow version `^6.0`.
+
+### Fixed
+- Fixed a bug where calendars with no fields in the layout would error when attempting to create new events.
+- Fixed a bug where duplicating calendars no longer worked due to the removal of dash `-` in validation.
+- Fixed a bug where ordering by `endDate DESC` would not return the latest event end date in GraphQL.
+- Fixed a bug where `uri` and `typeHandle` were unavailable for events in GraphQL.
+
 ## 4.0.0-beta.8 - 2022-08-02
 
 ### Changed
