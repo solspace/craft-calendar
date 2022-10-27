@@ -78,6 +78,18 @@
 ### Added
 - Added compatibility with Craft 4.x.
 
+## 3.3.17 - 2022-12-27
+
+### Fixed
+- Fixed a bug where duplicating calendars no longer worked due to the removal of dash `-` in validation.
+- Fixed a bug where ordering by `endDate DESC` would not return the latest event end date in GraphQL.
+- Fixed a bug where `uri` and `typeHandle` were unavailable for events in GraphQL.
+
+## 3.3.16 - 2022-09-12
+
+### Fixed
+- Fixed a bug where calendars with no fields in the layout would error when attempting to create new events.
+
 ## 3.3.15 - 2022-08-02
 
 ### Changed
