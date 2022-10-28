@@ -7,12 +7,12 @@ use craft\behaviors\FieldLayoutBehavior;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\ColorHelper;
 use Solspace\Calendar\Library\DateHelper;
-use craft\validators\HandleValidator;
-use craft\validators\UniqueValidator;
 use Solspace\Calendar\Records\CalendarRecord;
 
 class CalendarModel extends Model implements \JsonSerializable
@@ -281,55 +281,55 @@ class CalendarModel extends Model implements \JsonSerializable
 
     public function defineRules(): array
     {
-	    $rules = parent::defineRules();
+        $rules = parent::defineRules();
 
-	    $rules[] = [
-		    ['name', 'handle'],
-		    'required',
-	    ];
+        $rules[] = [
+            ['name', 'handle'],
+            'required',
+        ];
 
-	    $rules[] = [
-	        ['name', 'handle'],
-	        'string',
-	        'max' => 255,
-	    ];
+        $rules[] = [
+            ['name', 'handle'],
+            'string',
+            'max' => 255,
+        ];
 
-	    $rules[] = [
-		    ['handle'],
-		    HandleValidator::class,
-		    'reservedWords' => ['title'],
-	    ];
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => ['title'],
+        ];
 
-	    $rules[] = [
-		    ['name'],
-		    UniqueValidator::class,
-		    'targetClass' => CalendarRecord::class,
-		    'targetAttribute' => ['name'],
-		    'comboNotUnique' => \Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-	    ];
+        $rules[] = [
+            ['name'],
+            UniqueValidator::class,
+            'targetClass' => CalendarRecord::class,
+            'targetAttribute' => ['name'],
+            'comboNotUnique' => \Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+        ];
 
-	    $rules[] = [
-		    ['handle'],
-		    UniqueValidator::class,
-		    'targetClass' => CalendarRecord::class,
-		    'targetAttribute' => ['handle'],
-		    'comboNotUnique' => \Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-	    ];
+        $rules[] = [
+            ['handle'],
+            UniqueValidator::class,
+            'targetClass' => CalendarRecord::class,
+            'targetAttribute' => ['handle'],
+            'comboNotUnique' => \Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+        ];
 
         $rules[] = [
             ['titleFormat'],
             'required',
             'when' => function (self $model) {
                 return !$model->hasTitleField;
-            }
+            },
         ];
 
-	    $rules[] = [
-	        ['titleLabel'],
-	        'required',
-	        'when' => function (self $model) {
+        $rules[] = [
+            ['titleLabel'],
+            'required',
+            'when' => function (self $model) {
                 return $model->hasTitleField;
-            }
+            },
         ];
 
         return $rules;

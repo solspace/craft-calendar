@@ -271,8 +271,8 @@ class EventsApiController extends BaseController
 
         CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
-		$date = Carbon::parse($date, 'UTC');
-	    $date = $date->startOfDay();
+        $date = Carbon::parse($date, 'UTC');
+        $date = $date->startOfDay();
 
         if ($event->repeatsOnSelectDates()) {
             Calendar::getInstance()->selectDates->removeDate($event, $date);
@@ -283,34 +283,32 @@ class EventsApiController extends BaseController
         return $this->asJson('success');
     }
 
-	/**
-	 * https://github.com/solspace/craft-calendar/issues/122.
-	 *
-	 * Adds the first occurrence date to the list of select dates
-	 *
-	 * @return Response
-	 */
+    /**
+     * https://github.com/solspace/craft-calendar/issues/122.
+     *
+     * Adds the first occurrence date to the list of select dates
+     */
     public function actionFirstOccurrenceDate(): Response
     {
-	    $this->requirePostRequest();
+        $this->requirePostRequest();
 
-	    $eventId = \Craft::$app->request->post('eventId');
+        $eventId = \Craft::$app->request->post('eventId');
 
-	    $event = Calendar::getInstance()->events->getEventById($eventId, null, true);
+        $event = Calendar::getInstance()->events->getEventById($eventId, null, true);
 
-	    if (! $event) {
-		    return $this->asErrorJson([
-			    'success' => false,
-			    'event' => Calendar::t('Event could not be found'),
-		    ]);
-	    }
+        if (!$event) {
+            return $this->asErrorJson([
+                'success' => false,
+                'event' => Calendar::t('Event could not be found'),
+            ]);
+        }
 
-	    $event->selectDates = Calendar::getInstance()->events->addFirstOccurrenceDate($event->selectDates);
+        $event->selectDates = Calendar::getInstance()->events->addFirstOccurrenceDate($event->selectDates);
 
-	    return $this->asJson([
-	        'success' => true,
-	        'event' => $event,
-	    ]);
+        return $this->asJson([
+            'success' => true,
+            'event' => $event,
+        ]);
     }
 
     /**

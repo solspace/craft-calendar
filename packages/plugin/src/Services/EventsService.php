@@ -17,9 +17,9 @@ use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
-use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\web\HttpException;
 
@@ -209,24 +209,24 @@ class EventsService extends Component
 
             try {
                 $isSaved = \Craft::$app->elements->saveElement($event, $validateContent, $isNewEvent);
-	            if (! $isSaved) {
-		            return false;
-	            }
+                if (!$isSaved) {
+                    return false;
+                }
 
-		        $isSaved = $this->_respectNonTranslatableFields($event);
-		        if (! $isSaved) {
-			        return false;
-		        }
+                $isSaved = $this->_respectNonTranslatableFields($event);
+                if (!$isSaved) {
+                    return false;
+                }
 
-				$this->reindexSearchForAllSites($event);
+                $this->reindexSearchForAllSites($event);
 
-	            if (null !== $transaction) {
-		            $transaction->commit();
-	            }
+                if (null !== $transaction) {
+                    $transaction->commit();
+                }
 
-	            $this->trigger(self::EVENT_AFTER_SAVE, new SaveElementEvent($event, $isNewEvent));
+                $this->trigger(self::EVENT_AFTER_SAVE, new SaveElementEvent($event, $isNewEvent));
 
-	            return true;
+                return true;
             } catch (\Exception $e) {
                 if (null !== $transaction) {
                     $transaction->rollBack();
@@ -468,31 +468,28 @@ class EventsService extends Component
         }
     }
 
-	/**
-	 * https://github.com/solspace/craft-calendar/issues/122.
-	 *
-	 * Adds the first occurrence date to the list of select dates
-	 *
-	 * @param array $selectDates
-	 * @return array
-	 */
-	public function addFirstOccurrenceDate(array $selectDates): array
-	{
-		if (\array_key_exists(0, $selectDates) && !empty($selectDates[0]) && !empty($selectDates[0]->eventId)) {
-			$event = $this->getEventById($selectDates[0]->eventId, null, true);
+    /**
+     * https://github.com/solspace/craft-calendar/issues/122.
+     *
+     * Adds the first occurrence date to the list of select dates
+     */
+    public function addFirstOccurrenceDate(array $selectDates): array
+    {
+        if (\array_key_exists(0, $selectDates) && !empty($selectDates[0]) && !empty($selectDates[0]->eventId)) {
+            $event = $this->getEventById($selectDates[0]->eventId, null, true);
 
-			if ($event) {
-				$firstOccurrenceDate = new SelectDateModel();
-				$firstOccurrenceDate->id = (int) $event->getId();
-				$firstOccurrenceDate->eventId = (int) $event->getId();
-				$firstOccurrenceDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
+            if ($event) {
+                $firstOccurrenceDate = new SelectDateModel();
+                $firstOccurrenceDate->id = (int) $event->getId();
+                $firstOccurrenceDate->eventId = (int) $event->getId();
+                $firstOccurrenceDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
 
-				array_unshift($selectDates, $firstOccurrenceDate);
-			}
-		}
+                array_unshift($selectDates, $firstOccurrenceDate);
+            }
+        }
 
-		return $selectDates;
-	}
+        return $selectDates;
+    }
 
     /**
      * @throws \craft\errors\SiteNotFoundException
@@ -506,82 +503,80 @@ class EventsService extends Component
         }
     }
 
-	/**
-	 * If we have an event with multi-site enabled and a non-translatable fields, we need to respect the non-translatable field values
-	 *
-	 * @param Event $event
-	 * @return bool
-	 * @throws \Throwable
-	 * @throws \craft\errors\ElementNotFoundException
-	 * @throws \yii\base\Exception
-	 */
+    /**
+     * If we have an event with multi-site enabled and a non-translatable fields, we need to respect the non-translatable field values.
+     *
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \yii\base\Exception
+     */
     private function _respectNonTranslatableFields(Event $event): bool
     {
         if ($event->id && $event::isLocalized() && \Craft::$app->getIsMultiSite()) {
-		    $otherSiteEvents = [];
+            $otherSiteEvents = [];
 
-		    $hasNonTranslatableFields = false;
+            $hasNonTranslatableFields = false;
 
-		    // Grab the other sites ids using the supported site ids for $event.
-		    // So if $event siteId is 1 and $event supports site ids in 1, 2 and 3, we want to grab 2 and 3...
-		    $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($event), 'siteId');
-		    $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $event->siteId);
+            // Grab the other sites ids using the supported site ids for $event.
+            // So if $event siteId is 1 and $event supports site ids in 1, 2 and 3, we want to grab 2 and 3...
+            $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($event), 'siteId');
+            $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $event->siteId);
 
-		    if (! empty($otherSiteIds)) {
-		        foreach ($otherSiteIds as $otherSiteId) {
-			        $otherSiteEvent = $this->getEventById($event->id, $otherSiteId);
+            if (!empty($otherSiteIds)) {
+                foreach ($otherSiteIds as $otherSiteId) {
+                    $otherSiteEvent = $this->getEventById($event->id, $otherSiteId);
 
-			        if ($otherSiteEvent) {
-				        $otherSiteEvents[] = $otherSiteEvent;
-			        }
-		        }
-		    }
+                    if ($otherSiteEvent) {
+                        $otherSiteEvents[] = $otherSiteEvent;
+                    }
+                }
+            }
 
-		    $fieldLayout = $event->getFieldLayout();
+            $fieldLayout = $event->getFieldLayout();
 
-		    // If no field layout, there is nothing to process
-		    if (! $fieldLayout) {
-		        return true;
-		    }
+            // If no field layout, there is nothing to process
+            if (!$fieldLayout) {
+                return true;
+            }
 
-		    $fieldLayoutTabs = $fieldLayout->getTabs();
+            $fieldLayoutTabs = $fieldLayout->getTabs();
 
-		    // If no field layout tabs (which shouldn't be possible if no fields), there is nothing to process
-		    if (! $fieldLayoutTabs) {
-		        return true;
-		    }
+            // If no field layout tabs (which shouldn't be possible if no fields), there is nothing to process
+            if (!$fieldLayoutTabs) {
+                return true;
+            }
 
-		    foreach ($fieldLayoutTabs as $fieldLayoutTab) {
-			    foreach ($fieldLayoutTab->getElements() as $element) {
-				    if ($element instanceof \craft\fieldlayoutelements\CustomField && $element->getField()->translationMethod === \craft\base\Field::TRANSLATION_METHOD_NONE) {
-					    // We've found a field that is non-translatable in $event
-					    $hasNonTranslatableFields = true;
+            foreach ($fieldLayoutTabs as $fieldLayoutTab) {
+                foreach ($fieldLayoutTab->getElements() as $element) {
+                    if ($element instanceof \craft\fieldlayoutelements\CustomField && \craft\base\Field::TRANSLATION_METHOD_NONE === $element->getField()->translationMethod) {
+                        // We've found a field that is non-translatable in $event
+                        $hasNonTranslatableFields = true;
 
-					    // Lets grab the field handle and value
-					    $fieldHandle = $element->getField()->handle;
-					    $fieldValue = $event->getFieldValue($fieldHandle);
+                        // Lets grab the field handle and value
+                        $fieldHandle = $element->getField()->handle;
+                        $fieldValue = $event->getFieldValue($fieldHandle);
 
-					    // Loop over the same event in the other site ids and update the non-translatable field value
-					    foreach ($otherSiteEvents as $otherSiteEvent) {
-						    $otherSiteEvent->setFieldValue($fieldHandle, $fieldValue);
-					    }
-				    }
-			    }
-		    }
+                        // Loop over the same event in the other site ids and update the non-translatable field value
+                        foreach ($otherSiteEvents as $otherSiteEvent) {
+                            $otherSiteEvent->setFieldValue($fieldHandle, $fieldValue);
+                        }
+                    }
+                }
+            }
 
-		    // Save the same event in the other sites
-		    if ($hasNonTranslatableFields) {
-			    foreach ($otherSiteEvents as $otherSiteEvent) {
-				    $isSaved = \Craft::$app->elements->saveElement($otherSiteEvent, false, false, false);
+            // Save the same event in the other sites
+            if ($hasNonTranslatableFields) {
+                foreach ($otherSiteEvents as $otherSiteEvent) {
+                    $isSaved = \Craft::$app->elements->saveElement($otherSiteEvent, false, false, false);
 
-					// If any of the other site events didn't save, we want to bail out and throw an error
-				    if (! $isSaved) {
-					    return false;
-				    }
-			    }
-		    }
-	    }
+                    // If any of the other site events didn't save, we want to bail out and throw an error
+                    if (!$isSaved) {
+                        return false;
+                    }
+                }
+            }
+        }
 
-	    return true;
+        return true;
     }
 }

@@ -123,7 +123,7 @@ $events = [
     'October' => 'Oktober',
     'November' => 'November',
     'December' => 'Dezember',
-	'Exception date cannot be the same as our End Repeat date' => 'Das Ausnahmedatum darf nicht mit unserem Endwiederholungsdatum übereinstimmen',
+    'Exception date cannot be the same as our End Repeat date' => 'Das Ausnahmedatum darf nicht mit unserem Endwiederholungsdatum übereinstimmen',
 ];
 $calendars = [
     'Name' => 'Name',

@@ -478,8 +478,8 @@ class Event extends Element implements \JsonSerializable
         }
 
         if (null === $this->selectDates) {
-	        $this->hydrateSelectDates();
-	    }
+            $this->hydrateSelectDates();
+        }
 
         $cacheHash = md5(($rangeStart ? $rangeStart->getTimestamp() : 0).($rangeEnd ? $rangeEnd->getTimestamp() : 0));
         if (!isset($this->selectDatesCache[$cacheHash])) {
@@ -1145,7 +1145,7 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function canDelete(User $user): bool
     {
@@ -1153,7 +1153,7 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-	 * @inheritdoc
+     * {@inheritdoc}
      */
     public function canSave(User $user): bool
     {
@@ -1363,6 +1363,27 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
+     * We override actions from Element as we dont want to append View, Edit and Delete actions.
+     * We only want our custom Status, Delete and Restore actions.
+     *
+     * {@inheritdoc}
+     */
+    public static function actions(string $source): array
+    {
+        $actions = Collection::make(static::defineActions($source));
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementActionsEvent([
+            'source' => $source,
+            'actions' => $actions->all(),
+        ]);
+
+        BaseEvent::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+
+        return $event->actions;
+    }
+
+    /**
      * {@inheritDoc}
      */
     protected static function defineSources(string $context = null): array
@@ -1464,9 +1485,9 @@ class Event extends Element implements \JsonSerializable
                 'confirmationMessage' => Calendar::t('Are you sure you want to delete the selected events?'),
                 'successMessage' => Calendar::t('Events deleted.'),
             ]),
-	        \Craft::$app->elements->createAction([
-		        'type' => SetStatusAction::class,
-	        ]),
+            \Craft::$app->elements->createAction([
+                'type' => SetStatusAction::class,
+            ]),
         ];
 
         if (version_compare(\Craft::$app->getVersion(), '3.1', '>=')) {
@@ -1512,27 +1533,6 @@ class Event extends Element implements \JsonSerializable
                 return parent::tableAttributeHtml($attribute);
         }
     }
-
-	/**
-	 * We override actions from Element as we dont want to append View, Edit and Delete actions.
-	 * We only want our custom Status, Delete and Restore actions.
-	 *
-	 * @inheritdoc
-	 */
-	public static function actions(string $source): array
-	{
-		$actions = Collection::make(static::defineActions($source));
-
-		// Give plugins a chance to modify them
-		$event = new RegisterElementActionsEvent([
-			'source' => $source,
-			'actions' => $actions->all(),
-		]);
-
-		BaseEvent::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
-
-		return $event->actions;
-	}
 
     /**
      * {@inheritdoc}

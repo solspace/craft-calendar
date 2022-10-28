@@ -297,19 +297,19 @@ class CalendarVariable
         return str_replace(array_keys($replacements), $replacements, $format);
     }
 
-	/**
-	 * https://github.com/solspace/craft-calendar/issues/122.
-	 *
-	 * Adds the first occurrence date to the list of select dates
-	 *
-	 * @param Event $event
-	 * @return Event $event
-	 * @throws \yii\base\ExitException
-	 */
+    /**
+     * https://github.com/solspace/craft-calendar/issues/122.
+     *
+     * Adds the first occurrence date to the list of select dates
+     *
+     * @throws \yii\base\ExitException
+     *
+     * @return Event $event
+     */
     public function addFirstOccurrenceDate(Event $event): Event
     {
-		$event->selectDates = Calendar::getInstance()->events->addFirstOccurrenceDate($event->selectDates);
+        $event->selectDates = Calendar::getInstance()->events->addFirstOccurrenceDate($event->selectDates);
 
-	    return $event;
+        return $event;
     }
 }

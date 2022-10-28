@@ -49,7 +49,7 @@ class EventInterface extends AbstractInterface
                     'typeHandle' => [
                         'name' => 'typeHandle',
                         'type' => Type::string(),
-                        'description' => "The handle of the entry type that contains the event.",
+                        'description' => 'The handle of the entry type that contains the event.',
                     ],
                     'postDate' => [
                         'name' => 'postDate',
