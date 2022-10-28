@@ -10,18 +10,47 @@ use Solspace\Calendar\Library\CalendarPermissionHelper;
 
 class DeleteEventAction extends ElementAction
 {
-    /** @var string */
-    public $confirmationMessage;
+	/**
+	 * @var string|null The confirmation message that should be shown before the elements get deleted
+	 */
+	public ?string $confirmationMessage = null;
 
-    /** @var string */
-    public $successMessage;
+	/**
+	 * @var string|null The message that should be shown after the elements get deleted
+	 */
+	public ?string $successMessage = null;
+
+    /**
+     * {@inheritdoc}
+     */
+	public function getTriggerHtml(): ?string
+	{
+		// Only enable for deletable elements, per canDelete()
+		\Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
+        validateSelection: \$selectedItems => {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
+                    return false;
+                }
+            }
+            return true;
+        },
+    });
+})();
+JS, [static::class]);
+
+		return null;
+	}
 
     /**
      * {@inheritdoc}
      */
     public function getTriggerLabel(): string
     {
-        return Calendar::t('Delete…');
+        return Calendar::t('Delete');
     }
 
     /**
@@ -37,7 +66,13 @@ class DeleteEventAction extends ElementAction
      */
     public function getConfirmationMessage(): ?string
     {
-        return $this->confirmationMessage;
+	    if (isset($this->confirmationMessage)) {
+		    return $this->confirmationMessage;
+	    }
+
+	    return \Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+		    'type' => 'Event',
+	    ]);
     }
 
     /**
@@ -52,7 +87,13 @@ class DeleteEventAction extends ElementAction
             }
         }
 
-        $this->setMessage($this->successMessage);
+	    if (isset($this->successMessage)) {
+		    $this->setMessage($this->successMessage);
+	    } else {
+		    $this->setMessage(\Craft::t('app', '{type} deleted.', [
+			    'type' => 'Event',
+		    ]));
+	    }
 
         return true;
     }

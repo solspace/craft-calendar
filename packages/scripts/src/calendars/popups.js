@@ -318,7 +318,9 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
             },
             success: function (response) {
               if (response.success && response.event && response.event.hasOwnProperty('readableRepeatRule')) {
-                $('.event-repeats').html('<label>' + Craft.t('calendar', 'Repeats') + ':</label> ' + response.event.readableRepeatRule);
+                $('.event-repeats').html(
+                  '<label>' + Craft.t('calendar', 'Repeats') + ':</label> ' + response.event.readableRepeatRule
+                );
               }
             },
           });

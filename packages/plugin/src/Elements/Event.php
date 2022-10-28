@@ -9,13 +9,15 @@ use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use craft\events\RegisterElementActionsEvent;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
+use Illuminate\Support\Collection;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
-use Solspace\Calendar\Elements\Actions\SetStatusAction;
 use Solspace\Calendar\Elements\Actions\DeleteEventAction;
+use Solspace\Calendar\Elements\Actions\SetStatusAction;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
@@ -33,6 +35,7 @@ use Solspace\Calendar\Records\ExceptionRecord;
 use Solspace\Calendar\Records\SelectDateRecord;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
+use yii\base\Event as BaseEvent;
 
 class Event extends Element implements \JsonSerializable
 {
@@ -1141,6 +1144,22 @@ class Event extends Element implements \JsonSerializable
         return DateHelper::carbonDiffInDays($this->getStartDate(), $event->getStartDate());
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        return $this->isEditable($this);
+    }
+
+    /**
+	 * @inheritdoc
+     */
+    public function canSave(User $user): bool
+    {
+        return $this->isEditable($this);
+    }
+
     public function afterSave(bool $isNew): void
     {
         $insertData = [
@@ -1493,6 +1512,27 @@ class Event extends Element implements \JsonSerializable
                 return parent::tableAttributeHtml($attribute);
         }
     }
+
+	/**
+	 * We override actions from Element as we dont want to append View, Edit and Delete actions.
+	 * We only want our custom Status, Delete and Restore actions.
+	 *
+	 * @inheritdoc
+	 */
+	public static function actions(string $source): array
+	{
+		$actions = Collection::make(static::defineActions($source));
+
+		// Give plugins a chance to modify them
+		$event = new RegisterElementActionsEvent([
+			'source' => $source,
+			'actions' => $actions->all(),
+		]);
+
+		BaseEvent::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+
+		return $event->actions;
+	}
 
     /**
      * {@inheritdoc}
