@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 4.0.1 - 2022-11-21
+
+### Fixed
+- Fixed a bug where links to view/edit individual events in the CP disappeared in Craft 4.3.2+.
+- Fixed a bug where the "Set status" actions were greyed out in the CP events index, making it not possible to change the status from this menu.
+
 ## 4.0.0 - 2022-12-27
 
 ### Changed
