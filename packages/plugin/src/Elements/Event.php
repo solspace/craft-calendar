@@ -339,6 +339,11 @@ class Event extends Element implements \JsonSerializable
         return CalendarPermissionHelper::canEditEvent($this);
     }
 
+    public function canView(User $user): bool
+    {
+        return true;
+    }
+
     public static function gqlTypeNameByContext(mixed $context): string
     {
         if ($context instanceof CalendarModel) {
