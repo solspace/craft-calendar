@@ -47,6 +47,11 @@ class EventInterface extends AbstractInterface
                         'type' => Type::string(),
                         'description' => "The event's UUID",
                     ],
+                    'typeHandle' => [
+                        'name' => 'typeHandle',
+                        'type' => Type::string(),
+                        'description' => "The handle of the entry type that contains the event.",
+                    ],
                     'postDate' => [
                         'name' => 'postDate',
                         'type' => Type::string(),
@@ -121,6 +126,11 @@ class EventInterface extends AbstractInterface
                         'name' => 'url',
                         'type' => Type::string(),
                         'description' => 'The url of the event',
+                    ],
+                    'uri' => [
+                        'name' => 'uri',
+                        'type' => Type::string(),
+                        'description' => 'The uri of the event',
                     ],
                     'allDay' => [
                         'name' => 'allDay',

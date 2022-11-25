@@ -287,6 +287,11 @@ class Event extends Element implements \JsonSerializable
         return new EventQuery(self::class);
     }
 
+    public static function typeHandle()
+    {
+        return 'event';
+    }
+
     public static function hasTitles(): bool
     {
         return true;
