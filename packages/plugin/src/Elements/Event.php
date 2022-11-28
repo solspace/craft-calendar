@@ -1448,6 +1448,7 @@ class Event extends Element implements \JsonSerializable
     protected static function defineSortOptions(): array
     {
         return [
+            'title' => Calendar::t('Title'),
             'name' => Calendar::t('Calendar'),
             'startDate' => Calendar::t('Start Date'),
             'endDate' => Calendar::t('End Date'),
