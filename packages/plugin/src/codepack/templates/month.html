@@ -31,12 +31,16 @@
                     calendar: calendarHandle,
                 }) %}
 
+                {% set dateBoundsHelper = now.diff(month.nextDate)|date('%r%a') %}
+
                 <div class="row justify-content-between mb-3">
                     <div class="col-3">
+                    {% if dateBoundsHelper > -365 %}
                         <a class="btn btn-outline-secondary"
                            href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.previousDate.format('Y/m') }}">
                             <span class="fas fa-arrow-left"></span> {{ month.previousDate.format('F') }}
                         </a>
+                    {% endif %}
                     </div>
 
                     <div class="col-auto">
@@ -49,10 +53,12 @@
                     </div>
 
                     <div class="col-3 clearfix">
+                    {% if dateBoundsHelper < 365 %}
                         <a class="btn btn-outline-secondary float-right"
                            href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.nextDate.format('Y/m') }}">
                             {{ month.nextDate.format('F') }} <span class="fas fa-arrow-right"></span>
                         </a>
+                    {% endif %}
                     </div>
                 </div>
 
