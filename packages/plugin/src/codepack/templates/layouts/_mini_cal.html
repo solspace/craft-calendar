@@ -16,22 +16,28 @@
     date: targetDate,
 }) %}
 
+{% set dateBoundsHelper = now.diff(month.nextDate)|date('%r%a') %}
+
 <div id="mini_calendar">
     <table class="table table-bordered">
         <thead>
         <tr>
             <th colspan="1">
+            {% if dateBoundsHelper > -365 %}
                 {% if segment2 != "calendars" %}
                     <a id="mini_calendar_prev_month" href="{{ siteUrl }}demo/month/{{ month.previousDate.format('Y/m') }}/">&larr;</a>
                 {% endif %}
+            {% endif %}
             </th>
             <th colspan="5">
                 {{ month.date.format('F Y') }}
             </th>
             <th colspan="1">
+            {% if dateBoundsHelper < 365 %}
                 {% if segment2 != "calendars" %}
                     <a id="mini_calendar_next_month" href="{{ siteUrl }}demo/month/{{ month.nextDate.format('Y/m') }}/"> &rarr;</a>
                 {% endif %}
+            {% endif %}
             </th>
         </tr>
         <tr class="mini_calendar_days">
