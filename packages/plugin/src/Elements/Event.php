@@ -1598,13 +1598,25 @@ class Event extends Element implements \JsonSerializable
             return null;
         }
 
+        $sortedByDay = $this->byDay;
+        if ($sortedByDay) {
+            $weekDays = RRule::$week_days;
+            $sortedByDay = explode(',', $sortedByDay);
+            usort(
+                $sortedByDay,
+                fn ($a, $b) => ($weekDays[$a] ?? 0) <=> ($weekDays[$b] ?? 0)
+            );
+
+            $sortedByDay = implode(',', $sortedByDay);
+        }
+
         return new RRule([
             'FREQ' => $this->getFrequency(),
             'INTERVAL' => $this->interval,
             'DTSTART' => $this->initialStartDate->copy()->setTime(0, 0, 0),
             'UNTIL' => $this->getUntil(),
             'COUNT' => $this->count,
-            'BYDAY' => $this->byDay,
+            'BYDAY' => $sortedByDay,
             'BYMONTHDAY' => $this->byMonthDay,
             'BYMONTH' => $this->byMonth,
             'BYYEARDAY' => $this->byYearDay,
