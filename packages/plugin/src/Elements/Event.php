@@ -1426,7 +1426,6 @@ class Event extends Element implements \JsonSerializable
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Calendar::t('Title')],
             'slug' => ['label' => Calendar::t('Slug')],
             'calendar' => ['label' => Calendar::t('Calendar')],
             'startDateLocalized' => ['label' => Calendar::t('Start Date')],
@@ -1470,7 +1469,6 @@ class Event extends Element implements \JsonSerializable
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'title',
             'calendar',
             'startDate',
             'endDate',
