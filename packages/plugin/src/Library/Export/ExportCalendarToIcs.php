@@ -112,8 +112,8 @@ class ExportCalendarToIcs extends AbstractExportCalendar
         $selectDates = $event->getSelectDates();
         if (empty($selectDates) && $event->isRepeating()) {
             $rrule = $event->getRRule();
-            [$dtstart, $rrule] = explode("\n", $rrule);
             if ($rrule) {
+                [$dtstart, $rrule] = explode("\n", $rrule);
                 $exportString .= sprintf("%s\r\n", $rrule);
             }
             $exceptionDatesValues = [];
