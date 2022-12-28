@@ -1,5 +1,15 @@
 # Solspace Calendar Changelog
 
+## 4.0.2 - 2022-12-28
+
+### Changed
+- Updated the demo templates to include a helper to set date bounds to prevent endless search engine crawling.
+
+### Fixed
+- Fixed a bug where `readableRepeatRule` would output the days in the order they were chosen, not chronologically.
+- Fixed a bug where the Events CP index was showing both an "Element" and "Title" column.
+- Fixed a bug where the ICS feed subscription URL for a whole calender would sometimes return an "undefined array key 1" exception.
+
 ## 4.0.1 - 2022-11-21
 
 ### Fixed
