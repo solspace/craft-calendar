@@ -197,6 +197,18 @@ export const getDayViewLink = (date) => {
 export const getEvents = (start, end, timezone, callback) => {
   getSpinner().fadeIn('fast');
 
+  const $calendarList = $('ul.calendar-list');
+
+  let calendarIds = '*';
+  if ($calendarList.length) {
+    calendarIds = $('input:checked', $calendarList)
+        .map(function () {
+          return $(this).val();
+        })
+        .get()
+        .join();
+  }
+
   const { currentSiteId } = $('#solspace-calendar').data();
   const $calendarFilters = $('form.calendar-filters');
 
@@ -204,7 +216,9 @@ export const getEvents = (start, end, timezone, callback) => {
     ...$calendarFilters.serializeArray(),
     { name: 'rangeStart', value: start.toISOString() },
     { name: 'rangeEnd', value: end.toISOString() },
+    { name: 'calendars', value: calendarIds },
     { name: 'siteId', value: currentSiteId },
+    { name: [Craft.csrfTokenName], value: Craft.csrfTokenValue },
   ];
 
   $.ajax({

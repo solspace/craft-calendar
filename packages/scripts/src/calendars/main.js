@@ -224,6 +224,8 @@ $(() => {
       }
 
       $miniCal.data('calendars', usedCalendarIds.join(','));
+      $miniCal.fullCalendar('refetchEvents');
+      $calendar.fullCalendar('refetchEvents');
     },
   });
 
