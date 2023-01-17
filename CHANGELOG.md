@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 4.0.3 - 2023-01-17
+
+### Added
+- Added `cp.solspace.calendar.filters` hook to customize calendar filters in the CP Month/Week/Day view.
+
+### Fixed
+- Fixed a bug where events would not correctly display in alphabetical order when sorted by element title in the CP Events index when paginated.
+- Fixed a bug where event titles were not always being translated per site, when applicable.
+
 ## 4.0.2 - 2022-12-28
 
 ### Changed
@@ -93,6 +102,14 @@
 
 ### Added
 - Added compatibility with Craft 4.x.
+
+## 3.3.18 - 2023-01-17
+
+### Added
+- Added `cp.solspace.calendar.filters` hook to customize calendar filters in the CP Month/Week/Day view.
+
+### Changed
+- Updated `symfony/property-access`, `symfony/finder` and `symfony/filesystem` dependency version requirements to resolve potential conflicts.
 
 ## 3.3.17 - 2022-12-27
 
