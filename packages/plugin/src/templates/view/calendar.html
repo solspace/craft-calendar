@@ -117,28 +117,37 @@
              data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
         ></div>
 
-        <nav>
-            <ul class="calendar-list">
-                <li class="heading">
-                    <a href="#" class="sel" style="display: none;">{{ "Calendars"|t('calendar') }}</a>
-                    <span>
-                        {{ "Calendars"|t('calendar') }}
-                    </span>
-                </li>
-                {% for id, calendar in craft.calendar.calendars %}
-                    <li class="item">
-                        <input type="checkbox"
-                               name="calendar[]"
-                               id="calendar-item-{{ calendar.id }}"
-                               value="{{ calendar.id }}"
-                               checked />
-                        <label for="calendar-item-{{ calendar.id }}">
-                            <span style="background: {{ calendar.color }}; color: {{ calendar.contrastColor }}; border-color: {{ calendar.darkerColor }};"></span>
-                            {{ calendar.name }}
-                        </label>
+        <form class="calendar-filters">
+            {{ csrfInput() }}
+            <nav>
+                <ul class="calendar-list">
+                    <li class="heading">
+                        <a href="#" class="sel" style="display: none;">{{ "Calendars"|t('calendar') }}</a>
+                        <span>
+                            {{ "Calendars"|t('calendar') }}
+                        </span>
                     </li>
-                {% endfor %}
-            </ul>
-        </nav>
+                    <input type="hidden"
+                           name="calendars[]"
+                           value="">
+                    {% for id, calendar in craft.calendar.calendars %}
+                        <li class="item">
+                            <input type="checkbox"
+                                   name="calendars[]"
+                                   id="calendar-item-{{ calendar.id }}"
+                                   value="{{ calendar.id }}"
+                                   checked />
+                            <label for="calendar-item-{{ calendar.id }}">
+                                <span style="background: {{ calendar.color }}; color: {{ calendar.contrastColor }}; border-color: {{ calendar.darkerColor }};"></span>
+                                {{ calendar.name }}
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+
+            {% hook 'cp.solspace.calendar.filters' %}
+
+        </form>
     {% endif %}
 {% endblock %}

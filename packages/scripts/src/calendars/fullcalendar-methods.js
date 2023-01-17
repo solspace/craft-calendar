@@ -202,24 +202,28 @@ export const getEvents = (start, end, timezone, callback) => {
   let calendarIds = '*';
   if ($calendarList.length) {
     calendarIds = $('input:checked', $calendarList)
-      .map(function () {
-        return $(this).val();
-      })
-      .get()
-      .join();
+        .map(function () {
+          return $(this).val();
+        })
+        .get()
+        .join();
   }
 
   const { currentSiteId } = $('#solspace-calendar').data();
+  const $calendarFilters = $('form.calendar-filters');
+
+  const dataArray = [
+    ...$calendarFilters.serializeArray(),
+    { name: 'rangeStart', value: start.toISOString() },
+    { name: 'rangeEnd', value: end.toISOString() },
+    { name: 'calendars', value: calendarIds },
+    { name: 'siteId', value: currentSiteId },
+    { name: [Craft.csrfTokenName], value: Craft.csrfTokenValue },
+  ];
 
   $.ajax({
     url: Craft.getCpUrl('calendar/month'),
-    data: {
-      rangeStart: start.toISOString(),
-      rangeEnd: end.toISOString(),
-      calendars: calendarIds,
-      siteId: currentSiteId,
-      [Craft.csrfTokenName]: Craft.csrfTokenValue,
-    },
+    data: $.param(dataArray),
     type: 'post',
     dataType: 'json',
     success: function (eventList) {
