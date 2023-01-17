@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Models;
 
+use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\helpers\ArrayHelper;
@@ -51,6 +52,12 @@ class CalendarModel extends Model implements \JsonSerializable
     public $hasTitleField;
 
     /** @var string */
+    public $titleTranslationMethod;
+
+    /** @var string|null */
+    public $titleTranslationKeyFormat;
+
+    /** @var string */
     public $descriptionFieldHandle;
 
     /** @var string */
@@ -87,6 +94,8 @@ class CalendarModel extends Model implements \JsonSerializable
         $model->hasTitleField = true;
         $model->icsTimezone = DateHelper::FLOATING_TIMEZONE;
         $model->allowRepeatingEvents = true;
+        $model->titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+        $model->titleTranslationKeyFormat = null;
 
         return $model;
     }

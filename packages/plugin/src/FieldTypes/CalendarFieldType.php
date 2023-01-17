@@ -88,12 +88,17 @@ class CalendarFieldType extends Field
 
     public static function supportedTranslationMethods(): array
     {
-        return [];
+        return [
+            self::TRANSLATION_METHOD_SITE,
+            self::TRANSLATION_METHOD_SITE_GROUP,
+            self::TRANSLATION_METHOD_LANGUAGE,
+            self::TRANSLATION_METHOD_CUSTOM,
+        ];
     }
 
     public function getIsTranslatable(?ElementInterface $element = null): bool
     {
-        return false;
+        return true;
     }
 
     /**

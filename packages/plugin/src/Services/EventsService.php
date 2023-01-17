@@ -49,7 +49,7 @@ class EventsService extends Component
             $query->siteId($siteId);
         }
 
-        return $query->one();
+        return $query->_one();
     }
 
     /**
@@ -66,7 +66,7 @@ class EventsService extends Component
             ->setAllowedCalendarsOnly(false)
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->siteId($siteId)
-            ->one()
+            ->_one()
         ;
     }
 
@@ -90,7 +90,7 @@ class EventsService extends Component
         }
 
         /** @var Event[] $events */
-        $events = $query->all();
+        $events = $query->_all();
 
         $indexedById = [];
         foreach ($events as $event) {

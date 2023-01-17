@@ -198,6 +198,8 @@ class CalendarsController extends BaseController
         $calendar->titleFormat = $request->post('titleFormat');
         $calendar->titleLabel = $request->post('titleLabel');
         $calendar->hasTitleField = (bool) $request->post('hasTitleField');
+        $calendar->titleTranslationMethod = $request->post('titleTranslationMethod');
+        $calendar->titleTranslationKeyFormat = $request->post('titleTranslationKeyFormat');
         $calendar->icsTimezone = $request->post('icsTimezone');
         $calendar->allowRepeatingEvents = (bool) $request->post('allowRepeatingEvents');
 
@@ -374,6 +376,8 @@ class CalendarsController extends BaseController
                 'continueEditingUrl' => 'calendar/calendars/{handle}',
                 'customFields' => $customFieldData,
                 'timezoneOptions' => DateHelper::getTimezoneOptions(),
+                'typeName' => Event::displayName(),
+                'lowerTypeName' => Event::lowerDisplayName(),
             ]
         );
     }

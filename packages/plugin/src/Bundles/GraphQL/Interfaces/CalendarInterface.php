@@ -73,6 +73,16 @@ class CalendarInterface extends AbstractInterface
                 'type' => Type::string(),
                 'description' => "The calendar's color",
             ],
+            'titleTranslationMethod' => [
+                'name' => 'titleTranslationMethod',
+                'type' => Type::string(),
+                'description' => "The calendar's title translation method",
+            ],
+            'titleTranslationKeyFormat' => [
+                'name' => 'titleTranslationKeyFormat',
+                'type' => Type::string(),
+                'description' => "The calendar's title translation key format",
+            ],
             'descriptionFieldHandle' => [
                 'name' => 'name',
                 'type' => Type::string(),

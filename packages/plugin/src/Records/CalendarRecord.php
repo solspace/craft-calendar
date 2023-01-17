@@ -16,6 +16,8 @@ use yii\db\ActiveQuery;
  * @property string $titleFormat
  * @property string $titleLabel
  * @property string $hasTitleField
+ * @property string $titleTranslationMethod
+ * @property string $titleTranslationKeyFormat
  * @property string $descriptionFieldHandle
  * @property string $locationFieldHandle
  * @property string $icsHash

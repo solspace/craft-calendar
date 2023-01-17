@@ -42,6 +42,8 @@ class CalendarProjectConfig implements BundleInterface
             'handle' => $event->newValue['handle'],
             'description' => $event->newValue['description'],
             'color' => $event->newValue['color'],
+            'titleTranslationMethod' => $event->newValue['titleTranslationMethod'],
+            'titleTranslationKeyFormat' => $event->newValue['titleTranslationKeyFormat'],
             'descriptionFieldHandle' => $event->newValue['descriptionFieldHandle'],
             'locationFieldHandle' => $event->newValue['locationFieldHandle'],
             'icsHash' => $event->newValue['icsHash'],
