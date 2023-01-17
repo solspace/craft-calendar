@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 3.3.18 - 2023-01-17
+
+### Added
+- Added `cp.solspace.calendar.filters` hook to customize calendar filters in the CP Month/Week/Day view.
+
+### Changed
+- Updated `symfony/property-access`, `symfony/finder` and `symfony/filesystem` dependency version requirements to resolve potential conflicts.
+
 ## 3.3.17 - 2022-12-27
 
 ### Fixed
