@@ -11,10 +11,13 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\events\RegisterElementActionsEvent;
+use craft\fieldlayoutelements\TitleField;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use Illuminate\Support\Collection;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
@@ -294,6 +297,14 @@ class Event extends Element implements \JsonSerializable
         return true;
     }
 
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_ENABLED => \Craft::t('app', 'Enabled'),
+            self::STATUS_DISABLED => \Craft::t('app', 'Disabled'),
+        ];
+    }
+
     /**
      * @param array $config
      *
@@ -457,11 +468,34 @@ class Event extends Element implements \JsonSerializable
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        if ($this->calendarId) {
-            return $this->getCalendar()->getFieldLayout();
+        if (!$this->calendarId) {
+            return null;
         }
 
-        return null;
+        $layoutElements = [];
+
+        if ($this->getCalendar()->hasTitleField) {
+            $layoutElements[] = new TitleField([
+                'label' => 'Title',
+                'title' => 'Title',
+                'name' => 'title',
+            ]);
+        }
+
+        foreach ($this->getCalendar()->getFieldLayout()->getTabs() as $tab) {
+            $layoutElements = array_merge($layoutElements, $tab->getElements());
+        }
+
+        $fieldLayout = new FieldLayout();
+
+        $tab = new FieldLayoutTab();
+        $tab->name = 'Content';
+        $tab->setLayout($fieldLayout);
+        $tab->setElements($layoutElements);
+
+        $fieldLayout->setTabs([ $tab ]);
+
+        return $fieldLayout;
     }
 
     public function getCalendar(): CalendarModel
@@ -1241,6 +1275,17 @@ class Event extends Element implements \JsonSerializable
         return $this->isEditable($this);
     }
 
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        $this->updateTitle();
+
+        return parent::beforeSave($isNew);
+    }
+
     public function afterSave(bool $isNew): void
     {
         $insertData = [
@@ -1437,10 +1482,59 @@ class Event extends Element implements \JsonSerializable
 
     public function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
-            $this->slugFieldHtml(),
-            parent::metaFieldsHtml($static),
+        $fields = [];
+        $view = \Craft::$app->getView();
+
+        $fields[] = (function() use ($static) {
+            return Cp::textFieldHtml([
+                'label' => \Craft::t('app', 'Calendar'),
+                'id' => 'calendar',
+                'name' => 'calendar',
+                'value' => $this->getCalendar()->name,
+                'readonly' => true,
+            ]);
+        })();
+
+        // Slug
+        $fields[] = $this->slugFieldHtml($static);
+
+        // Author
+        if (\Craft::$app->getEdition() === \Craft::Pro) {
+            $fields[] = (function() use ($static) {
+                $author = $this->getAuthor();
+
+                return Cp::elementSelectFieldHtml([
+                    'label' => \Craft::t('app', 'Author'),
+                    'id' => 'authorId',
+                    'name' => 'authorId',
+                    'elementType' => User::class,
+                    'selectionLabel' => \Craft::t('app', 'Choose'),
+                    'criteria' => [],
+                    'single' => true,
+                    'elements' => $author ? [$author] : null,
+                    'disabled' => $static,
+                ]);
+            })();
+        }
+
+        $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+        $view->setIsDeltaRegistrationActive(true);
+        $view->registerDeltaName('postDate');
+        $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+
+        // Post Date
+        $fields[] = Cp::dateTimeFieldHtml([
+            'label' => \Craft::t('app', 'Post Date'),
+            'id' => 'postDate',
+            'name' => 'postDate',
+            'value' => $this->getPostDate(),
+            'errors' => $this->getErrors('postDate'),
+            'disabled' => $static,
         ]);
+
+        $fields[] = parent::metaFieldsHtml($static);
+
+        return implode("\n", $fields);
     }
 
     /**
