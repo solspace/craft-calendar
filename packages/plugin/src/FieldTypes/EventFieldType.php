@@ -79,21 +79,6 @@ class EventFieldType extends BaseRelationField
         return $query;
     }
 
-    public static function supportedTranslationMethods(): array
-    {
-        return [
-            self::TRANSLATION_METHOD_SITE,
-            self::TRANSLATION_METHOD_SITE_GROUP,
-            self::TRANSLATION_METHOD_LANGUAGE,
-            self::TRANSLATION_METHOD_CUSTOM,
-        ];
-    }
-
-    public function getIsTranslatable(ElementInterface $element = null): bool
-    {
-        return true;
-    }
-
     public static function elementType(): string
     {
         return Event::class;
