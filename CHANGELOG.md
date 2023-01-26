@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 4.0.4 - 2023-01-26
+
+### Fixed
+- Fixed a bug where sites with just 1 site would encounter a `titleTranslationMethod cannot be null` error when attempting to create a new calendar.
+- Fixed a bug where `titleTranslationMethod` and `titleTranslationKeyFormat` fields were sometimes not being added during a fresh install or update.
+- Fixed a bug where Calendar could error if a calendar had no field layout.
+- Fixed a bug where calendars that have titles set to be NOT TRANSLATABLE were still being translated per site.
+- Fixed a bug where attempting to edit a Calendar event through the Craft element editor modal would fail.
+
 ## 4.0.3 - 2023-01-17
 
 ### Added
