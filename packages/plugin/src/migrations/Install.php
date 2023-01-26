@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\migrations;
 
+use craft\base\Field;
 use Solspace\Commons\Migrations\ForeignKey;
 use Solspace\Commons\Migrations\StreamlinedInstallMigration;
 use Solspace\Commons\Migrations\Table;
@@ -24,6 +25,8 @@ class Install extends StreamlinedInstallMigration
                 ->addField('titleFormat', $this->string())
                 ->addField('titleLabel', $this->string()->defaultValue('Title'))
                 ->addField('hasTitleField', $this->boolean()->notNull()->defaultValue(true))
+                ->addField('titleTranslationMethod', $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE))
+                ->addField('titleTranslationKeyFormat', $this->text())
                 ->addField('descriptionFieldHandle', $this->string())
                 ->addField('locationFieldHandle', $this->string())
                 ->addField('icsHash', $this->string())

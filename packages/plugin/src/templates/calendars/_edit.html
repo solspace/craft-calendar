@@ -214,6 +214,9 @@
                     errors: calendar.getErrors('titleTranslationKeyFormat')
                 }) }}
             </div>
+        {% else %}
+            <input type="hidden" name="titleTranslationMethod" value="none">
+            <input type="hidden" name="titleTranslationKeyFormat" value="">
         {% endif %}
 
         {{ forms.textField({
