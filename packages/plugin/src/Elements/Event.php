@@ -482,8 +482,12 @@ class Event extends Element implements \JsonSerializable
             ]);
         }
 
-        foreach ($this->getCalendar()->getFieldLayout()->getTabs() as $tab) {
-            $layoutElements = array_merge($layoutElements, $tab->getElements());
+        $fieldLayout = $this->getCalendar()->getFieldLayout();
+
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getTabs() as $tab) {
+                $layoutElements = array_merge($layoutElements, $tab->getElements());
+            }
         }
 
         $fieldLayout = new FieldLayout();
