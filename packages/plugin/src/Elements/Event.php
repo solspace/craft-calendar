@@ -472,32 +472,44 @@ class Event extends Element implements \JsonSerializable
             return null;
         }
 
-        $layoutElements = [];
+        $fieldLayout = $this->getCalendar()->getFieldLayout();
+        if (!$fieldLayout) {
+            $fieldLayout = new FieldLayout();
+        }
 
         if ($this->getCalendar()->hasTitleField) {
-            $layoutElements[] = new TitleField([
-                'label' => 'Title',
-                'title' => 'Title',
-                'name' => 'title',
-            ]);
-        }
+            $tabs = $fieldLayout->getTabs();
 
-        $fieldLayout = $this->getCalendar()->getFieldLayout();
+            $hasTitle = !empty(
+                array_filter(
+                    $tabs,
+                    function (FieldLayoutTab $tab) {
+                        foreach ($tab->getElements() as $element) {
+                            if ($element instanceof TitleField) {
+                                return true;
+                            }
+                        }
 
-        if ($fieldLayout) {
-            foreach ($fieldLayout->getTabs() as $tab) {
-                $layoutElements = array_merge($layoutElements, $tab->getElements());
+                        return false;
+                    }
+                )
+            );
+
+            if (!$hasTitle) {
+                $firstTab = reset($tabs);
+                if ($firstTab) {
+                    $firstTab->setElements(
+                        array_merge([
+                            new TitleField([
+                                'label' => 'Title',
+                                'title' => 'Title',
+                                'name' => 'title',
+                            ]),
+                        ], $firstTab->getElements())
+                    );
+                }
             }
         }
-
-        $fieldLayout = new FieldLayout();
-
-        $tab = new FieldLayoutTab();
-        $tab->name = 'Content';
-        $tab->setLayout($fieldLayout);
-        $tab->setElements($layoutElements);
-
-        $fieldLayout->setTabs([ $tab ]);
 
         return $fieldLayout;
     }
