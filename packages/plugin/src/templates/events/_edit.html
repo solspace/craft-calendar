@@ -100,13 +100,13 @@
     {% if event.id %}<input type="hidden" name="eventId" value="{{ event.id }}">{% endif %}
     <input type="hidden" name="{{ name ~ "[calendarId]" }}" value="{{ event.calendarId }}">
 
+    {% include "calendar/events/_event_editor" %}
+
     {% if form %}
         <div id="fields" style="margin-bottom: 24px;">
             {{ form.render()|raw }}
         </div>
     {% endif %}
-
-    {% include "calendar/events/_event_editor" %}
 
 {% endblock %}
 
