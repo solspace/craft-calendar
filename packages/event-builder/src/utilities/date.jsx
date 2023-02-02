@@ -41,13 +41,9 @@ export const fromUnixTimeUTC = (timestamp) => {
 
 export const compareDates = ({ dateOne, dateTwo }) => {
   // Make sure both dates are in the same format
-  dateOne = (isDate(dateOne))
-    ? resetToDayEnd(startOfDay(dateOne))
-    : fromUnixTimeUTC(dateOne);
+  dateOne = isDate(dateOne) ? resetToDayEnd(startOfDay(dateOne)) : fromUnixTimeUTC(dateOne);
 
-  dateTwo = (isDate(dateTwo))
-    ? resetToDayEnd(startOfDay(dateTwo))
-    : fromUnixTimeUTC(dateTwo);
+  dateTwo = isDate(dateTwo) ? resetToDayEnd(startOfDay(dateTwo)) : fromUnixTimeUTC(dateTwo);
 
   return compareAsc(dateOne, dateTwo);
 };

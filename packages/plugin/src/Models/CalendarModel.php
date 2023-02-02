@@ -54,7 +54,7 @@ class CalendarModel extends Model implements \JsonSerializable
     /** @var string */
     public $titleTranslationMethod;
 
-    /** @var string|null */
+    /** @var null|string */
     public $titleTranslationKeyFormat;
 
     /** @var string */

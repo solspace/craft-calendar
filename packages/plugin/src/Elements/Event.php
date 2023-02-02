@@ -218,18 +218,21 @@ class Event extends Element implements \JsonSerializable
     public function getIsTitleTranslatable(): bool
     {
         $type = $this->getCalendar();
-        return ($type->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+
+        return Field::TRANSLATION_METHOD_NONE !== $type->titleTranslationMethod;
     }
 
     public function getTitleTranslationDescription(): null|string
     {
         $type = $this->getCalendar();
+
         return ElementHelper::translationDescription($type->titleTranslationMethod);
     }
 
     public function getTitleTranslationKey(): string
     {
         $type = $this->getCalendar();
+
         return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
     }
 
@@ -240,7 +243,7 @@ class Event extends Element implements \JsonSerializable
     {
         $type = $this->getCalendar();
 
-        if (! $type->hasTitleField) {
+        if (!$type->hasTitleField) {
             // Make sure that the locale has been loaded in case the title format has any Date/Time fields
             \Craft::$app->getLocale();
 
@@ -251,7 +254,7 @@ class Event extends Element implements \JsonSerializable
 
             $title = \Craft::$app->getView()->renderObjectTemplate($type->titleFormat, $this);
 
-            if ($title !== '') {
+            if ('' !== $title) {
                 $this->title = $title;
             }
 
@@ -1292,7 +1295,8 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws Exception if reasons
      */
     public function beforeSave(bool $isNew): bool
@@ -1501,7 +1505,7 @@ class Event extends Element implements \JsonSerializable
         $fields = [];
         $view = \Craft::$app->getView();
 
-        $fields[] = (function() use ($static) {
+        $fields[] = (function () {
             return Cp::textFieldHtml([
                 'label' => \Craft::t('app', 'Calendar'),
                 'id' => 'calendar',
@@ -1515,8 +1519,8 @@ class Event extends Element implements \JsonSerializable
         $fields[] = $this->slugFieldHtml($static);
 
         // Author
-        if (\Craft::$app->getEdition() === \Craft::Pro) {
-            $fields[] = (function() use ($static) {
+        if (\Craft::Pro === \Craft::$app->getEdition()) {
+            $fields[] = (function () use ($static) {
                 $author = $this->getAuthor();
 
                 return Cp::elementSelectFieldHtml([

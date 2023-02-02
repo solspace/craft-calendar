@@ -41,7 +41,7 @@ const start = getUnixTimeUTC(date);
 date = resetToDayEnd(date);
 const end = getUnixTimeUTC(date);
 
-const isEqualOrAfter = (start, end) => (isEqual(start, end) || isAfter(start, end));
+const isEqualOrAfter = (start, end) => isEqual(start, end) || isAfter(start, end);
 
 const dates = createSlice({
   name: 'dates',
