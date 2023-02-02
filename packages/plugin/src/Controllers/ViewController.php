@@ -52,7 +52,7 @@ class ViewController extends BaseController
             $eventQuery->status = null;
         }
 
-        return $this->asJson($eventQuery->_all());
+        return $this->asJson($eventQuery->all());
     }
 
     /**

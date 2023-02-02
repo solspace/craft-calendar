@@ -27,7 +27,7 @@ class m191022_124711_AddMultiSitesFix extends Migration
             ;
 
             /** @var Event[] $events */
-            $events = $query->_all();
+            $events = $query->all();
 
             if ($events) {
                 foreach ($events as $event) {
