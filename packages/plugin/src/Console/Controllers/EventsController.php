@@ -113,7 +113,7 @@ class EventsController extends Controller
             $query->limit($this->limit);
         }
 
-        $count = (int) $query->_count();
+        $count = (int) $query->count();
 
         if (0 === $count) {
             $this->stdout('No '.$elementType::pluralLowerDisplayName().' exist for that criteria.'.\PHP_EOL, Console::FG_YELLOW);

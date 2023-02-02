@@ -32,7 +32,7 @@ class ViewController extends BaseController
 
         if ($calendars) {
             // calendars may be form array or comma-separated values
-            if (is_array($calendars)) {
+            if (\is_array($calendars)) {
                 $criteria['calendarId'] = $calendars;
             } elseif ('*' !== $calendars) {
                 $criteria['calendarId'] = explode(',', $calendars);
@@ -52,7 +52,7 @@ class ViewController extends BaseController
             $eventQuery->status = null;
         }
 
-        return $this->asJson($eventQuery->_all());
+        return $this->asJson($eventQuery->all());
     }
 
     /**

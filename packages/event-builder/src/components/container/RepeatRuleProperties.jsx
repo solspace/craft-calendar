@@ -101,7 +101,7 @@ import { isPro, isRepeatRulesEnabled } from '@cal/event-builder/app';
       dispatch(byMonthDayActions.change(parseInt(event.target.dataset.value)));
     },
     setErrorMessage: (errorMessage) => {
-      dispatch(errorMessageActions.set(errorMessage))
+      dispatch(errorMessageActions.set(errorMessage));
     },
   })
 )
@@ -302,7 +302,7 @@ class RepeatRuleProperties extends React.Component {
           </Block>
         </Row>
 
-        <Row show={(errorMessage !== '')}>
+        <Row show={errorMessage !== ''}>
           <div className={'errorMessage'}>{translate(errorMessage)}</div>
         </Row>
 

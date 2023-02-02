@@ -202,11 +202,11 @@ export const getEvents = (start, end, timezone, callback) => {
   let calendarIds = '*';
   if ($calendarList.length) {
     calendarIds = $('input:checked', $calendarList)
-        .map(function () {
-          return $(this).val();
-        })
-        .get()
-        .join();
+      .map(function () {
+        return $(this).val();
+      })
+      .get()
+      .join();
   }
 
   const { currentSiteId } = $('#solspace-calendar').data();

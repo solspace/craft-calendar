@@ -6,11 +6,14 @@ import {
   setMilliseconds,
   addDays,
   addMinutes,
+  isAfter,
+  isEqual,
   isSameDay,
   isBefore,
   subMinutes,
   getHours,
   getMinutes,
+  getSeconds,
 } from 'date-fns';
 
 import {
@@ -37,6 +40,8 @@ let date = setMilliseconds(setSeconds(setMinutes(new Date(), 0), 0), 0);
 const start = getUnixTimeUTC(date);
 date = resetToDayEnd(date);
 const end = getUnixTimeUTC(date);
+
+const isEqualOrAfter = (start, end) => isEqual(start, end) || isAfter(start, end);
 
 const dates = createSlice({
   name: 'dates',
@@ -69,6 +74,11 @@ const dates = createSlice({
             endDate = addMinutes(startDate, eventDuration);
           }
         }
+
+        const originalEndDate = fromUnixTimeUTC(state.end);
+        endDate = setHours(endDate, getHours(originalEndDate));
+        endDate = setMinutes(endDate, getMinutes(originalEndDate));
+        endDate = setSeconds(endDate, getSeconds(originalEndDate));
 
         clone.end = getUnixTimeUTC(endDate);
       } else if (target === targets.end) {
@@ -103,15 +113,18 @@ const dates = createSlice({
 
       if (target === targets.start) {
         let startDate = modifiedDate;
-        let endDate;
 
-        if (multiDay) {
-          endDate = addDays(startDate, 1);
-        } else {
-          endDate = addMinutes(startDate, eventDuration);
+        if (isEqualOrAfter(modifiedDate, fromUnixTimeUTC(state.end))) {
+          let endDate;
+
+          if (multiDay) {
+            endDate = addDays(startDate, 1);
+          } else {
+            endDate = addMinutes(startDate, eventDuration);
+          }
+
+          clone.end = getUnixTimeUTC(endDate);
         }
-
-        clone.end = getUnixTimeUTC(endDate);
       }
 
       clone[target] = getUnixTimeUTC(modifiedDate);

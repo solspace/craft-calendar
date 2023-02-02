@@ -52,7 +52,7 @@ class EventMonth extends AbstractEventCollection
         $dayEnd = $this->getEndDate();
 
         $events = [];
-        foreach ($eventQuery->_all() as $event) {
+        foreach ($eventQuery->all() as $event) {
             $eventStartDate = $event->getStartDate();
             $eventEndDate = $event->getEndDate();
 

@@ -11,7 +11,7 @@ use craft\db\Migration;
 class m230126_190648_AddMissingCalendarTitleTranslationMethodColumn extends Migration
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function safeUp(): bool
     {
@@ -29,7 +29,7 @@ class m230126_190648_AddMissingCalendarTitleTranslationMethodColumn extends Migr
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function safeDown(): bool
     {
