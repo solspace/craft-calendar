@@ -222,7 +222,8 @@
                 on: event.enabled
             }) }}
 
-            {% for site in craft.app.sites.getAllSites() %}
+            {% for enabledCalendarSiteId in craft.calendar.calendarSites.getAllEnabledSiteIds()|sort %}
+                {% set site = craft.app.sites.getSiteById(enabledCalendarSiteId) %}
                 {{ forms.lightswitchField({
                     label: "Enabled for {site}"|t('app', { site: site.name }),
                     id: 'enabledForSite-' ~ site.id,
