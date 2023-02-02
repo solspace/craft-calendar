@@ -501,11 +501,13 @@ class Event extends Element implements \JsonSerializable
             if (!$hasTitle) {
                 $firstTab = reset($tabs);
                 if ($firstTab) {
+                    $titleLabel = $this->getCalendar()->titleLabel;
+
                     $firstTab->setElements(
                         array_merge([
                             new TitleField([
-                                'label' => 'Title',
-                                'title' => 'Title',
+                                'label' => $titleLabel,
+                                'title' => $titleLabel,
                                 'name' => 'title',
                             ]),
                         ], $firstTab->getElements())
