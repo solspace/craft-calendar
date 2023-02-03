@@ -4,7 +4,7 @@
 
 ### Changed
 - Improved Calendar date field logic to only reset End Time when the Start Time is set past it.
-- Update the Status area in the Calendar create/edit event page to be a closer match to native Craft Entries.
+- Updated the Status area in the Calendar create/edit event page to be a closer match to native Craft Entries.
 
 ### Fixed
 - Fixed a bug where page tabs were no longer showing in the Calendar create/edit event page.
