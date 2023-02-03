@@ -217,23 +217,25 @@ class Event extends Element implements \JsonSerializable
 
     public function getIsTitleTranslatable(): bool
     {
-        $type = $this->getCalendar();
-
-        return Field::TRANSLATION_METHOD_NONE !== $type->titleTranslationMethod;
+        return Field::TRANSLATION_METHOD_NONE !== $this->getCalendar()->titleTranslationMethod;
     }
 
     public function getTitleTranslationDescription(): null|string
     {
-        $type = $this->getCalendar();
-
-        return ElementHelper::translationDescription($type->titleTranslationMethod);
+        return ElementHelper::translationDescription(
+            $this->getCalendar()->titleTranslationMethod
+        );
     }
 
     public function getTitleTranslationKey(): string
     {
-        $type = $this->getCalendar();
+        $calendar = $this->getCalendar();
 
-        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
+        return ElementHelper::translationKey(
+            $this,
+            $calendar->titleTranslationMethod,
+            $calendar->titleTranslationKeyFormat
+        );
     }
 
     /**
@@ -241,9 +243,9 @@ class Event extends Element implements \JsonSerializable
      */
     public function updateTitle()
     {
-        $type = $this->getCalendar();
+        $calendar = $this->getCalendar();
 
-        if (!$type->hasTitleField) {
+        if (!$calendar->hasTitleField) {
             // Make sure that the locale has been loaded in case the title format has any Date/Time fields
             \Craft::$app->getLocale();
 
@@ -252,7 +254,7 @@ class Event extends Element implements \JsonSerializable
 
             \Craft::$app->language = $this->getSite()->language;
 
-            $title = \Craft::$app->getView()->renderObjectTemplate($type->titleFormat, $this);
+            $title = \Craft::$app->getView()->renderObjectTemplate($calendar->titleFormat, $this);
 
             if ('' !== $title) {
                 $this->title = $title;
