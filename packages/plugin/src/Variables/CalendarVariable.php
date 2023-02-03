@@ -16,6 +16,7 @@ use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\FormatsService;
 use Solspace\Calendar\Services\SettingsService;
+use Solspace\Calendar\Services\CalendarSitesService;
 
 class CalendarVariable
 {
@@ -230,6 +231,11 @@ class CalendarVariable
     public function settings(): SettingsService
     {
         return Calendar::getInstance()->settings;
+    }
+
+    public function calendarSites(): CalendarSitesService
+    {
+        return Calendar::getInstance()->calendarSites;
     }
 
     public function frequencyOptions(): array

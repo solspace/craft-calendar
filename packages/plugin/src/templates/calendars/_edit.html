@@ -245,7 +245,7 @@
 
     <hr>
 
-    <div class="field" style="{{ craft.calendar.lite ? "display: none;" }}">
+    <div class="field" {% if craft.calendar.lite %}style="display: none;"{% endif %}>
         {{ forms.lightswitchField({
             label: "Allow Repeating Events"|t("calendar"),
             instructions: "Disable this option to allow only single occurrence events for this calendar."|t("calendar"),
