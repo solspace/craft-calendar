@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 4.0.6 - 2023-02-07
+
+### Fixed
+- Fixed a bug where editing Statuses for other sites was not working.
+
 ## 4.0.5 - 2023-02-03
 
 ### Changed
