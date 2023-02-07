@@ -482,6 +482,11 @@ class EventQuery extends ElementQuery
             if (\in_array($context, ['index', 'modal'], true)) {
                 $this->loadOccurrences = false;
             }
+            // If we save an event via the events edit page or via the slide out panel, dont use the cached events
+            $action = \Craft::$app->request->post('action');
+            if (\in_array($action, ['elements/save', 'calendar/events/save-event'], true)) {
+                return parent::all();
+            }
         }
 
         if (null === $this->events || self::$lastCachedConfigStateHash !== $configHash) {
