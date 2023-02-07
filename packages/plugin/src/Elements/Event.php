@@ -485,6 +485,16 @@ class Event extends Element implements \JsonSerializable
         if ($this->getCalendar()->hasTitleField) {
             $tabs = $fieldLayout->getTabs();
 
+            if (empty($tabs)) {
+                $tab = new FieldLayoutTab();
+                $tab->name = 'Content';
+                $tab->setLayout($fieldLayout);
+
+                $fieldLayout->setTabs([$tab]);
+
+                $tabs = $fieldLayout->getTabs();
+            }
+
             $hasTitle = !empty(
                 array_filter(
                     $tabs,
