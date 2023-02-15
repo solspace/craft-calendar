@@ -1,10 +1,5 @@
 # Solspace Calendar Changelog
 
-## 3.3.19 - 2023-02-14
-
-### Changed
-- Improved Calendar date field logic to only reset End Time when the Start Time is set past it.
-
 ## 3.3.18 - 2023-01-17
 
 ### Added
