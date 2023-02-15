@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 3.3.19 - 2023-02-XX
+
+### Changed
+- Improved Calendar date field logic to only reset End Time when the Start Time is set past it.
+- Updated the Status area in the Calendar create/edit event page to be a closer match to native Craft Entries.
+
 ## 3.3.18 - 2023-01-17
 
 ### Added

@@ -268,7 +268,7 @@
 
         {% if showSites %}
             {{ forms.lightswitchField({
-                label: "Enabled for {site}"|t('app', { site: event.site.name }),
+                label: "{site}"|t('app', { site: event.site.name }),
                 id: 'enabledForSite',
                 name: 'enabledForSite',
                 on: event.siteId in enabledSiteIds,
