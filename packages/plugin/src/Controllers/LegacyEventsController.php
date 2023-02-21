@@ -19,7 +19,6 @@ use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use yii\helpers\FormatConverter;
-use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -74,6 +73,9 @@ class LegacyEventsController extends EventsController
                 ->scalar()
             ;
         }
+
+        $isEnabled = (bool) \Craft::$app->request->post('enabled', $event->enabled);
+        $event->enabled = $isEnabled;
 
         if (isset($values['calendarId'])) {
             $event->calendarId = $values['calendarId'];
@@ -151,14 +153,9 @@ class LegacyEventsController extends EventsController
 
         $this->handleRepeatRules($event, $values);
 
-        $enabledForSite = $this->enabledForSiteValue();
-        if (is_array($enabledForSite)) {
-            // Set the global status to true if it's enabled for *any* sites, or if already enabled.
-            $event->enabled = in_array(true, $enabledForSite, false) || $event->enabled;
-        } else {
-            $event->enabled = (bool)$this->request->getBodyParam('enabled', $event->enabled);
-        }
-        $event->setEnabledForSite($enabledForSite ?? $event->getEnabledForSite());
+        $enabledForSite = (bool) \Craft::$app->request->post('enabledForSite', $event->enabledForSite);
+
+        $event->enabledForSite = $enabledForSite ? '1' : '0';
         $event->title = \Craft::$app->request->post('title', $event->title);
         $event->slug = \Craft::$app->request->post('slug', $event->slug);
         $event->setFieldValuesFromRequest('fields');
@@ -333,14 +330,8 @@ class LegacyEventsController extends EventsController
         }
 
         $event->slug = $request->getBodyParam('slug', $event->slug);
-        $enabledForSite = $this->enabledForSiteValue();
-        if (is_array($enabledForSite)) {
-            // Set the global status to true if it's enabled for *any* sites, or if already enabled.
-            $event->enabled = in_array(true, $enabledForSite, false) || $event->enabled;
-        } else {
-            $event->enabled = (bool)$this->request->getBodyParam('enabled', $event->enabled);
-        }
-        $event->setEnabledForSite($enabledForSite ?? $event->getEnabledForSite());
+        $event->enabled = (bool) $request->getBodyParam('enabled', $event->enabled);
+        $event->enabledForSite = (bool) $request->getBodyParam('enabledForSite', $event->enabledForSite);
         $event->title = $request->getBodyParam('title', $event->title);
 
         $event->fieldLayoutId = null;
@@ -352,6 +343,8 @@ class LegacyEventsController extends EventsController
             $authorId = $authorId[0] ?? null;
             $event->authorId = $authorId;
         }
+
+        $event->enabled = (bool) $request->post('enabled', $event->enabled);
 
         if (isset($values['calendarId'])) {
             $event->calendarId = $values['calendarId'];
@@ -641,25 +634,5 @@ class LegacyEventsController extends EventsController
         }
 
         $event->rrule = $event->getRRuleRFCString();
-    }
-
-    /**
-     * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
-     *
-     * @return bool|bool[]|null
-     * @throws ForbiddenHttpException
-     * @since 3.4.0
-     */
-    protected function enabledForSiteValue()
-    {
-        $enabledForSite = $this->request->getBodyParam('enabledForSite');
-        if (is_array($enabledForSite)) {
-            // Make sure they are allowed to edit all of the posted site IDs
-            $editableSiteIds = \Craft::$app->getSites()->getEditableSiteIds();
-            if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
-                throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
-            }
-        }
-        return $enabledForSite;
     }
 }

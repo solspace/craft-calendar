@@ -198,59 +198,45 @@
             errors: event.getErrors('postDate'),
         }) }}
 
-    </div>
-
-    <div id="event-sites" class="meta">
-        {% if not showSites %}
-            {{ forms.lightswitchField({
-                label: 'Enabled'|t('app'),
-                id: 'enabled',
-                name: 'enabled',
-                on: event.enabled
-            }) }}
-        {% endif %}
+        {{ forms.lightswitchField({
+            label: showSites ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: event.enabled,
+        }) }}
 
         {% if showSites %}
             {{ forms.lightswitchField({
-                label: '<strong>Enabled for all sites</strong>'|t('app'),
-                id: 'enabled',
-                name: 'enabled',
-                on: event.enabled
+                label: "Enabled for {site}"|t('app', { site: event.site.name }),
+                id: 'enabledForSite',
+                name: 'enabledForSite',
+                on: event.siteId in enabledSiteIds,
             }) }}
-            {% for calendarSiteId, calendarSite in craft.calendar.calendarSites.getSiteSettingsForCalendar(calendar)|sort((a, b) => a.site.id <=> b.site.id) %}
-                {% set site = craft.app.sites.getSiteById(calendarSiteId) %}
-                {{ forms.lightswitchField({
-                    label: "{site}"|t('app', { site: site.name }),
-                    id: 'enabledForSite-' ~ site.id,
-                    name: 'enabledForSite[' ~ site.id ~ ']',
-                    on: site.id in enabledSiteIds,
-                    fieldClass: 'nested'
-                }) }}
-            {% endfor %}
         {% endif %}
+
     </div>
 
     {% if event.id %}
 
-        <div class="meta read-only">
-            <div class="data">
-                <dt class="heading">{{ "ID"|t('app') }}</dt>
-                <dd class="value">{{ event.id }}</dd>
-            </div>
-            <div class="data">
-                <dt class="heading">{{ "Status"|t('app') }}</dt>
-                <dd class="value">
-                    <span class="status {% if event.enabledForSite %}live{% else %}disabled{% endif %}"></span>
-                    <span>{% if event.enabledForSite %}{{ "Live"|t('app') }}{% else %}{{ "Disabled"|t('app') }}{% endif %}</span>
-                </dd>
-            </div>
-            <div class="data">
-                <dt class="heading">{{ "Created at"|t('app') }}</dt>
-                <dd class="value">{{ event.dateCreated|date('short') }}, {{ event.dateCreated|time('short') }}</dd>
-                <dt class="heading">{{ "Updated at"|t('app') }}</dt>
-                <dd class="value">{{ event.dateUpdated|date('short') }}, {{ event.dateUpdated|time('short') }}</dd>
-            </div>
+    <div class="meta read-only">
+        <div class="data">
+            <dt class="heading">{{ "ID"|t('app') }}</dt>
+            <dd class="value">{{ event.id }}</dd>
         </div>
+        <div class="data">
+            <dt class="heading">{{ "Status"|t('app') }}</dt>
+            <dd class="value">
+                <span class="status {% if event.enabledForSite %}live{% else %}disabled{% endif %}"></span>
+                <span>{% if event.enabledForSite %}{{ "Live"|t('app') }}{% else %}{{ "Disabled"|t('app') }}{% endif %}</span>
+            </dd>
+        </div>
+        <div class="data">
+            <dt class="heading">{{ "Created at"|t('app') }}</dt>
+            <dd class="value">{{ event.dateCreated|date('short') }}, {{ event.dateCreated|time('short') }}</dd>
+            <dt class="heading">{{ "Updated at"|t('app') }}</dt>
+            <dd class="value">{{ event.dateUpdated|date('short') }}, {{ event.dateUpdated|time('short') }}</dd>
+        </div>
+    </div>
 
     {% endif %}
 
@@ -265,54 +251,3 @@
         window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
     {% endjs %}
 {% endif %}
-
-{% js %}
-    const $globalLightSwitch = $('#event-sites').find('#enabled.lightswitch');
-    const $siteLightSwitches = $('#event-sites').find('.lightswitch:not("#enabled")');
-
-    function updateGlobalStatus() {
-        let allEnabled = true;
-        let allDisabled = true;
-
-        $siteLightSwitches.each(function () {
-            const enabled = $(this).data('lightswitch').on;
-
-            if (enabled) {
-                allDisabled = false;
-            } else {
-                allEnabled = false;
-            }
-
-            if (!allEnabled && !allDisabled) {
-                return false;
-            }
-        });
-
-        if (allEnabled) {
-            $globalLightSwitch.data('lightswitch').turnOn(true);
-        } else if (allDisabled) {
-            $globalLightSwitch.data('lightswitch').turnOff(true);
-        } else {
-            $globalLightSwitch.data('lightswitch').turnIndeterminate(true);
-        }
-    }
-
-    function updateSiteStatuses() {
-        const enabled = $globalLightSwitch.data('lightswitch').on;
-
-        $siteLightSwitches.each(function() {
-            if (enabled) {
-                $(this).data('lightswitch').turnOn(true);
-            } else {
-                $(this).data('lightswitch').turnOff(true);
-            }
-        });
-    }
-
-    $globalLightSwitch.on('change', updateSiteStatuses);
-    $siteLightSwitches.on('change', updateGlobalStatus);
-
-    Garnish.$doc.ready(function() {
-        updateGlobalStatus();
-    });
-{% endjs %}
