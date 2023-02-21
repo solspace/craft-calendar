@@ -208,7 +208,7 @@ class EventsService extends Component
             $transaction = \Craft::$app->db->beginTransaction();
 
             try {
-                $isSaved = \Craft::$app->elements->saveElement($event, $validateContent);
+                $isSaved = \Craft::$app->elements->saveElement($event, $validateContent, $isNewEvent);
 	            if (! $isSaved) {
 		            return false;
 	            }
