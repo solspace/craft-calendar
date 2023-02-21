@@ -65,7 +65,7 @@
                     </li>
                     <li>
                         <a class="formsubmit"
-                           data-redirect="{{ ("calendar/events/new/"~calendarHandle~"/"~site.handle)|hash }}">
+                           data-redirect="{{ ('calendar/events/new/'~calendarHandle~'/'~site.handle)|hash }}">
                             {{ "Save and add another"|t('calendar') }}
                         </a>
                     </li>
@@ -98,7 +98,7 @@
     {{ csrfInput() }}
     {% if craft.app.isMultiSite %}<input type="hidden" name="siteId" value="{{ event.siteId }}">{% endif %}
     {% if event.id %}<input type="hidden" name="eventId" value="{{ event.id }}">{% endif %}
-    <input type="hidden" name="{{ name ~ "[calendarId]" }}" value="{{ event.calendarId }}">
+    <input type="hidden" name="{{ name ~ '[calendarId]' }}" value="{{ event.calendarId }}">
 
     {% include "calendar/events/_event_editor" %}
 
