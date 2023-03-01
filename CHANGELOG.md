@@ -130,6 +130,11 @@
 ### Added
 - Added compatibility with Craft 4.x.
 
+## 3.3.20 - 2023-02-21
+
+### Changed
+- Reverted the Status area improvements in the Calendar create/edit event page due to conflicts with field translations.
+
 ## 3.3.19 - 2023-02-15
 
 ### Changed
