@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 4.0.7 - 2023-03-02
+
+### Fixed
+- Fixed a bug where it wasn't possible to query for events in multiple sites in GraphQL.
+
 ## 4.0.6 - 2023-02-07
 
 ### Fixed
