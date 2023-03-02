@@ -7,6 +7,7 @@ use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\events\DeleteElementEvent as CraftDeleteElementEvent;
 use craft\events\SiteEvent;
@@ -21,6 +22,8 @@ use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\CalendarRecord;
+use craft\records\Element as ElementRecord;
+use craft\records\Element_SiteSettings as ElementSiteSettingsRecord;
 use yii\web\HttpException;
 
 class EventsService extends Component
@@ -111,58 +114,112 @@ class EventsService extends Component
     }
 
     /**
-     * @param array $ids
+     * @param array|null $ids
+     * @param array|null $siteIds
+     * @return array
      */
-    public function getSingleEventMetadata(array $ids = null): array
+    public function getSingleEventMetadata(array $ids = null, array $siteIds = null): array
     {
-        return (new Query())
-            ->select(['id', 'startDate'])
-            ->from(Event::TABLE)
-            ->where(
-                [
-                    'and',
-                    'freq IS NULL',
-                    ['in', 'id', $ids],
-                ]
-            )
-            ->all()
+        $ids = array_unique($ids);
+        $siteIds = array_unique($siteIds);
+
+        $subQuery = (new Query())
+            ->select([
+                'elements.[[id]] elementsId',
+                'elements_sites.[[id]] elementsSitesId',
+                'content.[[id]] contentId',
+            ])
+            ->from(ElementRecord::tableName().' elements')
+            ->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]')
+            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
+            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]')
+            ->innerJoin(TABLE::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
+            ->where([
+                'and',
+                'events.[[freq]] IS NULL',
+                'elements.[[dateDeleted]] IS NULL',
+                'elements.[[enabled]] = TRUE',
+                ['in', 'events.[[id]]', $ids],
+                ['in', 'elements_sites.[[siteId]]', $siteIds],
+            ])
         ;
+
+        $query = (new Query())
+            ->select([
+                'events.[[id]]',
+                'events.[[startDate]]',
+                'elements_sites.[[siteId]]',
+                'content.[[title]]',
+            ])
+            ->from(['subQuery' => $subQuery])
+            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = subQuery.[[elementsId]]')
+            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = subQuery.[[elementsSitesId]]')
+            ->innerJoin(Event::tableName().' events', 'events.[[id]] = subQuery.[[elementsId]]')
+            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
+            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = subQuery.[[contentId]]')
+        ;
+
+        return $query->all();
     }
 
     /**
-     * @param array $ids
+     * @param array|null $ids
+     * @param array|null $siteIds
+     * @return array
      */
-    public function getRecurringEventMetadata(array $ids = null): array
+    public function getRecurringEventMetadata(array $ids = null, array $siteIds = null): array
     {
-        return (new Query())
-            ->select(
-                [
-                    'event.[[id]]',
-                    'event.[[calendarId]]',
-                    'event.[[startDate]]',
-                    'event.[[endDate]]',
-                    'event.[[freq]]',
-                    'event.[[count]]',
-                    'event.[[interval]]',
-                    'event.[[byDay]]',
-                    'event.[[byMonthDay]]',
-                    'event.[[byMonth]]',
-                    'event.[[byYearDay]]',
-                    'event.[[until]]',
-                    'calendar.[[allowRepeatingEvents]]',
-                ]
-            )
-            ->from(Event::TABLE.' event')
-            ->innerJoin(CalendarRecord::TABLE.' calendar', 'calendar.[[id]] = event.[[calendarId]]')
-            ->where(
-                [
-                    'and',
-                    'event.freq IS NOT NULL',
-                    ['in', 'event.id', $ids],
-                ]
-            )
-            ->all()
+        $ids = array_unique($ids);
+        $siteIds = array_unique($siteIds);
+
+        $subQuery = (new Query())
+            ->select([
+                'elements.[[id]] elementsId',
+                'elements_sites.[[id]] elementsSitesId',
+                'content.[[id]] contentId',
+            ])
+            ->from(ElementRecord::tableName().' elements')
+            ->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]')
+            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
+            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]')
+            ->innerJoin(TABLE::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
+            ->where([
+                'and',
+                'events.[[freq]] IS NOT NULL',
+                'elements.[[dateDeleted]] IS NULL',
+                'elements.[[enabled]] = TRUE',
+                ['in', 'events.[[id]]', $ids],
+                ['in', 'elements_sites.[[siteId]]', $siteIds],
+            ])
         ;
+
+        $query = (new Query())
+            ->select([
+                'events.[[id]]',
+                'events.[[calendarId]]',
+                'events.[[startDate]]',
+                'events.[[endDate]]',
+                'events.[[freq]]',
+                'events.[[count]]',
+                'events.[[interval]]',
+                'events.[[byDay]]',
+                'events.[[byMonthDay]]',
+                'events.[[byMonth]]',
+                'events.[[byYearDay]]',
+                'events.[[until]]',
+                'calendars.[[allowRepeatingEvents]]',
+                'elements_sites.[[siteId]]',
+                'content.[[title]]',
+            ])
+            ->from(['subQuery' => $subQuery])
+            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = subQuery.[[elementsId]]')
+            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = subQuery.[[elementsSitesId]]')
+            ->innerJoin(Event::tableName().' events', 'events.[[id]] = subQuery.[[elementsId]]')
+            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
+            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = subQuery.[[contentId]]')
+        ;
+
+        return $query->all();
     }
 
     public function getLatestModificationDate(): string

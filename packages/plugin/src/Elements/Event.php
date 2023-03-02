@@ -177,6 +177,11 @@ class Event extends Element implements \JsonSerializable
         }
     }
 
+    public static function tableName(): string
+    {
+        return self::TABLE;
+    }
+
     public function setEvent_builder_data($builderJson)
     {
         $eventBuilderData = json_decode($builderJson, true);

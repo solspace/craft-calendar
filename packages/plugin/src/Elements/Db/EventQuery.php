@@ -3,7 +3,6 @@
 namespace Solspace\Calendar\Elements\Db;
 
 use Carbon\Carbon;
-use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use RRule\RRule;
@@ -930,11 +929,15 @@ class EventQuery extends ElementQuery
      */
     private function cacheSingleEvents($foundIds)
     {
-        $singleEventMetadata = $this->getEventService()->getSingleEventMetadata($foundIds);
+        if (!is_array($this->siteId)) {
+            $this->siteId = [$this->siteId];
+        }
+
+        $singleEventMetadata = $this->getEventService()->getSingleEventMetadata($foundIds, $this->siteId);
 
         foreach ($singleEventMetadata as $metadata) {
             $startDate = new Carbon($metadata['startDate'], DateHelper::UTC);
-            $this->cacheEvent($metadata['id'], $startDate);
+            $this->cacheEvent($metadata['id'], $startDate, $metadata['siteId']);
         }
     }
 
@@ -945,7 +948,11 @@ class EventQuery extends ElementQuery
      */
     private function cacheRecurringEvents(array $foundIds)
     {
-        $recurringEventMetadata = $this->getEventService()->getRecurringEventMetadata($foundIds);
+        if (!is_array($this->siteId)) {
+            $this->siteId = [$this->siteId];
+        }
+
+        $recurringEventMetadata = $this->getEventService()->getRecurringEventMetadata($foundIds, $this->siteId);
 
         if (Calendar::getInstance()->isLite()) {
             $this->loadOccurrences = false;
@@ -961,6 +968,7 @@ class EventQuery extends ElementQuery
             $occurrencesLoaded = 0;
 
             $eventId = $metadata['id'];
+            $siteId = $metadata['siteId'];
             $startDate = $metadata['startDate'];
             $endDate = $metadata['endDate'];
             $startDateCarbon = new Carbon($startDate, DateHelper::UTC);
@@ -978,7 +986,7 @@ class EventQuery extends ElementQuery
                     continue;
                 }
 
-                $this->cacheEvent($eventId, $startDateCarbon);
+                $this->cacheEvent($eventId, $startDateCarbon, $siteId);
 
                 continue;
             }
@@ -1018,7 +1026,7 @@ class EventQuery extends ElementQuery
                         continue;
                     }
 
-                    $this->cacheEvent($eventId, $occurrenceStartDate);
+                    $this->cacheEvent($eventId, $occurrenceStartDate, $siteId);
                     ++$occurrencesLoaded;
                 }
             } else {
@@ -1073,7 +1081,7 @@ class EventQuery extends ElementQuery
                         continue;
                     }
 
-                    $this->cacheEvent($eventId, $occurrenceStartDate);
+                    $this->cacheEvent($eventId, $occurrenceStartDate, $siteId);
                     ++$occurrencesLoaded;
                 }
             }
@@ -1179,25 +1187,19 @@ class EventQuery extends ElementQuery
      * Adds event ID and occurrence date to the cache.
      *
      * @param int $eventId
+     * @param Carbon $date
+     * @param int $siteId
      */
-    private function cacheEvent($eventId, Carbon $date)
+    private function cacheEvent(int $eventId, Carbon $date, int $siteId)
     {
-        $this->eventCache[] = [$date, $eventId];
+        $this->eventCache[] = [$date, $eventId, $siteId];
     }
 
     /**
-     * Takes eventIds from cache and stores the respective Event object in the list.
+     * Takes events from cache and stores the respective Event object in the list.
      */
     private function cacheToStorage()
     {
-        $eventIds = array_map(
-            function ($data) {
-                return $data[1];
-            },
-            $this->eventCache
-        );
-
-        $this->eventIds = array_unique($eventIds);
         $limit = $this->limit;
         $offset = $this->offset;
         $this->limit = null;
@@ -1223,7 +1225,7 @@ class EventQuery extends ElementQuery
                 $event = new Event($event);
             }
 
-            $eventsById[$event->getId()] = $event;
+            $eventsById[$event['id'].'_'.$event['siteId']] = $event;
         }
 
         /**
@@ -1232,12 +1234,12 @@ class EventQuery extends ElementQuery
          * @var Carbon $date
          * @var int    $eventId
          */
-        foreach ($this->eventCache as [$date, $eventId]) {
-            if (!isset($eventsById[$eventId])) {
+        foreach ($this->eventCache as [$date, $eventId, $siteId]) {
+            if (!isset($eventsById[$eventId.'_'.$siteId])) {
                 continue;
             }
 
-            $this->storeEventOnDate($eventsById[$eventId], $date);
+            $this->storeEventOnDate($eventsById[$eventId.'_'.$siteId], $date);
         }
     }
 
