@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 3.3.21 - 2023-03-23
+
+### Fixed
+- Fixed a bug where events were not loading with PostgreSQL.
+- Fixed a bug where an `argument must be of type string, array given` error could occur in rare cases.
+
 ## 3.3.20 - 2023-02-21
 
 ### Changed
