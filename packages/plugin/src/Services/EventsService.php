@@ -138,7 +138,6 @@ class EventsService extends Component
                 'and',
                 'events.[[freq]] IS NULL',
                 'elements.[[dateDeleted]] IS NULL',
-                'elements.[[enabled]] = TRUE',
                 ['in', 'events.[[id]]', $ids],
                 ['in', 'elements_sites.[[siteId]]', $siteIds],
             ])
@@ -187,7 +186,6 @@ class EventsService extends Component
                 'and',
                 'events.[[freq]] IS NOT NULL',
                 'elements.[[dateDeleted]] IS NULL',
-                'elements.[[enabled]] = TRUE',
                 ['in', 'events.[[id]]', $ids],
                 ['in', 'elements_sites.[[siteId]]', $siteIds],
             ])
