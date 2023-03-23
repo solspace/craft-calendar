@@ -1,5 +1,12 @@
 # Solspace Calendar Changelog
 
+## 4.0.8 - 2023-03-23
+
+### Fixed
+- Fixed a bug where disabled events were not displaying in the CP events index on sites with only one Craft Site.
+- Fixed a bug where events were not loading with PostgreSQL.
+- Fixed a bug where an `argument must be of type string, array given` error could occur in rare cases.
+
 ## 4.0.7 - 2023-03-02
 
 ### Fixed
@@ -59,81 +66,44 @@
 
 ## 4.0.0 - 2022-12-27
 
+### Added
+- Added compatibility with Craft 4.x.
+- Added an on-demand option (`addFirstOccurrenceDate()`) to display the first occurrence date result in an occurrences list of events that use the "Select Dates" repeat rule.
+- Added `defineRules` to `CalendarModel` so users can define their validation rulesets.
+
 ### Changed
+- Changed the package name from `solspace/craft3-calendar` to `solspace/craft-calendar`.
 - Updated Symfony dependencies to allow version `^6.0`.
+- Updated FullCalendar demo so URL path always includes date segments if recurring event.
+- Updated the Preview button to only be visible for saved events. Live Preview will only work with saved elements or ones with a saved draft, which is not currently available.
 
 ### Fixed
 - Fixed a bug where calendars with no fields in the layout would error when attempting to create new events.
 - Fixed a bug where duplicating calendars no longer worked due to the removal of dash `-` in validation.
 - Fixed a bug where ordering by `endDate DESC` would not return the latest event end date in GraphQL.
 - Fixed a bug where `uri` and `typeHandle` were unavailable for events in GraphQL.
-
-## 4.0.0-beta.8 - 2022-08-02
-
-### Changed
-- Changed the package name from `solspace/craft3-calendar` to `solspace/craft-calendar`.
-
-### Fixed
 - Fixed a bug where calendar handles could have dashes in them.
 - Fixed a bug where saving an event with required fields in a multi-site environment could miss some error validation.
-
-## 4.0.0-beta.7 - 2022-07-27
-
-### Added
-- Added an on-demand option (`addFirstOccurrenceDate()`) to display the first occurrence date result in an occurrences list of events that use the "Select Dates" repeat rule.
-
-### Fixed
-- Fixed a bug where the ICS Location and Description mapping settings for each calendar were not working.
 - Fixed a bug where some sites making heavy use of the "Select Dates" repeat rule could experience performance issues.
-
-## 4.0.0-beta.6 - 2022-06-28
-
-### Added
-- Added `defineRules` to `CalendarModel` so users can define their validation rulesets.
-
-### Changed
-- Updated FullCalendar demo so URL path always includes date segments if recurring event.
-
-### Fixed
 - Fixed a bug where removing event occurrences from the CP Month/Week/Day view pages would sometimes use the day before, depending on your timezone.
 - Fixed a bug where fields that are not translatable were still being translated per site.
 - Fixed a bug where events that had exceptions for all occurrences would throw an error in the CP.
 - Fixed a bug where mass changing of event statuses was allowed when the user did not have the correct permissions.
 - Fixed a bug where `siteId` was not available in the GraphQL Event Interface.
-
-## 4.0.0-beta.5 - 2022-05-27
-
-### Fixed
 - Fixed a bug where editing existing events could trigger an error if using multiple sites.
 - Fixed a potential PHP 8.1 compatibility issue.
-
-## 4.0.0-beta.4 - 2022-05-25
-
-### Fixed
 - Fixed a bug where sites using Feed Me with Calendar could see errors in the control panel.
-
-## 4.0.0-beta.3 - 2022-04-25
-
-### Changed
-- Updated the Preview button to only be visible for saved events. Live Preview will only work with saved elements or ones with a saved draft, which is not currently available.
-
-### Fixed
 - Fixed a bug where deleting an event from inside the event edit page would not work.
 - Fixed a bug where an error would show when using the "Save and add another" feature while creating a new calendar.
 - Fixed a bug where displaying event recurrences could sometimes error.
-
-## 4.0.0-beta.2 - 2022-04-20
-
-### Fixed
-- Fixed various display and styling issues inside the control panel.
-- Fixed a bug where various repeat rules were no longer working correctly when creating and editing events in the front end.
 - Fixed a bug where events that repeat on "Select Dates" do not include the original event date as an occurrence in some areas of Calendar.
 - Fixed a compatibility issue with GraphQL.
 
-## 4.0.0-beta.1 - 2022-03-30
+## 3.3.21 - 2023-03-23
 
-### Added
-- Added compatibility with Craft 4.x.
+### Fixed
+- Fixed a bug where events were not loading with PostgreSQL.
+- Fixed a bug where an `argument must be of type string, array given` error could occur in rare cases.
 
 ## 3.3.20 - 2023-02-21
 
