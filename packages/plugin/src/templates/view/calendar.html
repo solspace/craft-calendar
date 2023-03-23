@@ -127,9 +127,6 @@
                             {{ "Calendars"|t('calendar') }}
                         </span>
                     </li>
-                    <input type="hidden"
-                           name="calendars[]"
-                           value="">
                     {% for id, calendar in craft.calendar.calendars %}
                         <li class="item">
                             <input type="checkbox"
