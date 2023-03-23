@@ -275,6 +275,7 @@
     {% endjs %}
 {% endif %}
 
+{% if showSites %}
 {% js %}
     const $globalLightSwitch = $('#event-sites').find('#enabled.lightswitch');
     const $siteLightSwitches = $('#event-sites').find('.lightswitch:not("#enabled")');
@@ -325,3 +326,4 @@
         updateGlobalStatus();
     });
 {% endjs %}
+{% endif %}
