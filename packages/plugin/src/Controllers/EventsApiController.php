@@ -299,10 +299,7 @@ class EventsApiController extends BaseController
 	    $event = Calendar::getInstance()->events->getEventById($eventId, null, true);
 
 	    if (! $event) {
-		    return $this->asErrorJson([
-			    'success' => false,
-			    'event' => Calendar::t('Event could not be found'),
-		    ]);
+		    return $this->asErrorJson(Calendar::t('Event could not be found'));
 	    }
 
 	    $event->selectDates = Calendar::getInstance()->events->addFirstOccurrenceDate($event->selectDates);
