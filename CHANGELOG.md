@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## 4.0.9 - Unreleased
+
+### Fixed
+- Fixed a bug where saving an entry would throw an Unauthorized Exception error when site is deactivated and user has no permissions.
+- Fixed a bug where the CP Month/Week/Day pages' Site selector dropdown wasn't only showing Sites the user has access to.
+
 ## 4.0.8 - 2023-03-23
 
 ### Fixed
