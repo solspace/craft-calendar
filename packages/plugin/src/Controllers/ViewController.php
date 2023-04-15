@@ -80,9 +80,15 @@ class ViewController extends BaseController
         $currentSiteId = \Craft::$app->sites->currentSite->id;
         $selectedSiteId = null;
 
+        $user = \Craft::$app->getUser()->getIdentity();
+
         $siteMap = [];
         if (\Craft::$app->getIsMultiSite()) {
             foreach (\Craft::$app->sites->getAllSites() as $site) {
+                if (!$user->can("editSite:".$site->uid)) {
+                    continue;
+                }
+
                 if (!\in_array($site->id, $enabledSiteIds)) {
                     continue;
                 }
