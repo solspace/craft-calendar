@@ -224,15 +224,18 @@
                 on: event.enabled
             }) }}
 
+            {% set allowedSiteIds = craft.app.sites.getEditableSiteIds() %}
             {% for calendarSiteId, calendarSite in craft.calendar.calendarSites.getSiteSettingsForCalendar(calendar)|sort((a, b) => a.site.id <=> b.site.id) %}
                 {% set site = craft.app.sites.getSiteById(calendarSiteId) %}
-                {{ forms.lightswitchField({
-                    label: "{site}"|t('app', { site: site.name }),
-                    id: 'enabledForSite-' ~ site.id,
-                    name: 'enabledForSite[' ~ site.id ~ ']',
-                    on: site.id in enabledSiteIds,
-                    fieldClass: 'nested'
-                }) }}
+                {% if site.id in allowedSiteIds %}
+                    {{ forms.lightswitchField({
+                        label: "{site}"|t('app', { site: site.name }),
+                        id: 'enabledForSite-' ~ site.id,
+                        name: 'enabledForSite[' ~ site.id ~ ']',
+                        on: site.id in enabledSiteIds,
+                        fieldClass: 'nested'
+                    }) }}
+                {% endif %}
             {% endfor %}
         {% endif %}
     </div>
