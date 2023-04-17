@@ -680,9 +680,6 @@ class EventsController extends BaseController
             // Make sure they are allowed to edit all of the posted site IDs
             $editableSiteIds = \Craft::$app->getSites()->getEditableSiteIds();
 
-            // Filter out any sites which are not enabled for the entry
-            $enabledForSite = array_filter($enabledForSite);
-
             if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
                 throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
             }
