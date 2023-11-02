@@ -85,7 +85,7 @@ class ViewController extends BaseController
         $siteMap = [];
         if (\Craft::$app->getIsMultiSite()) {
             foreach (\Craft::$app->sites->getAllSites() as $site) {
-                if (!$user->can("editSite:".$site->uid)) {
+                if (!$user->can('editSite:'.$site->uid)) {
                     continue;
                 }
 

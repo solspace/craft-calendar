@@ -220,11 +220,11 @@ class EventsController extends BaseController
         }
 
         $enabledForSite = $this->enabledForSiteValue();
-        if (is_array($enabledForSite)) {
+        if (\is_array($enabledForSite)) {
             // Set the global status to true if it's enabled for *any* sites, or if already enabled.
-            $event->enabled = in_array(true, $enabledForSite, false) || $event->enabled;
+            $event->enabled = \in_array(true, $enabledForSite, false) || $event->enabled;
         } else {
-            $event->enabled = (bool)$this->request->getBodyParam('enabled', $event->enabled);
+            $event->enabled = (bool) $this->request->getBodyParam('enabled', $event->enabled);
         }
         $event->setEnabledForSite($enabledForSite ?? $event->getEnabledForSite());
         $event->title = \Craft::$app->request->post('title', $event->title);
@@ -383,6 +383,30 @@ class EventsController extends BaseController
         }
 
         return $this->showEvent($event);
+    }
+
+    /**
+     * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
+     *
+     * @throws ForbiddenHttpException
+     *
+     * @return null|bool|bool[]
+     *
+     * @since 3.4.0
+     */
+    protected function enabledForSiteValue(): array|bool|null
+    {
+        $enabledForSite = $this->request->getBodyParam('enabledForSite');
+        if (\is_array($enabledForSite)) {
+            // Make sure they are allowed to edit all of the posted site IDs
+            $editableSiteIds = \Craft::$app->getSites()->getEditableSiteIds();
+
+            if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
+                throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
+            }
+        }
+
+        return $enabledForSite;
     }
 
     /**
@@ -564,11 +588,11 @@ class EventsController extends BaseController
 
         $event->slug = $request->getBodyParam('slug', $event->slug);
         $enabledForSite = $this->enabledForSiteValue();
-        if (is_array($enabledForSite)) {
+        if (\is_array($enabledForSite)) {
             // Set the global status to true if it's enabled for *any* sites, or if already enabled.
-            $event->enabled = in_array(true, $enabledForSite, false) || $event->enabled;
+            $event->enabled = \in_array(true, $enabledForSite, false) || $event->enabled;
         } else {
-            $event->enabled = (bool)$this->request->getBodyParam('enabled', $event->enabled);
+            $event->enabled = (bool) $this->request->getBodyParam('enabled', $event->enabled);
         }
         $event->setEnabledForSite($enabledForSite ?? $event->getEnabledForSite());
         $event->title = $request->getBodyParam('title', $event->title);
@@ -664,26 +688,5 @@ class EventsController extends BaseController
         if (!$hasPermission) {
             CalendarPermissionHelper::requirePermission('trigger-calendar-event-access-denied');
         }
-    }
-
-    /**
-     * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
-     *
-     * @return bool|bool[]|null
-     * @throws ForbiddenHttpException
-     * @since 3.4.0
-     */
-    protected function enabledForSiteValue(): array|bool|null
-    {
-        $enabledForSite = $this->request->getBodyParam('enabledForSite');
-        if (is_array($enabledForSite)) {
-            // Make sure they are allowed to edit all of the posted site IDs
-            $editableSiteIds = \Craft::$app->getSites()->getEditableSiteIds();
-
-            if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
-                throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
-            }
-        }
-        return $enabledForSite;
     }
 }

@@ -13,6 +13,8 @@ use craft\events\DeleteElementEvent as CraftDeleteElementEvent;
 use craft\events\SiteEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use craft\records\Element as ElementRecord;
+use craft\records\Element_SiteSettings as ElementSiteSettingsRecord;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
@@ -22,8 +24,6 @@ use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\CalendarRecord;
-use craft\records\Element as ElementRecord;
-use craft\records\Element_SiteSettings as ElementSiteSettingsRecord;
 use yii\web\HttpException;
 
 class EventsService extends Component
@@ -113,11 +113,6 @@ class EventsService extends Component
         return Event::buildQuery($criteria);
     }
 
-    /**
-     * @param array|null $ids
-     * @param array|null $siteIds
-     * @return array
-     */
     public function getSingleEventMetadata(array $ids = null, array $siteIds = null): array
     {
         $ids = array_unique($ids);
@@ -161,11 +156,6 @@ class EventsService extends Component
         return $query->all();
     }
 
-    /**
-     * @param array|null $ids
-     * @param array|null $siteIds
-     * @return array
-     */
     public function getRecurringEventMetadata(array $ids = null, array $siteIds = null): array
     {
         $ids = array_unique($ids);
