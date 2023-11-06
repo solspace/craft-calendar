@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 4.0.10 - 2023-11-06
+
+### Changed
+- Updated the plugin icon.
+
+### Fixed
+- Fixed a bug where updating a calendar's settings could shift all associated recurring event start/end dates to be the same as the End Repeat date.
+
 ## 4.0.9 - 2023-04-17
 
 ### Fixed
