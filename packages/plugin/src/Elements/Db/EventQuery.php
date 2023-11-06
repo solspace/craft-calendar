@@ -491,16 +491,13 @@ class EventQuery extends ElementQuery
         if (null === $this->events || self::$lastCachedConfigStateHash !== $configHash) {
             $limit = $this->limit;
             $offset = $this->offset;
-            $indexBy = $this->indexBy;
             $this->limit = null;
             $this->offset = null;
-            $this->indexBy = null;
 
             $ids = parent::ids($db);
 
             $this->limit = $limit;
             $this->offset = $offset;
-            $this->indexBy = $indexBy;
 
             if (empty($ids)) {
                 return [];
@@ -929,7 +926,7 @@ class EventQuery extends ElementQuery
      */
     private function cacheSingleEvents($foundIds)
     {
-        if (!is_array($this->siteId)) {
+        if (!\is_array($this->siteId)) {
             $this->siteId = [$this->siteId];
         }
 
@@ -948,7 +945,7 @@ class EventQuery extends ElementQuery
      */
     private function cacheRecurringEvents(array $foundIds)
     {
-        if (!is_array($this->siteId)) {
+        if (!\is_array($this->siteId)) {
             $this->siteId = [$this->siteId];
         }
 
@@ -1185,10 +1182,6 @@ class EventQuery extends ElementQuery
 
     /**
      * Adds event ID and occurrence date to the cache.
-     *
-     * @param int $eventId
-     * @param Carbon $date
-     * @param int $siteId
      */
     private function cacheEvent(int $eventId, Carbon $date, int $siteId)
     {
