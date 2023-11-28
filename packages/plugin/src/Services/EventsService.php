@@ -146,11 +146,11 @@ class EventsService extends Component
                 'content.[[title]]',
             ])
             ->from(['subQuery' => $subQuery])
-            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = subQuery.[[elementsId]]')
-            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = subQuery.[[elementsSitesId]]')
-            ->innerJoin(Event::tableName().' events', 'events.[[id]] = subQuery.[[elementsId]]')
+            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]')
+            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]')
+            ->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]')
             ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = subQuery.[[contentId]]')
+            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
         ;
 
         return $query->all();
@@ -200,11 +200,11 @@ class EventsService extends Component
                 'content.[[title]]',
             ])
             ->from(['subQuery' => $subQuery])
-            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = subQuery.[[elementsId]]')
-            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = subQuery.[[elementsSitesId]]')
-            ->innerJoin(Event::tableName().' events', 'events.[[id]] = subQuery.[[elementsId]]')
+            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]')
+            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]')
+            ->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]')
             ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = subQuery.[[contentId]]')
+            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
         ;
 
         return $query->all();
