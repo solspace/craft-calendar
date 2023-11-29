@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 4.0.11 - 2023-11-29
+
+### Fixed
+- Fixed a missing FROM-clause entry for table subquery.
+
 ## 4.0.10 - 2023-11-06
 
 ### Changed
