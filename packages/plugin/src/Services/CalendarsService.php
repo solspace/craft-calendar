@@ -7,13 +7,11 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\SiteEvent;
 use craft\helpers\Db;
-use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteModelEvent;
 use Solspace\Calendar\Events\SaveModelEvent;
-use Solspace\Calendar\Jobs\ReSaveEventsJob;
 use Solspace\Calendar\Library\Attributes\CalendarAttributes;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
@@ -308,8 +306,6 @@ class CalendarsService extends Component
 
         if ($isNew) {
             $calendar->id = Db::idByUid(CalendarRecord::TABLE, $calendar->uid);
-        } else {
-            Queue::push(new ReSaveEventsJob());
         }
 
         // Fire an 'afterSaveSection' event

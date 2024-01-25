@@ -5,11 +5,13 @@ namespace Solspace\Calendar\Controllers;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
+use craft\helpers\Queue;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Jobs\UpdateEventsUriJob;
 use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
@@ -232,6 +234,7 @@ class CalendarsController extends BaseController
         // Set site settings
         $previousSiteSettings = $this->getCalendarSitesService()->getSiteSettingsForCalendar($calendar);
         $newSiteSettings = [];
+        $hasUriFormatChanges = false;
         foreach (\Craft::$app->getSites()->getAllSites() as $site) {
             $postedSettings = $request->getBodyParam('sites.'.$site->handle);
 
@@ -249,6 +252,10 @@ class CalendarsController extends BaseController
                 $siteSettings->siteId = $site->id;
             }
 
+            if (!empty($postedSettings['uriFormat']) && $postedSettings['uriFormat'] !== $previousSiteSettings[$site->id]['uriFormat']) {
+                $hasUriFormatChanges = true;
+            }
+
             $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
             $siteSettings->enabledByDefault = (bool) $postedSettings['enabledByDefault'];
 
@@ -262,6 +269,16 @@ class CalendarsController extends BaseController
 
         // Save it
         if ($this->getCalendarService()->saveCalendar($calendar)) {
+            if ($hasUriFormatChanges) {
+                foreach ($calendar->siteSettings as $siteSetting) {
+                    Queue::push(new UpdateEventsUriJob([
+                        'calendarId' => $calendar->id,
+                        'siteId' => $siteSetting->siteId,
+                        'uriFormat' => $siteSetting->uriFormat,
+                    ]));
+                }
+            }
+
             \Craft::$app->session->setNotice(Calendar::t('Calendar saved.'));
 
             return $this->redirectToPostedUrl($calendar);
