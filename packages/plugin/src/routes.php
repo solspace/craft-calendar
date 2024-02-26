@@ -24,6 +24,8 @@ return [
     'calendar/events/api/create' => 'calendar/events-api/create',
     'calendar/events/api/delete' => 'calendar/events-api/delete',
     'calendar/events/api/delete-occurrence' => 'calendar/events-api/delete-occurrence',
+    'calendar/events/api/attributes' => 'calendar/events-api/attributes',
+    'calendar/events/api/custom-fields' => 'calendar/events-api/custom-fields',
     // Views
     'calendar/month' => 'calendar/view/month-data',
     'calendar/view/<view:month|week|day>' => 'calendar/view/target-time',

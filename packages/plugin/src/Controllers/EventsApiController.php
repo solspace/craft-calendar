@@ -310,6 +310,47 @@ class EventsApiController extends BaseController
         ]);
     }
 
+    public function actionAttributes(): Response
+    {
+        return $this->asJson([
+            ['id' => 'title', 'label' => 'Title', 'required' => true],
+            ['id' => 'siteId', 'label' => 'Site ID', 'required' => false],
+            ['id' => 'slug', 'label' => 'Slug', 'required' => false],
+            ['id' => 'authorId', 'label' => 'Author ID', 'required' => false],
+            ['id' => 'postDate', 'label' => 'Post Date', 'required' => false],
+            ['id' => 'dateCreated', 'label' => 'Date Created', 'required' => false],
+            ['id' => 'dateUpdated', 'label' => 'Date Updated', 'required' => false],
+        ]);
+    }
+
+    public function actionCustomFields(): Response
+    {
+        $calendarId = $this->request->get('calendarId');
+        if (!$calendarId) {
+            return $this->asJson([]);
+        }
+
+        $calendar = $this->getCalendarService()->getCalendarById($calendarId);
+        if (!$calendar) {
+            throw new HttpException(
+                404,
+                Calendar::t('Calendar with a ID "{calendarId}" could not be found', ['calendarId' => $calendarId])
+            );
+        }
+
+        $fieldLayout = $calendar->getFieldLayout();
+
+        $fields = [];
+        foreach ($fieldLayout->getCustomFields() as $field) {
+            $fields[] = [
+                'id' => $field->id,
+                'label' => $field->name,
+            ];
+        }
+
+        return $this->asJson($fields);
+    }
+
     /**
      * @throws HttpException
      */
