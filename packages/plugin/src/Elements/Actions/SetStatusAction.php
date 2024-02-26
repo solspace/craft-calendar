@@ -65,8 +65,8 @@ class SetStatusAction extends SetStatus
                 }
 
                 // If we wanted to inform the user, some elements were not updated due to permissions, we could uncomment the following lines
-            // } else {
-            //	$failCount++;
+                // } else {
+                //	$failCount++;
             }
         }
 

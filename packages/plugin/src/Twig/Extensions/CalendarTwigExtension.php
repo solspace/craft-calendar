@@ -2,7 +2,9 @@
 
 namespace Solspace\Calendar\Twig\Extensions;
 
-class CalendarTwigExtension extends \Twig\Extension\AbstractExtension
+use Twig\Extension\AbstractExtension;
+
+class CalendarTwigExtension extends AbstractExtension
 {
     /**
      * @deprecated since 1.26 (to be removed in 2.0), not used anymore internally

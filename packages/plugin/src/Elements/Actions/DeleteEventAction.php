@@ -20,9 +20,6 @@ class DeleteEventAction extends ElementAction
      */
     public ?string $successMessage = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
@@ -45,25 +42,16 @@ class DeleteEventAction extends ElementAction
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getTriggerLabel(): string
     {
         return Calendar::t('Delete');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function isDestructive(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConfirmationMessage(): ?string
     {
         if (isset($this->confirmationMessage)) {

@@ -8,7 +8,9 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Exceptions\DateHelperException;
 use Solspace\Calendar\Records\SelectDateRecord;
+use yii\web\BadRequestHttpException;
 use yii\web\HttpException;
 use yii\web\Response;
 
@@ -22,9 +24,9 @@ class EventsApiController extends BaseController
      * Modifies an event.
      *
      * @throws HttpException
-     * @throws \Solspace\Calendar\Library\Exceptions\DateHelperException
+     * @throws DateHelperException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionModifyDate(): Response
     {
@@ -136,7 +138,7 @@ class EventsApiController extends BaseController
      *
      * @throws HttpException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionModifyDuration(): Response
     {
@@ -160,7 +162,7 @@ class EventsApiController extends BaseController
      *
      * @throws HttpException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionCreate(): Response
     {
@@ -228,7 +230,7 @@ class EventsApiController extends BaseController
      *
      * @throws HttpException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionDelete(): Response
     {
@@ -254,7 +256,7 @@ class EventsApiController extends BaseController
      * Adds an exception to a recurring event.
      *
      * @throws HttpException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionDeleteOccurrence(): Response
     {

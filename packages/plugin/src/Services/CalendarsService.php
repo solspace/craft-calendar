@@ -15,6 +15,7 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteModelEvent;
 use Solspace\Calendar\Events\SaveModelEvent;
 use Solspace\Calendar\Library\Attributes\CalendarAttributes;
+use Solspace\Calendar\Library\Exceptions\AttributeException;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -175,7 +176,6 @@ class CalendarsService extends Component
     }
 
     /**
-     * @param int   $calendarId
      * @param mixed $uid
      *
      * @return null|CalendarModel
@@ -333,10 +333,10 @@ class CalendarsService extends Component
     /**
      * @param int $calendarId
      *
+     * @return bool
+     *
      * @throws \Exception
      * @throws \Throwable
-     *
-     * @return bool
      */
     public function deleteCalendarById($calendarId)
     {
@@ -382,9 +382,9 @@ class CalendarsService extends Component
     /**
      * @param null|array $attributes
      *
-     * @throws \Solspace\Calendar\Library\Exceptions\AttributeException
-     *
      * @return CalendarModel[]
+     *
+     * @throws AttributeException
      */
     public function getCalendars($attributes = null): array
     {

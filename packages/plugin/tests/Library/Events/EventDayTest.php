@@ -11,6 +11,7 @@ use Solspace\Calendar\Library\Exceptions\DurationException;
 
 /**
  * @internal
+ *
  * @coversNothing
  */
 class EventDayTest extends TestCase

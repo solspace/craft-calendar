@@ -47,6 +47,6 @@ class ApiController extends BaseController
 
         echo $exportString;
 
-        exit();
+        exit;
     }
 }

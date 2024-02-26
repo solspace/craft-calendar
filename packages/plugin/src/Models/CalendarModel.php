@@ -100,9 +100,6 @@ class CalendarModel extends Model implements \JsonSerializable
         return $model;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();

@@ -17,9 +17,6 @@ class SelectDatesService extends Component
     /**
      * Returns a list of Calendar_SelectDateModel's if any are found.
      *
-     * @param \DateTime $rangeStart
-     * @param \DateTime $rangeEnd
-     *
      * @return SelectDateModel[]
      */
     public function getSelectDatesForEvent(
@@ -32,9 +29,6 @@ class SelectDatesService extends Component
 
     /**
      * Returns a list of Calendar_SelectDateModel's if any are found.
-     *
-     * @param \DateTime $rangeStart
-     * @param \DateTime $rangeEnd
      *
      * @return SelectDateModel[]
      */
@@ -85,9 +79,6 @@ class SelectDatesService extends Component
     /**
      * Returns a list of date strings.
      *
-     * @param \DateTime $rangeStart
-     * @param \DateTime $rangeEnd
-     *
      * @return Carbon[]
      */
     public function getSelectDatesAsCarbonsForEventId(
@@ -114,7 +105,7 @@ class SelectDatesService extends Component
             ->createCommand()
             ->delete(SelectDateRecord::TABLE, ['eventId' => $event->id])
             ->execute()
-    ;
+        ;
 
         foreach ($dates as $date) {
             $selectDateRecord = new SelectDateRecord();
@@ -139,10 +130,6 @@ class SelectDatesService extends Component
         }
     }
 
-    /**
-     * @param \DateTime $rangeStart
-     * @param \DateTime $rangeEnd
-     */
     private function getCacheHash(int $eventId, \DateTime $rangeStart = null, \DateTime $rangeEnd = null): string
     {
         $string = $eventId;

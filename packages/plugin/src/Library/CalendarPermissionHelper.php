@@ -26,9 +26,6 @@ class CalendarPermissionHelper extends PermissionHelper
         }
     }
 
-    /**
-     * @param CalendarModel $calendar
-     */
     public static function canEditCalendar(CalendarModel $calendar = null): bool
     {
         $canManageAll = self::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);

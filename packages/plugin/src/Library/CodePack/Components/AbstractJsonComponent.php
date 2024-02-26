@@ -40,8 +40,6 @@ abstract class AbstractJsonComponent implements ComponentInterface
 
     /**
      * Calls the installation of this component.
-     *
-     * @param string $prefix
      */
     abstract public function install(string $prefix = null);
 
@@ -65,7 +63,7 @@ abstract class AbstractJsonComponent implements ComponentInterface
         $parsedData = json_decode($content);
 
         if (json_last_error()) {
-            throw new CodepackException('Codepack JSON component: '.json_last_error_msg());
+            throw new CodePackException('Codepack JSON component: '.json_last_error_msg());
         }
 
         if ($parsedData) {

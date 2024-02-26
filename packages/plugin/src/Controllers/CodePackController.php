@@ -7,6 +7,7 @@ use Solspace\Calendar\Library\CodePack\CodePack;
 use Solspace\Calendar\Library\CodePack\Exceptions\FileObject\FileObjectException;
 use Solspace\Calendar\Resources\Bundles\CodePackBundle;
 use Solspace\Commons\Helpers\PermissionHelper;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 class CodePackController extends BaseController
@@ -14,7 +15,7 @@ class CodePackController extends BaseController
     public const FLASH_VAR_KEY = 'codepack_prefix';
 
     /**
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws ForbiddenHttpException
      */
     public function init(): void
     {

@@ -25,9 +25,6 @@ class AgendaWidget extends AbstractWidget
         return Calendar::t('Calendar Agenda');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function init(): void
     {
         parent::init();

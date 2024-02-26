@@ -11,12 +11,15 @@ use Solspace\Calendar\Library\Events\EventDay;
 use Solspace\Calendar\Library\Events\EventHour;
 use Solspace\Calendar\Library\Events\EventMonth;
 use Solspace\Calendar\Library\Events\EventWeek;
+use Solspace\Calendar\Library\Exceptions\AttributeException;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
 use Solspace\Calendar\Services\SettingsService;
+use yii\base\Exception;
+use yii\base\ExitException;
 
 class CalendarVariable
 {
@@ -71,9 +74,9 @@ class CalendarVariable
      * @param int|string $id
      * @param array      $options - [occurrenceDate, occurrenceRangeStart, occurrenceRangeEnd, occurrenceLimit]
      *
-     * @throws \yii\base\Exception
-     *
      * @return null|Event
+     *
+     * @throws Exception
      */
     public function event($id, array $options = [])
     {
@@ -139,9 +142,9 @@ class CalendarVariable
     }
 
     /**
-     * @throws \Solspace\Calendar\Library\Exceptions\AttributeException
-     *
      * @return CalendarModel[]
+     *
+     * @throws AttributeException
      */
     public function calendars(array $attributes = null): array
     {
@@ -169,9 +172,9 @@ class CalendarVariable
     }
 
     /**
-     * @throws \Solspace\Calendar\Library\Exceptions\AttributeException
-     *
      * @return null|CalendarModel
+     *
+     * @throws AttributeException
      */
     public function calendar(array $attributes = null)
     {
@@ -188,9 +191,6 @@ class CalendarVariable
         return $calendarService->getAllAllowedCalendars();
     }
 
-    /**
-     * @param array $attributes
-     */
     public function month(array $attributes = null): EventMonth
     {
         $viewDataService = Calendar::getInstance()->viewData;
@@ -198,9 +198,6 @@ class CalendarVariable
         return $viewDataService->getMonth($attributes);
     }
 
-    /**
-     * @param array $attributes
-     */
     public function week(array $attributes = null): EventWeek
     {
         $viewDataService = Calendar::getInstance()->viewData;
@@ -208,9 +205,6 @@ class CalendarVariable
         return $viewDataService->getWeek($attributes);
     }
 
-    /**
-     * @param array $attributes
-     */
     public function day(array $attributes = null): EventDay
     {
         $viewDataService = Calendar::getInstance()->viewData;
@@ -218,9 +212,6 @@ class CalendarVariable
         return $viewDataService->getDay($attributes);
     }
 
-    /**
-     * @param array $attributes
-     */
     public function hour(array $attributes = null): EventHour
     {
         $viewDataService = Calendar::getInstance()->viewData;
@@ -308,9 +299,9 @@ class CalendarVariable
      *
      * Adds the first occurrence date to the list of select dates
      *
-     * @throws \yii\base\ExitException
-     *
      * @return Event $event
+     *
+     * @throws ExitException
      */
     public function addFirstOccurrenceDate(Event $event): Event
     {

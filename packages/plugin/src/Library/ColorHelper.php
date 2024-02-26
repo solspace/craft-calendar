@@ -13,9 +13,9 @@ class ColorHelper extends \Solspace\Commons\Helpers\ColorHelper
      * @param string $hexString Colour as hexadecimal (with or without hash);
      * @param float  $percent   Decimal (0.2 = lighten by 20%, -0.4 = darken by 40%)
      *
-     * @throws InvalidArgumentException
-     *
      * @return string Lightened/Darkend colour as hexadecimal (with hash);
+     *
+     * @throws InvalidArgumentException
      */
     public static function lightenDarkenColour($hexString, $percent): string
     {

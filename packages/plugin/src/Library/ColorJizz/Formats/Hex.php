@@ -310,7 +310,7 @@ class Hex extends ColorJizz
     {
         $red = (($this->hex & 0xFF0000) >> 16);
         $green = (($this->hex & 0x00FF00) >> 8);
-        $blue = (($this->hex & 0x0000FF));
+        $blue = ($this->hex & 0x0000FF);
 
         return new RGB($red, $green, $blue);
     }
@@ -390,9 +390,9 @@ class Hex extends ColorJizz
      *
      * @param string $str Can be a color name or string hex value (i.e. "FFFFFF")
      *
-     * @throws InvalidArgumentException
-     *
      * @return Hex the color in Hex format
+     *
+     * @throws InvalidArgumentException
      */
     public static function fromString($str)
     {

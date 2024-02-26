@@ -3,8 +3,9 @@
 namespace Solspace\Calendar\Twig\Extensions;
 
 use Twig\Compiler;
+use Twig\Node\Node;
 
-class RequireEventEditPermissions_Node extends \Twig\Node\Node
+class RequireEventEditPermissions_Node extends Node
 {
     public function compile(Compiler $compiler)
     {

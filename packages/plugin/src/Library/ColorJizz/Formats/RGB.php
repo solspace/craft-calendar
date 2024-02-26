@@ -134,21 +134,21 @@ class RGB extends ColorJizz
         if ($tmp_r > 0.04045) {
             $tmp_r = (($tmp_r + 0.055) / 1.055) ** 2.4;
         } else {
-            $tmp_r = $tmp_r / 12.92;
+            $tmp_r /= 12.92;
         }
         if ($tmp_g > 0.04045) {
             $tmp_g = (($tmp_g + 0.055) / 1.055) ** 2.4;
         } else {
-            $tmp_g = $tmp_g / 12.92;
+            $tmp_g /= 12.92;
         }
         if ($tmp_b > 0.04045) {
             $tmp_b = (($tmp_b + 0.055) / 1.055) ** 2.4;
         } else {
-            $tmp_b = $tmp_b / 12.92;
+            $tmp_b /= 12.92;
         }
-        $tmp_r = $tmp_r * 100;
-        $tmp_g = $tmp_g * 100;
-        $tmp_b = $tmp_b * 100;
+        $tmp_r *= 100;
+        $tmp_g *= 100;
+        $tmp_b *= 100;
         $new_x = $tmp_r * 0.4124 + $tmp_g * 0.3576 + $tmp_b * 0.1805;
         $new_y = $tmp_r * 0.2126 + $tmp_g * 0.7152 + $tmp_b * 0.0722;
         $new_z = $tmp_r * 0.0193 + $tmp_g * 0.1192 + $tmp_b * 0.9505;

@@ -7,6 +7,7 @@ use RRule\RRule;
 
 /**
  * @internal
+ *
  * @coversNothing
  */
 class RRuleTest extends TestCase

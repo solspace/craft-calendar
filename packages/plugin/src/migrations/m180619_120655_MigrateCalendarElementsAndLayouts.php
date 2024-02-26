@@ -12,9 +12,6 @@ use Solspace\Calendar\FieldTypes\EventFieldType;
  */
 class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         $this->update(
@@ -44,7 +41,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
             $id = $item['id'];
             $settings = $item['settings'];
 
-            if (false !== strpos($settings, 'targetLocale')) {
+            if (str_contains($settings, 'targetLocale')) {
                 $settings = str_replace('targetLocale', 'targetSiteId', $settings);
 
                 $this->update(
@@ -56,9 +53,6 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         $this->update(
@@ -88,7 +82,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
             $id = $item['id'];
             $settings = $item['settings'];
 
-            if (false !== strpos($settings, 'targetSiteId')) {
+            if (str_contains($settings, 'targetSiteId')) {
                 $settings = str_replace('targetSiteId', 'targetLocale', $settings);
 
                 $this->update(

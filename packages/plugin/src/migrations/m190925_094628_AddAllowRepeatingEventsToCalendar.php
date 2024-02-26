@@ -9,9 +9,6 @@ use craft\db\Migration;
  */
 class m190925_094628_AddAllowRepeatingEventsToCalendar extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         $table = $this->getDb()->getTableSchema('{{%calendar_calendars}}');
@@ -26,9 +23,6 @@ class m190925_094628_AddAllowRepeatingEventsToCalendar extends Migration
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         echo "m190925_094628_AddAllowRepeatingEventsToCalendar cannot be reverted.\n";

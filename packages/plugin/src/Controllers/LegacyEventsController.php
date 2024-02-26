@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\db\Query;
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -18,7 +19,9 @@ use Solspace\Calendar\Library\RecurrenceHelper;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
+use yii\base\InvalidConfigException;
 use yii\helpers\FormatConverter;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -29,15 +32,15 @@ class LegacyEventsController extends EventsController
     /**
      * Saves an event.
      *
+     * @return Response
+     *
      * @throws EventException
      * @throws HttpException
      * @throws \Throwable
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\BadRequestHttpException
-     *
-     * @return Response
+     * @throws InvalidConfigException
+     * @throws BadRequestHttpException
      */
     public function actionSaveEvent()
     {
@@ -206,13 +209,13 @@ class LegacyEventsController extends EventsController
     /**
      * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
      *
-     * @throws ForbiddenHttpException
-     *
      * @return null|bool|bool[]
+     *
+     * @throws ForbiddenHttpException
      *
      * @since 3.4.0
      */
-    protected function enabledForSiteValue(): array|bool|null
+    protected function enabledForSiteValue(): null|array|bool
     {
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (\is_array($enabledForSite)) {
@@ -227,9 +230,9 @@ class LegacyEventsController extends EventsController
     }
 
     /**
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     private function renderEditForm(Event $event, string $title): Response
     {
@@ -370,7 +373,7 @@ class LegacyEventsController extends EventsController
         $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
         $event->setFieldValuesFromRequest($fieldsLocation);
 
-        $authorId = \Craft::$app->getRequest()->getBodyParam('author', ($event->authorId ?: \Craft::$app->getUser()->getIdentity()->id));
+        $authorId = \Craft::$app->getRequest()->getBodyParam('author', $event->authorId ?: \Craft::$app->getUser()->getIdentity()->id);
         if (\is_array($authorId)) {
             $authorId = $authorId[0] ?? null;
             $event->authorId = $authorId;
@@ -498,9 +501,6 @@ class LegacyEventsController extends EventsController
     }
 
     /**
-     * @param int $eventId
-     * @param int $siteId
-     *
      * @throws \Exception
      */
     private function getExistingOrNewEvent(int $eventId = null, int $siteId = null): Event

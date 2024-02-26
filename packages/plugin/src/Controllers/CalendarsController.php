@@ -18,6 +18,8 @@ use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use Solspace\Commons\Helpers\PermissionHelper;
 use Solspace\Commons\Helpers\StringHelper;
+use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -25,7 +27,7 @@ use yii\web\Response;
 class CalendarsController extends BaseController
 {
     /**
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws ForbiddenHttpException
      */
     public function init(): void
     {
@@ -54,7 +56,7 @@ class CalendarsController extends BaseController
     }
 
     /**
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionCreateCalendar(): Response
     {
@@ -167,8 +169,8 @@ class CalendarsController extends BaseController
      * Saves a calendar.
      *
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionSaveCalendar(): Response
     {
@@ -277,8 +279,8 @@ class CalendarsController extends BaseController
      * Returns the "ics_hash" via ajax response.
      *
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionEnableIcsSharing(): Response
     {
@@ -306,8 +308,8 @@ class CalendarsController extends BaseController
      * Returns the "success: true" via ajax response.
      *
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionDisableIcsSharing(): Response
     {
@@ -332,8 +334,8 @@ class CalendarsController extends BaseController
 
     /**
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionDelete(): Response
     {
@@ -351,7 +353,7 @@ class CalendarsController extends BaseController
     }
 
     /**
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     private function renderEditTemplate(CalendarModel $calendar, string $title): Response
     {

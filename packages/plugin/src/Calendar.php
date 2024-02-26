@@ -3,6 +3,7 @@
 namespace Solspace\Calendar;
 
 use Composer\Autoload\ClassMapGenerator;
+use craft\base\Model;
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -156,9 +157,6 @@ class Calendar extends Plugin
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public static function editions(): array
     {
         return [
@@ -167,9 +165,6 @@ class Calendar extends Plugin
         ];
     }
 
-    /**
-     * @param string $language
-     */
     public static function t(string $message, array $params = [], string $language = null): string
     {
         return \Craft::t(self::TRANSLATION_CATEGORY, $message, $params, $language);
@@ -255,7 +250,7 @@ class Calendar extends Plugin
         \Craft::$app->fields->deleteLayoutsByType(\Solspace\Calendar\Elements\Event::class);
     }
 
-    protected function createSettingsModel(): ?\craft\base\Model
+    protected function createSettingsModel(): ?Model
     {
         return new SettingsModel();
     }

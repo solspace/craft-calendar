@@ -187,11 +187,9 @@ class DateHelper
     /**
      * Shifts BYDAY rule forward or backward by a given amount of days.
      *
-     * @param string $dayList
+     * @return null|string
      *
      * @throws DateHelperException
-     *
-     * @return null|string
      */
     public static function shiftByDays(string $dayList = null, int $shiftAmount)
     {
@@ -229,8 +227,6 @@ class DateHelper
 
     /**
      * Shifts BYMONTHDAY rule forward or backward by a given amount of days.
-     *
-     * @param string $monthDayList
      *
      * @return null|string
      */
@@ -271,8 +267,6 @@ class DateHelper
 
     /**
      * Shifts BYMONTH rule forward or backward by a given amount of days.
-     *
-     * @param string $monthList
      *
      * @return null|string
      */

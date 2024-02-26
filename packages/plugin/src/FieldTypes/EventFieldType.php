@@ -27,9 +27,6 @@ class EventFieldType extends BaseRelationField
         return Calendar::t('Add an event');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function valueType(): string
     {
         return EventQuery::class;

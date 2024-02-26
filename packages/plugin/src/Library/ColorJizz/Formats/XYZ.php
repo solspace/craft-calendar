@@ -85,17 +85,17 @@ class XYZ extends ColorJizz
         if ($var_R > 0.0031308) {
             $var_R = 1.055 * $var_R ** (1 / 2.4) - 0.055;
         } else {
-            $var_R = 12.92 * $var_R;
+            $var_R *= 12.92;
         }
         if ($var_G > 0.0031308) {
             $var_G = 1.055 * $var_G ** (1 / 2.4) - 0.055;
         } else {
-            $var_G = 12.92 * $var_G;
+            $var_G *= 12.92;
         }
         if ($var_B > 0.0031308) {
             $var_B = 1.055 * $var_B ** (1 / 2.4) - 0.055;
         } else {
-            $var_B = 12.92 * $var_B;
+            $var_B *= 12.92;
         }
         $var_R = max(0, min(255, $var_R * 255));
         $var_G = max(0, min(255, $var_G * 255));

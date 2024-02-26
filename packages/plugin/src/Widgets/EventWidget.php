@@ -17,9 +17,6 @@ class EventWidget extends AbstractWidget
         return Calendar::t('Calendar Event');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function init(): void
     {
         parent::init();

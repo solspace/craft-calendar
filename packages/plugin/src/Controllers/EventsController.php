@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\db\Query;
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
 use craft\events\ElementEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
@@ -19,7 +20,9 @@ use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
 use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Solspace\Calendar\Resources\Bundles\EventIndexBundle;
+use yii\base\InvalidConfigException;
 use yii\db\Exception;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -49,9 +52,9 @@ class EventsController extends BaseController
 
     /**
      * @throws HttpException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function actionCreateEvent(string $handle, string $siteHandle = null): Response
     {
@@ -112,10 +115,10 @@ class EventsController extends BaseController
 
     /**
      * @throws HttpException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\ForbiddenHttpException
+     * @throws InvalidConfigException
+     * @throws ForbiddenHttpException
      */
     public function actionEditEvent(int $id, string $siteHandle = null): Response
     {
@@ -161,15 +164,15 @@ class EventsController extends BaseController
     /**
      * Saves an event.
      *
+     * @return Response
+     *
      * @throws EventException
      * @throws HttpException
      * @throws \Throwable
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\web\BadRequestHttpException
-     *
-     * @return Response
+     * @throws InvalidConfigException
+     * @throws BadRequestHttpException
      */
     public function actionSaveEvent()
     {
@@ -279,7 +282,7 @@ class EventsController extends BaseController
     /**
      * Deletes an event.
      *
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      * @throws \Throwable
      */
     public function actionDeleteEvent()
@@ -345,7 +348,7 @@ class EventsController extends BaseController
     /**
      * @throws NotFoundHttpException
      * @throws ServerErrorHttpException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionViewSharedEvent(int $eventId = null, int $siteId = null): Response
     {
@@ -362,7 +365,7 @@ class EventsController extends BaseController
     /**
      * Previews an entry.
      *
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      * @throws ServerErrorHttpException
      * @throws NotFoundHttpException
      */
@@ -388,13 +391,13 @@ class EventsController extends BaseController
     /**
      * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
      *
-     * @throws ForbiddenHttpException
-     *
      * @return null|bool|bool[]
+     *
+     * @throws ForbiddenHttpException
      *
      * @since 3.4.0
      */
-    protected function enabledForSiteValue(): array|bool|null
+    protected function enabledForSiteValue(): null|array|bool
     {
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (\is_array($enabledForSite)) {
@@ -410,9 +413,9 @@ class EventsController extends BaseController
     }
 
     /**
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     private function renderEditForm(Event $event, string $title): Response
     {
@@ -602,7 +605,7 @@ class EventsController extends BaseController
         $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
         $event->setFieldValuesFromRequest($fieldsLocation);
 
-        $authorId = \Craft::$app->getRequest()->getBodyParam('author', ($event->authorId ?: \Craft::$app->getUser()->getIdentity()->id));
+        $authorId = \Craft::$app->getRequest()->getBodyParam('author', $event->authorId ?: \Craft::$app->getUser()->getIdentity()->id);
         if (\is_array($authorId)) {
             $authorId = $authorId[0] ?? null;
             $event->authorId = $authorId;
@@ -655,9 +658,6 @@ class EventsController extends BaseController
     }
 
     /**
-     * @param int $eventId
-     * @param int $siteId
-     *
      * @throws \Exception
      */
     private function getExistingOrNewEvent(int $eventId = null, int $siteId = null): Event

@@ -2,6 +2,4 @@
 
 namespace Solspace\Calendar\Library\Bundles;
 
-interface BundleInterface
-{
-}
+interface BundleInterface {}

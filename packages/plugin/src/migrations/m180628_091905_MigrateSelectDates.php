@@ -12,9 +12,6 @@ use Solspace\Calendar\Library\DateHelper;
  */
 class m180628_091905_MigrateSelectDates extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         $table = '{{%calendar_select_dates}}';
@@ -40,9 +37,6 @@ class m180628_091905_MigrateSelectDates extends Migration
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         echo "m180628_091905_MigrateSelectDates cannot be reverted.\n";
