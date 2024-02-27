@@ -13,9 +13,9 @@ class CalendarOptionsGenerator implements OptionsGeneratorInterface
     {
         $options = new OptionCollection();
 
-        $plugins = \Craft::$app->getPlugins();
-        if ($plugins->isPluginInstalled('calendar') && $plugins->isPluginEnabled('calendar')) {
-            $calendars = Calendar::getInstance()->calendars->getCalendars();
+        $calendar = Calendar::getInstance();
+        if ($calendar) {
+            $calendars = $calendar->calendars->getCalendars();
             foreach ($calendars as $calendar) {
                 $options->add($calendar->id, $calendar->name);
             }

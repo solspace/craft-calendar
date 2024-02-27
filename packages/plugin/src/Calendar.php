@@ -231,7 +231,7 @@ class Calendar extends Plugin
     /**
      * @return Calendar|Plugin
      */
-    public static function getInstance(): self
+    public static function getInstance(): ?self
     {
         return parent::getInstance();
     }
