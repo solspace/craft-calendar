@@ -16,10 +16,7 @@ class CalendarEventsBundle implements BundleInterface
             IntegrationsService::class,
             IntegrationsService::EVENT_REGISTER_INTEGRATION_TYPES,
             function (RegisterIntegrationTypesEvent $event) {
-                $plugins = \Craft::$app->getPlugins();
-                if ($plugins->isPluginInstalled('freeform') && $plugins->isPluginEnabled('freeform')) {
-                    $event->addType(CalendarEvents::class);
-                }
+                $event->addType(CalendarEvents::class);
             }
         );
     }
