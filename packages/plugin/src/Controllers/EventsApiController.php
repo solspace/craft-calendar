@@ -313,7 +313,7 @@ class EventsApiController extends BaseController
     public function actionAttributes(): Response
     {
         return $this->asJson([
-            ['id' => 'title', 'label' => 'Title', 'required' => true],
+            ['id' => 'title', 'label' => 'Title', 'required' => false],
             ['id' => 'siteId', 'label' => 'Site ID', 'required' => false],
             ['id' => 'slug', 'label' => 'Slug', 'required' => false],
             ['id' => 'authorId', 'label' => 'Author ID', 'required' => false],
