@@ -8,7 +8,9 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Exceptions\DateHelperException;
 use Solspace\Calendar\Records\SelectDateRecord;
+use yii\web\BadRequestHttpException;
 use yii\web\HttpException;
 use yii\web\Response;
 
@@ -22,9 +24,9 @@ class EventsApiController extends BaseController
      * Modifies an event.
      *
      * @throws HttpException
-     * @throws \Solspace\Calendar\Library\Exceptions\DateHelperException
+     * @throws DateHelperException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionModifyDate(): Response
     {
@@ -136,7 +138,7 @@ class EventsApiController extends BaseController
      *
      * @throws HttpException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionModifyDuration(): Response
     {
@@ -160,7 +162,7 @@ class EventsApiController extends BaseController
      *
      * @throws HttpException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionCreate(): Response
     {
@@ -228,7 +230,7 @@ class EventsApiController extends BaseController
      *
      * @throws HttpException
      * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionDelete(): Response
     {
@@ -254,7 +256,7 @@ class EventsApiController extends BaseController
      * Adds an exception to a recurring event.
      *
      * @throws HttpException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionDeleteOccurrence(): Response
     {
@@ -306,6 +308,50 @@ class EventsApiController extends BaseController
             'success' => true,
             'event' => $event,
         ]);
+    }
+
+    public function actionAttributes(): Response
+    {
+        return $this->asJson([
+            ['id' => 'title', 'label' => 'Title', 'required' => false],
+            ['id' => 'siteId', 'label' => 'Site ID', 'required' => false],
+            ['id' => 'slug', 'label' => 'Slug', 'required' => false],
+            ['id' => 'authorId', 'label' => 'Author ID', 'required' => false],
+            ['id' => 'allDay', 'label' => 'All Day', 'required' => false],
+            ['id' => 'startDate', 'label' => 'Start Date', 'required' => false],
+            ['id' => 'endDate', 'label' => 'End Date', 'required' => false],
+            ['id' => 'postDate', 'label' => 'Post Date', 'required' => false],
+            ['id' => 'dateCreated', 'label' => 'Date Created', 'required' => false],
+            ['id' => 'dateUpdated', 'label' => 'Date Updated', 'required' => false],
+        ]);
+    }
+
+    public function actionCustomFields(): Response
+    {
+        $calendarId = $this->request->get('calendarId');
+        if (!$calendarId) {
+            return $this->asJson([]);
+        }
+
+        $calendar = $this->getCalendarService()->getCalendarById($calendarId);
+        if (!$calendar) {
+            throw new HttpException(
+                404,
+                Calendar::t('Calendar with a ID "{calendarId}" could not be found', ['calendarId' => $calendarId])
+            );
+        }
+
+        $fieldLayout = $calendar->getFieldLayout();
+
+        $fields = [];
+        foreach ($fieldLayout->getCustomFields() as $field) {
+            $fields[] = [
+                'id' => $field->id,
+                'label' => $field->name,
+            ];
+        }
+
+        return $this->asJson($fields);
     }
 
     /**

@@ -9,9 +9,6 @@ use craft\db\Migration;
  */
 class m180921_124711_AddIcsTimezoneToCalendar extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         $table = $this->getDb()->getTableSchema('{{%calendar_calendars}}');
@@ -26,9 +23,6 @@ class m180921_124711_AddIcsTimezoneToCalendar extends Migration
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         echo "m180628_091905_MigrateSelectDates cannot be reverted.\n";

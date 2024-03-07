@@ -9,6 +9,7 @@ use Solspace\Calendar\Library\Exceptions\DateHelperException;
 
 /**
  * @internal
+ *
  * @coversNothing
  */
 class DateHelperTest extends TestCase
@@ -105,6 +106,7 @@ class DateHelperTest extends TestCase
 
     /**
      * @dataProvider shiftByDayDataProvider
+     *
      * @covers       \DateHelper::shiftByDays()
      *
      * @throws DateHelperException
@@ -223,6 +225,7 @@ class DateHelperTest extends TestCase
      * Tests the updated first day of week.
      *
      * @dataProvider dayOfWeekDataProvider
+     *
      * @covers       \DateHelper::updateWeekStartDate()
      */
     public function testUpdateDayOfWeek(int $firstDay, int $expectedLastDay): void

@@ -4,7 +4,6 @@ namespace Solspace\Calendar\Bundles\ExternalPluginSupport\FeedMe;
 
 use Cake\Utility\Hash;
 use Carbon\Carbon;
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User as UserElement;
 use craft\feedme\base\Element;
@@ -86,9 +85,9 @@ if (class_exists('craft\feedme\base\Element')) {
             $query = EventElement::find()
                 ->status(null)
                 ->setCalendarId($settings['elementGroup'][EventElement::class])
-                ->siteId(Hash::get($settings, 'siteId') ?: Craft::$app->getSites()->getPrimarySite()->id)
+                ->siteId(Hash::get($settings, 'siteId') ?: \Craft::$app->getSites()->getPrimarySite()->id)
             ;
-            Craft::configure($query, $params);
+            \Craft::configure($query, $params);
 
             return $query;
         }
@@ -149,7 +148,7 @@ if (class_exists('craft\feedme\base\Element')) {
                 $element->username = $value;
                 $element->email = $value;
 
-                if (!Craft::$app->getElements()->saveElement($element)) {
+                if (!\Craft::$app->getElements()->saveElement($element)) {
                     Plugin::error(
                         'Event error: Could not create author - `{e}`.',
                         ['e' => json_encode($element->getErrors())]
@@ -270,7 +269,5 @@ if (class_exists('craft\feedme\base\Element')) {
         }
     }
 } else {
-    class CalendarIntegration
-    {
-    }
+    class CalendarIntegration {}
 }

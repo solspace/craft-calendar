@@ -25,9 +25,6 @@ class UpcomingEventsWidget extends AbstractWidget
         return Calendar::t('Upcoming Events');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function init(): void
     {
         parent::init();

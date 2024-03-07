@@ -2,7 +2,6 @@
 
 namespace Solspace\Calendar\migrations;
 
-use Craft;
 use craft\db\Migration;
 use Solspace\Calendar\Elements\Event;
 
@@ -11,12 +10,9 @@ use Solspace\Calendar\Elements\Event;
  */
 class m191022_124711_AddMultiSitesFix extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
-        $allSites = Craft::$app->getSites()->getAllSites();
+        $allSites = \Craft::$app->getSites()->getAllSites();
 
         if (\count($allSites) > 1) {
             $query = Event::find()
@@ -33,7 +29,7 @@ class m191022_124711_AddMultiSitesFix extends Migration
                 foreach ($events as $event) {
                     foreach ($allSites as $site) {
                         $event->siteId = $site->id;
-                        $searchService = Craft::$app->getSearch();
+                        $searchService = \Craft::$app->getSearch();
                         $searchService->indexElementAttributes($event);
                     }
                 }
@@ -43,9 +39,6 @@ class m191022_124711_AddMultiSitesFix extends Migration
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         return false;

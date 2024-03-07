@@ -7,6 +7,7 @@ use Solspace\Calendar\Library\DatabaseHelper;
 
 /**
  * @internal
+ *
  * @coversNothing
  */
 class DatabaseHelperTest extends TestCase

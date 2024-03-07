@@ -2,6 +2,4 @@
 
 namespace Solspace\Calendar\Library\Exceptions;
 
-class DateHelperException extends CalendarException
-{
-}
+class DateHelperException extends CalendarException {}

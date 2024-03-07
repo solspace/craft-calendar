@@ -78,9 +78,6 @@ class CalendarSiteSettingsModel extends Model
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function attributeLabels(): array
     {
         return [
@@ -89,9 +86,6 @@ class CalendarSiteSettingsModel extends Model
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function rules(): array
     {
         $rules = [

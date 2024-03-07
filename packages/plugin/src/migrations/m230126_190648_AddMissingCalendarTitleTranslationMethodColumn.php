@@ -10,9 +10,6 @@ use craft\db\Migration;
  */
 class m230126_190648_AddMissingCalendarTitleTranslationMethodColumn extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp(): bool
     {
         $table = $this->getDb()->getTableSchema('{{%calendar_calendars}}');
@@ -28,9 +25,6 @@ class m230126_190648_AddMissingCalendarTitleTranslationMethodColumn extends Migr
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown(): bool
     {
         echo "m230126_190648_AddMissingCalendarTitleTranslationMethodColumn cannot be reverted.\n";

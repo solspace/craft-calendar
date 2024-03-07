@@ -43,7 +43,7 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
         echo $exportString;
 
         if ($shouldExit) {
-            exit();
+            exit;
         }
     }
 

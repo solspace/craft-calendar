@@ -10,9 +10,6 @@ use yii\db\Expression;
  */
 class m200608_083342_AddPostDateToEvents extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         $table = $this->getDb()->getTableSchema('{{%calendar_events}}');
@@ -31,9 +28,6 @@ class m200608_083342_AddPostDateToEvents extends Migration
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         $table = $this->getDb()->getTableSchema('{{%calendar_events}}');

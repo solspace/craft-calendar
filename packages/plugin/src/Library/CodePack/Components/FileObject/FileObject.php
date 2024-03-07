@@ -17,9 +17,6 @@ abstract class FileObject
     /** @var bool */
     protected $folder;
 
-    /**
-     * @param $path
-     */
     abstract protected function __construct(string $path);
 
     /**

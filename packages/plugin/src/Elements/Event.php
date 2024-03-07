@@ -10,6 +10,7 @@ use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\Cp;
@@ -39,8 +40,10 @@ use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\ExceptionRecord;
 use Solspace\Calendar\Records\SelectDateRecord;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
+use Solspace\Commons\Exceptions\Configurations\ConfigurationException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use yii\base\Event as BaseEvent;
+use yii\base\InvalidConfigException;
 
 class Event extends Element implements \JsonSerializable
 {
@@ -316,8 +319,6 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @param array $config
-     *
      * @return ElementQueryInterface|EventQuery
      */
     public static function buildQuery(array $config = null): ElementQueryInterface
@@ -370,7 +371,7 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function getSupportedSites(): array
     {
@@ -458,9 +459,9 @@ class Event extends Element implements \JsonSerializable
     /**
      * Returns the element's CP edit URL.
      *
-     * @throws \yii\base\InvalidConfigException
-     *
      * @return false|string
+     *
+     * @throws InvalidConfigException
      */
     public function getCpEditUrl(): ?string
     {
@@ -619,9 +620,6 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @param \DateTime $rangeStart
-     * @param \DateTime $rangeEnd
-     *
      * @return SelectDateModel[]
      */
     public function getSelectDates(\DateTime $rangeStart = null, \DateTime $rangeEnd = null): array
@@ -1177,10 +1175,10 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @throws \Solspace\Commons\Exceptions\Configurations\ConfigurationException
-     * @throws \ReflectionException
-     *
      * @return Event[]
+     *
+     * @throws ConfigurationException
+     * @throws \ReflectionException
      */
     public function getOccurrences(array $config = null): array
     {
@@ -1297,25 +1295,17 @@ class Event extends Element implements \JsonSerializable
         return DateHelper::carbonDiffInDays($this->getStartDate(), $event->getStartDate());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDelete(User $user): bool
     {
         return $this->isEditable($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canSave(User $user): bool
     {
         return $this->isEditable($this);
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception if reasons
      */
     public function beforeSave(bool $isNew): bool
@@ -1597,9 +1587,6 @@ class Event extends Element implements \JsonSerializable
         return $event->actions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected static function defineSources(string $context = null): array
     {
         $sources = [
@@ -1629,9 +1616,6 @@ class Event extends Element implements \JsonSerializable
         return $sources;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected static function defineTableAttributes(): array
     {
         $attributes = [
@@ -1672,9 +1656,6 @@ class Event extends Element implements \JsonSerializable
         return ['id', 'title', 'startDate', 'endDate'];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
@@ -1686,9 +1667,6 @@ class Event extends Element implements \JsonSerializable
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected static function defineActions(string $source = null): array
     {
         $actions = [
@@ -1714,9 +1692,6 @@ class Event extends Element implements \JsonSerializable
         return $actions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
@@ -1746,10 +1721,7 @@ class Event extends Element implements \JsonSerializable
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function route(): array|string|null
+    protected function route(): null|array|string
     {
         if (!$this->enabled) {
             return null;

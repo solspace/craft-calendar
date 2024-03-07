@@ -25,9 +25,6 @@ class MonthWidget extends AbstractWidget
         return Calendar::t('Mini Calendar');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function init(): void
     {
         parent::init();

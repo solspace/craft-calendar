@@ -6,8 +6,6 @@ class File extends FileObject
 {
     /**
      * File constructor.
-     *
-     * @param $path
      */
     protected function __construct(string $path)
     {

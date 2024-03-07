@@ -16,11 +16,12 @@ use Solspace\Calendar\Library\Events\EventDay;
 use Solspace\Calendar\Library\Events\EventHour;
 use Solspace\Calendar\Library\Events\EventMonth;
 use Solspace\Calendar\Library\Events\EventWeek;
+use Solspace\Calendar\Library\Exceptions\DurationException;
 
 class ViewDataService extends Component
 {
     /**
-     * @throws \Solspace\Calendar\Library\Exceptions\DurationException
+     * @throws DurationException
      */
     public function getMonth(array $attributes = null): EventMonth
     {
@@ -34,7 +35,7 @@ class ViewDataService extends Component
     }
 
     /**
-     * @throws \Solspace\Calendar\Library\Exceptions\DurationException
+     * @throws DurationException
      */
     public function getWeek(array $attributes = null): EventWeek
     {
@@ -48,7 +49,7 @@ class ViewDataService extends Component
     }
 
     /**
-     * @throws \Solspace\Calendar\Library\Exceptions\DurationException
+     * @throws DurationException
      */
     public function getDay(array $attributes = null): EventDay
     {
@@ -59,7 +60,7 @@ class ViewDataService extends Component
     }
 
     /**
-     * @throws \Solspace\Calendar\Library\Exceptions\DurationException
+     * @throws DurationException
      */
     public function getHour(array $attributes = null): EventHour
     {

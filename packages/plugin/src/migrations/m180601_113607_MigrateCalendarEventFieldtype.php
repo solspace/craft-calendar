@@ -10,9 +10,6 @@ use Solspace\Calendar\FieldTypes\EventFieldType;
  */
 class m180601_113607_MigrateCalendarEventFieldtype extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         $this->update(
@@ -24,9 +21,6 @@ class m180601_113607_MigrateCalendarEventFieldtype extends Migration
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         $this->update(

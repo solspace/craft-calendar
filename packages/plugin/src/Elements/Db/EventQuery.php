@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Elements\Db;
 
 use Carbon\Carbon;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use RRule\RRule;
@@ -20,6 +21,7 @@ use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\ExceptionsService;
 use Solspace\Calendar\Services\SelectDatesService;
 use Solspace\Commons\Helpers\PermissionHelper;
+use yii\base\Model;
 use yii\db\Connection;
 use yii\db\Expression;
 
@@ -400,9 +402,6 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param int $overlapThreshold
-     */
     public function setOverlapThreshold(int $overlapThreshold = null): self
     {
         $this->overlapThreshold = $overlapThreshold;
@@ -428,7 +427,7 @@ class EventQuery extends ElementQuery
      * @param string $q
      * @param null   $db
      */
-    public function count($q = '*', $db = null): string|int|bool|null
+    public function count($q = '*', $db = null): null|bool|int|string
     {
         $this->all($db);
 
@@ -442,9 +441,9 @@ class EventQuery extends ElementQuery
     /**
      * @param null $db
      *
-     * @return null|array|\craft\base\ElementInterface
+     * @return null|array|ElementInterface
      */
-    public function one($db = null): array|null|\yii\base\Model
+    public function one($db = null): null|array|Model
     {
         $oldLimit = $this->limit;
         $this->limit = 1;
@@ -546,7 +545,7 @@ class EventQuery extends ElementQuery
         return $this->events;
     }
 
-    public function nth(int $n, ?Connection $db = null): array|null|\yii\base\Model
+    public function nth(int $n, ?Connection $db = null): null|array|Model
     {
         $this->all($db);
 
@@ -1289,7 +1288,7 @@ class EventQuery extends ElementQuery
             $orderBy = 'sortOrder';
         }
 
-        if (false !== strpos($orderBy, '.')) {
+        if (str_contains($orderBy, '.')) {
             $orderBy = 'startDate';
         }
 

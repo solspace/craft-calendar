@@ -16,6 +16,7 @@ use Solspace\Commons\Exceptions\Configurations\ConfigurationException;
 
 /**
  * @internal
+ *
  * @coversNothing
  */
 class CalendarConfigurationTest extends TestCase

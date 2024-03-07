@@ -72,7 +72,7 @@ class DatabaseHelper
         $operator = self::OPERATOR_EQUALS;
         foreach (self::$operatorList as $searchableOperator) {
             $length = \strlen($searchableOperator);
-            if (0 === strpos($value, $searchableOperator)) {
+            if (str_starts_with($value, $searchableOperator)) {
                 $operator = $searchableOperator;
                 $value = substr($value, $length + 1);
 

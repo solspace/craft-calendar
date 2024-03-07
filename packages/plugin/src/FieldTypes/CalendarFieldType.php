@@ -6,6 +6,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\helpers\Gql as GqlHelper;
 use craft\services\Gql as GqlService;
+use GraphQL\Type\Definition\Type;
 use Solspace\Calendar\Bundles\GraphQL\Arguments\CalendarArguments;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\CalendarInterface;
 use Solspace\Calendar\Bundles\GraphQL\Resolvers\CalendarResolver;
@@ -15,25 +16,16 @@ use yii\db\Schema;
 
 class CalendarFieldType extends Field
 {
-    /**
-     * {@inheritDoc}
-     */
     public static function displayName(): string
     {
         return Calendar::t('Calendar Calendars');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public static function defaultSelectionLabel(): string
     {
         return Calendar::t('Add a calendar');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getContentColumnType(): array|string
     {
         return Schema::TYPE_INTEGER;
@@ -70,7 +62,7 @@ class CalendarFieldType extends Field
         );
     }
 
-    public function getContentGqlType(): array|\GraphQL\Type\Definition\Type
+    public function getContentGqlType(): array|Type
     {
         $gqlType = [
             'name' => $this->handle,
@@ -101,9 +93,6 @@ class CalendarFieldType extends Field
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof CalendarModel) {
@@ -113,9 +102,6 @@ class CalendarFieldType extends Field
         return parent::serializeValue($value, $element);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof CalendarModel) {
@@ -125,9 +111,6 @@ class CalendarFieldType extends Field
         return Calendar::getInstance()->calendars->getCalendarById((int) $value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function optionsSettingLabel(): string
     {
         return Calendar::t('Calendar Options');

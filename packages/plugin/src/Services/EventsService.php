@@ -6,11 +6,15 @@ use Carbon\Carbon;
 use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\errors\ElementNotFoundException;
+use craft\errors\SiteNotFoundException;
 use craft\events\DeleteElementEvent as CraftDeleteElementEvent;
 use craft\events\SiteEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\records\Element as ElementRecord;
@@ -22,6 +26,7 @@ use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
 use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Exceptions\DateHelperException;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\web\HttpException;
@@ -35,8 +40,6 @@ class EventsService extends Component
 
     /**
      * Returns an event by its ID.
-     *
-     * @param int $siteId
      *
      * @return null|ElementInterface|Event
      */
@@ -58,8 +61,6 @@ class EventsService extends Component
     /**
      * Returns an event by its slug.
      *
-     * @param int $siteId
-     *
      * @return null|ElementInterface|Event
      */
     public function getEventBySlug(string $slug, int $siteId = null, bool $includeDisabled = false)
@@ -74,8 +75,6 @@ class EventsService extends Component
     }
 
     /**
-     * @param int $siteId
-     *
      * @return Event[]
      */
     public function getEventsByIds(array $eventIds, int $siteId = null): array
@@ -128,7 +127,7 @@ class EventsService extends Component
             ->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]')
             ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
             ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]')
-            ->innerJoin(TABLE::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
+            ->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
             ->where([
                 'and',
                 'events.[[freq]] IS NULL',
@@ -150,7 +149,7 @@ class EventsService extends Component
             ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]')
             ->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]')
             ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
+            ->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
         ;
 
         return $query->all();
@@ -171,7 +170,7 @@ class EventsService extends Component
             ->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]')
             ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
             ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]')
-            ->innerJoin(TABLE::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
+            ->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
             ->where([
                 'and',
                 'events.[[freq]] IS NOT NULL',
@@ -204,7 +203,7 @@ class EventsService extends Component
             ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]')
             ->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]')
             ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(TABLE::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
+            ->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
         ;
 
         return $query->all();
@@ -341,7 +340,7 @@ class EventsService extends Component
      *        the event would then repeat on Mon and Thu.
      *        Bumping by 8 days would set it to Wed and Sat.
      *
-     * @throws \Solspace\Calendar\Library\Exceptions\DateHelperException
+     * @throws DateHelperException
      */
     public function bumpRecurrenceRule(Event $event, int $amountOfDays, int $amountOfMonths)
     {
@@ -537,7 +536,7 @@ class EventsService extends Component
     }
 
     /**
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     private function reindexSearchForAllSites(Event $event)
     {
@@ -552,7 +551,7 @@ class EventsService extends Component
      * If we have an event with multi-site enabled and a non-translatable fields, we need to respect the non-translatable field values.
      *
      * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
+     * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
     private function _respectNonTranslatableFields(Event $event): bool
@@ -593,7 +592,7 @@ class EventsService extends Component
 
             foreach ($fieldLayoutTabs as $fieldLayoutTab) {
                 foreach ($fieldLayoutTab->getElements() as $element) {
-                    if ($element instanceof \craft\fieldlayoutelements\CustomField && \craft\base\Field::TRANSLATION_METHOD_NONE === $element->getField()->translationMethod) {
+                    if ($element instanceof CustomField && Field::TRANSLATION_METHOD_NONE === $element->getField()->translationMethod) {
                         // We've found a field that is non-translatable in $event
                         $hasNonTranslatableFields = true;
 

@@ -8,6 +8,7 @@ use Solspace\Calendar\Library\Duration\DayDuration;
 
 /**
  * @internal
+ *
  * @coversNothing
  */
 class DayDurationTest extends TestCase

@@ -2,7 +2,6 @@
 
 namespace Solspace\Calendar\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -13,13 +12,10 @@ use craft\helpers\Db;
  */
 class m210506_063418_AddProjectConfigSupport extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         // Don't make the same config changes twice
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = \Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('plugins.calendar.schemaVersion', true);
         if (version_compare($schemaVersion, '3.3.0', '>=')) {
             return null;
@@ -30,9 +26,6 @@ class m210506_063418_AddProjectConfigSupport extends Migration
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         echo "m210506_063418_AddProjectConfigSupport cannot be reverted.\n";
@@ -137,7 +130,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
             return null;
         }
 
-        $fieldLayout = Craft::$app->fields->getLayoutById($fieldLayoutId);
+        $fieldLayout = \Craft::$app->fields->getLayoutById($fieldLayoutId);
         if (!$fieldLayout) {
             return null;
         }

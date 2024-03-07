@@ -13,9 +13,6 @@ use Solspace\Commons\Migrations\Table;
  */
 class m180316_130028_Craft3Upgrade extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp(): bool
     {
         $calendar = (new Query())
@@ -126,9 +123,6 @@ class m180316_130028_Craft3Upgrade extends Migration
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown(): bool
     {
         return true;

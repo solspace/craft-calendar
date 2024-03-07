@@ -4,6 +4,7 @@
  *  http://luke.nehemedia.de.
  *
  * @version   1.1
+ *
  * @last_edit 2017-03-17
  */
 $plugin = [

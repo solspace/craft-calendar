@@ -2,7 +2,6 @@
 
 namespace Solspace\Calendar\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -13,9 +12,6 @@ use Solspace\Calendar\Calendar;
  */
 class m210929_131016_PermissionsMigrationForProjectConfig extends Migration
 {
-    /**
-     * {@inheritdoc}
-     */
     public function safeUp()
     {
         // Establish all the new permissions we should be looking for,
@@ -52,7 +48,7 @@ class m210929_131016_PermissionsMigrationForProjectConfig extends Migration
         }
 
         // Don't make the same config changes twice
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = \Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('plugins.calendar.schemaVersion', true);
         if (version_compare($schemaVersion, '3.3.1', '<')) {
             foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
@@ -73,9 +69,6 @@ class m210929_131016_PermissionsMigrationForProjectConfig extends Migration
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function safeDown()
     {
         echo "m210929_131016_PermissionsMigrationForProjectConfig cannot be reverted.\n";

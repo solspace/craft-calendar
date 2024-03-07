@@ -116,8 +116,6 @@ class EventListOptions
     }
 
     /**
-     * @param int $limit
-     *
      * @return $this
      */
     public function setLimit(int $limit = null): self
@@ -136,8 +134,6 @@ class EventListOptions
     }
 
     /**
-     * @param int $offset
-     *
      * @return $this
      */
     public function setOffset(int $offset = null): self
@@ -156,8 +152,6 @@ class EventListOptions
     }
 
     /**
-     * @param string $order
-     *
      * @return $this
      */
     public function setOrder(string $order = null): self
@@ -186,8 +180,6 @@ class EventListOptions
     }
 
     /**
-     * @param bool $shuffle
-     *
      * @return $this
      */
     public function setShuffle(bool $shuffle = null): self
@@ -206,8 +198,6 @@ class EventListOptions
     }
 
     /**
-     * @param string $sort
-     *
      * @return $this
      */
     public function setSort(string $sort = null): self
@@ -250,8 +240,6 @@ class EventListOptions
     }
 
     /**
-     * @param int $overlapThreshold
-     *
      * @return $this
      */
     public function setOverlapThreshold(int $overlapThreshold = null): self
@@ -287,8 +275,6 @@ class EventListOptions
     }
 
     /**
-     * @param string $site
-     *
      * @return $this
      */
     public function setSite(string $site = null): self

@@ -4,7 +4,7 @@ namespace Solspace\Calendar\Library;
 
 use DateTime;
 
-class DateTimeUTC extends DateTime
+class DateTimeUTC extends \DateTime
 {
     /**
      * Creates a new DateTime object from a string.
@@ -12,7 +12,7 @@ class DateTimeUTC extends DateTime
      * @param array|string $date
      * @param null|string  $timezone
      *
-     * @return null|DateTime|false
+     * @return null|\DateTime|false
      */
     public static function createFromString($date, $timezone = self::UTC)
     {
@@ -35,7 +35,7 @@ class DateTimeUTC extends DateTime
      * @param string $time
      * @param mixed  $timezone the timezone the string is set in (defaults to UTC)
      *
-     * @return DateTime
+     * @return \DateTime
      */
     public static function createFromFormat($format, $time, $timezone = self::UTC)
     {
