@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Integrations\Plugins\Freeform\CalendarEvents;
 
+use Carbon\Carbon;
 use craft\base\Element;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
@@ -107,9 +108,6 @@ class CalendarEvents extends ElementIntegration
             $entry = Event::create($currentSiteId, $this->getCalendarId());
         }
 
-        $this->processMapping($entry, $form, $this->attributeMapping);
-        $this->processMapping($entry, $form, $this->fieldMapping);
-
         if (empty($entry->title)) {
             $entry->title = 'New Event - '.$entry->postDate->toDateTimeString();
         }
@@ -121,6 +119,21 @@ class CalendarEvents extends ElementIntegration
         $entry->siteId = $currentSiteId;
         $entry->enabled = !$this->isDisabled();
         $entry->allDay = $this->isAllDay();
+
+        $this->processMapping($entry, $form, $this->attributeMapping);
+        $this->processMapping($entry, $form, $this->fieldMapping);
+
+        if (!$entry->postDate instanceof Carbon) {
+            $entry->postDate = Carbon::parse($entry->postDate);
+        }
+
+        if (!$entry->startDate instanceof Carbon) {
+            $entry->startDate = Carbon::parse($entry->startDate);
+        }
+
+        if (!$entry->endDate instanceof Carbon) {
+            $entry->endDate = Carbon::parse($entry->endDate);
+        }
 
         return $entry;
     }
