@@ -1,6 +1,6 @@
 # Solspace Calendar Changelog
 
-## 4.0.12 - Unreleased
+## 4.0.12 - 2024-03-07
 
 ### Added
 - Added support for an element integration in Freeform 5. Allows users to create Calendar events from Freeform forms.

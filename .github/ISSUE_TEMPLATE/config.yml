@@ -7,10 +7,10 @@ contact_links:
     url: https://github.com/solspace/craft-calendar/discussions
     about: Ask a question about Calendar (e.g. whether or not ____ can be done, etc).
   - name: Private Support Ticket
-    url: https://docs.solspace.com/craft/calendar/v3/support.html
+    url: https://docs.solspace.com/craft/calendar/v4/support.html
     about: Create a private support ticket.
   - name: Calendar Documentation
-    url: https://docs.solspace.com/craft/calendar/v3/
+    url: https://docs.solspace.com/craft/calendar/v4/
     about: Read the official documentation.
   - name: Craft Stack Exchange
     url: https://craftcms.stackexchange.com/questions/tagged/solspace
