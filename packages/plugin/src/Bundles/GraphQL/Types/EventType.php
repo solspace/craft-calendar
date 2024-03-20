@@ -19,12 +19,12 @@ class EventType extends AbstractObjectType
         return EventInterface::getType();
     }
 
-    public static function resolveType($element = null): string
+    public static function resolveType(mixed $context = null): string
     {
-        if ($element instanceof Event) {
-            return GqlEntityRegistry::prefixTypeName($element->getGqlTypeName());
+        if ($context instanceof Event) {
+            return GqlEntityRegistry::prefixTypeName($context->getGqlTypeName());
         }
 
-        return static::resolveType($element);
+        return static::resolveType($context);
     }
 }

@@ -3,7 +3,7 @@
 namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class HourDuration extends AbstractDuration
 {
@@ -11,7 +11,7 @@ class HourDuration extends AbstractDuration
      * Duration constructor.
      * Must get a valid start and end date from $targetDate.
      */
-    protected function init(Carbon $targetDate)
+    protected function init(Carbon $targetDate): void
     {
         $startDate = new Carbon($targetDate->toDateTimeString(), DateHelper::UTC);
         $startDate->minute = 0;

@@ -5,8 +5,10 @@ namespace Solspace\Calendar\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use Solspace\Calendar\FieldTypes\EventFieldType;
-use Solspace\Commons\Migrations\ForeignKey;
-use Solspace\Commons\Migrations\Table;
+use Solspace\Calendar\Library\Migrations\ForeignKey;
+use Solspace\Calendar\Library\Migrations\Table;
+use Solspace\Calendar\Records\CalendarRecord;
+use Solspace\Calendar\Records\CalendarSiteSettingsRecord;
 
 /**
  * m180316_130028_Craft3Upgrade migration.
@@ -17,7 +19,7 @@ class m180316_130028_Craft3Upgrade extends Migration
     {
         $calendar = (new Query())
             ->select(['id', 'version'])
-            ->from('{{%plugins}}')
+            ->from(\craft\db\Table::PLUGINS)
             ->where([
                 'handle' => 'calendar',
             ])
@@ -36,14 +38,17 @@ class m180316_130028_Craft3Upgrade extends Migration
         }
 
         $this->update(
-            '{{%fields}}',
+            \craft\db\Table::FIELDS,
             ['type' => EventFieldType::class],
             ['type' => 'Calendar_Event'],
             [],
             false
         );
 
-        $table = (new Table('calendar_calendar_sites'))
+        $calTable = CalendarRecord::tableName();
+        $calSitesTable = CalendarSiteSettingsRecord::tableName();
+
+        $table = (new Table($calSitesTable))
             ->addField('id', $this->primaryKey())
             ->addField('calendarId', $this->integer())
             ->addField('siteId', $this->integer())
@@ -51,8 +56,8 @@ class m180316_130028_Craft3Upgrade extends Migration
             ->addField('hasUrls', $this->boolean()->defaultValue(false))
             ->addField('uriFormat', $this->string())
             ->addField('template', $this->string())
-            ->addForeignKey('siteId', 'sites', 'id', ForeignKey::CASCADE)
-            ->addForeignKey('calendarId', 'calendar_calendars', 'id', ForeignKey::CASCADE)
+            ->addForeignKey('siteId', \craft\db\Table::SITES, 'id', ForeignKey::CASCADE)
+            ->addForeignKey('calendarId', $calTable, 'id', ForeignKey::CASCADE)
             ->addIndex(['calendarId', 'siteId'], true)
             ->addField('dateCreated', $this->dateTime()->notNull())
             ->addField('dateUpdated', $this->dateTime()->notNull())
@@ -82,28 +87,27 @@ class m180316_130028_Craft3Upgrade extends Migration
             );
         }
 
-        $calTable = '{{%calendar_calendars}}';
         $calI18nTable = '{{%calendar_calendars_i18n}}';
         $i18nResults = (new Query())
             ->select(
                 [
-                    $calI18nTable.'.id',
-                    $calI18nTable.'.calendarId',
-                    $calI18nTable.'.locale__siteId',
-                    $calI18nTable.'.enabledByDefault',
-                    $calI18nTable.'.eventUrlFormat',
-                    $calTable.'.hasUrls',
-                    $calTable.'.eventTemplate',
+                    $calI18nTable.'.[[id]]',
+                    $calI18nTable.'.[[calendarId]]',
+                    $calI18nTable.'.[[locale__siteId]]',
+                    $calI18nTable.'.[[enabledByDefault]]',
+                    $calI18nTable.'.[[eventUrlFormat]]',
+                    $calTable.'.[[hasUrls]]',
+                    $calTable.'.[[eventTemplate]]',
                 ]
             )
             ->from($calI18nTable)
-            ->innerJoin($calTable, '{{%calendar_calendars}}.id = {{%calendar_calendars_i18n}}.calendarId')
+            ->innerJoin($calTable, $calTable.'.[[id]] = {{%calendar_calendars_i18n}}.[[calendarId]]')
             ->all()
         ;
 
         foreach ($i18nResults as $i18n) {
             $this->insert(
-                '{{%calendar_calendar_sites}}',
+                $calSitesTable,
                 [
                     'calendarId' => $i18n['calendarId'],
                     'siteId' => $i18n['locale__siteId'],

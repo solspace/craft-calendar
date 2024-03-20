@@ -5,7 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Carbon\Carbon;
 use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Resources\Bundles\CalendarViewBundle;
 use yii\web\Response;
 
@@ -55,16 +55,11 @@ class ViewController extends BaseController
         return $this->asJson($eventQuery->all());
     }
 
-    /**
-     * @param null|int $year
-     * @param null|int $month
-     * @param null|int $day
-     */
     public function actionTargetTime(
-        string $view = null,
-        $year = null,
-        $month = null,
-        $day = null
+        ?string $view = null,
+        ?int $year = null,
+        ?int $month = null,
+        ?int $day = null
     ): Response {
         $view ??= Calendar::VIEW_MONTH;
         $calendarView = $view;

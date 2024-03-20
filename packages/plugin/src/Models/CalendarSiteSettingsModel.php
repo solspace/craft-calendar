@@ -11,32 +11,23 @@ use yii\base\InvalidConfigException;
 
 class CalendarSiteSettingsModel extends Model
 {
-    /** @var int */
-    public $id;
+    public ?int $id = null;
 
-    /** @var string */
-    public $uid;
+    public ?string $uid = null;
 
-    /** @var int */
-    public $calendarId;
+    public ?int $calendarId = null;
 
-    /** @var int */
-    public $siteId;
+    public ?int $siteId = null;
 
-    /** @var bool */
-    public $enabledByDefault = true;
+    public bool $enabledByDefault = true;
 
-    /** @var bool */
-    public $hasUrls;
+    public ?bool $hasUrls = null;
 
-    /** @var string */
-    public $uriFormat;
+    public ?string $uriFormat = null;
 
-    /** @var string */
-    public $template;
+    public ?string $template = null;
 
-    /** @var CalendarModel */
-    private $calendar;
+    private ?CalendarModel $calendar = null;
 
     public function getSite(): Site
     {
@@ -67,8 +58,6 @@ class CalendarSiteSettingsModel extends Model
 
     /**
      * Sets the section.
-     *
-     * @return $this
      */
     public function setCalendar(CalendarModel $calendar): self
     {

@@ -7,8 +7,7 @@ use craft\events\CancelableEvent;
 
 class DeleteModelEvent extends CancelableEvent
 {
-    /** @var Model */
-    private $model;
+    private ?Model $model = null;
 
     /**
      * DeleteModelEvent constructor.

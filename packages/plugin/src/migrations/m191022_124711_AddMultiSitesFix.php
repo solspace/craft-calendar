@@ -10,7 +10,7 @@ use Solspace\Calendar\Elements\Event;
  */
 class m191022_124711_AddMultiSitesFix extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
         $allSites = \Craft::$app->getSites()->getAllSites();
 
@@ -39,7 +39,7 @@ class m191022_124711_AddMultiSitesFix extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         return false;
     }

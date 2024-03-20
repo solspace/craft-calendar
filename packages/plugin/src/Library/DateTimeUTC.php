@@ -2,19 +2,14 @@
 
 namespace Solspace\Calendar\Library;
 
-use DateTime;
-
 class DateTimeUTC extends \DateTime
 {
     /**
      * Creates a new DateTime object from a string.
      *
-     * @param array|string $date
-     * @param null|string  $timezone
-     *
      * @return null|\DateTime|false
      */
-    public static function createFromString($date, $timezone = self::UTC)
+    public static function createFromString(array|string $date, mixed $timezone = \DateTimeZone::UTC): null|bool|\DateTime
     {
         $date = parent::createFromString($date, $timezone, false);
 
@@ -30,16 +25,10 @@ class DateTimeUTC extends \DateTime
 
     /**
      * Creates a new \Craft\DateTime object (rather than \DateTime).
-     *
-     * @param string $format
-     * @param string $time
-     * @param mixed  $timezone the timezone the string is set in (defaults to UTC)
-     *
-     * @return \DateTime
      */
-    public static function createFromFormat($format, $time, $timezone = self::UTC)
+    public static function createFromFormat(string $format, string $datetime, mixed $timezone = \DateTimeZone::UTC): \DateTime
     {
-        $date = parent::createFromFormat($format, $time, $timezone);
+        $date = parent::createFromFormat($format, $datetime, $timezone);
 
         if (!$date) {
             return $date;
@@ -51,13 +40,7 @@ class DateTimeUTC extends \DateTime
         return $utc;
     }
 
-    /**
-     * @param string            $format
-     * @param null|mixed|string $timezone
-     *
-     * @return string
-     */
-    public function format($format, $timezone = self::UTC)
+    public function format(string $format, mixed $timezone = \DateTimeZone::UTC): string
     {
         if (!$timezone) {
             $timezone = $this->getTimezone();

@@ -3,45 +3,34 @@
 namespace Solspace\Calendar\Library\DataObjects;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class EventListOptions
 {
     public const SORT_ASC = 'ASC';
     public const SORT_DESC = 'DESC';
 
-    /** @var Carbon */
-    private $rangeStart;
+    private ?Carbon $rangeStart = null;
 
-    /** @var Carbon */
-    private $rangeEnd;
+    private ?Carbon $rangeEnd = null;
 
-    /** @var int */
-    private $limit;
+    private ?int $limit = null;
 
-    /** @var int */
-    private $offset;
+    private ?int $offset = null;
 
-    /** @var bool|int|string */
-    private $loadOccurrences;
+    private null|bool|int|string $loadOccurrences = null;
 
-    /** @var int */
-    private $overlapThreshold;
+    private ?int $overlapThreshold = null;
 
-    /** @var string */
-    private $order;
+    private ?string $order = null;
 
-    /** @var bool */
-    private $shuffle;
+    private ?bool $shuffle = null;
 
-    /** @var string */
-    private $sort;
+    private ?string $sort = null;
 
-    /** @var int */
-    private $siteId;
+    private ?int $siteId = null;
 
-    /** @var string */
-    private $site;
+    private ?string $site = null;
 
     /**
      * EventListOptions constructor.
@@ -51,20 +40,12 @@ class EventListOptions
         $this->sort = self::SORT_ASC;
     }
 
-    /**
-     * @return null|Carbon
-     */
-    public function getRangeStart()
+    public function getRangeStart(): ?Carbon
     {
         return $this->rangeStart;
     }
 
-    /**
-     * @param \DateTime|string $rangeStart
-     *
-     * @return $this
-     */
-    public function setRangeStart($rangeStart = null): self
+    public function setRangeStart(null|\DateTime|string $rangeStart = null): self
     {
         if ($rangeStart) {
             if ($rangeStart instanceof \DateTime) {
@@ -79,20 +60,12 @@ class EventListOptions
         return $this;
     }
 
-    /**
-     * @return null|Carbon
-     */
-    public function getRangeEnd()
+    public function getRangeEnd(): ?Carbon
     {
         return $this->rangeEnd;
     }
 
-    /**
-     * @param \DateTime|string $rangeEnd
-     *
-     * @return $this
-     */
-    public function setRangeEnd($rangeEnd = null): self
+    public function setRangeEnd(null|\DateTime|string $rangeEnd = null): self
     {
         if ($rangeEnd) {
             if ($rangeEnd instanceof \DateTime) {
@@ -107,54 +80,36 @@ class EventListOptions
         return $this;
     }
 
-    /**
-     * @return null|int
-     */
-    public function getLimit()
+    public function getLimit(): ?int
     {
         return $this->limit;
     }
 
-    /**
-     * @return $this
-     */
-    public function setLimit(int $limit = null): self
+    public function setLimit(?int $limit = null): self
     {
         $this->limit = $limit;
 
         return $this;
     }
 
-    /**
-     * @return null|int
-     */
-    public function getOffset()
+    public function getOffset(): ?int
     {
         return $this->offset;
     }
 
-    /**
-     * @return $this
-     */
-    public function setOffset(int $offset = null): self
+    public function setOffset(?int $offset = null): self
     {
         $this->offset = $offset;
 
         return $this;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getOrder()
+    public function getOrder(): ?string
     {
         return $this->order;
     }
 
-    /**
-     * @return $this
-     */
-    public function setOrder(string $order = null): self
+    public function setOrder(?string $order = null): self
     {
         if (preg_match('/^rand\(\)$/i', $order)) {
             $this->setShuffle(true);
@@ -171,36 +126,24 @@ class EventListOptions
         return $this;
     }
 
-    /**
-     * @return null|bool
-     */
-    public function isShuffle()
+    public function isShuffle(): ?bool
     {
         return $this->shuffle;
     }
 
-    /**
-     * @return $this
-     */
-    public function setShuffle(bool $shuffle = null): self
+    public function setShuffle(?bool $shuffle = null): self
     {
         $this->shuffle = $shuffle;
 
         return $this;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getSort()
+    public function getSort(): ?string
     {
         return $this->sort;
     }
 
-    /**
-     * @return $this
-     */
-    public function setSort(string $sort = null): self
+    public function setSort(?string $sort = null): self
     {
         if (null === $sort) {
             $this->sort = null;
@@ -211,38 +154,24 @@ class EventListOptions
         return $this;
     }
 
-    /**
-     * @return null|bool|int|string
-     */
-    public function loadOccurrences()
+    public function loadOccurrences(): null|bool|int|string
     {
         return $this->loadOccurrences;
     }
 
-    /**
-     * @param null|bool|int|string $loadOccurrences
-     *
-     * @return $this
-     */
-    public function setLoadOccurrences($loadOccurrences = null): self
+    public function setLoadOccurrences(null|bool|int|string $loadOccurrences = null): self
     {
         $this->loadOccurrences = $loadOccurrences;
 
         return $this;
     }
 
-    /**
-     * @return null|int
-     */
-    public function getOverlapThreshold()
+    public function getOverlapThreshold(): ?int
     {
         return $this->overlapThreshold;
     }
 
-    /**
-     * @return $this
-     */
-    public function setOverlapThreshold(int $overlapThreshold = null): self
+    public function setOverlapThreshold(?int $overlapThreshold = null): self
     {
         $this->overlapThreshold = $overlapThreshold;
 
@@ -254,11 +183,6 @@ class EventListOptions
         return $this->siteId;
     }
 
-    /**
-     * @param null|int $siteId
-     *
-     * @return $this
-     */
     public function setSiteId(int $siteId): self
     {
         $this->siteId = $siteId;
@@ -266,18 +190,12 @@ class EventListOptions
         return $this;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getSite()
+    public function getSite(): ?string
     {
         return $this->site;
     }
 
-    /**
-     * @return $this
-     */
-    public function setSite(string $site = null): self
+    public function setSite(?string $site = null): self
     {
         $this->site = $site;
 

@@ -8,6 +8,8 @@ use craft\events\RebuildConfigEvent;
 use craft\helpers\Db;
 use craft\services\ProjectConfig;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
+use Solspace\Calendar\Records\CalendarRecord;
+use Solspace\Calendar\Records\CalendarSiteSettingsRecord;
 use yii\base\Event;
 
 class ProjectConfigBundle implements BundleInterface
@@ -57,7 +59,7 @@ class ProjectConfigBundle implements BundleInterface
                     'calendar.[[allowRepeatingEvents]]',
                 ]
             )
-            ->from('{{%calendar_calendars}} calendar')
+            ->from(CalendarRecord::tableName().' calendar')
             ->orderBy(['name' => \SORT_ASC])
             ->all()
         ;
@@ -87,7 +89,7 @@ class ProjectConfigBundle implements BundleInterface
         return $config;
     }
 
-    private function buildFieldLayoutConfig(int $fieldLayoutId = null)
+    private function buildFieldLayoutConfig(?int $fieldLayoutId = null): ?array
     {
         if (!$fieldLayoutId) {
             return null;
@@ -106,7 +108,7 @@ class ProjectConfigBundle implements BundleInterface
 
     private function buildCalendarSitesConfig(int $calendarId): array
     {
-        $table = '{{%calendar_calendar_sites}}';
+        $table = CalendarSiteSettingsRecord::tableName();
 
         $siteSettings = (new Query())
             ->select(

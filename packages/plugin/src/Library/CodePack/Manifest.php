@@ -8,22 +8,17 @@ use Solspace\Calendar\Library\CodePack\Exceptions\Manifest\ManifestNotPresentExc
 
 class Manifest
 {
-    /** @var string */
-    private $packageName;
+    private ?string $packageName = null;
 
-    /** @var string */
-    private $packageDesc;
+    private ?string $packageDesc = null;
 
-    /** @var string */
-    private $vendor;
+    private ?string $vendor = null;
 
-    /** @var string */
-    private $vendorUrl;
+    private ?string $vendorUrl = null;
 
-    /** @var string */
-    private $docsUrl;
+    private ?string $docsUrl = null;
 
-    private static $availableProperties = [
+    private static array $availableProperties = [
         'package_name',
         'package_desc',
         'package_version',
@@ -32,16 +27,13 @@ class Manifest
         'docs_url',
     ];
 
-    private static $requiredProperties = [
+    private static array $requiredProperties = [
         'package_name',
         'package_version',
         'vendor',
     ];
 
-    /**
-     * @param string $manifestPath
-     */
-    public function __construct($manifestPath)
+    public function __construct(string $manifestPath)
     {
         $this->parseManifestFile($manifestPath);
     }
@@ -72,11 +64,9 @@ class Manifest
     }
 
     /**
-     * @param string $manifestPath
-     *
      * @throws ManifestException
      */
-    private function parseManifestFile($manifestPath)
+    private function parseManifestFile(string $manifestPath)
     {
         if (!file_exists($manifestPath)) {
             throw new ManifestNotPresentException(sprintf('Manifest file is not present in %s', $manifestPath));

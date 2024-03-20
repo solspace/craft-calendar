@@ -6,20 +6,21 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Queue;
+use craft\helpers\StringHelper as CraftStringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Jobs\UpdateEventsUriJob;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
-use Solspace\Commons\Helpers\PermissionHelper;
-use Solspace\Commons\Helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -109,7 +110,7 @@ class CalendarsController extends BaseController
             unset($layoutData['id'], $layoutData['uid']);
 
             $newLayout = new FieldLayout($layoutData);
-            $newLayout->uid = \craft\helpers\StringHelper::UUID();
+            $newLayout->uid = CraftStringHelper::UUID();
 
             $newLayoutTabs = [];
 
@@ -133,7 +134,7 @@ class CalendarsController extends BaseController
         $clonedSiteSettings = [];
         foreach ($calendar->getSiteSettings() as $siteSetting) {
             $clonedSiteSetting = new CalendarSiteSettingsModel($siteSetting->toArray());
-            $clonedSiteSetting->uid = \craft\helpers\StringHelper::UUID();
+            $clonedSiteSetting->uid = CraftStringHelper::UUID();
 
             $clonedSiteSettings[] = $clonedSiteSetting;
         }
@@ -164,7 +165,7 @@ class CalendarsController extends BaseController
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asFailure(StringHelper::implodeRecursively('. ', $clone->getErrorSummary(true)));
+        return $this->asFailure(FreeformStringHelper::implodeRecursively('. ', $clone->getErrorSummary(true)));
     }
 
     /**
@@ -189,7 +190,7 @@ class CalendarsController extends BaseController
         $calendar = $this->getCalendarService()->getCalendarById($postedCalendarId);
         if (!$calendar) {
             $calendar = new CalendarModel();
-            $calendar->uid = \craft\helpers\StringHelper::UUID();
+            $calendar->uid = CraftStringHelper::UUID();
         }
 
         $calendar->name = $request->post('name');
@@ -209,7 +210,7 @@ class CalendarsController extends BaseController
 
         // Set the field layout
         $fieldLayout = \Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : \craft\helpers\StringHelper::UUID();
+        $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : CraftStringHelper::UUID();
         $fieldLayout->type = Event::class;
         $calendar->setFieldLayout($fieldLayout);
 
@@ -249,12 +250,11 @@ class CalendarsController extends BaseController
                 $siteSettings = $previousSiteSettings[$site->id];
             } else {
                 $siteSettings = new CalendarSiteSettingsModel();
-                $siteSettings->uid = \craft\helpers\StringHelper::UUID();
+                $siteSettings->uid = CraftStringHelper::UUID();
                 $siteSettings->calendarId = $calendar->id;
                 $siteSettings->siteId = $site->id;
             }
-
-            if (!empty($postedSettings['uriFormat']) && $postedSettings['uriFormat'] !== $previousSiteSettings[$site->id]['uriFormat']) {
+            if (!empty($postedSettings['uriFormat']) && !empty($previousSiteSettings[$site->id]) && !empty($previousSiteSettings[$site->id]['uriFormat']) && $postedSettings['uriFormat'] !== $previousSiteSettings[$site->id]['uriFormat']) {
                 $hasUriFormatChanges = true;
             }
 

@@ -3,9 +3,9 @@
 namespace Solspace\Calendar\migrations;
 
 use craft\base\Field;
-use Solspace\Commons\Migrations\ForeignKey;
-use Solspace\Commons\Migrations\StreamlinedInstallMigration;
-use Solspace\Commons\Migrations\Table;
+use Solspace\Calendar\Library\Migrations\ForeignKey;
+use Solspace\Calendar\Library\Migrations\StreamlinedInstallMigration;
+use Solspace\Calendar\Library\Migrations\Table;
 
 /**
  * Install migration.

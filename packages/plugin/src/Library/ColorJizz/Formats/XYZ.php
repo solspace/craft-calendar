@@ -13,33 +13,23 @@ class XYZ extends ColorJizz
 {
     /**
      * The x.
-     *
-     * @var float
      */
-    public $x;
+    public ?float $x = null;
 
     /**
      * The y.
-     *
-     * @var float
      */
-    public $y;
+    public ?float $y = null;
 
     /**
      * The z.
-     *
-     * @var float
      */
-    public $z;
+    public ?float $z = null;
 
     /**
      * Create a new XYZ color.
-     *
-     * @param float $x The x dimension
-     * @param float $y The y dimension
-     * @param float $z The z dimension
      */
-    public function __construct($x, $y, $z)
+    public function __construct(float $x, float $y, float $z)
     {
         $this->toSelf = 'toXYZ';
         $this->x = $x;
@@ -52,7 +42,7 @@ class XYZ extends ColorJizz
      *
      * @return string The color in format: $x,$y,$z
      */
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('%s,%s,%s', $this->x, $this->y, $this->z);
     }
@@ -62,7 +52,7 @@ class XYZ extends ColorJizz
      *
      * @return Hex the color in Hex format
      */
-    public function toHex()
+    public function toHex(): Hex
     {
         return $this->toRGB()->toHex();
     }
@@ -72,7 +62,7 @@ class XYZ extends ColorJizz
      *
      * @return RGB the color in RGB format
      */
-    public function toRGB()
+    public function toRGB(): RGB
     {
         $var_X = $this->x / 100;
         $var_Y = $this->y / 100;
@@ -109,7 +99,7 @@ class XYZ extends ColorJizz
      *
      * @return XYZ the color in XYZ format
      */
-    public function toXYZ()
+    public function toXYZ(): self
     {
         return $this;
     }
@@ -119,7 +109,7 @@ class XYZ extends ColorJizz
      *
      * @return Yxy the color in Yxy format
      */
-    public function toYxy()
+    public function toYxy(): Yxy
     {
         $Y = $this->y;
         $x = $this->x / ($this->x + $this->y + $this->z);
@@ -133,7 +123,7 @@ class XYZ extends ColorJizz
      *
      * @return HSV the color in HSV format
      */
-    public function toHSV()
+    public function toHSV(): HSV
     {
         return $this->toRGB()->toHSV();
     }
@@ -143,7 +133,7 @@ class XYZ extends ColorJizz
      *
      * @return CMY the color in CMY format
      */
-    public function toCMY()
+    public function toCMY(): CMY
     {
         return $this->toRGB()->toCMY();
     }
@@ -153,7 +143,7 @@ class XYZ extends ColorJizz
      *
      * @return CMYK the color in CMYK format
      */
-    public function toCMYK()
+    public function toCMYK(): CMYK
     {
         return $this->toCMY()->toCMYK();
     }
@@ -163,7 +153,7 @@ class XYZ extends ColorJizz
      *
      * @return CIELab the color in CIELab format
      */
-    public function toCIELab()
+    public function toCIELab(): CIELab
     {
         $Xn = 95.047;
         $Yn = 100.000;
@@ -204,7 +194,7 @@ class XYZ extends ColorJizz
      *
      * @return CIELCh the color in CIELCh format
      */
-    public function toCIELCh()
+    public function toCIELCh(): CIELCh
     {
         return $this->toCIELab()->toCIELCh();
     }

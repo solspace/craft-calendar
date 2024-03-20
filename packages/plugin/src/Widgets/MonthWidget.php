@@ -8,17 +8,13 @@ use Solspace\Calendar\Resources\Bundles\WidgetMonthBundle;
 
 class MonthWidget extends AbstractWidget
 {
-    /** @var string */
-    public $title;
+    public ?string $title = null;
 
-    /** @var string */
-    public $view;
+    public ?string $view = null;
 
-    /** @var array */
-    public $calendars = '*';
+    public array|string $calendars = '*';
 
-    /** @var int */
-    public $siteId;
+    public ?int $siteId = null;
 
     public static function displayName(): string
     {

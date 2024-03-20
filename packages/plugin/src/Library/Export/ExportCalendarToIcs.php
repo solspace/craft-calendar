@@ -4,12 +4,11 @@ namespace Solspace\Calendar\Library\Export;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class ExportCalendarToIcs extends AbstractExportCalendar
 {
-    /** @var Carbon */
-    private $now;
+    private ?Carbon $now = null;
 
     /**
      * Collect events and parse them, and build a string

@@ -8,17 +8,13 @@ use Solspace\Calendar\Resources\Bundles\WidgetUpcomingEventsBundle;
 
 class UpcomingEventsWidget extends AbstractWidget
 {
-    /** @var string */
-    public $title;
+    public ?string $title = null;
 
-    /** @var int */
-    public $limit = 5;
+    public int $limit = 5;
 
-    /** @var array */
-    public $calendars = '*';
+    public array|string $calendars = '*';
 
-    /** @var int */
-    public $siteId;
+    public ?int $siteId = null;
 
     public static function displayName(): string
     {

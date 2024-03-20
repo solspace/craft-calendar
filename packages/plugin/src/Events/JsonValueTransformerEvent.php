@@ -6,12 +6,11 @@ use yii\base\Event;
 
 class JsonValueTransformerEvent extends Event
 {
-    /** @var string */
-    private $key;
+    private ?string $key = null;
 
-    private $value;
+    private mixed $value = null;
 
-    public function __construct(string $key, $value)
+    public function __construct(string $key, mixed $value)
     {
         $this->key = $key;
         $this->value = $value;
@@ -31,7 +30,7 @@ class JsonValueTransformerEvent extends Event
         return $this;
     }
 
-    public function getValue()
+    public function getValue(): mixed
     {
         return $this->value;
     }

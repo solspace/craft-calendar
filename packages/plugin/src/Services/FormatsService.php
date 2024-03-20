@@ -24,7 +24,7 @@ class FormatsService extends Component
         return $dateFormat;
     }
 
-    public function getTimeFormat(string $length = null, string $format = Locale::FORMAT_ICU): string
+    public function getTimeFormat(?string $length = null, string $format = Locale::FORMAT_ICU): string
     {
         $timeFormat = $this->getSettingsTimeFormat($length);
 
@@ -40,7 +40,7 @@ class FormatsService extends Component
         return $this->getDateFormat().' '.$this->getTimeFormat();
     }
 
-    private function getSettingsTimeFormat(string $length = null)
+    private function getSettingsTimeFormat(?string $length = null)
     {
         $length ??= \Craft::$app->locale->getFormatter()->timeFormat;
 

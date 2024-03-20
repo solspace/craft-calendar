@@ -1,9 +1,13 @@
 <?php
 
-$finder = PhpCsFixer\Finder::create()
-    ->in(__DIR__ . '/packages/plugin');
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
 
-return (new PhpCsFixer\Config())
+$finder = Finder::create()
+    ->in(__DIR__.'/packages/plugin')
+;
+
+return (new Config())
     ->setRules([
         '@Symfony' => true,
         '@Symfony:risky' => true,
@@ -18,6 +22,8 @@ return (new PhpCsFixer\Config())
         'protected_to_private' => false,
         'single_trait_insert_per_statement' => true,
         'ternary_to_null_coalescing' => true,
+        'multiline_whitespace_before_semicolons' => ['strategy' => 'new_line_for_chained_calls'],
     ])
     ->setRiskyAllowed(true)
-    ->setFinder($finder);
+    ->setFinder($finder)
+    ;

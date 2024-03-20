@@ -8,14 +8,11 @@ use Symfony\Component\Finder\Finder;
 
 abstract class FileObject
 {
-    /** @var string */
-    protected $name;
+    protected ?string $name = null;
 
-    /** @var string */
-    protected $path;
+    protected ?string $path = null;
 
-    /** @var bool */
-    protected $folder;
+    protected ?bool $folder = null;
 
     abstract protected function __construct(string $path);
 
@@ -39,14 +36,12 @@ abstract class FileObject
 
     /**
      * Copy the file or directory to $target location.
-     *
-     * @param null|array|callable $callable
      */
     abstract public function copy(
         string $target,
-        string $prefix = null,
-        callable $callable = null,
-        string $filePrefix = null
+        ?string $prefix = null,
+        ?callable $callable = null,
+        ?string $filePrefix = null
     );
 
     public function getName(): string

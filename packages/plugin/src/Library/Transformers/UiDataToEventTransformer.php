@@ -4,15 +4,13 @@ namespace Solspace\Calendar\Library\Transformers;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\RecurrenceHelper;
+use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 
 class UiDataToEventTransformer
 {
-    /** @var Event */
-    private $event;
+    private ?Event $event = null;
 
-    /** @var array */
-    private $builderData;
+    private ?array $builderData = null;
 
     /**
      * UiDataToEventTransformer constructor.
@@ -23,7 +21,7 @@ class UiDataToEventTransformer
         $this->builderData = $builderData;
     }
 
-    public function transform()
+    public function transform(): void
     {
         $this->resetEvent();
 
@@ -138,10 +136,7 @@ class UiDataToEventTransformer
         }, $this->builderData['selectDates']);
     }
 
-    /**
-     * @return null|string
-     */
-    private function getImploded(array $values = null)
+    private function getImploded(?array $values = null): ?string
     {
         return $values ? implode(',', $values) : null;
     }
@@ -156,7 +151,7 @@ class UiDataToEventTransformer
         );
     }
 
-    private function resetEvent()
+    private function resetEvent(): void
     {
         $event = $this->event;
 

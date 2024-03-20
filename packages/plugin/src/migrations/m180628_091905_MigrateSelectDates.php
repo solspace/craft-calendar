@@ -5,16 +5,17 @@ namespace Solspace\Calendar\migrations;
 use Carbon\Carbon;
 use craft\db\Migration;
 use craft\db\Query;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Records\SelectDateRecord;
 
 /**
  * m180628_091905_MigrateSelectDates migration.
  */
 class m180628_091905_MigrateSelectDates extends Migration
 {
-    public function safeUp()
+    public function safeUp(): void
     {
-        $table = '{{%calendar_select_dates}}';
+        $table = SelectDateRecord::tableName();
         $query = (new Query())
             ->select('*')
             ->from($table)
@@ -37,7 +38,7 @@ class m180628_091905_MigrateSelectDates extends Migration
         }
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m180628_091905_MigrateSelectDates cannot be reverted.\n";
 

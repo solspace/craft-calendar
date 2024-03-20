@@ -3,7 +3,7 @@
 namespace Solspace\Tests\Unit\Calendar\Library;
 
 use PHPUnit\Framework\TestCase;
-use Solspace\Calendar\Library\DatabaseHelper;
+use Solspace\Calendar\Library\Helpers\DatabaseHelper;
 
 /**
  * @internal
@@ -26,12 +26,9 @@ class DatabaseHelperTest extends TestCase
     /**
      * Tests if passed values generate the desired operator and value set.
      *
-     * @param string $input
-     * @param mixed  $expectedValue
-     *
      * @dataProvider operatorDataProvider
      */
-    public function testOperators($input, string $expectedOperator, $expectedValue): void
+    public function testOperators(mixed $input, string $expectedOperator, mixed $expectedValue): void
     {
         [$operator, $value] = DatabaseHelper::prepareOperator($input);
 

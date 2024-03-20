@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Carbon\Carbon;
 use craft\base\Element;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementEvent;
@@ -14,8 +15,8 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\CalendarPermissionHelper;
 use Solspace\Calendar\Library\Exceptions\EventException;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
 use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
@@ -56,7 +57,7 @@ class EventsController extends BaseController
      * @throws \yii\base\Exception
      * @throws InvalidConfigException
      */
-    public function actionCreateEvent(string $handle, string $siteHandle = null): Response
+    public function actionCreateEvent(string $handle, ?string $siteHandle = null): Response
     {
         $calendar = $this->getCalendarService()->getCalendarByHandle($handle);
         if (!$calendar) {
@@ -120,7 +121,7 @@ class EventsController extends BaseController
      * @throws InvalidConfigException
      * @throws ForbiddenHttpException
      */
-    public function actionEditEvent(int $id, string $siteHandle = null): Response
+    public function actionEditEvent(int $id, ?string $siteHandle = null): Response
     {
         $siteId = null;
         if ($siteHandle) {
@@ -148,10 +149,10 @@ class EventsController extends BaseController
             );
         }
 
-        $canManageAll = CalendarPermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
+        $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
         if (!$canManageAll) {
-            CalendarPermissionHelper::requirePermission(
-                CalendarPermissionHelper::prepareNestedPermission(
+            PermissionHelper::requirePermission(
+                PermissionHelper::prepareNestedPermission(
                     Calendar::PERMISSION_EVENTS_FOR,
                     $event->getCalendar()->uid
                 )
@@ -164,8 +165,6 @@ class EventsController extends BaseController
     /**
      * Saves an event.
      *
-     * @return Response
-     *
      * @throws EventException
      * @throws HttpException
      * @throws \Throwable
@@ -174,7 +173,7 @@ class EventsController extends BaseController
      * @throws InvalidConfigException
      * @throws BadRequestHttpException
      */
-    public function actionSaveEvent()
+    public function actionSaveEvent(): ?Response
     {
         $this->requirePostRequest();
 
@@ -203,7 +202,7 @@ class EventsController extends BaseController
         if (!$event->authorId) {
             $event->authorId = (int) (new Query())
                 ->select('id')
-                ->from('{{%users}}')
+                ->from(Table::USERS)
                 ->where(['admin' => 1])
                 ->limit(1)
                 ->orderBy(['id' => \SORT_ASC])
@@ -219,7 +218,7 @@ class EventsController extends BaseController
 
         $isNewAndPublic = !$event->id && !$isCalendarPublic;
         if ($eventId || $isNewAndPublic) {
-            CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+            PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
         }
 
         $enabledForSite = $this->enabledForSiteValue();
@@ -277,6 +276,8 @@ class EventsController extends BaseController
         }
 
         \Craft::$app->urlManager->setRouteParams(['event' => $event, 'errors' => $event->getErrors()]);
+
+        return null;
     }
 
     /**
@@ -350,7 +351,7 @@ class EventsController extends BaseController
      * @throws ServerErrorHttpException
      * @throws BadRequestHttpException
      */
-    public function actionViewSharedEvent(int $eventId = null, int $siteId = null): Response
+    public function actionViewSharedEvent(?int $eventId = null, ?int $siteId = null): Response
     {
         $this->requireToken();
 
@@ -390,8 +391,6 @@ class EventsController extends BaseController
 
     /**
      * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
-     *
-     * @return null|bool|bool[]
      *
      * @throws ForbiddenHttpException
      *
@@ -583,7 +582,7 @@ class EventsController extends BaseController
     /**
      * Populates an Entry with post data.
      */
-    private function populateEventModel(Event $event)
+    private function populateEventModel(Event $event): void
     {
         $request = \Craft::$app->request;
 
@@ -617,7 +616,7 @@ class EventsController extends BaseController
 
         $isNewAndPublic = !$event->id && !$isCalendarPublic;
         if ($eventId || $isNewAndPublic) {
-            CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+            PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
         }
 
         $eventBuilderData = \GuzzleHttp\json_decode(
@@ -660,7 +659,7 @@ class EventsController extends BaseController
     /**
      * @throws \Exception
      */
-    private function getExistingOrNewEvent(int $eventId = null, int $siteId = null): Event
+    private function getExistingOrNewEvent(?int $eventId = null, ?int $siteId = null): Event
     {
         if ($eventId) {
             $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
@@ -681,12 +680,12 @@ class EventsController extends BaseController
     /**
      * Triggers a 404 if there are no event edit permissions for the current user.
      */
-    private function requireEventPermission()
+    private function requireEventPermission(): void
     {
-        $hasPermission = CalendarPermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true);
+        $hasPermission = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true);
 
         if (!$hasPermission) {
-            CalendarPermissionHelper::requirePermission('trigger-calendar-event-access-denied');
+            PermissionHelper::requirePermission('trigger-calendar-event-access-denied');
         }
     }
 }

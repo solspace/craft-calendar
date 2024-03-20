@@ -4,23 +4,24 @@ namespace Solspace\Calendar\Elements\Db;
 
 use Carbon\Carbon;
 use craft\base\ElementInterface;
+use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Duration\DayDuration;
 use Solspace\Calendar\Library\Duration\DurationInterface;
 use Solspace\Calendar\Library\Duration\MonthDuration;
 use Solspace\Calendar\Library\Duration\WeekDuration;
 use Solspace\Calendar\Library\Exceptions\CalendarException;
-use Solspace\Calendar\Library\RecurrenceHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\ExceptionsService;
 use Solspace\Calendar\Services\SelectDatesService;
-use Solspace\Commons\Helpers\PermissionHelper;
 use yii\base\Model;
 use yii\db\Connection;
 use yii\db\Expression;
@@ -33,113 +34,81 @@ class EventQuery extends ElementQuery
     public const TARGET_WEEK = 'Week';
     public const TARGET_DAY = 'Day';
 
-    /** @var int */
-    public $typeId;
+    public ?int $typeId = null;
 
-    /** @var string */
-    private static $lastCachedConfigStateHash;
+    private static ?string $lastCachedConfigStateHash = null;
 
-    /** @var array */
-    private $calendarId;
+    private ?array $calendarId = null;
 
-    /** @var array */
-    private $calendarUid;
+    private ?array $calendarUid = null;
 
-    /** @var array */
-    private $calendar;
+    private ?array $calendar = null;
 
-    /** @var int */
-    private $authorId;
+    private ?int $authorId = null;
 
-    /** @var \DateTime */
-    private $postDate;
+    private null|Carbon|\DateTime|string $postDate = null;
 
-    /** @var \DateTime */
-    private $startDate;
+    private null|Carbon|\DateTime|string $startDate = null;
 
-    /** @var \DateTime */
-    private $endDate;
+    private null|Carbon|\DateTime|string $endDate = null;
 
-    /** @var \DateTime */
-    private $startsBefore;
+    private null|Carbon|\DateTime|string $startsBefore = null;
 
-    /** @var \DateTime */
-    private $startsBeforeOrAt;
+    private null|Carbon|\DateTime|string $startsBeforeOrAt = null;
 
-    /** @var \DateTime */
-    private $startsAfter;
+    private null|Carbon|\DateTime|string $startsAfter = null;
 
-    /** @var \DateTime */
-    private $startsAfterOrAt;
+    private null|Carbon|\DateTime|string $startsAfterOrAt = null;
 
-    /** @var \DateTime */
-    private $endsAfter;
+    private null|Carbon|\DateTime|string $endsAfter = null;
 
-    /** @var \DateTime */
-    private $endsAfterOrAt;
+    private null|Carbon|\DateTime|string $endsAfterOrAt = null;
 
-    /** @var \DateTime */
-    private $endsBefore;
+    private null|Carbon|\DateTime|string $endsBefore = null;
 
-    /** @var \DateTime */
-    private $endsBeforeOrAt;
+    private null|Carbon|\DateTime|string $endsBeforeOrAt = null;
 
-    /** @var bool */
-    private $allDay = false;
+    private bool $allDay = false;
 
-    /** @var \DateTime */
-    private $until;
+    private null|Carbon|\DateTime|string $until = null;
 
-    /** @var bool */
-    private $allowedCalendarsOnly = false;
+    private bool $allowedCalendarsOnly = false;
 
-    /** @var Carbon|string */
-    private $rangeStart;
+    private null|Carbon|\DateTime|string $rangeStart = null;
 
-    /** @var Carbon|string */
-    private $rangeEnd;
+    private null|Carbon|\DateTime|string $rangeEnd = null;
 
-    /** @var bool|int|string */
-    private $loadOccurrences = true;
+    private bool|int|string $loadOccurrences = true;
 
-    /** @var int */
-    private $overlapThreshold;
+    private ?int $overlapThreshold = null;
 
-    /** @var bool */
-    private $shuffle;
+    private ?bool $shuffle = null;
 
-    /** @var array - [date, [eventId, ..]] */
-    private $eventCache;
+    /** @var null|array - [date, [eventId, ..]] */
+    private ?array $eventCache = null;
 
-    /** @var array - events ordered by startDate */
-    private $eventsByDate;
+    /** @var null|array - events ordered by startDate */
+    private ?array $eventsByDate = null;
 
     /** @var Event[] - events ordered by date */
-    private $events;
+    private ?array $events = null;
 
     /** @var int[] */
-    private $eventIds;
+    private ?array $eventIds = null;
 
-    /** @var array */
-    private $eventsByMonth;
+    private ?array $eventsByMonth = null;
 
-    /** @var array */
-    private $eventsByWeek;
+    private ?array $eventsByWeek = null;
 
-    /** @var array */
-    private $eventsByDay;
+    private ?array $eventsByDay = null;
 
-    /** @var array */
-    private $eventsByHour;
+    private ?array $eventsByHour = null;
 
-    /** @var int */
-    private $totalCount;
+    private ?int $totalCount = null;
 
-    /** @var int */
-    private $firstDay;
+    private ?int $firstDay = null;
 
-    /** @var bool */
-    private $noMultiDayGroup;
+    private ?bool $noMultiDayGroup = null;
 
     public function __construct(string $elementType, array $config = [])
     {
@@ -149,12 +118,7 @@ class EventQuery extends ElementQuery
         parent::__construct($elementType, $config);
     }
 
-    /**
-     * @param array|int $value
-     *
-     * @return $this
-     */
-    public function setCalendarId($value = null): self
+    public function setCalendarId(null|array|int|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -165,12 +129,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param array|string $value
-     *
-     * @return $this
-     */
-    public function setCalendarUid($value = null): self
+    public function setCalendarUid(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -181,10 +140,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param array|string $value
-     */
-    public function setCalendar($value = null): self
+    public function setCalendar(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -195,12 +151,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param array|int $value
-     *
-     * @return $this
-     */
-    public function setAuthorId($value = null): self
+    public function setAuthorId(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -211,112 +162,77 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param null $value
-     *
-     * @return $this
-     */
-    public function setPostDate($value = null): self
+    public function setPostDate(null|Carbon|\DateTime|string $value = null): self
     {
         $this->postDate = $value;
 
         return $this;
     }
 
-    /**
-     * @param null|Carbon|\DateTime|string $value
-     */
-    public function setStartDate($value = null): self
+    public function setStartDate(null|Carbon|\DateTime|string $value = null): self
     {
         $this->startDate = $this->parseCarbon($value);
 
         return $this;
     }
 
-    /**
-     * @param null|Carbon|\DateTime|string $value
-     */
-    public function setEndDate($value = null): self
+    public function setEndDate(null|Carbon|\DateTime|string $value = null): self
     {
         $this->endDate = $this->parseCarbon($value);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $startsBefore
-     */
-    public function setStartsBefore($startsBefore): self
+    public function setStartsBefore(null|Carbon|\DateTime|string $startsBefore): self
     {
         $this->startsBefore = $this->parseCarbon($startsBefore);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $startsBeforeOrAt
-     */
-    public function setStartsBeforeOrAt($startsBeforeOrAt): self
+    public function setStartsBeforeOrAt(null|Carbon|\DateTime|string $startsBeforeOrAt): self
     {
         $this->startsBeforeOrAt = $this->parseCarbon($startsBeforeOrAt);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $startsAfter
-     */
-    public function setStartsAfter($startsAfter): self
+    public function setStartsAfter(null|Carbon|\DateTime|string $startsAfter): self
     {
         $this->startsAfter = $this->parseCarbon($startsAfter);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $startsAfterOrAt
-     */
-    public function setStartsAfterOrAt($startsAfterOrAt): self
+    public function setStartsAfterOrAt(null|Carbon|\DateTime|string $startsAfterOrAt): self
     {
         $this->startsAfterOrAt = $this->parseCarbon($startsAfterOrAt);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $endsAfter
-     */
-    public function setEndsAfter($endsAfter): self
+    public function setEndsAfter(null|Carbon|\DateTime|string $endsAfter): self
     {
         $this->endsAfter = $this->parseCarbon($endsAfter);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $endsAfterOrAt
-     */
-    public function setEndsAfterOrAt($endsAfterOrAt): self
+    public function setEndsAfterOrAt(null|Carbon|\DateTime|string $endsAfterOrAt): self
     {
         $this->endsAfterOrAt = $this->parseCarbon($endsAfterOrAt);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $endsBefore
-     */
-    public function setEndsBefore($endsBefore): self
+    public function setEndsBefore(null|Carbon|\DateTime|string $endsBefore): self
     {
         $this->endsBefore = $this->parseCarbon($endsBefore);
 
         return $this;
     }
 
-    /**
-     * @param \DateTime $endsBeforeOrAt
-     */
-    public function setEndsBeforeOrAt($endsBeforeOrAt): self
+    public function setEndsBeforeOrAt(null|Carbon|\DateTime|string $endsBeforeOrAt): self
     {
         $this->endsBeforeOrAt = $this->parseCarbon($endsBeforeOrAt);
 
@@ -333,19 +249,13 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param null|Carbon|\DateTime|string $value
-     */
-    public function setUntil($value = null): self
+    public function setUntil(null|Carbon|\DateTime|string $value = null): self
     {
         $this->until = $this->parseCarbon($value);
 
         return $this;
     }
 
-    /**
-     * @param null|bool $value
-     */
     public function setAllowedCalendarsOnly(bool $value): self
     {
         $this->allowedCalendarsOnly = $value;
@@ -353,20 +263,14 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param Carbon|string $rangeStart
-     */
-    public function setRangeStart($rangeStart = null): self
+    public function setRangeStart(null|Carbon|\DateTime|string $rangeStart = null): self
     {
         $this->rangeStart = $this->parseCarbon($rangeStart);
 
         return $this;
     }
 
-    /**
-     * @param Carbon|string $rangeEnd
-     */
-    public function setRangeEnd($rangeEnd = null): self
+    public function setRangeEnd(null|Carbon|\DateTime|string $rangeEnd = null): self
     {
         $this->rangeEnd = $this->parseCarbon($rangeEnd);
         if ('000000' === $this->rangeEnd->format('His')) {
@@ -376,33 +280,24 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param Carbon|string $rangeStart
-     */
-    public function setDateRangeStart($rangeStart = null): self
+    public function setDateRangeStart(null|Carbon|\DateTime|string $rangeStart = null): self
     {
         return $this->setRangeStart($rangeStart);
     }
 
-    /**
-     * @param Carbon|string $rangeEnd
-     */
-    public function setDateRangeEnd($rangeEnd = null): self
+    public function setDateRangeEnd(null|Carbon|\DateTime|string $rangeEnd = null): self
     {
         return $this->setRangeEnd($rangeEnd);
     }
 
-    /**
-     * @param bool|int|string $loadOccurrences
-     */
-    public function setLoadOccurrences($loadOccurrences): self
+    public function setLoadOccurrences(bool|int|string $loadOccurrences): self
     {
         $this->loadOccurrences = $loadOccurrences;
 
         return $this;
     }
 
-    public function setOverlapThreshold(int $overlapThreshold = null): self
+    public function setOverlapThreshold(?int $overlapThreshold = null): self
     {
         $this->overlapThreshold = $overlapThreshold;
 
@@ -423,10 +318,6 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * @param string $q
-     * @param null   $db
-     */
     public function count($q = '*', $db = null): null|bool|int|string
     {
         $this->all($db);
@@ -439,7 +330,7 @@ class EventQuery extends ElementQuery
     }
 
     /**
-     * @param null $db
+     * @param null|mixed $db
      *
      * @return null|array|ElementInterface
      */
@@ -460,7 +351,7 @@ class EventQuery extends ElementQuery
     }
 
     /**
-     * @param null $db
+     * @param null|mixed $db
      *
      * @return Event[]
      */
@@ -553,8 +444,6 @@ class EventQuery extends ElementQuery
     }
 
     /**
-     * @param null $db
-     *
      * @return int[]
      */
     public function ids(?Connection $db = null): array
@@ -624,8 +513,9 @@ class EventQuery extends ElementQuery
 
     protected function beforePrepare(): bool
     {
-        $table = Event::TABLE_STD;
-        $calendarTable = CalendarRecord::TABLE;
+        $table = Event::tableName();
+        $calendarTable = CalendarRecord::tableName();
+        $usersTable = Table::USERS;
 
         // join in the products table
         $this->joinElementTable($table);
@@ -639,15 +529,15 @@ class EventQuery extends ElementQuery
                     $hasCalendarsJoined = true;
                 }
 
-                if ('{{%relations}} relations' === $join[1]) {
+                if (Table::RELATIONS.' relations' === $join[1]) {
                     $hasRelations = true;
                 }
 
-                if (isset($join[1]['relations']) && '{{%relations}}' === $join[1]['relations']) {
+                if (isset($join[1]['relations']) && Table::RELATIONS === $join[1]['relations']) {
                     $hasRelations = true;
                 }
 
-                if ('{{%users}}' === $join[1]) {
+                if (Table::USERS === $join[1]) {
                     $hasUsers = true;
                 }
             }
@@ -666,7 +556,7 @@ class EventQuery extends ElementQuery
                 $this->join = [];
             }
 
-            $this->join[] = ['LEFT JOIN', '{{%users}}', "{{%users}}.[[id]] = {$table}.[[authorId]]"];
+            $this->join[] = ['LEFT JOIN', $usersTable, "{$usersTable}.[[id]] = {$table}.[[authorId]]"];
         }
 
         $select = [
@@ -685,7 +575,7 @@ class EventQuery extends ElementQuery
             $table.'.[[byMonthDay]]',
             $table.'.[[byDay]]',
             $table.'.[[postDate]]',
-            '{{%users}}.[[username]]',
+            $usersTable.'.[[username]]',
             $calendarTable.'.[[name]]',
         ];
 
@@ -904,10 +794,7 @@ class EventQuery extends ElementQuery
         return parent::beforePrepare();
     }
 
-    /**
-     * @param Carbon|\DateTime|string $date
-     */
-    private function extractDateAsFormattedString($date): string
+    private function extractDateAsFormattedString(Carbon|\DateTime|string $date): string
     {
         if ($date instanceof Carbon) {
             $date = $date->toDateTimeString();
@@ -923,10 +810,8 @@ class EventQuery extends ElementQuery
     /**
      * Picks out the single events from the given $foundIds list
      * Adds them all to event cache.
-     *
-     * @param array $foundIds
      */
-    private function cacheSingleEvents($foundIds)
+    private function cacheSingleEvents(array $foundIds): void
     {
         if (!\is_array($this->siteId)) {
             $this->siteId = [$this->siteId];
@@ -945,7 +830,7 @@ class EventQuery extends ElementQuery
      * Generates their recurrences within the current date range
      * Stores the valid event occurrences in cache.
      */
-    private function cacheRecurringEvents(array $foundIds)
+    private function cacheRecurringEvents(array $foundIds): void
     {
         if (!\is_array($this->siteId)) {
             $this->siteId = [$this->siteId];
@@ -1087,12 +972,7 @@ class EventQuery extends ElementQuery
         }
     }
 
-    /**
-     * @param string $relativeDate
-     *
-     * @return null|Carbon
-     */
-    private function getPaddedRangeStart($relativeDate = null)
+    private function getPaddedRangeStart(null|Carbon|\DateTime|string $relativeDate = null): null|Carbon|\DateTime|string
     {
         $paddedRangeStart = null;
         if ($this->rangeStart) {
@@ -1104,13 +984,7 @@ class EventQuery extends ElementQuery
         return $paddedRangeStart;
     }
 
-    /**
-     * @param null|Carbon|string $relativeDate
-     * @param string             $recurrenceFrequency
-     *
-     * @return null|Carbon
-     */
-    private function getPaddedRangeEnd($relativeDate = null, $recurrenceFrequency = null)
+    private function getPaddedRangeEnd(null|Carbon|\DateTime|string $relativeDate = null, ?string $recurrenceFrequency = null): null|Carbon|\DateTime|string
     {
         if ($this->rangeEnd) {
             return $this->rangeEnd->copy()->addWeek();
@@ -1141,12 +1015,7 @@ class EventQuery extends ElementQuery
         return $paddedRangeEnd;
     }
 
-    /**
-     * @param array $eventMetadata
-     *
-     * @return null|RRule
-     */
-    private function getRRuleFromEventMetadata($eventMetadata)
+    private function getRRuleFromEventMetadata(array $eventMetadata): ?RRule
     {
         $startDate = $eventMetadata['startDate'];
         $freq = $eventMetadata['freq'];
@@ -1185,7 +1054,7 @@ class EventQuery extends ElementQuery
     /**
      * Adds event ID and occurrence date to the cache.
      */
-    private function cacheEvent(int $eventId, Carbon $date, int $siteId)
+    private function cacheEvent(int $eventId, Carbon $date, int $siteId): void
     {
         $this->eventCache[] = [$date, $eventId, $siteId];
     }
@@ -1193,7 +1062,7 @@ class EventQuery extends ElementQuery
     /**
      * Takes events from cache and stores the respective Event object in the list.
      */
-    private function cacheToStorage()
+    private function cacheToStorage(): void
     {
         $limit = $this->limit;
         $offset = $this->offset;
@@ -1238,7 +1107,7 @@ class EventQuery extends ElementQuery
         }
     }
 
-    private function storeEventOnDate(Event $event, Carbon $date)
+    private function storeEventOnDate(Event $event, Carbon $date): void
     {
         try {
             $this->events[] = $event->cloneForDate($date);
@@ -1246,7 +1115,7 @@ class EventQuery extends ElementQuery
         }
     }
 
-    private function orderDates(array &$dates)
+    private function orderDates(array &$dates): void
     {
         $modifier = $this->getSortModifier();
 
@@ -1269,7 +1138,7 @@ class EventQuery extends ElementQuery
         );
     }
 
-    private function randomizeDates(array &$dates)
+    private function randomizeDates(array &$dates): void
     {
         shuffle($dates);
     }
@@ -1279,7 +1148,7 @@ class EventQuery extends ElementQuery
      *
      * @param Event[] $events
      */
-    private function orderEvents(array &$events)
+    private function orderEvents(array &$events): void
     {
         $modifier = $this->getSortModifier();
         $orderBy = $this->getOrderByField() ?? 'startDate';
@@ -1348,7 +1217,7 @@ class EventQuery extends ElementQuery
     /**
      * Cuts off the excess events based on ::$limit and ::$offset.
      */
-    private function cutOffExcess(array &$array)
+    private function cutOffExcess(array &$array): void
     {
         if ($this->limit >= 0) {
             $offset = $this->offset ?: 0;
@@ -1360,7 +1229,7 @@ class EventQuery extends ElementQuery
     /**
      * Builds a cache of events for easy lookup with indexes.
      */
-    private function cacheEvents()
+    private function cacheEvents(): void
     {
         $eventsByMonth = $eventsByWeek = $eventsByDay = $eventsByHour = [];
         foreach ($this->events as $event) {
@@ -1429,7 +1298,7 @@ class EventQuery extends ElementQuery
     /**
      * Warms up the cache if needed, adds event to it.
      */
-    private function addEventToCache(array &$cache, Carbon $date, Event $event)
+    private function addEventToCache(array &$cache, Carbon $date, Event $event): void
     {
         $key = $date->getTimestamp();
         if (!isset($cache[$key])) {
@@ -1441,12 +1310,8 @@ class EventQuery extends ElementQuery
 
     /**
      * Makes a Carbon instance from a given value.
-     *
-     * @param null|Carbon|\DateTime|string $value
-     *
-     * @return null|Carbon
      */
-    private function parseCarbon($value = null)
+    private function parseCarbon(null|Carbon|\DateTime|string $value = null): ?Carbon
     {
         if (null === $value) {
             return null;
@@ -1540,10 +1405,8 @@ class EventQuery extends ElementQuery
 
     /**
      * Returns the first order by field.
-     *
-     * @return null|string
      */
-    private function getOrderByField()
+    private function getOrderByField(): null|array|string
     {
         if (\is_array($this->orderBy) && \count($this->orderBy)) {
             $keys = array_keys($this->orderBy);

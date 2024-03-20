@@ -14,12 +14,10 @@ class Hex extends ColorJizz
 {
     /**
      * The value of the color.
-     *
-     * @var int
      */
-    public $hex;
+    public ?int $hex = null;
 
-    private static $color_names = [
+    private static array $color_names = [
         'black' => 0x000000,
         'darkgreen' => 0x006400,
         'green' => 0x008000,
@@ -254,7 +252,7 @@ class Hex extends ColorJizz
      *
      * @throws InvalidArgumentException
      */
-    public function __construct($hex)
+    public function __construct(int $hex)
     {
         if ($hex > 0xFFFFFF || $hex < 0) {
             throw new InvalidArgumentException(sprintf('Parameter hex out of range (%s)', $hex));
@@ -269,7 +267,7 @@ class Hex extends ColorJizz
      *
      * @return string The color in format: RRGGBB
      */
-    public function __toString()
+    public function __toString(): string
     {
         $rgb = $this->toRGB();
         $hex = str_pad(dechex($rgb->getRed()), 2, '0', \STR_PAD_LEFT);
@@ -286,7 +284,7 @@ class Hex extends ColorJizz
      *
      * @return Hex the color in Hex format
      */
-    public static function create($hex)
+    public static function create(int $hex): self
     {
         return new self($hex);
     }
@@ -296,7 +294,7 @@ class Hex extends ColorJizz
      *
      * @return Hex the color in Hex format
      */
-    public function toHex()
+    public function toHex(): self
     {
         return $this;
     }
@@ -306,7 +304,7 @@ class Hex extends ColorJizz
      *
      * @return RGB the color in RGB format
      */
-    public function toRGB()
+    public function toRGB(): RGB
     {
         $red = (($this->hex & 0xFF0000) >> 16);
         $green = (($this->hex & 0x00FF00) >> 8);
@@ -320,7 +318,7 @@ class Hex extends ColorJizz
      *
      * @return XYZ the color in XYZ format
      */
-    public function toXYZ()
+    public function toXYZ(): XYZ
     {
         return $this->toRGB()->toXYZ();
     }
@@ -330,7 +328,7 @@ class Hex extends ColorJizz
      *
      * @return Yxy the color in Yxy format
      */
-    public function toYxy()
+    public function toYxy(): Yxy
     {
         return $this->toRGB()->toXYZ();
     }
@@ -340,7 +338,7 @@ class Hex extends ColorJizz
      *
      * @return HSV the color in HSV format
      */
-    public function toHSV()
+    public function toHSV(): HSV
     {
         return $this->toRGB()->toHSV();
     }
@@ -350,7 +348,7 @@ class Hex extends ColorJizz
      *
      * @return CMY the color in CMY format
      */
-    public function toCMY()
+    public function toCMY(): CMY
     {
         return $this->toRGB()->toCMY();
     }
@@ -360,7 +358,7 @@ class Hex extends ColorJizz
      *
      * @return CMYK the color in CMYK format
      */
-    public function toCMYK()
+    public function toCMYK(): CMYK
     {
         return $this->toCMY()->toCMYK();
     }
@@ -370,7 +368,7 @@ class Hex extends ColorJizz
      *
      * @return CIELab the color in CIELab format
      */
-    public function toCIELab()
+    public function toCIELab(): CIELab
     {
         return $this->toXYZ()->toCIELab();
     }
@@ -380,7 +378,7 @@ class Hex extends ColorJizz
      *
      * @return CIELCh the color in CIELCh format
      */
-    public function toCIELCh()
+    public function toCIELCh(): CIELCh
     {
         return $this->toCIELab()->toCIELCh();
     }
@@ -394,7 +392,7 @@ class Hex extends ColorJizz
      *
      * @throws InvalidArgumentException
      */
-    public static function fromString($str)
+    public static function fromString(string $str): self
     {
         $str = strtolower($str);
 
@@ -402,7 +400,7 @@ class Hex extends ColorJizz
             return new self(self::$color_names[$str]);
         }
 
-        if ('#' == substr($str, 0, 1)) {
+        if (str_starts_with($str, '#')) {
             $str = substr($str, 1);
         }
 

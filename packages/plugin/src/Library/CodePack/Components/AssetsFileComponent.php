@@ -6,8 +6,7 @@ use Solspace\Calendar\Library\CodePack\Exceptions\FileObject\FileNotFoundExcepti
 
 class AssetsFileComponent extends AbstractFileComponent
 {
-    /** @var array */
-    private static $modifiableFileExtensions = [
+    private static array $modifiableFileExtensions = [
         'css',
         'scss',
         'sass',
@@ -16,8 +15,7 @@ class AssetsFileComponent extends AbstractFileComponent
         'coffee',
     ];
 
-    /** @var array */
-    private static $modifiableCssFiles = [
+    private static array $modifiableCssFiles = [
         'css',
         'scss',
         'sass',
@@ -28,12 +26,9 @@ class AssetsFileComponent extends AbstractFileComponent
      * If anything has to be done with a file once it's copied over
      * This method does it.
      *
-     * @param string      $newFilePath
-     * @param null|string $prefix
-     *
      * @throws FileNotFoundException
      */
-    public function postFileCopyAction($newFilePath, $prefix = null)
+    public function postFileCopyAction(string $newFilePath, ?string $prefix = null): void
     {
         if (!file_exists($newFilePath)) {
             throw new FileNotFoundException(
@@ -72,11 +67,8 @@ class AssetsFileComponent extends AbstractFileComponent
     /**
      * This pattern matches all url(/images[..]) with or without surrounding quotes
      * And replaces it with the prefixed asset path.
-     *
-     * @param string $content
-     * @param string $prefix
      */
-    private function updateImagesURL($content, $prefix): string
+    private function updateImagesURL(string $content, string $prefix): string
     {
         $pattern = '/url\s*\(\s*([\'"]?)\/((?:images)\/[a-zA-Z1-9_\-\.\/]+)[\'"]?\s*\)/';
         $replace = 'url($1/assets/'.$prefix.'/$2$1)';
@@ -86,11 +78,8 @@ class AssetsFileComponent extends AbstractFileComponent
 
     /**
      * Updates all "../somePath/" urls to "../$prefix_somePath/" urls.
-     *
-     * @param string $content
-     * @param string $prefix
      */
-    private function updateRelativePaths($content, $prefix): string
+    private function updateRelativePaths(string $content, string $prefix): string
     {
         $pattern = '/([\(\'"])\.\.\/([^"\'())]+)([\'"\)])/';
         $replace = '$1../'.$prefix.'$2$3';
@@ -98,11 +87,7 @@ class AssetsFileComponent extends AbstractFileComponent
         return (string) preg_replace($pattern, $replace, $content);
     }
 
-    /**
-     * @param string $content
-     * @param string $prefix
-     */
-    private function replaceCustomPrefixCalls($content, $prefix): string
+    private function replaceCustomPrefixCalls(string $content, string $prefix): string
     {
         $pattern = '/(%prefix%)/';
 

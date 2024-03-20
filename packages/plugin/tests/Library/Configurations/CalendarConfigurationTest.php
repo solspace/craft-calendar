@@ -1,18 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gustavs
- * Date: 26/02/2018
- * Time: 13:24.
- */
 
 namespace Solspace\Tests\Unit\Calendar\Library\Configurations;
 
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Library\Configurations\CalendarConfiguration;
-use Solspace\Calendar\Library\DateHelper;
-use Solspace\Commons\Exceptions\Configurations\ConfigurationException;
+use Solspace\Calendar\Library\Exceptions\ConfigurationException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 /**
  * @internal
@@ -34,13 +28,10 @@ class CalendarConfigurationTest extends TestCase
     /**
      * @dataProvider carbonDataProvider
      *
-     * @param mixed       $input
-     * @param null|Carbon $expectedOutput
-     *
      * @throws \ReflectionException
      * @throws ConfigurationException
      */
-    public function testCastToCarbon($input, $expectedOutput)
+    public function testCastToCarbon(null|Carbon|\DateTime|string $input, ?Carbon $expectedOutput)
     {
         $config = new TestConfig(['carbon' => $input]);
         $this->assertEquals($expectedOutput, $config->getCarbon());
@@ -49,12 +40,9 @@ class CalendarConfigurationTest extends TestCase
 
 class TestConfig extends CalendarConfiguration
 {
-    protected $carbon;
+    protected null|Carbon|\DateTime|string $carbon = null;
 
-    /**
-     * @return mixed
-     */
-    public function getCarbon()
+    public function getCarbon(): ?Carbon
     {
         return $this->castToCarbon($this->carbon);
     }

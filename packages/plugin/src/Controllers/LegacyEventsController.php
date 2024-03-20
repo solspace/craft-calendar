@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Carbon\Carbon;
 use craft\base\Element;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\Json;
@@ -12,13 +13,14 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\CalendarPermissionHelper;
-use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Exceptions\EventException;
-use Solspace\Calendar\Library\RecurrenceHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\helpers\FormatConverter;
 use yii\web\BadRequestHttpException;
@@ -32,17 +34,15 @@ class LegacyEventsController extends EventsController
     /**
      * Saves an event.
      *
-     * @return Response
-     *
      * @throws EventException
      * @throws HttpException
      * @throws \Throwable
      * @throws SiteNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Exception
      * @throws InvalidConfigException
      * @throws BadRequestHttpException
      */
-    public function actionSaveEvent()
+    public function actionSaveEvent(): ?Response
     {
         $this->requirePostRequest();
 
@@ -70,7 +70,7 @@ class LegacyEventsController extends EventsController
         if (!$event->authorId) {
             $event->authorId = (int) (new Query())
                 ->select('id')
-                ->from('{{%users}}')
+                ->from(Table::USERS)
                 ->where(['admin' => 1])
                 ->limit(1)
                 ->orderBy(['id' => \SORT_ASC])
@@ -86,7 +86,7 @@ class LegacyEventsController extends EventsController
 
         $isNewAndPublic = !$event->id && !$isCalendarPublic;
         if ($eventId || $isNewAndPublic) {
-            CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+            PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
         }
 
         $dateFormat = \Craft::$app->locale->getDateFormat('short', Locale::FORMAT_PHP);
@@ -204,12 +204,12 @@ class LegacyEventsController extends EventsController
         }
 
         \Craft::$app->urlManager->setRouteParams(['event' => $event, 'errors' => $event->getErrors()]);
+
+        return null;
     }
 
     /**
      * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
-     *
-     * @return null|bool|bool[]
      *
      * @throws ForbiddenHttpException
      *
@@ -231,7 +231,7 @@ class LegacyEventsController extends EventsController
 
     /**
      * @throws SiteNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Exception
      * @throws InvalidConfigException
      */
     private function renderEditForm(Event $event, string $title): Response
@@ -387,7 +387,7 @@ class LegacyEventsController extends EventsController
 
         $isNewAndPublic = !$event->id && !$isCalendarPublic;
         if ($eventId || $isNewAndPublic) {
-            CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+            PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
         }
 
         $dateFormat = \Craft::$app->locale->getDateFormat('short', Locale::FORMAT_PHP);
@@ -503,7 +503,7 @@ class LegacyEventsController extends EventsController
     /**
      * @throws \Exception
      */
-    private function getExistingOrNewEvent(int $eventId = null, int $siteId = null): Event
+    private function getExistingOrNewEvent(?int $eventId = null, ?int $siteId = null): Event
     {
         if ($eventId) {
             $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
@@ -527,7 +527,7 @@ class LegacyEventsController extends EventsController
      *
      * @throws EventException
      */
-    private function handleRepeatRules(Event $event, array $postedValues)
+    private function handleRepeatRules(Event $event, array $postedValues): void
     {
         if (!isset($postedValues['repeats'])) {
             return;

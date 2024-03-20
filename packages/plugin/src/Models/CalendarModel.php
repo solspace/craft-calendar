@@ -12,8 +12,8 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\ColorHelper;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\ColorHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Records\CalendarRecord;
 
 class CalendarModel extends Model implements \JsonSerializable
@@ -21,62 +21,44 @@ class CalendarModel extends Model implements \JsonSerializable
     public const COLOR_LIGHTEN_MULTIPLIER = 0.2;
     public const COLOR_DARKEN_MULTIPLIER = -0.2;
 
-    /** @var int */
-    public $id;
+    public ?int $id = null;
 
-    /** @var string */
-    public $uid;
+    public ?string $uid = null;
 
-    /** @var string */
-    public $name;
+    public ?string $name = null;
 
-    /** @var string */
-    public $handle;
+    public ?string $handle = null;
 
-    /** @var string */
-    public $description;
+    public ?string $description = null;
 
-    /** @var string */
-    public $color;
+    public ?string $color = null;
 
-    /** @var int */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
-    /** @var string */
-    public $titleFormat;
+    public ?string $titleFormat = null;
 
-    /** @var string */
-    public $titleLabel;
+    public ?string $titleLabel = null;
 
-    /** @var bool */
-    public $hasTitleField;
+    public ?bool $hasTitleField = null;
 
-    /** @var string */
-    public $titleTranslationMethod;
+    public ?string $titleTranslationMethod = null;
 
-    /** @var null|string */
-    public $titleTranslationKeyFormat;
+    public ?string $titleTranslationKeyFormat = null;
 
-    /** @var string */
-    public $descriptionFieldHandle;
+    public ?string $descriptionFieldHandle = null;
 
-    /** @var string */
-    public $locationFieldHandle;
+    public ?string $locationFieldHandle = null;
 
-    /** @var string */
-    public $icsHash;
+    public ?string $icsHash = null;
 
-    /** @var string */
-    public $icsTimezone;
+    public ?string $icsTimezone = null;
 
-    /** @var bool */
-    public $allowRepeatingEvents;
+    public ?bool $allowRepeatingEvents = null;
 
     /** @var CalendarSiteSettingsModel[] */
-    private $siteSettings;
+    private ?array $siteSettings = null;
 
-    /** @var FieldLayout */
-    private $fieldLayout;
+    private ?FieldLayout $fieldLayout = null;
 
     /**
      * Returns the calendar $name property.
@@ -144,10 +126,7 @@ class CalendarModel extends Model implements \JsonSerializable
         return ColorHelper::getContrastYIQ($this->color);
     }
 
-    /**
-     * @return null|string
-     */
-    public function getIcsUrl()
+    public function getIcsUrl(): ?string
     {
         if (null === $this->icsHash) {
             return null;
@@ -184,10 +163,8 @@ class CalendarModel extends Model implements \JsonSerializable
 
     /**
      * Returns the owner's field layout.
-     *
-     * @return null|FieldLayout
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         if (null === $this->fieldLayout && $this->fieldLayoutId) {
             $this->fieldLayout = \Craft::$app->getFields()->getLayoutById($this->fieldLayoutId);
@@ -204,7 +181,7 @@ class CalendarModel extends Model implements \JsonSerializable
     /**
      * Sets the owner's field layout.
      */
-    public function setFieldLayout(FieldLayout $fieldLayout)
+    public function setFieldLayout(FieldLayout $fieldLayout): void
     {
         $this->fieldLayout = $fieldLayout;
     }
@@ -234,7 +211,7 @@ class CalendarModel extends Model implements \JsonSerializable
      *
      * @param CalendarSiteSettingsModel[] $siteSettings
      */
-    public function setSiteSettings(array $siteSettings)
+    public function setSiteSettings(array $siteSettings): void
     {
         $this->siteSettings = ArrayHelper::index($siteSettings, 'siteId');
 
@@ -243,10 +220,7 @@ class CalendarModel extends Model implements \JsonSerializable
         }
     }
 
-    /**
-     * @return null|CalendarSiteSettingsModel
-     */
-    public function getSiteSettingsForSite(int $siteId)
+    public function getSiteSettingsForSite(int $siteId): ?CalendarSiteSettingsModel
     {
         $settings = $this->getSiteSettings();
 
@@ -257,10 +231,7 @@ class CalendarModel extends Model implements \JsonSerializable
         return null;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getUriFormat(int $siteId)
+    public function getUriFormat(int $siteId): ?string
     {
         $settings = $this->getSiteSettingsForSite($siteId);
 

@@ -34,10 +34,7 @@ class CalendarRecord extends ActiveRecord
         return self::TABLE;
     }
 
-    /**
-     * @return ActiveQuery|FieldLayout
-     */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQuery|FieldLayout
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }

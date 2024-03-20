@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use craft\base\Component;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
-use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Duration\DayDuration;
 use Solspace\Calendar\Library\Duration\DurationInterface;
 use Solspace\Calendar\Library\Duration\HourDuration;
@@ -17,13 +16,14 @@ use Solspace\Calendar\Library\Events\EventHour;
 use Solspace\Calendar\Library\Events\EventMonth;
 use Solspace\Calendar\Library\Events\EventWeek;
 use Solspace\Calendar\Library\Exceptions\DurationException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class ViewDataService extends Component
 {
     /**
      * @throws DurationException
      */
-    public function getMonth(array $attributes = null): EventMonth
+    public function getMonth(?array $attributes = null): EventMonth
     {
         $targetDate = $this->getDateFromAttributes($attributes);
         DateHelper::updateWeekStartDate($targetDate, $this->getFirstDayFromAttributes($attributes));
@@ -37,7 +37,7 @@ class ViewDataService extends Component
     /**
      * @throws DurationException
      */
-    public function getWeek(array $attributes = null): EventWeek
+    public function getWeek(?array $attributes = null): EventWeek
     {
         $targetDate = $this->getDateFromAttributes($attributes);
         DateHelper::updateWeekStartDate($targetDate, $this->getFirstDayFromAttributes($attributes));
@@ -51,7 +51,7 @@ class ViewDataService extends Component
     /**
      * @throws DurationException
      */
-    public function getDay(array $attributes = null): EventDay
+    public function getDay(?array $attributes = null): EventDay
     {
         $duration = new DayDuration($this->getDateFromAttributes($attributes));
         $eventList = $this->getEventQuery($duration, $attributes);
@@ -62,7 +62,7 @@ class ViewDataService extends Component
     /**
      * @throws DurationException
      */
-    public function getHour(array $attributes = null): EventHour
+    public function getHour(?array $attributes = null): EventHour
     {
         $duration = new HourDuration($this->getDateFromAttributes($attributes));
         $eventQuery = $this->getEventQuery($duration, $attributes);
@@ -70,10 +70,7 @@ class ViewDataService extends Component
         return new EventHour($duration, $eventQuery);
     }
 
-    /**
-     * @param null|array $attributes
-     */
-    private function getEventQuery(DurationInterface $duration, $attributes = null): EventQuery
+    private function getEventQuery(DurationInterface $duration, ?array $attributes = null): EventQuery
     {
         $eventService = Calendar::getInstance()->events;
 
@@ -84,7 +81,7 @@ class ViewDataService extends Component
      * Gets a Carbon date instance from $attributes if it's present
      * Today's date Carbon - if not.
      */
-    private function getDateFromAttributes(array $attributes = null): Carbon
+    private function getDateFromAttributes(?array $attributes = null): Carbon
     {
         if (null === $attributes || !isset($attributes['date'])) {
             $date = 'now';
@@ -99,7 +96,7 @@ class ViewDataService extends Component
      * Returns the firstDayOfWeek either from attributes or
      * user preference or craft defaults.
      */
-    private function getFirstDayFromAttributes(array $attributes = null): int
+    private function getFirstDayFromAttributes(?array $attributes = null): int
     {
         if (null !== $attributes && isset($attributes['firstDay'])) {
             $firstDay = $attributes['firstDay'];
@@ -121,10 +118,8 @@ class ViewDataService extends Component
 
     /**
      * Merges dateRangeStart and dateRangeEnd into attributes based on $duration.
-     *
-     * @param null|array $attributes
      */
-    private function assembleAttributes(DurationInterface $duration, $attributes = null): array
+    private function assembleAttributes(DurationInterface $duration, ?array $attributes = null): array
     {
         unset($attributes['date']);
 

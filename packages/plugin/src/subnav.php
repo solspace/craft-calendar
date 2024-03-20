@@ -1,7 +1,7 @@
 <?php
 
 use Solspace\Calendar\Calendar;
-use Solspace\Commons\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 
 $subnav = [
     'month' => ['label' => Calendar::t('Month'), 'url' => 'calendar/view/month'],

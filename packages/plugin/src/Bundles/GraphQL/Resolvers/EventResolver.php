@@ -8,6 +8,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use Solspace\Calendar\Bundles\GraphQL\GqlPermissions;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Models\CalendarModel;
+use yii\base\Model;
 
 class EventResolver extends Resolver
 {
@@ -25,14 +26,14 @@ class EventResolver extends Resolver
         return Calendar::getInstance()->events->getEventQuery($arguments)->all();
     }
 
-    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo): null|array|ElementInterface|Model
     {
         $arguments = self::getArguments($arguments);
 
         return Calendar::getInstance()->events->getEventQuery($arguments)->one();
     }
 
-    private static function getArguments(array $arguments)
+    private static function getArguments(array $arguments): array
     {
         $calendarUids = GqlPermissions::allowedCalendarUids();
         if ($calendarUids) {

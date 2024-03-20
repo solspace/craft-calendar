@@ -6,28 +6,19 @@ use Carbon\Carbon;
 
 class OccurrenceLoader
 {
-    /** @var int */
-    private $limit;
+    private ?int $limit = null;
 
-    /** @var Carbon */
-    private $rangeStart;
+    private ?Carbon $rangeStart = null;
 
-    /** @var Carbon */
-    private $rangeEnd;
+    private ?Carbon $rangeEnd = null;
 
-    /** @var bool|int|string */
-    private $loadOccurrences;
+    private null|bool|int|string $loadOccurrences = null;
 
-    /**
-     * OccurrenceLoader constructor.
-     *
-     * @param bool|int|string $loadOccurrences
-     */
     public function __construct(
-        Carbon $rangeStart = null,
-        Carbon $rangeEnd = null,
-        int $limit = null,
-        $loadOccurrences = true
+        ?Carbon $rangeStart = null,
+        ?Carbon $rangeEnd = null,
+        ?int $limit = null,
+        bool|int|string $loadOccurrences = true
     ) {
         if ($rangeStart) {
             $rangeStart->setTime(0, 0, 0);
@@ -43,34 +34,22 @@ class OccurrenceLoader
         $this->loadOccurrences = $loadOccurrences;
     }
 
-    /**
-     * @return null|int
-     */
-    public function getLimit()
+    public function getLimit(): ?int
     {
         return $this->limit;
     }
 
-    /**
-     * @return null|Carbon
-     */
-    public function getRangeStart()
+    public function getRangeStart(): ?Carbon
     {
         return $this->rangeStart;
     }
 
-    /**
-     * @return null|Carbon
-     */
-    public function getRangeEnd()
+    public function getRangeEnd(): ?Carbon
     {
         return $this->rangeEnd;
     }
 
-    /**
-     * @return null|bool|int|string
-     */
-    public function getLoadOccurrences()
+    public function getLoadOccurrences(): null|bool|int|string
     {
         return $this->loadOccurrences;
     }

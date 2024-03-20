@@ -7,11 +7,9 @@ use craft\events\CancelableEvent;
 
 class SaveModelEvent extends CancelableEvent
 {
-    /** @var Model */
-    private $model;
+    private ?Model $model = null;
 
-    /** @var bool */
-    private $isNew;
+    private ?bool $isNew = null;
 
     /**
      * BeforeSaveModelEvent constructor.

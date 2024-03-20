@@ -25,7 +25,7 @@ class SettingsService extends Component
 
     public function isAllDayDefault(): bool
     {
-        return $this->getSettingsModel()->allDay;
+        return $this->getSettingsModel()->allDay ?? false;
     }
 
     public function getDescriptionFieldHandle(): string
@@ -89,10 +89,7 @@ class SettingsService extends Component
         return (int) \Craft::$app->config->getGeneral()->defaultWeekStartDay;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getPluginName()
+    public function getPluginName(): ?string
     {
         return $this->getSettingsModel()->pluginName;
     }

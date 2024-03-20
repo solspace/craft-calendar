@@ -13,33 +13,23 @@ class HSV extends ColorJizz
 {
     /**
      * The hue.
-     *
-     * @var float
      */
-    public $hue;
+    public ?float $hue = null;
 
     /**
      * The saturation.
-     *
-     * @var float
      */
-    public $saturation;
+    public ?float $saturation = null;
 
     /**
      * The value.
-     *
-     * @var float
      */
-    public $value;
+    public ?float $value = null;
 
     /**
      * Create a new HSV color.
-     *
-     * @param float $hue        The hue (0-1)
-     * @param float $saturation The saturation (0-1)
-     * @param float $value      The value (0-1)
      */
-    public function __construct($hue, $saturation, $value)
+    public function __construct(float $hue, float $saturation, float $value)
     {
         $this->toSelf = 'toHSV';
         $this->hue = $hue;
@@ -49,30 +39,25 @@ class HSV extends ColorJizz
 
     /**
      * A string representation of this color in the current format.
-     *
-     * @return string The color in format: $hue,$saturation,$value
+     * The color in format: $hue,$saturation,$value.
      */
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('%s,%s,%s', $this->hue, $this->saturation, $this->value);
     }
 
     /**
      * Convert the color to Hex format.
-     *
-     * @return Hex the color in Hex format
      */
-    public function toHex()
+    public function toHex(): Hex
     {
         return $this->toRGB()->toHex();
     }
 
     /**
      * Convert the color to RGB format.
-     *
-     * @return RGB the color in RGB format
      */
-    public function toRGB()
+    public function toRGB(): RGB
     {
         $hue = $this->hue / 360;
         $saturation = $this->saturation / 100;
@@ -126,70 +111,56 @@ class HSV extends ColorJizz
 
     /**
      * Convert the color to XYZ format.
-     *
-     * @return XYZ the color in XYZ format
      */
-    public function toXYZ()
+    public function toXYZ(): XYZ
     {
         return $this->toRGB()->toXYZ();
     }
 
     /**
      * Convert the color to Yxy format.
-     *
-     * @return Yxy the color in Yxy format
      */
-    public function toYxy()
+    public function toYxy(): Yxy
     {
         return $this->toXYZ()->toYxy();
     }
 
     /**
      * Convert the color to HSV format.
-     *
-     * @return HSV the color in HSV format
      */
-    public function toHSV()
+    public function toHSV(): self
     {
         return $this;
     }
 
     /**
      * Convert the color to CMY format.
-     *
-     * @return CMY the color in CMY format
      */
-    public function toCMY()
+    public function toCMY(): CMY
     {
         return $this->toRGB()->toCMY();
     }
 
     /**
      * Convert the color to CMYK format.
-     *
-     * @return CMYK the color in CMYK format
      */
-    public function toCMYK()
+    public function toCMYK(): CMYK
     {
         return $this->toCMY()->toCMYK();
     }
 
     /**
      * Convert the color to CIELab format.
-     *
-     * @return CIELab the color in CIELab format
      */
-    public function toCIELab()
+    public function toCIELab(): CIELab
     {
         return $this->toRGB()->toCIELab();
     }
 
     /**
      * Convert the color to CIELCh format.
-     *
-     * @return CIELCh the color in CIELCh format
      */
-    public function toCIELCh()
+    public function toCIELCh(): CIELCh
     {
         return $this->toCIELab()->toCIELCh();
     }

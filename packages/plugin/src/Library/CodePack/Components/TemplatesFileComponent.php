@@ -6,7 +6,7 @@ use Solspace\Calendar\Library\CodePack\Exceptions\FileObject\FileNotFoundExcepti
 
 class TemplatesFileComponent extends AbstractFileComponent
 {
-    private $modifiableFileExtensions = [
+    private array $modifiableFileExtensions = [
         'html',
         'twig',
     ];
@@ -15,12 +15,9 @@ class TemplatesFileComponent extends AbstractFileComponent
      * If anything has to be done with a file once it's copied over
      * This method does it.
      *
-     * @param string      $newFilePath
-     * @param null|string $prefix
-     *
      * @throws FileNotFoundException
      */
-    public function postFileCopyAction($newFilePath, $prefix = null)
+    public function postFileCopyAction(string $newFilePath, ?string $prefix = null): void
     {
         if (!file_exists($newFilePath)) {
             throw new FileNotFoundException(
@@ -60,11 +57,8 @@ class TemplatesFileComponent extends AbstractFileComponent
      * This pattern matches all src or href tag values which begin with:
      * /css or /js or /images
      * And replaces it with the prefixed asset path.
-     *
-     * @param string $content
-     * @param string $prefix
      */
-    private function updateSrcAndHref($content, $prefix): string
+    private function updateSrcAndHref(string $content, string $prefix): string
     {
         $pattern = '/(src|href)=([\'"](?:\{{2}\s*siteUrl\s*}{2})?(?:\/?assets\/))demo\//';
         $replace = '$1=$2'.$prefix.'/';
@@ -74,11 +68,8 @@ class TemplatesFileComponent extends AbstractFileComponent
 
     /**
      * Replaces all links that starts with "{{ siteUrl }}demo/" with the new path.
-     *
-     * @param string $content
-     * @param string $prefix
      */
-    private function updateLinks($content, $prefix): string
+    private function updateLinks(string $content, string $prefix): string
     {
         $pattern = '/([\'"](?:\{{2}\s*siteUrl\s*}{2})?\/?)demo\//';
         $replace = '$1'.$prefix.'/';
@@ -88,11 +79,8 @@ class TemplatesFileComponent extends AbstractFileComponent
 
     /**
      * Updates all includes and extends with the new location.
-     *
-     * @param string $content
-     * @param string $prefix
      */
-    private function updateTemplateCalls($content, $prefix): string
+    private function updateTemplateCalls(string $content, string $prefix): string
     {
         $pattern = '/(\{\%\s*(?:extends|include)) ([\'"])(\/?)demo\//';
         $replace = '$1 $2$3'.$prefix.'/';
@@ -103,11 +91,8 @@ class TemplatesFileComponent extends AbstractFileComponent
     /**
      * Offset all segments by the number of segments the $prefix has
      * since our demo templates will be at least 1 folder deep.
-     *
-     * @param string $content
-     * @param string $prefix
      */
-    private function offsetSegments($content, $prefix): string
+    private function offsetSegments(string $content, string $prefix): string
     {
         $segmentCount = substr_count($prefix, '/') + 1;
 
@@ -118,11 +103,7 @@ class TemplatesFileComponent extends AbstractFileComponent
         );
     }
 
-    /**
-     * @param string $content
-     * @param string $prefix
-     */
-    private function replaceCustomPrefixCalls($content, $prefix): string
+    private function replaceCustomPrefixCalls(string $content, string $prefix): string
     {
         $pattern = '#(%prefix%)#';
 

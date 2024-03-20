@@ -2,7 +2,7 @@
 
 namespace Solspace\Calendar;
 
-use Composer\Autoload\ClassMapGenerator;
+use Composer\ClassMapGenerator\ClassMapGenerator;
 use craft\base\Model;
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
@@ -95,8 +95,7 @@ class Calendar extends Plugin
 
     public bool $hasCpSettings = true;
 
-    /** @var array */
-    private static $javascriptTranslationKeys = [
+    private static array $javascriptTranslationKeys = [
         'Couldn’t save event.',
         'Event saved.',
         'Refresh',
@@ -119,7 +118,7 @@ class Calendar extends Plugin
      * Includes CSS and JS files
      * Registers custom class auto-loader.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -165,7 +164,7 @@ class Calendar extends Plugin
         ];
     }
 
-    public static function t(string $message, array $params = [], string $language = null): string
+    public static function t(string $message, array $params = [], ?string $language = null): string
     {
         return \Craft::t(self::TRANSLATION_CATEGORY, $message, $params, $language);
     }
@@ -183,7 +182,7 @@ class Calendar extends Plugin
     /**
      * @throws ForbiddenHttpException
      */
-    public function requirePro()
+    public function requirePro(): void
     {
         if (!$this->isPro()) {
             throw new ForbiddenHttpException(self::t('Requires Calendar Pro'));
@@ -265,7 +264,7 @@ class Calendar extends Plugin
         );
     }
 
-    private function initControllers()
+    private function initControllers(): void
     {
         if (!\Craft::$app->request->isConsoleRequest) {
             $this->controllerMap = [
@@ -284,7 +283,7 @@ class Calendar extends Plugin
         }
     }
 
-    private function initServices()
+    private function initServices(): void
     {
         $this->setComponents(
             [
@@ -300,7 +299,7 @@ class Calendar extends Plugin
         );
     }
 
-    private function initRoutes()
+    private function initRoutes(): void
     {
         Event::on(
             UrlManager::class,
@@ -312,7 +311,7 @@ class Calendar extends Plugin
         );
     }
 
-    private function initTemplateVariables()
+    private function initTemplateVariables(): void
     {
         Event::on(
             CraftVariable::class,
@@ -323,7 +322,7 @@ class Calendar extends Plugin
         );
     }
 
-    private function initWidgets()
+    private function initWidgets(): void
     {
         if ($this->isPro()) {
             Event::on(
@@ -339,7 +338,7 @@ class Calendar extends Plugin
         }
     }
 
-    private function initFieldTypes()
+    private function initFieldTypes(): void
     {
         Event::on(
             Fields::class,
@@ -351,14 +350,14 @@ class Calendar extends Plugin
         );
     }
 
-    private function initEventListeners()
+    private function initEventListeners(): void
     {
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->events, 'addSiteHandler']);
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->calendars, 'addSiteHandler']);
         Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, [$this->events, 'transferUserEvents']);
     }
 
-    private function initPermissions()
+    private function initPermissions(): void
     {
         if (\Craft::$app->getEdition() >= \Craft::Pro) {
             Event::on(
@@ -418,7 +417,7 @@ class Calendar extends Plugin
         }
     }
 
-    private function initBundles()
+    private function initBundles(): void
     {
         static $initialized;
 

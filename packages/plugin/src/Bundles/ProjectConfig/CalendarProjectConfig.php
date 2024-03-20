@@ -25,7 +25,7 @@ class CalendarProjectConfig implements BundleInterface
         ;
     }
 
-    public function handleChange(ConfigEvent $event)
+    public function handleChange(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $id = Db::idByUid(CalendarRecord::TABLE, $uid);
@@ -72,7 +72,7 @@ class CalendarProjectConfig implements BundleInterface
         $this->changeSiteSettings($id, $event->newValue['siteSettings']);
     }
 
-    public function handleRemove(ConfigEvent $event)
+    public function handleRemove(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
         $id = Db::idByUid(CalendarRecord::TABLE, $uid);
@@ -88,7 +88,7 @@ class CalendarProjectConfig implements BundleInterface
         ;
     }
 
-    public function removeSiteSettingsFor(int $calendarId)
+    public function removeSiteSettingsFor(int $calendarId): void
     {
         \Craft::$app->db->createCommand()
             ->delete(CalendarSiteSettingsRecord::TABLE, ['calendarId' => $calendarId])
@@ -96,7 +96,7 @@ class CalendarProjectConfig implements BundleInterface
         ;
     }
 
-    private function handleFieldLayout($calendarId = null, array $data = null)
+    private function handleFieldLayout($calendarId = null, ?array $data = null)
     {
         $uid = $data['uid'] ?? null;
         if (!$uid && $calendarId) {
@@ -126,7 +126,7 @@ class CalendarProjectConfig implements BundleInterface
         }
     }
 
-    private function changeSiteSettings($calendarId, array $siteSettings)
+    private function changeSiteSettings($calendarId, array $siteSettings): void
     {
         $existingIds = (new Query())
             ->select('id')

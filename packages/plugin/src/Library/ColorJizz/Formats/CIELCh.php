@@ -13,33 +13,23 @@ class CIELCh extends ColorJizz
 {
     /**
      * The lightness.
-     *
-     * @var float
      */
-    public $lightness;
+    public ?float $lightness = null;
 
     /**
      * The chroma.
-     *
-     * @var float
      */
-    public $chroma;
+    public ?float $chroma = null;
 
     /**
      * The hue.
-     *
-     * @var float
      */
-    public $hue;
+    public ?float $hue = null;
 
     /**
      * Create a new CIELCh color.
-     *
-     * @param float $lightness
-     * @param float $chroma
-     * @param float $hue
      */
-    public function __construct($lightness, $chroma, $hue)
+    public function __construct(float $lightness, float $chroma, float $hue)
     {
         $this->toSelf = 'toCIELCh';
         $this->lightness = $lightness;
@@ -55,7 +45,7 @@ class CIELCh extends ColorJizz
      *
      * @return string The color in format: $lightness,$chroma,$hue
      */
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('%s,%s,%s', $this->lightness, $this->chroma, $this->hue);
     }
@@ -65,7 +55,7 @@ class CIELCh extends ColorJizz
      *
      * @return Hex the color in Hex format
      */
-    public function toHex()
+    public function toHex(): Hex
     {
         return $this->toCIELab()->toHex();
     }
@@ -75,7 +65,7 @@ class CIELCh extends ColorJizz
      *
      * @return RGB the color in RGB format
      */
-    public function toRGB()
+    public function toRGB(): RGB
     {
         return $this->toCIELab()->toRGB();
     }
@@ -85,7 +75,7 @@ class CIELCh extends ColorJizz
      *
      * @return XYZ the color in XYZ format
      */
-    public function toXYZ()
+    public function toXYZ(): XYZ
     {
         return $this->toCIELab()->toXYZ();
     }
@@ -95,7 +85,7 @@ class CIELCh extends ColorJizz
      *
      * @return Yxy the color in Yxy format
      */
-    public function toYxy()
+    public function toYxy(): Yxy
     {
         return $this->toXYZ()->toYxy();
     }
@@ -105,7 +95,7 @@ class CIELCh extends ColorJizz
      *
      * @return HSV the color in HSV format
      */
-    public function toHSV()
+    public function toHSV(): HSV
     {
         return $this->toCIELab()->toHSV();
     }
@@ -115,7 +105,7 @@ class CIELCh extends ColorJizz
      *
      * @return CMY the color in CMY format
      */
-    public function toCMY()
+    public function toCMY(): CMY
     {
         return $this->toCIELab()->toCMY();
     }
@@ -125,7 +115,7 @@ class CIELCh extends ColorJizz
      *
      * @return CMYK the color in CMYK format
      */
-    public function toCMYK()
+    public function toCMYK(): CMYK
     {
         return $this->toCIELab()->toCMYK();
     }
@@ -135,7 +125,7 @@ class CIELCh extends ColorJizz
      *
      * @return CIELab the color in CIELab format
      */
-    public function toCIELab()
+    public function toCIELab(): CIELab
     {
         $hradi = $this->hue * (\M_PI / 180);
         $a_dimension = cos($hradi) * $this->chroma;
@@ -149,7 +139,7 @@ class CIELCh extends ColorJizz
      *
      * @return CIELCh the color in CIELCh format
      */
-    public function toCIELCh()
+    public function toCIELCh(): self
     {
         return $this;
     }

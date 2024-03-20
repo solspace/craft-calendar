@@ -5,8 +5,8 @@ namespace Solspace\Calendar\Controllers;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\CodePack\CodePack;
 use Solspace\Calendar\Library\CodePack\Exceptions\FileObject\FileObjectException;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Resources\Bundles\CodePackBundle;
-use Solspace\Commons\Helpers\PermissionHelper;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 

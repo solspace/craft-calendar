@@ -4,6 +4,7 @@ namespace Solspace\Calendar\migrations;
 
 use craft\base\Field;
 use craft\db\Migration;
+use Solspace\Calendar\Records\CalendarRecord;
 
 /**
  * m230126_190648_AddMissingCalendarTitleTranslationMethodColumn migration.
@@ -12,14 +13,15 @@ class m230126_190648_AddMissingCalendarTitleTranslationMethodColumn extends Migr
 {
     public function safeUp(): bool
     {
-        $table = $this->getDb()->getTableSchema('{{%calendar_calendars}}');
+        $calendarTable = CalendarRecord::tableName();
+        $table = $this->getDb()->getTableSchema($calendarTable);
 
         if (!$table->getColumn('titleTranslationMethod')) {
-            $this->addColumn('{{%calendar_calendars}}', 'titleTranslationMethod', $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE)->after('hasTitleField'));
+            $this->addColumn($calendarTable, 'titleTranslationMethod', $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE)->after('hasTitleField'));
         }
 
         if (!$table->getColumn('titleTranslationKeyFormat')) {
-            $this->addColumn('{{%calendar_calendars}}', 'titleTranslationKeyFormat', $this->text()->after('titleTranslationMethod'));
+            $this->addColumn($calendarTable, 'titleTranslationKeyFormat', $this->text()->after('titleTranslationMethod'));
         }
 
         return true;

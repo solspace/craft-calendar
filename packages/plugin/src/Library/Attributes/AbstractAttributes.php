@@ -3,41 +3,32 @@
 namespace Solspace\Calendar\Library\Attributes;
 
 use craft\db\Query;
-use Solspace\Calendar\Library\DatabaseHelper;
 use Solspace\Calendar\Library\Exceptions\AttributeException;
+use Solspace\Calendar\Library\Helpers\DatabaseHelper;
 
 abstract class AbstractAttributes
 {
     public const SORT_ASC = 'ASC';
     public const SORT_DESC = 'DESC';
 
-    /** @var array */
-    protected $validAttributes;
+    protected ?array $validAttributes = null;
 
-    /** @var Query */
-    private $query;
+    private ?Query $query = null;
 
-    /** @var string */
-    private $order;
+    private ?string $order = null;
 
-    /** @var string */
-    private $sort;
+    private ?string $sort = null;
 
-    /** @var int */
-    private $limit;
+    private ?int $limit = null;
 
-    /** @var array */
-    private $attributes;
+    private ?array $attributes = null;
 
-    /** @var array */
-    private $conditions;
+    private ?array $conditions = null;
 
     /**
-     * @param null|array $attributes
-     *
      * @throws AttributeException
      */
-    final public function __construct(Query $query, $attributes = null)
+    final public function __construct(Query $query, ?array $attributes = null)
     {
         // A list of valid attributes must be present in the child class
         // If none are provided - an exception is thrown
@@ -74,26 +65,17 @@ abstract class AbstractAttributes
         return $query;
     }
 
-    /**
-     * @param string $value
-     */
-    private function setOrder($value)
+    private function setOrder(string $value): void
     {
         $this->order = $value;
     }
 
-    /**
-     * @param int $value
-     */
-    private function setLimit($value)
+    private function setLimit(int $value): void
     {
-        $this->limit = (int) $value;
+        $this->limit = $value;
     }
 
-    /**
-     * @param string $value
-     */
-    private function setSort($value)
+    private function setSort(string $value): void
     {
         $this->sort = self::SORT_ASC === strtoupper($value) ? \SORT_ASC : \SORT_DESC;
     }
@@ -102,11 +84,9 @@ abstract class AbstractAttributes
      * Parses all attributes, if any of the passed attributes does not exist in self::$validAttributes
      * An exception is thrown.
      *
-     * @param array $attributes
-     *
      * @throws AttributeException
      */
-    private function parseAttributes($attributes = null)
+    private function parseAttributes(?array $attributes = null): void
     {
         if (empty($attributes)) {
             return;
@@ -160,7 +140,7 @@ abstract class AbstractAttributes
     /**
      * Builds the conditions array.
      */
-    private function buildConditions()
+    private function buildConditions(): void
     {
         $conditions = [];
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Solspace\Calendar\Library;
+namespace Solspace\Calendar\Library\Helpers;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Calendar;
@@ -11,8 +11,7 @@ class DateHelper
     public const FLOATING_TIMEZONE = 'floating';
     public const UTC = 'utc';
 
-    /** @var array */
-    private static $weekDays = [
+    private static array $weekDays = [
         'SU' => 'Sunday',
         'MO' => 'Monday',
         'TU' => 'Tuesday',
@@ -22,8 +21,7 @@ class DateHelper
         'SA' => 'Saturday',
     ];
 
-    /** @var array */
-    private static $monthNames = [
+    private static array $monthNames = [
         1 => 'January',
         2 => 'February',
         3 => 'March',
@@ -38,10 +36,7 @@ class DateHelper
         12 => 'December',
     ];
 
-    /**
-     * @return string
-     */
-    public static function getCurrentWeekDay(Carbon $date)
+    public static function getCurrentWeekDay(Carbon $date): string
     {
         $weekDays = array_keys(self::$weekDays);
 
@@ -176,7 +171,7 @@ class DateHelper
     /**
      * Changes the first day and last day of the week for the given $date Carbon.
      */
-    public static function updateWeekStartDate(Carbon $date, int $firstDay = 0)
+    public static function updateWeekStartDate(Carbon $date, int $firstDay = 0): void
     {
         $lastDay = ($firstDay + 6) % 7;
 
@@ -187,11 +182,9 @@ class DateHelper
     /**
      * Shifts BYDAY rule forward or backward by a given amount of days.
      *
-     * @return null|string
-     *
      * @throws DateHelperException
      */
-    public static function shiftByDays(string $dayList = null, int $shiftAmount)
+    public static function shiftByDays(?string $dayList, int $shiftAmount): ?string
     {
         if (!$shiftAmount || empty($dayList)) {
             return $dayList;
@@ -227,10 +220,8 @@ class DateHelper
 
     /**
      * Shifts BYMONTHDAY rule forward or backward by a given amount of days.
-     *
-     * @return null|string
      */
-    public static function shiftByMonthDay(string $monthDayList = null, int $shiftAmount)
+    public static function shiftByMonthDay(?string $monthDayList, int $shiftAmount): ?string
     {
         if (empty($monthDayList)) {
             return $monthDayList;
@@ -267,10 +258,8 @@ class DateHelper
 
     /**
      * Shifts BYMONTH rule forward or backward by a given amount of days.
-     *
-     * @return null|string
      */
-    public static function shiftByMonth(string $monthList = null, int $shiftAmount)
+    public static function shiftByMonth(?string $monthList, int $shiftAmount): ?string
     {
         if (empty($monthList)) {
             return $monthList;
@@ -308,7 +297,7 @@ class DateHelper
     /**
      * Sorts an array of dates ASC-endingly.
      */
-    public static function sortArrayOfDates(array &$dateArray)
+    public static function sortArrayOfDates(array &$dateArray): void
     {
         usort(
             $dateArray,

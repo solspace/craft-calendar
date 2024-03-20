@@ -14,7 +14,7 @@ use RRule\RfcParser;
 use RRule\RRule as RRuleObject;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event as EventElement;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use yii\base\Event;
 
 if (class_exists('craft\feedme\base\Element')) {
@@ -31,15 +31,15 @@ if (class_exists('craft\feedme\base\Element')) {
             'COUNT' => 'count',
         ];
 
-        public static $name = 'Solspace Calendar Event (official)';
+        public static string $name = 'Solspace Calendar Event (official)';
 
-        public static $class = EventElement::class;
+        public static string $class = EventElement::class;
 
         public $element;
 
-        private $rruleInfo = [];
+        private array $rruleInfo = [];
 
-        private $selectDates = [];
+        private array $selectDates = [];
 
         public function getGroupsTemplate(): string
         {
@@ -198,7 +198,7 @@ if (class_exists('craft\feedme\base\Element')) {
             return $this->fetchArrayValue($feedData, $fieldInfo);
         }
 
-        private function _parseDate($feedData, $fieldInfo)
+        private function _parseDate($feedData, $fieldInfo): ?Carbon
         {
             $value = $this->fetchSimpleValue($feedData, $fieldInfo);
             $formatting = Hash::get($fieldInfo, 'options.match');
@@ -213,7 +213,7 @@ if (class_exists('craft\feedme\base\Element')) {
             return null;
         }
 
-        private function _onBeforeElementSave($event)
+        private function _onBeforeElementSave($event): void
         {
             /** @var EventElement $element */
             $element = $event->element;

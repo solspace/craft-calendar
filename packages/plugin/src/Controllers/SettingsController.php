@@ -4,7 +4,7 @@ namespace Solspace\Calendar\Controllers;
 
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
-use Solspace\Commons\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
@@ -139,10 +139,8 @@ class SettingsController extends BaseController
     /**
      * Determines which template has to be rendered based on $template
      * Adds a Calendar_SettingsModel to template variables.
-     *
-     * @param string $template
      */
-    private function provideTemplate($template, array $variables = []): Response
+    private function provideTemplate(string $template, array $variables = []): Response
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
 

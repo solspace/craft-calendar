@@ -4,8 +4,8 @@ namespace Solspace\Calendar\Resources\Bundles;
 
 class EventEditBundle extends CalendarAssetBundle
 {
-    /** @var string - worst hack ever made */
-    public static $locale;
+    /** @var null|string - worst hack ever made */
+    public static ?string $locale = null;
 
     public function getScripts(): array
     {

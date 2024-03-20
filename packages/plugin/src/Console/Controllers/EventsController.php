@@ -8,53 +8,55 @@ use craft\console\Controller;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
-use craft\helpers\Console;
+use craft\events\MultiElementActionEvent;
 use craft\services\Elements;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\Helpers\VersionHelper;
 use yii\console\ExitCode;
+use yii\helpers\Console;
 
 class EventsController extends Controller
 {
     /**
-     * @var int|string the ID(s) of the elements to resave
+     * @var null|int|string the ID(s) of the elements to resave
      */
-    public $elementId;
+    public null|int|string $elementId = null;
 
     /**
-     * @var string the UUID(s) of the elements to resave
+     * @var null|string the UUID(s) of the elements to resave
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var null|string the site handle to save elements from
      */
-    public $site;
+    public ?string $site = null;
 
     /**
      * @var string The status(es) of elements to resave. Can be set to multiple comma-separated statuses.
      */
-    public $status = 'any';
+    public string $status = 'any';
 
     /**
      * @var null|int the number of elements to skip
      */
-    public $offset;
+    public ?int $offset = null;
 
     /**
      * @var null|int the number of elements to resave
      */
-    public $limit;
+    public ?int $limit = null;
 
     /**
      * @var bool whether to save the elements across all their enabled sites
      */
-    public $propagate = true;
+    public bool $propagate = true;
 
     /**
      * @var bool whether to update the search indexes for the resaved elements
      */
-    public $updateSearchIndex = false;
+    public bool $updateSearchIndex = false;
 
     public function options($actionID): array
     {
@@ -71,7 +73,7 @@ class EventsController extends Controller
         return $options;
     }
 
-    public function actionResave()
+    public function actionResave(): int
     {
         return $this->saveElements(Event::find());
     }
@@ -127,29 +129,55 @@ class EventsController extends Controller
         $elementsService = \Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function (BatchElementActionEvent $e) use ($query) {
-            if ($e->query === $query) {
-                /** @var Element $element */
-                $element = $e->element;
-                $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
-            }
-        };
-
-        $afterCallback = function (BatchElementActionEvent $e) use ($query, &$fail) {
-            if ($e->query === $query) {
-                /** @var Element $element */
-                $element = $e->element;
-                if ($e->exception) {
-                    $this->stderr('error: '.$e->exception->getMessage().\PHP_EOL, Console::FG_RED);
-                    $fail = true;
-                } elseif ($element->hasErrors()) {
-                    $this->stderr('failed: '.implode(', ', $element->getErrorSummary(true)).\PHP_EOL, Console::FG_RED);
-                    $fail = true;
-                } else {
-                    $this->stdout('done'.\PHP_EOL, Console::FG_GREEN);
+        if (VersionHelper::isCraft4()) {
+            $beforeCallback = function (BatchElementActionEvent $e) use ($query) {
+                if ($e->query === $query) {
+                    /** @var Element $element */
+                    $element = $e->element;
+                    $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
                 }
-            }
-        };
+            };
+
+            $afterCallback = function (BatchElementActionEvent $e) use ($query, &$fail) {
+                if ($e->query === $query) {
+                    /** @var Element $element */
+                    $element = $e->element;
+                    if ($e->exception) {
+                        $this->stderr('error: '.$e->exception->getMessage().\PHP_EOL, Console::FG_RED);
+                        $fail = true;
+                    } elseif ($element->hasErrors()) {
+                        $this->stderr('failed: '.implode(', ', $element->getErrorSummary(true)).\PHP_EOL, Console::FG_RED);
+                        $fail = true;
+                    } else {
+                        $this->stdout('done'.\PHP_EOL, Console::FG_GREEN);
+                    }
+                }
+            };
+        } else {
+            $beforeCallback = function (MultiElementActionEvent $e) use ($query) {
+                if ($e->query === $query) {
+                    /** @var Element $element */
+                    $element = $e->element;
+                    $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
+                }
+            };
+
+            $afterCallback = function (MultiElementActionEvent $e) use ($query, &$fail) {
+                if ($e->query === $query) {
+                    /** @var Element $element */
+                    $element = $e->element;
+                    if ($e->exception) {
+                        $this->stderr('error: '.$e->exception->getMessage().\PHP_EOL, Console::FG_RED);
+                        $fail = true;
+                    } elseif ($element->hasErrors()) {
+                        $this->stderr('failed: '.implode(', ', $element->getErrorSummary(true)).\PHP_EOL, Console::FG_RED);
+                        $fail = true;
+                    } else {
+                        $this->stdout('done'.\PHP_EOL, Console::FG_GREEN);
+                    }
+                }
+            };
+        }
 
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);

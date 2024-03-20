@@ -4,7 +4,7 @@ namespace Solspace\Calendar\Library\Attributes;
 
 class CalendarAttributes extends AbstractAttributes
 {
-    protected $validAttributes = [
+    protected ?array $validAttributes = [
         'id',
         'name',
         'handle',

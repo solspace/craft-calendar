@@ -3,11 +3,11 @@
 namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class WeekDuration extends AbstractDuration
 {
-    protected function init(Carbon $targetDate)
+    protected function init(Carbon $targetDate): void
     {
         $startDate = new Carbon($targetDate->toDateTimeString(), DateHelper::UTC);
         $startDate->startOfWeek();

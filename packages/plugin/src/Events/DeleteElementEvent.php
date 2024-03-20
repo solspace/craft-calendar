@@ -7,8 +7,7 @@ use craft\events\CancelableEvent;
 
 class DeleteElementEvent extends CancelableEvent
 {
-    /** @var ElementInterface */
-    private $element;
+    private ?ElementInterface $element = null;
 
     /**
      * DeleteModelEvent constructor.

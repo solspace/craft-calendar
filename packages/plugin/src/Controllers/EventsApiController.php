@@ -6,9 +6,9 @@ use Carbon\Carbon;
 use craft\helpers\ElementHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\CalendarPermissionHelper;
-use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Exceptions\DateHelperException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Records\SelectDateRecord;
 use yii\web\BadRequestHttpException;
 use yii\web\HttpException;
@@ -189,7 +189,7 @@ class EventsApiController extends BaseController
         }
 
         // Check permissions for the calendar
-        CalendarPermissionHelper::requireCalendarEditPermissions($calendar);
+        PermissionHelper::requireCalendarEditPermissions($calendar);
 
         $startDate = new Carbon($startDate, DateHelper::UTC);
         $endDate = new Carbon($endDate, DateHelper::UTC);
@@ -243,7 +243,7 @@ class EventsApiController extends BaseController
             return $this->asFailure(Calendar::t('Event could not be found'));
         }
 
-        CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
         if (Calendar::getInstance()->events->deleteEventById($eventId)) {
             return $this->asJson('success');
@@ -271,7 +271,7 @@ class EventsApiController extends BaseController
             return $this->asFailure(Calendar::t('Event could not be found'));
         }
 
-        CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
         $date = Carbon::parse($date, 'UTC');
         $date = $date->startOfDay();
@@ -367,7 +367,7 @@ class EventsApiController extends BaseController
         $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
 
         if ($event) {
-            CalendarPermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+            PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
             return [$event, $deltaSeconds, $isAllDay];
         }

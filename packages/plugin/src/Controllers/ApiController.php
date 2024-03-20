@@ -14,7 +14,7 @@ class ApiController extends BaseController
     /**
      * @throws NotFoundHttpException
      */
-    public function actionIcs()
+    public function actionIcs(): void
     {
         Calendar::getInstance()->requirePro();
 

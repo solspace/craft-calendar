@@ -19,70 +19,70 @@ use Solspace\Calendar\Library\ColorJizz\Formats\Yxy;
  */
 abstract class ColorJizz
 {
-    protected $toSelf;
+    protected mixed $toSelf = null;
 
     /**
      * Convert the color to Hex format.
      *
      * @return Hex the color in Hex format
      */
-    abstract public function toHex();
+    abstract public function toHex(): Hex;
 
     /**
      * Convert the color to RGB format.
      *
      * @return RGB the color in RGB format
      */
-    abstract public function toRGB();
+    abstract public function toRGB(): RGB;
 
     /**
      * Convert the color to XYZ format.
      *
      * @return XYZ the color in XYZ format
      */
-    abstract public function toXYZ();
+    abstract public function toXYZ(): XYZ;
 
     /**
      * Convert the color to Yxy format.
      *
      * @return Yxy the color in Yxy format
      */
-    abstract public function toYxy();
+    abstract public function toYxy(): Yxy;
 
     /**
      * Convert the color to CIELab format.
      *
      * @return CIELab the color in CIELab format
      */
-    abstract public function toCIELab();
+    abstract public function toCIELab(): CIELab;
 
     /**
      * Convert the color to CIELCh format.
      *
      * @return CIELCh the color in CIELCh format
      */
-    abstract public function toCIELCh();
+    abstract public function toCIELCh(): CIELCh;
 
     /**
      * Convert the color to CMY format.
      *
      * @return CMY the color in CMY format
      */
-    abstract public function toCMY();
+    abstract public function toCMY(): CMY;
 
     /**
      * Convert the color to CMYK format.
      *
      * @return CMYK the color in CMYK format
      */
-    abstract public function toCMYK();
+    abstract public function toCMYK(): CMYK;
 
     /**
      * Convert the color to HSV format.
      *
      * @return HSV the color in HSV format
      */
-    abstract public function toHSV();
+    abstract public function toHSV(): HSV;
 
     /**
      * Find the distance to the destination color.
@@ -91,7 +91,7 @@ abstract class ColorJizz
      *
      * @return int distance to destination color
      */
-    public function distance(self $destinationColor)
+    public function distance(self $destinationColor): int
     {
         $a = $this->toCIELab();
         $b = $destinationColor->toCIELab();
@@ -108,7 +108,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz The closest color
      */
-    public function websafe()
+    public function websafe(): self
     {
         $palette = [];
         for ($red = 0; $red <= 255; $red += 51) {
@@ -129,7 +129,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz The closest color
      */
-    public function match(array $palette)
+    public function match(array $palette): self
     {
         $distance = 100000000000;
         $closest = null;
@@ -144,7 +144,7 @@ abstract class ColorJizz
         return \call_user_func([$closest, $this->toSelf]);
     }
 
-    public function equal($parts, $includeSelf = false)
+    public function equal($parts, $includeSelf = false): array
     {
         $parts = max($parts, 2);
         $current = $this->toCIELCh();
@@ -161,7 +161,7 @@ abstract class ColorJizz
         return $palette;
     }
 
-    public function split($includeSelf = false)
+    public function split($includeSelf = false): array
     {
         $rtn = [];
         $t = $this->hue(-150);
@@ -180,7 +180,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz The greyscale color
      */
-    public function complement()
+    public function complement(): self
     {
         return $this->hue(180);
     }
@@ -192,7 +192,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz[] Array of complimentary colors
      */
-    public function sweetspot($includeSelf = false)
+    public function sweetspot(bool|int $includeSelf = false): array
     {
         $colors = [$this->toHSV()];
         $colors[1] = new HSV(
@@ -218,7 +218,7 @@ abstract class ColorJizz
         return $colors;
     }
 
-    public function analogous($includeSelf = false)
+    public function analogous(bool|int $includeSelf = false): array
     {
         $rtn = [];
         $t = $this->hue(-30);
@@ -234,7 +234,7 @@ abstract class ColorJizz
         return $rtn;
     }
 
-    public function rectangle($sideLength, $includeSelf = false)
+    public function rectangle(int $sideLength, bool|int $includeSelf = false): array
     {
         $side1 = $sideLength;
         $side2 = (360 - ($sideLength * 2)) / 2;
@@ -257,7 +257,7 @@ abstract class ColorJizz
         return $rtn;
     }
 
-    public function range($destinationColor, $steps, $includeSelf = false)
+    public function range($destinationColor, int $steps, bool|int $includeSelf = false): array
     {
         $a = $this->toRGB();
         $b = $destinationColor->toRGB();
@@ -283,7 +283,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz The greyscale color
      */
-    public function greyscale()
+    public function greyscale(): self
     {
         $a = $this->toRGB();
         $ds = $a->red * 0.3 + $a->green * 0.59 + $a->blue * 0.11;
@@ -300,7 +300,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz The modified color
      */
-    public function hue($degreeModifier, $absolute = false)
+    public function hue(int $degreeModifier, bool $absolute = false): self
     {
         $a = $this->toCIELCh();
         $a->hue = $absolute ? $degreeModifier : $a->hue + $degreeModifier;
@@ -317,7 +317,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz The modified color
      */
-    public function saturation($satModifier, $absolute = false)
+    public function saturation(int $satModifier, bool $absolute = false): self
     {
         $a = $this->toHSV();
         $a->saturation = $absolute ? $satModifier : $a->saturation + $satModifier;
@@ -333,7 +333,7 @@ abstract class ColorJizz
      *
      * @return ColorJizz The modified color
      */
-    public function brightness($brightnessModifier, $absolute = false)
+    public function brightness(int $brightnessModifier, bool $absolute = false): self
     {
         $a = $this->toCIELab();
         $a->lightness = $absolute ? $brightnessModifier : $a->lightness + $brightnessModifier;

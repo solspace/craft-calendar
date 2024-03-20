@@ -7,11 +7,11 @@ use Solspace\Calendar\Calendar;
 
 class UpdateEventsUriJob extends BaseJob
 {
-    public int $siteId;
+    public ?int $siteId = null;
 
-    public int $calendarId;
+    public ?int $calendarId = null;
 
-    public ?string $uriFormat;
+    public ?string $uriFormat = null;
 
     public function execute($queue): void
     {

@@ -11,29 +11,22 @@ class CodePack
 {
     public const MANIFEST_NAME = 'manifest.json';
 
-    /** @var string */
-    private $location;
+    private ?string $location = null;
 
-    /** @var Manifest */
-    private $manifest;
+    private ?Manifest $manifest = null;
 
-    /** @var TemplatesFileComponent */
-    private $templates;
+    private ?TemplatesFileComponent $templates = null;
 
-    /** @var AssetsFileComponent */
-    private $assets;
+    private ?AssetsFileComponent $assets = null;
 
-    /** @var RoutesComponent */
-    private $routes;
+    private ?RoutesComponent $routes = null;
 
     /**
      * CodePack constructor.
      *
-     * @param string $location
-     *
      * @throws CodePackException
      */
-    public function __construct($location)
+    public function __construct(string $location)
     {
         if (!file_exists($location)) {
             throw new CodePackException(
@@ -58,10 +51,7 @@ class CodePack
         return trim($prefix, '/');
     }
 
-    /**
-     * @param string $prefix
-     */
-    public function install($prefix)
+    public function install(string $prefix): void
     {
         $prefix = self::getCleanPrefix($prefix);
 

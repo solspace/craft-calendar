@@ -1,6 +1,6 @@
 <?php
 
-namespace Solspace\Calendar\Library;
+namespace Solspace\Calendar\Library\Helpers;
 
 use Solspace\Calendar\Calendar;
 
@@ -12,10 +12,7 @@ class RecurrenceHelper
     public const YEARLY = 'YEARLY';
     public const SELECT_DATES = 'SELECT_DATES';
 
-    /**
-     * @var array
-     */
-    private static $frequencyOptions = [
+    private static array $frequencyOptions = [
         self::DAILY => 'Day(s)',
         self::WEEKLY => 'Week(s)',
         self::MONTHLY => 'Month(s)',
@@ -23,10 +20,7 @@ class RecurrenceHelper
         self::SELECT_DATES => 'Select dates',
     ];
 
-    /**
-     * @var array
-     */
-    private static $repeatsByOptions = [
+    private static array $repeatsByOptions = [
         1 => 'First',
         2 => 'Second',
         3 => 'Third',

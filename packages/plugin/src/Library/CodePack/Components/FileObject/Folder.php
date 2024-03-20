@@ -9,10 +9,9 @@ use Symfony\Component\Finder\SplFileInfo;
 class Folder extends FileObject implements \Iterator
 {
     /** @var null|FileObject[] */
-    protected $files;
+    protected ?array $files = null;
 
-    /** @var int */
-    private $fileCount;
+    private ?int $fileCount = null;
 
     /**
      * Folder constructor.
@@ -43,11 +42,9 @@ class Folder extends FileObject implements \Iterator
     /**
      * Copy the file or directory to $target location.
      *
-     * @param null|array|callable $callable
-     *
      * @throws FileObjectException
      */
-    public function copy(string $target, string $prefix = null, callable $callable = null, string $filePrefix = null)
+    public function copy(string $target, ?string $prefix = null, ?callable $callable = null, ?string $filePrefix = null): void
     {
         $target = rtrim($target, '/');
         $targetFolderPath = $target.'/'.$filePrefix.$this->name;
@@ -91,10 +88,7 @@ class Folder extends FileObject implements \Iterator
         return $this->fileCount;
     }
 
-    /**
-     * @return null|FileObject[]
-     */
-    public function getFiles()
+    public function getFiles(): ?array
     {
         return $this->files;
     }
@@ -108,7 +102,7 @@ class Folder extends FileObject implements \Iterator
      *
      * @since 5.0.0
      */
-    public function current()
+    public function current(): mixed
     {
         return current($this->files);
     }
@@ -119,7 +113,7 @@ class Folder extends FileObject implements \Iterator
      * @see  http://php.net/manual/en/iterator.next.php
      * @since 5.0.0
      */
-    public function next()
+    public function next(): void
     {
         next($this->files);
     }
@@ -133,7 +127,7 @@ class Folder extends FileObject implements \Iterator
      *
      * @since 5.0.0
      */
-    public function key()
+    public function key(): mixed
     {
         return key($this->files);
     }
@@ -148,7 +142,7 @@ class Folder extends FileObject implements \Iterator
      *
      * @since 5.0.0
      */
-    public function valid()
+    public function valid(): bool
     {
         return null !== $this->key() && false !== $this->key();
     }
@@ -159,7 +153,7 @@ class Folder extends FileObject implements \Iterator
      * @see  http://php.net/manual/en/iterator.rewind.php
      * @since 5.0.0
      */
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->files);
     }

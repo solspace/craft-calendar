@@ -11,7 +11,7 @@ class RoutesComponent extends AbstractJsonComponent
     /**
      * Calls the installation of this component.
      */
-    public function install(string $prefix = null)
+    public function install(?string $prefix = null): void
     {
         $routeService = \Craft::$app->routes;
 
@@ -90,15 +90,12 @@ class RoutesComponent extends AbstractJsonComponent
      * This is the method that sets all vital properties
      * ::$fileName.
      */
-    protected function setProperties()
+    protected function setProperties(): void
     {
         $this->fileName = 'routes.json';
     }
 
-    /**
-     * @return null|int|string
-     */
-    private function findExistingRoute(array $uriParts, array $existingRoutes = null)
+    private function findExistingRoute(array $uriParts, ?array $existingRoutes = null): null|int|string
     {
         if (!$existingRoutes) {
             return null;

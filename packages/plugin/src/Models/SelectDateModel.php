@@ -11,14 +11,11 @@ use craft\base\Model;
  */
 class SelectDateModel extends Model
 {
-    /** @var int */
-    public $id;
+    public ?int $id = null;
 
-    /** @var int */
-    public $eventId;
+    public ?int $eventId = null;
 
-    /** @var Carbon|\DateTime */
-    public $date;
+    public null|Carbon|\DateTime $date = null;
 
     public function __toString(): string
     {

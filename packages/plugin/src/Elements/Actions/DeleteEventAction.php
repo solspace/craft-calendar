@@ -6,7 +6,7 @@ use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\CalendarPermissionHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 
 class DeleteEventAction extends ElementAction
 {
@@ -70,7 +70,7 @@ class DeleteEventAction extends ElementAction
     {
         /** @var Event $element */
         foreach ($query->all() as $element) {
-            if (CalendarPermissionHelper::canEditEvent($element)) {
+            if (PermissionHelper::canEditEvent($element)) {
                 Calendar::getInstance()->events->deleteEvent($element);
             }
         }

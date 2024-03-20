@@ -6,11 +6,9 @@ use Solspace\Calendar\Elements\Db\EventQuery;
 
 abstract class AbstractExportCalendar implements ExportCalendarInterface
 {
-    /** @var EventQuery */
-    private $eventQuery;
+    private ?EventQuery $eventQuery = null;
 
-    /** @var array */
-    private $options;
+    private ?array $options = null;
 
     final public function __construct(EventQuery $events, array $options = [])
     {
@@ -21,10 +19,8 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
     /**
      * Collects the exportable string and outputs it
      * Sets headers to file download and content-type to text/calendar.
-     *
-     * @return string
      */
-    final public function export(bool $asFileUpload = true, bool $shouldExit = true)
+    final public function export(bool $asFileUpload = true, bool $shouldExit = true): void
     {
         $exportString = $this->prepareStringForExport();
 
@@ -66,13 +62,7 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
         return $this->eventQuery;
     }
 
-    /**
-     * @param string $key
-     * @param mixed  $defaultValue
-     *
-     * @return mixed
-     */
-    final protected function getOption($key, $defaultValue = null)
+    final protected function getOption(string $key, mixed $defaultValue = null): mixed
     {
         return $this->options[$key] ?? $defaultValue;
     }

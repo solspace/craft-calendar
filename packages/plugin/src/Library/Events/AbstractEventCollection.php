@@ -15,29 +15,23 @@ use Solspace\Calendar\Library\Duration\AbstractDuration;
  */
 abstract class AbstractEventCollection implements EventCollectionInterface, \Iterator
 {
-    /** @var bool */
-    protected $eventsBuilt;
+    protected ?bool $eventsBuilt = null;
 
     /** @var Event[] */
-    protected $cachedEvents;
+    protected ?array $cachedEvents = null;
 
     /** @var Event[] */
-    protected $events;
+    protected ?array $events = null;
 
-    /** @var array */
-    private $iterableObject;
+    private ?array $iterableObject = null;
 
-    /** @var EventQuery */
-    private $eventQuery;
+    private ?EventQuery $eventQuery = null;
 
-    /** @var Carbon */
-    private $startDate;
+    private ?Carbon $startDate = null;
 
-    /** @var Carbon */
-    private $endDate;
+    private ?Carbon $endDate = null;
 
-    /** @var AbstractDuration */
-    private $duration;
+    private ?AbstractDuration $duration = null;
 
     /**
      * AbstractEventCollection constructor.
@@ -176,7 +170,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
      *
      * @since 5.0.0
      */
-    public function current()
+    public function current(): mixed
     {
         return current($this->iterableObject);
     }
@@ -187,7 +181,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
      * @see  http://php.net/manual/en/iterator.next.php
      * @since 5.0.0
      */
-    public function next()
+    public function next(): void
     {
         next($this->iterableObject);
     }
@@ -197,11 +191,11 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
      *
      * @see  http://php.net/manual/en/iterator.key.php
      *
-     * @return mixed scalar on success, or null on failure
+     * @return null|int|string scalar on success, or null on failure
      *
      * @since 5.0.0
      */
-    public function key()
+    public function key(): null|int|string
     {
         return key($this->iterableObject);
     }
@@ -227,7 +221,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
      * @see  http://php.net/manual/en/iterator.rewind.php
      * @since 5.0.0
      */
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->iterableObject);
     }

@@ -14,11 +14,12 @@ use Solspace\Calendar\Events\DeleteModelEvent;
 use Solspace\Calendar\Events\SaveModelEvent;
 use Solspace\Calendar\Library\Attributes\CalendarAttributes;
 use Solspace\Calendar\Library\Exceptions\AttributeException;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\CalendarSiteSettingsRecord;
-use Solspace\Commons\Helpers\PermissionHelper;
+use yii\base\Exception;
 
 class CalendarsService extends Component
 {
@@ -28,10 +29,11 @@ class CalendarsService extends Component
     public const EVENT_AFTER_DELETE = 'afterDelete';
 
     /** @var CalendarModel[] */
-    private $calendarCache;
-    private $allCalendarsCached;
+    private ?array $calendarCache = null;
 
-    private $allowedCalendarCache;
+    private ?bool $allCalendarsCached = null;
+
+    private ?array $allowedCalendarCache = null;
 
     public function getFirstCalendarId(): int
     {
@@ -157,12 +159,7 @@ class CalendarsService extends Component
         return $titleArray;
     }
 
-    /**
-     * @param int $calendarId
-     *
-     * @return null|CalendarModel
-     */
-    public function getCalendarById($calendarId)
+    public function getCalendarById(?int $calendarId): ?CalendarModel
     {
         $calendars = $this->getAllCalendars();
 
@@ -173,12 +170,7 @@ class CalendarsService extends Component
         return null;
     }
 
-    /**
-     * @param mixed $uid
-     *
-     * @return null|CalendarModel
-     */
-    public function getCalendarByUid($uid)
+    public function getCalendarByUid(mixed $uid): ?CalendarModel
     {
         $data = $this->getQuery()->where(['uid' => $uid])->one();
         if (!$data) {
@@ -188,10 +180,7 @@ class CalendarsService extends Component
         return $this->createModel($data);
     }
 
-    /**
-     * @return null|CalendarModel
-     */
-    public function getCalendarByHandle(string $handle)
+    public function getCalendarByHandle(string $handle): ?CalendarModel
     {
         $data = $this->getQuery()
             ->where(['handle' => $handle])
@@ -205,12 +194,7 @@ class CalendarsService extends Component
         return null;
     }
 
-    /**
-     * @param string $icsHash
-     *
-     * @return null|CalendarModel
-     */
-    public function getCalendarByIcsHash($icsHash)
+    public function getCalendarByIcsHash(string $icsHash): ?CalendarModel
     {
         if (!$icsHash) {
             return null;
@@ -317,14 +301,10 @@ class CalendarsService extends Component
     }
 
     /**
-     * @param int $calendarId
-     *
-     * @return bool
-     *
      * @throws \Exception
      * @throws \Throwable
      */
-    public function deleteCalendarById($calendarId)
+    public function deleteCalendarById(int $calendarId): bool
     {
         $calendar = $this->getCalendarById($calendarId);
         if (!$calendar) {
@@ -366,13 +346,11 @@ class CalendarsService extends Component
     }
 
     /**
-     * @param null|array $attributes
-     *
      * @return CalendarModel[]
      *
      * @throws AttributeException
      */
-    public function getCalendars($attributes = null): array
+    public function getCalendars(?array $attributes = null): array
     {
         $calendarAttributes = new CalendarAttributes($this->getQuery(), $attributes);
         $query = $calendarAttributes->getQuery();
@@ -395,7 +373,7 @@ class CalendarsService extends Component
      */
     public function getCalendarSiteSettings(int $calendarId): array
     {
-        $table = '{{%calendar_calendar_sites}}';
+        $table = CalendarSiteSettingsRecord::tableName();
 
         $siteSettings = (new Query())
             ->select(
@@ -410,7 +388,7 @@ class CalendarsService extends Component
                 ]
             )
             ->from([$table.' calendar_calendar_sites'])
-            ->innerJoin('{{%sites}} sites', 'sites.[[id]] = calendar_calendar_sites.[[siteId]]')
+            ->innerJoin(Table::SITES.' sites', 'sites.[[id]] = calendar_calendar_sites.[[siteId]]')
             ->where(['calendar_calendar_sites.[[calendarId]]' => $calendarId])
             ->orderBy(['sites.[[sortOrder]]' => \SORT_ASC])
             ->all()
@@ -446,7 +424,7 @@ class CalendarsService extends Component
      * Returns whether a calendar’s events have URLs for the given site ID, and if the
      * calendar’s template path is valid.
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function isEventTemplateValid(CalendarModel $calendar, int $siteId): bool
     {

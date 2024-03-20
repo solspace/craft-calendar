@@ -7,7 +7,7 @@ use Twig\TokenParser\AbstractTokenParser;
 
 class RequireEventEditPermissions_TokenParser extends AbstractTokenParser
 {
-    public function parse(Token $token)
+    public function parse(Token $token): RequireEventEditPermissions_Node
     {
         $lineNumber = $token->getLine();
         $parser = $this->parser;
@@ -19,7 +19,7 @@ class RequireEventEditPermissions_TokenParser extends AbstractTokenParser
         return new RequireEventEditPermissions_Node(['event' => $event], [], $lineNumber, $this->getTag());
     }
 
-    public function getTag()
+    public function getTag(): string
     {
         return 'requireEventEditPermissions';
     }

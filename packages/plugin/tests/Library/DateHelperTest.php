@@ -4,8 +4,8 @@ namespace Solspace\Tests\Unit\Calendar\Library;
 
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
-use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Exceptions\DateHelperException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 /**
  * @internal

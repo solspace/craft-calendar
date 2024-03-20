@@ -6,13 +6,13 @@ use Carbon\Carbon;
 use craft\base\Component;
 use craft\db\Query;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\SelectDateRecord;
 
 class SelectDatesService extends Component
 {
-    private static $cachedDates = [];
+    private static array $cachedDates = [];
 
     /**
      * Returns a list of Calendar_SelectDateModel's if any are found.
@@ -21,8 +21,8 @@ class SelectDatesService extends Component
      */
     public function getSelectDatesForEvent(
         Event $event,
-        \DateTime $rangeStart = null,
-        \DateTime $rangeEnd = null
+        ?\DateTime $rangeStart = null,
+        ?\DateTime $rangeEnd = null
     ): array {
         return $this->getSelectDatesForEventId($event->id, $rangeStart, $rangeEnd);
     }
@@ -34,8 +34,8 @@ class SelectDatesService extends Component
      */
     public function getSelectDatesForEventId(
         int $eventId,
-        \DateTime $rangeStart = null,
-        \DateTime $rangeEnd = null
+        ?\DateTime $rangeStart = null,
+        ?\DateTime $rangeEnd = null
     ): array {
         if (!$eventId) {
             return [];
@@ -83,8 +83,8 @@ class SelectDatesService extends Component
      */
     public function getSelectDatesAsCarbonsForEventId(
         int $eventId,
-        \DateTime $rangeStart = null,
-        \DateTime $rangeEnd = null
+        ?\DateTime $rangeStart = null,
+        ?\DateTime $rangeEnd = null
     ): array {
         $selectDates = $this->getSelectDatesForEventId($eventId, $rangeStart, $rangeEnd);
 
@@ -99,7 +99,7 @@ class SelectDatesService extends Component
     /**
      * @param Carbon[] $dates
      */
-    public function saveDates(Event $event, array $dates)
+    public function saveDates(Event $event, array $dates): void
     {
         \Craft::$app->db
             ->createCommand()
@@ -116,7 +116,7 @@ class SelectDatesService extends Component
         }
     }
 
-    public function removeDate(Event $event, \DateTime $date)
+    public function removeDate(Event $event, \DateTime $date): void
     {
         $records = SelectDateRecord::findAll(
             [
@@ -130,7 +130,7 @@ class SelectDatesService extends Component
         }
     }
 
-    private function getCacheHash(int $eventId, \DateTime $rangeStart = null, \DateTime $rangeEnd = null): string
+    private function getCacheHash(int $eventId, ?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): string
     {
         $string = $eventId;
 

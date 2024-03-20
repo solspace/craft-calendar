@@ -6,13 +6,13 @@ use Carbon\Carbon;
 use craft\base\Component;
 use craft\db\Query;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\DateHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\ExceptionModel;
 use Solspace\Calendar\Records\ExceptionRecord;
 
 class ExceptionsService extends Component
 {
-    private static $cachedExceptions;
+    private static ?array $cachedExceptions = null;
 
     /**
      * Returns a list of Calendar_ExceptionModel's if any are found.
@@ -60,10 +60,7 @@ class ExceptionsService extends Component
         return [];
     }
 
-    /**
-     * @param int $eventId
-     */
-    public function getExceptionDatesForEventId($eventId): array
+    public function getExceptionDatesForEventId(int $eventId): array
     {
         $exceptions = $this->getExceptionsForEventId($eventId);
 
@@ -75,7 +72,7 @@ class ExceptionsService extends Component
         return $dates;
     }
 
-    public function saveException(Event $event, \DateTime $date, int $id = null)
+    public function saveException(Event $event, \DateTime $date, ?int $id = null): void
     {
         $exceptionRecord = null;
         if ($id) {
@@ -92,10 +89,7 @@ class ExceptionsService extends Component
         $exceptionRecord->save();
     }
 
-    /**
-     * @param array|ExceptionModel[] $exceptions
-     */
-    public function updateExceptions(array $exceptions)
+    public function updateExceptions(array $exceptions): void
     {
         $transaction = \Craft::$app->db->beginTransaction();
 

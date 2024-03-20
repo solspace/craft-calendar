@@ -13,33 +13,23 @@ class CIELab extends ColorJizz
 {
     /**
      * The lightness.
-     *
-     * @var float
      */
-    public $lightness;
+    public ?float $lightness = null;
 
     /**
      * The a dimension.
-     *
-     * @var float
      */
-    public $a_dimension;
+    public ?float $a_dimension = null;
 
     /**
-     * The b dimenson.
-     *
-     * @var float
+     * The b dimension.
      */
-    public $b_dimension;
+    public ?float $b_dimension = null;
 
     /**
      * Create a new CIELab color.
-     *
-     * @param float $lightness
-     * @param float $a_dimension
-     * @param float $b_dimension
      */
-    public function __construct($lightness, $a_dimension, $b_dimension)
+    public function __construct(float $lightness, float $a_dimension, float $b_dimension)
     {
         $this->toSelf = 'toCIELab';
         $this->lightness = $lightness; // $this->roundDec($l, 3);
@@ -52,12 +42,12 @@ class CIELab extends ColorJizz
      *
      * @return string The color in format: $lightness,$a_dimension,$b_dimension
      */
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('%s,%s,%s', $this->lightness, $this->a_dimension, $this->b_dimension);
     }
 
-    public static function create($lightness, $a_dimension, $b_dimension)
+    public static function create($lightness, $a_dimension, $b_dimension): self
     {
         return new self($lightness, $a_dimension, $b_dimension);
     }
@@ -67,7 +57,7 @@ class CIELab extends ColorJizz
      *
      * @return Hex the color in Hex format
      */
-    public function toHex()
+    public function toHex(): Hex
     {
         return $this->toRGB()->toHex();
     }
@@ -77,7 +67,7 @@ class CIELab extends ColorJizz
      *
      * @return RGB the color in RGB format
      */
-    public function toRGB()
+    public function toRGB(): RGB
     {
         return $this->toXYZ()->toRGB();
     }
@@ -87,7 +77,7 @@ class CIELab extends ColorJizz
      *
      * @return XYZ the color in XYZ format
      */
-    public function toXYZ()
+    public function toXYZ(): XYZ
     {
         $ref_X = 95.047;
         $ref_Y = 100.000;
@@ -124,7 +114,7 @@ class CIELab extends ColorJizz
      *
      * @return Yxy the color in Yxy format
      */
-    public function toYxy()
+    public function toYxy(): Yxy
     {
         return $this->toXYZ()->toYxy();
     }
@@ -134,7 +124,7 @@ class CIELab extends ColorJizz
      *
      * @return HSV the color in HSV format
      */
-    public function toHSV()
+    public function toHSV(): HSV
     {
         return $this->toRGB()->toHSV();
     }
@@ -144,7 +134,7 @@ class CIELab extends ColorJizz
      *
      * @return CMY the color in CMY format
      */
-    public function toCMY()
+    public function toCMY(): CMY
     {
         return $this->toRGB()->toCMY();
     }
@@ -154,7 +144,7 @@ class CIELab extends ColorJizz
      *
      * @return CMYK the color in CMYK format
      */
-    public function toCMYK()
+    public function toCMYK(): CMYK
     {
         return $this->toCMY()->toCMYK();
     }
@@ -164,7 +154,7 @@ class CIELab extends ColorJizz
      *
      * @return CIELab the color in CIELab format
      */
-    public function toCIELab()
+    public function toCIELab(): self
     {
         return $this;
     }
@@ -174,7 +164,7 @@ class CIELab extends ColorJizz
      *
      * @return CIELCh the color in CIELCh format
      */
-    public function toCIELCh()
+    public function toCIELCh(): CIELCh
     {
         $var_H = atan2($this->b_dimension, $this->a_dimension);
 

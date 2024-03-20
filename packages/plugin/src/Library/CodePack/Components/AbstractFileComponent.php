@@ -8,17 +8,13 @@ use Solspace\Calendar\Library\CodePack\Exceptions\CodePackException;
 
 abstract class AbstractFileComponent implements ComponentInterface
 {
-    /** @var string */
-    protected $installDirectory;
+    protected ?string $installDirectory = null;
 
-    /** @var string */
-    protected $targetFilesDirectory;
+    protected ?string $targetFilesDirectory = null;
 
-    /** @var Folder */
-    protected $contents;
+    protected null|FileObject|Folder $contents = null;
 
-    /** @var string */
-    private $location;
+    private ?string $location = null;
 
     /**
      * @param string $location - the location of files
@@ -34,7 +30,7 @@ abstract class AbstractFileComponent implements ComponentInterface
     /**
      * Installs the component files into the $installDirectory.
      */
-    public function install(string $prefix = null)
+    public function install(?string $prefix = null): void
     {
         $installDirectory = $this->getInstallDirectory();
         $installDirectory = rtrim($installDirectory, '/');
@@ -49,16 +45,10 @@ abstract class AbstractFileComponent implements ComponentInterface
     /**
      * If anything has to be done with a file once it's copied over
      * This method does it.
-     *
-     * @param string      $newFilePath
-     * @param null|string $prefix
      */
-    public function postFileCopyAction($newFilePath, $prefix = null) {}
+    public function postFileCopyAction(string $newFilePath, ?string $prefix = null) {}
 
-    /**
-     * @return FileObject
-     */
-    public function getContents()
+    public function getContents(): null|FileObject|Folder
     {
         return $this->contents;
     }
@@ -77,11 +67,9 @@ abstract class AbstractFileComponent implements ComponentInterface
     }
 
     /**
-     * @return FileObject
-     *
      * @throws CodePackException
      */
-    private function locateFiles()
+    private function locateFiles(): FileObject
     {
         $directory = FileObject::createFromPath($this->getFileLocation());
 
@@ -92,10 +80,7 @@ abstract class AbstractFileComponent implements ComponentInterface
         return $directory;
     }
 
-    /**
-     * @return string
-     */
-    private function getFileLocation()
+    private function getFileLocation(): string
     {
         return $this->location.'/'.$this->getTargetFilesDirectory();
     }

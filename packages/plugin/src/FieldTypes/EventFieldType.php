@@ -27,7 +27,14 @@ class EventFieldType extends BaseRelationField
         return Calendar::t('Add an event');
     }
 
+    // Craft 4
     public static function valueType(): string
+    {
+        return EventQuery::class;
+    }
+
+    // Craft 5
+    public static function phpType(): string
     {
         return EventQuery::class;
     }
@@ -44,6 +51,20 @@ class EventFieldType extends BaseRelationField
         }
 
         return parent::getTableAttributeHtml($value, $element);
+    }
+
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
+    {
+        if (\is_array($value)) {
+            $html = '';
+            foreach ($value as $event) {
+                $html .= parent::getPreviewHtml([$event], $element);
+            }
+
+            return $html;
+        }
+
+        return parent::getPreviewHtml($value, $element);
     }
 
     public function getContentGqlType(): array|Type

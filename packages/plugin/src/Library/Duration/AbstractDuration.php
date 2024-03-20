@@ -8,20 +8,16 @@ use Solspace\Calendar\Library\Exceptions\DurationException;
 
 abstract class AbstractDuration implements DurationInterface
 {
-    /** @var Carbon */
-    protected $startDate;
+    protected ?Carbon $startDate = null;
 
-    /** @var Carbon */
-    protected $startDateLocalized;
+    protected ?Carbon $startDateLocalized = null;
 
-    /** @var Carbon */
-    protected $endDate;
+    protected ?Carbon $endDate = null;
 
-    /** @var Carbon */
-    protected $endDateLocalized;
+    protected ?Carbon $endDateLocalized = null;
 
     /** @var Event[] */
-    protected $events;
+    protected ?array $events = null;
 
     /**
      * AbstractDuration constructor.

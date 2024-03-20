@@ -6,11 +6,9 @@ use Solspace\Calendar\Library\CodePack\Exceptions\CodePackException;
 
 abstract class AbstractJsonComponent implements ComponentInterface
 {
-    /** @var string */
-    protected $fileName;
+    protected ?string $fileName = null;
 
-    /** @var mixed */
-    private $jsonData;
+    private mixed $jsonData = null;
 
     /**
      * ComponentInterface constructor.
@@ -30,10 +28,8 @@ abstract class AbstractJsonComponent implements ComponentInterface
 
     /**
      * Returns the parsed JSON data.
-     *
-     * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->jsonData;
     }
@@ -41,7 +37,7 @@ abstract class AbstractJsonComponent implements ComponentInterface
     /**
      * Calls the installation of this component.
      */
-    abstract public function install(string $prefix = null);
+    abstract public function install(?string $prefix = null);
 
     /**
      * This is the method that sets all vital properties

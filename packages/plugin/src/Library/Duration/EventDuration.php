@@ -4,23 +4,17 @@ namespace Solspace\Calendar\Library\Duration;
 
 class EventDuration
 {
-    /** @var int */
-    private $years;
+    private ?int $years = null;
 
-    /** @var int */
-    private $months;
+    private ?int $months = null;
 
-    /** @var int */
-    private $days;
+    private ?int $days = null;
 
-    /** @var int */
-    private $hours;
+    private ?int $hours = null;
 
-    /** @var int */
-    private $minutes;
+    private ?int $minutes = null;
 
-    /** @var int */
-    private $seconds;
+    private ?int $seconds = null;
 
     /**
      * EventDuration constructor.
@@ -77,50 +71,32 @@ class EventDuration
         return trim($timeString);
     }
 
-    /**
-     * @return int
-     */
-    public function getYears()
+    public function getYears(): ?int
     {
         return $this->years;
     }
 
-    /**
-     * @return int
-     */
-    public function getMonths()
+    public function getMonths(): ?int
     {
         return $this->months;
     }
 
-    /**
-     * @return int
-     */
-    public function getDays()
+    public function getDays(): ?int
     {
         return $this->days;
     }
 
-    /**
-     * @return int
-     */
-    public function getHours()
+    public function getHours(): ?int
     {
         return $this->hours;
     }
 
-    /**
-     * @return int
-     */
-    public function getMinutes()
+    public function getMinutes(): ?int
     {
         return $this->minutes;
     }
 
-    /**
-     * @return int
-     */
-    public function getSeconds()
+    public function getSeconds(): ?int
     {
         return $this->seconds;
     }

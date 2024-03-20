@@ -4,14 +4,13 @@ namespace Solspace\Calendar\Library\Transformers;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\DateHelper;
-use Solspace\Calendar\Library\RecurrenceHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Models\ExceptionModel;
 
 class EventToUiDataTransformer
 {
-    /** @var Event */
-    private $event;
+    private ?Event $event = null;
 
     /**
      * EventToUiDataTransformer constructor.

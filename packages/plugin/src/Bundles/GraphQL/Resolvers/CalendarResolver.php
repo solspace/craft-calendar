@@ -9,7 +9,7 @@ use Solspace\Calendar\Calendar;
 
 class CalendarResolver extends Resolver
 {
-    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
+    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): array
     {
         $arguments = self::getArguments($arguments);
 
@@ -27,7 +27,7 @@ class CalendarResolver extends Resolver
         return $calendar ?: null;
     }
 
-    private static function getArguments(array $arguments)
+    private static function getArguments(array $arguments): array
     {
         $calendarUids = GqlPermissions::allowedCalendarUids();
         if ($calendarUids) {

@@ -10,10 +10,10 @@ use Solspace\Calendar\Library\Duration\HourDuration;
 class EventDay extends AbstractEventCollection
 {
     /** @var Event[] */
-    private $allDayEvents;
+    private ?array $allDayEvents = null;
 
     /** @var Event[] */
-    private $nonAllDayEvents;
+    private ?array $nonAllDayEvents = null;
 
     /**
      * @return Event[]

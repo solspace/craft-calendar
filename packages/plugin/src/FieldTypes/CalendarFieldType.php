@@ -26,7 +26,14 @@ class CalendarFieldType extends Field
         return Calendar::t('Add a calendar');
     }
 
+    // Craft 4
     public function getContentColumnType(): array|string
+    {
+        return Schema::TYPE_INTEGER;
+    }
+
+    // Craft 5
+    public static function dbType(): array|string
     {
         return Schema::TYPE_INTEGER;
     }

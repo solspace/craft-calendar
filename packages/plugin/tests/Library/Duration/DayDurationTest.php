@@ -13,8 +13,7 @@ use Solspace\Calendar\Library\Duration\DayDuration;
  */
 class DayDurationTest extends TestCase
 {
-    /** @var DayDuration */
-    private $duration;
+    private ?DayDuration $duration = null;
 
     protected function setUp(): void
     {

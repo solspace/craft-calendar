@@ -16,13 +16,7 @@ interface ExportCalendarInterface
      */
     public function __construct(EventQuery $events);
 
-    /**
-     * @return string
-     */
-    public function export();
+    public function export(): void;
 
-    /**
-     * @return string
-     */
-    public function output();
+    public function output(): string;
 }

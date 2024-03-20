@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gustavs
- * Date: 26/02/2018
- * Time: 12:17.
- */
 
 namespace Solspace\Calendar\Library\Configurations;
 
@@ -12,35 +6,23 @@ use Carbon\Carbon;
 
 class Occurrences extends CalendarConfiguration
 {
-    /** @var Carbon */
-    protected $rangeStart;
+    protected ?Carbon $rangeStart = null;
 
-    /** @var Carbon */
-    protected $rangeEnd;
+    protected ?Carbon $rangeEnd = null;
 
-    /** @var int */
-    protected $limit;
+    protected ?int $limit = null;
 
-    /**
-     * @return null|Carbon
-     */
-    public function getRangeStart()
+    public function getRangeStart(): ?Carbon
     {
         return $this->castToCarbon($this->rangeStart);
     }
 
-    /**
-     * @return null|Carbon
-     */
-    public function getRangeEnd()
+    public function getRangeEnd(): ?Carbon
     {
         return $this->castToCarbon($this->rangeEnd);
     }
 
-    /**
-     * @return null|int
-     */
-    public function getLimit()
+    public function getLimit(): ?int
     {
         return $this->castToInt($this->limit);
     }

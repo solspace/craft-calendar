@@ -10,19 +10,20 @@
     }
   ],
   "require": {
-    "php": "^8.0.2",
-    "craftcms/cms": "^4.0.0",
-    "rlanvin/php-rrule": "~1.6.0",
+    "php": "^8.0.2|^8.2.0",
+    "craftcms/cms": "^4.0.0|^5.0.0-beta.1",
+    "rlanvin/php-rrule": "^1.6.0|^2.0.0",
     "symfony/property-access": "^2.8|^3.0|^4.0|^5.0|^6.0",
     "symfony/finder": "^2.8|^3.0|^4.0|^5.0|^6.0",
     "symfony/filesystem": "^2.8|^3.0|^4.0|^5.0|^6.0",
-    "solspace/craft3-commons": "^1.0.17",
-    "nesbot/carbon": "^1.22.1|^2.19"
+    "nesbot/carbon": "^1.22.1|^2.19",
+    "composer/class-map-generator": "^1.1"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.3.0",
     "friendsofphp/php-cs-fixer": "^v3.8.0",
-    "brainmaestro/composer-git-hooks": "^2.8"
+    "brainmaestro/composer-git-hooks": "^2.8",
+    "craftcms/rector": "dev-main"
   },
   "autoload": {
     "psr-4": {
@@ -67,6 +68,9 @@
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
+    },
+    "platform": {
+      "php": "8.0.2"
     }
   }
 }

@@ -7,7 +7,7 @@ use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQueryInterface;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\CalendarPermissionHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 
 class SetStatusAction extends SetStatus
 {
@@ -24,7 +24,7 @@ class SetStatusAction extends SetStatus
 
         /** @var Event $element */
         foreach ($query->all() as $element) {
-            if (CalendarPermissionHelper::canEditEvent($element)) {
+            if (PermissionHelper::canEditEvent($element)) {
                 switch ($this->status) {
                     case self::ENABLED:
                         // Skip if there's nothing to change

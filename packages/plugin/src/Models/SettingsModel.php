@@ -22,55 +22,39 @@ class SettingsModel extends Model
     public const TIME_FORMAT_12_HOUR = '12-hour';
     public const TIME_FORMAT_24_HOUR = '24-hour';
 
-    /** @var int */
-    public $overlapThreshold;
+    public ?int $overlapThreshold = null;
 
-    /** @var int */
-    public $timeInterval;
+    public ?int $timeInterval = null;
 
-    /** @var int */
-    public $eventDuration;
+    public ?int $eventDuration = null;
 
-    /** @var bool */
-    public $allDay;
+    public ?bool $allDay = null;
 
-    /** @var bool */
-    public $demoBannerDisabled;
+    public ?bool $demoBannerDisabled = null;
 
-    /** @var bool */
-    public $showMiniCal;
+    public ?bool $showMiniCal = null;
 
-    /** @var bool */
-    public $showDisabledEvents;
+    public ?bool $showDisabledEvents = null;
 
-    /** @var bool */
-    public $quickCreateEnabled;
+    public ?bool $quickCreateEnabled = null;
 
-    /** @var string */
-    public $defaultView;
+    public ?string $defaultView = null;
 
-    /** @var bool */
-    public $guestAccess;
+    public ?bool $guestAccess = null;
 
-    /** @var string */
-    public $descriptionFieldHandle;
+    public ?string $descriptionFieldHandle = null;
 
-    /** @var string */
-    public $locationFieldHandle;
+    public ?string $locationFieldHandle = null;
 
-    /** @var bool */
-    public $authoredEventEditOnly;
+    public ?bool $authoredEventEditOnly = null;
 
-    /** @var string */
-    public $pluginName;
+    public ?string $pluginName = null;
 
-    /** @var int */
-    public $firstDayOfWeek;
+    public ?int $firstDayOfWeek = null;
 
-    /** @var int */
-    public $timeFormat;
+    public null|int|string $timeFormat = null;
 
-    private static $overlapThresholds = [
+    private static array $overlapThresholds = [
         0 => 0,
         1 => 1,
         2 => 2,
@@ -79,7 +63,7 @@ class SettingsModel extends Model
         5 => 5,
     ];
 
-    private static $timeIntervals = [
+    private static array $timeIntervals = [
         5 => 5,
         10 => 10,
         15 => 15,
@@ -87,7 +71,7 @@ class SettingsModel extends Model
         60 => 60,
     ];
 
-    private static $eventDurations = [
+    private static array $eventDurations = [
         30 => 30,
         60 => 60,
         120 => 120,

@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\SiteNotFoundException;
@@ -20,15 +21,16 @@ use craft\helpers\ElementHelper;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as ElementSiteSettingsRecord;
 use Solspace\Calendar\Calendar;
-use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
-use Solspace\Calendar\Library\CalendarPermissionHelper;
-use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Exceptions\DateHelperException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\VersionHelper;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\CalendarRecord;
+use yii\base\Exception;
 use yii\web\HttpException;
 
 class EventsService extends Component
@@ -40,10 +42,8 @@ class EventsService extends Component
 
     /**
      * Returns an event by its ID.
-     *
-     * @return null|ElementInterface|Event
      */
-    public function getEventById(int $eventId, int $siteId = null, bool $includeDisabled = false)
+    public function getEventById(int $eventId, ?int $siteId = null, bool $includeDisabled = false): null|ElementInterface|Event
     {
         $query = Event::find()
             ->setAllowedCalendarsOnly(false)
@@ -60,10 +60,8 @@ class EventsService extends Component
 
     /**
      * Returns an event by its slug.
-     *
-     * @return null|ElementInterface|Event
      */
-    public function getEventBySlug(string $slug, int $siteId = null, bool $includeDisabled = false)
+    public function getEventBySlug(string $slug, ?int $siteId = null, bool $includeDisabled = false): null|ElementInterface|Event
     {
         return Event::find()
             ->slug($slug)
@@ -77,7 +75,7 @@ class EventsService extends Component
     /**
      * @return Event[]
      */
-    public function getEventsByIds(array $eventIds, int $siteId = null): array
+    public function getEventsByIds(array $eventIds, ?int $siteId = null): array
     {
         $query = Event::find()
             ->setAllowedCalendarsOnly(false)
@@ -104,107 +102,137 @@ class EventsService extends Component
         return $indexedById;
     }
 
-    /**
-     * @param mixed $criteria
-     */
-    public function getEventQuery(array $criteria = null): EventQuery
+    public function getEventQuery(?array $criteria = null): ElementQueryInterface
     {
         return Event::buildQuery($criteria);
     }
 
-    public function getSingleEventMetadata(array $ids = null, array $siteIds = null): array
+    public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null): array
     {
+        $isCraft4 = VersionHelper::isCraft4();
+
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
 
-        $subQuery = (new Query())
-            ->select([
-                'elements.[[id]] elementsId',
-                'elements_sites.[[id]] elementsSitesId',
-                'content.[[id]] contentId',
-            ])
-            ->from(ElementRecord::tableName().' elements')
-            ->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]')
-            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]')
-            ->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
-            ->where([
-                'and',
-                'events.[[freq]] IS NULL',
-                'elements.[[dateDeleted]] IS NULL',
-                ['in', 'events.[[id]]', $ids],
-                ['in', 'elements_sites.[[siteId]]', $siteIds],
-            ])
-        ;
+        $subQuerySelect = [];
+        $subQuerySelect[] = 'elements.[[id]] elementsId';
+        $subQuerySelect[] = 'elements_sites.[[id]] elementsSitesId';
 
-        $query = (new Query())
-            ->select([
-                'events.[[id]]',
-                'events.[[startDate]]',
-                'elements_sites.[[siteId]]',
-                'content.[[title]]',
-            ])
-            ->from(['subQuery' => $subQuery])
-            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]')
-            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]')
-            ->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]')
-            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
-        ;
+        if ($isCraft4) {
+            $subQuerySelect[] = 'content.[[id]] contentId';
+        }
+
+        $subQuery = (new Query());
+        $subQuery->select($subQuerySelect);
+        $subQuery->from(ElementRecord::tableName().' elements');
+        $subQuery->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]');
+        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+        $subQuery->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]');
+
+        if ($isCraft4) {
+            $subQuery->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])');
+        }
+
+        $subQuery->where([
+            'and',
+            'events.[[freq]] IS NULL',
+            ['in', 'events.[[id]]', $ids],
+            ['in', 'elements_sites.[[siteId]]', $siteIds],
+        ]);
+
+        $querySelect = [];
+        $querySelect[] = 'events.[[id]]';
+        $querySelect[] = 'events.[[startDate]]';
+        $querySelect[] = 'elements_sites.[[siteId]]';
+        $querySelect[] = 'events.[[id]]';
+
+        if ($isCraft4) {
+            $querySelect[] = 'content.[[title]]';
+        } else {
+            $querySelect[] = 'elements_sites.[[title]]';
+        }
+
+        $query = (new Query());
+        $query->select($querySelect);
+        $query->from(['subQuery' => $subQuery]);
+        $query->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]');
+        $query->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]');
+        $query->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]');
+        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+
+        if ($isCraft4) {
+            $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
+        }
 
         return $query->all();
     }
 
-    public function getRecurringEventMetadata(array $ids = null, array $siteIds = null): array
+    public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null): array
     {
+        $isCraft4 = VersionHelper::isCraft4();
+
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
 
-        $subQuery = (new Query())
-            ->select([
-                'elements.[[id]] elementsId',
-                'elements_sites.[[id]] elementsSitesId',
-                'content.[[id]] contentId',
-            ])
-            ->from(ElementRecord::tableName().' elements')
-            ->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]')
-            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]')
-            ->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])')
-            ->where([
-                'and',
-                'events.[[freq]] IS NOT NULL',
-                'elements.[[dateDeleted]] IS NULL',
-                ['in', 'events.[[id]]', $ids],
-                ['in', 'elements_sites.[[siteId]]', $siteIds],
-            ])
-        ;
+        $subQuerySelect = [];
+        $subQuerySelect[] = 'elements.[[id]] elementsId';
+        $subQuerySelect[] = 'elements_sites.[[id]] elementsSitesId';
 
-        $query = (new Query())
-            ->select([
-                'events.[[id]]',
-                'events.[[calendarId]]',
-                'events.[[startDate]]',
-                'events.[[endDate]]',
-                'events.[[freq]]',
-                'events.[[count]]',
-                'events.[[interval]]',
-                'events.[[byDay]]',
-                'events.[[byMonthDay]]',
-                'events.[[byMonth]]',
-                'events.[[byYearDay]]',
-                'events.[[until]]',
-                'calendars.[[allowRepeatingEvents]]',
-                'elements_sites.[[siteId]]',
-                'content.[[title]]',
-            ])
-            ->from(['subQuery' => $subQuery])
-            ->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]')
-            ->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]')
-            ->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]')
-            ->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]')
-            ->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]')
-        ;
+        if ($isCraft4) {
+            $subQuerySelect[] = 'content.[[id]] contentId';
+        }
+
+        $subQuery = (new Query());
+        $subQuery->select($subQuerySelect);
+        $subQuery->from(ElementRecord::tableName().' elements');
+        $subQuery->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]');
+        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+        $subQuery->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]');
+
+        if ($isCraft4) {
+            $subQuery->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])');
+        }
+
+        $subQuery->where([
+            'and',
+            'events.[[freq]] IS NOT NULL',
+            ['in', 'events.[[id]]', $ids],
+            ['in', 'elements_sites.[[siteId]]', $siteIds],
+        ]);
+
+        $querySelect = [];
+        $querySelect[] = 'events.[[id]]';
+        $querySelect[] = 'events.[[calendarId]]';
+        $querySelect[] = 'events.[[startDate]]';
+        $querySelect[] = 'events.[[endDate]]';
+        $querySelect[] = 'events.[[freq]]';
+        $querySelect[] = 'events.[[count]]';
+        $querySelect[] = 'events.[[interval]]';
+        $querySelect[] = 'events.[[byDay]]';
+        $querySelect[] = 'events.[[byMonthDay]]';
+        $querySelect[] = 'events.[[byMonth]]';
+        $querySelect[] = 'events.[[byYearDay]]';
+        $querySelect[] = 'events.[[until]]';
+        $querySelect[] = 'calendars.[[allowRepeatingEvents]]';
+        $querySelect[] = 'elements_sites.[[siteId]]';
+
+        if ($isCraft4) {
+            $querySelect[] = 'content.[[title]]';
+        } else {
+            $querySelect[] = 'elements_sites.[[title]]';
+        }
+
+        $query = (new Query());
+        $query->select($querySelect);
+        $query->from(['subQuery' => $subQuery]);
+        $query->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]');
+        $query->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]');
+        $query->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]');
+        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+
+        if ($isCraft4) {
+            $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
+        }
 
         return $query->all();
     }
@@ -213,7 +241,7 @@ class EventsService extends Component
     {
         return (new Query())
             ->select(['MAX([[dateUpdated]])'])
-            ->from(Event::TABLE)
+            ->from(Event::tableName())
             ->limit(1)
             ->scalar()
         ;
@@ -223,16 +251,14 @@ class EventsService extends Component
     {
         return (int) (new Query())
             ->select(['COUNT([[id]])'])
-            ->from(Event::TABLE)
+            ->from(Event::tableName())
             ->scalar()
         ;
     }
 
     /**
-     * @param null|bool $validateContent
-     *
      * @throws \Throwable
-     * @throws \yii\base\Exception
+     * @throws Exception
      * @throws \yii\db\Exception
      */
     public function saveEvent(Event $event, bool $validateContent = true, bool $bypassTitleGenerator = false): bool
@@ -342,7 +368,7 @@ class EventsService extends Component
      *
      * @throws DateHelperException
      */
-    public function bumpRecurrenceRule(Event $event, int $amountOfDays, int $amountOfMonths)
+    public function bumpRecurrenceRule(Event $event, int $amountOfDays, int $amountOfMonths): void
     {
         if (!$event->repeats()) {
             return;
@@ -368,37 +394,40 @@ class EventsService extends Component
         $siteId = $event->site->id;
         $primarySiteId = \Craft::$app->sites->getPrimarySite()->id;
 
-        $elementRows = (new Query())
-            ->select(['ei18n.*'])
-            ->from('{{%elements_sites}} ei18n')
-            ->innerJoin(Event::TABLE.' e', 'ei18n.[[elementId]] = e.id')
-            ->where(['ei18n.[[siteId]]' => $primarySiteId])
-            ->all()
-        ;
+        $isCraft4 = VersionHelper::isCraft4();
 
-        $contentRows = (new Query())
-            ->select(['c.*'])
-            ->from('{{%content}} c')
-            ->innerJoin(Event::TABLE.' e', 'c.[[elementId]] = e.id')
-            ->where(['c.[[siteId]]' => $primarySiteId])
-            ->all()
-        ;
+        $elementRows = (new Query());
+        $elementRows->select(['elements_sites.*']);
+        $elementRows->from(Table::ELEMENTS_SITES.' elements_sites');
+        $elementRows->innerJoin(Event::tableName().' e', 'elements_sites.[[elementId]] = e.id');
+        $elementRows->where(['elements_sites.[[siteId]]' => $primarySiteId]);
+        $elementRows->all();
 
         $elementDataById = [];
         foreach ($elementRows as $elementData) {
             $elementDataById[$elementData['elementId']] = $elementData;
         }
 
-        $contentDataById = [];
-        foreach ($contentRows as $content) {
-            unset(
-                $content['siteId'],
-                $content['id'],
-                $content['dateCreated'],
-                $content['dateUpdated'],
-                $content['uid']
-            );
-            $contentDataById[$content['elementId']] = $content;
+        if ($isCraft4) {
+            $contentRows = (new Query());
+            $contentRows->select(['content.*']);
+            $contentRows->from(Table::CONTENT.' content');
+            $contentRows->innerJoin(Event::tableName().' calendar_events', 'content.[[elementId]] = calendar_events.id');
+            $contentRows->where(['content.[[siteId]]' => $primarySiteId]);
+            $contentRows->all();
+
+            $contentDataById = [];
+            foreach ($contentRows as $content) {
+                unset(
+                    $content['siteId'],
+                    $content['id'],
+                    $content['dateCreated'],
+                    $content['dateUpdated'],
+                    $content['uid']
+                );
+
+                $contentDataById[$content['elementId']] = $content;
+            }
         }
 
         foreach ($elementDataById as $elementId => $elementData) {
@@ -407,14 +436,14 @@ class EventsService extends Component
             \Craft::$app->db
                 ->createCommand()
                 ->batchInsert(
-                    '{{%elements_sites}}',
+                    Table::ELEMENTS_SITES,
                     ['elementId', 'siteId', 'slug', 'enabled'],
                     [[$elementId, $siteId, $elementData['slug'], true]]
                 )
                 ->execute()
             ;
 
-            if (isset($contentDataById[$elementId])) {
+            if ($isCraft4 && isset($contentDataById[$elementId])) {
                 $content = $contentDataById[$elementId];
 
                 $columns = array_keys($content);
@@ -425,7 +454,7 @@ class EventsService extends Component
 
                 \Craft::$app->db
                     ->createCommand()
-                    ->batchInsert('{{%content}}', $columns, [$values])
+                    ->batchInsert(Table::CONTENT, $columns, [$values])
                     ->execute()
                 ;
             }
@@ -434,10 +463,7 @@ class EventsService extends Component
         return true;
     }
 
-    /**
-     * @param Event|int $event
-     */
-    public function canEditEvent($event): bool
+    public function canEditEvent(Event|int $event): bool
     {
         /** @var SettingsService $settings */
         $settings = Calendar::getInstance()->settings;
@@ -447,7 +473,7 @@ class EventsService extends Component
         $eventModel = null;
         if ($event instanceof Event) {
             $eventModel = $event;
-        } elseif (is_numeric($event) && (int) $event) {
+        } elseif (is_numeric($event)) {
             $eventModel = $this->getEventById($event);
         }
 
@@ -455,15 +481,13 @@ class EventsService extends Component
             return true;
         }
 
-        return CalendarPermissionHelper::canEditEvent($event);
+        return PermissionHelper::canEditEvent($event);
     }
 
     /**
-     * @param Event|int $event
-     *
      * @throws HttpException
      */
-    public function requireEventEditPermissions($event): bool
+    public function requireEventEditPermissions(Event|int $event): bool
     {
         if (!$this->canEditEvent($event)) {
             throw new HttpException(404);
@@ -478,7 +502,7 @@ class EventsService extends Component
      * @throws \Throwable
      * @throws \yii\db\Exception
      */
-    public function transferUserEvents(CraftDeleteElementEvent $event)
+    public function transferUserEvents(CraftDeleteElementEvent $event): void
     {
         /** @var User $user */
         $user = $event->element;
@@ -490,7 +514,7 @@ class EventsService extends Component
             \Craft::$app->db
                 ->createCommand()
                 ->update(
-                    Event::TABLE,
+                    Event::tableName(),
                     ['authorId' => $user->inheritorOnDelete->id],
                     ['authorId' => $user->id],
                     [],
@@ -501,7 +525,7 @@ class EventsService extends Component
         } else {
             $eventIds = (new Query())
                 ->select(['id'])
-                ->from(Event::TABLE)
+                ->from(Event::tableName())
                 ->where(['authorId' => $user->id])
                 ->column()
             ;
@@ -538,7 +562,7 @@ class EventsService extends Component
     /**
      * @throws SiteNotFoundException
      */
-    private function reindexSearchForAllSites(Event $event)
+    private function reindexSearchForAllSites(Event $event): void
     {
         foreach (\Craft::$app->getSites()->getAllSites() as $site) {
             $event->siteId = $site->id;
@@ -552,7 +576,7 @@ class EventsService extends Component
      *
      * @throws \Throwable
      * @throws ElementNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function _respectNonTranslatableFields(Event $event): bool
     {

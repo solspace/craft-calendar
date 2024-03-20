@@ -3,18 +3,21 @@
 namespace Solspace\Calendar\migrations;
 
 use craft\db\Migration;
+use Solspace\Calendar\Records\CalendarRecord;
 
 /**
  * m180628_091905_MigrateSelectDates migration.
  */
 class m180921_124711_AddIcsTimezoneToCalendar extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
-        $table = $this->getDb()->getTableSchema('{{%calendar_calendars}}');
+        $calendarTable = CalendarRecord::tableName();
+
+        $table = $this->getDb()->getTableSchema($calendarTable);
         if (!$table->getColumn('icsTimezone')) {
             $this->addColumn(
-                '{{%calendar_calendars}}',
+                $calendarTable,
                 'icsTimezone',
                 $this->string(200)->null()
             );
@@ -23,7 +26,7 @@ class m180921_124711_AddIcsTimezoneToCalendar extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m180628_091905_MigrateSelectDates cannot be reverted.\n";
 

@@ -4,6 +4,7 @@ namespace Solspace\Calendar\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
+use craft\db\Table;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 
@@ -12,10 +13,10 @@ use Solspace\Calendar\FieldTypes\EventFieldType;
  */
 class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
 {
-    public function safeUp()
+    public function safeUp(): void
     {
         $this->update(
-            '{{%elements}}',
+            Table::ELEMENTS,
             ['type' => Event::class],
             ['type' => 'Calendar_Event'],
             [],
@@ -23,7 +24,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
         );
 
         $this->update(
-            '{{%fieldlayouts}}',
+            Table::FIELDLAYOUTS,
             ['type' => Event::class],
             ['type' => 'Calendar_Event'],
             [],
@@ -32,7 +33,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
 
         $items = (new Query())
             ->select(['id', 'settings'])
-            ->from('{{%fields}}')
+            ->from(Table::FIELDS)
             ->where(['type' => EventFieldType::class])
             ->all()
         ;
@@ -45,7 +46,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
                 $settings = str_replace('targetLocale', 'targetSiteId', $settings);
 
                 $this->update(
-                    '{{%fields}}',
+                    Table::FIELDS,
                     ['settings' => $settings],
                     ['id' => $id]
                 );
@@ -53,10 +54,10 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
         }
     }
 
-    public function safeDown()
+    public function safeDown(): void
     {
         $this->update(
-            '{{%elements}}',
+            Table::ELEMENTS,
             ['type' => 'Calendar_Event'],
             ['type' => EventFieldType::class],
             [],
@@ -64,7 +65,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
         );
 
         $this->update(
-            '{{%fieldlayouts}}',
+            Table::FIELDLAYOUTS,
             ['type' => 'Calendar_Event'],
             ['type' => EventFieldType::class],
             [],
@@ -73,7 +74,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
 
         $items = (new Query())
             ->select(['id', 'settings'])
-            ->from('{{%fields}}')
+            ->from(Table::FIELDS)
             ->where(['type' => EventFieldType::class])
             ->all()
         ;
@@ -86,7 +87,7 @@ class m180619_120655_MigrateCalendarElementsAndLayouts extends Migration
                 $settings = str_replace('targetSiteId', 'targetLocale', $settings);
 
                 $this->update(
-                    '{{%fields}}',
+                    Table::FIELDS,
                     ['settings' => $settings],
                     ['id' => $id]
                 );

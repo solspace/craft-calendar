@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\migrations;
 
 use craft\db\Migration;
+use craft\db\Table;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 
 /**
@@ -10,10 +11,10 @@ use Solspace\Calendar\FieldTypes\EventFieldType;
  */
 class m180601_113607_MigrateCalendarEventFieldtype extends Migration
 {
-    public function safeUp()
+    public function safeUp(): void
     {
         $this->update(
-            '{{%fields}}',
+            Table::FIELDS,
             ['type' => EventFieldType::class],
             ['type' => 'Calendar_Event'],
             [],
@@ -21,10 +22,10 @@ class m180601_113607_MigrateCalendarEventFieldtype extends Migration
         );
     }
 
-    public function safeDown()
+    public function safeDown(): void
     {
         $this->update(
-            '{{%fields}}',
+            Table::FIELDS,
             ['type' => 'Calendar_Event'],
             ['type' => EventFieldType::class],
             [],

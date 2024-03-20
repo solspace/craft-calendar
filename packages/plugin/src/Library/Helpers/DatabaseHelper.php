@@ -1,8 +1,9 @@
 <?php
 
-namespace Solspace\Calendar\Library;
+namespace Solspace\Calendar\Library\Helpers;
 
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ElementHelper;
 
 class DatabaseHelper
@@ -12,7 +13,7 @@ class DatabaseHelper
     public const OPERATOR_NOT_IN = 'not';
     public const OPERATOR_IN = 'in';
 
-    private static $operatorList = [
+    private static array $operatorList = [
         self::OPERATOR_NOT_EQUAL,
         self::OPERATOR_NOT_IN,
     ];
@@ -20,17 +21,15 @@ class DatabaseHelper
     /**
      * Looks through the database to see if a given $slug has been used
      * If it has - increment it with "-1" and try again, up until 100.
-     *
-     * @param string $slug
      */
-    public static function getSuitableSlug($slug): string
+    public static function getSuitableSlug(string $slug): string
     {
-        $baseSlug = $slug = ElementHelper::normalizeSlug($slug ?? '');
+        $baseSlug = $slug = ElementHelper::normalizeSlug($slug);
         $iterator = 1;
         while ($iterator <= 100) {
             $result = (new Query())
                 ->select(['id'])
-                ->from('{{%elements_sites}}')
+                ->from(Table::ELEMENTS_SITES)
                 ->where(['slug' => $slug])
                 ->scalar()
             ;
@@ -51,11 +50,9 @@ class DatabaseHelper
      *      - "5" would output ["=", "5"]
      *      - "!= string" would output ["!=", "string"].
      *
-     * @param array|string $value
-     *
      * @return array - [operator, value]
      */
-    public static function prepareOperator($value): array
+    public static function prepareOperator(array|string $value): array
     {
         if (\is_array($value)) {
             $firstValue = reset($value);

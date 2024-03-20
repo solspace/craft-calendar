@@ -12,7 +12,7 @@ use Solspace\Calendar\Calendar;
  */
 class m210929_131016_PermissionsMigrationForProjectConfig extends Migration
 {
-    public function safeUp()
+    public function safeUp(): void
     {
         // Establish all the new permissions we should be looking for,
         // mapped to the old permissions users/groups must have to gain the new ones
@@ -69,7 +69,7 @@ class m210929_131016_PermissionsMigrationForProjectConfig extends Migration
         }
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m210929_131016_PermissionsMigrationForProjectConfig cannot be reverted.\n";
 

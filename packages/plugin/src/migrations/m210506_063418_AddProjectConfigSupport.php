@@ -6,13 +6,15 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
+use Solspace\Calendar\Records\CalendarRecord;
+use Solspace\Calendar\Records\CalendarSiteSettingsRecord;
 
 /**
  * m210506_063418_AddProjectConfigSupport migration.
  */
 class m210506_063418_AddProjectConfigSupport extends Migration
 {
-    public function safeUp()
+    public function safeUp(): ?bool
     {
         // Don't make the same config changes twice
         $projectConfig = \Craft::$app->getProjectConfig();
@@ -26,7 +28,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m210506_063418_AddProjectConfigSupport cannot be reverted.\n";
 
@@ -42,6 +44,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
 
     private function buildCalendarConfig(): array
     {
+        $calendarTable = CalendarRecord::tableName();
         $calendars = (new Query())
             ->select(
                 [
@@ -62,7 +65,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
                     '[[calendar]].[[allowRepeatingEvents]]',
                 ]
             )
-            ->from('{{%calendar_calendars}} calendar')
+            ->from($calendarTable.' calendar')
             ->orderBy(['name' => \SORT_ASC])
             ->all()
         ;
@@ -104,7 +107,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
                     '[[calendarSites]].[[template]]',
                 ]
             )
-            ->from('{{%calendar_calendar_sites}} calendarSites')
+            ->from(CalendarSiteSettingsRecord::tableName().' calendarSites')
             ->where(['calendarId' => $calendarId])
             ->orderBy(['id' => \SORT_ASC])
             ->all()
@@ -124,7 +127,7 @@ class m210506_063418_AddProjectConfigSupport extends Migration
         return $config;
     }
 
-    private function buildFieldLayoutConfig($fieldLayoutId)
+    private function buildFieldLayoutConfig($fieldLayoutId): ?array
     {
         if (!$fieldLayoutId) {
             return null;

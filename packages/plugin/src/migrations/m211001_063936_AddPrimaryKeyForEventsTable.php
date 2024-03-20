@@ -3,12 +3,14 @@
 namespace Solspace\Calendar\migrations;
 
 use craft\db\Migration;
+use Solspace\Calendar\Elements\Event;
 
 class m211001_063936_AddPrimaryKeyForEventsTable extends Migration
 {
-    public function safeUp()
+    public function safeUp(): bool
     {
-        $table = $this->getDb()->getTableSchema('{{%calendar_events}}');
+        $eventTable = Event::tableName();
+        $table = $this->getDb()->getTableSchema($eventTable);
 
         $idColumn = $table->getColumn('id');
         if ($idColumn->isPrimaryKey) {
@@ -16,17 +18,18 @@ class m211001_063936_AddPrimaryKeyForEventsTable extends Migration
         }
 
         if (!$table->getColumn('internalId')) {
-            $this->addColumn('{{%calendar_events}}', 'internalId', $this->primaryKey());
+            $this->addColumn($eventTable, 'internalId', $this->primaryKey());
         }
 
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
-        $table = $this->getDb()->getTableSchema('{{%calendar_events}}');
+        $eventTable = Event::tableName();
+        $table = $this->getDb()->getTableSchema($eventTable);
         if ($table->getColumn('internalId')) {
-            $this->dropColumn('{{%calendar_events}}', 'internalId');
+            $this->dropColumn($eventTable, 'internalId');
         }
 
         return true;

@@ -20,23 +20,10 @@ class SelectDateRecord extends ActiveRecord
         return self::TABLE;
     }
 
-    /**
-     * @return array
-     */
-    public function defineIndexes()
+    public function defineIndexes(): array
     {
         return [
             ['columns' => ['eventId', 'date']],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    protected function defineAttributes()
-    {
-        return [
-            'date' => AttributeType::DateTime,
         ];
     }
 }

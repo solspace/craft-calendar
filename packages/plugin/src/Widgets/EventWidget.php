@@ -9,8 +9,7 @@ use Solspace\Calendar\Resources\Bundles\WidgetEventsBundle;
 
 class EventWidget extends AbstractWidget
 {
-    /** @var string */
-    public $title;
+    public ?string $title = null;
 
     public static function displayName(): string
     {

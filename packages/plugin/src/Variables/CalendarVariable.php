@@ -3,17 +3,18 @@
 namespace Solspace\Calendar\Variables;
 
 use Carbon\Carbon;
+use craft\elements\db\ElementQueryInterface;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\DateHelper;
 use Solspace\Calendar\Library\Events\EventDay;
 use Solspace\Calendar\Library\Events\EventHour;
 use Solspace\Calendar\Library\Events\EventMonth;
 use Solspace\Calendar\Library\Events\EventWeek;
 use Solspace\Calendar\Library\Exceptions\AttributeException;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
-use Solspace\Calendar\Library\RecurrenceHelper;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
@@ -32,10 +33,7 @@ class CalendarVariable
         return !$this->settings()->isDemoBannerDisabled();
     }
 
-    /**
-     * @param Event|int $event
-     */
-    public function canEditEvent($event): bool
+    public function canEditEvent(Event|int $event): bool
     {
         return Calendar::getInstance()->events->canEditEvent($event);
     }
@@ -55,10 +53,7 @@ class CalendarVariable
         return Calendar::getInstance()->name;
     }
 
-    /**
-     * @param null|array $attributes
-     */
-    public function events($attributes = null): EventQuery
+    public function events(?array $attributes = null): ElementQueryInterface
     {
         return Event::buildQuery($attributes);
     }
@@ -71,14 +66,11 @@ class CalendarVariable
     /**
      * Get a single event.
      *
-     * @param int|string $id
-     * @param array      $options - [occurrenceDate, occurrenceRangeStart, occurrenceRangeEnd, occurrenceLimit]
-     *
-     * @return null|Event
+     * @param array $options - [occurrenceDate, occurrenceRangeStart, occurrenceRangeEnd, occurrenceLimit]
      *
      * @throws Exception
      */
-    public function event($id, array $options = [])
+    public function event(int|string $id, array $options = []): ?Event
     {
         if ('new' === $id) {
             return Event::create(\Craft::$app->sites->currentSite->id);
@@ -130,10 +122,7 @@ class CalendarVariable
         return Calendar::getInstance()->isPro();
     }
 
-    /**
-     * @return string
-     */
-    public function export(EventQuery $events, array $options = [])
+    public function export(EventQuery $events, array $options = []): void
     {
         Calendar::getInstance()->requirePro();
 
@@ -146,7 +135,7 @@ class CalendarVariable
      *
      * @throws AttributeException
      */
-    public function calendars(array $attributes = null): array
+    public function calendars(?array $attributes = null): array
     {
         return Calendar::getInstance()->calendars->getCalendars($attributes);
     }
@@ -172,11 +161,9 @@ class CalendarVariable
     }
 
     /**
-     * @return null|CalendarModel
-     *
      * @throws AttributeException
      */
-    public function calendar(array $attributes = null)
+    public function calendar(?array $attributes = null): ?CalendarModel
     {
         $calendarService = Calendar::getInstance()->calendars;
         $calendarList = $calendarService->getCalendars($attributes);
@@ -191,28 +178,28 @@ class CalendarVariable
         return $calendarService->getAllAllowedCalendars();
     }
 
-    public function month(array $attributes = null): EventMonth
+    public function month(?array $attributes = null): EventMonth
     {
         $viewDataService = Calendar::getInstance()->viewData;
 
         return $viewDataService->getMonth($attributes);
     }
 
-    public function week(array $attributes = null): EventWeek
+    public function week(?array $attributes = null): EventWeek
     {
         $viewDataService = Calendar::getInstance()->viewData;
 
         return $viewDataService->getWeek($attributes);
     }
 
-    public function day(array $attributes = null): EventDay
+    public function day(?array $attributes = null): EventDay
     {
         $viewDataService = Calendar::getInstance()->viewData;
 
         return $viewDataService->getDay($attributes);
     }
 
-    public function hour(array $attributes = null): EventHour
+    public function hour(?array $attributes = null): EventHour
     {
         $viewDataService = Calendar::getInstance()->viewData;
 
@@ -254,7 +241,7 @@ class CalendarVariable
         return DateHelper::getMonthNames();
     }
 
-    public function getHumanReadableDateFormat(string $format = null): string
+    public function getHumanReadableDateFormat(?string $format = null): string
     {
         if (null === $format) {
             $format = \Craft::$app->locale->getDateFormat('short', 'php');
@@ -263,7 +250,7 @@ class CalendarVariable
         return $this->getHumanReadableDateTimeFormat($format);
     }
 
-    public function getHumanReadableTimeFormat(string $format = null): string
+    public function getHumanReadableTimeFormat(?string $format = null): string
     {
         if (null === $format) {
             $format = \Craft::$app->locale->getTimeFormat('short', 'php');
@@ -272,7 +259,7 @@ class CalendarVariable
         return $this->getHumanReadableDateTimeFormat($format);
     }
 
-    public function getHumanReadableDateTimeFormat(string $format = null): string
+    public function getHumanReadableDateTimeFormat(?string $format = null): string
     {
         if (null === $format) {
             $format = \Craft::$app->locale->getDateTimeFormat('short', 'php');
@@ -298,8 +285,6 @@ class CalendarVariable
      * https://github.com/solspace/craft-calendar/issues/122.
      *
      * Adds the first occurrence date to the list of select dates
-     *
-     * @return Event $event
      *
      * @throws ExitException
      */

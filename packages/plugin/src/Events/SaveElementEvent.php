@@ -7,11 +7,9 @@ use craft\events\CancelableEvent;
 
 class SaveElementEvent extends CancelableEvent
 {
-    /** @var Element */
-    private $element;
+    private ?Element $element = null;
 
-    /** @var bool */
-    private $new;
+    private ?bool $new = null;
 
     /**
      * SaveElementEvent constructor.
