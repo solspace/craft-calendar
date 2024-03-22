@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.0-alpha.1 - 2024-03-22
+
+### Added
+- Added compatibility with Craft 5 beta (in addition to Craft 4.x).
+
 ## 4.0.12 - 2024-03-07
 
 ### Added
