@@ -40,7 +40,7 @@ class SettingsModel extends Model
 
     public ?string $defaultView = null;
 
-    public ?bool $guestAccess = null;
+    public null|array|bool $guestAccess = null;
 
     public ?string $descriptionFieldHandle = null;
 
