@@ -6,9 +6,9 @@ use Carbon\Carbon;
 
 class Occurrences extends CalendarConfiguration
 {
-    protected ?Carbon $rangeStart = null;
+    protected null|Carbon|\DateTime|string $rangeStart = null;
 
-    protected ?Carbon $rangeEnd = null;
+    protected null|Carbon|\DateTime|string $rangeEnd = null;
 
     protected ?int $limit = null;
 
