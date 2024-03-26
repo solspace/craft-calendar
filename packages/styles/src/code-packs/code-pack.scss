@@ -14,13 +14,9 @@
 
     padding: 0 10px;
     margin: 0 0 25px;
-
-    &:last-child {
-      width: 100%;
-    }
   }
 
-  @media only screen and (max-width: 1430px) {
+  @media only screen and (max-width: 800px) {
     > div {
       width: 100%;
     }
@@ -124,7 +120,7 @@ ul.section-structure {
   background: #f4f7fc;
 }
 
-#add-demo-template {
+.add-sample-template {
   position: absolute;
   right: 20px;
   top: 10px;

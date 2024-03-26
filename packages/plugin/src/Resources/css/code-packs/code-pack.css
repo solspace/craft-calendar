@@ -14,10 +14,7 @@
   padding: 0 10px;
   margin: 0 0 25px;
 }
-#components-wrapper > div:last-child {
-  width: 100%;
-}
-@media only screen and (max-width: 1430px) {
+@media only screen and (max-width: 800px) {
   #components-wrapper > div {
     width: 100%;
   }
@@ -97,7 +94,7 @@ ul.directory-structure, ul.section-structure > li > div {
   background: #f4f7fc;
 }
 
-#add-demo-template {
+.add-sample-template {
   position: absolute;
   right: 20px;
   top: 10px;
