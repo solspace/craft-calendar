@@ -6,7 +6,7 @@ class VersionHelper
 {
     public static function isCraft4(): bool
     {
-        return self::compareVersions(\Craft::$app->getVersion(), '5.0.0-beta.1') < 0;
+        return self::compareVersions(\Craft::$app->getVersion(), '5.0.0') < 0;
     }
 
     public static function compareVersions(string $version1, string $version2): int
