@@ -1,16 +1,20 @@
 # Solspace Calendar Changelog
 
-## 5.0.0-alpha.1 - 2024-03-22
+## 5.0.0 - 2024-03-26
 
 ### Added
-- Added compatibility with Craft 5 beta (in addition to Craft 4.x).
+- Added compatibility with Craft 5.x (in addition to Craft 4.x).
+
+### Changed
+- Updated plugin icon.
+- Removed _Resources_ area in control panel.
 
 ## 4.0.12 - 2024-03-07
 
 ### Added
 - Added support for an element integration in Freeform 5. Allows users to create Calendar events from Freeform forms.
 
-### Changes
+### Changed
 - Updated Calendar to use a custom job to resave events instead of using Craft's own resave elements functionality, which seems to cause event dates to jump forward by roughly 6 months to 1 year into the future. Reverted previous changes in 4.0.10 thought to have resolved the issue.
 
 ## 4.0.11 - 2023-11-29
