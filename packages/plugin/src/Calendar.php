@@ -405,7 +405,6 @@ class Calendar extends Plugin
                             'nested' => $editEventsPermissions,
                         ],
                         self::PERMISSION_SETTINGS => ['label' => self::t('Access Settings')],
-                        self::PERMISSION_RESOURCES => ['label' => self::t('Access Resources')],
                     ];
 
                     $event->permissions[] = [

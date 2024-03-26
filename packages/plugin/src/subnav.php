@@ -35,8 +35,4 @@ if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS) && $isAllow
     ];
 }
 
-if (PermissionHelper::checkPermission(Calendar::PERMISSION_RESOURCES)) {
-    $subnav['resources'] = ['label' => Calendar::t('Resources'), 'url' => 'calendar/resources'];
-}
-
 return $subnav;
