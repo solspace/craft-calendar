@@ -32,11 +32,11 @@ class SettingsModel extends Model
 
     public ?bool $demoBannerDisabled = null;
 
-    public ?bool $showMiniCal = null;
+    public null|array|bool $showMiniCal = null;
 
-    public ?bool $showDisabledEvents = null;
+    public null|array|bool $showDisabledEvents = null;
 
-    public ?bool $quickCreateEnabled = null;
+    public null|array|bool $quickCreateEnabled = null;
 
     public ?string $defaultView = null;
 
@@ -46,7 +46,7 @@ class SettingsModel extends Model
 
     public ?string $locationFieldHandle = null;
 
-    public ?bool $authoredEventEditOnly = null;
+    public null|array|bool $authoredEventEditOnly = null;
 
     public ?string $pluginName = null;
 
