@@ -93,7 +93,7 @@ class PermissionHelper
     /**
      * Combines a nested permission with ID.
      */
-    public static function prepareNestedPermission(string $permissionName, int $id): string
+    public static function prepareNestedPermission(string $permissionName, int|string $id): string
     {
         return $permissionName.':'.$id;
     }
