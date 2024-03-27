@@ -1,4 +1,4 @@
-# Solspace Calendar plugin for Craft CMS 4.x
+# Solspace Calendar plugin for Craft CMS 5.x
 
 The most reliable and powerful event management plugin for Craft. Set up beautiful calendars and events in minutes!
 
@@ -11,9 +11,9 @@ Calendar is the most reliable and powerful event management and calendaring plug
 ## Helpful Links
 
 - [Buy Calendar at the Plugin Store](https://plugins.craftcms.com/calendar)
-- [Calendar Documentation](https://docs.solspace.com/craft/calendar/v4/)
+- [Calendar Documentation](https://docs.solspace.com/craft/calendar/v5/)
 - [Report an Issue](https://github.com/solspace/craft-calendar/issues)
 - [Feature Requests](https://github.com/solspace/craft-calendar/discussions)
 - [Ask a Question](https://github.com/solspace/craft-calendar/discussions)
-- [Private Support Ticket](https://docs.solspace.com/craft/calendar/v4/support.html)
+- [Private Support Ticket](https://docs.solspace.com/support/)
 - [Craft Stack Exchange](https://craftcms.stackexchange.com/questions/tagged/solspace)
