@@ -6,7 +6,7 @@ The most reliable and powerful event management plugin for Craft. Set up beautif
 
 ## Overview
 
-Calendar is the most reliable and powerful event management and calendaring plugin on the market for Craft CMS. The intuitive interface allows you to create events with complex recurring event rules and exclusions, while the flexible templating offers a variety of options to satisfy your calendaring needs. Stop wasting valuable development hours wrestling with and tuning Craft Entries or other alternatives. You can trust Calendar (and the team behind it) to deliver the quality and support you expect and deserve.
+Craft CMS users can rely on the Calendar plugin for efficient event management and calendaring. With its own element type, you can easily manage Calendar Events with power and flexibility. Its intuitive interface makes creating events with complex recurring rules and exclusions easy. The flexible templating options ensure you can customize your calendar to meet your needs. You can trust the quality and support provided by the Solspace team.
 
 ## Helpful Links
 
