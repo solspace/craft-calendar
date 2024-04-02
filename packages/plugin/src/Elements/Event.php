@@ -66,7 +66,7 @@ class Event extends Element implements \JsonSerializable
 
     public ?string $name = null;
 
-    public ?int $authorId = null;
+    public null|array|int|string $authorId = null;
 
     public null|Carbon|\DateTime|string $startDate = null;
 
