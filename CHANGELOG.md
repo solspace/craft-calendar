@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.1 - 2024-04-03
+
+### Fixed
+- Fixed several potential issues with queries to better support prefixes and updated variable names to be more meaningful.
+
 ## 5.0.0 - 2024-03-26
 
 ### Added
