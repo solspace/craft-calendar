@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 4.0.13 - 2024-04-04
+
+### Added
+- Added `selectDatesAsDatesLocalized` and `exceptionsLocalized` to aid with timezone issues when using `|date` to translate dates.
+
+### Fixed
+- Fixed a bug where events with "Selected Dates" repeat rules would not always save correctly via a front-end form.
+
 ## 4.0.12 - 2024-03-07
 
 ### Added
