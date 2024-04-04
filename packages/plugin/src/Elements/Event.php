@@ -540,6 +540,19 @@ class Event extends Element implements \JsonSerializable
         return $this->exceptions;
     }
 
+    /**
+     * @return ExceptionModel[]
+     */
+    public function getExceptionsLocalized(): array
+    {
+        $exceptionsLocalized = $this->getExceptions();
+        foreach ($exceptionsLocalized as $exceptionLocalized) {
+            $exceptionLocalized->date = new Carbon($exceptionLocalized->date->toDateTimeString());
+        }
+
+        return $exceptionsLocalized;
+    }
+
     public function setExceptions(array $exceptions): self
     {
         $this->exceptions = [];
@@ -653,6 +666,18 @@ class Event extends Element implements \JsonSerializable
         $dates = [];
         foreach ($models as $model) {
             $dates[] = $model->date;
+        }
+
+        return $dates;
+    }
+
+    public function getSelectDatesAsDatesLocalized(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
+    {
+        $models = $this->getSelectDates($rangeStart, $rangeEnd);
+
+        $dates = [];
+        foreach ($models as $model) {
+            $dates[] = new Carbon($model->date->toDateTimeString());
         }
 
         return $dates;
