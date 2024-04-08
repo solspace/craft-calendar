@@ -1,10 +1,15 @@
 # Solspace Calendar Changelog
 
-## 5.0.3 - Unreleased
+## 5.0.4 - Unreleased
+
+### Changed
+- Updated the `nesbot/carbon` dependency to include `^3.0.0"`.
+- Updated Calendar to support Carbon 3.x.
+
+## 5.0.3 - 2024-04-08
 
 ### Changed
 - Updated the `symfony/property-access`, `symfony/finder`, and `symfony/filesystem` dependencies to include `^7.0`.
-- Updated the `nesbot/carbon` dependency to include `^3.0.0"`.
 
 ## 5.0.2 - 2024-04-04
 
