@@ -175,8 +175,13 @@ class DateHelper
     {
         $lastDay = ($firstDay + 6) % 7;
 
-        $date::setWeekStartsAt($firstDay);
-        $date::setWeekEndsAt($lastDay);
+        if (method_exists('Carbon\Carbon', 'startOfWeek')) {
+            $date->startOfWeek($firstDay);
+            $date->endOfWeek($lastDay);
+        } else {
+            $date::setWeekStartsAt($firstDay);
+            $date::setWeekEndsAt($lastDay);
+        }
     }
 
     /**

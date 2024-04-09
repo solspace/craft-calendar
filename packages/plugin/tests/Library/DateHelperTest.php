@@ -234,12 +234,18 @@ class DateHelperTest extends TestCase
 
         DateHelper::updateWeekStartDate($carbon, $firstDay);
 
-        self::assertSame($carbon->getWeekStartsAt(), $firstDay, sprintf('Expected start day: %d', $firstDay));
-        self::assertSame(
-            Carbon::getWeekEndsAt(),
-            $expectedLastDay,
-            sprintf('Expected last day: %d', $expectedLastDay)
-        );
+        if (method_exists('Carbon\Carbon', 'startOfWeek')) {
+            $lastDay = ($firstDay + 6) % 7;
+
+            $start = $carbon->startOfWeek($firstDay)->dayOfWeek;
+            $end = $carbon->endOfWeek($lastDay)->dayOfWeek;
+        } else {
+            $start = $carbon->getWeekStartsAt();
+            $end = Carbon::getWeekEndsAt();
+        }
+
+        self::assertSame($start, $firstDay, sprintf('Expected start day: %d', $firstDay));
+        self::assertSame($end, $expectedLastDay, sprintf('Expected last day: %d', $expectedLastDay));
     }
 
     public function testSortArrayByDates(): void
