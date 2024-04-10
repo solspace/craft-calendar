@@ -13,9 +13,9 @@
     "php": "^8.0.2|^8.2.0",
     "craftcms/cms": "^4.0.0|^5.0.0",
     "rlanvin/php-rrule": "^1.6.0|^2.0.0",
-    "symfony/property-access": "^2.8|^3.0|^4.0|^5.0|^6.0|^7.0",
-    "symfony/finder": "^2.8|^3.0|^4.0|^5.0|^6.0|^7.0",
-    "symfony/filesystem": "^2.8|^3.0|^4.0|^5.0|^6.0|^7.0",
+    "symfony/property-access": "^5.0|^6.0|^7.0",
+    "symfony/finder": "^5.0|^6.0|^7.0",
+    "symfony/filesystem": "^5.0|^6.0|^7.0",
     "nesbot/carbon": "^1.22.1|^2.19|^3.0.0",
     "composer/class-map-generator": "^1.1"
   },
@@ -45,8 +45,8 @@
     "name": "Calendar",
     "developer": "Solspace",
     "developerUrl": "https://docs.solspace.com/",
-    "documentationUrl": "https://docs.solspace.com/craft/calendar/v4/",
-    "changelogUrl": "https://raw.githubusercontent.com/solspace/craft-calendar/v4/master/CHANGELOG.md",
+    "documentationUrl": "https://docs.solspace.com/craft/calendar/v5/",
+    "changelogUrl": "https://raw.githubusercontent.com/solspace/craft-calendar/v5/CHANGELOG.md",
     "hasSettings": true,
     "hasCpSection": true,
     "hooks": {
