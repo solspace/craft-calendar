@@ -16,7 +16,6 @@ use Solspace\Calendar\Library\Events\EventHour;
 use Solspace\Calendar\Library\Events\EventMonth;
 use Solspace\Calendar\Library\Events\EventWeek;
 use Solspace\Calendar\Library\Exceptions\DurationException;
-use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class ViewDataService extends Component
 {
@@ -26,9 +25,9 @@ class ViewDataService extends Component
     public function getMonth(?array $attributes = null): EventMonth
     {
         $targetDate = $this->getDateFromAttributes($attributes);
-        DateHelper::updateWeekStartDate($targetDate, $this->getFirstDayFromAttributes($attributes));
+        // $firstDay = $this->getFirstDayFromAttributes($attributes);
 
-        $duration = new MonthDuration($targetDate);
+        $duration = new MonthDuration($targetDate/* , [], $firstDay */);
         $eventQuery = $this->getEventQuery($duration, $attributes);
 
         return new EventMonth($duration, $eventQuery);
@@ -40,9 +39,9 @@ class ViewDataService extends Component
     public function getWeek(?array $attributes = null): EventWeek
     {
         $targetDate = $this->getDateFromAttributes($attributes);
-        DateHelper::updateWeekStartDate($targetDate, $this->getFirstDayFromAttributes($attributes));
+        // $firstDay = $this->getFirstDayFromAttributes($attributes);
 
-        $duration = new WeekDuration($targetDate);
+        $duration = new WeekDuration($targetDate/* , [], $firstDay */);
         $eventQuery = $this->getEventQuery($duration, $attributes);
 
         return new EventWeek($duration, $eventQuery);
@@ -107,6 +106,10 @@ class ViewDataService extends Component
 
             try {
                 $carbon = new Carbon($firstDay);
+
+                if (method_exists('Carbon\Carbon', 'startOfWeek')) {
+                    return $carbon->startOfWeek($firstDay)->dayOfWeek;
+                }
 
                 return $carbon->dayOfWeek;
             } catch (\Exception $e) {

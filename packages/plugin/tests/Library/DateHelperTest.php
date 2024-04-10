@@ -232,14 +232,14 @@ class DateHelperTest extends TestCase
     {
         $carbon = new Carbon('UTC');
 
-        DateHelper::updateWeekStartDate($carbon, $firstDay);
-
         if (method_exists('Carbon\Carbon', 'startOfWeek')) {
             $lastDay = ($firstDay + 6) % 7;
 
             $start = $carbon->startOfWeek($firstDay)->dayOfWeek;
             $end = $carbon->endOfWeek($lastDay)->dayOfWeek;
         } else {
+            DateHelper::updateWeekStartDate($carbon, $firstDay);
+
             $start = $carbon->getWeekStartsAt();
             $end = Carbon::getWeekEndsAt();
         }

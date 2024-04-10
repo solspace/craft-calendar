@@ -313,7 +313,16 @@ class EventQuery extends ElementQuery
 
     public function setFirstDay(int $firstDay): self
     {
-        DateHelper::updateWeekStartDate(new Carbon(), $firstDay);
+        $carbon = new Carbon('UTC');
+
+        if (method_exists('Carbon\Carbon', 'startOfWeek')) {
+            $lastDay = ($firstDay + 6) % 7;
+
+            $carbon->startOfWeek($firstDay);
+            $carbon->endOfWeek($lastDay);
+        } else {
+            DateHelper::updateWeekStartDate($carbon, $firstDay);
+        }
 
         return $this;
     }

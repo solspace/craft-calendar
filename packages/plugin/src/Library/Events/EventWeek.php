@@ -21,7 +21,11 @@ class EventWeek extends AbstractEventCollection
     {
         $dayList = [];
 
-        $targetDate = $this->getStartDate();
+        // FIXME - this needs to come from template level or calendar settings
+        $firstDay = 4;
+        $lastDay = ($firstDay + 6) % 7;
+
+        $targetDate = $this->getStartDate()->copy()->startOfWeek($firstDay);
         while ($this->getEndDate()->gt($targetDate)) {
             $dayDuration = new DayDuration($targetDate);
             $eventDay = new EventDay($dayDuration, $eventQuery);

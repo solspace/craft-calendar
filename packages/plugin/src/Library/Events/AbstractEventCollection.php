@@ -23,6 +23,8 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /** @var Event[] */
     protected ?array $events = null;
 
+    // protected ?int $firstDay = null;
+
     private ?array $iterableObject = null;
 
     private ?EventQuery $eventQuery = null;
@@ -41,6 +43,12 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     final public function __construct(AbstractDuration $duration, EventQuery $eventQuery)
     {
         $this->duration = $duration;
+
+        // $firstDay = $duration->getFirstDay();
+        // $lastDay = ($firstDay + 6) % 7;
+        // $this->startDate = $duration->getStartDate()->startOfWeek($firstDay);
+        // $this->endDate = $duration->getEndDate()->copy()->endOfWeek($lastDay);
+
         $this->startDate = $duration->getStartDate();
         $this->endDate = $duration->getEndDate();
         $this->eventQuery = $eventQuery;
@@ -147,6 +155,13 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
 
         return $this->cachedEvents;
     }
+
+    /*
+    final public function getFirstDay(): ?int
+    {
+        return $this->firstDay;
+    }
+    */
 
     final public function getEventCount(): int
     {

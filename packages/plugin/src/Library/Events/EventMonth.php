@@ -18,10 +18,17 @@ class EventMonth extends AbstractEventCollection
     {
         $weekList = [];
 
-        $targetWeekDate = $this->getDate()->copy();
+        // FIXME - this needs to come from template level or calendar settings
+        $firstDay = 4;
+        $lastDay = ($firstDay + 6) % 7;
+
+        $targetWeekDate = $this->getDate()->copy()->startOfWeek($firstDay);
+        // $targetEndDate = $this->getEndDate()->copy()->endOfWeek($lastDay);
+
+        // $targetWeekDate = $this->getDate()->copy();
         $targetEndDate = $this->getEndDate()->copy()->endOfWeek();
         while ($targetEndDate->gt($targetWeekDate)) {
-            $weekDuration = new WeekDuration($targetWeekDate);
+            $weekDuration = new WeekDuration($targetWeekDate/* , [], $firstDay */);
             $eventWeek = new EventWeek($weekDuration, $eventQuery);
 
             $weekList[] = $eventWeek;

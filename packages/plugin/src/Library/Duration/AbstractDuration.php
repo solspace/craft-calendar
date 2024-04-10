@@ -19,6 +19,8 @@ abstract class AbstractDuration implements DurationInterface
     /** @var Event[] */
     protected ?array $events = null;
 
+    // protected ?int $firstDay = null;
+
     /**
      * AbstractDuration constructor.
      *
@@ -26,10 +28,12 @@ abstract class AbstractDuration implements DurationInterface
      *
      * @throws DurationException
      */
-    final public function __construct(Carbon $targetDate, array $events = [])
+    final public function __construct(Carbon $targetDate, array $events = []/* , int $firstDay = null */)
     {
         $this->events = $events;
         $this->init($targetDate);
+        // $this->firstDay = $firstDay;
+        // $this->init($targetDate, $firstDay);
 
         $this->startDateLocalized = new Carbon($this->startDate->toDateTimeString());
         $this->endDateLocalized = new Carbon($this->endDate->toDateTimeString());
@@ -79,8 +83,22 @@ abstract class AbstractDuration implements DurationInterface
         return $date->between($this->startDate, $this->endDate);
     }
 
+    /*
+    public function setFirstDay(int $firstDay): void
+    {
+        $this->firstDay = $firstDay;
+    }
+    */
+
+    /*
+    public function getFirstDay(): ?int
+    {
+        return $this->firstDay;
+    }
+    */
+
     /**
      * Initialize all dates.
      */
-    abstract protected function init(Carbon $targetDate);
+    abstract protected function init(Carbon $targetDate/* , ?int $firstDay */);
 }
