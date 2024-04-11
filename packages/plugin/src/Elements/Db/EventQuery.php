@@ -436,6 +436,11 @@ class EventQuery extends ElementQuery
         return $this->events;
     }
 
+    public function batch($batchSize = null, $db = null): array
+    {
+        return array_chunk($this->all($db), $batchSize);
+    }
+
     public function nth(int $n, ?Connection $db = null): null|array|Model
     {
         $this->all($db);
