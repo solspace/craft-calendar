@@ -57,9 +57,9 @@ class ViewController extends BaseController
 
     public function actionTargetTime(
         ?string $view = null,
-        ?int $year = null,
-        ?int $month = null,
-        ?int $day = null
+        ?string $year = null,
+        ?string $month = null,
+        ?string $day = null
     ): Response {
         $view ??= Calendar::VIEW_MONTH;
         $calendarView = $view;

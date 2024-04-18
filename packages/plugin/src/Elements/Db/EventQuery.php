@@ -311,10 +311,11 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
+    /**
+     * @deprecated since Carbon 3.0.0, this is no longer possible
+     */
     public function setFirstDay(int $firstDay): self
     {
-        DateHelper::updateWeekStartDate(new Carbon(), $firstDay);
-
         return $this;
     }
 
