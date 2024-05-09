@@ -4,6 +4,12 @@
 {% set selectedSubnavItem = currentView %}
 {% set title = currentView|ucfirst|t('calendar') %}
 
+{% set crumbs = [
+    { label: craft.calendar.name, url: url("calendar") },
+    { label: "Events"|t("calendar"), url: url("calendar/events") },
+    { label: title, url: url("calendar/view/" ~ selectedSubnavItem) },
+] %}
+
 {% block content %}
 
     {% set showBanner = craft.calendar.showDemoTemplateBanner %}

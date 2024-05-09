@@ -3,6 +3,11 @@
 {% set title = "Events"|t('calendar') %}
 {% set selectedSubnavItem = 'events' %}
 
+{% set crumbs = [
+    { label: craft.calendar.name, url: url("calendar") },
+    { label: "Events"|t("calendar"), url: url("calendar/events") },
+] %}
+
 {% do view.registerTranslations('calendar', [
     'New Event',
     'New {calendar} Event',

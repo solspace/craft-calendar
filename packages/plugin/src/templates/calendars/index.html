@@ -3,6 +3,11 @@
 {% set selectedSubnavItem = "calendars" %}
 {% set title = "Calendars"|t('calendar') %}
 
+{% set crumbs = [
+    { label: craft.calendar.name, url: url("calendar") },
+    { label: "Calendars"|t("calendar"), url: url("calendar/calendars") },
+] %}
+
 {% set content %}
     <div id="nocalendars"{% if calendars %} class="hidden"{% endif %}>
         <p>{{ "No calendars exist yet."|t('calendar') }}</p>

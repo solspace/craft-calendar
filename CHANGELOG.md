@@ -1,10 +1,17 @@
 # Solspace Calendar Changelog
 
-## 5.0.4 - Unreleased
+## 5.0.4 - 2024-05-09
+
+### Added
+- Added favicons to the demo templates.
 
 ### Changed
 - Updated the `nesbot/carbon` dependency to include `^3.0.0"`.
 - Updated Calendar to support Carbon 3.x.
+
+### Fixed
+- Fixed a bug where reoccurring events were not returning when using batch calls.
+- Fixed a number of breadcrumbs throughout Calendar control panel pages.
 
 ## 5.0.3 - 2024-04-08
 
