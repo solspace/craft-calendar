@@ -175,8 +175,8 @@ class DateHelper
     {
         $lastDay = ($firstDay + 6) % 7;
 
-        $date::setWeekStartsAt($firstDay);
-        $date::setWeekEndsAt($lastDay);
+        // $date::setWeekStartsAt($firstDay);
+        // $date::setWeekEndsAt($lastDay);
     }
 
     /**
