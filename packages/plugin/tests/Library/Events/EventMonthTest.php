@@ -5,6 +5,7 @@ namespace Solspace\Tests\Unit\Calendar\Library\Events;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Library\Configurations\DurationConfiguration;
 use Solspace\Calendar\Library\Duration\DayDuration;
 use Solspace\Calendar\Library\Events\EventMonth;
 use Solspace\Calendar\Library\Exceptions\DurationException;
@@ -36,9 +37,10 @@ class EventMonthTest extends TestCase
         string $expectedFirstDate,
         string $expectedLastDate
     ): void {
+        $config = $this->createMock(DurationConfiguration::class);
         $targetDayDate = new Carbon('2016-04-01', 'UTC');
 
-        $dayDuration = new DayDuration($targetDayDate);
+        $dayDuration = new DayDuration($targetDayDate, $config);
         $day = new EventMonth($dayDuration, $this->createMock(EventQuery::class));
 
         $dateRange = $day->getDateRange($before, $after);

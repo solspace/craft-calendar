@@ -3,7 +3,7 @@
 namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\Configurations\DurationConfiguration;
 use Solspace\Calendar\Library\Exceptions\DurationException;
 
 abstract class AbstractDuration implements DurationInterface
@@ -16,19 +16,13 @@ abstract class AbstractDuration implements DurationInterface
 
     protected ?Carbon $endDateLocalized = null;
 
-    /** @var Event[] */
-    protected ?array $events = null;
+    protected DurationConfiguration $config;
 
-    /**
-     * AbstractDuration constructor.
-     *
-     * @param Event[] $events
-     *
-     * @throws DurationException
-     */
-    final public function __construct(Carbon $targetDate, array $events = [])
-    {
-        $this->events = $events;
+    final public function __construct(
+        Carbon $targetDate,
+        array|DurationConfiguration $config = [],
+    ) {
+        $this->config = \is_array($config) ? new DurationConfiguration($config) : $config;
         $this->init($targetDate);
 
         $this->startDateLocalized = new Carbon($this->startDate->toDateTimeString());
@@ -64,19 +58,16 @@ abstract class AbstractDuration implements DurationInterface
     }
 
     /**
-     * @return Event[]
-     */
-    public function getEvents(): array
-    {
-        return $this->events;
-    }
-
-    /**
      * Checks if the given $date is contained in between $durationStartDate and $durationEndDate.
      */
     public function containsDate(Carbon $date): bool
     {
         return $date->between($this->startDate, $this->endDate);
+    }
+
+    public function getConfig(): ?DurationConfiguration
+    {
+        return $this->config;
     }
 
     /**

@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
 use craft\events\MultiElementActionEvent;
 use craft\services\Elements;
+use Solspace\Calendar\Console\Controllers\Fix\TitleFixMigration;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\VersionHelper;
@@ -60,6 +61,10 @@ class EventsController extends Controller
 
     public function options($actionID): array
     {
+        if ('fix-titles' === $actionID) {
+            return [];
+        }
+
         $options = parent::options($actionID);
         $options[] = 'elementId';
         $options[] = 'uid';
@@ -71,6 +76,18 @@ class EventsController extends Controller
         $options[] = 'updateSearchIndex';
 
         return $options;
+    }
+
+    public function actionFixTitles()
+    {
+        $this->stdout('Fixing event titles...'.\PHP_EOL, Console::FG_YELLOW);
+
+        $migration = new TitleFixMigration();
+        $migration->run();
+
+        $this->stdout('Event titles fixed.'.\PHP_EOL, Console::FG_YELLOW);
+
+        return ExitCode::OK;
     }
 
     public function actionResave(): int

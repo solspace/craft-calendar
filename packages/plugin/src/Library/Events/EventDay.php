@@ -89,7 +89,7 @@ class EventDay extends AbstractEventCollection
         foreach (range(0, 23) as $hour) {
             $currentTime->hour = $hour;
 
-            $hourDuration = new HourDuration($currentTime);
+            $hourDuration = new HourDuration($currentTime, $this->getDuration()->getConfig());
             $eventHour = new EventHour($hourDuration, $eventQuery);
 
             $hourList[] = $eventHour;

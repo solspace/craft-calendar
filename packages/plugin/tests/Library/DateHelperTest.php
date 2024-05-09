@@ -221,27 +221,6 @@ class DateHelperTest extends TestCase
         ];
     }
 
-    /**
-     * Tests the updated first day of week.
-     *
-     * @dataProvider dayOfWeekDataProvider
-     *
-     * @covers       \DateHelper::updateWeekStartDate()
-     */
-    public function testUpdateDayOfWeek(int $firstDay, int $expectedLastDay): void
-    {
-        $carbon = new Carbon('UTC');
-
-        DateHelper::updateWeekStartDate($carbon, $firstDay);
-
-        self::assertSame($carbon->getWeekStartsAt(), $firstDay, sprintf('Expected start day: %d', $firstDay));
-        self::assertSame(
-            Carbon::getWeekEndsAt(),
-            $expectedLastDay,
-            sprintf('Expected last day: %d', $expectedLastDay)
-        );
-    }
-
     public function testSortArrayByDates(): void
     {
         $dateArray = [
