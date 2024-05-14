@@ -4,6 +4,7 @@
 
 ### Added
 - Added favicons to the demo templates.
+- Added `calendar/events/fix-titles` CLI command to fix the migration of Element titles for sites that have upgraded from Craft 4 to Craft 5. This command needs to be run once after the migration.
 
 ### Changed
 - Updated the `nesbot/carbon` dependency to include `^3.0.0"`.
