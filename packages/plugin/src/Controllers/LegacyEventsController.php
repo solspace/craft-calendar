@@ -32,8 +32,6 @@ class LegacyEventsController extends EventsController
     /**
      * Saves an event.
      *
-     * @return Response
-     *
      * @throws EventException
      * @throws HttpException
      * @throws \Throwable
@@ -41,6 +39,8 @@ class LegacyEventsController extends EventsController
      * @throws \yii\base\Exception
      * @throws InvalidConfigException
      * @throws BadRequestHttpException
+     *
+     * @return Response
      */
     public function actionSaveEvent()
     {
@@ -209,9 +209,9 @@ class LegacyEventsController extends EventsController
     /**
      * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
      *
-     * @return null|bool|bool[]
-     *
      * @throws ForbiddenHttpException
+     *
+     * @return null|bool|bool[]
      *
      * @since 3.4.0
      */

@@ -269,5 +269,7 @@ if (class_exists('craft\feedme\base\Element')) {
         }
     }
 } else {
-    class CalendarIntegration {}
+    class CalendarIntegration
+    {
+    }
 }

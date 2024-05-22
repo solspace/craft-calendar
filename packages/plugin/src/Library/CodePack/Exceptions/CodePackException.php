@@ -2,4 +2,6 @@
 
 namespace Solspace\Calendar\Library\CodePack\Exceptions;
 
-class CodePackException extends \Exception {}
+class CodePackException extends \Exception
+{
+}

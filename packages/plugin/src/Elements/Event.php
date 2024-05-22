@@ -459,9 +459,9 @@ class Event extends Element implements \JsonSerializable
     /**
      * Returns the element's CP edit URL.
      *
-     * @return false|string
-     *
      * @throws InvalidConfigException
+     *
+     * @return false|string
      */
     public function getCpEditUrl(): ?string
     {
@@ -1200,10 +1200,10 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @return Event[]
-     *
      * @throws ConfigurationException
      * @throws \ReflectionException
+     *
+     * @return Event[]
      */
     public function getOccurrences(array $config = null): array
     {

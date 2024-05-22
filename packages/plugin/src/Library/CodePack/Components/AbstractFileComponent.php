@@ -53,7 +53,9 @@ abstract class AbstractFileComponent implements ComponentInterface
      * @param string      $newFilePath
      * @param null|string $prefix
      */
-    public function postFileCopyAction($newFilePath, $prefix = null) {}
+    public function postFileCopyAction($newFilePath, $prefix = null)
+    {
+    }
 
     /**
      * @return FileObject
@@ -77,9 +79,9 @@ abstract class AbstractFileComponent implements ComponentInterface
     }
 
     /**
-     * @return FileObject
-     *
      * @throws CodePackException
+     *
+     * @return FileObject
      */
     private function locateFiles()
     {

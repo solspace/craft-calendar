@@ -74,9 +74,9 @@ class CalendarVariable
      * @param int|string $id
      * @param array      $options - [occurrenceDate, occurrenceRangeStart, occurrenceRangeEnd, occurrenceLimit]
      *
-     * @return null|Event
-     *
      * @throws Exception
+     *
+     * @return null|Event
      */
     public function event($id, array $options = [])
     {
@@ -142,9 +142,9 @@ class CalendarVariable
     }
 
     /**
-     * @return CalendarModel[]
-     *
      * @throws AttributeException
+     *
+     * @return CalendarModel[]
      */
     public function calendars(array $attributes = null): array
     {
@@ -172,9 +172,9 @@ class CalendarVariable
     }
 
     /**
-     * @return null|CalendarModel
-     *
      * @throws AttributeException
+     *
+     * @return null|CalendarModel
      */
     public function calendar(array $attributes = null)
     {
@@ -299,9 +299,9 @@ class CalendarVariable
      *
      * Adds the first occurrence date to the list of select dates
      *
-     * @return Event $event
-     *
      * @throws ExitException
+     *
+     * @return Event $event
      */
     public function addFirstOccurrenceDate(Event $event): Event
     {

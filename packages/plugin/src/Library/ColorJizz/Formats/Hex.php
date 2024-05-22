@@ -390,9 +390,9 @@ class Hex extends ColorJizz
      *
      * @param string $str Can be a color name or string hex value (i.e. "FFFFFF")
      *
-     * @return Hex the color in Hex format
-     *
      * @throws InvalidArgumentException
+     *
+     * @return Hex the color in Hex format
      */
     public static function fromString($str)
     {

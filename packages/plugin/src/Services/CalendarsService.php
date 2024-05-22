@@ -319,10 +319,10 @@ class CalendarsService extends Component
     /**
      * @param int $calendarId
      *
-     * @return bool
-     *
      * @throws \Exception
      * @throws \Throwable
+     *
+     * @return bool
      */
     public function deleteCalendarById($calendarId)
     {
@@ -368,9 +368,9 @@ class CalendarsService extends Component
     /**
      * @param null|array $attributes
      *
-     * @return CalendarModel[]
-     *
      * @throws AttributeException
+     *
+     * @return CalendarModel[]
      */
     public function getCalendars($attributes = null): array
     {

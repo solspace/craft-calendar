@@ -2,4 +2,6 @@
 
 namespace Solspace\Calendar\Library\Exceptions;
 
-class EventException extends CalendarException {}
+class EventException extends CalendarException
+{
+}

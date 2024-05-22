@@ -187,9 +187,9 @@ class DateHelper
     /**
      * Shifts BYDAY rule forward or backward by a given amount of days.
      *
-     * @return null|string
-     *
      * @throws DateHelperException
+     *
+     * @return null|string
      */
     public static function shiftByDays(string $dayList = null, int $shiftAmount)
     {
