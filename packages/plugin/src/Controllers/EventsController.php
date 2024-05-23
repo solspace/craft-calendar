@@ -566,7 +566,7 @@ class EventsController extends BaseController
             'url' => UrlHelper::cpUrl('calendar/events'),
         ];
 
-        if ($isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
+        if ($isCraft5) {
             $calendarMenuItems = [];
 
             foreach ($this->getCalendarService()->getAllCalendars() as $cal) {
