@@ -9,10 +9,10 @@ use craft\helpers\Queue;
 use craft\helpers\StringHelper as CraftStringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Field;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Jobs\UpdateEventsUriJob;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
@@ -272,11 +272,15 @@ class CalendarsController extends BaseController
         // Save it
         if ($this->getCalendarService()->saveCalendar($calendar)) {
             if ($hasUriFormatChanges) {
-                foreach ($calendar->siteSettings as $siteSetting) {
-                    Queue::push(new UpdateEventsUriJob([
-                        'calendarId' => $calendar->id,
-                        'siteId' => $siteSetting->siteId,
-                        'uriFormat' => $siteSetting->uriFormat,
+                $events = Calendar::getInstance()->events->getEventQuery([
+                    'calendarId' => $calendar->id,
+                ])->all();
+
+                foreach ($events as $event) {
+                    Queue::push(new UpdateElementSlugsAndUris([
+                        'elementId' => $event->id,
+                        'elementType' => $event::class,
+                        'updateDescendants' => false,
                     ]));
                 }
             }
