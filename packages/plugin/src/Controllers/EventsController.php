@@ -602,7 +602,7 @@ class EventsController extends BaseController
         } else {
             $crumbs[] = [
                 'label' => Calendar::t($event->calendar->name),
-                'url' => UrlHelper::cpUrl('calendar/calendars/'.$event->calendar->handle),
+                'url' => UrlHelper::cpUrl('calendar/events/?source=calendar%3A'.$event->calendar->id),
             ];
         }
 
@@ -618,7 +618,7 @@ class EventsController extends BaseController
             } else {
                 $crumbs[] = [
                     'label' => Calendar::t($title),
-                    'url' => UrlHelper::cpUrl('calendar/calendars/'.$event->id),
+                    'url' => UrlHelper::cpUrl('calendar/events/'.$event->id),
                     'current' => true,
                 ];
             }
