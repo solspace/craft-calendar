@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
+use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -33,7 +34,6 @@ use Solspace\Calendar\Library\Exceptions\ConfigurationException;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
-use Solspace\Calendar\Library\Helpers\VersionHelper;
 use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
 use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Models\CalendarModel;
@@ -269,7 +269,7 @@ class Event extends Element implements \JsonSerializable
 
     public static function hasContent(): bool
     {
-        return VersionHelper::isCraft4();
+        return version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
     }
 
     public static function isLocalized(): bool
@@ -409,6 +409,20 @@ class Event extends Element implements \JsonSerializable
     public function isEditable(): bool
     {
         return PermissionHelper::canEditEvent($this);
+    }
+
+    public function can(string $permission): bool
+    {
+        $currentUser = \Craft::$app->getUser()->getIdentity();
+        if ($currentUser->admin) {
+            return true;
+        }
+
+        if (!isset($this->id)) {
+            return false;
+        }
+
+        return \Craft::$app->getUserPermissions()->doesUserHavePermission($currentUser->id, $permission);
     }
 
     public function canView(User $user): bool
@@ -1687,6 +1701,69 @@ class Event extends Element implements \JsonSerializable
                 ],
             ],
         ];
+    }
+
+    protected function safeActionMenuItems(): array
+    {
+        // Hide the edit option since we're already on the edit screen
+        return [];
+        /*
+        if (!$this->id) {
+            return parent::safeActionMenuItems();
+        }
+
+        $safeActionMenuItems = [];
+
+        if ($this->can('view') && $this->isEditable()) {
+            $editId = sprintf('action-edit-%s', mt_rand());
+
+            $safeActionMenuItems[] = [
+                'id' => $editId,
+                'icon' => 'edit',
+                'label' => \Craft::t('app', 'Edit {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ];
+        }
+
+        return $safeActionMenuItems;
+        */
+    }
+
+    protected function destructiveActionMenuItems(): array
+    {
+        if (!$this->id) {
+            return parent::destructiveActionMenuItems();
+        }
+
+        $destructiveItems = [];
+
+        $siteHandle = $this->getSite()->handle;
+
+        $redirectUrl = UrlHelper::cpUrl('calendar/events?site='.$siteHandle.'&source=calendar:'.$this->calendarId);
+
+        if ($this->can('delete') && $this->isEditable()) {
+            $destructiveItems[] = [
+                'icon' => 'trash',
+                'label' => \Craft::t('app', 'Delete {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+                'action' => 'calendar/events/delete-event',
+                'params' => [
+                    'siteId' => $this->siteId,
+                    'id' => $this->getCanonicalId(),
+                    'eventId' => $this->getCanonicalId(),
+                    'elementId' => $this->getCanonicalId(),
+                ],
+                'redirect' => $redirectUrl,
+                'confirm' => \Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+                'destructive' => false,
+            ];
+        }
+
+        return $destructiveItems;
     }
 
     private function hydrateSelectDates(): void

@@ -10,6 +10,8 @@ use yii\web\Response;
 
 class SettingsController extends BaseController
 {
+    private bool $isCraft5 = true;
+
     /**
      * Make sure this controller requires a logged in member.
      */
@@ -20,6 +22,8 @@ class SettingsController extends BaseController
         if (!\Craft::$app->request->getIsConsoleRequest()) {
             $this->requireLogin();
         }
+
+        $this->isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');
     }
 
     /**
@@ -58,7 +62,7 @@ class SettingsController extends BaseController
      */
     public function actionGeneral(): Response
     {
-        return $this->provideTemplate('general');
+        return $this->provideTemplate('general', ['label' => 'General Settings']);
     }
 
     /**
@@ -66,7 +70,7 @@ class SettingsController extends BaseController
      */
     public function actionEvents(): Response
     {
-        return $this->provideTemplate('events');
+        return $this->provideTemplate('events', ['label' => 'Event Settings']);
     }
 
     /**
@@ -103,6 +107,7 @@ class SettingsController extends BaseController
         return $this->provideTemplate(
             'guest_access',
             [
+                'label' => 'Guest Access',
                 'guestAccess' => $guestAccess,
                 'calendars' => $calendarOptions,
             ]
@@ -151,10 +156,30 @@ class SettingsController extends BaseController
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
 
+        $label = !empty($variables['label']) ? $variables['label'] : ucwords($template);
+
+        $crumbs = [
+            [
+                'label' => Calendar::t(Calendar::getInstance()->name),
+                'url' => UrlHelper::cpUrl('calendar'),
+            ],
+            [
+                'label' => Calendar::t('Settings'),
+                'url' => UrlHelper::cpUrl('calendar/settings'),
+            ],
+            [
+                'label' => Calendar::t($label),
+                'url' => UrlHelper::cpUrl('calendar/settings/'.$template),
+                'current' => true,
+            ],
+        ];
+
         return $this->renderTemplate(
             'calendar/settings/_'.$template,
             array_merge(
                 [
+                    'isCraft5' => $this->isCraft5,
+                    'crumbs' => $crumbs,
                     'settings' => $this->getSettingsService()->getSettingsModel(),
                 ],
                 $variables

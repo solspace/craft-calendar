@@ -4,9 +4,11 @@ namespace Solspace\Calendar\Controllers;
 
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper as CraftStringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
@@ -15,6 +17,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\SitesHelper;
 use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
@@ -29,6 +32,8 @@ use yii\web\Response;
 
 class CalendarsController extends BaseController
 {
+    private bool $isCraft5 = true;
+
     /**
      * @throws ForbiddenHttpException
      */
@@ -43,6 +48,8 @@ class CalendarsController extends BaseController
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
 
+        $this->isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');
+
         parent::init();
     }
 
@@ -50,9 +57,23 @@ class CalendarsController extends BaseController
     {
         \Craft::$app->view->registerAssetBundle(CalendarIndexBundle::class);
 
+        $crumbs = [
+            [
+                'label' => Calendar::t(Calendar::getInstance()->name),
+                'url' => UrlHelper::cpUrl('calendar'),
+            ],
+            [
+                'label' => Calendar::t('Calendars'),
+                'url' => UrlHelper::cpUrl('calendar/calendars'),
+                'current' => true,
+            ],
+        ];
+
         return $this->renderTemplate(
             'calendar/calendars',
             [
+                'isCraft5' => $this->isCraft5,
+                'crumbs' => $crumbs,
                 'calendars' => $this->getCalendarService()->getAllCalendars(),
             ]
         );
@@ -391,9 +412,52 @@ class CalendarsController extends BaseController
 
         \Craft::$app->view->registerAssetBundle(CalendarEditBundle::class);
 
+        $site = SitesHelper::getCurrentCpSite();
+        $sites = SitesHelper::getEditableSites();
+
+        $crumbs = [];
+
+        if ($this->isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
+            $crumbs[] = [
+                'id' => 'site-crumb',
+                'icon' => Cp::earthIcon(),
+                'label' => \Craft::t('site', $site->name),
+                'menu' => [
+                    'label' => \Craft::t('site', 'Select site'),
+                    'items' => Cp::siteMenuItems($sites, $site),
+                ],
+            ];
+        }
+
+        $crumbs[] = [
+            'label' => Calendar::t(Calendar::getInstance()->name),
+            'url' => UrlHelper::cpUrl('calendar'),
+        ];
+
+        $crumbs[] = [
+            'label' => Calendar::t('Calendars'),
+            'url' => UrlHelper::cpUrl('calendar/calendars'),
+        ];
+
+        if ($calendar->name === $title) {
+            $crumbs[] = [
+                'label' => Calendar::t($calendar->name),
+                'url' => UrlHelper::cpUrl('calendar/calendars/'.$calendar->handle),
+                'current' => true,
+            ];
+        } else {
+            $crumbs[] = [
+                'label' => Calendar::t('Create a new calendar'),
+                'url' => UrlHelper::cpUrl('calendar/calendars/new'),
+                'current' => true,
+            ];
+        }
+
         return $this->renderTemplate(
             'calendar/calendars/_edit',
             [
+                'isCraft5' => $this->isCraft5,
+                'crumbs' => $crumbs,
                 'title' => $title,
                 'calendar' => $calendar,
                 'continueEditingUrl' => 'calendar/calendars/{handle}',

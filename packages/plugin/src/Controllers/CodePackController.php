@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Controllers;
 
+use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\CodePack\CodePack;
 use Solspace\Calendar\Library\CodePack\Exceptions\FileObject\FileObjectException;
@@ -14,12 +15,16 @@ class CodePackController extends BaseController
 {
     public const FLASH_VAR_KEY = 'codepack_prefix';
 
+    private bool $isCraft5 = true;
+
     /**
      * @throws ForbiddenHttpException
      */
     public function init(): void
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
+
+        $this->isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');
 
         parent::init();
     }
@@ -32,6 +37,22 @@ class CodePackController extends BaseController
     {
         $this->view->registerAssetBundle(CodePackBundle::class);
 
+        $crumbs = [
+            [
+                'label' => Calendar::t(Calendar::getInstance()->name),
+                'url' => UrlHelper::cpUrl('calendar'),
+            ],
+            [
+                'label' => Calendar::t('Settings'),
+                'url' => UrlHelper::cpUrl('calendar/settings'),
+            ],
+            [
+                'label' => Calendar::t('Demo Templates'),
+                'url' => UrlHelper::cpUrl('calendar/settings/demo-templates'),
+                'current' => true,
+            ],
+        ];
+
         $codePack = $this->getCodePack();
 
         $postInstallPrefix = \Craft::$app->session->getFlash(self::FLASH_VAR_KEY);
@@ -39,6 +60,8 @@ class CodePackController extends BaseController
             return $this->renderTemplate(
                 'calendar/codepack/_post_install',
                 [
+                    'isCraft5' => $this->isCraft5,
+                    'crumbs' => $crumbs,
                     'codePack' => $codePack,
                     'prefix' => CodePack::getCleanPrefix($postInstallPrefix),
                 ]
@@ -48,6 +71,8 @@ class CodePackController extends BaseController
         return $this->renderTemplate(
             'calendar/codepack',
             [
+                'isCraft5' => $this->isCraft5,
+                'crumbs' => $crumbs,
                 'codePack' => $codePack,
                 'prefix' => 'calendar-demo',
             ]
@@ -61,6 +86,22 @@ class CodePackController extends BaseController
     {
         $this->requirePostRequest();
 
+        $crumbs = [
+            [
+                'label' => Calendar::t(Calendar::getInstance()->name),
+                'url' => UrlHelper::cpUrl('calendar'),
+            ],
+            [
+                'label' => Calendar::t('Settings'),
+                'url' => UrlHelper::cpUrl('calendar/settings'),
+            ],
+            [
+                'label' => Calendar::t('Demo Templates'),
+                'url' => UrlHelper::cpUrl('calendar/settings/demo-templates'),
+                'current' => true,
+            ],
+        ];
+
         $codePack = $this->getCodePack();
         $prefix = \Craft::$app->request->post('prefix');
 
@@ -73,6 +114,8 @@ class CodePackController extends BaseController
             return $this->renderTemplate(
                 'calendar/codepack',
                 [
+                    'isCraft5' => $this->isCraft5,
+                    'crumbs' => $crumbs,
                     'codePack' => $codePack,
                     'prefix' => $prefix,
                     'exceptionMessage' => $exception->getMessage(),
