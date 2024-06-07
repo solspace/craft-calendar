@@ -29,7 +29,7 @@ class CalendarSiteSettingsModel extends Model
 
     private ?CalendarModel $calendar = null;
 
-    public function getSite(): Site
+    public function getSite(): ?Site
     {
         return \Craft::$app->sites->getSiteById($this->siteId);
     }
