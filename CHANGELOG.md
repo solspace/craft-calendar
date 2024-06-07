@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 4.0.14 - 2024-06-07
+
+### Changed
+- Replaced the custom `UpdateEventsUriJob` with Craft's `UpdateElementSlugsAndUris` job to correctly parse URI parameters.
+
+### Fixed
+- Fixed a bug where reoccurring events were not returning when using batch calls.
+
 ## 4.0.13 - 2024-04-04
 
 ### Added
@@ -13,7 +21,7 @@
 ### Added
 - Added support for an element integration in Freeform 5. Allows users to create Calendar events from Freeform forms.
 
-### Changes
+### Changed
 - Updated Calendar to use a custom job to resave events instead of using Craft's own resave elements functionality, which seems to cause event dates to jump forward by roughly 6 months to 1 year into the future. Reverted previous changes in 4.0.10 thought to have resolved the issue.
 
 ## 4.0.11 - 2023-11-29
