@@ -3,14 +3,6 @@
 
 {% set selectedSubnavItem = "calendars" %}
 {% set saveShortcutRedirect = 'calendar/calendars/{handle}' %}
-{% set calendarName = calendar.name ? calendar.name : "Create New" %}
-{% set calendarHandle = calendar.handle ? calendar.handle : "new" %}
-
-{% set crumbs = [
-    { label: craft.calendar.name, url: url("calendar") },
-    { label: "Calendars"|t("calendar"), url: url("calendar/calendars") },
-    { label: calendarName, url: url("calendar/calendars/" ~ calendarHandle) },
-] %}
 
 {% set fullPageForm = true %}
 
