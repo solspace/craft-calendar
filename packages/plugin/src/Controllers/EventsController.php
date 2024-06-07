@@ -9,6 +9,7 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementEvent;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -17,6 +18,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Exceptions\EventException;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Helpers\SitesHelper;
 use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
 use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
@@ -43,9 +45,25 @@ class EventsController extends BaseController
 
         \Craft::$app->view->registerAssetBundle(EventIndexBundle::class);
 
+        $isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');
+
+        $crumbs = [
+            [
+                'label' => Calendar::t(Calendar::getInstance()->name),
+                'url' => UrlHelper::cpUrl('calendar'),
+            ],
+            [
+                'label' => Calendar::t('Events'),
+                'url' => UrlHelper::cpUrl('calendar/events'),
+                'current' => true,
+            ],
+        ];
+
         return $this->renderTemplate(
             'calendar/events/_index',
             [
+                'isCraft5' => $isCraft5,
+                'crumbs' => $crumbs,
                 'calendars' => Calendar::getInstance()->calendars->getAllAllowedCalendars(),
             ]
         );
@@ -520,6 +538,98 @@ class EventsController extends BaseController
             );
         }
 
+        $site = SitesHelper::getCurrentCpSite();
+        $sites = SitesHelper::getEditableSites();
+        $isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');
+
+        $crumbs = [];
+
+        if ($isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
+            $crumbs[] = [
+                'id' => 'site-crumb',
+                'icon' => Cp::earthIcon(),
+                'label' => \Craft::t('site', $site->name),
+                'menu' => [
+                    'label' => \Craft::t('site', 'Select site'),
+                    'items' => Cp::siteMenuItems($sites, $site),
+                ],
+            ];
+        }
+
+        $crumbs[] = [
+            'label' => Calendar::t(Calendar::getInstance()->name),
+            'url' => UrlHelper::cpUrl('calendar'),
+        ];
+
+        $crumbs[] = [
+            'label' => Calendar::t('Events'),
+            'url' => UrlHelper::cpUrl('calendar/events'),
+        ];
+
+        if ($isCraft5) {
+            $calendarMenuItems = [];
+
+            foreach ($this->getCalendarService()->getAllCalendars() as $cal) {
+                $attributes = [
+                    'data' => [
+                        'calendar-id' => $cal->id,
+                    ],
+                ];
+
+                $calendarMenuItems[] = [
+                    'status' => false,
+                    'label' => $cal->name,
+                    'url' => $event->title === $title
+                        ? UrlHelper::cpUrl('calendar/events?site='.$site->handle.'&source=calendar:'.$cal->id)
+                        : UrlHelper::cpUrl('calendar/events/new/'.$cal->handle.'/'.$site->handle),
+                    'hidden' => false,
+                    'selected' => ($cal->handle === $event->calendar->handle),
+                    'attributes' => $attributes,
+                ];
+            }
+
+            $crumbs[] = [
+                'id' => 'calendar-crumb',
+                'label' => Calendar::t($calendar->name),
+                'url' => $event->title === $title
+                    ? UrlHelper::cpUrl('calendar/events?site='.$site->handle.'&source=calendar:'.$calendar->id)
+                    : UrlHelper::cpUrl('calendar/events/new/'.$calendar->handle.'/'.$site->handle),
+                'menu' => [
+                    'items' => $calendarMenuItems,
+                    'label' => Calendar::t('Select calendar'),
+                ],
+            ];
+        } else {
+            $crumbs[] = [
+                'label' => Calendar::t($event->calendar->name),
+                'url' => UrlHelper::cpUrl('calendar/events/?source=calendar%3A'.$event->calendar->id),
+            ];
+        }
+
+        if ($event->title === $title) {
+            if ($isCraft5) {
+                $crumbs[] = [
+                    'html' => Cp::elementChipHtml($event, [
+                        'showActionMenu' => true,
+                        'showDraftName' => false,
+                    ]),
+                    'current' => true,
+                ];
+            } else {
+                $crumbs[] = [
+                    'label' => Calendar::t($title),
+                    'url' => UrlHelper::cpUrl('calendar/events/'.$event->id),
+                    'current' => true,
+                ];
+            }
+        } else {
+            $crumbs[] = [
+                'label' => Calendar::t('Create a new event'),
+                'url' => UrlHelper::cpUrl('calendar/events/new/'.$calendar->handle.'/'.$site->handle),
+                'current' => true,
+            ];
+        }
+
         $template = 'calendar/events/_edit';
         if (version_compare(\Craft::$app->getVersion(), '3.5', '<')) {
             $template = 'calendar/events/_edit_legacy';
@@ -528,6 +638,8 @@ class EventsController extends BaseController
         return $this->renderTemplate(
             $template,
             [
+                'isCraft5' => $isCraft5,
+                'crumbs' => $crumbs,
                 'name' => self::EVENT_FIELD_NAME,
                 'event' => $event,
                 'title' => $title,

@@ -3,7 +3,7 @@
 {% set title = "Explore"|t("calendar") %}
 {% set crumbs = [
     { label: craft.calendar.name, url: url("calendar") },
-    { label: "Resources"|t("calendar"), url: url("calendar/resources") },
+    { label: "Resources"|t("calendar"), url: url("calendar/resources"), current: true },
 ] %}
 
 {% block content %}

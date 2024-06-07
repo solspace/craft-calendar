@@ -5,11 +5,6 @@
 {% set selectedSubnavItem = 'events' %}
 {% set saveShortcutRedirect = continueEditingUrl %}
 
-{% set crumbs = [
-    { label: craft.calendar.name, url: url('calendar') },
-    { label: "Events"|t('calendar'), url: url('calendar/events') },
-] %}
-
 {% js %}
     var calendarTimeInterval = {{ craft.calendar.settings.timeInterval }};
     var calendarEventDuration = {{ craft.calendar.settings.eventDuration }};
