@@ -1,5 +1,15 @@
 # Solspace Calendar Changelog
 
+## 5.0.5 - 2024-06-07
+
+### Changed
+- Replaced the custom `UpdateEventsUriJob` with Craft's `UpdateElementSlugsAndUris` job to correctly parse URI parameters.
+- Updated the plugin icon with subtle improvements for Craft 5.
+
+### Fixed
+- Fixed a bug where CP breadcrumbs for events in Craft 5 were not displaying correctly.
+- Fixed a bug where viewing an event in the CP would sometimes error in Craft 4.
+
 ## 5.0.4 - 2024-05-09
 
 ### Added
@@ -41,6 +51,14 @@
 ### Changed
 - Updated plugin icon.
 - Removed _Resources_ area in control panel.
+
+## 4.0.14 - 2024-06-07
+
+### Changed
+- Replaced the custom `UpdateEventsUriJob` with Craft's `UpdateElementSlugsAndUris` job to correctly parse URI parameters.
+
+### Fixed
+- Fixed a bug where reoccurring events were not returning when using batch calls.
 
 ## 4.0.13 - 2024-04-04
 
