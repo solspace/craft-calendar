@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where installation of Craft CMS would break if the Calendar plugin was enabled in Project Config [#297]
+
 ## 5.0.5 - 2024-06-07
 
 ### Changed

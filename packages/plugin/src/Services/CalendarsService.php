@@ -453,6 +453,13 @@ class CalendarsService extends Component
 
     public function addSiteHandler(SiteEvent $event): bool
     {
+        if (false === \Craft::$app->getPlugins()->isPluginEnabled('calendar')) {
+            // This method can be called as a listener during installation,
+            // when the plugin specific tables are not created yet.
+            // @see https://github.com/solspace/craft-calendar/issues/297#issuecomment-2186480291
+            return true;
+        }
+
         if (!$event->isNew) {
             return true;
         }
