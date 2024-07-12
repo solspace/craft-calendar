@@ -1440,7 +1440,6 @@ class EventQuery extends ElementQuery
      */
     private function extractGroupedEvents(string $extractableClass, string $targetTimeframe): array
     {
-        Carbon::setWeekStartsAt($this->firstDay ?? 1);
         $initialGrouping = $this->noMultiDayGroup;
         $this->noMultiDayGroup = true;
         $this->all();
