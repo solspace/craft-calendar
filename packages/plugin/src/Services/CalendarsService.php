@@ -453,6 +453,10 @@ class CalendarsService extends Component
 
     public function addSiteHandler(SiteEvent $event): bool
     {
+        if (false === \Craft::$app->getPlugins()->isPluginEnabled('calendar')) {
+            return true;
+        }
+
         if (!$event->isNew) {
             return true;
         }
