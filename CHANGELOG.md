@@ -1,9 +1,10 @@
 # Solspace Calendar Changelog
 
-## 5.0.6 - Unreleased
+## 5.0.6 - 2024-07-12
 
 ### Fixed
 - Fixed a bug where installation of Craft CMS would break if the Calendar plugin was enabled in Project Config.
+- Fixed a bug where using the `groupedByWeek()` method returns an error.
 
 ## 5.0.5 - 2024-06-07
 
