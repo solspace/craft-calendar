@@ -428,6 +428,7 @@ class EventQuery extends ElementQuery
 
             $this->cacheToStorage();
             $this->orderEvents($this->events);
+            $this->indexEvents($this->events);
 
             // Build up an event cache, to be accessed later
             $this->cacheEvents();
@@ -1228,6 +1229,19 @@ class EventQuery extends ElementQuery
             $offset = $this->offset ?: 0;
 
             $array = \array_slice($array, $offset, $this->limit);
+        }
+    }
+
+    private function indexEvents(array &$array): void
+    {
+        if ($this->indexBy) {
+            $index = [];
+
+            foreach ($this->events as $event) {
+                $index[$event->{$this->indexBy}] = $event;
+            }
+
+            $array = $index;
         }
     }
 
