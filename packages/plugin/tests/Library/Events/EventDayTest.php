@@ -22,7 +22,7 @@ class EventDayTest extends TestCase
         $config = $this->createMock(DurationConfiguration::class);
         $targetDayDate = new Carbon('2016-01-01', 'America/Winnipeg');
 
-        $dayDuration = new DayDuration($targetDayDate, [], $config);
+        $dayDuration = new DayDuration($targetDayDate, $config);
         $day = new EventDay($dayDuration, $this->createMock(EventQuery::class));
 
         self::assertEquals(
@@ -56,7 +56,7 @@ class EventDayTest extends TestCase
         $config = $this->createMock(DurationConfiguration::class);
         $targetDayDate = new Carbon('2016-01-01', 'UTC');
 
-        $dayDuration = new DayDuration($targetDayDate, [], $config);
+        $dayDuration = new DayDuration($targetDayDate, $config);
         $day = new EventDay($dayDuration, $this->createMock(EventQuery::class));
 
         $dateRange = $day->getDateRange($before, $after);

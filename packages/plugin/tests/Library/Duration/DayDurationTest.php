@@ -20,7 +20,7 @@ class DayDurationTest extends TestCase
     {
         $config = $this->createMock(DurationConfiguration::class);
 
-        $this->duration = new DayDuration(new Carbon('2019-01-01'), [], $config);
+        $this->duration = new DayDuration(new Carbon('2019-01-01'), $config);
     }
 
     public function testContainsADateInToday(): void
