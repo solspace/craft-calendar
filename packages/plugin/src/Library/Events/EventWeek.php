@@ -23,7 +23,7 @@ class EventWeek extends AbstractEventCollection
 
         $targetDate = $this->getStartDate();
         while ($this->getEndDate()->gt($targetDate)) {
-            $dayDuration = new DayDuration($targetDate, $this->getDuration()->getConfig());
+            $dayDuration = new DayDuration($targetDate, [], $this->getDuration()->getConfig());
             $eventDay = new EventDay($dayDuration, $eventQuery);
 
             $dayList[] = $eventDay;

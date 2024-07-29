@@ -16,12 +16,16 @@ abstract class AbstractDuration implements DurationInterface
 
     protected ?Carbon $endDateLocalized = null;
 
+    protected array $events = [];
+
     protected DurationConfiguration $config;
 
     final public function __construct(
         Carbon $targetDate,
+        array $events = [],
         array|DurationConfiguration $config = [],
     ) {
+        $this->events = $events;
         $this->config = \is_array($config) ? new DurationConfiguration($config) : $config;
         $this->init($targetDate);
 
@@ -68,6 +72,11 @@ abstract class AbstractDuration implements DurationInterface
     public function getConfig(): ?DurationConfiguration
     {
         return $this->config;
+    }
+
+    public function getEvents(): array
+    {
+        return $this->events;
     }
 
     /**
