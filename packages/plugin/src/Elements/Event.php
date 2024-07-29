@@ -19,6 +19,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\web\UploadedFile;
 use Illuminate\Support\Collection;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
@@ -144,6 +145,8 @@ class Event extends Element implements \JsonSerializable
 
     /** @var Event[] */
     private $occurrenceCache = [];
+
+    private ?string $_fieldParamNamePrefix = null;
 
     /**
      * Event constructor.
@@ -1610,6 +1613,67 @@ class Event extends Element implements \JsonSerializable
         BaseEvent::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
 
         return $event->actions;
+    }
+
+    public function setFieldValuesFromRequest(string $paramNamespace = ''): void
+    {
+        $this->setFieldParamNamespace($paramNamespace);
+
+        if (isset($this->_fieldParamNamePrefix)) {
+            $values = \Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
+        } else {
+            $values = \Craft::$app->getRequest()->getBodyParams();
+        }
+
+        // Run through this multiple times, in case any fields become visible as a result of other field value changes
+        $processedFields = [];
+        do {
+            $processedAnyFields = false;
+            foreach ($this->fieldLayoutFields(true) as $field) {
+                // Have we already processed this field?
+                if (isset($processedFields[$field->id])) {
+                    continue;
+                }
+
+                $processedFields[$field->id] = true;
+                $processedAnyFields = true;
+
+                // Do we have any post data for this field?
+                if (isset($values[$field->handle])) {
+                    $value = $values[$field->handle];
+                } elseif (
+                    isset($this->_fieldParamNamePrefix)
+                    && UploadedFile::getInstancesByName("{$this->_fieldParamNamePrefix}.{$field->handle}")
+                ) {
+                    // A file was uploaded for this field
+                    $value = null;
+                } else {
+                    continue;
+                }
+
+                // Add in additional support for other field types
+                if ($field instanceof \benf\neo\Field) {
+                    if (!empty($values[$field->handle]['blocks']) && \is_array($values[$field->handle]['blocks'])) {
+                        $index = 0;
+                        $blocks = [];
+                        foreach ($values[$field->handle]['blocks'] as $block) {
+                            $blocks['new'.$index] = $block;
+                            ++$index;
+                        }
+                        $this->setFieldValues([$field->handle => $blocks]);
+                    } else {
+                        $this->setFieldValues([$field->handle => '']);
+                    }
+                } else {
+                    $this->setFieldValueFromRequest($field->handle, $value);
+                }
+            }
+        } while ($processedAnyFields);
+    }
+
+    public function setFieldParamNamespace(string $namespace): void
+    {
+        $this->_fieldParamNamePrefix = '' !== $namespace ? $namespace : null;
     }
 
     protected static function defineSources(string $context = null): array
