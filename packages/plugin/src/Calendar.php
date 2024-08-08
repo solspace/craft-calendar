@@ -359,7 +359,7 @@ class Calendar extends Plugin
 
     private function initPermissions(): void
     {
-        if (\Craft::$app->getEdition() >= \Craft::Pro) {
+        if (\Craft::Solo !== \Craft::$app->getEdition()) {
             Event::on(
                 UserPermissions::class,
                 UserPermissions::EVENT_REGISTER_PERMISSIONS,

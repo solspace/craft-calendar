@@ -1456,7 +1456,7 @@ class Event extends Element implements \JsonSerializable
         $fields[] = $this->slugFieldHtml($static);
 
         // Author
-        if (\Craft::Pro === \Craft::$app->getEdition()) {
+        if (\Craft::Solo !== \Craft::$app->getEdition()) {
             $fields[] = (function () use ($static) {
                 $author = $this->getAuthor();
 
@@ -1558,8 +1558,8 @@ class Event extends Element implements \JsonSerializable
             'link' => ['label' => Calendar::t('Link'), 'icon' => 'world'],
         ];
 
-        // Hide Author from Craft Personal/Client
-        if (\Craft::$app->getEdition() < \Craft::Pro) {
+        // Hide Author from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
             unset($attributes['author']);
         }
 
