@@ -21,7 +21,7 @@ class EventMonth extends AbstractEventCollection
         $targetWeekDate = $this->getDate()->copy();
         $targetEndDate = $this->getEndDate()->copy()->endOfWeek();
         while ($targetEndDate->gt($targetWeekDate)) {
-            $weekDuration = new WeekDuration($targetWeekDate, $this->getDuration()->getConfig());
+            $weekDuration = new WeekDuration($targetWeekDate, [], $this->getDuration()->getConfig());
             $eventWeek = new EventWeek($weekDuration, $eventQuery);
 
             $weekList[] = $eventWeek;
