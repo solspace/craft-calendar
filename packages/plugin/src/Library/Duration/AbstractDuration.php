@@ -22,8 +22,8 @@ abstract class AbstractDuration implements DurationInterface
 
     final public function __construct(
         Carbon $targetDate,
+        array $events = [],
         array|DurationConfiguration $config = [],
-        ?array $events = [],
     ) {
         $this->events = $events;
         $this->config = \is_array($config) ? new DurationConfiguration($config) : $config;
