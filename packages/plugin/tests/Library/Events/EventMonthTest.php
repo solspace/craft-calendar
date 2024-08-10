@@ -40,7 +40,7 @@ class EventMonthTest extends TestCase
         $config = $this->createMock(DurationConfiguration::class);
         $targetDayDate = new Carbon('2016-04-01', 'UTC');
 
-        $dayDuration = new DayDuration($targetDayDate, $config);
+        $dayDuration = new DayDuration($targetDayDate, [], $config);
         $day = new EventMonth($dayDuration, $this->createMock(EventQuery::class));
 
         $dateRange = $day->getDateRange($before, $after);

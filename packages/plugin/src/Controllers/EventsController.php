@@ -205,11 +205,11 @@ class EventsController extends BaseController
             throw new HttpException(404, 'No event data posted');
         }
 
-        // Update authors only if Craft PRO is enabled
+        // Update authors only if not Craft Solo
         // And if the author is posted.
         // If not - it stays the same
         // By default the Logged in user ID is used
-        if (\Craft::Pro === \Craft::$app->getEdition()) {
+        if (\Craft::Solo !== \Craft::$app->getEdition()) {
             $authorList = \Craft::$app->request->post('author');
             if (\is_array($authorList) && !empty($authorList)) {
                 $authorId = (int) reset($authorList);

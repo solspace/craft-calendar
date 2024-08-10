@@ -155,6 +155,6 @@ class PermissionHelper
 
     private static function permissionsEnabled(): bool
     {
-        return \Craft::Pro === \Craft::$app->getEdition();
+        return \Craft::Solo !== \Craft::$app->getEdition();
     }
 }
