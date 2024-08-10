@@ -26,7 +26,7 @@ class ViewDataService extends Component
     {
         $targetDate = $this->getDateFromAttributes($attributes);
 
-        $duration = new MonthDuration($targetDate, $attributes);
+        $duration = new MonthDuration($targetDate, [], $attributes);
         $eventQuery = $this->getEventQuery($duration, $attributes);
 
         return new EventMonth($duration, $eventQuery);
@@ -39,7 +39,7 @@ class ViewDataService extends Component
     {
         $targetDate = $this->getDateFromAttributes($attributes);
 
-        $duration = new WeekDuration($targetDate, $attributes);
+        $duration = new WeekDuration($targetDate, [], $attributes);
         $eventQuery = $this->getEventQuery($duration, $attributes);
 
         return new EventWeek($duration, $eventQuery);
@@ -50,7 +50,7 @@ class ViewDataService extends Component
      */
     public function getDay(?array $attributes = null): EventDay
     {
-        $duration = new DayDuration($this->getDateFromAttributes($attributes), $attributes);
+        $duration = new DayDuration($this->getDateFromAttributes($attributes), [], $attributes);
         $eventList = $this->getEventQuery($duration, $attributes);
 
         return new EventDay($duration, $eventList);
@@ -61,7 +61,7 @@ class ViewDataService extends Component
      */
     public function getHour(?array $attributes = null): EventHour
     {
-        $duration = new HourDuration($this->getDateFromAttributes($attributes), $attributes);
+        $duration = new HourDuration($this->getDateFromAttributes($attributes), [], $attributes);
         $eventQuery = $this->getEventQuery($duration, $attributes);
 
         return new EventHour($duration, $eventQuery);

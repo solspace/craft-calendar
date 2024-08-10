@@ -37,9 +37,9 @@ if (class_exists('craft\feedme\base\Element')) {
 
         public $element;
 
-        private array $rruleInfo = [];
+        private ?array $rruleInfo = [];
 
-        private array $selectDates = [];
+        private ?array $selectDates = [];
 
         public function getGroupsTemplate(): string
         {
