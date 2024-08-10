@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 5.0.7 - 2024-08-10
+
+### Fixed
+- Fixed issues with permissions when using the Craft Team edition.
+- Fixed a bug where using the `groupedBy` methods would return an error when listing events.
+- Fixed a bug where importing Calendar events with empty RRULES via Feed Me would fail.
+- Fixed a bug where importing Calendar events via _Feed Me_ was incorrectly updating translatable fields.
+- Fixed a bug where data from some third-party field types were not saving correctly.
+
 ## 5.0.6 - 2024-07-12
 
 ### Fixed
