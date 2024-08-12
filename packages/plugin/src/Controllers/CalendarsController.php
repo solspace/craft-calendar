@@ -138,11 +138,20 @@ class CalendarsController extends BaseController
             $oldLayoutTabs = $oldLayout->getTabs();
 
             foreach ($oldLayoutTabs as $oldLayoutTab) {
+                $newElements = [];
+                foreach ($oldLayoutTab->getElements() as $oldElement) {
+                    unset($oldElement['uid']);
+
+                    $oldElement->uid = CraftStringHelper::UUID();
+                    $newElements[] = $oldElement;
+                }
+
                 $newLayoutTab = new FieldLayoutTab();
+                $newLayoutTab->uid = CraftStringHelper::UUID();
                 $newLayoutTab->name = $oldLayoutTab->name;
                 $newLayoutTab->sortOrder = $oldLayoutTab->sortOrder;
                 $newLayoutTab->setLayout($newLayout);
-                $newLayoutTab->setElements($oldLayoutTab->getElements());
+                $newLayoutTab->setElements($newElements);
 
                 $newLayoutTabs[] = $newLayoutTab;
             }
@@ -172,15 +181,15 @@ class CalendarsController extends BaseController
 
         $iterator = 0;
         foreach ($handles as $handle) {
-            if (preg_match('/-(\d+)$/', $handle, $matches)) {
-                $iterator = max($iterator, (int) $matches[1]);
+            if (preg_match('/^(.*)(\d+)$/', $handle, $matches)) {
+                $iterator = max($iterator, (int) $matches[2]);
             }
         }
 
         ++$iterator;
 
         $clone->name = preg_replace('/^(.*) \d+$/', '$1', $clone->name).' '.$iterator;
-        $clone->handle = preg_replace('/^(.*)-\d+$/', '$1', $clone->handle).$iterator;
+        $clone->handle = preg_replace('/^(.*)\d+$/', '$1', $clone->handle).$iterator;
 
         if ($this->getCalendarService()->saveCalendar($clone)) {
             return $this->asJson(['success' => true]);
