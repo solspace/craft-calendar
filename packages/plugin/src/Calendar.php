@@ -93,6 +93,8 @@ class Calendar extends Plugin
     public const CONFIG_CALENDAR_PATH = 'solspace.calendar.calendars';
     public const CONFIG_CALENDAR_SITES_PATH = 'solspace.calendar.calendar-sites';
 
+    public string $schemaVersion = '';
+
     public bool $hasCpSettings = true;
 
     private static array $javascriptTranslationKeys = [
@@ -187,6 +189,17 @@ class Calendar extends Plugin
         if (!$this->isPro()) {
             throw new ForbiddenHttpException(self::t('Requires Calendar Pro'));
         }
+    }
+
+    public function beforeInstall(): void
+    {
+        parent::beforeInstall();
+
+        $projectConfig = \Craft::$app->getProjectConfig();
+        $composerPluginInfo = \Craft::$app->getPlugins()->getComposerPluginInfo('calendar');
+        $schemaVersion = $projectConfig->get('plugins.calendar.extra.schemaVersion') ?? $composerPluginInfo['schemaVersion'];
+
+        $this->schemaVersion ??= $schemaVersion;
     }
 
     /**
