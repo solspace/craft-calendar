@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.8 - 2024-09-12
+
+### Fixed
+- Fixed a bug where unique UIDs were not generated for field layout elements when duplicating calendars.
+
 ## 5.0.7 - 2024-08-10
 
 ### Fixed
