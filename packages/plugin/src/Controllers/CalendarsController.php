@@ -6,6 +6,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Queue;
+use craft\helpers\StringHelper as CraftStringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
