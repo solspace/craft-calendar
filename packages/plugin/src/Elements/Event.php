@@ -1534,11 +1534,11 @@ class Event extends Element implements \JsonSerializable
             $processedAnyFields = false;
             foreach ($this->fieldLayoutFields(true) as $field) {
                 // Have we already processed this field?
-                if (isset($processedFields[$field->id])) {
+                if (isset($processedFields[$field->handle])) {
                     continue;
                 }
 
-                $processedFields[$field->id] = true;
+                $processedFields[$field->handle] = true;
                 $processedAnyFields = true;
 
                 // Do we have any post data for this field?
