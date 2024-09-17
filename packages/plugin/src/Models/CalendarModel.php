@@ -146,7 +146,7 @@ class CalendarModel extends Model implements \JsonSerializable
 
     public function getDescriptionFieldHandles(): array
     {
-        $fieldList = [Calendar::t('None')];
+        $fieldList = [];
         if ($this->getFieldLayout()) {
             foreach ($this->getFieldLayout()->getCustomFields() as $field) {
                 $fieldList[$field->handle] = $field->name;
