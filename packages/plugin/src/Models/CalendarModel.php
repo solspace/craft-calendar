@@ -273,11 +273,7 @@ class CalendarModel extends Model implements \JsonSerializable
 
     public function jsonSerialize(): array
     {
-        return [
-            'id' => (int) $this->id,
-            'name' => $this->name,
-            'handle' => $this->handle,
-        ];
+        return $this->getConfig();
     }
 
     public function rules(): array
@@ -339,5 +335,43 @@ class CalendarModel extends Model implements \JsonSerializable
         ];
 
         return $rules;
+    }
+
+    public function getConfig(): array
+    {
+        $config = [
+            'id' => $this->id,
+            'uid' => $this->uid,
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'description' => $this->description,
+            'color' => $this->color,
+            'fieldLayoutId' => $this->fieldLayoutId,
+            'titleFormat' => $this->titleFormat,
+            'titleLabel' => $this->titleLabel,
+            'hasTitleField' => $this->hasTitleField,
+            'titleTranslationMethod' => $this->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat,
+            'descriptionFieldHandle' => $this->descriptionFieldHandle,
+            'locationFieldHandle' => $this->locationFieldHandle,
+            'icsHash' => $this->icsHash,
+            'icsTimezone' => $this->icsTimezone,
+            'allowRepeatingEvents' => $this->allowRepeatingEvents,
+        ];
+
+        foreach ($this->getSiteSettings() as $siteId => $siteSettings) {
+            $config['siteSettings'][$siteSettings['uid']] = [
+                'id' => (int) $siteSettings['id'],
+                'uid' => $siteSettings['uid'],
+                'calendarId' => (int) $siteSettings['calendarId'],
+                'siteId' => (int) $siteSettings['siteId'],
+                'enabledByDefault' => (bool) $siteSettings['enabledByDefault'],
+                'hasUrls' => (bool) $siteSettings['hasUrls'],
+                'uriFormat' => $siteSettings['uriFormat'] ?: null,
+                'template' => $siteSettings['template'] ?: null,
+            ];
+        }
+
+        return $config;
     }
 }
