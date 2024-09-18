@@ -170,12 +170,9 @@ class CalendarsController extends BaseController
         }
         $clone->setSiteSettings($clonedSiteSettings);
 
-        $handleBase = preg_replace('/^(.*)-\d+/', '$1', $calendar->handle);
-
         $handles = (new Query())
             ->select('handle')
             ->from(CalendarRecord::TABLE)
-            ->where(['like', 'handle', $handleBase])
             ->column()
         ;
 

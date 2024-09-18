@@ -7,6 +7,7 @@ use craft\db\Table;
 use craft\events\ConfigEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -117,7 +118,7 @@ class CalendarProjectConfig implements BundleInterface
         if (!empty($data['tabs'])) {
             $layout = FieldLayout::createFromConfig($data);
             $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $uid);
-            $layout->uid = $uid;
+            $layout->uid = StringHelper::UUID();
             $layout->type = Event::class;
 
             \Craft::$app->getFields()->saveLayout($layout);
