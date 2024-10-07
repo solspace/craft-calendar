@@ -162,6 +162,48 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
+    /**
+     * Narrows the query results based on the entries’ author ID(s).
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches entries…
+     * | - | -
+     * | `1` | with an author with an ID of 1.
+     * | `'not 1'` | not with an author with an ID of 1.
+     * | `[1, 2]` | with an author with an ID of 1 or 2.
+     * | `['and', 1, 2]` |  with authors with IDs of 1 and 2.
+     * | `['not', 1, 2]` | not with an author with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch entries with an author with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .authorId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch entries with an author with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->authorId(1)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     *
+     * @return static self reference
+     *
+     * @uses $authorId
+     */
+    public function authorId(mixed $value): static
+    {
+        $this->authorId = $value;
+
+        return $this;
+    }
+
     public function setPostDate(null|Carbon|\DateTime|string $value = null): self
     {
         $this->postDate = $value;
@@ -1529,6 +1571,6 @@ class EventQuery extends ElementQuery
             'indexBy' => $this->indexBy,
         ];
 
-        return sha1(serialize($data));
+        return sha1(json_encode($data));
     }
 }
