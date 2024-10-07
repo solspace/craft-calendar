@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 5.0.9 - 2024-10-07
+
+### Added
+- Added the ability to filter events by _Author_ in the control panel Events index.
+
+### Fixed
+- Fixed a bug where calendars with reused instanced fields in the same field layout (Craft 5) were not saving values.
+- Fixed a bug where the _ICS Description_ and _ICS Location_ field dropdowns would not show reused instanced fields (Craft 5) in calendar settings.
+- Fixed a bug where the _Calendar Events_ field type could trigger a `Serialization of 'Closure is not allowed'` error.
+- Fixed a bug where unique UIDs were not generated for field layout elements when duplicating calendars. Added a migration for Craft 4 installs.
+
 ## 5.0.8 - 2024-09-12
 
 ### Fixed
