@@ -256,12 +256,17 @@
         options: timezoneOptions
     }) }}
 
+    {% set descriptionFieldOptions = [{ label: 'None'|t('calendar'), value: '' }] %}
+    {% for key, value in calendar.descriptionFieldHandles %}
+        {% set descriptionFieldOptions = descriptionFieldOptions|merge([{ label: value ~ ' (' ~ key ~ ')', value: key }]) %}
+    {% endfor %}
+
     {{ forms.selectField({
         label: "ICS Description field"|t('calendar'),
         instructions: "Set the field to be used for event description when exporting ICS file."|t('calendar'),
         id: 'descriptionFieldHandle',
         name: 'descriptionFieldHandle',
-        options: calendar.descriptionFieldHandles,
+        options: descriptionFieldOptions,
         value: calendar.descriptionFieldHandle,
         errors: calendar.getErrors('descriptionFieldHandle')
     }) }}
@@ -271,7 +276,7 @@
         instructions: "Set the field to be used for event location when exporting ICS file."|t('calendar'),
         id: 'locationFieldHandle',
         name: 'locationFieldHandle',
-        options: calendar.locationFieldHandles,
+        options: descriptionFieldOptions,
         value: calendar.locationFieldHandle,
         errors: calendar.getErrors('locationFieldHandle')
     }) }}
