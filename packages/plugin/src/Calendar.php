@@ -130,6 +130,7 @@ class Calendar extends Plugin
         $this->initTemplateVariables();
         $this->initWidgets();
         $this->initFieldTypes();
+        $this->initElementTypes();
         $this->initEventListeners();
         $this->initPermissions();
         $this->initBundles();
@@ -359,6 +360,17 @@ class Calendar extends Plugin
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = EventFieldType::class;
                 $event->types[] = CalendarFieldType::class;
+            }
+        );
+    }
+
+    private function initElementTypes(): void
+    {
+        Event::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = \Solspace\Calendar\Elements\Event::class;
             }
         );
     }
