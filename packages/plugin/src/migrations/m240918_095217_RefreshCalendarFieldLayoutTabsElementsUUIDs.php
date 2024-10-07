@@ -13,15 +13,13 @@ class m240918_095217_RefreshCalendarFieldLayoutTabsElementsUUIDs extends Migrati
 {
     public function safeUp(): bool
     {
-        $calendars = (new Query())
-            ->select(['fieldLayoutId'])
-            ->from('{{%calendar_calendars}}')
-            ->all()
-        ;
+        if (version_compare(\Craft::$app->getVersion(), '5', '<')) {
+            $calendars = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from('{{%calendar_calendars}}')
+                ->all()
+            ;
 
-        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5', '<');
-
-        if ($isCraft4) {
             foreach ($calendars as $calendar) {
                 $fieldLayoutTabsTable = '{{%fieldlayouttabs}}';
 
@@ -46,44 +44,9 @@ class m240918_095217_RefreshCalendarFieldLayoutTabsElementsUUIDs extends Migrati
                     );
                 }
             }
+
+            \Craft::$app->projectConfig->rebuild();
         }
-
-        if (!$isCraft4) {
-            foreach ($calendars as $calendar) {
-                $fieldLayoutsTable = '{{%fieldlayouts}}';
-
-                $fieldLayout = (new Query())
-                    ->select(['id', 'config'])
-                    ->from($fieldLayoutsTable)
-                    ->where(['id' => $calendar['fieldLayoutId']])
-                    ->one()
-                ;
-
-                if (!empty($fieldLayout['config'])) {
-                    $config = json_decode($fieldLayout['config']);
-
-                    $tabs = $config->tabs ?? [];
-
-                    foreach ($tabs as $tab) {
-                        if (!empty($tab->elements)) {
-                            foreach ($tab->elements as $element) {
-                                $element->uid = StringHelper::UUID();
-                            }
-                        }
-                    }
-
-                    $config->tabs = $tabs;
-
-                    $this->update(
-                        $fieldLayoutsTable,
-                        ['config' => $config],
-                        ['id' => $fieldLayout['id']],
-                    );
-                }
-            }
-        }
-
-        \Craft::$app->projectConfig->rebuild();
 
         return true;
     }
