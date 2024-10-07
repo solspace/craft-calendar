@@ -41,8 +41,6 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
 
     protected function criteria(): ?array
     {
-        return [
-            'authors' => true,
-        ];
+        return [];
     }
 }
