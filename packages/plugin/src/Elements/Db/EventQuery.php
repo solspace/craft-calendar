@@ -1571,6 +1571,6 @@ class EventQuery extends ElementQuery
             'indexBy' => $this->indexBy,
         ];
 
-        return sha1(serialize($data));
+        return sha1(json_encode($data));
     }
 }
