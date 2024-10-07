@@ -8,6 +8,7 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
@@ -26,6 +27,7 @@ use RRule\RRule;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Actions\DeleteEventAction;
 use Solspace\Calendar\Elements\Actions\SetStatusAction;
+use Solspace\Calendar\Elements\conditions\EventCondition;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
 use Solspace\Calendar\Library\Configurations\Occurrences;
@@ -258,6 +260,11 @@ class Event extends Element implements \JsonSerializable
     public static function find(): ElementQueryInterface
     {
         return new EventQuery(self::class);
+    }
+
+    public static function createCondition(): ElementConditionInterface
+    {
+        return \Craft::createObject(EventCondition::class, [static::class]);
     }
 
     public static function typeHandle(): string
@@ -529,6 +536,11 @@ class Event extends Element implements \JsonSerializable
     public function getCalendar(): CalendarModel
     {
         return Calendar::getInstance()->calendars->getCalendarById($this->calendarId);
+    }
+
+    public function getAuthorId(): ?int
+    {
+        return $this->authorId;
     }
 
     public function getAuthor(): ?User
@@ -1579,6 +1591,42 @@ class Event extends Element implements \JsonSerializable
         $this->_fieldParamNamePrefix = '' !== $namespace ? $namespace : null;
     }
 
+    public function attributes(): array
+    {
+        $names = parent::attributes();
+        $names[] = 'authorId';
+        $names[] = 'author';
+
+        return $names;
+    }
+
+    public function extraFields(): array
+    {
+        $names = parent::extraFields();
+        $names[] = 'authorId';
+        $names[] = 'author';
+
+        return $names;
+    }
+
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    {
+        switch ($attribute) {
+            case 'authorId':
+                $elementQuery->andWith(['authorId', ['status' => null]]);
+
+                break;
+
+            case 'author':
+                $elementQuery->andWith(['author', ['status' => null]]);
+
+                break;
+
+            default:
+                parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        }
+    }
+
     protected static function defineSources(?string $context = null): array
     {
         $sources = [
@@ -1617,6 +1665,7 @@ class Event extends Element implements \JsonSerializable
             'endDateLocalized' => ['label' => Calendar::t('End Date')],
             'allDay' => ['label' => Calendar::t('All Day')],
             'rrule' => ['label' => Calendar::t('Repeats')],
+            'authorId' => ['label' => Calendar::t('Author ID')],
             'author' => ['label' => Calendar::t('Author')],
             'postDate' => ['label' => Calendar::t('Post Date')],
             'link' => ['label' => Calendar::t('Link'), 'icon' => 'world'],
@@ -1624,7 +1673,7 @@ class Event extends Element implements \JsonSerializable
 
         // Hide Author from Craft Solo
         if (\Craft::Solo === \Craft::$app->getEdition()) {
-            unset($attributes['author']);
+            unset($attributes['authorId'], $attributes['author']);
         }
 
         return $attributes;
@@ -1633,24 +1682,27 @@ class Event extends Element implements \JsonSerializable
     protected static function defineSortOptions(): array
     {
         return [
+            'authorId' => Calendar::t('Author ID'),
+            'author' => Calendar::t('Author'),
             'title' => Calendar::t('Title'),
             'name' => Calendar::t('Calendar'),
             'startDate' => Calendar::t('Start Date'),
             'endDate' => Calendar::t('End Date'),
             'allDay' => Calendar::t('All Day'),
-            'username' => Calendar::t('Author'),
             'postDate' => Calendar::t('Post Date'),
         ];
     }
 
     protected static function defineSearchableAttributes(): array
     {
-        return ['id', 'title', 'startDate', 'endDate'];
+        return ['authorId', 'author', 'id', 'title', 'startDate', 'endDate'];
     }
 
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
+            'authorId',
+            'author',
             'calendar',
             'startDate',
             'endDate',
