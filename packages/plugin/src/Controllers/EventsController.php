@@ -17,6 +17,7 @@ use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Exceptions\EventException;
+use Solspace\Calendar\Library\Helpers\CpHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\Helpers\SitesHelper;
 use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
@@ -551,7 +552,7 @@ class EventsController extends BaseController
                 'label' => \Craft::t('site', $site->name),
                 'menu' => [
                     'label' => \Craft::t('site', 'Select site'),
-                    'items' => Cp::siteMenuItems($sites, $site),
+                    'items' => CpHelper::siteMenuItems($sites, $site),
                 ],
             ];
         }
