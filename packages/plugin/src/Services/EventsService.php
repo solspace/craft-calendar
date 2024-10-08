@@ -107,9 +107,14 @@ class EventsService extends Component
         return Event::buildQuery($criteria);
     }
 
-    public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null): array
+    public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
     {
         $isCraft4 = VersionHelper::isCraft4();
+
+        $whereDeleted = 'elements.[[dateDeleted]] IS NULL';
+        if ($trashed) {
+            $whereDeleted = 'elements.[[dateDeleted]] IS NOT NULL';
+        }
 
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
@@ -136,6 +141,7 @@ class EventsService extends Component
         $subQuery->where([
             'and',
             'events.[[freq]] IS NULL',
+            $whereDeleted,
             ['in', 'events.[[id]]', $ids],
             ['in', 'elements_sites.[[siteId]]', $siteIds],
         ]);
@@ -167,9 +173,14 @@ class EventsService extends Component
         return $query->all();
     }
 
-    public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null): array
+    public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
     {
         $isCraft4 = VersionHelper::isCraft4();
+
+        $whereDeleted = 'elements.[[dateDeleted]] IS NULL';
+        if ($trashed) {
+            $whereDeleted = 'elements.[[dateDeleted]] IS NOT NULL';
+        }
 
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
@@ -196,6 +207,7 @@ class EventsService extends Component
         $subQuery->where([
             'and',
             'events.[[freq]] IS NOT NULL',
+            $whereDeleted,
             ['in', 'events.[[id]]', $ids],
             ['in', 'elements_sites.[[siteId]]', $siteIds],
         ]);
