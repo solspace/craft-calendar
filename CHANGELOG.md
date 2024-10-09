@@ -7,6 +7,7 @@
 
 ### Removed
 - Removed the migration that attempted to resolve the issue of unique UIDs not being generated for field layout elements when duplicating calendars.
+- Removed unnecessary Craft version helper.
 
 ## 5.0.9 - 2024-10-07
 
