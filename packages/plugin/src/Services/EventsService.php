@@ -27,7 +27,6 @@ use Solspace\Calendar\Events\SaveElementEvent;
 use Solspace\Calendar\Library\Exceptions\DateHelperException;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Library\Helpers\VersionHelper;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\base\Exception;
@@ -109,7 +108,7 @@ class EventsService extends Component
 
     public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null): array
     {
-        $isCraft4 = VersionHelper::isCraft4();
+        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
 
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
@@ -169,7 +168,7 @@ class EventsService extends Component
 
     public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null): array
     {
-        $isCraft4 = VersionHelper::isCraft4();
+        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
 
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
@@ -398,7 +397,7 @@ class EventsService extends Component
         $siteId = $event->site->id;
         $primarySiteId = \Craft::$app->sites->getPrimarySite()->id;
 
-        $isCraft4 = VersionHelper::isCraft4();
+        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
 
         $elementRows = (new Query());
         $elementRows->select(['elements_sites.*']);
