@@ -5,6 +5,9 @@
 ### Added
 - Added `calendar/calendars/fix-field-layout-tabs-elements-uids --rebuildProjectConfig` CLI command to resolve issues for Calendar 4.x and earlier versions of 5.0.x where unique UIDs were not being generated for field layout elements when duplicating calendars. This CLI command is only applicable to sites on Craft 4 that may have duplicated calendars in earlier versions of Calendar 4.x and 5.x. This command will not work on Craft 5 due to bigger differences in how the data is stored.
 
+### Fixed
+- Fixed a bug where Calendar event titles and fields were not translating correctly in Craft 5.
+
 ### Removed
 - Removed the migration that attempted to resolve the issue of unique UIDs not being generated for field layout elements when duplicating calendars.
 - Removed unnecessary Craft version helper.
