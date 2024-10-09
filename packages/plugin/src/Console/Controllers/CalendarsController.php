@@ -55,57 +55,59 @@ class CalendarsController extends Controller
 
     private function _fixUids(int &$count, array &$uids = []): void
     {
-        $calendars = (new Query())
-            ->select(['fieldLayoutId'])
-            ->from('{{%calendar_calendars}}')
-            ->all()
-        ;
-
-        foreach ($calendars as $calendar) {
-            $fieldLayoutTabsTable = '{{%fieldlayouttabs}}';
-
-            $fieldLayoutTab = (new Query())
-                ->select(['id', 'elements'])
-                ->from($fieldLayoutTabsTable)
-                ->where(['layoutId' => $calendar['fieldLayoutId']])
-                ->one()
+        if (version_compare(\Craft::$app->getVersion(), '5', '<')) {
+            $calendars = (new Query())
+                ->select(['fieldLayoutId'])
+                ->from('{{%calendar_calendars}}')
+                ->all()
             ;
 
-            if (!empty($fieldLayoutTab['elements'])) {
-                $this->stdout('    > Looking at field layout tabs ID '.$fieldLayoutTab['id']."\n");
+            foreach ($calendars as $calendar) {
+                $fieldLayoutTabsTable = '{{%fieldlayouttabs}}';
 
-                $modified = false;
+                $fieldLayoutTab = (new Query())
+                    ->select(['id', 'elements'])
+                    ->from($fieldLayoutTabsTable)
+                    ->where(['layoutId' => $calendar['fieldLayoutId']])
+                    ->one()
+                ;
 
-                $elements = json_decode($fieldLayoutTab['elements']);
-                if (\is_array($elements)) {
-                    foreach ($elements as &$element) {
-                        $uid = $element->uid;
+                if (!empty($fieldLayoutTab['elements'])) {
+                    $this->stdout('    > Looking at field layout tabs ID '.$fieldLayoutTab['id']."\n");
 
-                        $this->stdout('        > Looking at element UUID '.$uid."\n");
+                    $modified = false;
 
-                        if (\in_array($uid, $uids)) {
-                            $element->uid = StringHelper::UUID();
+                    $elements = json_decode($fieldLayoutTab['elements']);
+                    if (\is_array($elements)) {
+                        foreach ($elements as &$element) {
+                            $uid = $element->uid;
 
-                            $this->stdout('            > Duplicate UUID found at '.$uid."\n");
-                            $this->stdout('            > Setting to '.$element->uid."\n");
+                            $this->stdout('        > Looking at element UUID '.$uid."\n");
 
-                            ++$count;
-                            $modified = true;
+                            if (\in_array($uid, $uids)) {
+                                $element->uid = StringHelper::UUID();
 
-                            continue;
+                                $this->stdout('            > Duplicate UUID found at '.$uid."\n");
+                                $this->stdout('            > Setting to '.$element->uid."\n");
+
+                                ++$count;
+                                $modified = true;
+
+                                continue;
+                            }
+
+                            $uids[] = $uid;
                         }
 
-                        $uids[] = $uid;
-                    }
-
-                    if ($modified) {
-                        Db::update(
-                            $fieldLayoutTabsTable,
-                            ['elements' => json_encode($elements)],
-                            ['id' => $fieldLayoutTab['id']],
-                            [],
-                            false,
-                        );
+                        if ($modified) {
+                            Db::update(
+                                $fieldLayoutTabsTable,
+                                ['elements' => json_encode($elements)],
+                                ['id' => $fieldLayoutTab['id']],
+                                [],
+                                false,
+                            );
+                        }
                     }
                 }
             }
