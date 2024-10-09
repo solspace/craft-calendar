@@ -13,7 +13,6 @@ use craft\services\Elements;
 use Solspace\Calendar\Console\Controllers\Fix\TitleFixMigration;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\Helpers\VersionHelper;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 
@@ -146,7 +145,7 @@ class EventsController extends Controller
         $elementsService = \Craft::$app->getElements();
         $fail = false;
 
-        if (VersionHelper::isCraft4()) {
+        if (version_compare(\Craft::$app->getVersion(), '5.0.0', '<')) {
             $beforeCallback = function (BatchElementActionEvent $e) use ($query) {
                 if ($e->query === $query) {
                     /** @var Element $element */

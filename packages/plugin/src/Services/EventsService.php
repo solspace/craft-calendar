@@ -27,7 +27,6 @@ use Solspace\Calendar\Events\SaveElementEvent;
 use Solspace\Calendar\Library\Exceptions\DateHelperException;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Library\Helpers\VersionHelper;
 use Solspace\Calendar\Models\SelectDateModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\base\Exception;
@@ -107,9 +106,14 @@ class EventsService extends Component
         return Event::buildQuery($criteria);
     }
 
-    public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null): array
+    public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
     {
-        $isCraft4 = VersionHelper::isCraft4();
+        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
+
+        $whereDeleted = 'elements.[[dateDeleted]] IS NULL';
+        if ($trashed) {
+            $whereDeleted = 'elements.[[dateDeleted]] IS NOT NULL';
+        }
 
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
@@ -136,6 +140,7 @@ class EventsService extends Component
         $subQuery->where([
             'and',
             'events.[[freq]] IS NULL',
+            $whereDeleted,
             ['in', 'events.[[id]]', $ids],
             ['in', 'elements_sites.[[siteId]]', $siteIds],
         ]);
@@ -167,9 +172,14 @@ class EventsService extends Component
         return $query->all();
     }
 
-    public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null): array
+    public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
     {
-        $isCraft4 = VersionHelper::isCraft4();
+        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
+
+        $whereDeleted = 'elements.[[dateDeleted]] IS NULL';
+        if ($trashed) {
+            $whereDeleted = 'elements.[[dateDeleted]] IS NOT NULL';
+        }
 
         $ids = array_unique($ids);
         $siteIds = array_unique($siteIds);
@@ -196,6 +206,7 @@ class EventsService extends Component
         $subQuery->where([
             'and',
             'events.[[freq]] IS NOT NULL',
+            $whereDeleted,
             ['in', 'events.[[id]]', $ids],
             ['in', 'elements_sites.[[siteId]]', $siteIds],
         ]);
@@ -398,7 +409,7 @@ class EventsService extends Component
         $siteId = $event->site->id;
         $primarySiteId = \Craft::$app->sites->getPrimarySite()->id;
 
-        $isCraft4 = VersionHelper::isCraft4();
+        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
 
         $elementRows = (new Query());
         $elementRows->select(['elements_sites.*']);

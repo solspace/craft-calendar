@@ -7,10 +7,9 @@ use craft\db\Query;
 use craft\helpers\App;
 use craft\migrations\BaseContentRefactorMigration;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\Helpers\VersionHelper;
 
 // m240319_132700_UpdateElements migration.
-if (VersionHelper::isCraft4()) {
+if (version_compare(\Craft::$app->getVersion(), '5.0.0', '<')) {
     class m240319_132700_UpdateElements extends Migration
     {
         public function safeUp(): bool
