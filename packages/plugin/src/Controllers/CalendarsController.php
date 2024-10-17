@@ -110,7 +110,7 @@ class CalendarsController extends BaseController
             unset($layoutData['id'], $layoutData['uid']);
 
             $newLayout = new FieldLayout($layoutData);
-            $newLayout->uid = \craft\helpers\StringHelper::UUID();
+            $newLayout->uid = CraftStringHelper::UUID();
 
             $newLayoutTabs = [];
 
@@ -143,18 +143,15 @@ class CalendarsController extends BaseController
         $clonedSiteSettings = [];
         foreach ($calendar->getSiteSettings() as $siteSetting) {
             $clonedSiteSetting = new CalendarSiteSettingsModel($siteSetting->toArray());
-            $clonedSiteSetting->uid = \craft\helpers\StringHelper::UUID();
+            $clonedSiteSetting->uid = CraftStringHelper::UUID();
 
             $clonedSiteSettings[] = $clonedSiteSetting;
         }
         $clone->setSiteSettings($clonedSiteSettings);
 
-        $handleBase = preg_replace('/^(.*)-\d+/', '$1', $calendar->handle);
-
         $handles = (new Query())
             ->select('handle')
             ->from(CalendarRecord::TABLE)
-            ->where(['like', 'handle', $handleBase])
             ->column()
         ;
 
@@ -199,7 +196,7 @@ class CalendarsController extends BaseController
         $calendar = $this->getCalendarService()->getCalendarById($postedCalendarId);
         if (!$calendar) {
             $calendar = new CalendarModel();
-            $calendar->uid = \craft\helpers\StringHelper::UUID();
+            $calendar->uid = CraftStringHelper::UUID();
         }
 
         $calendar->name = $request->post('name');
@@ -219,7 +216,7 @@ class CalendarsController extends BaseController
 
         // Set the field layout
         $fieldLayout = \Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : \craft\helpers\StringHelper::UUID();
+        $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : CraftStringHelper::UUID();
         $fieldLayout->type = Event::class;
         $calendar->setFieldLayout($fieldLayout);
 
@@ -259,12 +256,12 @@ class CalendarsController extends BaseController
                 $siteSettings = $previousSiteSettings[$site->id];
             } else {
                 $siteSettings = new CalendarSiteSettingsModel();
-                $siteSettings->uid = \craft\helpers\StringHelper::UUID();
+                $siteSettings->uid = CraftStringHelper::UUID();
                 $siteSettings->calendarId = $calendar->id;
                 $siteSettings->siteId = $site->id;
             }
 
-            if (!empty($postedSettings['uriFormat']) && $postedSettings['uriFormat'] !== $previousSiteSettings[$site->id]['uriFormat']) {
+            if (!empty($postedSettings['uriFormat']) && !empty($previousSiteSettings[$site->id]) && $postedSettings['uriFormat'] !== $previousSiteSettings[$site->id]['uriFormat']) {
                 $hasUriFormatChanges = true;
             }
 
