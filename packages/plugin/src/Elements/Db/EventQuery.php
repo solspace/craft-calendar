@@ -937,7 +937,7 @@ class EventQuery extends ElementQuery
             $this->siteId = [$this->siteId];
         }
 
-        $singleEventMetadata = $this->getEventService()->getSingleEventMetadata($foundIds, $this->siteId);
+        $singleEventMetadata = $this->getEventService()->getSingleEventMetadata($foundIds, $this->siteId, $this->trashed);
 
         foreach ($singleEventMetadata as $metadata) {
             $startDate = new Carbon($metadata['startDate'], DateHelper::UTC);
@@ -956,7 +956,7 @@ class EventQuery extends ElementQuery
             $this->siteId = [$this->siteId];
         }
 
-        $recurringEventMetadata = $this->getEventService()->getRecurringEventMetadata($foundIds, $this->siteId);
+        $recurringEventMetadata = $this->getEventService()->getRecurringEventMetadata($foundIds, $this->siteId, $this->trashed);
 
         if (Calendar::getInstance()->isLite()) {
             $this->loadOccurrences = false;
