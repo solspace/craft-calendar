@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 4.0.16 - 2024-10-17
+
+### Added
+- Added `calendar/calendars/fix-field-layout-tabs-elements-uids --rebuildProjectConfig` CLI command to resolve issues where unique UIDs were not generated for field layout elements when duplicating calendars.
+
+### Fixed
+- Fixed a bug where soft-deleted (_Trashed_) events were not visible on the CP Events index page.
+
 ## 4.0.15 - 2024-09-12
 
 ### Fixed
