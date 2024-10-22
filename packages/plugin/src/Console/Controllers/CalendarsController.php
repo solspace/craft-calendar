@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Console\Controllers;
 
 use craft\console\Controller;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -56,59 +57,52 @@ class CalendarsController extends Controller
     private function _fixUids(int &$count, array &$uids = []): void
     {
         if (version_compare(\Craft::$app->getVersion(), '5', '<')) {
-            $fieldLayouts = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from('{{%calendar_calendars}}')
-                ->all()
-            ;
+            $query = (new Query());
+            $query->select(['field_layout_tabs.id', 'field_layout_tabs.elements']);
+            $query->from(Table::FIELDLAYOUTTABS.' field_layout_tabs');
+            $query->innerJoin(Table::FIELDLAYOUTS.' field_layouts', 'field_layout_tabs.[[layoutId]] = field_layouts.[[id]]');
+            $query->where(['field_layouts.[[type]]' => 'Solspace\Calendar\Elements\Event']);
 
-            foreach ($fieldLayouts as $fieldLayout) {
-                $fieldLayoutTabsTable = '{{%fieldlayouttabs}}';
+            $rows = $query->all();
 
-                $fieldLayoutTabs = (new Query())
-                    ->select(['id', 'elements'])
-                    ->from($fieldLayoutTabsTable)
-                    ->where(['layoutId' => $fieldLayout['fieldLayoutId']])
-                    ->all()
-                ;
+            foreach ($rows as $row) {
+                if (!empty($row['elements'])) {
+                    $this->stdout('    > Looking at field layout tabs ID '.$row['id']."\n");
 
-                foreach ($fieldLayoutTabs as $fieldLayoutTab) {
-                    if (!empty($fieldLayoutTab['elements'])) {
-                        $this->stdout('    > Looking at field layout tabs ID '.$fieldLayoutTab['id']."\n");
+                    $modified = false;
 
-                        $modified = false;
+                    $elements = json_decode($row['elements']);
+                    if (\is_array($elements)) {
+                        foreach ($elements as &$element) {
+                            $uid = $element->uid;
 
-                        $elements = json_decode($fieldLayoutTab['elements']);
-                        if (\is_array($elements)) {
-                            foreach ($elements as &$element) {
-                                $uid = $element->uid;
+                            $this->stdout('        > Looking at element UUID '.$uid."\n");
 
-                                $this->stdout('        > Looking at element UUID '.$uid."\n");
+                            if (\in_array($uid, $uids)) {
+                                $element->uid = StringHelper::UUID();
 
-                                if (\in_array($uid, $uids)) {
-                                    $element->uid = StringHelper::UUID();
+                                $this->stdout('            > Duplicate UUID found at '.$uid."\n");
+                                $this->stdout('            > Setting to '.$element->uid."\n");
 
-                                    $this->stdout('            > Duplicate UUID found at '.$uid."\n");
-                                    $this->stdout('            > Setting to '.$element->uid."\n");
+                                ++$count;
+                                $modified = true;
 
-                                    ++$count;
-                                    $modified = true;
-
-                                    continue;
-                                }
-
-                                $uids[] = $uid;
+                                continue;
                             }
 
-                            if ($modified) {
-                                Db::update(
-                                    $fieldLayoutTabsTable,
-                                    ['elements' => json_encode($elements)],
-                                    ['id' => $fieldLayoutTab['id']],
-                                    [],
-                                    false,
-                                );
-                            }
+                            $uids[] = $uid;
+                        }
+
+                        if ($modified) {
+                            $this->stdout('    > Updated field layout tabs ID '.$row['id']."\n");
+
+                            Db::update(
+                                Table::FIELDLAYOUTTABS,
+                                ['elements' => json_encode($elements)],
+                                ['id' => $row['id']],
+                                [],
+                                false,
+                            );
                         }
                     }
                 }
