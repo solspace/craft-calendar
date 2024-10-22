@@ -414,7 +414,7 @@ class EventsService extends Component
         $elementRows = (new Query());
         $elementRows->select(['elements_sites.*']);
         $elementRows->from(Table::ELEMENTS_SITES.' elements_sites');
-        $elementRows->innerJoin(Event::tableName().' e', 'elements_sites.[[elementId]] = e.id');
+        $elementRows->innerJoin(Event::tableName().' e', 'elements_sites.[[elementId]] = e.[[id]]');
         $elementRows->where(['elements_sites.[[siteId]]' => $primarySiteId]);
         $elementRows->all();
 
@@ -427,7 +427,7 @@ class EventsService extends Component
             $contentRows = (new Query());
             $contentRows->select(['content.*']);
             $contentRows->from(Table::CONTENT.' content');
-            $contentRows->innerJoin(Event::tableName().' calendar_events', 'content.[[elementId]] = calendar_events.id');
+            $contentRows->innerJoin(Event::tableName().' calendar_events', 'content.[[elementId]] = calendar_events.[[id]]');
             $contentRows->where(['content.[[siteId]]' => $primarySiteId]);
             $contentRows->all();
 
