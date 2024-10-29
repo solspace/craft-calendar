@@ -19,7 +19,9 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
 
     public function getExclusiveQueryParams(): array
     {
-        return ['author', 'authorId'];
+        return [
+            'authorId',
+        ];
     }
 
     public function modifyQuery(ElementQueryInterface $query): void

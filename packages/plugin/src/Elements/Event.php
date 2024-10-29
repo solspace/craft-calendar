@@ -1470,7 +1470,7 @@ class Event extends Element implements \JsonSerializable
         // Slug
         $fields[] = $this->slugFieldHtml($static);
 
-        // Author
+        // Author - Hide Author from Craft Solo
         if (\Craft::Solo !== \Craft::$app->getEdition()) {
             $fields[] = (function () use ($static) {
                 $author = $this->getAuthor();
@@ -1597,6 +1597,11 @@ class Event extends Element implements \JsonSerializable
         $names[] = 'authorId';
         $names[] = 'author';
 
+        // Hide Author from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            unset($names['authorId'], $names['author']);
+        }
+
         return $names;
     }
 
@@ -1606,25 +1611,17 @@ class Event extends Element implements \JsonSerializable
         $names[] = 'authorId';
         $names[] = 'author';
 
+        // Hide Author from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            unset($names['authorId'], $names['author']);
+        }
+
         return $names;
     }
 
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        switch ($attribute) {
-            case 'authorId':
-                $elementQuery->andWith(['authorId', ['status' => null]]);
-
-                break;
-
-            case 'author':
-                $elementQuery->andWith(['author', ['status' => null]]);
-
-                break;
-
-            default:
-                parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
-        }
+        parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
     }
 
     protected static function defineSources(?string $context = null): array
@@ -1681,9 +1678,8 @@ class Event extends Element implements \JsonSerializable
 
     protected static function defineSortOptions(): array
     {
-        return [
+        $attributes = [
             'authorId' => Calendar::t('Author ID'),
-            'author' => Calendar::t('Author'),
             'title' => Calendar::t('Title'),
             'name' => Calendar::t('Calendar'),
             'startDate' => Calendar::t('Start Date'),
@@ -1691,18 +1687,37 @@ class Event extends Element implements \JsonSerializable
             'allDay' => Calendar::t('All Day'),
             'postDate' => Calendar::t('Post Date'),
         ];
+
+        // Hide Author from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            unset($attributes['authorId']);
+        }
+
+        return $attributes;
     }
 
     protected static function defineSearchableAttributes(): array
     {
-        return ['authorId', 'author', 'id', 'title', 'startDate', 'endDate'];
+        $attributes = [
+            'authorId',
+            'author',
+            'id',
+            'title',
+            'startDate',
+            'endDate',
+        ];
+
+        // Hide Author from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            unset($attributes['authorId'], $attributes['author']);
+        }
+
+        return $attributes;
     }
 
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'authorId',
-            'author',
             'calendar',
             'startDate',
             'endDate',

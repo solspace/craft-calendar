@@ -9,7 +9,14 @@ class EventCondition extends ElementCondition
     // Craft 4
     protected function conditionRuleTypes(): array
     {
-        return array_merge(parent::conditionRuleTypes(), [
+        $conditions = parent::conditionRuleTypes();
+
+        // Hide Author Conditions from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            return $conditions;
+        }
+
+        return array_merge($conditions, [
             AuthorConditionRule::class,
         ]);
     }
@@ -17,7 +24,14 @@ class EventCondition extends ElementCondition
     // Craft 5
     protected function selectableConditionRules(): array
     {
-        return array_merge(parent::selectableConditionRules(), [
+        $conditions = parent::selectableConditionRules();
+
+        // Hide Author Conditions from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            return $conditions;
+        }
+
+        return array_merge($conditions, [
             AuthorConditionRule::class,
         ]);
     }
