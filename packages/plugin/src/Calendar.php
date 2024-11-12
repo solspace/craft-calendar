@@ -12,6 +12,7 @@ use craft\helpers\StringHelper;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\Fields;
+use craft\services\Gc;
 use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
@@ -156,6 +157,17 @@ class Calendar extends Plugin
             && 'calendar' === \Craft::$app->request->getSegment(1)
         ) {
             \Craft::$app->view->registerAssetBundle(MainAssetBundle::class);
+        }
+
+        if (method_exists(Gc::class, 'deleteOrphanedFieldLayouts')) {
+            Event::on(Gc::class, Gc::EVENT_RUN, function(Event $event) {
+                /** @var Gc $gc */
+                $gc = $event->sender;
+                $gc->deleteOrphanedFieldLayouts(
+                    \Solspace\Calendar\Elements\Event::class,
+                    'calendar_calendars',
+                );
+            });
         }
     }
 

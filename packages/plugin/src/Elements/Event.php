@@ -1568,6 +1568,10 @@ class Event extends Element implements \JsonSerializable
 
                 // Add in additional support for other field types
                 if ($field instanceof \benf\neo\Field) {
+                    if (Field::TRANSLATION_METHOD_SITE === $field->translationMethod) {
+                        $field->propagationMethod = 'language';
+                    }
+
                     if (!empty($values[$field->handle]['blocks']) && \is_array($values[$field->handle]['blocks'])) {
                         $index = 0;
                         $blocks = [];
