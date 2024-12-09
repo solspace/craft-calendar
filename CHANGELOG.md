@@ -308,7 +308,7 @@
 
 ## 3.0.0 - 2020-02-04
 
-> {warning} This major version introduces editions support ('Lite' edition introduced - existing customers 'Standard' licenses become 'Pro' licenses) and requires Craft 3.4+ as well. Please ensure you have a recent database backup, and we recommend you test the update on a local/staging environment before updating your production server. [Please follow the upgrading guide available here](https://docs.solspace.com/craft/calendar/v3/setup/updating-calendar-2.html)!
+> {warning} This major version introduces editions support ('Lite' edition introduced - existing customers 'Standard' licenses become 'Pro' licenses) and requires Craft 3.4+ as well. Please ensure you have a recent database backup, and we recommend you test the update on a local/staging environment before updating your production server. [Please follow the upgrading guide available here](https://docs.solspace.com/craft/calendar/v3/setup/updating-calendar-2/)!
 
 ### Added
 - Added Lite edition for Calendar for simpler setups. The key differences are no ICS export/subscriptions, repeating rules, dashboard widgets and renaming of plugin name.

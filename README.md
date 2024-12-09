@@ -15,5 +15,5 @@ Calendar is the most reliable and powerful event management and calendaring plug
 - [Report an Issue](https://github.com/solspace/craft-calendar/issues)
 - [Feature Requests](https://github.com/solspace/craft-calendar/discussions)
 - [Ask a Question](https://github.com/solspace/craft-calendar/discussions)
-- [Private Support Ticket](https://docs.solspace.com/craft/calendar/v3/support.html)
+- [Private Support Ticket](https://docs.solspace.com/support/)
 - [Craft Stack Exchange](https://craftcms.stackexchange.com/questions/tagged/solspace)
