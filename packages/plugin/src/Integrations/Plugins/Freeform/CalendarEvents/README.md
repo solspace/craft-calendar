@@ -1,6 +1,6 @@
 # Setup Guide
 
-This integration allows you to map Freeform submission data to [Calendar](https://docs.solspace.com/craft/calendar/v4). In addition to most custom Craft fields, Freeform can also map to the *Title*, *Site ID*, *Slug*, *Author ID*, *Post Date*, *Date Created* and *Date Updated*.
+This integration allows you to map Freeform submission data to [Calendar](https://docs.solspace.com/craft/calendar/v5). In addition to most custom Craft fields, Freeform can also map to the *Title*, *Site ID*, *Slug*, *Author ID*, *Post Date*, *Date Created* and *Date Updated*.
 
 ## Setup Instructions
 

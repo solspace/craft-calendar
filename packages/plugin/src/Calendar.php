@@ -85,7 +85,7 @@ class Calendar extends Plugin
     public const PERMISSION_SETTINGS = 'calendar-settings';
     public const PERMISSION_RESOURCES = 'calendar-resources';
 
-    public const PERMISSIONS_HELP_LINK = 'https://docs.solspace.com/craft/calendar/v4/setup/demo-templates.html';
+    public const PERMISSIONS_HELP_LINK = 'https://docs.solspace.com/craft/calendar/v5/configuration/demo-templates/';
 
     public const EDITION_LITE = 'lite';
     public const EDITION_PRO = 'pro';
