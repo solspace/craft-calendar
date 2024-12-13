@@ -165,7 +165,7 @@ class Calendar extends Plugin
                 $gc = $event->sender;
                 $gc->deleteOrphanedFieldLayouts(
                     \Solspace\Calendar\Elements\Event::class,
-                    'calendar_calendars',
+                    '{{%calendar_calendars}}',
                 );
             });
         }

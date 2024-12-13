@@ -1,5 +1,8 @@
 # Solspace Calendar Changelog
 
+### Fixed
+- Fixed a bug that prevented orphaned event field layouts from being deleted during garbage collection.
+
 ## 5.0.12 - 2024-11-12
 
 ### Fixed
