@@ -1142,7 +1142,7 @@ class Event extends Element implements \JsonSerializable
 
             $rangeEnd = $occurrencesConfig->getRangeEnd();
             if (null === $rangeEnd) {
-                $rangeEnd = $this->isInfinite() ? new \DateTime('+6 months') : $this->getUntil();
+                $rangeEnd = $this->isInfinite() ? $rangeStart->copy()->addMonths(6) : $this->getUntil();
             }
 
             if ($this->getRRuleObject()) {
