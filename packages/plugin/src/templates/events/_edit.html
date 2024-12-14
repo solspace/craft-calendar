@@ -4,6 +4,7 @@
 {% set calendarHandle = calendar.handle|default %}
 {% set selectedSubnavItem = 'events' %}
 {% set saveShortcutRedirect = continueEditingUrl %}
+{% set elementType = 'Solspace\\Calendar\\Elements\\Event' %}
 
 {% set crumbs = [
     { label: craft.calendar.name, url: url('calendar') },
@@ -58,31 +59,19 @@
             <div class="menu">
                 <ul>
                     <li>
-                        <a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">
-                            {{ "Save and continue editing"|t('calendar') }}
-                            <span class="shortcut">⌘S</span>
+                        <a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save and continue editing"|t('calendar') }}<span class="shortcut">⌘S</span>
                         </a>
                     </li>
                     <li>
-                        <a class="formsubmit"
-                           data-redirect="{{ ('calendar/events/new/'~calendarHandle~'/'~site.handle)|hash }}">
-                            {{ "Save and add another"|t('calendar') }}
+                        <a class="formsubmit" data-redirect="{{ ('calendar/events/new/'~calendarHandle~'/'~site.handle)|hash }}">{{ "Save and add another"|t('calendar') }}
                         </a>
                     </li>
                     {% if event.id %}
-                        <li><a class="formsubmit" data-param="eventId"
-                               data-value=""
-                               data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new event"|t('calendar') }}</a>
+                        <li><a class="formsubmit" data-action="elements/duplicate" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new event"|t('calendar') }}</a>
                         </li>
                         <hr>
                         <li>
-                            <a class="formsubmit error"
-                               data-action="calendar/events/delete-event"
-                               data-confirm="{{ 'Are you sure you want to delete this event?'|t('calendar') }}"
-                               data-redirect="{{ 'calendar/events'|hash }}"
-                            >
-                                {{ "Delete"|t('calendar') }}
-                            </a>
+                            <a class="formsubmit error" data-action="calendar/events/delete-event" data-confirm="{{ 'Are you sure you want to delete this event?'|t('calendar') }}" data-redirect="{{ 'calendar/events'|hash }}">{{ "Delete"|t('calendar') }}</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -97,8 +86,12 @@
     {{ redirectInput('calendar/events') }}
     {{ csrfInput() }}
     {% if craft.app.isMultiSite %}<input type="hidden" name="siteId" value="{{ event.siteId }}">{% endif %}
-    {% if event.id %}<input type="hidden" name="eventId" value="{{ event.id }}">{% endif %}
+    {% if event.id %}
+        <input type="hidden" name="eventId" value="{{ event.id }}">
+        <input type="hidden" name="elementId" value="{{ event.id }}">
+    {% endif %}
     <input type="hidden" name="{{ name ~ '[calendarId]' }}" value="{{ event.calendarId }}">
+    <input type="hidden" name="elementType" value="{{ elementType }}">
 
     {% include "calendar/events/_event_editor" %}
 
