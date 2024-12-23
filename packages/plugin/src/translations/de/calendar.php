@@ -1,4 +1,5 @@
 <?php
+
 /**
  *  German translation by Lucas Bares <luke@nehemdia.de>
  *  http://luke.nehemedia.de.
