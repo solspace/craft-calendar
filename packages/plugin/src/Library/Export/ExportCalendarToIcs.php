@@ -68,13 +68,13 @@ class ExportCalendarToIcs extends AbstractExportCalendar
 
         $description = null;
         $descriptionFieldHandle = $event->getCalendar()->descriptionFieldHandle;
-        if (isset($event->{$descriptionFieldHandle})) {
+        if ($descriptionFieldHandle && isset($event->{$descriptionFieldHandle})) {
             $description = $event->{$descriptionFieldHandle};
         }
 
         $location = null;
         $locationFieldHandle = $event->getCalendar()->locationFieldHandle;
-        if (isset($event->{$locationFieldHandle})) {
+        if ($locationFieldHandle && isset($event->{$locationFieldHandle})) {
             $location = $event->{$locationFieldHandle};
         }
         $title = $event->title;
