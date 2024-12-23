@@ -1,7 +1,13 @@
 # Solspace Calendar Changelog
 
+## 5.0.13 - 2024-12-23
+
 ### Fixed
+- Fixed a bug where exporting events would fail if the ICS Description and Location fields were not filled in.
 - Fixed a bug that prevented orphaned event field layouts from being deleted during garbage collection.
+- Fixed a bug where `getOccurrences` would sometimes not correctly retrieve events results when `rangeEnd` was not set for neverending repeating events.
+- Fixed a bug where uploading files to events via the front-end form would not work as of Calendar 5.0.7.
+- Fixed various issues with Neo fields.
 
 ## 5.0.12 - 2024-11-12
 
