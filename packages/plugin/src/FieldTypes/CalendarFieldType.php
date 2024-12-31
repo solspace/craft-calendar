@@ -26,6 +26,11 @@ class CalendarFieldType extends Field
         return Calendar::t('Add a calendar');
     }
 
+    public static function icon(): string
+    {
+        return '@calendar/icon-mask.svg';
+    }
+
     // Craft 4
     public function getContentColumnType(): array|string
     {

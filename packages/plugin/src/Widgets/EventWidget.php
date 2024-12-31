@@ -16,6 +16,11 @@ class EventWidget extends AbstractWidget
         return Calendar::t('Calendar Event');
     }
 
+    public static function icon(): string
+    {
+        return '@calendar/icon-mask.svg';
+    }
+
     public function init(): void
     {
         parent::init();

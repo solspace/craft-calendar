@@ -21,6 +21,11 @@ class AgendaWidget extends AbstractWidget
         return Calendar::t('Calendar Agenda');
     }
 
+    public static function icon(): string
+    {
+        return '@calendar/icon-mask.svg';
+    }
+
     public function init(): void
     {
         parent::init();

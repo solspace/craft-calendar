@@ -18,7 +18,12 @@ class UpcomingEventsWidget extends AbstractWidget
 
     public static function displayName(): string
     {
-        return Calendar::t('Upcoming Events');
+        return Calendar::t('Calendar Upcoming Events');
+    }
+
+    public static function icon(): string
+    {
+        return '@calendar/icon-mask.svg';
     }
 
     public function init(): void

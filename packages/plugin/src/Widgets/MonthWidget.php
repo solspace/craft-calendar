@@ -18,7 +18,12 @@ class MonthWidget extends AbstractWidget
 
     public static function displayName(): string
     {
-        return Calendar::t('Mini Calendar');
+        return Calendar::t('Calendar Mini');
+    }
+
+    public static function icon(): string
+    {
+        return '@calendar/icon-mask.svg';
     }
 
     public function init(): void

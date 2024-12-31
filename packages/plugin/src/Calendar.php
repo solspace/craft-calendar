@@ -124,6 +124,7 @@ class Calendar extends Plugin
     public function init(): void
     {
         parent::init();
+        \Yii::setAlias('@calendar', __DIR__);
 
         $this->initControllers();
         $this->initServices();

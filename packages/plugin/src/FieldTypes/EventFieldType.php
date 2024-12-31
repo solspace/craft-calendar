@@ -27,6 +27,11 @@ class EventFieldType extends BaseRelationField
         return Calendar::t('Add an event');
     }
 
+    public static function icon(): string
+    {
+        return '@calendar/icon-mask.svg';
+    }
+
     // Craft 4
     public static function valueType(): string
     {
