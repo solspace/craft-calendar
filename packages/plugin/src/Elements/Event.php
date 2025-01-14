@@ -19,7 +19,6 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use craft\web\UploadedFile;
 use Illuminate\Support\Collection;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
@@ -145,8 +144,6 @@ class Event extends Element implements \JsonSerializable
 
     /** @var Event[] */
     private $occurrenceCache = [];
-
-    private ?string $_fieldParamNamePrefix = null;
 
     /**
      * Event constructor.
@@ -1323,6 +1320,11 @@ class Event extends Element implements \JsonSerializable
         return DateHelper::carbonDiffInDays($this->getStartDate(), $event->getStartDate());
     }
 
+    public function canDuplicate(User $user): bool
+    {
+        return $this->isEditable($this);
+    }
+
     public function canDelete(User $user): bool
     {
         return $this->isEditable($this);
@@ -1615,65 +1617,37 @@ class Event extends Element implements \JsonSerializable
         return $event->actions;
     }
 
-    public function setFieldValuesFromRequest(string $paramNamespace = ''): void
+    public function attributes(): array
     {
-        $this->setFieldParamNamespace($paramNamespace);
+        $names = parent::attributes();
+        $names[] = 'authorId';
+        $names[] = 'author';
 
-        if (isset($this->_fieldParamNamePrefix)) {
-            $values = \Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
-        } else {
-            $values = \Craft::$app->getRequest()->getBodyParams();
+        // Hide Author from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            unset($names['authorId'], $names['author']);
         }
 
-        // Run through this multiple times, in case any fields become visible as a result of other field value changes
-        $processedFields = [];
-        do {
-            $processedAnyFields = false;
-            foreach ($this->fieldLayoutFields(true) as $field) {
-                // Have we already processed this field?
-                if (isset($processedFields[$field->id])) {
-                    continue;
-                }
-
-                $processedFields[$field->id] = true;
-                $processedAnyFields = true;
-
-                // Do we have any post data for this field?
-                if (isset($values[$field->handle])) {
-                    $value = $values[$field->handle];
-                } elseif (
-                    isset($this->_fieldParamNamePrefix)
-                    && UploadedFile::getInstancesByName("{$this->_fieldParamNamePrefix}.{$field->handle}")
-                ) {
-                    // A file was uploaded for this field
-                    $value = null;
-                } else {
-                    continue;
-                }
-
-                // Add in additional support for other field types
-                if ($field instanceof \benf\neo\Field) {
-                    if (!empty($values[$field->handle]['blocks']) && \is_array($values[$field->handle]['blocks'])) {
-                        $index = 0;
-                        $blocks = [];
-                        foreach ($values[$field->handle]['blocks'] as $block) {
-                            $blocks['new'.$index] = $block;
-                            ++$index;
-                        }
-                        $this->setFieldValues([$field->handle => $blocks]);
-                    } else {
-                        $this->setFieldValues([$field->handle => '']);
-                    }
-                } else {
-                    $this->setFieldValueFromRequest($field->handle, $value);
-                }
-            }
-        } while ($processedAnyFields);
+        return $names;
     }
 
-    public function setFieldParamNamespace(string $namespace): void
+    public function extraFields(): array
     {
-        $this->_fieldParamNamePrefix = '' !== $namespace ? $namespace : null;
+        $names = parent::extraFields();
+        $names[] = 'authorId';
+        $names[] = 'author';
+
+        // Hide Author from Craft Solo
+        if (\Craft::Solo === \Craft::$app->getEdition()) {
+            unset($names['authorId'], $names['author']);
+        }
+
+        return $names;
+    }
+
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
+    {
+        parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
     }
 
     protected static function defineSources(string $context = null): array
