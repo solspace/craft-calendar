@@ -95,26 +95,6 @@ class Calendar extends Plugin
 
     public bool $hasCpSettings = true;
 
-    /** @var array */
-    private static $javascriptTranslationKeys = [
-        'Couldn’t save event.',
-        'Event saved.',
-        'Refresh',
-        'New Event',
-        'Starts',
-        'Ends',
-        'Repeats',
-        'Edit',
-        'Delete',
-        'Delete occurrence',
-        'Are you sure?',
-        'Are you sure you want to delete this event?',
-        'Couldn’t save event.',
-        'Are you sure you want to enable ICS sharing for this calendar?',
-        'Are you sure you want to disable ICS sharing for this calendar?',
-        'Today',
-    ];
-
     /**
      * Includes CSS and JS files
      * Registers custom class auto-loader.
@@ -140,7 +120,10 @@ class Calendar extends Plugin
         }
 
         if (\Craft::$app->request->getIsCpRequest()) {
-            \Craft::$app->view->registerTranslations(self::TRANSLATION_CATEGORY, self::$javascriptTranslationKeys);
+            $translations = include __DIR__.'/translations/en-US/calendar.php';
+            $translations = array_keys($translations);
+
+            \Craft::$app->view->registerTranslations(self::TRANSLATION_CATEGORY, $translations);
         }
 
         if (\Craft::$app->request->getIsSiteRequest()) {
