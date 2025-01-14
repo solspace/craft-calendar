@@ -1198,6 +1198,15 @@ class EventQuery extends ElementQuery
      */
     private function orderEvents(array &$events): void
     {
+        if (\is_array($this->orderBy) && \count($this->orderBy) > 1) {
+            $this->orderByMultipleCriteria($events);
+        } else {
+            $this->orderBySingleCriteria($events);
+        }
+    }
+
+    private function orderBySingleCriteria(array &$events): void
+    {
         $modifier = $this->getSortModifier();
         $orderBy = $this->getOrderByField() ?? 'startDate';
 
@@ -1258,6 +1267,28 @@ class EventQuery extends ElementQuery
 
                 // Otherwise put the one which is multi-day - first
                 return $multiDayComparison;
+            }
+        );
+    }
+
+    private function orderByMultipleCriteria(array &$events): void
+    {
+        usort(
+            $events,
+            function (Event $eventA, Event $eventB) {
+                foreach ($this->orderBy as $key => $order) {
+                    if ($eventA[$key] == $eventB[$key]) {
+                        continue;
+                    }
+
+                    if (\SORT_ASC === $order) {
+                        return $eventA[$key] <=> $eventB[$key];
+                    }
+
+                    return $eventB[$key] <=> $eventA[$key];
+                }
+
+                return 0;
             }
         );
     }
