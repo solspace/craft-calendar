@@ -135,6 +135,7 @@ $events = [
     'Times' => 'Times',
     'On' => 'On',
     'Exception date cannot be the same as our End Repeat date' => 'Exception date cannot be the same as our End Repeat date',
+    'at' => 'at',
 ];
 $calendars = [
     'Name' => 'Name',
