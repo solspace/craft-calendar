@@ -1,4 +1,5 @@
 <?php
+
 /**
  *  German translation by Lucas Bares <luke@nehemdia.de>
  *  http://luke.nehemedia.de.
@@ -125,6 +126,7 @@ $events = [
     'November' => 'November',
     'December' => 'Dezember',
     'Exception date cannot be the same as our End Repeat date' => 'Das Ausnahmedatum darf nicht mit unserem Endwiederholungsdatum übereinstimmen',
+    'at' => 'um',
 ];
 $calendars = [
     'Name' => 'Name',
