@@ -120,6 +120,24 @@
 - Updated plugin icon.
 - Removed _Resources_ area in control panel.
 
+## 4.0.17 - 2025-01-14
+
+### Changed
+- Updated the `fix-field-layout-tabs-elements-uids` console command to address orphaned field layout tabs belonging to the Calendar Event element type.
+- Removed the _Resources_ subnav link.
+
+### Fixed
+- Fixed a translation issue in the event details popup in the CP Month/Week/Day pages.
+- Fixed various issues with Neo fields.
+
+## 4.0.16 - 2024-10-17
+
+### Added
+- Added `calendar/calendars/fix-field-layout-tabs-elements-uids --rebuildProjectConfig` CLI command to resolve issues where unique UIDs were not generated for field layout elements when duplicating calendars.
+
+### Fixed
+- Fixed a bug where soft-deleted (_Trashed_) events were not visible on the CP Events index page.
+
 ## 4.0.15 - 2024-09-12
 
 ### Fixed
