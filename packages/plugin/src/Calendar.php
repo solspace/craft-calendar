@@ -72,7 +72,6 @@ class Calendar extends Plugin
     public const VIEW_DAY = 'day';
     public const VIEW_EVENTS = 'events';
     public const VIEW_CALENDARS = 'calendars';
-    public const VIEW_RESOURCES = 'resources';
 
     public const PERMISSION_CALENDARS = 'calendar-manageCalendars';
     public const PERMISSION_CREATE_CALENDARS = 'calendar-createCalendars';
@@ -82,7 +81,6 @@ class Calendar extends Plugin
     public const PERMISSION_EVENTS_FOR = 'calendar-manageEventsFor';
     public const PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
     public const PERMISSION_SETTINGS = 'calendar-settings';
-    public const PERMISSION_RESOURCES = 'calendar-resources';
 
     public const PERMISSIONS_HELP_LINK = 'https://docs.solspace.com/craft/calendar/v4/configuration/demo-templates/';
 
@@ -389,7 +387,6 @@ class Calendar extends Plugin
                             'nested' => $editEventsPermissions,
                         ],
                         self::PERMISSION_SETTINGS => ['label' => self::t('Access Settings')],
-                        self::PERMISSION_RESOURCES => ['label' => self::t('Access Resources')],
                     ];
 
                     $event->permissions[] = [

@@ -37,9 +37,4 @@ return [
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
     'calendar/settings/ics' => 'calendar/settings/ics',
     'calendar/settings/demo-templates' => 'calendar/codepack/list-contents',
-    // Resources
-    'calendar/resources' => 'calendar/resources/index',
-    'calendar/resources/community' => 'calendar/resources/community',
-    'calendar/resources/explore' => 'calendar/resources/explore',
-    'calendar/resources/support' => 'calendar/resources/support',
 ];
