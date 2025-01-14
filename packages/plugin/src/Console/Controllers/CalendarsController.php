@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Console\Controllers;
 
 use craft\console\Controller;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -56,28 +57,21 @@ class CalendarsController extends Controller
     private function _fixUids(int &$count, array &$uids = []): void
     {
         if (version_compare(\Craft::$app->getVersion(), '5', '<')) {
-            $calendars = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from('{{%calendar_calendars}}')
-                ->all()
-            ;
+            $query = (new Query());
+            $query->select(['field_layout_tabs.id', 'field_layout_tabs.elements']);
+            $query->from(Table::FIELDLAYOUTTABS.' field_layout_tabs');
+            $query->innerJoin(Table::FIELDLAYOUTS.' field_layouts', 'field_layout_tabs.[[layoutId]] = field_layouts.[[id]]');
+            $query->where(['field_layouts.[[type]]' => 'Solspace\Calendar\Elements\Event']);
 
-            foreach ($calendars as $calendar) {
-                $fieldLayoutTabsTable = '{{%fieldlayouttabs}}';
+            $rows = $query->all();
 
-                $fieldLayoutTab = (new Query())
-                    ->select(['id', 'elements'])
-                    ->from($fieldLayoutTabsTable)
-                    ->where(['layoutId' => $calendar['fieldLayoutId']])
-                    ->one()
-                ;
-
-                if (!empty($fieldLayoutTab['elements'])) {
-                    $this->stdout('    > Looking at field layout tabs ID '.$fieldLayoutTab['id']."\n");
+            foreach ($rows as $row) {
+                if (!empty($row['elements'])) {
+                    $this->stdout('    > Looking at field layout tabs ID '.$row['id']."\n");
 
                     $modified = false;
 
-                    $elements = json_decode($fieldLayoutTab['elements']);
+                    $elements = json_decode($row['elements']);
                     if (\is_array($elements)) {
                         foreach ($elements as &$element) {
                             $uid = $element->uid;
@@ -100,10 +94,12 @@ class CalendarsController extends Controller
                         }
 
                         if ($modified) {
+                            $this->stdout('    > Updated field layout tabs ID '.$row['id']."\n");
+
                             Db::update(
-                                $fieldLayoutTabsTable,
+                                Table::FIELDLAYOUTTABS,
                                 ['elements' => json_encode($elements)],
-                                ['id' => $fieldLayoutTab['id']],
+                                ['id' => $row['id']],
                                 [],
                                 false,
                             );

@@ -381,7 +381,7 @@ class EventsService extends Component
         $elementRows = (new Query())
             ->select(['ei18n.*'])
             ->from('{{%elements_sites}} ei18n')
-            ->innerJoin(Event::TABLE.' e', 'ei18n.[[elementId]] = e.id')
+            ->innerJoin(Event::TABLE.' e', 'ei18n.[[elementId]] = e.[[id]]')
             ->where(['ei18n.[[siteId]]' => $primarySiteId])
             ->all()
         ;
@@ -389,7 +389,7 @@ class EventsService extends Component
         $contentRows = (new Query())
             ->select(['c.*'])
             ->from('{{%content}} c')
-            ->innerJoin(Event::TABLE.' e', 'c.[[elementId]] = e.id')
+            ->innerJoin(Event::TABLE.' e', 'c.[[elementId]] = e.[[id]]')
             ->where(['c.[[siteId]]' => $primarySiteId])
             ->all()
         ;
