@@ -2,7 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set selectedSubnavItem = currentView %}
-{% set title = currentView|ucfirst|t('calendar') %}
+{% set title = currentView|capitalize|t('calendar') %}
 
 {% set crumbs = [
     { label: craft.calendar.name, url: url("calendar") },
