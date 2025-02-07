@@ -39,7 +39,7 @@ body:
     id: calendar-edition
     attributes:
       label: Calendar Edition
-      description: What edition of Calendar are you running?
+      description: Which edition of Calendar are you currently using?
       options:
         - Pro
         - Lite
@@ -50,7 +50,7 @@ body:
     id: calendar-version
     attributes:
       label: Calendar Version
-      description: What version of Calendar are you using?
+      description: Which version of Calendar are you currently using?
       placeholder: e.g. 5.3.1
     validations:
       required: true
@@ -58,7 +58,7 @@ body:
     id: craft-version
     attributes:
       label: Craft Version
-      description: What version of Craft are you running?
+      description: Which version of Craft are you currently using?
       placeholder: e.g. 5.1.8
     validations:
       required: true
