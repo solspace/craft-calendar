@@ -67,7 +67,6 @@ body:
     attributes:
       label: When did this issue start?
       description: Choose all that apply.
-      multiple: true
       options:
         - Fresh install of Calendar
         - After upgrading from older Calendar version
