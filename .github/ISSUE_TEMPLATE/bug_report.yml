@@ -68,11 +68,11 @@ body:
       label: When did this issue start?
       description: Choose all that apply.
       options:
+        - label: Unsure
         - label: Fresh install of Calendar
         - label: After upgrading from older Calendar version
         - label: After upgrading from older Craft version
         - label: After a change to hosting configuration
-        - label: Unsure
   - type: input
     id: previous-calendar-version
     attributes:
