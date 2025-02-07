@@ -1,0 +1,84 @@
+name: Report an Issue
+description: Create a report about a bug or something that isn't working correctly in Calendar.
+type: Problem
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to fill out this report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Please describe the issue that is happening.
+      placeholder: Please elaborate as much as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: errors-stack-trace
+    attributes:
+      label: Errors and Stack Trace (if available)
+      description: If you are seeing any errors, please copy and paste those here (including the stack trace if possible). Be sure to check the Craft error logs to find more detailed errors.
+      placeholder: This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: How can we reproduce this?
+      description: Please describe how we can reproduce this issue. If possible, please simplify the issue as much as possible (while still seeing the issue) on your site.
+      placeholder: Please elaborate as much as possible.
+      value:  |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: dropdown
+    id: calendar-edition
+    attributes:
+      label: Calendar Edition
+      description: What edition of Calendar are you running?
+      options:
+        - Pro
+        - Lite
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: calendar-version
+    attributes:
+      label: Calendar Version
+      description: What version of Calendar are you using?
+      placeholder: e.g. 5.3.1
+    validations:
+      required: true
+  - type: input
+    id: craft-version
+    attributes:
+      label: Craft Version
+      description: What version of Craft are you running?
+      placeholder: e.g. 5.1.8
+    validations:
+      required: true
+  - type: dropdown
+    id: when-started
+    attributes:
+      label: When did this issue start?
+      description: Choose all that apply.
+      multiple: true
+      options:
+        - Fresh install of Calendar
+        - After upgrading from older Calendar version
+        - After upgrading from older Craft version
+        - After a change to hosting configuration
+        - Unsure
+  - type: input
+    id: previous-calendar-version
+    attributes:
+      label: Previous Calendar Version
+      description: If this issue began after an update to Calendar, please let us know which version of Calendar you updated from.
+      placeholder: e.g. 5.1.17
+    validations:
+      required: false
