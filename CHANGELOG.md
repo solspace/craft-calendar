@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 5.0.14 - 2025-02-11
+
+### Changed
+- Updated the plugin icon.
+- Updated the Calendar dashboard widgets and field types to include the Calendar icon.
+
+### Fixed
+- Fixed a bug where some parts of the event details popup window were not translatable.
+- Fixed a bug where events could not be ordered by multiple criteria on the front end.
+- Fixed a deprecation warning in the control panel (`ucfirst` to `capitalize`).
+
 ## 5.0.13 - 2024-12-23
 
 ### Fixed
