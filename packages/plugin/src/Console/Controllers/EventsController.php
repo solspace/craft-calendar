@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
 use craft\events\MultiElementActionEvent;
 use craft\services\Elements;
+use Solspace\Calendar\Console\Controllers\Fix\ContentFixMigration;
 use Solspace\Calendar\Console\Controllers\Fix\TitleFixMigration;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
@@ -85,6 +86,18 @@ class EventsController extends Controller
         $migration->run();
 
         $this->stdout('Event titles fixed.'.\PHP_EOL, Console::FG_YELLOW);
+
+        return ExitCode::OK;
+    }
+
+    public function actionFixContents()
+    {
+        $this->stdout('Fixing event contents...'.\PHP_EOL, Console::FG_YELLOW);
+
+        $migration = new ContentFixMigration();
+        $migration->run();
+
+        $this->stdout('Event contents fixed.'.\PHP_EOL, Console::FG_YELLOW);
 
         return ExitCode::OK;
     }
