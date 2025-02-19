@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.15 - 2025-02-19
+
+### Added
+- Added `calendar/events/fix-contents` command to help fix missing event data after upgrading from Craft 4 to Craft 5.
+
 ## 5.0.14 - 2025-02-11
 
 ### Changed
