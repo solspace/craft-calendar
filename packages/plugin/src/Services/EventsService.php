@@ -106,7 +106,7 @@ class EventsService extends Component
         return Event::buildQuery($criteria);
     }
 
-    public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
+    public function getSingleEventMetadata(?array $ids, ?array $siteIds, ?bool $trashed, ?array $orderBy): array
     {
         $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
 
@@ -169,10 +169,14 @@ class EventsService extends Component
             $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
         }
 
+        if (!empty($orderBy)) {
+            $query->orderBy($orderBy);
+        }
+
         return $query->all();
     }
 
-    public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
+    public function getRecurringEventMetadata(?array $ids, ?array $siteIds, ?bool $trashed, ?array $orderBy): array
     {
         $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
 
@@ -243,6 +247,10 @@ class EventsService extends Component
 
         if ($isCraft4) {
             $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
+        }
+
+        if (!empty($orderBy)) {
+            $query->orderBy($orderBy);
         }
 
         return $query->all();
