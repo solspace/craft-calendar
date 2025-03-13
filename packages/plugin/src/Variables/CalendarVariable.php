@@ -101,9 +101,9 @@ class CalendarVariable
 
         $event = null;
         if (is_numeric($id)) {
-            $event = $eventsService->getEventById($id, $siteId, $includeDisabled);
+            $event = $eventsService->getEventById($id, $siteId, $includeDisabled, false);
         } elseif (\is_string($id)) {
-            $event = $eventsService->getEventBySlug($id, $siteId, $includeDisabled);
+            $event = $eventsService->getEventBySlug($id, $siteId, $includeDisabled, false);
         }
 
         if ($event) {
