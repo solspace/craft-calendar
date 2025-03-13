@@ -1598,7 +1598,7 @@ class Event extends Element implements \JsonSerializable
     {
         $attributes = [
             'slug' => ['label' => Calendar::t('Slug')],
-            'calendar' => ['label' => Calendar::t('Calendar')],
+            'name' => ['label' => Calendar::t('Calendar')],
             'startDate' => ['label' => Calendar::t('Start Date')],
             'endDate' => ['label' => Calendar::t('End Date')],
             'dateCreated' => ['label' => Calendar::t('Date Created')],
@@ -1644,6 +1644,7 @@ class Event extends Element implements \JsonSerializable
     protected static function defineSearchableAttributes(): array
     {
         $attributes = [
+            'name',
             'authorId',
             'author',
             'id',
@@ -1666,7 +1667,7 @@ class Event extends Element implements \JsonSerializable
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'calendar',
+            'name',
             'startDate',
             'endDate',
             'dateCreated',
