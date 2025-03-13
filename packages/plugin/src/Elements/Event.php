@@ -1599,8 +1599,10 @@ class Event extends Element implements \JsonSerializable
         $attributes = [
             'slug' => ['label' => Calendar::t('Slug')],
             'calendar' => ['label' => Calendar::t('Calendar')],
-            'startDateLocalized' => ['label' => Calendar::t('Start Date')],
-            'endDateLocalized' => ['label' => Calendar::t('End Date')],
+            'startDate' => ['label' => Calendar::t('Start Date')],
+            'endDate' => ['label' => Calendar::t('End Date')],
+            'dateCreated' => ['label' => Calendar::t('Date Created')],
+            'dateUpdated' => ['label' => Calendar::t('Date Updated')],
             'allDay' => ['label' => Calendar::t('All Day')],
             'rrule' => ['label' => Calendar::t('Repeats')],
             'authorId' => ['label' => Calendar::t('Author ID')],
@@ -1625,6 +1627,8 @@ class Event extends Element implements \JsonSerializable
             'name' => Calendar::t('Calendar'),
             'startDate' => Calendar::t('Start Date'),
             'endDate' => Calendar::t('End Date'),
+            'dateCreated' => Calendar::t('Date Created'),
+            'dateUpdated' => Calendar::t('Date Updated'),
             'allDay' => Calendar::t('All Day'),
             'postDate' => Calendar::t('Post Date'),
         ];
@@ -1646,6 +1650,9 @@ class Event extends Element implements \JsonSerializable
             'title',
             'startDate',
             'endDate',
+            'dateCreated',
+            'dateUpdated',
+            'postDate',
         ];
 
         // Hide Author from Craft Solo
@@ -1662,6 +1669,8 @@ class Event extends Element implements \JsonSerializable
             'calendar',
             'startDate',
             'endDate',
+            'dateCreated',
+            'dateUpdated',
             'allDay',
             'postDate',
         ];
