@@ -74,6 +74,7 @@ $events = [
     'Cancel' => 'Annuleer',
     'Limit' => 'Limiet',
     'Delete' => 'Verwijder',
+    'Event ID was missing.' => 'De gebeurtenis-ID ontbrak.',
     'Are you sure you want to delete this event?' => 'Ben je zeker dat je dit evenement wil verwijderen?',
     'Delete occurrence' => 'Verwijder gebeurtenis',
     'Are you sure?' => 'Ben je zeker?',

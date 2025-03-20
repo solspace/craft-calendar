@@ -1804,6 +1804,9 @@ class Event extends Element implements \JsonSerializable
 
     protected function destructiveActionMenuItems(): array
     {
+        // Uncomment the block below to add ... and extra context menu to last item in breadcrumbs list
+        return parent::destructiveActionMenuItems();
+        /*
         if (!$this->id) {
             return parent::destructiveActionMenuItems();
         }
@@ -1836,6 +1839,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         return $destructiveItems;
+        */
     }
 
     private function hydrateSelectDates(): void

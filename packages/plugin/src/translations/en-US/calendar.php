@@ -85,6 +85,7 @@ $events = [
     'Couldn’t delete event.' => 'Couldn’t delete event.',
     'All events' => 'All events',
     'Add an event' => 'Add an event',
+    'Event ID was missing.' => 'Event ID was missing.',
     'Are you sure you want to delete the selected events?' => 'Are you sure you want to delete the selected events?',
     'Events deleted.' => 'Events deleted.',
     'Create a new event' => 'Create a new event',
