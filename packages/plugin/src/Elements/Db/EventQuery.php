@@ -1282,15 +1282,14 @@ class EventQuery extends ElementQuery
             $events,
             function (Event $eventA, Event $eventB) {
                 foreach ($this->orderBy as $key => $order) {
-
-                    $valueA = $eventA->$key ?? null;
-                    $valueB = $eventB->$key ?? null;
+                    $valueA = $eventA->{$key} ?? null;
+                    $valueB = $eventB->{$key} ?? null;
 
                     if ($valueA === $valueB) {
                         continue;
                     }
 
-                    return $order === \SORT_ASC ? $valueA <=> $valueB : $valueB <=> $valueA;
+                    return \SORT_ASC === $order ? $valueA <=> $valueB : $valueB <=> $valueA;
                 }
 
                 return 0;
