@@ -168,6 +168,10 @@ class CalendarVariable
         $calendarService = Calendar::getInstance()->calendars;
         $calendarList = $calendarService->getCalendars($attributes);
 
+        if (empty($calendarList)) {
+            return null;
+        }
+
         return reset($calendarList);
     }
 
