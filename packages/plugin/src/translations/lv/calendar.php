@@ -74,6 +74,7 @@ $events = [
     'Cancel' => 'Atteikt',
     'Limit' => 'Ierobežojums',
     'Delete' => 'Dzēst',
+    'Delete event' => 'Dzēst notikumu',
     'Event ID was missing.' => 'Trūkst notikuma ID.',
     'Are you sure you want to delete this event?' => 'Vai tiešām vēlaties dzēst šo notikumu?',
     'Delete occurrence' => 'Dzēst pasākuma notikumu',

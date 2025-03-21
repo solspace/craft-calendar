@@ -82,6 +82,7 @@ $events = [
     'Cancel' => 'Abbrechen',
     'Limit' => 'Begrenzen',
     'Delete' => 'Löschen',
+    'Delete event' => 'Ereignis löschen',
     'Event ID was missing.' => 'Die Ereignis-ID fehlte.',
     'Are you sure you want to delete this event?' => 'Wollen Sie dieses Ereignis wirklich löschen?',
     'Delete occurrence' => 'Vorkommnis löschen',

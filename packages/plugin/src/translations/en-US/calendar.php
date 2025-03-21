@@ -76,6 +76,7 @@ $events = [
     'Cancel' => 'Cancel',
     'Limit' => 'Limit',
     'Delete' => 'Delete',
+    'Delete event' => 'Delete event',
     'Are you sure you want to delete this event?' => 'Are you sure you want to delete this event?',
     'Delete occurrence' => 'Delete occurrence',
     'Are you sure?' => 'Are you sure?',
