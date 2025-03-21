@@ -612,6 +612,8 @@ class EventQuery extends ElementQuery
             $eventsTable.'.[[authorId]]',
             $eventsTable.'.[[startDate]]',
             $eventsTable.'.[[endDate]]',
+            $eventsTable.'.[[dateCreated]]',
+            $eventsTable.'.[[dateUpdated]]',
             $eventsTable.'.[[allDay]]',
             $eventsTable.'.[[rrule]]',
             $eventsTable.'.[[freq]]',
@@ -657,6 +659,24 @@ class EventQuery extends ElementQuery
 
         if ($this->authorId) {
             $this->subQuery->andWhere(Db::parseParam($eventsTable.'.[[authorId]]', $this->authorId));
+        }
+
+        if ($this->dateCreated) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $eventsTable.'.[[dateCreated]]',
+                    $this->extractDateAsFormattedString($this->dateCreated)
+                )
+            );
+        }
+
+        if ($this->dateUpdated) {
+            $this->subQuery->andWhere(
+                Db::parseParam(
+                    $eventsTable.'.[[dateUpdated]]',
+                    $this->extractDateAsFormattedString($this->dateUpdated)
+                )
+            );
         }
 
         if ($this->postDate) {
@@ -821,21 +841,6 @@ class EventQuery extends ElementQuery
 
             if (!PermissionHelper::isAdmin() && Calendar::getInstance()->settings->isAuthoredEventEditOnly()) {
                 $this->subQuery->andWhere($eventsTable.'.[[authorId]]', \Craft::$app->user->id);
-            }
-        }
-
-        if (\is_array($this->orderBy)) {
-            if (isset($this->orderBy['dateCreated'])) {
-                $sortDirection = $this->orderBy['dateCreated'];
-                $this->orderBy['[[calendar_events.dateCreated]]'] = $sortDirection;
-
-                unset($this->orderBy['dateCreated']);
-            }
-            if (isset($this->orderBy['postDate'])) {
-                $sortDirection = $this->orderBy['postDate'];
-                $this->orderBy['[[calendar_events.postDate]]'] = $sortDirection;
-
-                unset($this->orderBy['postDate']);
             }
         }
 

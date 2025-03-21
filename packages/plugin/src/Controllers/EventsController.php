@@ -178,7 +178,7 @@ class EventsController extends BaseController
             );
         }
 
-        return $this->renderEditForm($event, $event->title);
+        return $this->renderEditForm($event, $event->title ?? '');
     }
 
     /**
@@ -311,34 +311,41 @@ class EventsController extends BaseController
         $this->requirePostRequest();
 
         $eventId = \Craft::$app->request->post('eventId');
+        if (!$eventId) {
+            if (\Craft::$app->request->isAjax) {
+                return $this->asJson(['success' => false, 'message' => Calendar::t('Event ID was missing.')]);
+            }
 
-        $event = $this->getEventsService()->getEventById($eventId, null, true);
-
-        if (!$event) {
             return false;
         }
 
-        $eventWasDeleted = $this->getEventsService()->deleteEvent($event);
-
-        if ($eventWasDeleted) {
-            // Return JSON response if the request is an AJAX request
+        $event = $this->getEventsService()->getEventById($eventId, null, true);
+        if (!$event) {
             if (\Craft::$app->request->isAjax) {
-                return $this->asJson(['success' => true]);
+                return $this->asJson(['success' => false, 'message' => Calendar::t('Could not find an Event with ID {id}', ['id' => $eventId])]);
             }
 
-            \Craft::$app->session->setNotice(Calendar::t('Event deleted.'));
-
-            return $this->redirectToPostedUrl($event);
+            return false;
         }
 
-        // Return JSON response if the request is an AJAX request
+        $deleted = $this->getEventsService()->deleteEvent($event);
+        if (!$deleted) {
+            if (\Craft::$app->request->isAjax) {
+                return $this->asJson(['success' => false, 'message' => Calendar::t('Couldn’t delete event.')]);
+            }
+
+            return false;
+        }
+
+        $message = Calendar::t('Event deleted.');
+
+        \Craft::$app->session->setSuccess($message);
+
         if (\Craft::$app->request->isAjax) {
-            return $this->asJson(['success' => false]);
+            return $this->asJson(['success' => true, 'message' => $message]);
         }
 
-        \Craft::$app->session->setError(Calendar::t('Couldn’t delete event.'));
-
-        return false;
+        return $this->redirectToPostedUrl($event);
     }
 
     /**
@@ -546,13 +553,19 @@ class EventsController extends BaseController
         $crumbs = [];
 
         if ($isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
+            $allowedCalendarSites = Calendar::getInstance()->calendarSites->getAllowedCalendarSites($calendar);
+            $allowedCalendarSites = array_map(fn ($item) => $item['name'], $allowedCalendarSites);
+
+            $items = CpHelper::siteMenuItems($sites, $site);
+            $items = array_filter($items, fn ($item) => \in_array($item['label'], $allowedCalendarSites));
+
             $crumbs[] = [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
                 'label' => \Craft::t('site', $site->name),
                 'menu' => [
                     'label' => \Craft::t('site', 'Select site'),
-                    'items' => CpHelper::siteMenuItems($sites, $site),
+                    'items' => $items,
                 ],
             ];
         }

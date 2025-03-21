@@ -4,9 +4,11 @@ namespace Solspace\Calendar\Services;
 
 use craft\base\Component;
 use craft\db\Query;
+use craft\records\Site;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
+use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\CalendarSiteSettingsRecord;
 
 class CalendarSitesService extends Component
@@ -62,6 +64,19 @@ class CalendarSitesService extends Component
     {
         $path = Calendar::CONFIG_CALENDAR_SITES_PATH.'.'.$model->uid;
         \Craft::$app->projectConfig->remove($path);
+    }
+
+    public function getAllowedCalendarSites(CalendarModel $calendar): array
+    {
+        return (new Query())
+            ->select('*')
+            ->from(CalendarSiteSettingsRecord::TABLE.' calendarSites')
+            ->innerJoin(CalendarRecord::TABLE.' calendar', '[[calendar]].[[id]] = [[calendarSites]].[[calendarId]]')
+            ->innerJoin(Site::tableName().' sites', '[[calendarSites]].[[siteId]] = [[sites]].[[id]]')
+            ->where(['[[calendar]].[[id]]' => $calendar->id])
+            ->orderBy(['[[calendarSites]].[[id]]' => \SORT_ASC])
+            ->all()
+        ;
     }
 
     private function getQuery(): Query

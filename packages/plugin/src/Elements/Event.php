@@ -1598,9 +1598,11 @@ class Event extends Element implements \JsonSerializable
     {
         $attributes = [
             'slug' => ['label' => Calendar::t('Slug')],
-            'calendar' => ['label' => Calendar::t('Calendar')],
-            'startDateLocalized' => ['label' => Calendar::t('Start Date')],
-            'endDateLocalized' => ['label' => Calendar::t('End Date')],
+            'name' => ['label' => Calendar::t('Calendar')],
+            'startDate' => ['label' => Calendar::t('Start Date')],
+            'endDate' => ['label' => Calendar::t('End Date')],
+            'dateCreated' => ['label' => Calendar::t('Date Created')],
+            'dateUpdated' => ['label' => Calendar::t('Date Updated')],
             'allDay' => ['label' => Calendar::t('All Day')],
             'rrule' => ['label' => Calendar::t('Repeats')],
             'authorId' => ['label' => Calendar::t('Author ID')],
@@ -1625,6 +1627,8 @@ class Event extends Element implements \JsonSerializable
             'name' => Calendar::t('Calendar'),
             'startDate' => Calendar::t('Start Date'),
             'endDate' => Calendar::t('End Date'),
+            'dateCreated' => Calendar::t('Date Created'),
+            'dateUpdated' => Calendar::t('Date Updated'),
             'allDay' => Calendar::t('All Day'),
             'postDate' => Calendar::t('Post Date'),
         ];
@@ -1640,12 +1644,16 @@ class Event extends Element implements \JsonSerializable
     protected static function defineSearchableAttributes(): array
     {
         $attributes = [
+            'name',
             'authorId',
             'author',
             'id',
             'title',
             'startDate',
             'endDate',
+            'dateCreated',
+            'dateUpdated',
+            'postDate',
         ];
 
         // Hide Author from Craft Solo
@@ -1659,9 +1667,11 @@ class Event extends Element implements \JsonSerializable
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'calendar',
+            'name',
             'startDate',
             'endDate',
+            'dateCreated',
+            'dateUpdated',
             'allDay',
             'postDate',
         ];
@@ -1804,6 +1814,9 @@ class Event extends Element implements \JsonSerializable
 
     protected function destructiveActionMenuItems(): array
     {
+        // Uncomment the block below to add ... and extra context menu to last item in breadcrumbs list
+        return parent::destructiveActionMenuItems();
+        /*
         if (!$this->id) {
             return parent::destructiveActionMenuItems();
         }
@@ -1836,6 +1849,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         return $destructiveItems;
+        */
     }
 
     private function hydrateSelectDates(): void
