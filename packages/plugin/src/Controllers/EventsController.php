@@ -159,7 +159,7 @@ class EventsController extends BaseController
             EventEditBundle::$locale = $locale;
         }
 
-        $event = $this->getEventsService()->getEventById($id, $siteId, true);
+        $event = $this->getEventsService()->getEventById($id, $siteId, true, false);
 
         if (!$event) {
             throw new HttpException(
