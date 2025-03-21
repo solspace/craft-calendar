@@ -129,8 +129,8 @@ class EventsService extends Component
         $subQuery = (new Query());
         $subQuery->select($subQuerySelect);
         $subQuery->from(ElementRecord::tableName().' elements');
-        $subQuery->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]');
-        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+        $subQuery->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = elements.[[id]]');
+        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
         $subQuery->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]');
 
         if ($isCraft4) {
@@ -139,17 +139,21 @@ class EventsService extends Component
 
         $subQuery->where([
             'and',
-            'events.[[freq]] IS NULL',
+            'calendar_events.[[freq]] IS NULL',
             $whereDeleted,
-            ['in', 'events.[[id]]', $ids],
+            ['in', 'calendar_events.[[id]]', $ids],
             ['in', 'elements_sites.[[siteId]]', $siteIds],
         ]);
 
         $querySelect = [];
-        $querySelect[] = 'events.[[id]]';
-        $querySelect[] = 'events.[[startDate]]';
+        $querySelect[] = 'calendar_events.[[id]]';
+        $querySelect[] = 'calendar_events.[[postDate]]';
+        $querySelect[] = 'calendar_events.[[startDate]]';
+        $querySelect[] = 'calendar_events.[[endDate]]';
+        $querySelect[] = 'calendar_events.[[dateCreated]]';
+        $querySelect[] = 'calendar_events.[[dateUpdated]]';
         $querySelect[] = 'elements_sites.[[siteId]]';
-        $querySelect[] = 'events.[[id]]';
+        $querySelect[] = 'calendar_events.[[id]]';
 
         if ($isCraft4) {
             $querySelect[] = 'content.[[title]]';
@@ -162,8 +166,8 @@ class EventsService extends Component
         $query->from(['subQuery' => $subQuery]);
         $query->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]');
         $query->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]');
-        $query->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]');
-        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+        $query->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = [[subQuery]].[[elementsId]]');
+        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
 
         if ($isCraft4) {
             $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
@@ -199,8 +203,8 @@ class EventsService extends Component
         $subQuery = (new Query());
         $subQuery->select($subQuerySelect);
         $subQuery->from(ElementRecord::tableName().' elements');
-        $subQuery->innerJoin(Event::tableName().' events', 'events.[[id]] = elements.[[id]]');
-        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+        $subQuery->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = elements.[[id]]');
+        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
         $subQuery->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]');
 
         if ($isCraft4) {
@@ -209,25 +213,28 @@ class EventsService extends Component
 
         $subQuery->where([
             'and',
-            'events.[[freq]] IS NOT NULL',
+            'calendar_events.[[freq]] IS NOT NULL',
             $whereDeleted,
-            ['in', 'events.[[id]]', $ids],
+            ['in', 'calendar_events.[[id]]', $ids],
             ['in', 'elements_sites.[[siteId]]', $siteIds],
         ]);
 
         $querySelect = [];
-        $querySelect[] = 'events.[[id]]';
-        $querySelect[] = 'events.[[calendarId]]';
-        $querySelect[] = 'events.[[startDate]]';
-        $querySelect[] = 'events.[[endDate]]';
-        $querySelect[] = 'events.[[freq]]';
-        $querySelect[] = 'events.[[count]]';
-        $querySelect[] = 'events.[[interval]]';
-        $querySelect[] = 'events.[[byDay]]';
-        $querySelect[] = 'events.[[byMonthDay]]';
-        $querySelect[] = 'events.[[byMonth]]';
-        $querySelect[] = 'events.[[byYearDay]]';
-        $querySelect[] = 'events.[[until]]';
+        $querySelect[] = 'calendar_events.[[id]]';
+        $querySelect[] = 'calendar_events.[[calendarId]]';
+        $querySelect[] = 'calendar_events.[[postDate]]';
+        $querySelect[] = 'calendar_events.[[dateCreated]]';
+        $querySelect[] = 'calendar_events.[[dateUpdated]]';
+        $querySelect[] = 'calendar_events.[[startDate]]';
+        $querySelect[] = 'calendar_events.[[endDate]]';
+        $querySelect[] = 'calendar_events.[[freq]]';
+        $querySelect[] = 'calendar_events.[[count]]';
+        $querySelect[] = 'calendar_events.[[interval]]';
+        $querySelect[] = 'calendar_events.[[byDay]]';
+        $querySelect[] = 'calendar_events.[[byMonthDay]]';
+        $querySelect[] = 'calendar_events.[[byMonth]]';
+        $querySelect[] = 'calendar_events.[[byYearDay]]';
+        $querySelect[] = 'calendar_events.[[until]]';
         $querySelect[] = 'calendars.[[allowRepeatingEvents]]';
         $querySelect[] = 'elements_sites.[[siteId]]';
 
@@ -242,8 +249,8 @@ class EventsService extends Component
         $query->from(['subQuery' => $subQuery]);
         $query->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]');
         $query->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]');
-        $query->innerJoin(Event::tableName().' events', 'events.[[id]] = [[subQuery]].[[elementsId]]');
-        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = events.[[calendarId]]');
+        $query->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = [[subQuery]].[[elementsId]]');
+        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
 
         if ($isCraft4) {
             $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
