@@ -178,7 +178,7 @@ class EventsController extends BaseController
             );
         }
 
-        return $this->renderEditForm($event, $event->title);
+        return $this->renderEditForm($event, $event->title ?? '');
     }
 
     /**
@@ -553,13 +553,19 @@ class EventsController extends BaseController
         $crumbs = [];
 
         if ($isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
+            $allowedCalendarSites = Calendar::getInstance()->calendarSites->getAllowedCalendarSites($calendar);
+            $allowedCalendarSites = array_map(fn ($item) => $item['name'], $allowedCalendarSites);
+
+            $items = CpHelper::siteMenuItems($sites, $site);
+            $items = array_filter($items, fn ($item) => \in_array($item['label'], $allowedCalendarSites));
+
             $crumbs[] = [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
                 'label' => \Craft::t('site', $site->name),
                 'menu' => [
                     'label' => \Craft::t('site', 'Select site'),
-                    'items' => CpHelper::siteMenuItems($sites, $site),
+                    'items' => $items,
                 ],
             ];
         }
