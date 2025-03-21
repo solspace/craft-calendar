@@ -42,9 +42,10 @@ class EventsService extends Component
     /**
      * Returns an event by its ID.
      */
-    public function getEventById(int $eventId, ?int $siteId = null, bool $includeDisabled = false): null|ElementInterface|Event
+    public function getEventById(int $eventId, ?int $siteId = null, bool $includeDisabled = false, ?bool $loadOccurrences = true): null|ElementInterface|Event
     {
         $query = Event::find()
+            ->setLoadOccurrences($loadOccurrences)
             ->setAllowedCalendarsOnly(false)
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->id($eventId)
@@ -60,10 +61,11 @@ class EventsService extends Component
     /**
      * Returns an event by its slug.
      */
-    public function getEventBySlug(string $slug, ?int $siteId = null, bool $includeDisabled = false): null|ElementInterface|Event
+    public function getEventBySlug(string $slug, ?int $siteId = null, bool $includeDisabled = false, ?bool $loadOccurrences = true): null|ElementInterface|Event
     {
         return Event::find()
             ->slug($slug)
+            ->setLoadOccurrences($loadOccurrences)
             ->setAllowedCalendarsOnly(false)
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->siteId($siteId)
