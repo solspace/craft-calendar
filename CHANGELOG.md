@@ -1,5 +1,20 @@
 # Solspace Calendar Changelog
 
+## 5.0.16 - 2025-03-21
+
+### Added
+- Added support for ordering events in the CP Events page by _Calendar_, _Post Date_, _Date Created_, and _Date Updated_.
+
+### Changed
+- Updated the _Delete_ button in the CP Event edit page to match Craft 5.
+
+### Fixed
+- Fixed a bug where attempting to order the CP Events page by custom fields would result in an error and show no results.
+- Fixed a bug where an error would display if a _FeedMe_ feed exists for a deleted Calendar.
+- Fixed a bug where some events might not have titles generated for them on multi-sites.
+- Fixed a bug where ordering events in the CP Events page by _Post Date_ could result in an error.
+- Fixed a bug where viewing an event in the CP Event edit page might cause an error if an exclusion exists for the event's _Start Date_.
+
 ## 5.0.15 - 2025-02-19
 
 ### Added
