@@ -557,7 +557,7 @@ class EventsController extends BaseController
             $allowedCalendarSites = array_map(fn ($item) => $item['name'], $allowedCalendarSites);
 
             $items = CpHelper::siteMenuItems($sites, $site);
-            $items = array_filter($items, fn ($item) => \in_array($item['label'], $allowedCalendarSites));
+            $items = array_filter($items, fn ($item) => $item && isset($item['label']) && \in_array($item['label'], $allowedCalendarSites));
 
             $crumbs[] = [
                 'id' => 'site-crumb',
