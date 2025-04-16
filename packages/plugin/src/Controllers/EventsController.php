@@ -554,10 +554,35 @@ class EventsController extends BaseController
 
         if ($isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
             $allowedCalendarSites = Calendar::getInstance()->calendarSites->getAllowedCalendarSites($calendar);
-            $allowedCalendarSites = array_map(fn ($item) => $item['name'], $allowedCalendarSites);
+            $allowedCalendarSiteNames = array_map(fn ($item) => $item['name'], $allowedCalendarSites);
 
-            $items = CpHelper::siteMenuItems($sites, $site);
-            $items = array_filter($items, fn ($item) => \in_array($item['label'], $allowedCalendarSites));
+            $allSiteItems = CpHelper::siteMenuItems($sites, $site);
+            $filteredItems = [];
+
+            foreach ($allSiteItems as $entry) {
+                if (!\is_array($entry)) {
+                    continue;
+                }
+
+                if (!empty($entry['items']) && \is_array($entry['items'])) {
+                    $filteredGroupItems = [];
+
+                    foreach ($entry['items'] as $item) {
+                        if (isset($item['label']) && \in_array($item['label'], $allowedCalendarSiteNames, true)) {
+                            $filteredGroupItems[] = $item;
+                        }
+                    }
+
+                    if (!empty($filteredGroupItems)) {
+                        $filteredItems[] = [
+                            'heading' => $entry['heading'] ?? null,
+                            'items' => $filteredGroupItems,
+                        ];
+                    }
+                } elseif (isset($entry['label']) && \in_array($entry['label'], $allowedCalendarSiteNames, true)) {
+                    $filteredItems[] = $entry;
+                }
+            }
 
             $crumbs[] = [
                 'id' => 'site-crumb',
@@ -565,7 +590,7 @@ class EventsController extends BaseController
                 'label' => \Craft::t('site', $site->name),
                 'menu' => [
                     'label' => \Craft::t('site', 'Select site'),
-                    'items' => $items,
+                    'items' => $filteredItems,
                 ],
             ];
         }
