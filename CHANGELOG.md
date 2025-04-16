@@ -1,5 +1,13 @@
 # Solspace Calendar Changelog
 
+## 5.0.17 - 2025-04-15
+
+### Added
+- Verified support for Craft 5.7 and 4.15.
+
+### Fixed
+- Fixed a bug where editing events in a multi-site setup with Site Groups would cause an error.
+
 ## 5.0.16 - 2025-03-21
 
 ### Added
