@@ -31,6 +31,7 @@ use Solspace\Freeform\Library\Integrations\Types\Elements\ElementIntegration;
 class CalendarEvents extends ElementIntegration
 {
     #[Required]
+    #[VisibilityFilter('enabled')]
     #[Input\Select(
         label: 'Calendar',
         emptyOption: 'Select a default calendar',
@@ -38,11 +39,13 @@ class CalendarEvents extends ElementIntegration
     )]
     protected string $calendarId = '';
 
+    #[VisibilityFilter('enabled')]
     #[Input\Boolean(
         label: 'All Day',
     )]
     protected bool $allDay = false;
 
+    #[VisibilityFilter('enabled')]
     #[Input\Boolean(
         label: 'Disabled',
     )]
@@ -50,6 +53,7 @@ class CalendarEvents extends ElementIntegration
 
     #[Flag(IntegrationInterface::FLAG_INSTANCE_ONLY)]
     #[ValueTransformer(FieldMappingTransformer::class)]
+    #[VisibilityFilter('enabled')]
     #[VisibilityFilter('!!values.calendarId')]
     #[Input\Special\Properties\FieldMapping(
         instructions: 'Select the Freeform fields to be mapped to the applicable Calendar Event attributes',
@@ -59,6 +63,7 @@ class CalendarEvents extends ElementIntegration
 
     #[Flag(IntegrationInterface::FLAG_INSTANCE_ONLY)]
     #[ValueTransformer(FieldMappingTransformer::class)]
+    #[VisibilityFilter('enabled')]
     #[VisibilityFilter('!!values.calendarId')]
     #[Input\Special\Properties\FieldMapping(
         instructions: 'Select the Freeform fields to be mapped to the applicable custom Calendar Event fields',
