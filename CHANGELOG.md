@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.18 - 2025-05-06
+
+### Fixed
+- Fixed a bug where events could not be removed from a Calendar field type in another element.
+
 ## 5.0.17 - 2025-04-15
 
 ### Added
