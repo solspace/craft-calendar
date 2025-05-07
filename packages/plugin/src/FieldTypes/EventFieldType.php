@@ -14,6 +14,7 @@ use Solspace\Calendar\Bundles\GraphQL\Resolvers\EventResolver;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Resources\Bundles\EventFieldTypeBundle;
 
 class EventFieldType extends BaseRelationField
 {
@@ -105,5 +106,13 @@ class EventFieldType extends BaseRelationField
     public static function elementType(): string
     {
         return Event::class;
+    }
+
+    public function getInputHtml($value, ?ElementInterface $element = null): string
+    {
+        $view = \Craft::$app->getView();
+        $view->registerAssetBundle(EventFieldTypeBundle::class);
+
+        return parent::getInputHtml($value, $element);
     }
 }
