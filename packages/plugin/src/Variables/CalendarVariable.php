@@ -109,6 +109,11 @@ class CalendarVariable
         if ($event) {
             if ($targetDate) {
                 $event = $event->cloneForDate($targetDate);
+                if ($event) {
+                    return $event;
+                }
+
+                return null;
             }
 
             return $event;
