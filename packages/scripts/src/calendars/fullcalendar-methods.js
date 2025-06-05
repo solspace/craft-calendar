@@ -118,7 +118,7 @@ export const eventRepositioned = (modification, event, delta, revertFunc) => {
       isAllDay: event.allDay,
       startDate: event.start.toISOString(),
       endDate: event.end ? event.end.toISOString() : null,
-      deltaSeconds: delta.as('seconds'),
+      deltaSeconds: parseInt(delta.as('seconds'), 10),
       [Craft.csrfTokenName]: Craft.csrfTokenValue,
     },
     success: function (response) {
