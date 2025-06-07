@@ -17,3 +17,5 @@ cghooks.lock
 /Craft3 Calendar.iml
 
 .php-cs-fixer.cache
+/composer.lock
+/yarn.lock

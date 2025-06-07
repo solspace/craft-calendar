@@ -1,5 +1,12 @@
 # Solspace Calendar Changelog
 
+## 5.0.19 - 2025-06-06
+
+### Fixed
+- Fixed a bug where modifying an event's date on the CP Month, Week, or Day pages would trigger an error.
+- Fixed a bug with querying events by custom fields in GraphQL.
+- Fixed a bug where an invalid date fed to the `targetDate` parameter in `calendar.event` would not fail gracefully.
+
 ## 5.0.18 - 2025-05-06
 
 ### Fixed
