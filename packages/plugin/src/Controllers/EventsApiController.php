@@ -362,7 +362,7 @@ class EventsApiController extends BaseController
         $eventId = (int) \Craft::$app->request->post('eventId');
         $siteId = (int) \Craft::$app->request->post('siteId');
         $isAllDay = 'true' === \Craft::$app->request->post('isAllDay');
-        $deltaSeconds = \Craft::$app->request->post('deltaSeconds');
+        $deltaSeconds = (int) \Craft::$app->request->post('deltaSeconds');
 
         $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
 
