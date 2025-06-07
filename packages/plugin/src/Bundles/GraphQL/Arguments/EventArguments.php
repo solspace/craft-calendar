@@ -2,9 +2,11 @@
 
 namespace Solspace\Calendar\Bundles\GraphQL\Arguments;
 
+use craft\base\GqlInlineFragmentFieldInterface;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
+use Solspace\Calendar\Elements\Event;
 
 class EventArguments extends ElementArguments
 {
@@ -101,5 +103,20 @@ class EventArguments extends ElementArguments
                 ],
             ]
         );
+    }
+
+    public static function getContentArguments(): array
+    {
+        $contentArguments = [];
+
+        $contentFields = \Craft::$app->getFields()->getLayoutByType(Event::class)->getCustomFields();
+
+        foreach ($contentFields as $contentField) {
+            if (!$contentField instanceof GqlInlineFragmentFieldInterface) {
+                $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
+            }
+        }
+
+        return array_merge(parent::getContentArguments(), $contentArguments);
     }
 }
