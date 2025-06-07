@@ -373,7 +373,7 @@ class Event extends Element implements \JsonSerializable
         return [\Craft::$app->getSites()->getPrimarySite()->id];
     }
 
-    public function cloneForDate(\DateTime $date): self
+    public function cloneForDate(\DateTime $date): ?self
     {
         $clone = clone $this;
         foreach ($this->getBehaviors() as $key => $value) {
@@ -382,7 +382,7 @@ class Event extends Element implements \JsonSerializable
 
         if (null !== $date) {
             if (!$this->happensOn($date)) {
-                throw new CalendarException('Invalid event date');
+                return null;
             }
 
             $startDate = $this->getStartDate()->copy();
