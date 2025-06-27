@@ -17,14 +17,6 @@ use Solspace\Calendar\Library\Exceptions\DurationException;
  */
 class EventMonthTest extends TestCase
 {
-    public function dateRangeDataProvider(): array
-    {
-        return [
-            [5, 5, 11, '2015-11-01', '2016-09-01'],
-            [-10, -7, 18, '2015-06-01', '2016-11-01'],
-        ];
-    }
-
     /**
      * @dataProvider dateRangeDataProvider
      *
@@ -51,5 +43,13 @@ class EventMonthTest extends TestCase
         self::assertCount($total, $dateRange);
         self::assertEquals($expectedFirstDate, $firstDate->format('Y-m-d'));
         self::assertEquals($expectedLastDate, $lastDate->format('Y-m-d'));
+    }
+
+    public function dateRangeDataProvider(): array
+    {
+        return [
+            [5, 5, 11, '2015-11-01', '2016-09-01'],
+            [-10, -7, 18, '2015-06-01', '2016-11-01'],
+        ];
     }
 }

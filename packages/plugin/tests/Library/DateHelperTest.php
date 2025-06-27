@@ -14,6 +14,16 @@ use Solspace\Calendar\Library\Helpers\DateHelper;
  */
 class DateHelperTest extends TestCase
 {
+    /**
+     * @dataProvider comparisonDataProvider
+     */
+    public function testComparisons(Carbon $dateA, Carbon $dateB, int $expectedResult): void
+    {
+        $comparison = DateHelper::compareCarbons($dateA, $dateB);
+
+        self::assertSame($expectedResult, $comparison);
+    }
+
     public function comparisonDataProvider(): array
     {
         return [
@@ -28,16 +38,6 @@ class DateHelperTest extends TestCase
                 1,
             ],
         ];
-    }
-
-    /**
-     * @dataProvider comparisonDataProvider
-     */
-    public function testComparisons(Carbon $dateA, Carbon $dateB, int $expectedResult): void
-    {
-        $comparison = DateHelper::compareCarbons($dateA, $dateB);
-
-        self::assertSame($expectedResult, $comparison);
     }
 
     public function testGetDateIntervalFromSeconds(): void
@@ -64,20 +64,6 @@ class DateHelperTest extends TestCase
         self::assertSame(-1, DateHelper::carbonDiffInDays($dateA, $dateB));
     }
 
-    public function diffInMonthsDataProvider(): array
-    {
-        return [
-            ['2016-01-31 23:59:59', '2016-02-01 00:00:00', 1],
-            ['2016-01-31 23:59:59', '2016-01-31 00:00:00', 0],
-            ['2016-05-31', '2016-01-01', -4],
-            ['2016-05-31', '2017-01-01', 8],
-            ['2011-01-01', '2024-01-01', 156],
-            ['2016-01-01', '2016-05-31', 4],
-            ['2017-01-01', '2016-05-31', -8],
-            ['2024-01-01', '2011-01-01', -156],
-        ];
-    }
-
     /**
      * @dataProvider diffInMonthsDataProvider
      */
@@ -89,18 +75,17 @@ class DateHelperTest extends TestCase
         self::assertSame($expectedResult, DateHelper::carbonDiffInMonths($dateA, $dateB));
     }
 
-    public function shiftByDayDataProvider(): array
+    public function diffInMonthsDataProvider(): array
     {
         return [
-            ['WE,SU', 0, 'WE,SU'],
-            ['SU,WE,FR', 38, 'WE,SA,MO'],
-            ['MO,TU,FR', 5, 'SA,SU,WE'],
-            ['3MO,3TU,5FR', 5, '3SA,3SU,5WE'],
-            ['MO,TU,FR', -4, 'TH,FR,MO'],
-            ['-MO,-TU', -3, '-FR,-SA'],
-            ['-MO,-TU', 3, '-TH,-FR'],
-            ['-1MO,-2TU', 3, '-1TH,-2FR'],
-            ['', 3, ''],
+            ['2016-01-31 23:59:59', '2016-02-01 00:00:00', 1],
+            ['2016-01-31 23:59:59', '2016-01-31 00:00:00', 0],
+            ['2016-05-31', '2016-01-01', -4],
+            ['2016-05-31', '2017-01-01', 8],
+            ['2011-01-01', '2024-01-01', 156],
+            ['2016-01-01', '2016-05-31', 4],
+            ['2017-01-01', '2016-05-31', -8],
+            ['2024-01-01', '2011-01-01', -156],
         ];
     }
 
@@ -122,12 +107,18 @@ class DateHelperTest extends TestCase
         );
     }
 
-    public function shiftByDayFailingDataProvider(): array
+    public function shiftByDayDataProvider(): array
     {
         return [
-            ['SOME,FAIL', 1],
-            ['0,SU', 3],
-            ['sa', 2],
+            ['WE,SU', 0, 'WE,SU'],
+            ['SU,WE,FR', 38, 'WE,SA,MO'],
+            ['MO,TU,FR', 5, 'SA,SU,WE'],
+            ['3MO,3TU,5FR', 5, '3SA,3SU,5WE'],
+            ['MO,TU,FR', -4, 'TH,FR,MO'],
+            ['-MO,-TU', -3, '-FR,-SA'],
+            ['-MO,-TU', 3, '-TH,-FR'],
+            ['-1MO,-2TU', 3, '-1TH,-2FR'],
+            ['', 3, ''],
         ];
     }
 
@@ -139,6 +130,29 @@ class DateHelperTest extends TestCase
         $this->expectException(DateHelperException::class);
 
         DateHelper::shiftByDays($dayList, $shiftAmount);
+    }
+
+    public function shiftByDayFailingDataProvider(): array
+    {
+        return [
+            ['SOME,FAIL', 1],
+            ['0,SU', 3],
+            ['sa', 2],
+        ];
+    }
+
+    /**
+     * @dataProvider shiftByMonthDayDataProvider
+     */
+    public function testShiftByMonthDay(string $monthDayList, int $shiftAmount, string $expectedResult): void
+    {
+        $updatedList = DateHelper::shiftByMonthDay($monthDayList, $shiftAmount);
+
+        self::assertSame(
+            $expectedResult,
+            $updatedList,
+            \sprintf('Shifting %s by %d days. Expecting %s', $monthDayList, $shiftAmount, $expectedResult)
+        );
     }
 
     public function shiftByMonthDayDataProvider(): array
@@ -159,16 +173,21 @@ class DateHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider shiftByMonthDayDataProvider
+     * @dataProvider shiftByMonthDataProvider
      */
-    public function testShiftByMonthDay(string $monthDayList, int $shiftAmount, string $expectedResult): void
+    public function testShiftByMonth(string $monthList, int $shiftAmount, string $expectedResult): void
     {
-        $updatedList = DateHelper::shiftByMonthDay($monthDayList, $shiftAmount);
+        $updatedList = DateHelper::shiftByMonth($monthList, $shiftAmount);
 
         self::assertSame(
             $expectedResult,
             $updatedList,
-            \sprintf('Shifting %s by %d days. Expecting %s', $monthDayList, $shiftAmount, $expectedResult)
+            \sprintf(
+                'Shifting %s by %d days. Expecting %s',
+                $monthList,
+                $shiftAmount,
+                $expectedResult
+            )
         );
     }
 
@@ -187,25 +206,6 @@ class DateHelperTest extends TestCase
             ['1,12,8', 16, '5,4,12'],
             ['1,12,8', -16, '9,8,4'],
         ];
-    }
-
-    /**
-     * @dataProvider shiftByMonthDataProvider
-     */
-    public function testShiftByMonth(string $monthList, int $shiftAmount, string $expectedResult): void
-    {
-        $updatedList = DateHelper::shiftByMonth($monthList, $shiftAmount);
-
-        self::assertSame(
-            $expectedResult,
-            $updatedList,
-            \sprintf(
-                'Shifting %s by %d days. Expecting %s',
-                $monthList,
-                $shiftAmount,
-                $expectedResult
-            )
-        );
     }
 
     public function dayOfWeekDataProvider(): array

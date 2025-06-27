@@ -12,17 +12,6 @@ use Solspace\Calendar\Library\Helpers\DatabaseHelper;
  */
 class DatabaseHelperTest extends TestCase
 {
-    public function operatorDataProvider(): array
-    {
-        return [
-            ['!= 1', '!=', '1'],
-            ['string', '=', 'string'],
-            [['5', '4', '3'], 'in', ['5', '4', '3']],
-            ['not 1', 'NOT IN', ['1']],
-            ['not 1,2,3', 'NOT IN', ['1', '2', '3']],
-        ];
-    }
-
     /**
      * Tests if passed values generate the desired operator and value set.
      *
@@ -34,5 +23,16 @@ class DatabaseHelperTest extends TestCase
 
         self::assertSame($expectedOperator, $operator);
         self::assertSame($expectedValue, $value);
+    }
+
+    public function operatorDataProvider(): array
+    {
+        return [
+            ['!= 1', '!=', '1'],
+            ['string', '=', 'string'],
+            [['5', '4', '3'], 'in', ['5', '4', '3']],
+            ['not 1', 'NOT IN', ['1']],
+            ['not 1,2,3', 'NOT IN', ['1', '2', '3']],
+        ];
     }
 }
