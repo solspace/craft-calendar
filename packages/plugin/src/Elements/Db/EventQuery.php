@@ -501,6 +501,10 @@ class EventQuery extends ElementQuery
 
         $eventIds = [];
         foreach ($events as $event) {
+            if (null === $event) {
+                continue;
+            }
+
             $eventIds[] = $event->id;
         }
 
@@ -1315,6 +1319,10 @@ class EventQuery extends ElementQuery
             $index = [];
 
             foreach ($this->events as $event) {
+                if (null === $event) {
+                    continue;
+                }
+
                 $index[$event->{$this->indexBy}] = $event;
             }
 
@@ -1329,6 +1337,10 @@ class EventQuery extends ElementQuery
     {
         $eventsByMonth = $eventsByWeek = $eventsByDay = $eventsByHour = [];
         foreach ($this->events as $event) {
+            if (null === $event) {
+                continue;
+            }
+
             $startDate = $event->getStartDate();
             if ($this->rangeStart && $this->rangeStart->gt($startDate)) {
                 $startDate = $this->rangeStart;

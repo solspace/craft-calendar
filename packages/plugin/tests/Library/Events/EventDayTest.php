@@ -33,14 +33,6 @@ class EventDayTest extends TestCase
         self::assertEquals('UTC', $day->getStartDate()->getTimezone()->getName());
     }
 
-    public function dateRangeDataProvider(): array
-    {
-        return [
-            [5, 5, 11, '2015-12-27', '2016-01-06'],
-            [-10, -7, 18, '2015-12-22', '2016-01-08'],
-        ];
-    }
-
     /**
      * @dataProvider dateRangeDataProvider
      *
@@ -67,5 +59,13 @@ class EventDayTest extends TestCase
         self::assertCount($total, $dateRange);
         self::assertEquals($expectedFirstDate, $firstDate->format('Y-m-d'));
         self::assertEquals($expectedLastDate, $lastDate->format('Y-m-d'));
+    }
+
+    public function dateRangeDataProvider(): array
+    {
+        return [
+            [5, 5, 11, '2015-12-27', '2016-01-06'],
+            [-10, -7, 18, '2015-12-22', '2016-01-08'],
+        ];
     }
 }

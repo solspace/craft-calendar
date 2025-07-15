@@ -409,6 +409,17 @@ class CalendarsController extends BaseController
      */
     private function renderEditTemplate(CalendarModel $calendar, string $title): Response
     {
+        $fieldLayout = $calendar->getFieldLayout();
+
+        if (!$fieldLayout) {
+            $fieldLayout = new FieldLayout();
+            $calendar->setFieldLayout($fieldLayout);
+        }
+
+        if (!$fieldLayout->type || !class_exists($fieldLayout->type)) {
+            $fieldLayout->type = Event::class;
+        }
+
         $customFields = \Craft::$app->fields->getAllFields();
         $customFieldData = [];
 

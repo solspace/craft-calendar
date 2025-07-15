@@ -15,16 +15,6 @@ use Solspace\Calendar\Library\Helpers\DateHelper;
  */
 class CalendarConfigurationTest extends TestCase
 {
-    public function carbonDataProvider(): array
-    {
-        return [
-            [null, null],
-            [new Carbon('2017-01-01 12:00:00', DateHelper::UTC), new Carbon('2017-01-01 12:00:00', DateHelper::UTC)],
-            [new \DateTime('2017-01-01 12:00:00'), new Carbon('2017-01-01 12:00:00', DateHelper::UTC)],
-            ['2017-01-01 12:00:00', new Carbon('2017-01-01 12:00:00', DateHelper::UTC)],
-        ];
-    }
-
     /**
      * @dataProvider carbonDataProvider
      *
@@ -35,6 +25,16 @@ class CalendarConfigurationTest extends TestCase
     {
         $config = new TestConfig(['carbon' => $input]);
         $this->assertEquals($expectedOutput, $config->getCarbon());
+    }
+
+    public function carbonDataProvider(): array
+    {
+        return [
+            [null, null],
+            [new Carbon('2017-01-01 12:00:00', DateHelper::UTC), new Carbon('2017-01-01 12:00:00', DateHelper::UTC)],
+            [new \DateTime('2017-01-01 12:00:00'), new Carbon('2017-01-01 12:00:00', DateHelper::UTC)],
+            ['2017-01-01 12:00:00', new Carbon('2017-01-01 12:00:00', DateHelper::UTC)],
+        ];
     }
 }
 
