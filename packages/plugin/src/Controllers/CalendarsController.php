@@ -88,6 +88,10 @@ class CalendarsController extends BaseController
 
         $calendar = CalendarModel::create();
 
+        $layout = new FieldLayout();
+        $layout->type = Event::class;
+        $calendar->setFieldLayout($layout);
+
         return $this->renderEditTemplate($calendar, Calendar::t('Create a new calendar'));
     }
 
