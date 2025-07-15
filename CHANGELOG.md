@@ -1,5 +1,12 @@
 # Solspace Calendar Changelog
 
+## 5.0.20 - 2025-07-15
+
+### Fixed
+- Fixed a bug where pagination was not showing in the CP Events index.
+- Fixed a _Call to a member function getStartDate() on null_ error when using Blitz caching.
+- Fixed a bug where an error could occur when editing or creating a calendar in Craft 5.x.
+
 ## 5.0.19 - 2025-06-06
 
 ### Fixed
