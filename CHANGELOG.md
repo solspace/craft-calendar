@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.21 - 2025-07-25
+
+### Fixed
+- Fixed a potential issue with the Blitz plugin in the Calendar 5.0.20 update.
+
 ## 5.0.20 - 2025-07-15
 
 ### Fixed
