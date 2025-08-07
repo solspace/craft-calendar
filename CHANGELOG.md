@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.22 - 2025-08-07
+
+### Fixed
+- Fixed a bug where events couldn't be deleted.
+
 ## 5.0.21 - 2025-07-25
 
 ### Fixed
