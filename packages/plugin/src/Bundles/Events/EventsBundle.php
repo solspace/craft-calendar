@@ -22,8 +22,12 @@ class EventsBundle implements BundleInterface
         Event::on(
             CalendarEvent::class,
             CalendarEvent::EVENT_AFTER_DELETE,
-            function (CalendarEvent $event) {
-                \Craft::$app->getElements()->invalidateCachesForElement($event);
+            function (Event $event) {
+                $element = $event->sender;
+
+                if ($element instanceof CalendarEvent) {
+                    \Craft::$app->getElements()->invalidateCachesForElement($element);
+                }
             }
         );
     }
