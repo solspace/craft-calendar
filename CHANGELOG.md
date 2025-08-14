@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.23 - 2025-08-14
+
+### Fixed
+- Fixed the Blitz integration to use Blitz's `addElement()` and `refresh()` methods instead of the non-existent `purgeElement()` method for cache purging.
+
 ## 5.0.22 - 2025-08-07
 
 ### Fixed
