@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.23.1 - 2025-08-15
+
+### Fixed
+- Fixed the Blitz integration to use the correct event type for `afterDelete` handlers, preventing type errors when deleting events.
+
 ## 5.0.23 - 2025-08-14
 
 ### Fixed
