@@ -35,7 +35,7 @@ class CalendarEventsBundle implements BundleInterface
                 Event::on(
                     CalendarEvent::class,
                     CalendarEvent::EVENT_AFTER_DELETE,
-                    function (ModelEvent $event) {
+                    function (Event $event) {
                         Blitz::$plugin->refreshCache->addElement($event->sender);
                         Blitz::$plugin->refreshCache->refresh();
                     }
