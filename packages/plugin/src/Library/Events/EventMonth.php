@@ -18,15 +18,26 @@ class EventMonth extends AbstractEventCollection
     {
         $weekList = [];
 
-        $targetWeekDate = $this->getDate()->copy();
-        $targetEndDate = $this->getEndDate()->copy()->endOfWeek();
-        while ($targetEndDate->gt($targetWeekDate)) {
-            $weekDuration = new WeekDuration($targetWeekDate, [], $this->getDuration()->getConfig());
-            $eventWeek = new EventWeek($weekDuration, $eventQuery);
+        $config = $this->getDuration()->getConfig();
+        $firstDay = ($config->firstDay ?? 0); // 0 to 6, where 0 = Sunday
+        $monthStart = $this->getStartDate()->copy()->startOfDay();
+        $monthEnd = $this->getEndDate()->copy()->endOfDay();
 
-            $weekList[] = $eventWeek;
+        // day Of Week: 0 = Sun to 6 = Sat
+        $startDow = $monthStart->dayOfWeek;
+        $endDow = $monthEnd->dayOfWeek;
 
-            $targetWeekDate->addWeek();
+        // Start = previous firstDay (or same day if already firstDay)
+        $shiftToGridStart = (7 + $startDow - $firstDay) % 7;
+        $gridStart = $monthStart->copy()->subDays($shiftToGridStart)->startOfDay();
+
+        // End = next (firstDay + 6) (or same day if already last day of week)
+        $lastWeekEndDow = ($firstDay + 6) % 7;
+        $shiftToGridEnd = (7 + $lastWeekEndDow - $endDow) % 7;
+        $gridEnd = $monthEnd->copy()->addDays($shiftToGridEnd)->endOfDay();
+
+        for ($cursor = $gridStart->copy(); $cursor->lte($gridEnd); $cursor->addWeek()) {
+            $weekList[] = new EventWeek(new WeekDuration($cursor, [], $config), $eventQuery);
         }
 
         return $weekList;

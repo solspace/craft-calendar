@@ -11,6 +11,7 @@ miniCalList.forEach((miniCal) => {
     defaultView: 'month',
     nextDayThreshold: '0' + overlapThreshold + ':00:01',
     fixedWeekCount: false,
+    showNonCurrentDates: true,
     eventLimit: 1,
     firstDay: firstDayOfWeek,
     lang: locale,
