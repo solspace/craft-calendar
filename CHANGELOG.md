@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.24 - 2025-08-18
+
+### Fixed
+- Fixed a bug where months that had days spanning across 6 rows of weeks were being cut off at 5.
+
 ## 5.0.23.1 - 2025-08-15
 
 ### Fixed

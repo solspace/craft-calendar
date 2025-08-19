@@ -1,7 +1,7 @@
 {
   "name": "solspace/craft-calendar",
   "description": "The most powerful event management and calendaring plugin!",
-  "version": "5.0.23.1",
+  "version": "5.0.24",
   "type": "craft-plugin",
   "authors": [
     {
