@@ -666,28 +666,31 @@ class EventQuery extends ElementQuery
         }
 
         if ($this->dateCreated) {
+            $value = $this->dateCreated;
             $this->subQuery->andWhere(
                 Db::parseParam(
                     $eventsTable.'.[[dateCreated]]',
-                    $this->extractDateAsFormattedString($this->dateCreated)
+                    \is_array($value) ? $value : $this->extractDateAsFormattedString($value)
                 )
             );
         }
 
         if ($this->dateUpdated) {
+            $value = $this->dateUpdated;
             $this->subQuery->andWhere(
                 Db::parseParam(
                     $eventsTable.'.[[dateUpdated]]',
-                    $this->extractDateAsFormattedString($this->dateUpdated)
+                    \is_array($value) ? $value : $this->extractDateAsFormattedString($value)
                 )
             );
         }
 
         if ($this->postDate) {
+            $value = $this->postDate;
             $this->subQuery->andWhere(
                 Db::parseParam(
                     $eventsTable.'.[[postDate]]',
-                    $this->extractDateAsFormattedString($this->postDate)
+                    \is_array($value) ? $value : $this->extractDateAsFormattedString($value)
                 )
             );
         }
