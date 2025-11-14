@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Integrations\Plugins\Freeform\CalendarEvents;
 
 use Solspace\Calendar\Calendar;
+use Solspace\Freeform\Attributes\Property\Implementations\Options\Option;
 use Solspace\Freeform\Attributes\Property\Implementations\Options\OptionCollection;
 use Solspace\Freeform\Attributes\Property\Implementations\Options\OptionsGeneratorInterface;
 use Solspace\Freeform\Attributes\Property\Property;
@@ -13,11 +14,16 @@ class CalendarOptionsGenerator implements OptionsGeneratorInterface
     {
         $options = new OptionCollection();
 
-        $calendar = Calendar::getInstance();
-        if ($calendar) {
-            $calendars = $calendar->calendars->getCalendars();
+        $calendarPlugin = Calendar::getInstance();
+        if ($calendarPlugin) {
+            $calendars = $calendarPlugin->calendars->getCalendars();
             foreach ($calendars as $calendar) {
-                $options->add($calendar->id, $calendar->name);
+                $options->add(
+                    new Option(
+                        value: (string) $calendar->id,
+                        label: $calendar->name
+                    )
+                );
             }
         }
 
