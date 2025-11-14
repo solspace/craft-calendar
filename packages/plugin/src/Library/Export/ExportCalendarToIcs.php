@@ -112,7 +112,12 @@ class ExportCalendarToIcs extends AbstractExportCalendar
         if (empty($selectDates) && $event->isRepeating()) {
             $rrule = $event->getRRule();
             if ($rrule) {
-                [$dtstart, $rrule] = explode("\n", $rrule);
+                // Normalize all line endings to "\n"
+                $rrule = preg_replace('/\r\n?/', "\n", $rrule);
+                // Split on newlines
+                [$dtstart, $rrule] = explode("\n", $rrule, 2);
+                // Trim again to make sure nothing weird survived
+                $rrule = trim($rrule);
                 $exportString .= \sprintf("%s\r\n", $rrule);
             }
             $exceptionDatesValues = [];
