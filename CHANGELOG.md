@@ -1,5 +1,15 @@
 # Solspace Calendar Changelog
 
+## 5.0.25 - 2025-11-17
+
+### Fixed
+- Fixed compatibility issues with the **Blitz** plugin.
+- Fixed an issue where **ICS Export** could generate an invalid file.
+- Fixed an issue where deleting events could error in multi-site environments when the event's calendar doesn't have the primary site enabled.
+- Fixed an issue where filtering by **Date Created** could throw a `server error occurred` message.
+- Fixed an issue where the GraphQL field resolver did not work correctly for the **Calendars** field type.
+- Fixed a `TypeError` in `EventQuery` when date filters (`dateCreated` / `dateUpdated` / `postDate`) were provided as arrays.
+
 ## 5.0.24 - 2025-08-18
 
 ### Fixed
