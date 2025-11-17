@@ -310,6 +310,7 @@ class EventsController extends BaseController
         $this->requireEventPermission();
         $this->requirePostRequest();
 
+        $siteId = \Craft::$app->request->post('siteId');
         $eventId = \Craft::$app->request->post('eventId');
         if (!$eventId) {
             if (\Craft::$app->request->isAjax) {
@@ -319,7 +320,7 @@ class EventsController extends BaseController
             return false;
         }
 
-        $event = $this->getEventsService()->getEventById($eventId, null, true);
+        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
         if (!$event) {
             if (\Craft::$app->request->isAjax) {
                 return $this->asJson(['success' => false, 'message' => Calendar::t('Could not find an Event with ID {id}', ['id' => $eventId])]);
