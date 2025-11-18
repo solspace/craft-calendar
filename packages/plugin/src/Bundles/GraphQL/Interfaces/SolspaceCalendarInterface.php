@@ -68,6 +68,13 @@ class SolspaceCalendarInterface extends AbstractInterface
                 'args' => EventArguments::getArguments(),
                 'description' => 'Solspace Calendar event',
             ],
+            'eventCount' => [
+                'name' => 'eventCount',
+                'type' => Type::nonNull(Type::int()),
+                'resolve' => EventResolver::class.'::resolveCount',
+                'args' => EventArguments::getArguments(),
+                'description' => "This query is used to return the number of calendar's events.",
+            ],
         ];
     }
 }
