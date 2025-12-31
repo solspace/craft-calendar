@@ -6,29 +6,14 @@ use yii\db\ColumnSchemaBuilder;
 
 class Table
 {
-    private ?string $name = null;
-
-    private ?string $options = null;
-
-    private ?array $fields = null;
-
-    private ?array $indexes = null;
-
-    private ?array $foreignKeys = null;
-
-    private ?array $primaryKeys = null;
+    private array $fields = [];
+    private array $indexes = [];
+    private array $foreignKeys = [];
 
     public function __construct(
-        string $name,
-        ?string $options = null
-    ) {
-        $this->name = $name;
-        $this->options = $options;
-        $this->fields = [];
-        $this->indexes = [];
-        $this->foreignKeys = [];
-        $this->primaryKeys = [];
-    }
+        private string $name,
+        private ?string $options = null,
+    ) {}
 
     public function __toString(): string
     {
@@ -50,13 +35,6 @@ class Table
         return $this->options;
     }
 
-    public function addPrimaryKey(array $columns): self
-    {
-        $this->primaryKeys[] = new PrimaryKey($columns);
-
-        return $this;
-    }
-
     public function addField(string $name, ColumnSchemaBuilder $definition): self
     {
         $this->fields[] = new Field($name, $definition);
@@ -64,9 +42,9 @@ class Table
         return $this;
     }
 
-    public function addIndex(array $columns, bool $unique = false, ?string $prefix = null): self
+    public function addIndex(array $columns, bool $unique = false, ?string $prefix = null, ?string $name = null): self
     {
-        $this->indexes[] = new Index($columns, $unique, $prefix);
+        $this->indexes[] = new Index($columns, $unique, $prefix, $name);
 
         return $this;
     }
@@ -76,7 +54,8 @@ class Table
         string $refTable,
         string $refColumn,
         ?string $onDelete = null,
-        ?string $onUpdate = null
+        ?string $onUpdate = null,
+        ?string $name = null,
     ): self {
         $this->foreignKeys[] = new ForeignKey(
             $this,
@@ -84,7 +63,8 @@ class Table
             $refTable,
             $refColumn,
             $onDelete,
-            $onUpdate
+            $onUpdate,
+            $name,
         );
 
         return $this;
@@ -109,10 +89,5 @@ class Table
     public function getForeignKeys(): array
     {
         return $this->foreignKeys;
-    }
-
-    public function getPrimaryKeys(): array
-    {
-        return $this->primaryKeys;
     }
 }

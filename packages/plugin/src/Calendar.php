@@ -284,7 +284,6 @@ class Calendar extends Plugin
                 'calendars' => CalendarsController::class,
                 'events-api' => EventsApiController::class,
                 'events' => EventsController::class,
-                'legacy-events' => LegacyEventsController::class,
                 'settings' => SettingsController::class,
                 'view' => ViewController::class,
                 'resources' => ResourcesController::class,

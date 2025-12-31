@@ -7,9 +7,6 @@ use Solspace\Calendar\Library\Migrations\ForeignKey;
 use Solspace\Calendar\Library\Migrations\StreamlinedInstallMigration;
 use Solspace\Calendar\Library\Migrations\Table;
 
-/**
- * Install migration.
- */
 class Install extends StreamlinedInstallMigration
 {
     protected function defineTableData(): array
@@ -20,6 +17,7 @@ class Install extends StreamlinedInstallMigration
                 ->addField('name', $this->string(100)->notNull())
                 ->addField('handle', $this->string(100)->notNull()->unique())
                 ->addField('description', $this->text())
+                ->addField('defaultTimezone', $this->string()->null())
                 ->addField('color', $this->string(10)->notNull())
                 ->addField('fieldLayoutId', $this->integer())
                 ->addField('titleFormat', $this->string())
@@ -54,6 +52,7 @@ class Install extends StreamlinedInstallMigration
                 ->addField('id', $this->integer()->notNull())
                 ->addField('calendarId', $this->integer())
                 ->addField('authorId', $this->integer())
+                ->addField('timezone', $this->string()->null())
                 ->addField('startDate', $this->dateTime()->notNull())
                 ->addField('endDate', $this->dateTime()->notNull())
                 ->addField('allDay', $this->boolean())
@@ -92,6 +91,34 @@ class Install extends StreamlinedInstallMigration
                 ->addField('eventId', $this->integer()->notNull())
                 ->addForeignKey('eventId', 'calendar_events', 'id', ForeignKey::CASCADE)
                 ->addIndex(['eventId', 'date'], false, 'select_dates_'),
+
+            (new Table('calendar_events_occurrences'))
+                ->addField('id', $this->primaryKey())
+                ->addField('eventId', $this->integer()->notNull())
+                ->addField('calendarId', $this->integer()->notNull())
+                ->addField('startUtc', $this->dateTime()->notNull())
+                ->addField('endUtc', $this->dateTime())
+                ->addField('occurrenceKey', $this->string()->notNull())
+                ->addField('allDay', $this->boolean())
+                ->addForeignKey(
+                    'eventId',
+                    'calendar_events',
+                    'id',
+                    ForeignKey::CASCADE,
+                    name: 'occurrences_event_id_fk',
+                )
+                ->addForeignKey(
+                    'calendarId',
+                    'calendar_calendars',
+                    'id',
+                    ForeignKey::CASCADE,
+                    name: 'occurrences_calendar_id_fk',
+                )
+                ->addIndex(['calendarId', 'startUtc'], name: 'occurrences_calendar_start_idx')
+                ->addIndex(['eventId', 'startUtc'], true, name: 'occurrences_event_start_idx_unq')
+                ->addIndex(['occurrenceKey'], true, name: 'occurrences_occurrence_key_idx_unq')
+                ->addIndex(['startUtc'], name: 'occurrences_start_utc_idx')
+                ->addIndex(['endUtc'], name: 'occurrences_end_utc_idx'),
         ];
     }
 }

@@ -31,10 +31,6 @@ abstract class StreamlinedInstallMigration extends Migration
                     $index->isUnique()
                 );
             }
-
-            foreach ($table->getPrimaryKeys() as $primaryKey) {
-                $this->addPrimaryKey(null, $table->getName(), $primaryKey->getColumns());
-            }
         }
 
         foreach ($this->defineTableData() as $table) {
@@ -50,7 +46,7 @@ abstract class StreamlinedInstallMigration extends Migration
                         $foreignKey->getOnUpdate()
                     );
                 } catch (\Exception $e) {
-                    \Craft::warning($e->getMessage());
+                    \Craft::warning("Failed to add FK {$foreignKey->getName()}: ".$e->getMessage(), __METHOD__);
                 }
             }
         }
@@ -60,6 +56,19 @@ abstract class StreamlinedInstallMigration extends Migration
 
     final public function safeDown(): bool
     {
+        // PostgreSQL: recover from failed transaction before proceeding
+        if (
+            'pgsql' === $this->db->getDriverName()
+            && null !== $this->db->getTransaction()
+        ) {
+            try {
+                $this->db->pdo->rollBack();
+                \Craft::warning('Rolled back aborted PostgreSQL transaction before uninstall.', __METHOD__);
+            } catch (\Throwable $e) {
+                \Craft::warning('Could not roll back aborted PostgreSQL transaction: '.$e->getMessage(), __METHOD__);
+            }
+        }
+
         if (!$this->beforeUninstall()) {
             return false;
         }
@@ -70,30 +79,65 @@ abstract class StreamlinedInstallMigration extends Migration
 
         $tables = $this->defineTableData();
 
+        // Drop foreign keys
         foreach ($tables as $table) {
-            if (!$this->db->tableExists($table->getDatabaseName())) {
+            $tableName = $table->getDatabaseName();
+
+            $schema = null;
+
+            try {
+                $schema = $this->db->getTableSchema($tableName, true);
+            } catch (\Throwable $e) {
+                \Craft::warning("Failed to get table schema for {$tableName}: ".$e->getMessage(), __METHOD__);
+            }
+
+            if (!$schema) {
                 continue;
             }
 
             foreach ($table->getForeignKeys() as $foreignKey) {
                 try {
-                    $this->dropForeignKeyIfExists($table->getDatabaseName(), $foreignKey->getColumn());
-                } catch (\Exception $e) {
-                    \Craft::warning($e->getMessage());
+                    $this->dropForeignKey($foreignKey->getName(), $tableName);
+                } catch (\Throwable $e) {
+                    \Craft::warning("Failed to drop FK {$foreignKey->getName()} on {$tableName}: ".$e->getMessage(), __METHOD__);
                 }
             }
         }
 
+        // Drop tables
         $tables = array_reverse($tables);
 
         /** @var Table $table */
         foreach ($tables as $table) {
-            $this->dropTableIfExists($table->getDatabaseName());
+            $tableName = $table->getDatabaseName();
+
+            $schema = null;
+
+            try {
+                $schema = $this->db->getTableSchema($tableName, true);
+            } catch (\Throwable $e) {
+                \Craft::warning("Failed to get table schema for {$tableName} during drop: ".$e->getMessage(), __METHOD__);
+
+                continue;
+            }
+
+            if (!$schema) {
+                continue;
+            }
+
+            try {
+                $this->dropTable($tableName);
+            } catch (\Throwable $e) {
+                \Craft::warning("Failed to drop table {$tableName}: ".$e->getMessage(), __METHOD__);
+            }
         }
 
         return $this->afterUninstall();
     }
 
+    /**
+     * @return Table[]
+     */
     abstract protected function defineTableData(): array;
 
     protected function beforeInstall(): bool

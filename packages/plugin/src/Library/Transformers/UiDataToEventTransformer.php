@@ -45,14 +45,11 @@ class UiDataToEventTransformer
         $byMonth = $data['byMonth'] ?? [];
 
         $endRepeatType = $data['endRepeat']['type'] ?? Event::UNTIL_TYPE_FOREVER;
-        $endRepeatDate = Carbon::createFromTimestampUTC($data['endRepeat']['date'] ?? time());
+        $endRepeatDate = Carbon::createFromTimestamp($data['endRepeat']['date'] ?? time());
         $endRepeatCount = $data['endRepeat']['count'] ?? 1;
 
         $event->startDate = $startDate;
-        $event->startDateLocalized = new Carbon($startDate->toDateTimeString());
-
         $event->endDate = $endDate;
-        $event->endDateLocalized = new Carbon($endDate->toDateTimeString());
 
         $event->allDay = $allDay;
         if ($allDay) {

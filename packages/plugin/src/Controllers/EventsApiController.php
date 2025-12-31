@@ -174,25 +174,21 @@ class EventsApiController extends BaseController
         $isAllDay = \Craft::$app->request->post('allDay', false);
         $siteId = \Craft::$app->request->post('siteId', \Craft::$app->sites->currentSite->id);
 
-        if (!isset($eventData['title']) || empty($eventData['title'])) {
+        if (empty($eventData['title'])) {
             return $this->asFailure(Calendar::t('Event title is required'));
         }
 
-        if (!isset($eventData['calendarId']) || empty($eventData['calendarId'])) {
+        if (empty($eventData['calendarId'])) {
             return $this->asFailure(Calendar::t('Calendar not specified'));
         }
 
         $calendar = Calendar::getInstance()->calendars->getCalendarById($eventData['calendarId']);
+        // Check permissions for the calendar
+        PermissionHelper::requireCalendarEditPermissions($calendar);
 
         if (!$calendar) {
             return $this->asFailure(Calendar::t('The specified calendar does not exist'));
         }
-
-        // Check permissions for the calendar
-        PermissionHelper::requireCalendarEditPermissions($calendar);
-
-        $startDate = new Carbon($startDate, DateHelper::UTC);
-        $endDate = new Carbon($endDate, DateHelper::UTC);
 
         if (!$startDate) {
             return $this->asFailure(Calendar::t('Event start date is required'));
@@ -201,6 +197,9 @@ class EventsApiController extends BaseController
         if (!$endDate) {
             return $this->asFailure(Calendar::t('Event end date is required'));
         }
+
+        $startDate = new Carbon($startDate, DateHelper::UTC);
+        $endDate = new Carbon($endDate, DateHelper::UTC);
 
         if ($isAllDay) {
             $startDate->setTime(0, 0, 0);

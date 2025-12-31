@@ -4,7 +4,7 @@ namespace Solspace\Calendar\Library\Migrations;
 
 use Solspace\Calendar\Library\Exceptions\DatabaseException;
 
-class ForeignKey
+class ForeignKey implements \Stringable
 {
     public const CASCADE = 'CASCADE';
     public const UPDATE = 'UPDATE';
@@ -20,30 +20,18 @@ class ForeignKey
         self::SET_DEFAULT,
     ];
 
-    private ?Table $table = null;
-
-    private ?string $column = null;
-
-    private ?string $referenceTable = null;
-
-    private ?string $referenceColumn = null;
-
-    private ?string $onDelete = null;
-
-    private ?string $onUpdate = null;
+    private ?string $onDelete;
+    private ?string $onUpdate;
 
     public function __construct(
-        Table $table,
-        string $column,
-        string $referenceTable,
-        string $referenceColumn,
+        private Table $table,
+        private string $column,
+        private string $referenceTable,
+        private string $referenceColumn,
         ?string $onDelete = null,
-        ?string $onUpdate = null
+        ?string $onUpdate = null,
+        private ?string $name = null,
     ) {
-        $this->table = $table;
-        $this->column = $column;
-        $this->referenceTable = $referenceTable;
-        $this->referenceColumn = $referenceColumn;
         $this->onDelete = self::getHandler($onDelete);
         $this->onUpdate = self::getHandler($onUpdate);
     }
@@ -55,6 +43,10 @@ class ForeignKey
 
     public function getName(): string
     {
+        if (null !== $this->name) {
+            return $this->name;
+        }
+
         return $this->table.'_'.$this->column.'_fk';
     }
 
@@ -78,30 +70,30 @@ class ForeignKey
         return $this->referenceColumn;
     }
 
-    public function getOnDelete(): ?string
+    public function getOnDelete()
     {
         return $this->onDelete;
     }
 
-    public function getOnUpdate(): ?string
+    public function getOnUpdate()
     {
         return $this->onUpdate;
     }
 
-    private static function getHandler(?string $handler = null): ?string
+    private static function getHandler(?string $handler = null)
     {
         if (null === $handler) {
             return null;
         }
 
         if (!\in_array($handler, self::$handlers, true)) {
-            $message = \sprintf(
-                'Cannot set "%s" as onDelete or onUpdate. Use one of these instead: "%s"',
-                $handler,
-                implode('", "', self::$handlers)
+            throw new DatabaseException(
+                \sprintf(
+                    'Cannot set "%s" as onDelete or onUpdate. Use one of these instead: "%s"',
+                    $handler,
+                    implode('", "', self::$handlers)
+                )
             );
-
-            throw new DatabaseException($message);
         }
 
         return $handler;

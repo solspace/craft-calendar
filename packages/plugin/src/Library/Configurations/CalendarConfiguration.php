@@ -56,7 +56,7 @@ abstract class CalendarConfiguration
         }
 
         if (\is_string($value)) {
-            return new Carbon($value, DateHelper::UTC);
+            return new Carbon($value);
         }
 
         if ($value instanceof Carbon) {
@@ -64,7 +64,7 @@ abstract class CalendarConfiguration
         }
 
         if ($value instanceof \DateTime) {
-            return new Carbon($value->format('Y-m-d H:i:s'), DateHelper::UTC);
+            return new Carbon($value);
         }
 
         return null;
