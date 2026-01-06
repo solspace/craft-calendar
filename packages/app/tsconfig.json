@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../plugin/src/Resources/js/client/",
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM"],
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "typeRoots": [
+      "config/@types",
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ],
+    "paths": {
+      "@cal/*": ["app/src/*"],
+      "@config/*": ["app/config/*"]
+    }
+  },
+  "exclude": ["node_modules"]
+}

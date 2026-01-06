@@ -19,3 +19,6 @@ cghooks.lock
 .php-cs-fixer.cache
 /composer.lock
 /yarn.lock
+
+.env
+packages/app/config/webpack/certs

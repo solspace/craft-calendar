@@ -1,23 +1,16 @@
 {
+  "exclude": ["node_modules"],
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "allowJs": false,
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "types": [
-      "node"
-    ]
-  },
-  "include": [
-    "packages/app/**/*.ts",
-    "packages/app/**/*.tsx",
-    "vite.config.ts"
-  ]
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "rootDir": "./",
+    "baseUrl": "./packages",
+    "allowJs": false
+  }
 }

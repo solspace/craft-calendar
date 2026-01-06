@@ -18,6 +18,7 @@ use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use Solspace\Calendar\Controllers\ApiController;
+use Solspace\Calendar\Controllers\AppController;
 use Solspace\Calendar\Controllers\CalendarsController;
 use Solspace\Calendar\Controllers\CodePackController;
 use Solspace\Calendar\Controllers\EventsApiController;
@@ -280,6 +281,7 @@ class Calendar extends Plugin
         if (!\Craft::$app->request->isConsoleRequest) {
             $this->controllerMap = [
                 'api' => ApiController::class,
+                'app' => AppController::class,
                 'codepack' => CodePackController::class,
                 'calendars' => CalendarsController::class,
                 'events-api' => EventsApiController::class,
