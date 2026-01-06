@@ -29,12 +29,10 @@ class m251231_090653_AddOccurrencesAndTimezones extends Migration
             $this->createTable(
                 '{{%calendar_events_occurrences}}',
                 [
-                    'id' => $this->primaryKey(),
                     'eventId' => $this->integer()->notNull(),
                     'calendarId' => $this->integer()->notNull(),
                     'startUtc' => $this->dateTime()->notNull(),
                     'endUtc' => $this->dateTime(),
-                    'occurrenceKey' => $this->string()->notNull(),
                     'allDay' => $this->boolean(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
@@ -42,9 +40,14 @@ class m251231_090653_AddOccurrencesAndTimezones extends Migration
                 ]
             );
 
+            $this->addPrimaryKey(
+                'pk_calendar_events_occurrences',
+                '{{%calendar_events_occurrences}}',
+                ['eventId', 'startUtc'],
+            );
+
             $this->createIndex('occurrences_calendar_start_idx', '{{%calendar_events_occurrences}}', ['calendarId', 'startUtc']);
             $this->createIndex('occurrences_event_start_idx_unq', '{{%calendar_events_occurrences}}', ['eventId', 'startUtc'], true);
-            $this->createIndex('occurrences_occurrence_key_idx_unq', '{{%calendar_events_occurrences}}', ['occurrenceKey'], true);
             $this->createIndex('occurrences_start_utc_idx', '{{%calendar_events_occurrences}}', ['startUtc']);
             $this->createIndex('occurrences_end_utc_idx', '{{%calendar_events_occurrences}}', ['endUtc']);
 
@@ -73,8 +76,8 @@ class m251231_090653_AddOccurrencesAndTimezones extends Migration
     public function safeDown(): bool
     {
         if ($this->db->tableExists('{{%calendar_events_occurrences}}')) {
-            $this->dropForeignKeyIfExists('occurrences_event_id_fk', '{{%calendar_events_occurrences}}');
-            $this->dropForeignKeyIfExists('occurrences_calendar_id_fk', '{{%calendar_events_occurrences}}');
+            $this->dropForeignKeyIfExists('{{%calendar_events_occurrences}}', 'occurrences_event_id_fk');
+            $this->dropForeignKeyIfExists('{{%calendar_events_occurrences}}', 'occurrences_calendar_id_fk');
             $this->dropTable('{{%calendar_events_occurrences}}');
         }
 

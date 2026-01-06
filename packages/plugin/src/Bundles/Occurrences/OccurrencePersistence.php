@@ -31,12 +31,21 @@ class OccurrencePersistence implements BundleInterface
             return;
         }
 
+        $timeDelta = $element->startDate->diff($element->endDate);
+
+        OccurrenceRecord::deleteAll(['eventId' => $element->id]);
+
         $rrule = $element->getRRuleObject();
         if (!$rrule) {
             $record = new OccurrenceRecord();
             $record->eventId = $element->id;
             $record->calendarId = $element->calendarId;
             $record->startUtc = $element->startDate;
+            $record->endUtc = $element->startDate->clone()->add($timeDelta);
+            $record->allDay = $element->allDay;
+            $record->save();
+
+            return;
         }
 
         $occurrences = $rrule->getOccurrences(5);
@@ -45,7 +54,9 @@ class OccurrencePersistence implements BundleInterface
             $record->eventId = $element->id;
             $record->calendarId = $element->calendarId;
             $record->startUtc = $occurrence;
-            //$record->save();
+            $record->endUtc = $occurrence->add($timeDelta);
+            $record->allDay = $element->allDay;
+            $record->save();
         }
 
         // magic here

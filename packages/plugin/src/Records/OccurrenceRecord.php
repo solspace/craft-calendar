@@ -13,7 +13,6 @@ use Solspace\Calendar\Elements\Event;
  * @property int    $calendarId
  * @property string $startUtc
  * @property string $endUtc
- * @property string $occurrenceKey
  * @property bool   $allDay
  */
 class OccurrenceRecord extends ActiveRecord
@@ -34,10 +33,5 @@ class OccurrenceRecord extends ActiveRecord
     public function getCalendar(): ActiveQuery
     {
         return $this->hasOne(CalendarRecord::class, ['id' => 'calendarId']);
-    }
-
-    public function getEvent(): ActiveQuery
-    {
-        return $this->hasOne(Event::class, ['id' => 'eventId']);
     }
 }

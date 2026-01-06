@@ -1,0 +1,22 @@
+{% extends "calendar/layouts/_layout.html" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = "Calendar"|t('calendar') %}
+
+{% set crumbs = [
+    { label: craft.calendar.name, url: url("calendar") },
+    { label: "Events"|t("calendar"), url: url("calendar/events") },
+    { label: title, url: url("calendar/app"), current: true },
+] %}
+
+{% block content %}
+
+	<div id="solspace-calendar" data-time-format="{{ craft.calendar.formats.timeFormat('short') }}" data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}" data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}" data-current-site-id="{{ selectedSiteId }}" data-current-day="{{ currentDay.toDateString }}" data-site-map="{{ siteMap|json_encode }}" {{ isQuickCreateEnabled ? 'data-can-quick-create' }} {{ isMultiSite ? 'data-is-multi-site' }} {{ currentUser and currentUser.can('calendar-manageEvents') and calendarOptions is not empty ? 'data-can-edit-events' }}></div>
+
+{% endblock %}
+
+{% block footer %}
+	{# Load Vite client and app as ES modules for HMR #}
+	<script type="module" src="https://craft-5.ddev.site:5173/@vite/client"></script>
+	<script type="module" src="https://craft-5.ddev.site:5173/packages/app/calendar/index.tsx"></script>
+{% endblock %}

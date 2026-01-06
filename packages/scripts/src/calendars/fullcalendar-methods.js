@@ -227,17 +227,19 @@ export const getEvents = (start, end, timezone, callback) => {
     type: 'post',
     dataType: 'json',
     success: function (eventList) {
-      // All day events have to actually go into the next day
-      // So we pad them with 2 seconds to go from 23:59:59 same day
-      // Into 00:00:01 the next day
-      for (let i = 0; i < eventList.length; i++) {
-        const event = eventList[i];
-        if (event.allDay) {
-          eventList[i].end = moment(event.end).add(2, 's').utc().format();
-        }
-      }
+      const events = eventList.map((item) => {
+        const event = { ...item };
 
-      callback(eventList);
+        const start = new Date(item.start);
+        const end = item.end ? new Date(item.end) : null;
+
+        event.end = end;
+        event.start = start;
+
+        return event;
+      });
+
+      callback(events);
       getSpinner().fadeOut('fast');
     },
   });

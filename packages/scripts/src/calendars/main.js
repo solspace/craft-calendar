@@ -127,7 +127,7 @@ $(() => {
   }
 
   $calendar.fullCalendar({
-    now: new moment(),
+    now: new Date(),
     defaultDate: currentDay,
     defaultView: $calendar.data('view'),
     nextDayThreshold: '0' + overlapThreshold + ':00:01',

@@ -210,8 +210,10 @@
                 html: '<span class="color-indicator" style="background-color: ' + event.backgroundColor + ';"></span> ' + event.calendar.name
             });
 
-            var start = moment(event.start);
-            var end = moment(event.end);
+            var start = event.start;
+            var end = event.end;
+
+            console.log(start, end);
 
             var dateFormat = 'dddd, MMMM D, YYYY';
             if (event.allDay) {

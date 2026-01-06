@@ -4,6 +4,7 @@ $datePattern = '<view:month|week|day>/<year:\d+>/<month:\d+>/<day:\d+>';
 
 return [
     'calendar' => 'calendar/settings/default-view',
+    'calendar/app' => 'calendar/app',
     'calendar/calendars' => 'calendar/calendars/calendars-index',
     'calendar/calendars/new' => 'calendar/calendars/create-calendar',
     'calendar/calendars/duplicate' => 'calendar/calendars/duplicate',

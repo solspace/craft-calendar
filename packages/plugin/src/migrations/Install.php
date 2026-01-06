@@ -93,12 +93,10 @@ class Install extends StreamlinedInstallMigration
                 ->addIndex(['eventId', 'date'], false, 'select_dates_'),
 
             (new Table('calendar_events_occurrences'))
-                ->addField('id', $this->primaryKey())
                 ->addField('eventId', $this->integer()->notNull())
                 ->addField('calendarId', $this->integer()->notNull())
                 ->addField('startUtc', $this->dateTime()->notNull())
                 ->addField('endUtc', $this->dateTime())
-                ->addField('occurrenceKey', $this->string()->notNull())
                 ->addField('allDay', $this->boolean())
                 ->addForeignKey(
                     'eventId',
@@ -116,9 +114,15 @@ class Install extends StreamlinedInstallMigration
                 )
                 ->addIndex(['calendarId', 'startUtc'], name: 'occurrences_calendar_start_idx')
                 ->addIndex(['eventId', 'startUtc'], true, name: 'occurrences_event_start_idx_unq')
-                ->addIndex(['occurrenceKey'], true, name: 'occurrences_occurrence_key_idx_unq')
                 ->addIndex(['startUtc'], name: 'occurrences_start_utc_idx')
                 ->addIndex(['endUtc'], name: 'occurrences_end_utc_idx'),
         ];
+    }
+
+    protected function afterUp(): void
+    {
+        parent::afterUp();
+
+        $this->addPrimaryKey('pk_calendar_events_occurrences', '{{%calendar_events_occurrences}}', ['eventId', 'startUtc']);
     }
 }

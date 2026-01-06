@@ -18,6 +18,8 @@ module.exports = {
       return name.replace('./src/', '');
     },
     path: path.resolve(__dirname, '../plugin/src/Resources/js/scripts'),
+    // Webpack 5 on modern Node versions needs a hash algo supported by OpenSSL/BoringSSL
+    hashFunction: 'sha256',
   },
 
   module: {

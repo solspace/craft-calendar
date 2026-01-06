@@ -4,13 +4,28 @@ namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
 use craft\i18n\Locale;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Db\OccurrenceQuery;
+use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Models\OccurrenceModel;
+use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Resources\Bundles\CalendarViewBundle;
+use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\Response;
 
 class ViewController extends BaseController
 {
+    public function __construct(
+        $id,
+        $module,
+        $config = [],
+        private OccurrenceProvider $occurrenceProvider,
+    ) {
+        parent::__construct($id, $module, $config);
+    }
+
     /**
      * Returns a collection of Event objects based on date ranges
      * for a given month.
@@ -20,7 +35,15 @@ class ViewController extends BaseController
         $this->requirePostRequest();
 
         $rangeStart = \Craft::$app->request->post('rangeStart');
+        if ($rangeStart) {
+            $rangeStart = new Carbon($rangeStart);
+        }
+
         $rangeEnd = \Craft::$app->request->post('rangeEnd');
+        if ($rangeEnd) {
+            $rangeEnd = new Carbon($rangeEnd);
+        }
+
         $calendars = \Craft::$app->request->post('calendars');
         $siteId = \Craft::$app->request->post('siteId');
         $extraCriteria = \Craft::$app->request->post('criteria', []);
@@ -45,14 +68,17 @@ class ViewController extends BaseController
             $criteria['siteId'] = $siteId ?: \Craft::$app->sites->currentSite->id;
         }
 
-        $eventQuery = $this->getEventsService()->getEventQuery($criteria);
-
         // Check settings if disabled events should be shown
         if ($this->getSettingsService()->showDisabledEvents()) {
-            $eventQuery->status = null;
+            $criteria['status'] = null;
         }
 
-        return $this->asJson($eventQuery->all());
+        $query = $this->occurrenceProvider->createQuery($criteria);
+        $occurrences = $this->occurrenceProvider->getOccurrences($query);
+
+        $transformer = new FullCalTransformer();
+
+        return $this->asJson(array_map([$transformer, 'fromModel'], $occurrences));
     }
 
     public function actionTargetTime(

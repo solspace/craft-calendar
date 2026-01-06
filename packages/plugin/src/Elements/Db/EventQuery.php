@@ -349,11 +349,13 @@ class EventQuery extends ElementQuery
         $calendar = CalendarRecord::TABLE;
         $users = Table::USERS;
 
-        // TODO: alias the tables
         $this->joinElementTable($events);
         $this->join('INNER JOIN', $calendar, "{$calendar}.[[id]] = {$events}.[[calendarId]]");
         $this->join('LEFT JOIN', $users, "{$users}.[[id]] = {$events}.[[authorId]]");
-        $this->subQuery->join('LEFT JOIN', $occurrences, "{$occurrences}.[[eventId]] = {$events}.[[id]]");
+        $this->subQuery
+            ->join('INNER JOIN', $occurrences, "{$occurrences}.[[eventId]] = {$events}.[[id]]")
+            ->groupBy([$events.'.[[id]]', 'siteSettingsId'])
+        ;
 
         $this->query->select([
             $events.'.[[calendarId]]',
@@ -531,34 +533,21 @@ class EventQuery extends ElementQuery
         }
 
         if ($this->rangeStart) {
-            $rangeStartString = $this->extractDateAsFormattedString($this->rangeStart);
-
             $this->subQuery->andWhere(
-                "({$events}.[[rrule]] IS NULL AND {$events}.[[endDate]] >= :rangeStart)
-                OR ({$events}.[[rrule]] IS NOT NULL AND {$events}.[[until]] IS NOT NULL AND {$events}.[[until]] >= :rangeStart)
-                OR ({$events}.[[rrule]] IS NOT NULL AND {$events}.[[until]] IS NULL)
-                OR ({$events}.[[freq]] = :freq)",
-                [
-                    'rangeStart' => $rangeStartString,
-                    'freq' => RecurrenceHelper::SELECT_DATES,
-                ]
+                "{$occurrences}.[[endUtc]] >= :rangeStart",
+                ['rangeStart' => $this->rangeStart],
             );
         }
 
         if ($this->rangeEnd) {
-            $rangeEndString = $this->extractDateAsFormattedString($this->rangeEnd);
-
             $this->subQuery->andWhere(
-                "{$events}.[[startDate]] <= :rangeEnd OR {$events}.[[freq]] = :freq",
-                [
-                    'rangeEnd' => $rangeEndString,
-                    'freq' => RecurrenceHelper::SELECT_DATES,
-                ]
+                "{$occurrences}.[[startUtc]] <= :rangeEnd",
+                ['rangeEnd' => $this->rangeEnd],
             );
         }
 
         if ($this->allDay) {
-            $this->subQuery->andWhere(Db::parseParam($events.'.[[allDay]]', (bool) $this->allDay));
+            $this->subQuery->andWhere(Db::parseParam($events.'.[[allDay]]', $this->allDay));
         }
 
         if ($this->until) {
@@ -576,11 +565,7 @@ class EventQuery extends ElementQuery
 
             if (!$isAdmin && !$canManageAll) {
                 $allowedUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
-                $allowedIds = array_map(function ($uid) {
-                    return Db::idByUid(CalendarRecord::TABLE, $uid);
-                }, $allowedUids);
-
-                $this->subQuery->andWhere(Db::parseParam($events.'.[[calendarId]]', $allowedIds));
+                $this->subQuery->andWhere(Db::parseParam($calendar.'.[[uid]]', $allowedUids));
             }
 
             if (!PermissionHelper::isAdmin() && Calendar::getInstance()->settings->isAuthoredEventEditOnly()) {

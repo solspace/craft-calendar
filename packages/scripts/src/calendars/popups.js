@@ -204,8 +204,10 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
       event.calendar.name,
   });
 
-  const start = moment(event.start);
-  const end = moment(event.end);
+  const start = event.start;
+  const end = event.end;
+
+  console.log(start, end);
 
   let dateFormat = 'dddd, MMMM D, YYYY';
   if (event.allDay) {
