@@ -1726,6 +1726,12 @@ class Event extends Element implements \JsonSerializable
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
 
+            case 'startDate':
+                return $this->tableAttributeDate($this->startDate, $attribute);
+
+            case 'endDate':
+                return $this->tableAttributeDate($this->endDate, $attribute);
+
             default:
                 return parent::tableAttributeHtml($attribute);
         }
@@ -1754,6 +1760,12 @@ class Event extends Element implements \JsonSerializable
 
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
+
+            case 'startDate':
+                return $this->attributeHtmlDate($this->startDate, $attribute);
+
+            case 'endDate':
+                return $this->attributeHtmlDate($this->endDate, $attribute);
 
             default:
                 return parent::attributeHtml($attribute);
@@ -1850,6 +1862,48 @@ class Event extends Element implements \JsonSerializable
 
         return $destructiveItems;
         */
+    }
+
+    private function tableAttributeDate(?\DateTimeInterface $date, string $attribute): string
+    {
+        if ($this->allDay) {
+            return $this->renderAllDayDate($date);
+        }
+
+        // Non all-day: keep existing Craft 4 behavior (timezone-aware)
+        return parent::tableAttributeHtml($attribute);
+    }
+
+    private function attributeHtmlDate(?\DateTimeInterface $date, string $attribute): string
+    {
+        if ($this->allDay) {
+            return $this->renderAllDayDate($date);
+        }
+
+        // Non all-day: keep existing Craft 5 behavior (timezone-aware)
+        return parent::attributeHtml($attribute);
+    }
+
+    /**
+     * All-day events should be treated as date-only (no TZ conversion), otherwise midnight UTC will shift to the prior day in negative offsets (PST etc).
+     */
+    private function renderAllDayDate(?\DateTimeInterface $date): string
+    {
+        if (!$date) {
+            return '';
+        }
+
+        $immutable = $date instanceof \DateTimeImmutable
+            ? $date
+            : \DateTimeImmutable::createFromInterface($date);
+
+        // Treat all-day as a DATE ONLY in UTC (do not let Craft/Yii formatter convert TZ)
+        $utc = $immutable->setTimezone(new \DateTimeZone('UTC'));
+
+        // Use Craft locale short date format, but format it ourselves
+        $phpFormat = \Craft::$app->getLocale()->getDateFormat('short', 'php');
+
+        return $utc->format($phpFormat);
     }
 
     private function hydrateSelectDates(): void
