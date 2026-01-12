@@ -16,8 +16,10 @@ declare namespace Craft {
       criteria?: Record<string, unknown>;
       storageKey?: string;
       onSelect: (elements: Array<CraftElement>) => void;
-    }
+    },
   ): Promise<void>;
+
+  function t(category: string, message: string, params?: Record<string, string>): string;
 
   function getCpUrl(path: string): string;
 

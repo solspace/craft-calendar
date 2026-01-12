@@ -23,7 +23,7 @@ class FullCalTransformer
 
             'title' => $model->event->title,
             'slug' => $model->event->slug,
-            'url' => $model->event->getUrl(),
+            'url' => $model->event->getCpEditUrl(),
 
             'start' => $model->startDate,
             'end' => $model->endDate,

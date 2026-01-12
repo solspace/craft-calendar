@@ -5,7 +5,7 @@
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM"],
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": ["node", "jquery"],
     "typeRoots": [
       "config/@types",
       "./node_modules/@types",

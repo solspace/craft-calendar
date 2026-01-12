@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Bundles\Occurrences;
 
+use Carbon\Carbon;
 use craft\events\ElementEvent;
 use craft\services\Elements;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
@@ -48,7 +49,12 @@ class OccurrencePersistence implements BundleInterface
             return;
         }
 
-        $occurrences = $rrule->getOccurrences(5);
+        if ($rrule->isInfinite()) {
+            $occurrences = $rrule->getOccurrencesBefore(new Carbon("+100 years"));
+        } else {
+            $occurrences = $rrule->getOccurrences();
+        }
+
         foreach ($occurrences as $occurrence) {
             $record = new OccurrenceRecord();
             $record->eventId = $element->id;

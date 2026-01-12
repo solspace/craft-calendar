@@ -6,8 +6,9 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import "../config";
 
+import { App } from "@cal/app";
+import { Calendar } from "@cal/pages/calendar/calendar";
 import { generateUrl } from "@cal/utils/urls";
-import { App } from "./app";
 
 const container = document.getElementById("calendar-app");
 const root = ReactDOM.createRoot(container);
@@ -17,11 +18,8 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
       <Routes>
-        <Route path="/app" element={<App />}>
-          <Route path="calendars">
-            <Route path=":calendarId/*" element={<div>test</div>} />
-            <Route index element={<div>test index</div>} />
-          </Route>
+        <Route path="/" element={<App />}>
+          <Route index element={<Calendar />} />
         </Route>
       </Routes>
     </QueryClientProvider>
