@@ -115,6 +115,13 @@ class CalendarInterface extends AbstractInterface
                 'args' => EventArguments::getArguments(),
                 'description' => "The calendar's events",
             ],
+            'eventCount' => [
+                'name' => 'eventCount',
+                'type' => Type::nonNull(Type::int()),
+                'resolve' => EventResolver::class.'::resolveCount',
+                'args' => EventArguments::getArguments(),
+                'description' => "This query is used to return the number of calendar's events.",
+            ],
         ];
     }
 }

@@ -3,34 +3,24 @@
 namespace Solspace\Calendar\Bundles\GraphQL\Resolvers;
 
 use craft\base\ElementInterface;
-use craft\gql\base\Resolver;
-use GraphQL\Type\Definition\ResolveInfo;
+use craft\gql\base\ElementResolver;
 use Solspace\Calendar\Bundles\GraphQL\GqlPermissions;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Models\CalendarModel;
-use yii\base\Model;
 
-class EventResolver extends Resolver
+class EventResolver extends ElementResolver
 {
-    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
+    public static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed
     {
         $arguments = self::getArguments($arguments);
+
         if ($source instanceof CalendarModel) {
             $arguments['calendarId'] = $source->id;
-        } elseif ($source instanceof ElementInterface) {
-            $fieldName = $resolveInfo->fieldName;
-
+        } elseif ($source instanceof ElementInterface && null !== $fieldName) {
             return $source->{$fieldName};
         }
 
-        return Calendar::getInstance()->events->getEventQuery($arguments)->all();
-    }
-
-    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo): null|array|ElementInterface|Model
-    {
-        $arguments = self::getArguments($arguments);
-
-        return Calendar::getInstance()->events->getEventQuery($arguments)->one();
+        return Calendar::getInstance()->events->getEventQuery($arguments);
     }
 
     private static function getArguments(array $arguments): array
