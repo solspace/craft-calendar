@@ -135,7 +135,9 @@ class SettingsController extends BaseController
         $plugin = Calendar::getInstance();
         $plugin->setSettings($postData);
 
-        \Craft::$app->plugins->savePluginSettings($plugin, $postData);
+        $allSettings = $plugin->getSettings()->toArray();
+
+        \Craft::$app->plugins->savePluginSettings($plugin, $allSettings);
         \Craft::$app->session->setNotice(Calendar::t('Settings saved successfully.'));
 
         return $this->redirectToPostedUrl();

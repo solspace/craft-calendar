@@ -1348,6 +1348,21 @@ class EventQuery extends ElementQuery
      */
     private function orderEvents(array &$events): void
     {
+        $invalidEvents = array_filter($events, fn ($event) => !$event instanceof Event);
+        if (!empty($invalidEvents)) {
+            \Craft::warning(
+                \sprintf(
+                    'Calendar EventQuery: %d invalid event(s) filtered before sorting. Values: %s',
+                    \count($invalidEvents),
+                    json_encode(array_map(fn ($event) => \is_object($event) ? $event::class : \gettype($event), $invalidEvents))
+                ),
+                __METHOD__
+            );
+        }
+
+        // Remove any null/invalid items so usort callback never receives null or passing it down the line
+        $events = array_values(array_filter($events, fn ($event) => $event instanceof Event));
+
         if (\is_array($this->orderBy) && \count($this->orderBy) > 1) {
             $this->orderByMultipleCriteria($events);
         } else {
