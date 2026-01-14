@@ -23,7 +23,8 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
 
     const currentSource = this.$source;
     const { id, name, handle, key } = currentSource.data();
-    const isAllEventsSource = key === '*';
+    const isCalendarSource = typeof key === 'string' && key.indexOf('calendar:') === 0;
+    const isAllEventsSource = key === '*' || !isCalendarSource;
 
     const sources = this.getValidSources().filter((item) => item.id !== id);
 
@@ -35,7 +36,7 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
 
     if (isAllEventsSource) {
       label = Craft.t('calendar', 'New Event');
-      menuClass += ' menubtn';
+      menuClass += ' add icon menubtn';
     } else {
       label = Craft.t('calendar', 'New {calendar} Event', { calendar: name });
       menuClass += ' add icon';
