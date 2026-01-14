@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 5.0.26 - 2026-01-14
+
+### Added
+- **GraphQL**: Added an `eventCount` argument to calendar interfaces.
+
+### Fixed
+- Fixed a **Craft 5.8.22+** compatibility issue where saving Calendar settings could partially save and drop values from other settings pages.
+- **GraphQL**: Fixed a `relatedToEntries` filter issue in the event resolver on Craft 5.
+- Fixed the **New Event** button when viewing a custom source in the CP Events Index page.
+- Fixed event ordering and pagination in the CP Events Index page.
+
 ## 5.0.25 - 2025-11-17
 
 ### Fixed
