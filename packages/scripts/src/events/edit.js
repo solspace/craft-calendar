@@ -46,7 +46,7 @@ const updateActionButtons = function () {
         return false;
       }
 
-      Craft.sendActionRequest('POST', 'calendar/events/delete-event', {
+      Craft.sendActionRequest('POST', 'calendar/events/delete', {
         data: {
           [Craft.csrfTokenName]: Craft.csrfTokenValue,
           siteId: $('#main-form input[name="siteId"]').val(),

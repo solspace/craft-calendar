@@ -21,6 +21,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use craft\web\CpScreenResponseBehavior;
 use Illuminate\Support\Collection;
 use RRule\RRule;
 use Solspace\Calendar\Calendar;
@@ -48,6 +49,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
 use yii\base\Event as BaseEvent;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\web\Response;
 
 class Event extends Element implements \JsonSerializable
 {
@@ -81,6 +83,8 @@ class Event extends Element implements \JsonSerializable
     public null|Carbon|\DateTime|string $initialEndDate = null;
 
     public null|Carbon|\DateTime|string $endDateLocalized = null;
+
+    public string $testingValue = 'abcd';
 
     public ?bool $allDay = null;
 
@@ -194,14 +198,9 @@ class Event extends Element implements \JsonSerializable
         return 'event';
     }
 
-    public static function trackChanges(): bool
+    public static function hasDrafts(): bool
     {
-        return false;
-    }
-
-    public function getIsTitleTranslatable(): bool
-    {
-        return Field::TRANSLATION_METHOD_NONE !== $this->getCalendar()->titleTranslationMethod;
+        return true;
     }
 
     public function getTitleTranslationDescription(): ?string
@@ -457,72 +456,7 @@ class Event extends Element implements \JsonSerializable
             return null;
         }
 
-        $siteHandle = $this->getSite()->handle;
-
-        return UrlHelper::cpUrl('calendar/events/'.$this->id.'/'.$siteHandle);
-    }
-
-    /**
-     * Returns the field layout used by this element.
-     */
-    public function getFieldLayout(): ?FieldLayout
-    {
-        if (!$this->calendarId) {
-            return null;
-        }
-
-        $fieldLayout = $this->getCalendar()->getFieldLayout();
-        if (!$fieldLayout) {
-            $fieldLayout = new FieldLayout();
-        }
-
-        if ($this->getCalendar()->hasTitleField) {
-            $tabs = $fieldLayout->getTabs();
-
-            if (empty($tabs)) {
-                $tab = new FieldLayoutTab();
-                $tab->name = 'Content';
-                $tab->setLayout($fieldLayout);
-
-                $fieldLayout->setTabs([$tab]);
-
-                $tabs = $fieldLayout->getTabs();
-            }
-
-            $hasTitle = !empty(
-                array_filter(
-                    $tabs,
-                    function (FieldLayoutTab $tab) {
-                        foreach ($tab->getElements() as $element) {
-                            if ($element instanceof TitleField) {
-                                return true;
-                            }
-                        }
-
-                        return false;
-                    }
-                )
-            );
-
-            if (!$hasTitle) {
-                $firstTab = reset($tabs);
-                if ($firstTab) {
-                    $titleLabel = $this->getCalendar()->titleLabel;
-
-                    $firstTab->setElements(
-                        array_merge([
-                            new TitleField([
-                                'label' => $titleLabel,
-                                'title' => $titleLabel,
-                                'name' => 'title',
-                            ]),
-                        ], $firstTab->getElements())
-                    );
-                }
-            }
-        }
-
-        return $fieldLayout;
+        return UrlHelper::cpUrl('calendar/events/'.$this->id);
     }
 
     public function getCalendar(): CalendarModel
@@ -1295,9 +1229,30 @@ class Event extends Element implements \JsonSerializable
      */
     public function beforeSave(bool $isNew): bool
     {
+        if (!parent::beforeSave($isNew)) {
+            return false;
+        }
+
         $this->updateTitle();
 
-        return parent::beforeSave($isNew);
+        $byMonth = \Craft::$app->getRequest()->getBodyParam('byMonth');
+        $byDay = \Craft::$app->getRequest()->getBodyParam('byDay');
+
+        $this->byMonth = $byMonth;
+        $this->byDay = $byDay;
+
+        return true;
+    }
+
+    public function beforeValidate(): bool
+    {
+        if (!parent::beforeValidate()) {
+            return false;
+        }
+
+        $this->applyEventBuilderDataFromRequest();
+
+        return true;
     }
 
     public function afterSave(bool $isNew): void
@@ -1400,6 +1355,50 @@ class Event extends Element implements \JsonSerializable
         }
 
         parent::afterSave($isNew);
+    }
+
+    public function getFieldLayout(): ?FieldLayout
+    {
+        $calendar = $this->getCalendar();
+        if (!$calendar) {
+            return null;
+        }
+
+        return $calendar->getFieldLayout();
+    }
+
+    public function getFieldLayoutId(): ?int
+    {
+        $calendar = $this->getCalendar();
+        if (!$calendar) {
+            return null;
+        }
+
+        return $calendar->fieldLayoutId;
+    }
+
+    private function applyEventBuilderDataFromRequest(): void
+    {
+        $request = \Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return;
+        }
+
+        $eventBuilderData = $request->getBodyParam('event_builder_data');
+        if (!$eventBuilderData) {
+            return;
+        }
+
+        if (\is_string($eventBuilderData)) {
+            $this->setEvent_builder_data($eventBuilderData);
+
+            return;
+        }
+
+        if (\is_array($eventBuilderData)) {
+            $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
+            $transformer->transform();
+        }
     }
 
     public function jsonSerialize(): array
@@ -1549,6 +1548,27 @@ class Event extends Element implements \JsonSerializable
         $fields[] = parent::metaFieldsHtml($static);
 
         return implode("\n", $fields);
+    }
+
+    public function prepareEditScreen(Response $response, string $containerId): void
+    {
+        /** @var CpScreenResponseBehavior $screen */
+        $screen = $response->getBehavior('cp-screen');
+        if (!$screen) {
+            return;
+        }
+
+        $screen->selectedSubnavItem('events');
+        $screen->crumbs([
+            [
+                'label' => Calendar::t('Calendar'),
+                'url' => UrlHelper::cpUrl('calendar'),
+            ],
+            [
+                'label' => Calendar::t('Events'),
+                'url' => UrlHelper::cpUrl('calendar/events'),
+            ],
+        ]);
     }
 
     /**
@@ -1873,7 +1893,7 @@ class Event extends Element implements \JsonSerializable
                 'label' => \Craft::t('app', 'Delete {type}', [
                     'type' => static::lowerDisplayName(),
                 ]),
-                'action' => 'calendar/events/delete-event',
+                'action' => 'calendar/events/delete',
                 'params' => [
                     'siteId' => $this->siteId,
                     'id' => $this->getCanonicalId(),
