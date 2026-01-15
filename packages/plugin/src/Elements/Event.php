@@ -141,10 +141,12 @@ class Event extends Element implements \JsonSerializable
             $endDate = $endDate->format('Y-m-d H:i:s');
         }
 
-        $this->startDateLocalized = new Carbon($startDate ?? 'now');
+        $craftTimezone = \Craft::$app->getTimeZone();
+
+        $this->startDateLocalized = new Carbon($startDate ?? 'now', $craftTimezone);
         $this->startDate = new Carbon($startDate ?? 'now', DateHelper::UTC);
         $this->initialStartDate = $this->startDate->copy();
-        $this->endDateLocalized = new Carbon($endDate ?? 'now');
+        $this->endDateLocalized = new Carbon($endDate ?? 'now', $craftTimezone);
         $this->endDate = new Carbon($endDate ?? 'now', DateHelper::UTC);
         $this->initialEndDate = $this->endDate->copy();
         $this->postDate = $this->postDate ? new Carbon($this->postDate) : null;
@@ -1727,10 +1729,10 @@ class Event extends Element implements \JsonSerializable
                 return Calendar::t(ucfirst($this->getStatus()));
 
             case 'startDate':
-                return $this->tableAttributeDate($this->startDate, $attribute);
+                return $this->tableAttributeDate($this->startDateLocalized);
 
             case 'endDate':
-                return $this->tableAttributeDate($this->endDate, $attribute);
+                return $this->tableAttributeDate($this->endDateLocalized);
 
             default:
                 return parent::tableAttributeHtml($attribute);
@@ -1762,10 +1764,10 @@ class Event extends Element implements \JsonSerializable
                 return Calendar::t(ucfirst($this->getStatus()));
 
             case 'startDate':
-                return $this->attributeHtmlDate($this->startDate, $attribute);
+                return $this->attributeHtmlDate($this->startDateLocalized);
 
             case 'endDate':
-                return $this->attributeHtmlDate($this->endDate, $attribute);
+                return $this->attributeHtmlDate($this->endDateLocalized);
 
             default:
                 return parent::attributeHtml($attribute);
@@ -1864,46 +1866,58 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function tableAttributeDate(?\DateTimeInterface $date, string $attribute): string
+    private function tableAttributeDate(null|\DateTimeInterface|string $date): string
     {
-        if ($this->allDay) {
-            return $this->renderAllDayDate($date);
-        }
-
-        // Non all-day: keep existing Craft 4 behavior (timezone-aware)
-        return parent::tableAttributeHtml($attribute);
-    }
-
-    private function attributeHtmlDate(?\DateTimeInterface $date, string $attribute): string
-    {
-        if ($this->allDay) {
-            return $this->renderAllDayDate($date);
-        }
-
-        // Non all-day: keep existing Craft 5 behavior (timezone-aware)
-        return parent::attributeHtml($attribute);
-    }
-
-    /**
-     * All-day events should be treated as date-only (no TZ conversion), otherwise midnight UTC will shift to the prior day in negative offsets (PST etc).
-     */
-    private function renderAllDayDate(?\DateTimeInterface $date): string
-    {
-        if (!$date) {
+        $dt = $this->normalizeLocalizedDate($date);
+        if (!$dt) {
             return '';
         }
 
-        $immutable = $date instanceof \DateTimeImmutable
-            ? $date
-            : \DateTimeImmutable::createFromInterface($date);
+        // All-day should be date-only
+        if ($this->allDay) {
+            return \Craft::$app->getFormatter()->asDate($dt);
+        }
 
-        // Treat all-day as a DATE ONLY in UTC (do not let Craft/Yii formatter convert TZ)
-        $utc = $immutable->setTimezone(new \DateTimeZone('UTC'));
+        // Timed events should display in LOCAL timezone
+        return \Craft::$app->getFormatter()->asTime($dt) ?: \Craft::$app->getFormatter()->asDatetime($dt);
+    }
 
-        // Use Craft locale short date format, but format it ourselves
-        $phpFormat = \Craft::$app->getLocale()->getDateFormat('short', 'php');
+    private function attributeHtmlDate(null|\DateTimeInterface|string $date): string
+    {
+        $dt = $this->normalizeLocalizedDate($date);
+        if (!$dt) {
+            return '';
+        }
 
-        return $utc->format($phpFormat);
+        // All-day should be date-only
+        if ($this->allDay) {
+            return \Craft::$app->getFormatter()->asDate($dt);
+        }
+
+        // Timed events should display in LOCAL timezone
+        return ElementHelper::attributeHtml($dt);
+    }
+
+    private function normalizeLocalizedDate(null|\DateTimeInterface|string $date): ?\DateTimeInterface
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $timezone = new \DateTimeZone(\Craft::$app->getTimeZone());
+
+        if (\is_string($date)) {
+            return new \DateTime($date, $timezone);
+        }
+
+        // Convert any DateTimeInterface to the Craft timezone explicitly
+        $datetime = $date instanceof \DateTime
+            ? clone $date
+            : new \DateTime($date->format('Y-m-d H:i:s'), $date->getTimezone());
+
+        $datetime->setTimezone($timezone);
+
+        return $datetime;
     }
 
     private function hydrateSelectDates(): void
