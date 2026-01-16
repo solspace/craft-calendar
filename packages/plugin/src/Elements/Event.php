@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
-use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
@@ -1534,21 +1533,33 @@ class Event extends Element implements \JsonSerializable
 
     public function attributes(): array
     {
-        $names = parent::attributes();
-        $names[] = 'authorId';
-        $names[] = 'author';
+        $names = [
+            'title',
+            'authorId',
+            'author',
+        ];
 
         // Hide Author from Craft Solo
         if (\Craft::Solo === \Craft::$app->getEdition()) {
             unset($names['authorId'], $names['author']);
         }
 
-        return $names;
+        return array_merge(array_filter($names), parent::attributes());
+    }
+
+    public function attributeLabels(): array
+    {
+        $labels = [
+            'title' => Calendar::t('Event'),
+        ];
+
+        return array_merge(array_filter($labels), parent::attributeLabels());
     }
 
     public function extraFields(): array
     {
         $names = parent::extraFields();
+        $names[] = 'title';
         $names[] = 'authorId';
         $names[] = 'author';
 
@@ -1597,6 +1608,7 @@ class Event extends Element implements \JsonSerializable
     protected static function defineTableAttributes(): array
     {
         $attributes = [
+            'title' => ['label' => Calendar::t('Event')],
             'slug' => ['label' => Calendar::t('Slug')],
             'name' => ['label' => Calendar::t('Calendar')],
             'startDate' => ['label' => Calendar::t('Start Date')],
@@ -1616,14 +1628,14 @@ class Event extends Element implements \JsonSerializable
             unset($attributes['authorId'], $attributes['author']);
         }
 
-        return $attributes;
+        return array_merge(array_filter($attributes), parent::defineTableAttributes());
     }
 
     protected static function defineSortOptions(): array
     {
         $attributes = [
+            'title' => Calendar::t('Event'),
             'authorId' => Calendar::t('Author ID'),
-            'title' => Calendar::t('Title'),
             'name' => Calendar::t('Calendar'),
             'startDate' => Calendar::t('Start Date'),
             'endDate' => Calendar::t('End Date'),
@@ -1644,11 +1656,11 @@ class Event extends Element implements \JsonSerializable
     protected static function defineSearchableAttributes(): array
     {
         $attributes = [
+            'title',
             'name',
             'authorId',
             'author',
             'id',
-            'title',
             'startDate',
             'endDate',
             'dateCreated',
@@ -1667,6 +1679,7 @@ class Event extends Element implements \JsonSerializable
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
+            'title',
             'name',
             'startDate',
             'endDate',
@@ -1710,6 +1723,16 @@ class Event extends Element implements \JsonSerializable
 
                 return $author ? Cp::elementHtml($author) : '';
 
+            case 'title':
+                return \sprintf(
+                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span><a href="%s" title="%s" class="label-link"><span>%s</span></a></div>',
+                    $this->getStatus(),
+                    Calendar::t(ucfirst($this->getStatus())),
+                    $this->getCpEditUrl(),
+                    $this->title,
+                    $this->title,
+                );
+
             case 'calendar':
                 return \sprintf(
                     '<div style="white-space: nowrap;"><span class="color-indicator" style="background-color: %s;"></span>%s</div>',
@@ -1725,10 +1748,9 @@ class Event extends Element implements \JsonSerializable
 
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
-
-            default:
-                return parent::tableAttributeHtml($attribute);
         }
+
+        return parent::tableAttributeHtml($attribute);
     }
 
     protected function attributeHtml(string $attribute): string
@@ -1739,6 +1761,16 @@ class Event extends Element implements \JsonSerializable
 
                 return $author ? Cp::elementChipHtml($author) : '';
 
+            case 'title':
+                return \sprintf(
+                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span><a href="%s" title="%s" class="label-link"><span>%s</span></a></div>',
+                    $this->getStatus(),
+                    Calendar::t(ucfirst($this->getStatus())),
+                    $this->getCpEditUrl(),
+                    $this->title,
+                    $this->title,
+                );
+
             case 'calendar':
                 return \sprintf(
                     '<div style="white-space: nowrap;"><span class="color-indicator" style="background-color: %s;"></span>%s</div>',
@@ -1754,10 +1786,9 @@ class Event extends Element implements \JsonSerializable
 
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
-
-            default:
-                return parent::attributeHtml($attribute);
         }
+
+        return parent::attributeHtml($attribute);
     }
 
     protected function route(): null|array|string
