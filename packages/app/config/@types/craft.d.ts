@@ -26,3 +26,18 @@ declare namespace Craft {
   const csrfTokenName: string;
   const csrfTokenValue: string;
 }
+
+declare namespace Garnish {
+  type MenuBtnOptions = {
+    onOptionSelect?: (target: HTMLElement) => void;
+  };
+
+  class MenuBtn {
+    constructor(target: Element, options?: MenuBtnOptions);
+    showMenu(): void;
+  }
+}
+
+interface JQuery {
+  datepicker(...args: unknown[]): JQuery;
+}

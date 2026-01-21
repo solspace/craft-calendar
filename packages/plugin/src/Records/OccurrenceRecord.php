@@ -11,8 +11,8 @@ use Solspace\Calendar\Elements\Event;
  * @property int    $id
  * @property int    $eventId
  * @property int    $calendarId
- * @property string $startUtc
- * @property string $endUtc
+ * @property string $startDate
+ * @property string $endDate
  * @property bool   $allDay
  */
 class OccurrenceRecord extends ActiveRecord

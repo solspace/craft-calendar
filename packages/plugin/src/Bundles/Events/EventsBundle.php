@@ -2,9 +2,12 @@
 
 namespace Solspace\Calendar\Bundles\Events;
 
+use craft\events\TemplateEvent;
+use craft\web\View;
 use craft\events\ModelEvent;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
+use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use yii\base\Event;
 
 class EventsBundle implements BundleInterface

@@ -7,11 +7,8 @@ use Carbon\Carbon;
 class OccurrenceLoader
 {
     private ?int $limit = null;
-
     private ?Carbon $rangeStart = null;
-
     private ?Carbon $rangeEnd = null;
-
     private null|bool|int|string $loadOccurrences = null;
 
     public function __construct(

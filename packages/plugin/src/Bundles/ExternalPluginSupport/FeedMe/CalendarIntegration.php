@@ -246,6 +246,7 @@ if (class_exists('craft\feedme\base\Element')) {
                 $event->contentData[$key] = $value;
             }
 
+            // TODO: this has to be refactored, since now RRULE data is in the RFC string
             $freq = $element->getFrequency();
             if ($freq) {
                 $rrule = new RRuleObject(

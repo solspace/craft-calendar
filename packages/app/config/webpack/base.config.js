@@ -8,6 +8,10 @@ module.exports = {
 
 	entry: {
 		app: path.resolve(__dirname, "../../src/index.tsx"),
+		"event-builder": path.resolve(
+			__dirname,
+			"../../src/event-builder/index.tsx",
+		),
 	},
 	output: {
 		filename: "[name].js",

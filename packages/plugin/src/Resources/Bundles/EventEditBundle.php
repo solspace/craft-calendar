@@ -2,6 +2,8 @@
 
 namespace Solspace\Calendar\Resources\Bundles;
 
+use craft\helpers\App;
+
 class EventEditBundle extends CalendarAssetBundle
 {
     /** @var null|string - worst hack ever made */
@@ -9,8 +11,12 @@ class EventEditBundle extends CalendarAssetBundle
 
     public function getScripts(): array
     {
+        $clientPath = App::env('CAL_CLIENT_PATH') ?? null;
+        if ($clientPath) {
+            return [$clientPath.'/event-builder.js'];
+        }
+
         return [
-            'js/scripts/events/edit.js',
             'js/event-builder/vendor.js',
             'js/event-builder/app.js',
         ];

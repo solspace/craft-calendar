@@ -10,7 +10,7 @@ class CalendarAppBundle extends CalendarAssetBundle
     {
         $clientPath = App::env('CAL_CLIENT_PATH') ?? null;
         if ($clientPath) {
-            return [$clientPath];
+            return [$clientPath.'/app.js'];
         }
 
         return [

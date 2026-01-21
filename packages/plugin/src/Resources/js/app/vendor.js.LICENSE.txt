@@ -1,3 +1,14 @@
+/*!
+  react-datepicker v9.0.0
+  https://github.com/Hacker0x01/react-datepicker
+  Released under the MIT License.
+*/
+
+/*!
+* tabbable 6.4.0
+* @license MIT, https://github.com/focus-trap/tabbable/blob/master/LICENSE
+*/
+
 /*! Axios v1.13.2 Copyright (c) 2025 Matt Zabriskie and contributors */
 
 /**
@@ -51,7 +62,17 @@
  */
 
 /**
- * react-router v7.11.0
+ * @license React
+ * use-sync-external-store-with-selector.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * react-router v7.12.0
  *
  * Copyright (c) Remix Software Inc.
  *
@@ -62,7 +83,7 @@
  */
 
 /**
- * react-router-dom v7.11.0
+ * react-router-dom v7.12.0
  *
  * Copyright (c) Remix Software Inc.
  *

@@ -346,7 +346,7 @@ class EventQuery extends ElementQuery
     protected function beforePrepare(): bool
     {
         $events = Event::TABLE;
-        $occurrences = OccurrenceRecord::TABLE;
+        // $occurrences = OccurrenceRecord::TABLE;
         $calendar = CalendarRecord::TABLE;
         $users = Table::USERS;
 
@@ -354,14 +354,15 @@ class EventQuery extends ElementQuery
         $this->join('INNER JOIN', $calendar, "{$calendar}.[[id]] = {$events}.[[calendarId]]");
         $this->join('LEFT JOIN', $users, "{$users}.[[id]] = {$events}.[[authorId]]");
 
+        // TODO: decide if these are even needed, since we have occurrence lookup query
         // Check if occurrences exist for the event
-        $occExists = (new Query())
-            ->select(new Expression('1'))
-            ->from(["occ" => $occurrences])
-            ->where("[[occ.eventId]] = {$events}.[[id]]")
-        ;
-
-        $this->subQuery->andWhere(['exists', $occExists]);
+        // $occExists = (new Query())
+        //     ->select(new Expression('1'))
+        //     ->from(["occ" => $occurrences])
+        //     ->where("[[occ.eventId]] = {$events}.[[id]]")
+        // ;
+        //
+        // $this->subQuery->andWhere(['exists', $occExists]);
 
         $this->query->select([
             $events.'.[[calendarId]]',
@@ -372,6 +373,7 @@ class EventQuery extends ElementQuery
             $events.'.[[dateUpdated]]',
             $events.'.[[allDay]]',
             $events.'.[[rrule]]',
+            $events.'.[[repeatType]]',
             $events.'.[[freq]]',
             $events.'.[[interval]]',
             $events.'.[[count]]',
@@ -537,20 +539,6 @@ class EventQuery extends ElementQuery
                 )
             );
         }
-
-        // if ($this->rangeStart) {
-        //     $this->subQuery->andWhere(
-        //         "{$occurrences}.[[endUtc]] >= :rangeStart",
-        //         ['rangeStart' => $this->rangeStart],
-        //     );
-        // }
-        //
-        // if ($this->rangeEnd) {
-        //     $this->subQuery->andWhere(
-        //         "{$occurrences}.[[startUtc]] <= :rangeEnd",
-        //         ['rangeEnd' => $this->rangeEnd],
-        //     );
-        // }
 
         if ($this->allDay) {
             $this->subQuery->andWhere(Db::parseParam($events.'.[[allDay]]', $this->allDay));

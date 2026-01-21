@@ -11,7 +11,7 @@ class FullCalTransformer
     {
         return [
             'id' => $record->id,
-            'startDate' => $record->startUtc,
+            'startDate' => $record->startDate,
         ];
     }
 

@@ -57,6 +57,8 @@ class Install extends StreamlinedInstallMigration
                 ->addField('endDate', $this->dateTime()->notNull())
                 ->addField('allDay', $this->boolean())
                 ->addField('rrule', $this->string())
+                ->addField('repeatType', $this->string(10)->defaultValue('NEVER'))
+                ->addField('repeatEndType', $this->string(10)->defaultValue('NEVER'))
                 ->addField('freq', $this->string())
                 ->addField('interval', $this->integer())
                 ->addField('count', $this->integer())
@@ -95,8 +97,8 @@ class Install extends StreamlinedInstallMigration
             (new Table('calendar_events_occurrences'))
                 ->addField('eventId', $this->integer()->notNull())
                 ->addField('calendarId', $this->integer()->notNull())
-                ->addField('startUtc', $this->dateTime()->notNull())
-                ->addField('endUtc', $this->dateTime())
+                ->addField('startDate', $this->dateTime()->notNull())
+                ->addField('endDate', $this->dateTime())
                 ->addField('allDay', $this->boolean())
                 ->addForeignKey(
                     'eventId',
@@ -112,10 +114,12 @@ class Install extends StreamlinedInstallMigration
                     ForeignKey::CASCADE,
                     name: 'occurrences_calendar_id_fk',
                 )
-                ->addIndex(['calendarId', 'startUtc'], name: 'occurrences_calendar_start_idx')
-                ->addIndex(['eventId', 'startUtc'], true, name: 'occurrences_event_start_idx_unq')
-                ->addIndex(['startUtc'], name: 'occurrences_start_utc_idx')
-                ->addIndex(['endUtc'], name: 'occurrences_end_utc_idx'),
+                ->addIndex(['calendarId', 'startDate'], name: 'occurrences_calendar_start_idx')
+                ->addIndex(['calendarId', 'endDate'], name: 'occurrences_calendar_end_idx')
+                ->addIndex(['eventId', 'startDate'], true, name: 'occurrences_event_start_idx_unq')
+                ->addIndex(['eventId', 'endDate'], name: 'occurrences_event_end_idx')
+                ->addIndex(['startDate'], name: 'occurrences_start_date_idx')
+                ->addIndex(['endDate'], name: 'occurrences_end_date_idx'),
         ];
     }
 
@@ -123,6 +127,6 @@ class Install extends StreamlinedInstallMigration
     {
         parent::afterUp();
 
-        $this->addPrimaryKey('pk_calendar_events_occurrences', '{{%calendar_events_occurrences}}', ['eventId', 'startUtc']);
+        $this->addPrimaryKey('pk_calendar_events_occurrences', '{{%calendar_events_occurrences}}', ['eventId', 'startDate']);
     }
 }

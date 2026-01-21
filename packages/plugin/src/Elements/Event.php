@@ -16,6 +16,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -60,59 +61,45 @@ class Event extends Element implements \JsonSerializable
     public const UNTIL_TYPE_UNTIL = 'until';
     public const UNTIL_TYPE_AFTER = 'after';
 
+    public const REPEAT_NEVER = 'NEVER';
+    public const REPEAT_DAILY = 'DAILY';
+    public const REPEAT_WEEKLY = 'WEEKLY';
+    public const REPEAT_MONTHLY = 'MONTHLY';
+    public const REPEAT_YEARLY = 'YEARLY';
+    public const REPEAT_CUSTOM = 'CUSTOM';
+
     public const SPAN_LIMIT_DAYS = 365;
 
     public const EVENT_TRANSFORM_JSON_VALUE = 'transform-json-value';
 
-    public null|Carbon|\DateTime|string $postDate = null;
+    private const CARBON_PROPERTIES = [
+        'startDate',
+        'endDate',
+        'until',
+        'postDate',
+    ];
 
     public ?int $calendarId = null;
-
+    public ?int $authorId = null;
+    public ?string $username = null;
     public ?string $name = null;
 
-    public null|array|int|string $authorId = null;
-
-    public null|Carbon|\DateTime|string $startDate = null;
-
-    public null|Carbon|\DateTime|string $initialStartDate = null;
-
-    public null|Carbon|\DateTime|string $startDateLocalized = null;
-
-    public null|Carbon|\DateTime|string $endDate = null;
-
-    public null|Carbon|\DateTime|string $initialEndDate = null;
-
-    public null|Carbon|\DateTime|string $endDateLocalized = null;
-
-    public string $testingValue = 'abcd';
-
-    public ?bool $allDay = null;
+    public ?Carbon $postDate = null;
+    public ?Carbon $startDate = null;
+    public ?Carbon $endDate = null;
+    public ?Carbon $until = null;
 
     public ?string $rrule = null;
-
+    public ?string $repeatType = null;
+    public ?string $repeatEndType = null;
+    public ?bool $allDay = null;
     public ?string $freq = null;
-
     public ?int $interval = null;
-
     public ?int $count = null;
-
-    public null|Carbon|\DateTime|string $until = null;
-
-    public null|Carbon|\DateTime|string $untilLocalized = null;
-
     public ?string $byMonth = null;
-
     public ?string $byYearDay = null;
-
     public ?string $byMonthDay = null;
-
     public ?string $byDay = null;
-
-    public ?int $sortOrder = null;
-
-    public ?int $score = null;
-
-    public ?string $username = null;
 
     private static ?int $overlapThreshold = null;
 
@@ -128,41 +115,22 @@ class Event extends Element implements \JsonSerializable
     /** @var Event[] */
     private array $occurrenceCache = [];
 
-    /**
-     * Event constructor.
-     */
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-
-        $startDate = $this->startDate;
-        if ($startDate instanceof \DateTime) {
-            $startDate = $startDate->format('Y-m-d H:i:s');
-        }
-
-        $endDate = $this->endDate;
-        if ($endDate instanceof \DateTime) {
-            $endDate = $endDate->format('Y-m-d H:i:s');
-        }
-
-        $this->startDate = new Carbon($startDate ?? 'now', DateHelper::UTC);
-        $this->initialStartDate = $this->startDate->copy();
-        $this->endDate = new Carbon($endDate ?? 'now', DateHelper::UTC);
-        $this->initialEndDate = $this->endDate->copy();
-        $this->postDate = $this->postDate ? new Carbon($this->postDate) : null;
-        if (null !== $this->until) {
-            $until = $this->until;
-            if ($until instanceof \DateTime) {
-                $until = $until->format('Y-m-d H:i:s');
-            }
-
-            $this->until = new Carbon($until, DateHelper::UTC);
-        }
-    }
-
     public static function tableName(): string
     {
         return self::TABLE;
+    }
+
+    public function __construct($config = [])
+    {
+        foreach (self::CARBON_PROPERTIES as $property) {
+            if (isset($config[$property]) && is_string($config[$property])) {
+                $dateObject = DateTimeHelper::toDateTime($config[$property]);
+
+                $config[$property] = Carbon::createFromInterface($dateObject);
+            }
+        }
+
+        parent::__construct($config);
     }
 
     public function setEvent_builder_data($builderJson): void
@@ -260,19 +228,9 @@ class Event extends Element implements \JsonSerializable
         return \Craft::createObject(EventCondition::class, [static::class]);
     }
 
-    public static function typeHandle(): string
-    {
-        return 'event';
-    }
-
     public static function hasTitles(): bool
     {
         return true;
-    }
-
-    public static function hasContent(): bool
-    {
-        return version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
     }
 
     public static function isLocalized(): bool
@@ -708,7 +666,7 @@ class Event extends Element implements \JsonSerializable
 
     public function repeats(): bool
     {
-        return null !== $this->freq;
+        return null !== $this->repeatType;
     }
 
     public function repeatsOnSelectDates(): bool
@@ -718,6 +676,10 @@ class Event extends Element implements \JsonSerializable
 
     public function getFrequency(): ?string
     {
+        // TODO: Return the RRULE FREQ value instead
+
+        return null;
+
         return match ($this->freq) {
             RecurrenceHelper::DAILY, RecurrenceHelper::WEEKLY, RecurrenceHelper::MONTHLY, RecurrenceHelper::YEARLY, RecurrenceHelper::SELECT_DATES => $this->freq,
             default => null,
@@ -739,32 +701,35 @@ class Event extends Element implements \JsonSerializable
      */
     public function getOccurrenceDatesBetween(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
     {
+        // TODO: refactor this to use RRULE
         $occurrences = [];
 
-        if ($this->repeats()) {
-            if ($this->repeatsOnSelectDates()) {
-                $startDate = $this->getStartDate();
-                if ((!$rangeStart || $startDate >= $rangeStart) && (!$rangeEnd || $startDate <= $rangeEnd)) {
-                    $occurrences[] = $startDate->setTime(0, 0, 0);
-                }
-
-                $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($rangeStart, $rangeEnd));
-            } else {
-                $rrule = $this->getRRuleObject();
-                if (null !== $rrule) {
-                    if ($this->isInfinite()) {
-                        $rangeStart = $rangeStart ?: new Carbon('today');
-                        $rangeEnd = $rangeEnd ?: new Carbon('+6 months');
-                    }
-
-                    $occurrences = array_merge($occurrences, $rrule->getOccurrencesBetween($rangeStart, $rangeEnd));
-                }
-            }
-        }
-
-        DateHelper::sortArrayOfDates($occurrences);
-
         return $occurrences;
+
+        // if ($this->repeats()) {
+        //     if ($this->repeatsOnSelectDates()) {
+        //         $startDate = $this->getStartDate();
+        //         if ((!$rangeStart || $startDate >= $rangeStart) && (!$rangeEnd || $startDate <= $rangeEnd)) {
+        //             $occurrences[] = $startDate->setTime(0, 0, 0);
+        //         }
+        //
+        //         $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($rangeStart, $rangeEnd));
+        //     } else {
+        //         $rrule = $this->getRRuleObject();
+        //         if (null !== $rrule) {
+        //             if ($this->isInfinite()) {
+        //                 $rangeStart = $rangeStart ?: new Carbon('today');
+        //                 $rangeEnd = $rangeEnd ?: new Carbon('+6 months');
+        //             }
+        //
+        //             $occurrences = array_merge($occurrences, $rrule->getOccurrencesBetween($rangeStart, $rangeEnd));
+        //         }
+        //     }
+        // }
+        //
+        // DateHelper::sortArrayOfDates($occurrences);
+        //
+        // return $occurrences;
     }
 
     public function happensOn(\DateTime $date): bool
@@ -798,46 +763,14 @@ class Event extends Element implements \JsonSerializable
         return $this->startDate;
     }
 
-    /**
-     * @deprecated use getStartDate() instead
-     */
-    public function getStartDateLocalized(): Carbon
-    {
-        return $this->getStartDate();
-    }
-
     public function getEndDate(): Carbon
     {
         return $this->endDate;
     }
 
-    /**
-     * @deprecated use getEndDate() instead
-     */
-    public function getEndDateLocalized(): Carbon
-    {
-        return $this->getEndDate();
-    }
-
     public function getUntil(): ?Carbon
     {
         return $this->until;
-    }
-
-    /**
-     * @deprecated use getUntil() instead
-     */
-    public function getUntilLocalized(): ?Carbon
-    {
-        return $this->getUntil();
-    }
-
-    /**
-     * An alias for getUntil().
-     */
-    public function getUntilDate(): ?Carbon
-    {
-        return $this->getUntil();
     }
 
     /**
@@ -982,12 +915,12 @@ class Event extends Element implements \JsonSerializable
         return !$this->isInfinite();
     }
 
-    public function getDateCreated(): null|Carbon|\DateTime|string
+    public function getDateCreated(): ?\DateTime
     {
         return $this->dateCreated;
     }
 
-    public function getPostDate(): null|Carbon|\DateTime|string
+    public function getPostDate(): ?Carbon
     {
         return $this->postDate;
     }
@@ -1036,37 +969,11 @@ class Event extends Element implements \JsonSerializable
 
     public function getRRuleObject(): ?RRule
     {
-        if (!$this->getFrequency() || $this->repeatsOnSelectDates()) {
+        if ($this->repeatType === self::REPEAT_NEVER || !$this->rrule) {
             return null;
         }
 
-        $sortedByDay = $this->byDay;
-        if ($sortedByDay) {
-            if (\defined('\RRule\RRule::WEEKDAYS')) {
-                $weekDays = RRule::WEEKDAYS;
-            } else {
-                $weekDays = RRule::$week_days;
-            }
-            $sortedByDay = explode(',', $sortedByDay);
-            usort(
-                $sortedByDay,
-                fn ($a, $b) => ($weekDays[$a] ?? 0) <=> ($weekDays[$b] ?? 0)
-            );
-
-            $sortedByDay = implode(',', $sortedByDay);
-        }
-
-        return new RRule([
-            'FREQ' => $this->getFrequency(),
-            'INTERVAL' => $this->interval,
-            'DTSTART' => $this->initialStartDate->copy()->setTime(0, 0, 0),
-            'UNTIL' => $this->getUntil(),
-            'COUNT' => $this->count,
-            'BYDAY' => $sortedByDay,
-            'BYMONTHDAY' => $this->byMonthDay,
-            'BYMONTH' => $this->byMonth,
-            'BYYEARDAY' => $this->byYearDay,
-        ]);
+        return new RRule($this->rrule);
     }
 
     public function getReadableRepeatRule(): ?string
@@ -1235,11 +1142,30 @@ class Event extends Element implements \JsonSerializable
 
         $this->updateTitle();
 
-        $byMonth = \Craft::$app->getRequest()->getBodyParam('byMonth');
-        $byDay = \Craft::$app->getRequest()->getBodyParam('byDay');
+        $request = \Craft::$app->getRequest();
 
-        $this->byMonth = $byMonth;
-        $this->byDay = $byDay;
+        $start = $request->getBodyParam('start');
+        $start = $start ? new Carbon((int) $start) : null;
+
+        $end = $request->getBodyParam('end');
+        $end = $end ? new Carbon((int) $end) : null;
+
+        $until = $request->getBodyParam('until');
+        $until = $until ? new Carbon((int) $until) : null;
+
+        $allDay = (bool) $request->getBodyParam('allDay');
+        $repeatType = $request->getBodyParam('repeatType');
+        $repeatEndType = $request->getBodyParam('repeatEndType');
+        $rrule = $request->getBodyParam('rrule');
+
+        $this->startDate = $start;
+        $this->endDate = $end;
+        $this->until = $until;
+
+        $this->allDay = $allDay;
+        $this->repeatType = $repeatType;
+        $this->repeatEndType = $repeatEndType;
+        $this->rrule = $rrule;
 
         return true;
     }
@@ -1264,15 +1190,17 @@ class Event extends Element implements \JsonSerializable
             'endDate' => $this->endDate->toDateTimeString(),
             'allDay' => (bool) $this->allDay,
             'rrule' => $this->rrule,
+            'repeatType' => $this->repeatType,
+            'repeatEndType' => $this->repeatEndType,
             'freq' => $this->freq,
             'interval' => $this->interval,
             'count' => $this->count,
-            'until' => $this->until ? $this->until->toDateTimeString() : null,
+            'until' => $this->until?->toDateTimeString(),
             'byMonth' => $this->byMonth,
             'byYearDay' => $this->byYearDay,
             'byMonthDay' => $this->byMonthDay,
             'byDay' => $this->byDay,
-            'postDate' => $this->postDate ? $this->postDate->format('Y-m-d H:i:s') : null,
+            'postDate' => $this->postDate?->format('Y-m-d H:i:s'),
         ];
 
         $db = \Craft::$app->db;
@@ -1399,6 +1327,25 @@ class Event extends Element implements \JsonSerializable
             $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
             $transformer->transform();
         }
+    }
+
+    public function builderConfig(): array
+    {
+        return [
+            'app' => [
+                'pro' => Calendar::getInstance()->isPro(),
+            ],
+            'event' => [
+                'start' => $this->startDate->timestamp,
+                'end' => $this->endDate->timestamp,
+                'until' => $this->until?->timestamp,
+
+                'allDay' => $this->allDay,
+                'repeatType' => $this->repeatType,
+                'repeatEndType' => $this->repeatEndType,
+                'rrule' => $this->rrule,
+            ]
+        ];
     }
 
     public function jsonSerialize(): array

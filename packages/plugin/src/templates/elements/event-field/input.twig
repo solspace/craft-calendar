@@ -1,23 +1,18 @@
+{% do craft.app.view.registerAssetBundle("Solspace\\Calendar\\Resources\\Bundles\\EventEditBundle") %}
 {% set event = element %}
 
 {% set repeatRulesEnabled = event.calendar.allowRepeatingEvents ?? true %}
 
-<div
-    data-event-builder
-    {{ craft.calendar.isPro ? 'data-pro' }}
-    {{ repeatRulesEnabled ? 'data-repeat-rules-enabled' }}
-></div>
+<div data-event-builder-scope>
+	<div data-event-builder>
+		<script type="application/json" data-event-builder-config>{{ event.builderConfig|json_encode|raw }}</script>
+		<input type="hidden" name="start" value="{{ event.getStartDate().toAtomString() }}"/>
+		<input type="hidden" name="end" value="{{ event.getEndDate().toAtomString() }}"/>
+		<input type="hidden" name="allDay" value="{{ event.allDay ? 1 : 0 }}"/>
+		<input type="hidden" name="byDay" value="{{ event.byDay ?? '' }}"/>
+		<input type="hidden" name="byMonth" value="{{ event.byMonth ?? '' }}"/>
+		<input type="hidden" name="byMonthDay" value="{{ event.byMonthDay ?? '' }}"/>
+	</div>
+</div>
 
-<input
-        type="hidden"
-        name="event_builder_data"
-        data-event-builder-data
-        value=""
-/>
-
-<input type="hidden" name="calendarId" value="{{ event.calendarId }}" />
-
-{% js %}
-    var existingEventData = {# eventData|json_encode|raw #}"";
-    var eventConfig = {# eventConfig|json_encode|raw #}"";
-{% endjs %}
+<input type="hidden" name="calendarId" value="{{ event.calendarId }}"/>

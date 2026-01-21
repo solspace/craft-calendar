@@ -45,8 +45,8 @@ class OccurrenceProvider
                 continue;
             }
 
-            $startDate = new Carbon($occurrence['startUtc']);
-            $endDate = new Carbon($occurrence['endUtc']);
+            $startDate = new Carbon($occurrence['startDate']);
+            $endDate = new Carbon($occurrence['endDate']);
 
             $model = new OccurrenceModel([
                 'event' => $events[$occurrence['eventId']],

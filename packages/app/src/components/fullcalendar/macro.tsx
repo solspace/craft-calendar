@@ -60,14 +60,14 @@ export const FullCalendarMacro: FC = () => {
                     .appendTo($siteUl);
                 }
 
-                new Garnish.MenuBtn(event.currentTarget, {
+                new Garnish.MenuBtn(event.currentTarget as Element, {
                   onOptionSelect: (target) => {
                     const siteId = $(target).data("site-id");
 
                     $calendar.data("current-site-id", siteId);
 
                     siteButton.text(siteMap[siteId]);
-                    $calendar.fullCalendar("refetchEvents");
+                    api.refetchEvents();
                   },
                 }).showMenu();
 

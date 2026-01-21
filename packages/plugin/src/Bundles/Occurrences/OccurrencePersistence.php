@@ -41,8 +41,8 @@ class OccurrencePersistence implements BundleInterface
             $record = new OccurrenceRecord();
             $record->eventId = $element->id;
             $record->calendarId = $element->calendarId;
-            $record->startUtc = $element->startDate;
-            $record->endUtc = $element->startDate->clone()->add($timeDelta);
+            $record->startDate = $element->startDate;
+            $record->endDate = $element->startDate->clone()->add($timeDelta);
             $record->allDay = $element->allDay;
             $record->save();
 
@@ -50,7 +50,7 @@ class OccurrencePersistence implements BundleInterface
         }
 
         if ($rrule->isInfinite()) {
-            $occurrences = $rrule->getOccurrencesBefore(new Carbon("+100 years"));
+            $occurrences = $rrule->getOccurrencesBefore(new Carbon("+50 years"));
         } else {
             $occurrences = $rrule->getOccurrences();
         }
@@ -59,8 +59,8 @@ class OccurrencePersistence implements BundleInterface
             $record = new OccurrenceRecord();
             $record->eventId = $element->id;
             $record->calendarId = $element->calendarId;
-            $record->startUtc = $occurrence;
-            $record->endUtc = $occurrence->add($timeDelta);
+            $record->startDate = $occurrence;
+            $record->endDate = $occurrence->add($timeDelta);
             $record->allDay = $element->allDay;
             $record->save();
         }

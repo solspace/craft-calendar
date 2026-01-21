@@ -134,35 +134,35 @@ class OccurrenceQuery extends ActiveQuery
     public function prepare($builder): Query
     {
         if ($this->startsBefore) {
-            $this->andWhere('[[startUtc]] < :startsBefore', ['startsBefore' => $this->startsBefore]);
+            $this->andWhere('[[startDate]] < :startsBefore', ['startsBefore' => $this->startsBefore]);
         } else if ($this->startsBeforeOrAt) {
-            $this->andWhere('[[startUtc]] <= :startsBefore', ['startsBefore' => $this->startsBefore]);
+            $this->andWhere('[[startDate]] <= :startsBefore', ['startsBefore' => $this->startsBefore]);
         }
 
         if ($this->startsAfter) {
-            $this->andWhere('[[startUtc]] > :startsAfter', ['startsAfter' => $this->startsAfter]);
+            $this->andWhere('[[startDate]] > :startsAfter', ['startsAfter' => $this->startsAfter]);
         } else if ($this->startsAfterOrAt) {
-            $this->andWhere('[[startUtc]] >= :startsAfter', ['startsAfter' => $this->startsAfter]);
+            $this->andWhere('[[startDate]] >= :startsAfter', ['startsAfter' => $this->startsAfter]);
         }
 
         if ($this->endsBefore) {
-            $this->andWhere('[[endUtc]] < :endsBefore', ['endsBefore' => $this->endsBefore]);
+            $this->andWhere('[[endDate]] < :endsBefore', ['endsBefore' => $this->endsBefore]);
         } else if ($this->endsBeforeOrAt) {
-            $this->andWhere('[[endUtc]] <= :endsBefore', ['endsBefore' => $this->endsBefore]);
+            $this->andWhere('[[endDate]] <= :endsBefore', ['endsBefore' => $this->endsBefore]);
         }
 
         if ($this->endsAfter) {
-            $this->andWhere('[[endUtc]] > :endsAfter', ['endsAfter' => $this->endsAfter]);
+            $this->andWhere('[[endDate]] > :endsAfter', ['endsAfter' => $this->endsAfter]);
         } else if ($this->endsAfterOrAt) {
-            $this->andWhere('[[endUtc]] >= :endsAfter', ['endsAfter' => $this->endsAfter]);
+            $this->andWhere('[[endDate]] >= :endsAfter', ['endsAfter' => $this->endsAfter]);
         }
 
         if ($this->rangeStart) {
-            $this->andWhere('[[endUtc]] >= :rangeStart', ['rangeStart' => $this->rangeStart]);
+            $this->andWhere('[[endDate]] >= :rangeStart', ['rangeStart' => $this->rangeStart]);
         }
 
         if ($this->rangeEnd) {
-            $this->andWhere('[[startUtc]] <= :rangeEnd', ['rangeEnd' => $this->rangeEnd]);
+            $this->andWhere('[[startDate]] <= :rangeEnd', ['rangeEnd' => $this->rangeEnd]);
         }
 
         return parent::prepare($builder);
