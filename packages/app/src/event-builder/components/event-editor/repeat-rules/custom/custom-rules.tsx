@@ -1,16 +1,14 @@
 import { eventSelectors } from "@cal/event-builder/store/event.slice";
-import type { AppDispatch } from "@cal/event-builder/store/store";
 import type { FC } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Frequency } from "rrule";
+import { ByMonth } from "./custom.bymonth";
 import { ByDay } from "./custom.byday";
 import { ByWeek } from "./custom.byweek";
+import { ByYear } from "./custom.byyear";
 
 export const CustomRules: FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { freq, interval } = useSelector(eventSelectors.state);
-
-  console.log(freq, Frequency.DAILY);
+  const { freq } = useSelector(eventSelectors.state);
 
   if (freq === Frequency.DAILY) {
     return <ByDay />;
@@ -20,5 +18,13 @@ export const CustomRules: FC = () => {
     return <ByWeek />;
   }
 
-  return <div>custom</div>;
+  if (freq === Frequency.MONTHLY) {
+    return <ByMonth />;
+  }
+
+  if (freq === Frequency.YEARLY) {
+    return <ByYear />;
+  }
+
+  return null;
 };

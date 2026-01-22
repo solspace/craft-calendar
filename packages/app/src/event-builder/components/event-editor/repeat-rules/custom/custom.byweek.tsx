@@ -11,7 +11,7 @@ const days = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA, RRule.
 
 export const ByWeek: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { interval, byweekday } = useSelector(eventSelectors.state);
+  const { byweekday } = useSelector(eventSelectors.state);
 
   return (
     <div>
@@ -30,6 +30,10 @@ export const ByWeek: FC = () => {
                 values = values.filter((d) => d !== day.weekday);
               } else {
                 values.push(day.weekday);
+              }
+
+              if (values.length === 0) {
+                return;
               }
 
               dispatch(eventActions.setDays({ type: "byweekday", values }));
