@@ -6,9 +6,10 @@ import classes from "@cal/utils/classes";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Dropdown, type Option } from "../../../controls/dropdown/dropdown";
-import { DayMatrix, DayMatrixButton, MonthMatrix } from "./custom.styles";
+import { MatrixButton, MonthMatrixWrapper } from "./custom.styles";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
 import { Interval } from "./interval";
+import { DayMatrix } from "./matrix.days";
 
 const modeOptions: Option<string>[] = [
   { value: "MONTHDAY", label: "On specific date" },
@@ -80,12 +81,12 @@ export const ByYear: FC = () => {
       <Interval noun="year" />
 
       <Control label="Month">
-        <MonthMatrix>
+        <MonthMatrixWrapper>
           {monthOptions.map((month) => {
             const isActive = selectedMonths.includes(month.value);
 
             return (
-              <DayMatrixButton
+              <MatrixButton
                 key={month.value}
                 type="button"
                 className={classes(isActive && "active")}
@@ -108,10 +109,10 @@ export const ByYear: FC = () => {
                 }}
               >
                 {month.label}
-              </DayMatrixButton>
+              </MatrixButton>
             );
           })}
-        </MonthMatrix>
+        </MonthMatrixWrapper>
       </Control>
 
       <div className="field">
@@ -130,36 +131,11 @@ export const ByYear: FC = () => {
       </div>
 
       {mode === "MONTHDAY" && (
-        <Control label="Days of month">
-          <DayMatrix>
-            {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => {
-              const isActive = selectedMonthDays.includes(day);
-
-              return (
-                <DayMatrixButton
-                  key={day}
-                  type="button"
-                  className={classes(isActive && "active")}
-                  onClick={() => {
-                    let values = selectedMonthDays.filter((value) => value !== day);
-                    if (!isActive) {
-                      values = [...values, day];
-                    }
-
-                    if (values.length === 0) {
-                      return;
-                    }
-
-                    values.sort((a, b) => a - b);
-                    setMonthDayMode(selectedMonths, values);
-                  }}
-                >
-                  {day}
-                </DayMatrixButton>
-              );
-            })}
-          </DayMatrix>
-        </Control>
+        <DayMatrix
+          label="Days of month"
+          values={selectedMonthDays}
+          onChange={(values) => setMonthDayMode(selectedMonths, values)}
+        />
       )}
 
       {mode === "WEEKDAY" && (

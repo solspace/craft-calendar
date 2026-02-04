@@ -1,14 +1,12 @@
-import { Control } from "@cal/event-builder/components/controls/control";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
 import { Flex } from "@cal/styles/components";
-import classes from "@cal/utils/classes";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Dropdown, type Option } from "../../../controls/dropdown/dropdown";
-import { DayMatrix, DayMatrixButton } from "./custom.styles";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
 import { Interval } from "./interval";
+import { DayMatrix } from "./matrix.days";
 
 const modeOptions: Option<string>[] = [
   { value: "MONTHDAY", label: "On day of month" },
@@ -75,32 +73,11 @@ export const ByMonth: FC = () => {
       </div>
 
       {mode === "MONTHDAY" && (
-        <Control label="Days of month">
-          <DayMatrix>
-            {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
-              <DayMatrixButton
-                key={day}
-                type="button"
-                className={classes(selectedMonthDays.includes(day) && "active")}
-                onClick={() => {
-                  let values = selectedMonthDays.filter((value) => value !== day);
-                  if (!selectedMonthDays.includes(day)) {
-                    values = [...values, day];
-                  }
-
-                  if (values.length === 0) {
-                    return;
-                  }
-
-                  values.sort((a, b) => a - b);
-                  setMonthDayMode(values);
-                }}
-              >
-                {day}
-              </DayMatrixButton>
-            ))}
-          </DayMatrix>
-        </Control>
+        <DayMatrix
+          label={"Days of month"}
+          values={selectedMonthDays}
+          onChange={(values) => setMonthDayMode(values)}
+        />
       )}
 
       {mode === "WEEKDAY" && (

@@ -5,6 +5,11 @@ export const CalendarPreviewWrapper = styled.div`
 
   display: flex;
   justify-content: end;
+  gap: 18px;
+
+  > .field {
+    margin: 0;
+  }
 
   table:not(.data) {
     th, td {
@@ -71,5 +76,33 @@ export const CalendarPreviewWrapper = styled.div`
         }
       }
     }
+  }
+`;
+
+export const OccurrencePreview = styled.div`
+  min-width: 120px;
+  max-width: 120px;
+
+  margin-top: 40px;
+
+  p {
+    word-wrap: break-word;
+  }
+`;
+
+export const DateItem = styled.li`
+  padding: 5px 8px;
+
+  font-size: 12px;
+  line-height: 12px;
+  font-family: monospace;
+  margin-bottom: 4px;
+
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+
+  &:last-child {
+    margin-bottom: 0;
   }
 `;

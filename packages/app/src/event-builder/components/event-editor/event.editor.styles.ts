@@ -11,10 +11,6 @@ export const EventEditorWrapper = styled.div`
   border-radius: var(--radius-lg);
   box-shadow: 0 2px 6px -1px rgba(0,0,0,.05);
 
-  > div {
-    flex: 1;
-  }
-
   &:before {
     content: "";
     position: absolute;

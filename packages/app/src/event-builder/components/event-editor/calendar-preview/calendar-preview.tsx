@@ -1,17 +1,33 @@
 import { eventSelectors } from "@cal/event-builder/store/event.slice";
+import translate from "@cal/utils/translations";
 import dayGrid from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
 import { format } from "date-fns";
 import type { FC } from "react";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { rrulestr } from "rrule";
+import { datetime, rrulestr } from "rrule";
 import { Control } from "../../controls/control";
-import { CalendarPreviewWrapper } from "./calendar-preview.styles";
+import { CalendarPreviewWrapper, DateItem, OccurrencePreview } from "./calendar-preview.styles";
+
+const MAX_OCCURRENCES = 8;
 
 export const CalendarPreview: FC = () => {
   const { rrule } = useSelector(eventSelectors.state);
   const [viewRange, setViewRange] = useState<{ start: Date; end: Date } | null>(null);
+
+  const rruleObj = useMemo(() => (rrule ? rrulestr(rrule) : null), [rrule]);
+
+  const firstOccurrences: Date[] = useMemo(() => {
+    if (!rruleObj || !viewRange) {
+      return [];
+    }
+
+    const start = viewRange.start;
+    const end = datetime(start.getFullYear() + 100, 1, 1, 0, 0, 0);
+
+    return rruleObj.between(start, end, true, (_, index) => index < MAX_OCCURRENCES);
+  }, [rruleObj, viewRange]);
 
   const occurrences = useMemo(() => {
     if (!rrule || !viewRange) {
@@ -49,6 +65,25 @@ export const CalendarPreview: FC = () => {
           }
         />
       </Control>
+      <OccurrencePreview>
+        <Control label="">
+          {firstOccurrences.length === 0 ? (
+            <p>
+              {translate("No upcoming occurrences since {date}", {
+                date: format(viewRange?.start || new Date(), "PP"),
+              })}
+            </p>
+          ) : (
+            <ul>
+              {firstOccurrences
+                .map((date) => format(date, "PP"))
+                .map((date) => (
+                  <DateItem key={date}>{date}</DateItem>
+                ))}
+            </ul>
+          )}
+        </Control>
+      </OccurrencePreview>
     </CalendarPreviewWrapper>
   );
 };

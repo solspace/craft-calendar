@@ -68,7 +68,12 @@ const eventBuilderSlice = createSlice({
       rebuildRRule(state);
     },
     setRepeatEndType: (state, action: PayloadAction<RepeatEndType>) => {
-      state.repeatEndType = action.payload;
+      const repeatEndType = action.payload;
+      state.repeatEndType = repeatEndType;
+      if (repeatEndType !== "AFTER") {
+        state.count = null;
+      }
+
       rebuildRRule(state);
     },
     setFreq: (state, action: PayloadAction<Frequency>) => {
@@ -240,24 +245,14 @@ const rebuildRRule = (state: EventState) => {
   console.log("[rrule]: rrule built:", state.rrule, options);
 };
 
-const weekdayMap = [
-  RRule.MO,
-  RRule.TU,
-  RRule.WE,
-  RRule.TH,
-  RRule.FR,
-  RRule.SA,
-  RRule.SU,
-];
+const weekdayMap = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA, RRule.SU];
 
 const buildNthByweekday = (values?: number[], position?: number) => {
   if (!values?.length || !position) {
     return values;
   }
 
-  return values
-    .map((weekday) => weekdayMap[weekday]?.nth(position))
-    .filter(Boolean);
+  return values.map((weekday) => weekdayMap[weekday]?.nth(position)).filter(Boolean);
 };
 
 export const { actions: eventActions } = eventBuilderSlice;

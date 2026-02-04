@@ -1,3 +1,4 @@
+import translate from "@cal/utils/translations";
 import type { FC, PropsWithChildren } from "react";
 
 export type ControlProps = {
@@ -9,7 +10,7 @@ export const Control: FC<PropsWithChildren<ControlProps>> = ({ label, id, childr
   return (
     <div className="field">
       <div className="heading">
-        <label htmlFor={id}>{label}</label>
+        <label htmlFor={id}>{label ? translate(label) : ""}</label>
       </div>
       <div className="input">{children}</div>
     </div>
