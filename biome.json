@@ -21,7 +21,8 @@
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        "noExplicitAny": "error"
+        "noExplicitAny": "error",
+        "noArrayIndexKey": "off"
       },
       "correctness": {
         "noUnusedImports": {

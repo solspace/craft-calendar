@@ -1,49 +1,127 @@
 import styled from "styled-components";
 
-export const DayMatrixWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+const RADIUS = "5px";
 
-  background: var(--gray-200);
-  border: 1px solid var(--gray-200);
-`;
-
-export const MonthMatrixWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-
-  border: 1px solid var(--gray-200);
-`;
-
-export const MatrixButton = styled.button`
-  cursor: pointer;
+const ButtonBase = styled.button`
   width: 100%;
   padding: 0.5rem;
-  margin-left: -1px;
-  margin-bottom: -1px;
 
-  background: var(--gray-100);
-  border-right: inherit;
-  border-bottom: inherit;
+  background-color: var(--gray-100);
+  border-right: 1px solid var(--gray-300);
+  border-bottom: 1px solid var(--gray-300);
+  border-left: none;
+  border-top: none;
+`;
+
+export const MatrixButton = styled(ButtonBase)`
+  cursor: pointer;
 
   &:hover {
     background: var(--gray-200);
   }
 
   &.active {
-    background: var(--gray-300);
     color: white;
+    background: var(--teal-600);
   }
 `;
 
-export const MatrixPlaceholder = styled.div`
-  background: var(--gray-100);
-  padding: 0.5rem;
-  width: 100%;
-  opacity: 0.5;
+export const MatrixPlaceholder = styled(ButtonBase)`
+  background: var(--gray-150);
 
   user-select: none;
   pointer-events: none;
+`;
+
+const MatrixWrapper = styled.div`
+  display: grid;
+  gap: 0;
+  padding: 0;
+
+  background: var(--gray-300);
+  border: 1px solid var(--gray-300);
+  border-radius: ${RADIUS};
+
+  &, &:after, &:before {
+    box-sizing: initial !important;
+  }
+`;
+
+export const DayMatrixWrapper = styled(MatrixWrapper)`
+  grid-template-columns: repeat(7, 1fr);
+
+  ${ButtonBase} {
+    &:first-child {
+      border-top-left-radius: ${RADIUS};
+    }
+
+    &:nth-child(7) {
+      border-top-right-radius: ${RADIUS};
+    }
+
+    &:last-child {
+      border-bottom-right-radius: ${RADIUS};
+    }
+
+    &:nth-child(29) {
+      border-bottom-left-radius: ${RADIUS};
+    }
+
+    &:nth-child(7n) {
+      border-right: none;
+    }
+
+    &:nth-child(n + 29) {
+      border-bottom: none;
+    }
+  }
+`;
+
+export const WeekMatrixWrapper = styled(MatrixWrapper)`
+  grid-template-columns: repeat(7, 1fr);
+
+  ${ButtonBase} {
+    border-bottom: none;
+
+    &:first-child {
+      border-top-left-radius: ${RADIUS};
+      border-bottom-left-radius: ${RADIUS};
+    }
+
+    &:last-child {
+      border-right: none;
+      border-top-right-radius: ${RADIUS};
+      border-bottom-right-radius: ${RADIUS};
+    }
+  }
+`;
+
+export const MonthMatrixWrapper = styled(MatrixWrapper)`
+  grid-template-columns: repeat(4, 1fr);
+
+  ${ButtonBase} {
+    &:first-child {
+      border-top-left-radius: ${RADIUS};
+    }
+
+    &:nth-child(4) {
+      border-top-right-radius: ${RADIUS};
+    }
+
+    &:nth-child(9) {
+      border-bottom-left-radius: ${RADIUS};
+    }
+
+    &:last-child {
+      border-bottom-right-radius: ${RADIUS};
+    }
+
+    &:nth-child(4n) {
+      border-right: none;
+    }
+
+    &:nth-child(n + 9) {
+      border-bottom: none;
+    }
+  }
 `;

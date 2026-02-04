@@ -4,7 +4,7 @@ import classes from "@cal/utils/classes";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RRule } from "rrule";
-import styled from "styled-components";
+import { MatrixButton, WeekMatrixWrapper } from "./custom.styles";
 import { Interval } from "./interval";
 
 const days = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA, RRule.SU];
@@ -15,11 +15,10 @@ export const ByWeek: FC = () => {
 
   return (
     <div>
-      {JSON.stringify(byweekday)}
       <Interval noun="week" />
-      <Wrapper className="field">
+      <WeekMatrixWrapper className="field">
         {days.map((day) => (
-          <Btn
+          <MatrixButton
             key={day.weekday}
             type="button"
             className={classes(byweekday?.includes(day.weekday) && "active")}
@@ -40,59 +39,9 @@ export const ByWeek: FC = () => {
             }}
           >
             {day.toString()}
-          </Btn>
+          </MatrixButton>
         ))}
-      </Wrapper>
+      </WeekMatrixWrapper>
     </div>
   );
 };
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
-const Btn = styled.button`
-position: relative;
-  cursor: pointer;
-  padding: 4px 8px;
-
-  border: 1px solid var(--gray-200);
-  background: var(--gray-100);
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  &:first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-  }
-
-  &:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
-
-  &:not(:first-child) {
-    left: -1px;
-  }
-
-  &.active {
-    background: var(--gray-200);
-    border: 1px solid var(--gray-300);
-  }
-
-  &:hover {
-    z-index: 2;
-    background: var(--gray-200);
-    border: 1px solid var(--gray-300);
-
-    &.active {
-      background: var(--gray-300);
-      border: 1px solid var(--gray-400);
-    }
-  }
-`;
