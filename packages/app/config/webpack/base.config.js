@@ -56,6 +56,14 @@ module.exports = {
     new webpack.ProvidePlugin({ React: "react" }),
   ],
 
+  ignoreWarnings: [
+    {
+      module: /react-datepicker\/dist\/index\.es\.js$/,
+      message:
+        /Critical dependency: the request of a dependency is an expression/,
+    },
+  ],
+
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
     alias: {

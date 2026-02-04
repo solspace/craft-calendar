@@ -374,6 +374,7 @@ class EventQuery extends ElementQuery
             $events.'.[[allDay]]',
             $events.'.[[rrule]]',
             $events.'.[[repeatType]]',
+            $events.'.[[repeatEndType]]',
             $events.'.[[freq]]',
             $events.'.[[interval]]',
             $events.'.[[count]]',

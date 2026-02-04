@@ -70,6 +70,7 @@ export const RepeatRules: FC = () => {
           <Dropdown
             label="Repeat End"
             options={endOptions}
+            value={repeatEndType}
             onChange={(value) => dispatch(eventActions.setRepeatEndType(value as RepeatEndType))}
           />
 
@@ -80,7 +81,6 @@ export const RepeatRules: FC = () => {
               onChange={(value) => dispatch(eventActions.setCount(value))}
             />
           )}
-
           {repeatEndType === "ON_DATE" && (
             <DatePicker
               label=""

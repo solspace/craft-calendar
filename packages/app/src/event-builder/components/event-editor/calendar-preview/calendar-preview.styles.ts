@@ -100,8 +100,8 @@ export const DateList = styled.ul<DateListProps>`
   justify-content: ${(props) => (props.$count > 7 ? "space-between" : "start")};
   gap: 4px;
 
-  height: 100%;
-  padding-top: 57px;
+  height: 215px;
+  margin-top: 57px;
 `;
 
 export const DateItem = styled.li`
