@@ -2,6 +2,7 @@ import { type FC, useEffect, useState } from "react";
 import DatePickerControl, { type DatePickerProps } from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
+import styled from "styled-components";
 import { Control, type ControlProps } from "../control";
 
 type Props = {
@@ -19,20 +20,27 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
 
   return (
     <Control label={label} id={id}>
-      {/* @ts-ignore cannot get the types to work well when passing props */}
-      <DatePickerControl
-        {...datePickerProps}
-        wrapperClassName="fullwidth"
-        className="text fullwidth"
-        selected={date}
-        onChange={(date: Date | null) => {
-          const time = date ? date.getTime() / 1000 : null;
-          if (onChange) {
-            console.log("saving time", time, date.getTime());
-            onChange(time);
-          }
-        }}
-      />
+      <DatePickerWrapper>
+        {/* @ts-ignore cannot get the types to work well when passing props */}
+        <DatePickerControl
+          {...datePickerProps}
+          wrapperClassName="fullwidth"
+          className="text fullwidth"
+          selected={date}
+          onChange={(date: Date | null) => {
+            const time = date ? date.getTime() / 1000 : null;
+            if (onChange) {
+              onChange(time);
+            }
+          }}
+        />
+      </DatePickerWrapper>
     </Control>
   );
 };
+
+const DatePickerWrapper = styled.div`
+  .react-datepicker-popper {
+    width: 327px;
+  }
+`;

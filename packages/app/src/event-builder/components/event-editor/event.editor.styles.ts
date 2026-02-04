@@ -1,6 +1,8 @@
 import styled from "styled-components";
 
 export const EventEditorWrapper = styled.div`
+  container-type: inline-size;
+
   display: flex;
   flex-direction: row;
   gap: 60px;
@@ -10,6 +12,10 @@ export const EventEditorWrapper = styled.div`
   background-color: var(--custom-bg-color,var(--gray-050));
   border-radius: var(--radius-lg);
   box-shadow: 0 2px 6px -1px rgba(0,0,0,.05);
+
+  @container (max-width: 1084px) {
+    flex-direction: column;
+  }
 
   &:before {
     content: "";

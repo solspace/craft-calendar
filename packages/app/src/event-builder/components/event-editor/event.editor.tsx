@@ -26,7 +26,7 @@ export const EventEditor: FC = () => {
 
   return (
     <EventEditorWrapper>
-      <div style={{ flex: 0.75 }}>
+      <div style={{ flex: 1 }}>
         <LightSwitch
           id={allDayId}
           label="All Day"
@@ -41,7 +41,7 @@ export const EventEditor: FC = () => {
           onChange={(value) => dispatch(eventActions.setStart(value))}
           datePickerProps={{
             id: startId,
-            showTimeInput: !allDay,
+            showTimeSelect: !allDay,
             dateFormat: format,
           }}
         />
@@ -54,7 +54,17 @@ export const EventEditor: FC = () => {
           datePickerProps={{
             id: endId,
             dateFormat: format,
-            showTimeInput: !allDay,
+            showTimeSelect: !allDay,
+            filterTime: (time) => {
+              if (!start) {
+                return true;
+              }
+
+              const startDate = new Date(start * 1000);
+              const selectedDate = new Date(time);
+
+              return startDate.getTime() < selectedDate.getTime();
+            },
           }}
         />
       </div>

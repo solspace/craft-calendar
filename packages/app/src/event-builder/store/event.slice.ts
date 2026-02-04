@@ -49,7 +49,9 @@ const eventBuilderSlice = createSlice({
   initialState: defaultState,
   reducers: {
     setStart: (state, action: PayloadAction<number>) => {
+      const delta = state.end - state.start;
       state.start = action.payload;
+      state.end = state.start + delta;
       if (state.until && state.repeatEndType === "ON_DATE") {
         state.until = alignUntilForState(state, state.until);
       }
