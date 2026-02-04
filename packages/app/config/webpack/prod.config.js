@@ -1,16 +1,20 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-const TerserPlugin = require('terser-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 
-const { merge } = require('webpack-merge');
-const baseConfig = require('./base.config.js');
+const { merge } = require("webpack-merge");
+const baseConfig = require("./base.config.js");
 
 module.exports = merge(baseConfig, {
+  performance: {
+    maxAssetSize: 1024 * 1024 * 5,
+    maxEntrypointSize: 1024 * 1024 * 5,
+  },
   module: {
     rules: [
       {
         test: /\.ts(x?)$/,
         exclude: /node_modules/,
-        use: [{ loader: 'ts-loader' }],
+        use: [{ loader: "ts-loader" }],
       },
     ],
   },
@@ -31,8 +35,8 @@ module.exports = merge(baseConfig, {
       cacheGroups: {
         vendor: {
           test: /node_modules/,
-          chunks: 'initial',
-          name: 'vendor',
+          chunks: "initial",
+          name: "vendor",
           enforce: true,
         },
       },

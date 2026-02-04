@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const EventEditorWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  gap: var(--l);
+  gap: 60px;
 
   padding: var(--l);
 

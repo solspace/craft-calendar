@@ -1,9 +1,11 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../plugin/src/Resources/js/client/",
+    "outDir": "../plugin/src/Resources/js/app/",
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "types": ["node", "jquery"],
     "typeRoots": [

@@ -8,7 +8,12 @@ import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { datetime, rrulestr } from "rrule";
 import { Control } from "../../controls/control";
-import { CalendarPreviewWrapper, DateItem, OccurrencePreview } from "./calendar-preview.styles";
+import {
+  CalendarPreviewWrapper,
+  DateItem,
+  DateList,
+  OccurrencePreview,
+} from "./calendar-preview.styles";
 
 const MAX_OCCURRENCES = 8;
 
@@ -66,23 +71,21 @@ export const CalendarPreview: FC = () => {
         />
       </Control>
       <OccurrencePreview>
-        <Control label="">
-          {firstOccurrences.length === 0 ? (
-            <p>
-              {translate("No upcoming occurrences since {date}", {
-                date: format(viewRange?.start || new Date(), "PP"),
-              })}
-            </p>
-          ) : (
-            <ul>
-              {firstOccurrences
-                .map((date) => format(date, "PP"))
-                .map((date) => (
-                  <DateItem key={date}>{date}</DateItem>
-                ))}
-            </ul>
-          )}
-        </Control>
+        {firstOccurrences.length === 0 ? (
+          <p>
+            {translate("No occurrences starting from")}
+            <br />
+            {format(viewRange?.start || new Date(), "PP")}
+          </p>
+        ) : (
+          <DateList $count={firstOccurrences.length}>
+            {firstOccurrences
+              .map((date) => format(date, "PP"))
+              .map((date) => (
+                <DateItem key={date}>{date}</DateItem>
+              ))}
+          </DateList>
+        )}
       </OccurrencePreview>
     </CalendarPreviewWrapper>
   );

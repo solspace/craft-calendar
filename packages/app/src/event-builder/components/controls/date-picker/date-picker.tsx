@@ -22,7 +22,8 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
       {/* @ts-ignore cannot get the types to work well when passing props */}
       <DatePickerControl
         {...datePickerProps}
-        className="text"
+        wrapperClassName="fullwidth"
+        className="text fullwidth"
         selected={date}
         onChange={(date: Date | null) => {
           const time = date ? date.getTime() / 1000 : null;

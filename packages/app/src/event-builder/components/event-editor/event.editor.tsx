@@ -26,7 +26,7 @@ export const EventEditor: FC = () => {
 
   return (
     <EventEditorWrapper>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 0.75 }}>
         <LightSwitch
           id={allDayId}
           label="All Day"

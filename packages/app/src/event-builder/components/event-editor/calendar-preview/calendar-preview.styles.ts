@@ -82,27 +82,36 @@ export const CalendarPreviewWrapper = styled.div`
 export const OccurrencePreview = styled.div`
   min-width: 120px;
   max-width: 120px;
-
-  margin-top: 40px;
+  height: 100%;
 
   p {
+    padding-top: 57px;
     word-wrap: break-word;
   }
 `;
 
-export const DateItem = styled.li`
-  padding: 5px 8px;
+type DateListProps = {
+  $count: number;
+};
 
-  font-size: 12px;
-  line-height: 12px;
+export const DateList = styled.ul<DateListProps>`
+  display: flex;
+  flex-direction: column;
+  justify-content: ${(props) => (props.$count > 7 ? "space-between" : "start")};
+  gap: 4px;
+
+  height: 100%;
+  padding-top: 57px;
+`;
+
+export const DateItem = styled.li`
+  padding: 4px 8px;
+
+  font-size: 13px;
+  line-height: 13px;
   font-family: monospace;
-  margin-bottom: 4px;
 
   background-color: var(--gray-100);
-  border: 1px solid var(--gray-300);
-  border-radius: 6px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  border: 1px solid var(--gray-200);
+  border-left: 5px solid var(--gray-200);
 `;
