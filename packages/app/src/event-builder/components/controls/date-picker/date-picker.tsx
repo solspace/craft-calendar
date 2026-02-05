@@ -40,7 +40,22 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
 };
 
 const DatePickerWrapper = styled.div`
-  .react-datepicker-popper {
-    width: 327px;
+  .react-datepicker {
+    &-popper {
+      width: 327px;
+    }
+
+    &__calendar-icon {
+      width: 1.25em;
+      height: 1.25em;
+    }
+
+    &__input-container {
+      &.react-datepicker__view-calendar-icon {
+        input.text {
+          padding-left: 2.25em;
+        }
+      }
+    }
   }
 `;

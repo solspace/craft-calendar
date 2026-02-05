@@ -64,7 +64,5 @@ class OccurrencePersistence implements BundleInterface
             $record->allDay = $element->allDay;
             $record->save();
         }
-
-        // magic here
     }
 }
