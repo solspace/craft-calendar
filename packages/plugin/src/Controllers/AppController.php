@@ -10,7 +10,7 @@ use yii\web\Response;
 
 class AppController extends BaseController
 {
-    public function actionIndex(): Response
+    public function actionIndex(?string $year = null, ?string $month = null, ?string $day = null): Response
     {
         $enabledSiteIds = Calendar::getInstance()->calendarSites->getAllEnabledSiteIds();
         $currentSiteId = \Craft::$app->sites->currentSite->id;
@@ -46,7 +46,7 @@ class AppController extends BaseController
             }
         }
 
-        $currentDay = new Carbon();
+        $currentDay = Carbon::createFromDate($year, $month, $day);
 
         $dateFormat = Calendar::getInstance()->formats->getDateFormat(null, Locale::FORMAT_PHP);
         $timeFormat = Calendar::getInstance()->formats->getTimeFormat(null, Locale::FORMAT_PHP);

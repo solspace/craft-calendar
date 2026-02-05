@@ -1,15 +1,18 @@
 <?php
 
-$datePattern = '<view:month|week|day>/<year:\d+>/<month:\d+>/<day:\d+>';
-
 return [
+    // App
     'calendar' => 'calendar/app',
+    'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/app',
+
+    // Calendars
     'calendar/calendars' => 'calendar/calendars/calendars-index',
     'calendar/calendars/new' => 'calendar/calendars/create-calendar',
     'calendar/calendars/duplicate' => 'calendar/calendars/duplicate',
     'calendar/calendars/delete' => 'calendar/calendars/delete-calendar',
     'calendar/calendars/<handle:[\w\-]+>' => 'calendar/calendars/edit-calendar',
 
+    // Events
     'calendar/events' => 'calendar/events/events-index',
     'calendar/events/delete' => 'elements/delete',
     'calendar/events/new' => 'calendar/events/create-event',
@@ -25,10 +28,7 @@ return [
     'calendar/events/api/delete-occurrence' => 'calendar/events-api/delete-occurrence',
     'calendar/events/api/attributes' => 'calendar/events-api/attributes',
     'calendar/events/api/custom-fields' => 'calendar/events-api/custom-fields',
-    // Views
-    'calendar/month' => 'calendar/view/month-data',
-    'calendar/view/<view:month|week|day>' => 'calendar/view/target-time',
-    'calendar/view/'.$datePattern => 'calendar/view/target-time',
+
     // Settings
     'calendar/settings/license' => 'calendar/settings/license',
     'calendar/settings/general' => 'calendar/settings/general',

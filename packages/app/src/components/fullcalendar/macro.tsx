@@ -3,17 +3,72 @@ import interaction from "@fullcalendar/interaction";
 import list from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGrid from "@fullcalendar/timegrid";
-import axios from "axios";
-import { type FC, useRef } from "react";
+import { format } from "date-fns";
+import { type FC, useCallback, useMemo, useRef } from "react";
+import { getMacroCalendarData } from "./macro.calendar-data";
+import { createMacroCustomButtons, getMacroHeaderToolbarEnd } from "./macro.custom-buttons";
+import { useMacroDateSelector } from "./macro.date-selector";
+import { macroEvents } from "./macro.events";
+import { useMacroViewSettings, type View } from "./macro.persistence";
+import { useMacroSitePicker } from "./macro.site-picker";
 import { MacroWrapper } from "./macro.styles";
 
 export const FullCalendarMacro: FC = () => {
-  const $calendar = $("#calendar-app");
-  const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek, timeFormat } =
-    $calendar.data();
+  const $calendar = useMemo(() => $("#calendar-app"), []);
+  const { view, setView } = useMacroViewSettings();
+  const { currentDay, currentSiteId, siteMap, weekStartDay } = useMemo(
+    () => getMacroCalendarData($calendar),
+    [$calendar],
+  );
 
   const calendar = useRef<FullCalendar>(null);
-  const api = calendar.current?.getApi();
+  const getApi = useCallback(() => calendar.current?.getApi(), []);
+
+  const { hasSitePicker, sitePickerButton } = useMacroSitePicker({
+    $calendar,
+    currentSiteId,
+    siteMap,
+    getApi,
+  });
+
+  const { datePickerButton, dateSelector } = useMacroDateSelector({
+    getApi,
+    weekStartDay,
+  });
+
+  const changeUrl = useCallback(() => {
+    const api = getApi();
+    if (!api) {
+      return;
+    }
+
+    const url = Craft.getCpUrl(`calendar/${format(api.getDate(), "yyyy/MM/dd")}`);
+    history.pushState("data", "", url);
+  }, [getApi]);
+
+  const customButtons = useMemo(
+    () =>
+      createMacroCustomButtons({
+        onPrev: () => {
+          getApi()?.prev();
+          changeUrl();
+        },
+        onNext: () => {
+          getApi()?.next();
+          changeUrl();
+        },
+        onToday: () => {
+          getApi()?.today();
+          changeUrl();
+        },
+        onRefresh: () => {
+          getApi()?.refetchEvents();
+        },
+        datePickerButton,
+        sitePickerButton,
+      }),
+    [datePickerButton, getApi, sitePickerButton, changeUrl],
+  );
 
   return (
     <MacroWrapper>
@@ -21,125 +76,27 @@ export const FullCalendarMacro: FC = () => {
         ref={calendar}
         themeSystem="bootstrap5"
         plugins={[dayGrid, timeGrid, list, interaction]}
+        customButtons={customButtons}
+        initialView={view}
+        initialDate={currentDay}
+        firstDay={weekStartDay}
+        eventClick={console.log}
+        dateClick={console.log}
+        events={macroEvents}
         headerToolbar={{
           start: "title",
           center: "dayGridMonth,timeGridWeek,timeGridDay",
-          end: "sitepicker refresh datepicker prev,today,next",
+          end: getMacroHeaderToolbarEnd(hasSitePicker),
         }}
-        customButtons={{
-          today: {
-            text: Craft.t("calendar", "Today"),
-            click: () => {
-              api?.today();
-            },
-          },
-          sitepicker: {
-            text: Craft.t("calendar", "Site Picker"),
-            icon: "site",
-            click: (event: MouseEvent) => {
-              const siteButton = $(".fc-siteButton-button", calendar.current);
-
-              if (siteButton.data("initialized") === undefined) {
-                const $menu = $("<div>", { class: "menu" }).insertAfter(
-                  event.currentTarget as HTMLElement,
-                );
-                const $siteUl = $("<ul>").appendTo($menu);
-
-                for (const key in siteMap) {
-                  if (!Object.hasOwn(siteMap, key)) {
-                    continue;
-                  }
-
-                  $("<li>")
-                    .append(
-                      $("<a>", {
-                        "data-site-id": key,
-                        text: siteMap[key],
-                      }),
-                    )
-                    .appendTo($siteUl);
-                }
-
-                new Garnish.MenuBtn(event.currentTarget as Element, {
-                  onOptionSelect: (target) => {
-                    const siteId = $(target).data("site-id");
-
-                    $calendar.data("current-site-id", siteId);
-
-                    siteButton.text(siteMap[siteId]);
-                    api.refetchEvents();
-                  },
-                }).showMenu();
-
-                siteButton.data("initialized", true);
-              }
-            },
-          },
-          refresh: {
-            text: Craft.t("calendar", "Refresh"),
-            icon: "arrow-clockwise",
-            click: () => {
-              api?.refetchEvents();
-            },
-          },
-          datepicker: {
-            text: Craft.t("calendar", "Pick a Date"),
-            icon: "calendar",
-            click: () => {
-              const button = $(".fc-datepicker-button:first");
-              const { top, left } = button.offset();
-              const height = button.outerHeight();
-
-              button.datepicker(
-                "dialog",
-                api.getDate().toISOString().slice(0, 10),
-                (input: string) => {
-                  const viewType = api.view.type;
-                  // eslint-disable-next-line no-unused-vars
-                  const [_, year, month, date] = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input);
-
-                  let view = "month";
-                  switch (viewType) {
-                    case "agendaDay":
-                      view = "day";
-                      break;
-
-                    case "agendaWeek":
-                      view = "week";
-                      break;
-                  }
-
-                  const url = Craft.getCpUrl(`calendar/view/${view}/${year}/${month}/${date}`);
-                  history.pushState("data", "", url);
-                  api.gotoDate(input);
-                },
-                { dateFormat: "yy-mm-dd" },
-                [left, top + height],
-              );
-
-              $("#ui-datepicker-div.ui-datepicker-dialog + input[id^=dp]").css({
-                visibility: "hidden",
-              });
-            },
-          },
+        datesSet={({ view }) => {
+          setTimeout(() => {
+            setView(view.type as View);
+          }, 50);
         }}
-        initialView="dayGridMonth"
-        eventClick={console.log}
-        dateClick={console.log}
-        events={(info, success, failure) => {
-          axios
-            .get<Event[]>("/api/events", {
-              params: {
-                start: info.start,
-                end: info.end,
-              },
-            })
-            .then((res) => {
-              success(res.data);
-            })
-            .catch(failure);
-        }}
+        eventChange={console.log}
       />
+
+      {dateSelector}
     </MacroWrapper>
   );
 };
