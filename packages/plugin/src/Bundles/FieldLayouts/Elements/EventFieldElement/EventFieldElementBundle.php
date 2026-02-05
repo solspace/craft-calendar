@@ -17,7 +17,7 @@ class EventFieldElementBundle implements BundleInterface
         Event::on(
             FieldLayout::class,
             FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
-            function (DefineFieldLayoutFieldsEvent $event) {
+            static function (DefineFieldLayoutFieldsEvent $event) {
                 /** @var FieldLayout $layout */
                 $layout = $event->sender;
 

@@ -9,7 +9,7 @@ class OccurrenceLoader
     private ?int $limit = null;
     private ?Carbon $rangeStart = null;
     private ?Carbon $rangeEnd = null;
-    private null|bool|int|string $loadOccurrences = null;
+    private bool|int|string|null $loadOccurrences = null;
 
     public function __construct(
         ?Carbon $rangeStart = null,
@@ -46,7 +46,7 @@ class OccurrenceLoader
         return $this->rangeEnd;
     }
 
-    public function getLoadOccurrences(): null|bool|int|string
+    public function getLoadOccurrences(): bool|int|string|null
     {
         return $this->loadOccurrences;
     }

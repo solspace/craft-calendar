@@ -5,7 +5,6 @@ namespace Solspace\Calendar\Records;
 use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
-use Solspace\Calendar\Elements\Event;
 
 /**
  * @property int    $id

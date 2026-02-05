@@ -2,7 +2,6 @@
 
 namespace Solspace\Calendar\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 class m251231_090653_AddOccurrencesAndTimezones extends Migration

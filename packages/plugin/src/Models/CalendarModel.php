@@ -292,7 +292,7 @@ class CalendarModel extends Model implements \JsonSerializable
         $rules[] = [
             ['titleFormat'],
             'required',
-            'when' => function (self $model) {
+            'when' => static function (self $model) {
                 return !$model->hasTitleField;
             },
         ];
@@ -300,7 +300,7 @@ class CalendarModel extends Model implements \JsonSerializable
         $rules[] = [
             ['titleLabel'],
             'required',
-            'when' => function (self $model) {
+            'when' => static function (self $model) {
                 return $model->hasTitleField;
             },
         ];

@@ -4,7 +4,6 @@ namespace Solspace\Calendar\Library\Configurations;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Library\Exceptions\ConfigurationException;
-use Solspace\Calendar\Library\Helpers\DateHelper;
 
 abstract class CalendarConfiguration
 {
@@ -49,7 +48,7 @@ abstract class CalendarConfiguration
         return sha1(serialize($this));
     }
 
-    protected function castToCarbon(null|Carbon|\DateTime|string $value): ?Carbon
+    protected function castToCarbon(Carbon|\DateTime|string|null $value): ?Carbon
     {
         if (null === $value) {
             return null;

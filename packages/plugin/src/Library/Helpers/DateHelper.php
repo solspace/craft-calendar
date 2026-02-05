@@ -59,7 +59,7 @@ class DateHelper
         $weekDays = self::getWeekDays($dayOffset);
         array_walk(
             $weekDays,
-            function (&$value) use ($abbreviationLength, $translate) {
+            static function (&$value) use ($abbreviationLength, $translate) {
                 $value = substr($value, 0, $abbreviationLength);
                 if ($translate) {
                     $value = Calendar::t($value);
@@ -93,7 +93,7 @@ class DateHelper
         if ($translate) {
             array_walk(
                 $monthNames,
-                function (&$value) {
+                static function (&$value) {
                     $value = ucfirst(Calendar::t($value));
                 }
             );
@@ -301,7 +301,7 @@ class DateHelper
     {
         usort(
             $dateArray,
-            function (\DateTime $dateA, \DateTime $dateB) {
+            static function (\DateTime $dateA, \DateTime $dateB) {
                 if ($dateA < $dateB) {
                     return -1;
                 }

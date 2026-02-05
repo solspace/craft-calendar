@@ -4,7 +4,6 @@ namespace Solspace\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\Element;
-use craft\base\Field;
 use craft\db\Query;
 use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
@@ -14,14 +13,12 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
-use craft\fieldlayoutelements\TitleField;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\web\CpScreenResponseBehavior;
 use Illuminate\Support\Collection;
 use RRule\RRule;
@@ -115,15 +112,10 @@ class Event extends Element implements \JsonSerializable
     /** @var Event[] */
     private array $occurrenceCache = [];
 
-    public static function tableName(): string
-    {
-        return self::TABLE;
-    }
-
     public function __construct($config = [])
     {
         foreach (self::CARBON_PROPERTIES as $property) {
-            if (isset($config[$property]) && is_string($config[$property])) {
+            if (isset($config[$property]) && \is_string($config[$property])) {
                 $dateObject = DateTimeHelper::toDateTime($config[$property]);
 
                 $config[$property] = Carbon::createFromInterface($dateObject);
@@ -131,6 +123,11 @@ class Event extends Element implements \JsonSerializable
         }
 
         parent::__construct($config);
+    }
+
+    public static function tableName(): string
+    {
+        return self::TABLE;
     }
 
     public function setEvent_builder_data($builderJson): void
@@ -531,7 +528,7 @@ class Event extends Element implements \JsonSerializable
         if (!isset($this->selectDatesCache[$cacheHash])) {
             $this->selectDatesCache[$cacheHash] = array_filter(
                 $this->selectDates,
-                function (SelectDateModel $selectDate) use ($rangeStart, $rangeEnd) {
+                static function (SelectDateModel $selectDate) use ($rangeStart, $rangeEnd) {
                     $isAfterRangeStart = null === $rangeStart || $selectDate->date >= $rangeStart;
                     $isBeforeRangeEnd = null === $rangeEnd || $selectDate->date <= $rangeEnd;
 
@@ -702,10 +699,7 @@ class Event extends Element implements \JsonSerializable
     public function getOccurrenceDatesBetween(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
     {
         // TODO: refactor this to use RRULE
-        $occurrences = [];
-
-        return $occurrences;
-
+        return [];
         // if ($this->repeats()) {
         //     if ($this->repeatsOnSelectDates()) {
         //         $startDate = $this->getStartDate();
@@ -823,7 +817,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         return array_map(
-            function ($value) {
+            static function ($value) {
                 return preg_replace('/^-?\d/', '', $value);
             },
             $weekDays
@@ -881,7 +875,7 @@ class Event extends Element implements \JsonSerializable
         if ($rruleObject) {
             $string = $rruleObject->humanReadable([
                 'locale' => $locale,
-                'date_formatter' => function (\DateTime $date) use ($format) {
+                'date_formatter' => static function (\DateTime $date) use ($format) {
                     return $date->format($format);
                 },
             ]);
@@ -1006,7 +1000,6 @@ class Event extends Element implements \JsonSerializable
     {
         // TODO: implement occurrence fetch from DB
         return [];
-
         $occurrencesConfig = new Occurrences($config);
         $configHash = $occurrencesConfig->getConfigHash();
 
@@ -1305,30 +1298,6 @@ class Event extends Element implements \JsonSerializable
         return $calendar->fieldLayoutId;
     }
 
-    private function applyEventBuilderDataFromRequest(): void
-    {
-        $request = \Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return;
-        }
-
-        $eventBuilderData = $request->getBodyParam('event_builder_data');
-        if (!$eventBuilderData) {
-            return;
-        }
-
-        if (\is_string($eventBuilderData)) {
-            $this->setEvent_builder_data($eventBuilderData);
-
-            return;
-        }
-
-        if (\is_array($eventBuilderData)) {
-            $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
-            $transformer->transform();
-        }
-    }
-
     public function builderConfig(): array
     {
         return [
@@ -1344,7 +1313,7 @@ class Event extends Element implements \JsonSerializable
                 'repeatType' => $this->repeatType,
                 'repeatEndType' => $this->repeatEndType,
                 'rrule' => $this->rrule,
-            ]
+            ],
         ];
     }
 
@@ -1767,7 +1736,7 @@ class Event extends Element implements \JsonSerializable
         }
     }
 
-    protected function route(): null|array|string
+    protected function route(): array|string|null
     {
         if (!$this->enabled) {
             return null;
@@ -1857,6 +1826,30 @@ class Event extends Element implements \JsonSerializable
 
         return $destructiveItems;
         */
+    }
+
+    private function applyEventBuilderDataFromRequest(): void
+    {
+        $request = \Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return;
+        }
+
+        $eventBuilderData = $request->getBodyParam('event_builder_data');
+        if (!$eventBuilderData) {
+            return;
+        }
+
+        if (\is_string($eventBuilderData)) {
+            $this->setEvent_builder_data($eventBuilderData);
+
+            return;
+        }
+
+        if (\is_array($eventBuilderData)) {
+            $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
+            $transformer->transform();
+        }
     }
 
     private function hydrateSelectDates(): void

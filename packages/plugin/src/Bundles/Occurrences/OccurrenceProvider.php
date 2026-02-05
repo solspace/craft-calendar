@@ -3,11 +3,9 @@
 namespace Solspace\Calendar\Bundles\Occurrences;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\OccurrenceModel;
-use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Services\CalendarsService;
 
@@ -15,8 +13,7 @@ class OccurrenceProvider
 {
     public function __construct(
         private CalendarsService $calendarsService
-    ) {
-    }
+    ) {}
 
     public function createQuery(array $criteria = []): OccurrenceQuery
     {

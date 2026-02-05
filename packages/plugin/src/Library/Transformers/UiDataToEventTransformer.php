@@ -118,7 +118,7 @@ class UiDataToEventTransformer
      */
     public function getExceptions(): array
     {
-        return array_map(function ($timestamp) {
+        return array_map(static function ($timestamp) {
             return Carbon::createFromTimestampUTC($timestamp);
         }, $this->builderData['exceptions']);
     }
@@ -128,7 +128,7 @@ class UiDataToEventTransformer
      */
     public function getSelectDates(): array
     {
-        return array_map(function ($timestamp) {
+        return array_map(static function ($timestamp) {
             return Carbon::createFromTimestampUTC($timestamp);
         }, $this->builderData['selectDates']);
     }
@@ -141,7 +141,7 @@ class UiDataToEventTransformer
     private function getDaysWithInterval(array $days, int $interval): array
     {
         return array_map(
-            function ($value) use ($interval) {
+            static function ($value) use ($interval) {
                 return \sprintf('%d%s', $interval, $value);
             },
             $days

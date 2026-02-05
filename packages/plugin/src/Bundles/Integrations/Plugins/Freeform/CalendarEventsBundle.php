@@ -27,7 +27,7 @@ class CalendarEventsBundle implements BundleInterface
             Event::on(
                 $integrationsServiceClass,
                 \constant("{$integrationsServiceClass}::EVENT_REGISTER_INTEGRATION_TYPES"),
-                function ($event) {
+                static function ($event) {
                     $event->addType(CalendarEvents::class);
                 }
             );

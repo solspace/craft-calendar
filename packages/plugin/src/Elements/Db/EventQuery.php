@@ -3,31 +3,17 @@
 namespace Solspace\Calendar\Elements\Db;
 
 use Carbon\Carbon;
-use Carbon\Exceptions\InvalidDateException;
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
-use RRule\RRule;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\Duration\DayDuration;
 use Solspace\Calendar\Library\Duration\DurationInterface;
-use Solspace\Calendar\Library\Duration\MonthDuration;
-use Solspace\Calendar\Library\Duration\WeekDuration;
-use Solspace\Calendar\Library\Exceptions\CalendarException;
 use Solspace\Calendar\Library\Exceptions\DateFormatException;
-use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
-use Solspace\Calendar\Services\EventsService;
-use Solspace\Calendar\Services\ExceptionsService;
-use Solspace\Calendar\Services\SelectDatesService;
-use yii\base\Model;
-use yii\db\Connection;
 use yii\db\Expression;
 
 class EventQuery extends ElementQuery
@@ -79,25 +65,25 @@ class EventQuery extends ElementQuery
     private ?array $calendarUid = null;
     private ?array $calendar = null;
 
-    private null|array|int|string $authorId = null;
+    private array|int|string|null $authorId = null;
 
-    private null|\DateTime|string $postDate = null;
-    private null|\DateTime|string $startDate = null;
-    private null|\DateTime|string $endDate = null;
-    private null|\DateTime|string $startsBefore = null;
-    private null|\DateTime|string $startsBeforeOrAt = null;
-    private null|\DateTime|string $startsAfter = null;
-    private null|\DateTime|string $startsAfterOrAt = null;
-    private null|\DateTime|string $endsAfter = null;
-    private null|\DateTime|string $endsAfterOrAt = null;
-    private null|\DateTime|string $endsBefore = null;
-    private null|\DateTime|string $endsBeforeOrAt = null;
+    private \DateTime|string|null $postDate = null;
+    private \DateTime|string|null $startDate = null;
+    private \DateTime|string|null $endDate = null;
+    private \DateTime|string|null $startsBefore = null;
+    private \DateTime|string|null $startsBeforeOrAt = null;
+    private \DateTime|string|null $startsAfter = null;
+    private \DateTime|string|null $startsAfterOrAt = null;
+    private \DateTime|string|null $endsAfter = null;
+    private \DateTime|string|null $endsAfterOrAt = null;
+    private \DateTime|string|null $endsBefore = null;
+    private \DateTime|string|null $endsBeforeOrAt = null;
 
     private bool $allDay = false;
     private bool $allowedCalendarsOnly = false;
-    private null|\DateTime|string $until = null;
-    private null|\DateTime|string $rangeStart = null;
-    private null|\DateTime|string $rangeEnd = null;
+    private \DateTime|string|null $until = null;
+    private \DateTime|string|null $rangeStart = null;
+    private \DateTime|string|null $rangeEnd = null;
 
     private bool|int|string $loadOccurrences = true;
 
@@ -128,7 +114,7 @@ class EventQuery extends ElementQuery
         parent::__construct($elementType, $config);
     }
 
-    public function setCalendarId(null|array|int|string $value = null): self
+    public function setCalendarId(array|int|string|null $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -139,7 +125,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setCalendarUid(null|array|string $value = null): self
+    public function setCalendarUid(array|string|null $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -150,7 +136,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setCalendar(null|array|string $value = null): self
+    public function setCalendar(array|string|null $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -161,7 +147,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setAuthorId(null|array|int|string $value = null): self
+    public function setAuthorId(array|int|string|null $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -696,7 +682,7 @@ class EventQuery extends ElementQuery
             return Carbon::parse($value);
         } catch (\Exception) {
             throw new DateFormatException(
-                sprintf(
+                \sprintf(
                     'Invalid date param type: %s',
                     \is_object($value) ? $value::class : \gettype($value)
                 )

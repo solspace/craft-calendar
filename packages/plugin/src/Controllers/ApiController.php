@@ -13,16 +13,16 @@ use yii\web\Response;
 
 class ApiController extends BaseController
 {
+    protected array|bool|int $allowAnonymous = ['ics'];
+
     public function __construct(
         $id,
         $module,
-        $config = [],
+        $config,
         private OccurrenceProvider $occurrenceProvider,
     ) {
         parent::__construct($id, $module, $config);
     }
-
-    protected array|bool|int $allowAnonymous = ['ics'];
 
     public function actionEvents(): Response
     {

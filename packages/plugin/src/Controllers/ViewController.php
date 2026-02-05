@@ -6,11 +6,8 @@ use Carbon\Carbon;
 use craft\i18n\Locale;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
-use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
-use Solspace\Calendar\Models\OccurrenceModel;
-use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Resources\Bundles\CalendarViewBundle;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\Response;
@@ -20,7 +17,7 @@ class ViewController extends BaseController
     public function __construct(
         $id,
         $module,
-        $config = [],
+        $config,
         private OccurrenceProvider $occurrenceProvider,
     ) {
         parent::__construct($id, $module, $config);

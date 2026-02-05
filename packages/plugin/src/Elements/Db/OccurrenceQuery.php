@@ -10,9 +10,9 @@ use yii\db\Query;
 class OccurrenceQuery extends ActiveQuery
 {
     public ?string $status = Event::STATUS_ENABLED;
-    public array|string|int|null $eventId = null;
-    public array|string|int|null $calendarId = null;
-    public array|string|int|null $siteId = null;
+    public array|int|string|null $eventId = null;
+    public array|int|string|null $calendarId = null;
+    public array|int|string|null $siteId = null;
 
     public ?\DateTime $startsBefore = null;
     public ?\DateTime $startsBeforeOrAt = null;
@@ -32,26 +32,26 @@ class OccurrenceQuery extends ActiveQuery
         return $this;
     }
 
-    public function event(int|array|string|null $event): self
+    public function event(array|int|string|null $event): self
     {
         $this->eventId = $event;
 
         return $this;
     }
 
-    public function eventId(int|array|string|null $eventId): self
+    public function eventId(array|int|string|null $eventId): self
     {
         return $this->event($eventId);
     }
 
-    public function calendar(int|array|string|null $calendar): self
+    public function calendar(array|int|string|null $calendar): self
     {
         $this->calendarId = $calendar;
 
         return $this;
     }
 
-    public function calendarId(int|array|string $calendarId): self
+    public function calendarId(array|int|string $calendarId): self
     {
         return $this->calendar($calendarId);
     }
@@ -135,25 +135,25 @@ class OccurrenceQuery extends ActiveQuery
     {
         if ($this->startsBefore) {
             $this->andWhere('[[startDate]] < :startsBefore', ['startsBefore' => $this->startsBefore]);
-        } else if ($this->startsBeforeOrAt) {
+        } elseif ($this->startsBeforeOrAt) {
             $this->andWhere('[[startDate]] <= :startsBefore', ['startsBefore' => $this->startsBefore]);
         }
 
         if ($this->startsAfter) {
             $this->andWhere('[[startDate]] > :startsAfter', ['startsAfter' => $this->startsAfter]);
-        } else if ($this->startsAfterOrAt) {
+        } elseif ($this->startsAfterOrAt) {
             $this->andWhere('[[startDate]] >= :startsAfter', ['startsAfter' => $this->startsAfter]);
         }
 
         if ($this->endsBefore) {
             $this->andWhere('[[endDate]] < :endsBefore', ['endsBefore' => $this->endsBefore]);
-        } else if ($this->endsBeforeOrAt) {
+        } elseif ($this->endsBeforeOrAt) {
             $this->andWhere('[[endDate]] <= :endsBefore', ['endsBefore' => $this->endsBefore]);
         }
 
         if ($this->endsAfter) {
             $this->andWhere('[[endDate]] > :endsAfter', ['endsAfter' => $this->endsAfter]);
-        } else if ($this->endsAfterOrAt) {
+        } elseif ($this->endsAfterOrAt) {
             $this->andWhere('[[endDate]] >= :endsAfter', ['endsAfter' => $this->endsAfter]);
         }
 

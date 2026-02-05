@@ -50,7 +50,7 @@ class OccurrencePersistence implements BundleInterface
         }
 
         if ($rrule->isInfinite()) {
-            $occurrences = $rrule->getOccurrencesBefore(new Carbon("+50 years"));
+            $occurrences = $rrule->getOccurrencesBefore(new Carbon('+50 years'));
         } else {
             $occurrences = $rrule->getOccurrences();
         }

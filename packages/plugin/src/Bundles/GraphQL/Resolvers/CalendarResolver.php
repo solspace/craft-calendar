@@ -23,7 +23,7 @@ class CalendarResolver extends Resolver
 
             $calendars = Calendar::getInstance()->calendars;
 
-            return array_values(array_filter(array_map(function ($item) use ($calendars) {
+            return array_values(array_filter(array_map(static function ($item) use ($calendars) {
                 if ($item instanceof CalendarModel) {
                     return $item;
                 }

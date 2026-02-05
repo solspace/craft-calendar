@@ -23,7 +23,6 @@ use Solspace\Calendar\Controllers\CalendarsController;
 use Solspace\Calendar\Controllers\CodePackController;
 use Solspace\Calendar\Controllers\EventsApiController;
 use Solspace\Calendar\Controllers\EventsController;
-use Solspace\Calendar\Controllers\LegacyEventsController;
 use Solspace\Calendar\Controllers\ResourcesController;
 use Solspace\Calendar\Controllers\SettingsController;
 use Solspace\Calendar\Controllers\ViewController;
@@ -146,7 +145,7 @@ class Calendar extends Plugin
         }
 
         if (method_exists(Gc::class, 'deleteOrphanedFieldLayouts')) {
-            Event::on(Gc::class, Gc::EVENT_RUN, function (Event $event) {
+            Event::on(Gc::class, Gc::EVENT_RUN, static function (Event $event) {
                 /** @var Gc $gc */
                 $gc = $event->sender;
                 $gc->deleteOrphanedFieldLayouts(
@@ -328,7 +327,7 @@ class Calendar extends Plugin
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
-            function (Event $event) {
+            static function (Event $event) {
                 $event->sender->set('calendar', CalendarVariable::class);
             }
         );
@@ -340,7 +339,7 @@ class Calendar extends Plugin
             Event::on(
                 Dashboard::class,
                 Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-                function (RegisterComponentTypesEvent $event) {
+                static function (RegisterComponentTypesEvent $event) {
                     $event->types[] = AgendaWidget::class;
                     $event->types[] = EventWidget::class;
                     $event->types[] = MonthWidget::class;
@@ -355,7 +354,7 @@ class Calendar extends Plugin
         Event::on(
             Fields::class,
             Fields::EVENT_REGISTER_FIELD_TYPES,
-            function (RegisterComponentTypesEvent $event) {
+            static function (RegisterComponentTypesEvent $event) {
                 $event->types[] = EventFieldType::class;
                 $event->types[] = CalendarFieldType::class;
             }
@@ -367,7 +366,7 @@ class Calendar extends Plugin
         Event::on(
             Elements::class,
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
-            function (RegisterComponentTypesEvent $event) {
+            static function (RegisterComponentTypesEvent $event) {
                 $event->types[] = \Solspace\Calendar\Elements\Event::class;
             }
         );

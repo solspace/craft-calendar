@@ -18,7 +18,7 @@ class EventListOptions
 
     private ?int $offset = null;
 
-    private null|bool|int|string $loadOccurrences = null;
+    private bool|int|string|null $loadOccurrences = null;
 
     private ?int $overlapThreshold = null;
 
@@ -45,7 +45,7 @@ class EventListOptions
         return $this->rangeStart;
     }
 
-    public function setRangeStart(null|\DateTime|string $rangeStart = null): self
+    public function setRangeStart(\DateTime|string|null $rangeStart = null): self
     {
         if ($rangeStart) {
             if ($rangeStart instanceof \DateTime) {
@@ -65,7 +65,7 @@ class EventListOptions
         return $this->rangeEnd;
     }
 
-    public function setRangeEnd(null|\DateTime|string $rangeEnd = null): self
+    public function setRangeEnd(\DateTime|string|null $rangeEnd = null): self
     {
         if ($rangeEnd) {
             if ($rangeEnd instanceof \DateTime) {
@@ -154,12 +154,12 @@ class EventListOptions
         return $this;
     }
 
-    public function loadOccurrences(): null|bool|int|string
+    public function loadOccurrences(): bool|int|string|null
     {
         return $this->loadOccurrences;
     }
 
-    public function setLoadOccurrences(null|bool|int|string $loadOccurrences = null): self
+    public function setLoadOccurrences(bool|int|string|null $loadOccurrences = null): self
     {
         $this->loadOccurrences = $loadOccurrences;
 

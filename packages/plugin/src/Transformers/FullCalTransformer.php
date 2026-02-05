@@ -19,7 +19,7 @@ class FullCalTransformer
     {
         return [
             'id' => $model->getOccurrenceKey(),
-            //'groupId' => $model->event->id,
+            // 'groupId' => $model->event->id,
 
             'title' => $model->event->title,
             'slug' => $model->event->slug,

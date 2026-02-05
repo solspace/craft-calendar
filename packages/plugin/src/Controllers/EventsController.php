@@ -2,36 +2,17 @@
 
 namespace Solspace\Calendar\Controllers;
 
-use Carbon\Carbon;
 use craft\base\Element;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
-use craft\events\ElementEvent;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
-use RRule\RRule;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
-use Solspace\Calendar\Library\Exceptions\EventException;
-use Solspace\Calendar\Library\Helpers\CpHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Library\Helpers\SitesHelper;
-use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
-use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Solspace\Calendar\Resources\Bundles\EventIndexBundle;
 use yii\base\InvalidConfigException;
-use yii\db\Exception;
-use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 

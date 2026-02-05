@@ -1,19 +1,25 @@
 <?php
 
-use PhpCsFixer\Config;
-use PhpCsFixer\Finder;
-
-$finder = Finder::create()
+$finder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/packages/plugin')
+    ->filter(
+        // Ignore _bootstrap.php files
+        static function (\SplFileInfo $file) {
+            return !preg_match('/_bootstrap\.php$/', $file->getRealPath());
+        }
+    )
 ;
 
-return (new Config())
+return (new PhpCsFixer\Config())
+    ->setUnsupportedPhpVersionAllowed(true)
+    ->setParallelConfig(\PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
     ->setRules([
         '@Symfony' => true,
         '@Symfony:risky' => true,
         '@PHP80Migration' => true,
         '@PHPUnit75Migration:risky' => true,
         '@PhpCsFixer' => true,
+        'native_function_invocation' => [ 'strict' => false ],
         'array_indentation' => true,
         'array_syntax' => ['syntax' => 'short'],
         'combine_nested_dirname' => true,
@@ -23,6 +29,8 @@ return (new Config())
         'single_trait_insert_per_statement' => true,
         'ternary_to_null_coalescing' => true,
         'multiline_whitespace_before_semicolons' => ['strategy' => 'new_line_for_chained_calls'],
+        'php_unit_internal_class' => false,
+        'yoda_style' => false,
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder)

@@ -23,7 +23,7 @@ class DeleteEventAction extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
-        \Craft::$app->getView()->registerJsWithVars(fn ($type) => <<<JS
+        \Craft::$app->getView()->registerJsWithVars(static fn ($type) => <<<JS
             (() => {
                 new Craft.ElementActionTrigger({
                     type: {$type},

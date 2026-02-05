@@ -9,11 +9,6 @@ use Solspace\Calendar\Calendar;
 
 class EventFieldElement extends BaseField
 {
-    protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return Calendar::t('Calendar Event');
-    }
-
     public function mandatory(): bool
     {
         return true;
@@ -52,6 +47,11 @@ class EventFieldElement extends BaseField
     public function attribute(): string
     {
         return 'calendarEvent';
+    }
+
+    protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return Calendar::t('Calendar Event');
     }
 
     protected function selectorLabel(): ?string

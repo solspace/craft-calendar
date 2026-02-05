@@ -15,7 +15,7 @@ class FeedMeBundle implements BundleInterface
             Event::on(
                 Elements::class,
                 Elements::EVENT_REGISTER_FEED_ME_ELEMENTS,
-                function (RegisterFeedMeElementsEvent $event) {
+                static function (RegisterFeedMeElementsEvent $event) {
                     $event->elements[] = CalendarIntegration::class;
                 }
             );

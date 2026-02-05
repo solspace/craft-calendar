@@ -21,6 +21,6 @@ class OccurrenceModel extends Model
 
     public function getOccurrenceKey(): string
     {
-        return $this->event->id . '-' . $this->startDate->format('YmdHis');
+        return $this->event->id.'-'.$this->startDate->format('YmdHis');
     }
 }
