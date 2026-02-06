@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { type ReactElement, useCallback, useEffect, useRef, useState } from "react";
+import { type FC, type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import DatePickerControl from "react-datepicker";
 import type {
   DatePickerPosition,
@@ -9,6 +9,7 @@ import type {
 } from "./macro.types";
 
 import "react-datepicker/dist/react-datepicker.css";
+import { useMacroViewSettings, type View } from "./macro.persistence";
 
 type UseMacroDateSelectorProps = {
   getApi: GetCalendarApi;
@@ -21,6 +22,7 @@ type UseMacroDateSelectorResult = {
 };
 
 type DateSelectorPopoverProps = {
+  view: View;
   popoverRef: React.RefObject<HTMLDivElement | null>;
   position: DatePickerPosition;
   selectedDate: Date | null;
@@ -28,13 +30,17 @@ type DateSelectorPopoverProps = {
   onDateSelect: (date: Date | null) => void;
 };
 
-const DateSelectorPopover = ({
+const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
+  view,
   popoverRef,
   position,
   selectedDate,
   weekStartDay,
   onDateSelect,
-}: DateSelectorPopoverProps): ReactElement => {
+}) => {
+  const showWeekPicker = view === "timeGridWeek";
+  const showMonthYearPicker = view === "dayGridMonth";
+
   return (
     <div
       ref={popoverRef}
@@ -52,6 +58,9 @@ const DateSelectorPopover = ({
         showYearDropdown
         dropdownMode="select"
         calendarStartDay={weekStartDay}
+        showWeekPicker={showWeekPicker}
+        showWeekNumbers={showWeekPicker}
+        showMonthYearPicker={showMonthYearPicker}
       />
     </div>
   );
@@ -61,6 +70,7 @@ export const useMacroDateSelector = ({
   getApi,
   weekStartDay,
 }: UseMacroDateSelectorProps): UseMacroDateSelectorResult => {
+  const { view } = useMacroViewSettings();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<DatePickerPosition | null>(null);
@@ -152,6 +162,7 @@ export const useMacroDateSelector = ({
   const dateSelector =
     isOpen && position ? (
       <DateSelectorPopover
+        view={view}
         popoverRef={popoverRef}
         position={position}
         selectedDate={selectedDate}

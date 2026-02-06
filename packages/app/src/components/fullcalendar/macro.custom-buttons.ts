@@ -35,18 +35,14 @@ export const createMacroCustomButtons = ({
     },
     today: {
       text: Craft.t("calendar", "Today"),
-      click: () => {
-        onToday();
-      },
+      click: onToday,
     },
-    ...(sitePickerButton ? { sitepicker: sitePickerButton } : {}),
     refresh: {
       text: Craft.t("calendar", "Refresh"),
       icon: "refresh",
-      click: () => {
-        onRefresh();
-      },
+      click: onRefresh,
     },
     datepicker: datePickerButton,
+    ...(sitePickerButton ? { sitepicker: sitePickerButton } : {}),
   };
 };
