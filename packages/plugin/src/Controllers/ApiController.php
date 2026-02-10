@@ -80,7 +80,7 @@ class ApiController extends BaseController
     {
         Calendar::getInstance()->requirePro();
 
-        $site = \Craft::$app->request->get('site', '');
+        $site = \Craft::$app->request->get('site', null);
         $icsHash = \Craft::$app->request->get('hash', '');
         $icsHash = str_replace('.ics', '', $icsHash);
 
@@ -90,13 +90,10 @@ class ApiController extends BaseController
         }
 
         $eventQuery = Event::find()
-            ->setLoadOccurrences(false)
             ->setCalendarId($calendar->id)
+            ->status(null)
+            ->site($site)
         ;
-
-        if ($site) {
-            $eventQuery->site($site);
-        }
 
         $exporter = new ExportCalendarToIcs($eventQuery);
         $exportString = $exporter->output();

@@ -20,14 +20,6 @@ export const EventBuilder: FC = () => {
   return (
     <EventBuilderWrapper>
       <EventEditor />
-      <input type="hidden" name="start" value={start} />
-      <input type="hidden" name="end" value={end} />
-      <input type="hidden" name="until" value={until || ""} />
-
-      <input type="hidden" name="allDay" value={allDay ? "1" : "0"} />
-      <input type="hidden" name="repeatType" value={repeatType || "NEVER"} />
-      <input type="hidden" name="repeatEndType" value={repeatEndType || "NEVER"} />
-      <input type="hidden" name="rrule" value={rrule || ""} />
 
       <code>
         <pre>{rrule}</pre>

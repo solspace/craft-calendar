@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 
 import { EventBuilder } from "./event-builder";
+import { persistStateToInputs } from "./event-builder.persistence";
 import { createEventBuilderStore } from "./store/store";
 import type { BuilderConfig } from "./types";
 
@@ -14,13 +15,17 @@ const mountEventBuilder = (container: HTMLElement): void => {
 
   mounted.add(container);
   container.dataset.eventBuilderMounted = "true";
+
   const json = JSON.parse(container.querySelector("script[data-event-builder-config]").textContent);
+  const rootContainer = container.querySelector("[data-event-builder-root]");
   const config = json as BuilderConfig;
 
-  console.log(config);
-
   const store = createEventBuilderStore(config);
-  const root = ReactDOM.createRoot(container);
+  const root = ReactDOM.createRoot(rootContainer);
+
+  store.subscribe(() => {
+    persistStateToInputs(store, container);
+  });
 
   root.render(
     <Provider store={store}>

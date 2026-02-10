@@ -116,8 +116,6 @@ class EventsController extends Controller
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
 
-        $query->setLoadOccurrences(false);
-
         if ($this->elementId) {
             $query->id(\is_int($this->elementId) ? $this->elementId : explode(',', $this->elementId));
         }

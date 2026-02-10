@@ -17,15 +17,6 @@ use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
-use Solspace\Calendar\Controllers\ApiController;
-use Solspace\Calendar\Controllers\AppController;
-use Solspace\Calendar\Controllers\CalendarsController;
-use Solspace\Calendar\Controllers\CodePackController;
-use Solspace\Calendar\Controllers\EventsApiController;
-use Solspace\Calendar\Controllers\EventsController;
-use Solspace\Calendar\Controllers\ResourcesController;
-use Solspace\Calendar\Controllers\SettingsController;
-use Solspace\Calendar\Controllers\ViewController;
 use Solspace\Calendar\FieldTypes\CalendarFieldType;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
@@ -68,9 +59,7 @@ class Calendar extends Plugin
 
     public const FIELD_LAYOUT_TYPE = 'Calendar_Event';
 
-    public const VIEW_MONTH = 'month';
-    public const VIEW_WEEK = 'week';
-    public const VIEW_DAY = 'day';
+    public const VIEW_DASHBOARD = 'dashboard';
     public const VIEW_EVENTS = 'events';
     public const VIEW_CALENDARS = 'calendars';
     public const VIEW_RESOURCES = 'resources';
@@ -179,9 +168,6 @@ class Calendar extends Plugin
         return !$this->isPro();
     }
 
-    /**
-     * @throws ForbiddenHttpException
-     */
     public function requirePro(): void
     {
         if (!$this->isPro()) {
@@ -278,17 +264,7 @@ class Calendar extends Plugin
     private function initControllers(): void
     {
         if (!\Craft::$app->request->isConsoleRequest) {
-            $this->controllerMap = [
-                'api' => ApiController::class,
-                'app' => AppController::class,
-                'codepack' => CodePackController::class,
-                'calendars' => CalendarsController::class,
-                'events-api' => EventsApiController::class,
-                'events' => EventsController::class,
-                'settings' => SettingsController::class,
-                'view' => ViewController::class,
-                'resources' => ResourcesController::class,
-            ];
+            $this->controllerNamespace = 'Solspace\Calendar\Controllers';
         } else {
             $this->controllerNamespace = 'Solspace\Calendar\Console\Controllers';
         }

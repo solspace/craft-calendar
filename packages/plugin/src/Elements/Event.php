@@ -4,7 +4,6 @@ namespace Solspace\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\Element;
-use craft\db\Query;
 use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
@@ -28,35 +27,19 @@ use Solspace\Calendar\Elements\Actions\SetStatusAction;
 use Solspace\Calendar\Elements\conditions\EventCondition;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
-use Solspace\Calendar\Library\Configurations\Occurrences;
 use Solspace\Calendar\Library\Duration\EventDuration;
-use Solspace\Calendar\Library\Exceptions\CalendarException;
-use Solspace\Calendar\Library\Exceptions\ConfigurationException;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
-use Solspace\Calendar\Library\Transformers\EventToUiDataTransformer;
-use Solspace\Calendar\Library\Transformers\UiDataToEventTransformer;
 use Solspace\Calendar\Models\CalendarModel;
-use Solspace\Calendar\Models\ExceptionModel;
-use Solspace\Calendar\Models\SelectDateModel;
-use Solspace\Calendar\Records\ExceptionRecord;
-use Solspace\Calendar\Records\SelectDateRecord;
-use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use yii\base\Event as BaseEvent;
 use yii\base\Exception;
-use yii\base\InvalidConfigException;
 use yii\web\Response;
 
 class Event extends Element implements \JsonSerializable
 {
     public const TABLE = '{{%calendar_events}}';
     public const TABLE_STD = 'calendar_events';
-
-    public const UNTIL_TYPE_FOREVER = 'forever';
-    public const UNTIL_TYPE_UNTIL = 'until';
-    public const UNTIL_TYPE_AFTER = 'after';
 
     public const REPEAT_NEVER = 'NEVER';
     public const REPEAT_DAILY = 'DAILY';
@@ -69,6 +52,7 @@ class Event extends Element implements \JsonSerializable
 
     public const EVENT_TRANSFORM_JSON_VALUE = 'transform-json-value';
 
+    private const MAX_OCCURRENCES = 5000;
     private const CARBON_PROPERTIES = [
         'startDate',
         'endDate',
@@ -93,24 +77,6 @@ class Event extends Element implements \JsonSerializable
     public ?string $freq = null;
     public ?int $interval = null;
     public ?int $count = null;
-    public ?string $byMonth = null;
-    public ?string $byYearDay = null;
-    public ?string $byMonthDay = null;
-    public ?string $byDay = null;
-
-    private static ?int $overlapThreshold = null;
-
-    /** @var ExceptionModel[] */
-    private ?array $exceptions = null;
-
-    /** @var SelectDateModel[] */
-    private ?array $selectDates = null;
-
-    /** @var SelectDateModel[] */
-    private ?array $selectDatesCache = null;
-
-    /** @var Event[] */
-    private array $occurrenceCache = [];
 
     public function __construct($config = [])
     {
@@ -128,14 +94,6 @@ class Event extends Element implements \JsonSerializable
     public static function tableName(): string
     {
         return self::TABLE;
-    }
-
-    public function setEvent_builder_data($builderJson): void
-    {
-        $eventBuilderData = json_decode($builderJson, true);
-
-        $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
-        $transformer->transform();
     }
 
     public static function displayName(): string
@@ -187,7 +145,7 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * Updates the entry's title, if its entry type has a dynamic title format.
+     * Updates the entry's title if its entry type has a dynamic title format.
      */
     public function updateTitle(): void
     {
@@ -213,7 +171,7 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @return ElementQueryInterface|EventQuery
+     * @return EventQuery
      */
     public static function find(): ElementQueryInterface
     {
@@ -277,18 +235,17 @@ class Event extends Element implements \JsonSerializable
     {
         $settings = Calendar::getInstance()->settings;
 
-        $date = new \DateTime();
-        $date = new Carbon($date->format('Y-m-d H:i:s'));
-        $date->setTime($date->hour, 0, 0);
+        $date = new Carbon();
+        $date->setTime($date->hour, 0);
 
         $element = new self();
-        $element->postDate = new Carbon();
-        $element->allDay = $settings->isAllDayDefault();
-        $element->authorId = \Craft::$app->user->getId();
-        $element->enabled = true;
         $element->startDate = $date;
         $element->endDate = $element->startDate->copy()->addMinutes($settings->getEventDuration());
+        $element->allDay = $settings->isAllDayDefault();
         $element->calendarId = $calendarId ?? Calendar::getInstance()->calendars->getFirstCalendarId();
+        $element->authorId = \Craft::$app->user->getId();
+        $element->postDate = new Carbon();
+        $element->enabled = true;
 
         if ($siteId) {
             $element->siteId = $siteId;
@@ -322,41 +279,6 @@ class Event extends Element implements \JsonSerializable
         }
 
         return [\Craft::$app->getSites()->getPrimarySite()->id];
-    }
-
-    public function cloneForDate(\DateTime $date): ?self
-    {
-        $clone = clone $this;
-        foreach ($this->getBehaviors() as $key => $value) {
-            $clone->attachBehavior($key, $value);
-        }
-
-        if (null !== $date) {
-            if (!$this->happensOn($date)) {
-                return null;
-            }
-
-            $startDate = $this->getStartDate()->copy();
-            $endDate = $this->getEndDate()->copy();
-
-            $diffInSeconds = $startDate->diffInSeconds($endDate);
-
-            $startDate->setDateTime(
-                (int) $date->format('Y'),
-                (int) $date->format('m'),
-                (int) $date->format('d'),
-                $startDate->hour,
-                $startDate->minute,
-                $startDate->second
-            );
-            $endDate = $startDate->copy();
-            $endDate->addSeconds($diffInSeconds);
-
-            $clone->startDate = $startDate;
-            $clone->endDate = $endDate;
-        }
-
-        return $clone;
     }
 
     /**
@@ -400,11 +322,6 @@ class Event extends Element implements \JsonSerializable
         return static::gqlTypeNameByContext($this->getCalendar());
     }
 
-    /**
-     * Returns the element's CP edit URL.
-     *
-     * @throws InvalidConfigException
-     */
     public function getCpEditUrl(): ?string
     {
         if (!$this->isEditable()) {
@@ -438,223 +355,35 @@ class Event extends Element implements \JsonSerializable
         return $this->getCalendar()->getUriFormat($this->siteId);
     }
 
-    /**
-     * @return ExceptionModel[]
-     */
-    public function getExceptions(): array
-    {
-        if (null === $this->exceptions) {
-            $this->exceptions = Calendar::getInstance()->exceptions->getExceptionsForEvent($this);
-        }
-
-        return $this->exceptions;
-    }
-
-    /**
-     * @return ExceptionModel[]
-     */
-    public function getExceptionsLocalized(): array
-    {
-        $exceptionsLocalized = $this->getExceptions();
-        foreach ($exceptionsLocalized as $exceptionLocalized) {
-            $exceptionLocalized->date = new Carbon($exceptionLocalized->date->toDateTimeString());
-        }
-
-        return $exceptionsLocalized;
-    }
-
-    public function setExceptions(array $exceptions): self
-    {
-        $this->exceptions = [];
-
-        foreach ($exceptions as $date) {
-            if ($date instanceof ExceptionModel) {
-                $this->exceptions[] = $date;
-            } elseif ($date instanceof \DateTime) {
-                $model = new ExceptionModel();
-                $model->date = Carbon::createFromTimestampUTC($date->getTimestamp());
-                $model->eventId = $this->id;
-
-                $this->exceptions[] = $model;
-            } elseif (\is_string($date)) {
-                $model = new ExceptionModel();
-                $model->date = Carbon::createFromDate($date);
-                $model->eventId = $this->id;
-
-                $this->exceptions[] = $model;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function addException(ExceptionModel $exceptionModel): self
-    {
-        $this->getExceptions();
-        $this->exceptions[] = $exceptionModel;
-
-        return $this;
-    }
-
-    public function getExceptionDateStrings(): array
-    {
-        $exceptions = $this->getExceptions();
-
-        $exceptionDates = [];
-        foreach ($exceptions as $exception) {
-            $exceptionDates[] = $exception->date->format('Y-m-d');
-        }
-
-        return $exceptionDates;
-    }
-
-    /**
-     * @return SelectDateModel[]
-     */
-    public function getSelectDates(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
-    {
-        if (RecurrenceHelper::SELECT_DATES !== $this->freq || !$this->id) {
-            return [];
-        }
-
-        if (null === $this->selectDates) {
-            $this->hydrateSelectDates();
-        }
-
-        $cacheHash = md5(($rangeStart ? $rangeStart->getTimestamp() : 0).($rangeEnd ? $rangeEnd->getTimestamp() : 0));
-        if (!isset($this->selectDatesCache[$cacheHash])) {
-            $this->selectDatesCache[$cacheHash] = array_filter(
-                $this->selectDates,
-                static function (SelectDateModel $selectDate) use ($rangeStart, $rangeEnd) {
-                    $isAfterRangeStart = null === $rangeStart || $selectDate->date >= $rangeStart;
-                    $isBeforeRangeEnd = null === $rangeEnd || $selectDate->date <= $rangeEnd;
-
-                    return $isAfterRangeStart && $isBeforeRangeEnd;
-                }
-            );
-        }
-
-        return $this->selectDatesCache[$cacheHash];
-    }
-
-    public function setSelectDates(array $selectDates = []): self
-    {
-        $this->selectDates = [];
-        $this->selectDatesCache = [];
-
-        foreach ($selectDates as $date) {
-            if ($date instanceof SelectDateModel) {
-                $this->selectDates[] = $date;
-            } elseif ($date instanceof \DateTime) {
-                $model = new SelectDateModel();
-                $model->date = Carbon::createFromTimestampUTC($date->getTimestamp());
-                $model->eventId = $this->id;
-
-                $this->selectDates[] = $model;
-            } elseif (\is_string($date)) {
-                $model = new SelectDateModel();
-                $model->date = Carbon::createFromDate($date);
-                $model->eventId = $this->id;
-
-                $this->selectDates[] = $model;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime[]
-     */
-    public function getSelectDatesAsDates(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
-    {
-        $models = $this->getSelectDates($rangeStart, $rangeEnd);
-
-        $dates = [];
-        foreach ($models as $model) {
-            $dates[] = $model->date;
-        }
-
-        return $dates;
-    }
-
-    public function getSelectDatesAsDatesLocalized(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
-    {
-        $models = $this->getSelectDates($rangeStart, $rangeEnd);
-
-        $dates = [];
-        foreach ($models as $model) {
-            $dates[] = new Carbon($model->date->toDateTimeString());
-        }
-
-        return $dates;
-    }
-
-    public function getSelectDatesAsString(string $format = 'Y-m-d'): array
-    {
-        $selectDates = $this->getSelectDates();
-
-        $formattedDatesList = [];
-        foreach ($selectDates as $selectDate) {
-            $formattedDatesList[] = $selectDate->date->format($format);
-        }
-
-        return $formattedDatesList;
-    }
-
-    /**
-     * @return $this
-     */
-    public function addSelectDate(SelectDateModel $selectDateModel): self
-    {
-        $this->getSelectDates();
-        $this->selectDates[] = $selectDateModel;
-        $this->selectDatesCache = [];
-
-        return $this;
-    }
-
     public function isMultiDay(): bool
     {
-        if (null === self::$overlapThreshold) {
-            self::$overlapThreshold = Calendar::getInstance()->settings->getOverlapThreshold();
-        }
-
         $startDate = $this->getStartDate();
         $endDate = $this->getEndDate();
 
-        if (!$startDate || !$endDate) {
-            return false;
-        }
-
         $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
-
         if ($diffInDays > 1) {
             return true;
         }
 
-        $dateBeforeOverlap = DateHelper::isDateBeforeOverlap($this->getEndDate(), self::$overlapThreshold);
+        $threshold = $this->getOverlapThreshold();
+        $dateBeforeOverlap = DateHelper::isDateBeforeOverlap($this->getEndDate(), $threshold);
 
-        return 1 === $diffInDays && !$dateBeforeOverlap;
+        return $diffInDays === 1 && !$dateBeforeOverlap;
     }
 
     public function isCurrentlyHappening(): bool
     {
-        static $currentDate;
-        if (null === $currentDate) {
-            $local = new Carbon('now', \Craft::$app->getTimeZone());
-            $currentDate = new Carbon($local->format('Y-m-d H:i:s'));
+        static $isHappening;
+        if (null === $isHappening) {
+            $isHappening = $this->isHappeningOn(new Carbon('now'));
         }
 
-        return $this->isHappeningOn($currentDate);
+        return $isHappening;
     }
 
-    public function isHappeningOn(Carbon|string $date): bool
+    public function isHappeningOn(\DateTime|string $date): bool
     {
-        if (!$date instanceof Carbon) {
+        if (\is_string($date)) {
             $date = new Carbon($date);
         }
 
@@ -663,30 +392,11 @@ class Event extends Element implements \JsonSerializable
 
     public function repeats(): bool
     {
-        return null !== $this->repeatType;
-    }
-
-    public function repeatsOnSelectDates(): bool
-    {
-        return $this->repeats() && RecurrenceHelper::SELECT_DATES === $this->freq;
-    }
-
-    public function getFrequency(): ?string
-    {
-        // TODO: Return the RRULE FREQ value instead
-
-        return null;
-
-        return match ($this->freq) {
-            RecurrenceHelper::DAILY, RecurrenceHelper::WEEKLY, RecurrenceHelper::MONTHLY, RecurrenceHelper::YEARLY, RecurrenceHelper::SELECT_DATES => $this->freq,
-            default => null,
-        };
+        return $this->repeatType !== self::REPEAT_NEVER;
     }
 
     /**
-     * Returns an array of \DateTime objects for each recurrence.
-     *
-     * @return array|\DateTime[]
+     * @return \DateTime[]
      */
     public function getOccurrenceDates(): array
     {
@@ -694,54 +404,26 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * @return array|\DateTime[]
+     * @return \DateTime[]
      */
     public function getOccurrenceDatesBetween(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
     {
-        // TODO: refactor this to use RRULE
-        return [];
-        // if ($this->repeats()) {
-        //     if ($this->repeatsOnSelectDates()) {
-        //         $startDate = $this->getStartDate();
-        //         if ((!$rangeStart || $startDate >= $rangeStart) && (!$rangeEnd || $startDate <= $rangeEnd)) {
-        //             $occurrences[] = $startDate->setTime(0, 0, 0);
-        //         }
-        //
-        //         $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($rangeStart, $rangeEnd));
-        //     } else {
-        //         $rrule = $this->getRRuleObject();
-        //         if (null !== $rrule) {
-        //             if ($this->isInfinite()) {
-        //                 $rangeStart = $rangeStart ?: new Carbon('today');
-        //                 $rangeEnd = $rangeEnd ?: new Carbon('+6 months');
-        //             }
-        //
-        //             $occurrences = array_merge($occurrences, $rrule->getOccurrencesBetween($rangeStart, $rangeEnd));
-        //         }
-        //     }
-        // }
-        //
-        // DateHelper::sortArrayOfDates($occurrences);
-        //
-        // return $occurrences;
+        if (!$this->repeats()) {
+            return [];
+        }
+
+        $rrule = $this->getRRuleObject();
+
+        return $rrule?->getOccurrencesBetween($rangeStart, $rangeEnd, self::MAX_OCCURRENCES);
     }
 
     public function happensOn(\DateTime $date): bool
     {
-        if (!$date instanceof Carbon) {
-            $date = new Carbon($date->format('Y-m-d'));
-        }
-
-        $date->setTime(0, 0, 0);
+        $date = Carbon::createFromInterface($date);
+        $date->setTime(0, 0);
 
         if ($date->toDateString() === $this->getStartDate()->toDateString()) {
             return true;
-        }
-
-        if ($this->repeatsOnSelectDates()) {
-            $dates = $this->getSelectDatesAsString();
-
-            return \in_array($date->toDateString(), $dates, true);
         }
 
         $rrule = $this->getRRuleObject();
@@ -768,79 +450,6 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * Returns the repeats ON rule, which could be -1, 1, 2, 3 or 4
-     * Or 0 if no rule is set.
-     */
-    public function getRepeatsOnRule(): int
-    {
-        $weekDays = $this->getRepeatsByWeekDays();
-        if (
-            !empty($weekDays)
-            && \in_array(
-                $this->getFrequency(),
-                [RecurrenceHelper::MONTHLY, RecurrenceHelper::YEARLY],
-                true
-            )
-        ) {
-            $firstSymbol = $weekDays[0][0];
-            if ('-' === $firstSymbol) {
-                return -1;
-            }
-
-            if (is_numeric($firstSymbol)) {
-                return (int) $firstSymbol;
-            }
-        }
-
-        return 0;
-    }
-
-    /**
-     * Gets an array of week day 2 letter abbreviations if such a rule has been specified.
-     */
-    public function getRepeatsByWeekDays(): ?array
-    {
-        return $this->getArrayFromRRuleString($this->byDay);
-    }
-
-    /**
-     * Strips off any "first", "second", "third", "fourth", "last" rules present in ::$byDay variable
-     * and returns just the week days
-     * [-1SU,-1WE] becomes [SU,WE], etc.
-     */
-    public function getRepeatsByWeekDaysAbsolute(): ?array
-    {
-        $weekDays = $this->getArrayFromRRuleString($this->byDay);
-
-        if (!$weekDays) {
-            return null;
-        }
-
-        return array_map(
-            static function ($value) {
-                return preg_replace('/^-?\d/', '', $value);
-            },
-            $weekDays
-        );
-    }
-
-    /**
-     * Gets an array of month day numbers if such a rule has been specified.
-     */
-    public function getRepeatsByMonthDays(): ?array
-    {
-        return $this->getArrayFromRRuleString($this->byMonthDay);
-    }
-
-    /**
-     * Gets an array of month numbers if such a rule has been specified.
-     */
-    public function getRepeatsByMonths(): ?array
-    {
-        return $this->getArrayFromRRuleString($this->byMonth);
-    }
-
-    /**
      * Returns the RFC compliant RRULE string
      * Or NULL if no rule present.
      */
@@ -861,17 +470,11 @@ class Event extends Element implements \JsonSerializable
         }
 
         $locale = \Craft::$app->getLocale();
-        $format = \Craft::$app->locale->getDateFormat('medium', 'php');
-
-        if ($this->repeatsOnSelectDates()) {
-            return implode(', ', $this->getSelectDatesAsString($format));
-        }
-
-        $rruleObject = $this->getRRuleObject();
-
+        $format = $locale->getDateFormat('medium', 'php');
         $locale = $locale->id;
         $locale = preg_replace('/^(\w+)_.*$/', '$1', $locale);
 
+        $rruleObject = $this->getRRuleObject();
         if ($rruleObject) {
             $string = $rruleObject->humanReadable([
                 'locale' => $locale,
@@ -886,22 +489,9 @@ class Event extends Element implements \JsonSerializable
         return null;
     }
 
-    public function getUntilType(): string
-    {
-        if ($this->count) {
-            return self::UNTIL_TYPE_AFTER;
-        }
-
-        if ($this->until) {
-            return self::UNTIL_TYPE_UNTIL;
-        }
-
-        return self::UNTIL_TYPE_FOREVER;
-    }
-
     public function isInfinite(): bool
     {
-        return self::UNTIL_TYPE_FOREVER === $this->getUntilType();
+        return $this->getRRuleObject()?->isInfinite() ?? false;
     }
 
     public function isFinite(): bool
@@ -941,21 +531,6 @@ class Event extends Element implements \JsonSerializable
         return Calendar::getInstance()->isPro() && $this->repeats();
     }
 
-    public function getInterval(): ?int
-    {
-        return $this->interval;
-    }
-
-    public function getFreq(): ?string
-    {
-        return $this->freq;
-    }
-
-    public function getCount(): ?int
-    {
-        return $this->count;
-    }
-
     public function getRRule(): ?string
     {
         return $this->rrule;
@@ -975,135 +550,6 @@ class Event extends Element implements \JsonSerializable
         return $this->getHumanReadableRepeatsString();
     }
 
-    public function getSimplifiedRepeatRule(): ?string
-    {
-        if (!$this->repeats()) {
-            return null;
-        }
-
-        return match ($this->getFrequency()) {
-            RecurrenceHelper::YEARLY => Calendar::t('Yearly'),
-            RecurrenceHelper::MONTHLY => Calendar::t('Monthly'),
-            RecurrenceHelper::WEEKLY => Calendar::t('Weekly'),
-            RecurrenceHelper::DAILY => Calendar::t('Daily'),
-            default => null,
-        };
-    }
-
-    /**
-     * @return Event[]
-     *
-     * @throws ConfigurationException
-     * @throws \ReflectionException
-     */
-    public function getOccurrences(?array $config = null): array
-    {
-        // TODO: implement occurrence fetch from DB
-        return [];
-        $occurrencesConfig = new Occurrences($config);
-        $configHash = $occurrencesConfig->getConfigHash();
-
-        if (!isset($this->occurrenceCache[$configHash])) {
-            $occurrenceDates = [];
-
-            $rangeStart = $occurrencesConfig->getRangeStart();
-            if (null === $rangeStart) {
-                $rangeStart = new Carbon('today', DateHelper::UTC);
-            }
-
-            $rangeEnd = $occurrencesConfig->getRangeEnd();
-            if (null === $rangeEnd) {
-                $rangeEnd = $this->isInfinite() ? $rangeStart->copy()->addMonths(6) : $this->getUntil();
-            }
-
-            if ($this->getRRuleObject()) {
-                $occurrenceDates = $this->getOccurrenceDatesBetween($rangeStart, $rangeEnd);
-            } elseif ($this->getSelectDates()) {
-                $occurrenceDates = $this->getSelectDatesAsDates($rangeStart, $rangeEnd);
-            }
-
-            $occurrences = [];
-            $exceptions = $this->getExceptionDateStrings();
-            $count = 0;
-            foreach ($occurrenceDates as $date) {
-                if (\in_array($date->format('Y-m-d'), $exceptions, true)) {
-                    continue;
-                }
-
-                if ($occurrencesConfig->getLimit() && ++$count > $occurrencesConfig->getLimit()) {
-                    break;
-                }
-
-                try {
-                    $occurrences[] = $this->cloneForDate($date);
-                } catch (CalendarException $e) {
-                }
-            }
-
-            $this->occurrenceCache[$configHash] = $occurrences;
-        }
-
-        return $this->occurrenceCache[$configHash];
-    }
-
-    public function getOccurrenceCount(): int
-    {
-        return \count($this->getOccurrences());
-    }
-
-    /**
-     * Compare this event to another event's MultiDay property
-     * Returns: -1    if this is multi-day and the other isn't
-     *          1     if this is not multi-day, but the other is
-     *          true  if both are multi-day
-     *          false if both aren't multi-day.
-     */
-    public function compareMultiDay(self $event): bool|int
-    {
-        if ($this->isMultiDay() && !$event->isMultiDay()) {
-            return -1;
-        }
-
-        if (!$this->isMultiDay() && $event->isMultiDay()) {
-            return 1;
-        }
-
-        return $this->isMultiDay() && $event->isMultiDay();
-    }
-
-    /**
-     * Compare this event to another event's MultiDay property
-     * Returns: -1    if this is all-day and the other isn't
-     *          1     if this is not all-day, but the other is
-     *          true  if both are all-day
-     *          false if both aren't all-day.
-     */
-    public function compareAllDay(self $event): bool|int
-    {
-        if ($this->isAllDay() && !$event->isAllDay()) {
-            return -1;
-        }
-
-        if (!$this->isAllDay() && $event->isAllDay()) {
-            return 1;
-        }
-
-        return $this->isAllDay() && $event->isAllDay();
-    }
-
-    public function compareStartDates(self $event): int
-    {
-        return DateHelper::compareCarbons($this->getStartDate(), $event->getStartDate());
-    }
-
-    public function compareEndDates(self $event): int
-    {
-        return DateHelper::compareCarbons($this->getEndDate(), $event->getEndDate());
-    }
-
-    /**
-     * Get the diff in days between two events.
-     */
     public function diffInDays(self $event): int
     {
         return DateHelper::carbonDiffInDays($this->getStartDate(), $event->getStartDate());
@@ -1111,17 +557,17 @@ class Event extends Element implements \JsonSerializable
 
     public function canDuplicate(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     public function canDelete(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     public function canSave(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     /**
@@ -1147,6 +593,7 @@ class Event extends Element implements \JsonSerializable
         $until = $until ? new Carbon((int) $until) : null;
 
         $allDay = (bool) $request->getBodyParam('allDay');
+
         $repeatType = $request->getBodyParam('repeatType');
         $repeatEndType = $request->getBodyParam('repeatEndType');
         $rrule = $request->getBodyParam('rrule');
@@ -1154,22 +601,11 @@ class Event extends Element implements \JsonSerializable
         $this->startDate = $start;
         $this->endDate = $end;
         $this->until = $until;
-
         $this->allDay = $allDay;
+
         $this->repeatType = $repeatType;
         $this->repeatEndType = $repeatEndType;
         $this->rrule = $rrule;
-
-        return true;
-    }
-
-    public function beforeValidate(): bool
-    {
-        if (!parent::beforeValidate()) {
-            return false;
-        }
-
-        $this->applyEventBuilderDataFromRequest();
 
         return true;
     }
@@ -1179,21 +615,14 @@ class Event extends Element implements \JsonSerializable
         $insertData = [
             'calendarId' => $this->calendarId,
             'authorId' => $this->authorId,
-            'startDate' => $this->startDate->toDateTimeString(),
-            'endDate' => $this->endDate->toDateTimeString(),
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate,
+            'until' => $this->until,
             'allDay' => (bool) $this->allDay,
             'rrule' => $this->rrule,
             'repeatType' => $this->repeatType,
             'repeatEndType' => $this->repeatEndType,
-            'freq' => $this->freq,
-            'interval' => $this->interval,
-            'count' => $this->count,
-            'until' => $this->until?->toDateTimeString(),
-            'byMonth' => $this->byMonth,
-            'byYearDay' => $this->byYearDay,
-            'byMonthDay' => $this->byMonthDay,
-            'byDay' => $this->byDay,
-            'postDate' => $this->postDate?->format('Y-m-d H:i:s'),
+            'postDate' => $this->postDate,
         ];
 
         $db = \Craft::$app->db;
@@ -1211,91 +640,12 @@ class Event extends Element implements \JsonSerializable
             ;
         }
 
-        if (\is_array($this->selectDates)) {
-            $existingDates = (new Query())
-                ->select(['id', 'date'])
-                ->from(SelectDateRecord::TABLE)
-                ->where(['eventId' => $this->id])
-                ->pairs()
-            ;
-
-            $currentDates = [];
-            foreach ($this->selectDates as $selectDate) {
-                $currentDates[] = $selectDate->date->toDateTimeString();
-            }
-
-            $toDelete = array_keys(array_diff($existingDates, $currentDates));
-            $toInsert = array_diff($currentDates, $existingDates);
-
-            if ($toDelete) {
-                $db->createCommand()
-                    ->delete(SelectDateRecord::TABLE, ['eventId' => $this->id, 'id' => $toDelete])
-                    ->execute()
-                ;
-            }
-
-            foreach ($toInsert as $selectDate) {
-                $record = new SelectDateRecord();
-                $record->eventId = $this->id;
-                $record->date = new Carbon($selectDate);
-
-                $record->save();
-            }
-        }
-
-        if (\is_array($this->exceptions)) {
-            $existingDates = (new Query())
-                ->select(['id', 'date'])
-                ->from(ExceptionRecord::TABLE)
-                ->where(['eventId' => $this->id])
-                ->pairs()
-            ;
-
-            $currentDates = [];
-            foreach ($this->exceptions as $exception) {
-                $currentDates[] = $exception->date->toDateTimeString();
-            }
-
-            $toDelete = array_keys(array_diff($existingDates, $currentDates));
-            $toInsert = array_diff($currentDates, $existingDates);
-
-            if ($toDelete) {
-                $db->createCommand()
-                    ->delete(ExceptionRecord::TABLE, ['eventId' => $this->id, 'id' => $toDelete])
-                    ->execute()
-                ;
-            }
-
-            foreach ($toInsert as $exception) {
-                $record = new ExceptionRecord();
-                $record->eventId = $this->id;
-                $record->date = new Carbon($exception);
-
-                $record->save();
-            }
-        }
-
         parent::afterSave($isNew);
     }
 
     public function getFieldLayout(): ?FieldLayout
     {
-        $calendar = $this->getCalendar();
-        if (!$calendar) {
-            return null;
-        }
-
-        return $calendar->getFieldLayout();
-    }
-
-    public function getFieldLayoutId(): ?int
-    {
-        $calendar = $this->getCalendar();
-        if (!$calendar) {
-            return null;
-        }
-
-        return $calendar->fieldLayoutId;
+        return $this->getCalendar()->getFieldLayout();
     }
 
     public function builderConfig(): array
@@ -1383,30 +733,6 @@ class Event extends Element implements \JsonSerializable
         if ($this->startDate->diffInDays($this->endDate, true) > self::SPAN_LIMIT_DAYS) {
             $this->addError('startDate', Calendar::t('The maximum time span of an event is 365 days'));
         }
-    }
-
-    public function getEditorHtml(): string
-    {
-        $plugin = Calendar::getInstance();
-        $view = \Craft::$app->getView();
-
-        $view->registerAssetBundle(EventEditBundle::class);
-        $output = $view->renderTemplate('calendar/events/_event_editor', [
-            'event' => $this,
-            'eventData' => (new EventToUiDataTransformer($this))->transform(),
-            'eventConfig' => [
-                'timeFormat' => $plugin->formats->getTimeFormat(Locale::LENGTH_SHORT),
-                'dateFormat' => $plugin->formats->getDateFormat(Locale::LENGTH_SHORT),
-                'timeInterval' => $plugin->settings->getTimeInterval(),
-                'eventDuration' => $plugin->settings->getEventDuration(),
-                'locale' => \Craft::$app->getSites()->getCurrentSite()->language,
-                'firstDayOfWeek' => $plugin->settings->getFirstDayOfWeek(),
-                'isNewEvent' => !$this->id,
-            ],
-        ]);
-        $output .= parent::getEditorHtml();
-
-        return $output;
     }
 
     public function metaFieldsHtml(bool $static): string
@@ -1828,33 +1154,14 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function applyEventBuilderDataFromRequest(): void
+    private function getOverlapThreshold(): int
     {
-        $request = \Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return;
+        static $overlapThreshold;
+        if (null === $overlapThreshold) {
+            $overlapThreshold = Calendar::getInstance()->settings->getOverlapThreshold();
         }
 
-        $eventBuilderData = $request->getBodyParam('event_builder_data');
-        if (!$eventBuilderData) {
-            return;
-        }
-
-        if (\is_string($eventBuilderData)) {
-            $this->setEvent_builder_data($eventBuilderData);
-
-            return;
-        }
-
-        if (\is_array($eventBuilderData)) {
-            $transformer = new UiDataToEventTransformer($this, $eventBuilderData);
-            $transformer->transform();
-        }
-    }
-
-    private function hydrateSelectDates(): void
-    {
-        $this->selectDates = Calendar::getInstance()->selectDates->getSelectDatesForEvent($this);
+        return $overlapThreshold;
     }
 
     /**

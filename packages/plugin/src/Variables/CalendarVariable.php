@@ -2,7 +2,6 @@
 
 namespace Solspace\Calendar\Variables;
 
-use Carbon\Carbon;
 use craft\elements\db\ElementQueryInterface;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
@@ -74,49 +73,6 @@ class CalendarVariable
     {
         if ('new' === $id) {
             return Event::create(\Craft::$app->sites->currentSite->id);
-        }
-
-        $targetDate = null;
-        if (isset($options['targetDate'])) {
-            $targetDate = new Carbon($options['targetDate'], DateHelper::UTC);
-        } elseif (isset($options['occurrenceDate'])) {
-            $targetDate = new Carbon($options['occurrenceDate'], DateHelper::UTC);
-        }
-
-        $siteId = null;
-        if (isset($options['site'])) {
-            $siteHandle = $options['site'];
-            $site = \Craft::$app->sites->getSiteByHandle($siteHandle);
-            if ($site) {
-                $siteId = $site->id;
-            }
-        }
-
-        if (isset($options['siteId'])) {
-            $siteId = (int) $options['siteId'];
-        }
-
-        $eventsService = Calendar::getInstance()->events;
-        $includeDisabled = \array_key_exists('status', $options) && null === $options['status'];
-
-        $event = null;
-        if (is_numeric($id)) {
-            $event = $eventsService->getEventById($id, $siteId, $includeDisabled, false);
-        } elseif (\is_string($id)) {
-            $event = $eventsService->getEventBySlug($id, $siteId, $includeDisabled, false);
-        }
-
-        if ($event) {
-            if ($targetDate) {
-                $event = $event->cloneForDate($targetDate);
-                if ($event) {
-                    return $event;
-                }
-
-                return null;
-            }
-
-            return $event;
         }
 
         return null;

@@ -94,13 +94,7 @@ class EventFieldType extends BaseRelationField
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        $query = parent::normalizeValue($value, $element);
-
-        if ($query instanceof EventQuery) {
-            $query->setLoadOccurrences(false);
-        }
-
-        return $query;
+        return parent::normalizeValue($value, $element);
     }
 
     public static function elementType(): string

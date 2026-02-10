@@ -32,105 +32,106 @@ class EventsApiController extends BaseController
     {
         $this->requirePostRequest();
 
-        /**
-         * @var Event $event
-         * @var int   $deltaSeconds
-         * @var bool  $isAllDay
-         */
-        [$event, $deltaSeconds, $isAllDay] = $this->validateAndReturnModificationData();
-
-        $eventsService = $this->getEventsService();
-
-        $wasAllDay = $event->allDay;
-        $oldStartDate = $event->getStartDate()->copy();
-        $startDate = $event->getStartDate();
-        $startDate->addSeconds($deltaSeconds);
-
-        $endDateDiff = $oldStartDate->diff($event->getEndDate());
-
-        $endDate = $startDate->copy();
-        $endDate->add($endDateDiff);
-
-        $postedStartDateString = \Craft::$app->request->post('startDate');
-        $postedStartDate = new Carbon($postedStartDateString, DateHelper::UTC);
-        $originalOccurrenceDate = $postedStartDate->subSeconds($deltaSeconds);
-
-        $isOriginalEvent = $originalOccurrenceDate->format('Y-m-d') === $event->getStartDate()->toDateString();
-
-        // We update the event start and end dates ONLY if this isn' a "repeats on select dates" event
-        // Or if it is and we're currently modifying the original event
-        if ($isOriginalEvent || !$event->repeatsOnSelectDates()) {
-            $event->startDate = $startDate;
-            $event->endDate = $endDate;
-            $event->allDay = $isAllDay;
-
-            if ($wasAllDay && !$isAllDay) {
-                $event->endDate = clone $startDate;
-                $event->endDate->add(new \DateInterval('PT2H'));
-            } elseif (!$wasAllDay && $isAllDay) {
-                $event->startDate->setTime(0, 0, 0);
-                $event->endDate = clone $event->startDate;
-                $event->endDate->setTime(23, 59, 59);
-            }
-        } elseif (!$isOriginalEvent && $event->repeatsOnSelectDates()) {
-            $event->startDate = $event->getStartDate();
-            $event->startDate->setTime($startDate->format('H'), $startDate->format('i'), $startDate->format('s'));
-            $event->endDate = $event->getStartDate()->copy();
-            $event->endDate->add($endDateDiff);
-        }
-
-        if ($event->repeats()) {
-            if ($event->repeatsOnSelectDates()) {
-                if (!$isOriginalEvent) {
-                    $selectDateRecords = SelectDateRecord::findAll(
-                        [
-                            'eventId' => $event->id,
-                            'date' => $originalOccurrenceDate->format('Y-m-d'),
-                        ]
-                    );
-
-                    foreach ($selectDateRecords as $selectDate) {
-                        $date = new \DateTime($postedStartDateString);
-                        $date->setTime(0, 0, 0);
-
-                        $selectDate->date = $date;
-                        $selectDate->save(false);
-                    }
-                }
-            } else {
-                $currentStartDate = $event->getStartDate();
-
-                $diffInDays = DateHelper::carbonDiffInDays($oldStartDate, $currentStartDate);
-                $diffInMonths = DateHelper::carbonDiffInMonths($oldStartDate, $currentStartDate);
-
-                $daysInterval = new \DateInterval('P'.abs($diffInDays).'D');
-                $daysInterval->invert = $diffInDays < 0 ? 1 : 0;
-
-                if (0 !== $diffInDays) {
-                    $untilDate = $event->getUntil();
-                    if ($untilDate) {
-                        $untilDate->add($daysInterval);
-                        $event->until = $untilDate;
-                    }
-
-                    $eventsService->bumpRecurrenceRule($event, $diffInDays, $diffInMonths);
-
-                    $exceptions = $this->getExceptionsService()->getExceptionsForEventId($event->id);
-                    foreach ($exceptions as $exception) {
-                        $date = new Carbon('today', DateHelper::UTC);
-                        $date->setTimestamp($exception->date->getTimestamp());
-                        $date->add($daysInterval);
-                        $date->setTime(0, 0);
-
-                        $this->getExceptionsService()->saveException($event, $date, $exception->id);
-                    }
-                }
-            }
-        }
-
-        $eventsService->saveEvent($event);
-
-        return $this->asJson('success');
+        // /**
+        //  * @var Event $event
+        //  * @var int   $deltaSeconds
+        //  * @var bool  $isAllDay
+        //  */
+        // [$event, $deltaSeconds, $isAllDay] = $this->validateAndReturnModificationData();
+        //
+        // $eventsService = $this->getEventsService();
+        //
+        // $wasAllDay = $event->allDay;
+        // $oldStartDate = $event->getStartDate()->copy();
+        // $startDate = $event->getStartDate();
+        // $startDate->addSeconds($deltaSeconds);
+        //
+        // $endDateDiff = $oldStartDate->diff($event->getEndDate());
+        //
+        // $endDate = $startDate->copy();
+        // $endDate->add($endDateDiff);
+        //
+        // $postedStartDateString = \Craft::$app->request->post('startDate');
+        // $postedStartDate = new Carbon($postedStartDateString, DateHelper::UTC);
+        // $originalOccurrenceDate = $postedStartDate->subSeconds($deltaSeconds);
+        //
+        // $isOriginalEvent = $originalOccurrenceDate->format('Y-m-d') === $event->getStartDate()->toDateString();
+        //
+        // // We update the event start and end dates ONLY if this isn' a "repeats on select dates" event
+        // // Or if it is and we're currently modifying the original event
+        // if ($isOriginalEvent || !$event->repeatsOnSelectDates()) {
+        //     $event->startDate = $startDate;
+        //     $event->endDate = $endDate;
+        //     $event->allDay = $isAllDay;
+        //
+        //     if ($wasAllDay && !$isAllDay) {
+        //         $event->endDate = clone $startDate;
+        //         $event->endDate->add(new \DateInterval('PT2H'));
+        //     } elseif (!$wasAllDay && $isAllDay) {
+        //         $event->startDate->setTime(0, 0, 0);
+        //         $event->endDate = clone $event->startDate;
+        //         $event->endDate->setTime(23, 59, 59);
+        //     }
+        // } elseif (!$isOriginalEvent && $event->repeatsOnSelectDates()) {
+        //     $event->startDate = $event->getStartDate();
+        //     $event->startDate->setTime($startDate->format('H'), $startDate->format('i'), $startDate->format('s'));
+        //     $event->endDate = $event->getStartDate()->copy();
+        //     $event->endDate->add($endDateDiff);
+        // }
+        //
+        // if ($event->repeats()) {
+        //     if ($event->repeatsOnSelectDates()) {
+        //         if (!$isOriginalEvent) {
+        //             $selectDateRecords = SelectDateRecord::findAll(
+        //                 [
+        //                     'eventId' => $event->id,
+        //                     'date' => $originalOccurrenceDate->format('Y-m-d'),
+        //                 ]
+        //             );
+        //
+        //             foreach ($selectDateRecords as $selectDate) {
+        //                 $date = new \DateTime($postedStartDateString);
+        //                 $date->setTime(0, 0, 0);
+        //
+        //                 $selectDate->date = $date;
+        //                 $selectDate->save(false);
+        //             }
+        //         }
+        //     } else {
+        //         $currentStartDate = $event->getStartDate();
+        //
+        //         $diffInDays = DateHelper::carbonDiffInDays($oldStartDate, $currentStartDate);
+        //         $diffInMonths = DateHelper::carbonDiffInMonths($oldStartDate, $currentStartDate);
+        //
+        //         $daysInterval = new \DateInterval('P'.abs($diffInDays).'D');
+        //         $daysInterval->invert = $diffInDays < 0 ? 1 : 0;
+        //
+        //         if (0 !== $diffInDays) {
+        //             // TODO: removing until date here
+        //             // $untilDate = $event->getUntil();
+        //             // if ($untilDate) {
+        //             //     $untilDate->add($daysInterval);
+        //             //     $event->until = $untilDate;
+        //             // }
+        //
+        //             $eventsService->bumpRecurrenceRule($event, $diffInDays, $diffInMonths);
+        //
+        //             $exceptions = $this->getExceptionsService()->getExceptionsForEventId($event->id);
+        //             foreach ($exceptions as $exception) {
+        //                 $date = new Carbon('today', DateHelper::UTC);
+        //                 $date->setTimestamp($exception->date->getTimestamp());
+        //                 $date->add($daysInterval);
+        //                 $date->setTime(0, 0);
+        //
+        //                 $this->getExceptionsService()->saveException($event, $date, $exception->id);
+        //             }
+        //         }
+        //     }
+        // }
+        //
+        // $eventsService->saveEvent($event);
+        //
+        // return $this->asJson('success');
     }
 
     /**
@@ -275,11 +276,11 @@ class EventsApiController extends BaseController
         $date = Carbon::parse($date, 'UTC');
         $date = $date->startOfDay();
 
-        if ($event->repeatsOnSelectDates()) {
-            Calendar::getInstance()->selectDates->removeDate($event, $date);
-        } else {
-            Calendar::getInstance()->exceptions->saveException($event, $date);
-        }
+        // if ($event->repeatsOnSelectDates()) {
+        // Calendar::getInstance()->selectDates->removeDate($event, $date);
+        // } else {
+        Calendar::getInstance()->exceptions->saveException($event, $date);
+        // }
 
         return $this->asJson('success');
     }

@@ -13,7 +13,7 @@ class SettingsModel extends Model
     public const DEFAULT_ALL_DAY = false;
     public const DEFAULT_SHOW_MINI_CAL = true;
     public const DEFAULT_SHOW_DISABLED_EVENTS = true;
-    public const DEFAULT_VIEW = Calendar::VIEW_MONTH;
+    public const DEFAULT_VIEW = Calendar::VIEW_DASHBOARD;
     public const DEFAULT_ALLOW_QUICK_CREATE = true;
     public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
     public const DEFAULT_FIRST_DAY_OF_WEEK = -1;

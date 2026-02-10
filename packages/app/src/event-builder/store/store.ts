@@ -37,9 +37,7 @@ const normalizeByWeekday = (value?: Weekday | number | Array<Weekday | number>) 
 
 export const createEventBuilderStore = (initialState: BuilderConfig) => {
   const rrule = initialState.event.rrule ? rrulestr(initialState.event.rrule) : null;
-  const { byweekday, bysetpos: bysetposFromWeekday } = normalizeByWeekday(
-    rrule?.options.byweekday,
-  );
+  const { byweekday, bysetpos } = normalizeByWeekday(rrule?.options.byweekday);
 
   const preloadedState = {
     event: {
@@ -51,7 +49,7 @@ export const createEventBuilderStore = (initialState: BuilderConfig) => {
       bymonth: rrule?.options.bymonth,
       bymonthday: rrule?.options.bymonthday,
       byyearday: rrule?.options.byyearday,
-      bysetpos: rrule?.options.bysetpos ?? bysetposFromWeekday,
+      bysetpos: rrule?.options.bysetpos ?? bysetpos,
     },
   };
 

@@ -70,39 +70,26 @@ class EventQuery extends ElementQuery
     private \DateTime|string|null $postDate = null;
     private \DateTime|string|null $startDate = null;
     private \DateTime|string|null $endDate = null;
+
     private \DateTime|string|null $startsBefore = null;
     private \DateTime|string|null $startsBeforeOrAt = null;
     private \DateTime|string|null $startsAfter = null;
     private \DateTime|string|null $startsAfterOrAt = null;
+
     private \DateTime|string|null $endsAfter = null;
     private \DateTime|string|null $endsAfterOrAt = null;
     private \DateTime|string|null $endsBefore = null;
     private \DateTime|string|null $endsBeforeOrAt = null;
 
-    private bool $allDay = false;
-    private bool $allowedCalendarsOnly = false;
     private \DateTime|string|null $until = null;
     private \DateTime|string|null $rangeStart = null;
     private \DateTime|string|null $rangeEnd = null;
 
-    private bool|int|string $loadOccurrences = true;
+    private bool $allDay = false;
+    private bool $allowedCalendarsOnly = false;
 
     private ?int $overlapThreshold = null;
-    private ?bool $shuffle = null;
 
-    /** @var null|array - [date, [eventId, ..]] */
-    private ?array $eventCache = null;
-
-    /** @var null|array - events ordered by startDate */
-    private ?array $eventsByDate = null;
-
-    /** @var Event[] - events ordered by date */
-    private ?array $events = null;
-
-    /** @var int[] */
-    private ?array $eventsByHour = null;
-
-    private ?int $totalCount = null;
     private ?int $firstDay = null;
     private ?bool $noMultiDayGroup = null;
 
@@ -315,13 +302,6 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setLoadOccurrences(bool|int|string $loadOccurrences): self
-    {
-        $this->loadOccurrences = $loadOccurrences;
-
-        return $this;
-    }
-
     public function setOverlapThreshold(?int $overlapThreshold = null): self
     {
         $this->overlapThreshold = $overlapThreshold;
@@ -355,21 +335,14 @@ class EventQuery extends ElementQuery
             $events.'.[[authorId]]',
             $events.'.[[startDate]]',
             $events.'.[[endDate]]',
-            $events.'.[[dateCreated]]',
-            $events.'.[[dateUpdated]]',
+            $events.'.[[until]]',
             $events.'.[[allDay]]',
             $events.'.[[rrule]]',
             $events.'.[[repeatType]]',
             $events.'.[[repeatEndType]]',
-            $events.'.[[freq]]',
-            $events.'.[[interval]]',
-            $events.'.[[count]]',
-            $events.'.[[until]]',
-            $events.'.[[byMonth]]',
-            $events.'.[[byYearDay]]',
-            $events.'.[[byMonthDay]]',
-            $events.'.[[byDay]]',
             $events.'.[[postDate]]',
+            $events.'.[[dateCreated]]',
+            $events.'.[[dateUpdated]]',
             $users.'.[[username]]',
             $calendar.'.[[name]]',
         ]);

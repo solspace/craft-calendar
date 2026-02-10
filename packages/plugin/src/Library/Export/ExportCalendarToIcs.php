@@ -29,19 +29,6 @@ class ExportCalendarToIcs extends AbstractExportCalendar
         foreach ($events as $event) {
             $startDate = $event->getStartDate();
             $exportString .= $this->combineExportString($event, $startDate);
-
-            if ($event->getSelectDatesAsDates()) {
-                foreach ($event->getSelectDatesAsDates() as $date) {
-                    $dateCarbon = Carbon::createFromTimestampUTC($date->getTimestamp());
-                    $dateCarbon->setTime(
-                        $startDate->hour,
-                        $startDate->minute,
-                        $startDate->second
-                    );
-
-                    $exportString .= $this->combineExportString($event, $dateCarbon);
-                }
-            }
         }
 
         return $exportString.'END:VCALENDAR';
@@ -108,36 +95,16 @@ class ExportCalendarToIcs extends AbstractExportCalendar
             $exportString .= \sprintf("DTEND;TZID=%s:%s\r\n", $timezone, $endDate->format(self::DATE_TIME_FORMAT));
         }
 
-        $selectDates = $event->getSelectDates();
-        if (empty($selectDates) && $event->isRepeating()) {
+        if ($event->isRepeating()) {
             $rrule = $event->getRRule();
             if ($rrule) {
                 // Normalize all line endings to "\n"
                 $rrule = preg_replace('/\r\n?/', "\n", $rrule);
                 // Split on newlines
-                [$dtstart, $rrule] = explode("\n", $rrule, 2);
+                [, $rrule] = explode("\n", $rrule, 2);
                 // Trim again to make sure nothing weird survived
                 $rrule = trim($rrule);
                 $exportString .= \sprintf("%s\r\n", $rrule);
-            }
-            $exceptionDatesValues = [];
-            foreach ($event->getExceptionDateStrings() as $exceptionDate) {
-                $exceptionDate = new Carbon($exceptionDate, DateHelper::UTC);
-                if ($event->isAllDay()) {
-                    $exceptionDatesValues[] = $exceptionDate->format(self::DATE_FORMAT);
-                } else {
-                    $exceptionDate->setTime($startDate->hour, $startDate->minute, $startDate->second);
-                    $exceptionDatesValues[] = $exceptionDate->format(self::DATE_TIME_FORMAT);
-                }
-            }
-
-            $exceptionDates = implode(',', $exceptionDatesValues);
-            if ($exceptionDates) {
-                if ($event->isAllDay()) {
-                    $exportString .= \sprintf("EXDATE;VALUE=DATE:%s\r\n", $exceptionDates);
-                } else {
-                    $exportString .= \sprintf("EXDATE:%s\r\n", $exceptionDates);
-                }
             }
         }
 

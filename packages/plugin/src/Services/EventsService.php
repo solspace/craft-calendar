@@ -18,17 +18,13 @@ use craft\events\SiteEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
-use craft\records\Element as ElementRecord;
-use craft\records\Element_SiteSettings as ElementSiteSettingsRecord;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
-use Solspace\Calendar\Library\Exceptions\DateHelperException;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Models\SelectDateModel;
-use Solspace\Calendar\Records\CalendarRecord;
 use yii\base\Exception;
 use yii\web\HttpException;
 
@@ -42,30 +38,23 @@ class EventsService extends Component
     /**
      * Returns an event by its ID.
      */
-    public function getEventById(int $eventId, ?int $siteId = null, bool $includeDisabled = false, ?bool $loadOccurrences = true): ElementInterface|Event|null
+    public function getEventById(int $eventId, ?int $siteId = null, bool $includeDisabled = false): ElementInterface|Event|null
     {
-        $query = Event::find()
-            ->setLoadOccurrences($loadOccurrences)
+        return Event::find()
             ->setAllowedCalendarsOnly(false)
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->id($eventId)
+            ->siteId($siteId)
         ;
-
-        if (null !== $siteId) {
-            $query->siteId($siteId);
-        }
-
-        return $query->one();
     }
 
     /**
      * Returns an event by its slug.
      */
-    public function getEventBySlug(string $slug, ?int $siteId = null, bool $includeDisabled = false, ?bool $loadOccurrences = true): ElementInterface|Event|null
+    public function getEventBySlug(string $slug, ?int $siteId = null, bool $includeDisabled = false): ElementInterface|Event|null
     {
         return Event::find()
             ->slug($slug)
-            ->setLoadOccurrences($loadOccurrences)
             ->setAllowedCalendarsOnly(false)
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->siteId($siteId)
@@ -84,177 +73,19 @@ class EventsService extends Component
             ->status(null)
             ->limit(null)
             ->offset(null)
+            ->indexBy('id')
         ;
 
         if (null !== $siteId) {
             $query->siteId($siteId);
         }
 
-        /** @var Event[] $events */
-        $events = $query->all();
-
-        $indexedById = [];
-        foreach ($events as $event) {
-            $indexedById[$event->id] = $event;
-        }
-
-        unset($events);
-
-        return $indexedById;
+        return $query->all();
     }
 
     public function getEventQuery(?array $criteria = null): ElementQueryInterface
     {
         return Event::buildQuery($criteria);
-    }
-
-    public function getSingleEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
-    {
-        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
-
-        $whereDeleted = 'elements.[[dateDeleted]] IS NULL';
-        if ($trashed) {
-            $whereDeleted = 'elements.[[dateDeleted]] IS NOT NULL';
-        }
-
-        $ids = array_unique($ids);
-        $siteIds = array_unique($siteIds);
-
-        $subQuerySelect = [];
-        $subQuerySelect[] = 'elements.[[id]] elementsId';
-        $subQuerySelect[] = 'elements_sites.[[id]] elementsSitesId';
-
-        if ($isCraft4) {
-            $subQuerySelect[] = 'content.[[id]] contentId';
-        }
-
-        $subQuery = (new Query());
-        $subQuery->select($subQuerySelect);
-        $subQuery->from(ElementRecord::tableName().' elements');
-        $subQuery->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = elements.[[id]]');
-        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
-        $subQuery->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]');
-
-        if ($isCraft4) {
-            $subQuery->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])');
-        }
-
-        $subQuery->where([
-            'and',
-            'calendar_events.[[freq]] IS NULL',
-            $whereDeleted,
-            ['in', 'calendar_events.[[id]]', $ids],
-            ['in', 'elements_sites.[[siteId]]', $siteIds],
-        ]);
-
-        $querySelect = [];
-        $querySelect[] = 'calendar_events.[[id]]';
-        $querySelect[] = 'calendar_events.[[postDate]]';
-        $querySelect[] = 'calendar_events.[[startDate]]';
-        $querySelect[] = 'calendar_events.[[endDate]]';
-        $querySelect[] = 'calendar_events.[[dateCreated]]';
-        $querySelect[] = 'calendar_events.[[dateUpdated]]';
-        $querySelect[] = 'elements_sites.[[siteId]]';
-        $querySelect[] = 'calendar_events.[[id]]';
-
-        if ($isCraft4) {
-            $querySelect[] = 'content.[[title]]';
-        } else {
-            $querySelect[] = 'elements_sites.[[title]]';
-        }
-
-        $query = (new Query());
-        $query->select($querySelect);
-        $query->from(['subQuery' => $subQuery]);
-        $query->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]');
-        $query->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]');
-        $query->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = [[subQuery]].[[elementsId]]');
-        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
-
-        if ($isCraft4) {
-            $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
-        }
-
-        return $query->all();
-    }
-
-    public function getRecurringEventMetadata(?array $ids = null, ?array $siteIds = null, ?bool $trashed = null): array
-    {
-        $isCraft4 = version_compare(\Craft::$app->getVersion(), '5.0.0', '<');
-
-        $whereDeleted = 'elements.[[dateDeleted]] IS NULL';
-        if ($trashed) {
-            $whereDeleted = 'elements.[[dateDeleted]] IS NOT NULL';
-        }
-
-        $ids = array_unique($ids);
-        $siteIds = array_unique($siteIds);
-
-        $subQuerySelect = [];
-        $subQuerySelect[] = 'elements.[[id]] elementsId';
-        $subQuerySelect[] = 'elements_sites.[[id]] elementsSitesId';
-
-        if ($isCraft4) {
-            $subQuerySelect[] = 'content.[[id]] contentId';
-        }
-
-        $subQuery = (new Query());
-        $subQuery->select($subQuerySelect);
-        $subQuery->from(ElementRecord::tableName().' elements');
-        $subQuery->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = elements.[[id]]');
-        $subQuery->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
-        $subQuery->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[elementId]] = elements.[[id]]');
-
-        if ($isCraft4) {
-            $subQuery->innerJoin(Table::CONTENT.' content', '(content.[[elementId]] = elements.[[id]]) AND ([[content.siteId]] = elements_sites.[[siteId]])');
-        }
-
-        $subQuery->where([
-            'and',
-            'calendar_events.[[freq]] IS NOT NULL',
-            $whereDeleted,
-            ['in', 'calendar_events.[[id]]', $ids],
-            ['in', 'elements_sites.[[siteId]]', $siteIds],
-        ]);
-
-        $querySelect = [];
-        $querySelect[] = 'calendar_events.[[id]]';
-        $querySelect[] = 'calendar_events.[[calendarId]]';
-        $querySelect[] = 'calendar_events.[[postDate]]';
-        $querySelect[] = 'calendar_events.[[dateCreated]]';
-        $querySelect[] = 'calendar_events.[[dateUpdated]]';
-        $querySelect[] = 'calendar_events.[[startDate]]';
-        $querySelect[] = 'calendar_events.[[endDate]]';
-        $querySelect[] = 'calendar_events.[[freq]]';
-        $querySelect[] = 'calendar_events.[[count]]';
-        $querySelect[] = 'calendar_events.[[interval]]';
-        $querySelect[] = 'calendar_events.[[byDay]]';
-        $querySelect[] = 'calendar_events.[[byMonthDay]]';
-        $querySelect[] = 'calendar_events.[[byMonth]]';
-        $querySelect[] = 'calendar_events.[[byYearDay]]';
-        $querySelect[] = 'calendar_events.[[until]]';
-        $querySelect[] = 'calendars.[[allowRepeatingEvents]]';
-        $querySelect[] = 'elements_sites.[[siteId]]';
-
-        if ($isCraft4) {
-            $querySelect[] = 'content.[[title]]';
-        } else {
-            $querySelect[] = 'elements_sites.[[title]]';
-        }
-
-        $query = (new Query());
-        $query->select($querySelect);
-        $query->from(['subQuery' => $subQuery]);
-        $query->innerJoin(ElementRecord::tableName().' elements', 'elements.[[id]] = [[subQuery]].[[elementsId]]');
-        $query->innerJoin(ElementSiteSettingsRecord::tableName().' elements_sites', 'elements_sites.[[id]] = [[subQuery]].[[elementsSitesId]]');
-        $query->innerJoin(Event::tableName().' calendar_events', 'calendar_events.[[id]] = [[subQuery]].[[elementsId]]');
-        $query->innerJoin(CalendarRecord::tableName().' calendars', 'calendars.[[id]] = calendar_events.[[calendarId]]');
-
-        if ($isCraft4) {
-            $query->innerJoin(Table::CONTENT.' content', 'content.[[id]] = [[subQuery]].[[contentId]]');
-        }
-
-        return $query->all();
     }
 
     public function getLatestModificationDate(): string
@@ -378,28 +209,6 @@ class EventsService extends Component
         }
 
         return false;
-    }
-
-    /**
-     * Bumps all event recurrences by the given $amountOfDays
-     * E.g. - if the event repeats weekly on Tue and Fri, and it gets bumped by -1 day
-     *        the event would then repeat on Mon and Thu.
-     *        Bumping by 8 days would set it to Wed and Sat.
-     *
-     * @throws DateHelperException
-     */
-    public function bumpRecurrenceRule(Event $event, int $amountOfDays, int $amountOfMonths): void
-    {
-        if (!$event->repeats()) {
-            return;
-        }
-
-        $event->byDay = DateHelper::shiftByDays($event->byDay, $amountOfDays);
-        $event->byMonthDay = DateHelper::shiftByMonthDay($event->byMonthDay, $amountOfDays);
-
-        if ($amountOfMonths) {
-            $event->byMonth = DateHelper::shiftByMonth($event->byMonth, $amountOfMonths);
-        }
     }
 
     /**

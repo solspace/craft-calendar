@@ -11,11 +11,18 @@
 
 {% block content %}
 
-    <div id="calendar-app" data-time-format="{{ craft.calendar.formats.timeFormat('short') }}"
-         data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
-         data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
-         data-current-site-id="{{ selectedSiteId }}" data-current-day="{{ currentDay.toDateString }}"
-         data-site-map="{{ siteMap|json_encode }}" {{ isQuickCreateEnabled ? 'data-can-quick-create' }} {{ isMultiSite ? 'data-is-multi-site' }} {{ currentUser and currentUser.can('calendar-manageEvents') and calendarOptions is not empty ? 'data-can-edit-events' }}></div>
+    <div
+        id="calendar-app"
+        data-time-format="{{ craft.calendar.formats.timeFormat('short') }}"
+        data-overlap-threshold="{{ craft.calendar.settings.overlapThreshold }}"
+        data-first-day-of-week="{{ craft.calendar.settings.firstDayOfWeek }}"
+        data-current-site-id="{{ selectedSiteId }}"
+        data-current-day="{{ currentDay.toDateString }}"
+        data-site-map="{{ siteMap|json_encode }}"
+        {{ isQuickCreateEnabled ? 'data-can-quick-create' }}
+        {{ isMultiSite ? 'data-is-multi-site' }}
+        {{ currentUser and currentUser.can('calendar-manageEvents') and calendarOptions is not empty ? 'data-can-edit-events' }}
+    ></div>
+
 
 {% endblock %}
-

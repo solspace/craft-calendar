@@ -36,25 +36,18 @@ class SettingsController extends BaseController
         $canAccessCalendars = PermissionHelper::checkPermission(Calendar::PERMISSION_CALENDARS);
         $canAccessEvents = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS);
 
-        $isMonthView = Calendar::VIEW_MONTH === $defaultView;
-        $isWeekView = Calendar::VIEW_WEEK === $defaultView;
-        $isDayView = Calendar::VIEW_DAY === $defaultView;
         $isEventsView = Calendar::VIEW_EVENTS === $defaultView;
         $isCalendarsView = Calendar::VIEW_CALENDARS === $defaultView;
 
-        if ($isEventsView && !$canAccessEvents) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/view/'.Calendar::VIEW_MONTH));
+        if ($isEventsView && $canAccessEvents) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/events'));
         }
 
-        if ($isCalendarsView && !$canAccessCalendars) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/view/'.Calendar::VIEW_MONTH));
+        if ($isCalendarsView && $canAccessCalendars) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/calendars'));
         }
 
-        if ($isMonthView || $isWeekView || $isDayView) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/view/'.$defaultView));
-        }
-
-        return $this->redirect(UrlHelper::cpUrl('calendar/'.$defaultView));
+        return $this->redirect(UrlHelper::cpUrl('calendar'));
     }
 
     /**
