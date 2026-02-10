@@ -4,7 +4,6 @@
   "description": "Calendar plugin for Craft",
   "workspaces": [
     "packages/app",
-    "packages/event-builder",
     "packages/scripts",
     "packages/styles"
   ],
@@ -42,9 +41,8 @@
   "scripts": {
     "dev": "lerna run --parallel dev",
     "build": "lerna run --parallel build",
-    "format": "prettier --write '**/*.{ts,tsx,md,json,js,jsx,css,scss}'",
-    "format:verify": "prettier --list-different '**/*.{ts,tsx,md,json,js,jsx,css,scss}'",
     "lint": "lerna run --parallel lint",
+    "lint:fix": "lerna run --parallel lint:fix",
     "test": "lerna run test"
   },
   "author": "Solspace, Inc.",

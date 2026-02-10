@@ -6,8 +6,9 @@
     "build": "npm run clean && NODE_ENV=production npm run compile",
     "watch": "webpack --watch",
     "clean": "rm -rf ../plugin/src/Resources/js/scripts",
-    "lint": "eslint -c .eslintrc.json .",
     "compile": "webpack",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
     "test": "jest --maxWorkers=4"
   },
   "author": "Solspace Inc.",

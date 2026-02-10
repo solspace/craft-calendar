@@ -1,6 +1,6 @@
-import { buildEventPopup } from './popups';
+import { buildEventPopup } from "./popups";
 
-const $solspaceCalendar = $('#solspace-calendar');
+const $solspaceCalendar = $("#solspace-calendar");
 let $solspaceCalendarSpinner = null;
 
 /**
@@ -12,7 +12,7 @@ let $solspaceCalendarSpinner = null;
  */
 export const renderEvent = (event, element) => {
   if (event.allDay) {
-    element.addClass('fc-event-all-day');
+    element.addClass("fc-event-all-day");
   }
 
   if (!event.end) {
@@ -20,21 +20,21 @@ export const renderEvent = (event, element) => {
   }
 
   if (!event.multiDay && !event.allDay) {
-    element.addClass('fc-event-single-day');
-    const colorIcon = $('<span />')
-      .addClass('fc-color-icon')
-      .css('background-color', event.backgroundColor)
-      .css('border-color', event.borderColor);
-    $('.fc-content', element).prepend(colorIcon);
+    element.addClass("fc-event-single-day");
+    const colorIcon = $("<span />")
+      .addClass("fc-color-icon")
+      .css("background-color", event.backgroundColor)
+      .css("border-color", event.borderColor);
+    $(".fc-content", element).prepend(colorIcon);
   } else {
-    element.addClass('fc-event-multi-day');
+    element.addClass("fc-event-multi-day");
   }
 
   if (!event.enabled) {
-    element.addClass('fc-event-disabled');
+    element.addClass("fc-event-disabled");
   }
 
-  element.addClass('fc-color-' + event.textColor);
+  element.addClass(`fc-color-${event.textColor}`);
 
   const { timeFormat, isMultiSite } = $solspaceCalendar.data();
 
@@ -51,12 +51,12 @@ export const today = new moment();
  */
 export const renderDay = (date, cell) => {
   const dayNumberElement = cell
-    .parents('.fc-bg:first')
-    .siblings('.fc-content-skeleton')
-    .find('thead > tr > td:eq(' + cell.index() + ')');
+    .parents(".fc-bg:first")
+    .siblings(".fc-content-skeleton")
+    .find(`thead > tr > td:eq(${cell.index()})`);
 
   const link = getDayViewLink(date);
-  const anchor = $('<a />').attr('href', link).html(dayNumberElement.html());
+  const anchor = $("<a />").attr("href", link).html(dayNumberElement.html());
 
   dayNumberElement.html(anchor);
 };
@@ -67,35 +67,35 @@ export const renderDay = (date, cell) => {
  * @param element
  */
 export const renderView = (view, element) => {
-  const calendar = element.parents('#solspace-calendar');
-  const currentDate = new moment(calendar.data('current-day'));
+  const calendar = element.parents("#solspace-calendar");
+  const currentDate = new moment(calendar.data("current-day"));
 
-  if (view.name === 'agendaWeek') {
-    const $weekRows = $('.fc-day-header.fc-widget-header', element);
+  if (view.name === "agendaWeek") {
+    const $weekRows = $(".fc-day-header.fc-widget-header", element);
 
     $weekRows.each(function () {
       let content = $(this).html();
-      const dateParts = content.split(' ');
+      const dateParts = content.split(" ");
 
-      content = dateParts[0] + ' <span>' + dateParts[1] + '</span>';
+      content = `${dateParts[0]} <span>${dateParts[1]}</span>`;
 
-      const date = new moment($(this).data('date'));
+      const date = new moment($(this).data("date"));
       const link = getDayViewLink(date);
 
-      const $anchor = $('<a />').attr('href', link).html(content);
+      const $anchor = $("<a />").attr("href", link).html(content);
 
-      if (currentDate.format('YYYYMMDD') === date.format('YYYYMMDD')) {
-        $anchor.addClass('fc-title-today');
+      if (currentDate.format("YYYYMMDD") === date.format("YYYYMMDD")) {
+        $anchor.addClass("fc-title-today");
       }
 
       $(this).html($anchor);
     });
   }
 
-  $('.fc-localeButton-button', $solspaceCalendar).addClass('menubtn btn');
+  $(".fc-localeButton-button", $solspaceCalendar).addClass("menubtn btn");
 
-  if (view.name === 'agendaDay') {
-    $('thead.fc-head', element).remove();
+  if (view.name === "agendaDay") {
+    $("thead.fc-head", element).remove();
   }
 };
 
@@ -109,28 +109,28 @@ export const renderView = (view, element) => {
  */
 export const eventRepositioned = (modification, event, delta, revertFunc) => {
   $.ajax({
-    url: Craft.getCpUrl('calendar/events/api/modify-' + modification),
-    type: 'post',
-    dataType: 'json',
+    url: Craft.getCpUrl(`calendar/events/api/modify-${modification}`),
+    type: "post",
+    dataType: "json",
     data: {
       eventId: event.id,
       siteId: event.site.id,
       isAllDay: event.allDay,
       startDate: event.start.toISOString(),
       endDate: event.end ? event.end.toISOString() : null,
-      deltaSeconds: parseInt(delta.as('seconds'), 10),
+      deltaSeconds: parseInt(delta.as("seconds"), 10),
       [Craft.csrfTokenName]: Craft.csrfTokenValue,
     },
-    success: function (response) {
+    success: (response) => {
       if (response.error) {
         revertFunc();
       } else {
         if (event.repeats) {
-          $calendar.fullCalendar('refetchEvents');
+          $calendar.fullCalendar("refetchEvents");
         }
       }
     },
-    error: function () {
+    error: () => {
       revertFunc();
     },
   });
@@ -144,7 +144,7 @@ export const eventRepositioned = (modification, event, delta, revertFunc) => {
  * @param revertFunc
  */
 export const eventDateChange = (event, delta, revertFunc) => {
-  eventRepositioned('date', event, delta, revertFunc);
+  eventRepositioned("date", event, delta, revertFunc);
 };
 
 /**
@@ -155,7 +155,7 @@ export const eventDateChange = (event, delta, revertFunc) => {
  * @param revertFunc
  */
 export const eventDurationChange = (event, delta, revertFunc) => {
-  eventRepositioned('duration', event, delta, revertFunc);
+  eventRepositioned("duration", event, delta, revertFunc);
 };
 
 /**
@@ -164,7 +164,7 @@ export const eventDurationChange = (event, delta, revertFunc) => {
  * @param event
  */
 export const eventClick = (event) => {
-  window.location.href = Craft.getCpUrl('calendar/events/' + event.id + '/' + event.site.handle);
+  window.location.href = Craft.getCpUrl(`calendar/events/${event.id}/${event.site.handle}`);
 };
 
 /**
@@ -176,14 +176,14 @@ export const eventClick = (event) => {
  */
 export const getDayViewLink = (date) => {
   if (date.isValid()) {
-    const year = date.format('YYYY');
-    const month = date.format('MM');
-    const day = date.format('DD');
+    const year = date.format("YYYY");
+    const month = date.format("MM");
+    const day = date.format("DD");
 
-    return Craft.getCpUrl('calendar/view/day/' + year + '/' + month + '/' + day);
+    return Craft.getCpUrl(`calendar/view/day/${year}/${month}/${day}`);
   }
 
-  return '';
+  return "";
 };
 
 /**
@@ -194,14 +194,14 @@ export const getDayViewLink = (date) => {
  * @param timezone
  * @param callback
  */
-export const getEvents = (start, end, timezone, callback) => {
-  getSpinner().fadeIn('fast');
+export const getEvents = (start, end, _timezone, callback) => {
+  getSpinner().fadeIn("fast");
 
-  const $calendarList = $('ul.calendar-list');
+  const $calendarList = $("ul.calendar-list");
 
-  let calendarIds = '*';
+  let calendarIds = "*";
   if ($calendarList.length) {
-    calendarIds = $('input:checked', $calendarList)
+    calendarIds = $("input:checked", $calendarList)
       .map(function () {
         return $(this).val();
       })
@@ -209,24 +209,24 @@ export const getEvents = (start, end, timezone, callback) => {
       .join();
   }
 
-  const { currentSiteId } = $('#solspace-calendar').data();
-  const $calendarFilters = $('form.calendar-filters');
+  const { currentSiteId } = $("#solspace-calendar").data();
+  const $calendarFilters = $("form.calendar-filters");
 
   const dataArray = [
     ...$calendarFilters.serializeArray(),
-    { name: 'rangeStart', value: start.toISOString() },
-    { name: 'rangeEnd', value: end.toISOString() },
-    { name: 'calendars', value: calendarIds },
-    { name: 'siteId', value: currentSiteId },
+    { name: "rangeStart", value: start.toISOString() },
+    { name: "rangeEnd", value: end.toISOString() },
+    { name: "calendars", value: calendarIds },
+    { name: "siteId", value: currentSiteId },
     { name: [Craft.csrfTokenName], value: Craft.csrfTokenValue },
   ];
 
   $.ajax({
-    url: Craft.getCpUrl('calendar/month'),
+    url: Craft.getCpUrl("calendar/month"),
     data: $.param(dataArray),
-    type: 'post',
-    dataType: 'json',
-    success: function (eventList) {
+    type: "post",
+    dataType: "json",
+    success: (eventList) => {
       const events = eventList.map((item) => {
         const event = { ...item };
 
@@ -240,7 +240,7 @@ export const getEvents = (start, end, timezone, callback) => {
       });
 
       callback(events);
-      getSpinner().fadeOut('fast');
+      getSpinner().fadeOut("fast");
     },
   });
 };
@@ -250,7 +250,7 @@ export const getEvents = (start, end, timezone, callback) => {
  */
 export const closeAllQTips = () => {
   window.qTipsEnabled = false;
-  $('div.qtip:visible').qtip('hide');
+  $("div.qtip:visible").qtip("hide");
 };
 
 export const enableQTips = () => {
@@ -260,9 +260,9 @@ export const enableQTips = () => {
 export const getSpinner = () => {
   if (!$solspaceCalendarSpinner) {
     $solspaceCalendar
-      .find('.fc-right')
+      .find(".fc-right")
       .prepend('<div id="solspace-calendar-spinner" class="spinner" style="display: none;"></div>');
-    $solspaceCalendarSpinner = $('#solspace-calendar-spinner');
+    $solspaceCalendarSpinner = $("#solspace-calendar-spinner");
   }
 
   return $solspaceCalendarSpinner;

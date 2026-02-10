@@ -2,8 +2,8 @@ import { eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { FC } from "react";
 import { useSelector } from "react-redux";
 import { Frequency } from "rrule";
-import { ByMonth } from "./custom.bymonth";
 import { ByDay } from "./custom.byday";
+import { ByMonth } from "./custom.bymonth";
 import { ByWeek } from "./custom.byweek";
 import { ByYear } from "./custom.byyear";
 

@@ -8,11 +8,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "types": ["node", "jquery"],
-    "typeRoots": [
-      "config/@types",
-      "./node_modules/@types",
-      "../../node_modules/@types"
-    ],
+    "typeRoots": ["config/@types", "./node_modules/@types", "../../node_modules/@types"],
     "paths": {
       "@cal/*": ["app/src/*"],
       "@config/*": ["app/config/*"]

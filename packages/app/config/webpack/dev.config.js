@@ -55,8 +55,7 @@ export default merge(baseConfig, {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "X-Requested-With, content-type, Authorization",
+      "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization",
     },
     static: {
       directory: clientDir,
@@ -75,10 +74,7 @@ export default merge(baseConfig, {
             loader: "ts-loader",
             options: {
               getCustomTransformers: () => ({
-                before: [
-                  ReactRefreshTypeScript(),
-                  createStyledComponentsTransformer.default(),
-                ],
+                before: [ReactRefreshTypeScript(), createStyledComponentsTransformer.default()],
               }),
               configFile: resolve(__dirname, "../../tsconfig.build.json"),
               transpileOnly: true,

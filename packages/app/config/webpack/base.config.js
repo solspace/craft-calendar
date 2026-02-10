@@ -8,10 +8,7 @@ module.exports = {
 
   entry: {
     app: path.resolve(__dirname, "../../src/index.tsx"),
-    "event-builder": path.resolve(
-      __dirname,
-      "../../src/event-builder/index.tsx",
-    ),
+    "event-builder": path.resolve(__dirname, "../../src/event-builder/index.tsx"),
   },
   output: {
     filename: "[name].js",
@@ -49,9 +46,7 @@ module.exports = {
   devtool: false,
   plugins: [
     new webpack.DefinePlugin({
-      "process.env.DEBUG_MODE": JSON.stringify(
-        process.env.NODE_ENV === "development",
-      ),
+      "process.env.DEBUG_MODE": JSON.stringify(process.env.NODE_ENV === "development"),
     }),
     new webpack.ProvidePlugin({ React: "react" }),
   ],
@@ -59,8 +54,7 @@ module.exports = {
   ignoreWarnings: [
     {
       module: /react-datepicker\/dist\/index\.es\.js$/,
-      message:
-        /Critical dependency: the request of a dependency is an expression/,
+      message: /Critical dependency: the request of a dependency is an expression/,
     },
   ],
 

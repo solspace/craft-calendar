@@ -1,8 +1,7 @@
-const CHAR_LIST =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const CHAR_LIST = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 export const generateRandomHash = (length: number = 8): string => {
-  let result = '';
+  let result = "";
   const charactersLength = CHAR_LIST.length;
 
   let counter = 0;

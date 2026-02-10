@@ -5,8 +5,8 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
   buttonGroup: null,
 
   init: function (elementType, $container, settings) {
-    this.on('selectSource', $.proxy(this, 'updateButton'));
-    this.on('selectSite', $.proxy(this, 'updateButton'));
+    this.on("selectSource", $.proxy(this, "updateButton"));
+    this.on("selectSite", $.proxy(this, "updateButton"));
     this.base(elementType, $container, settings);
   },
 
@@ -23,27 +23,27 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
 
     const currentSource = this.$source;
     const { id, name, handle, key } = currentSource.data();
-    const isCalendarSource = typeof key === 'string' && key.indexOf('calendar:') === 0;
-    const isAllEventsSource = key === '*' || !isCalendarSource;
+    const isCalendarSource = typeof key === "string" && key.indexOf("calendar:") === 0;
+    const isAllEventsSource = key === "*" || !isCalendarSource;
 
     const sources = this.getValidSources().filter((item) => item.id !== id);
 
-    const buttonGroup = $('<div />', { class: 'btngroup submit' });
+    const buttonGroup = $("<div />", { class: "btngroup submit" });
 
-    let menu = this.createMenuList(sources);
+    const menu = this.createMenuList(sources);
     let label, href;
-    let menuClass = 'btn submit';
+    let menuClass = "btn submit";
 
     if (isAllEventsSource) {
-      label = Craft.t('calendar', 'New Event');
-      menuClass += ' add icon menubtn';
+      label = Craft.t("calendar", "New Event");
+      menuClass += " add icon menubtn";
     } else {
-      label = Craft.t('calendar', 'New {calendar} Event', { calendar: name });
-      menuClass += ' add icon';
+      label = Craft.t("calendar", "New {calendar} Event", { calendar: name });
+      menuClass += " add icon";
       href = this.getSourceUrl(handle);
     }
 
-    const menuButton = $('<a />', {
+    const menuButton = $("<a />", {
       class: menuClass,
       href,
       text: Craft.escapeHtml(label),
@@ -53,7 +53,7 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
 
     let menuTarget = menuButton;
     if (!isAllEventsSource && sources.length > 0) {
-      menuTarget = $('<div />', { class: 'btn submit menubtn' }).insertBefore(menu);
+      menuTarget = $("<div />", { class: "btn submit menubtn" }).insertBefore(menu);
     }
 
     new Garnish.MenuBtn(menuTarget);
@@ -69,18 +69,18 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
   },
 
   createMenuList(sources) {
-    const menu = $('<div />', { class: 'menu' });
-    const list = $('<ul />').appendTo(menu);
+    const menu = $("<div />", { class: "menu" });
+    const list = $("<ul />").appendTo(menu);
 
     for (let i = 0; i < sources.length; i++) {
       const { name, handle, color } = sources[i];
-      const listItem = $('<li />');
+      const listItem = $("<li />");
 
-      $('<a />', {
+      $("<a />", {
         href: this.getSourceUrl(handle),
         text: Craft.escapeHtml(name),
       })
-        .prepend($('<span />', { class: 'color-indicator' }).css({ backgroundColor: color }))
+        .prepend($("<span />", { class: "color-indicator" }).css({ backgroundColor: color }))
         .appendTo(listItem);
 
       listItem.appendTo(list);
@@ -94,11 +94,11 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
     const validSources = [];
     for (let i = 0; i < sources.length; i++) {
       const source = $(sources[i]);
-      const { key, id, handle, name, color, sites = '' } = source.data();
+      const { key, id, handle, name, color, sites = "" } = source.data();
 
-      if (key === '*') continue;
+      if (key === "*") continue;
 
-      let siteMap = `${sites}`.split(',').map((item) => parseInt(item));
+      const siteMap = `${sites}`.split(",").map((item) => parseInt(item, 10));
 
       // Disregard sources for sites that are not currently selected
       if (siteMap.indexOf(this.siteId) === -1) continue;
@@ -121,4 +121,4 @@ Craft.EventIndex = Craft.BaseElementIndex.extend({
 });
 
 // Register it!
-Craft.registerElementIndexClass('Solspace\\Calendar\\Elements\\Event', Craft.EventIndex);
+Craft.registerElementIndexClass("Solspace\\Calendar\\Elements\\Event", Craft.EventIndex);

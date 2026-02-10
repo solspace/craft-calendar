@@ -8,9 +8,7 @@ import { EventBuilderWrapper } from "./event-builder.styles";
 import { eventSelectors } from "./store/event.slice";
 
 export const EventBuilder: FC = () => {
-  const { start, end, until, allDay, rrule, repeatType, repeatEndType } = useSelector(
-    eventSelectors.state,
-  );
+  const { rrule } = useSelector(eventSelectors.state);
 
   const isDebug = useMemo(isDebugMode, []);
   const occurrences = rrule

@@ -1,33 +1,30 @@
 declare const Craft: {
-	t(category: string, string: string, params: Params): string;
+  t(category: string, string: string, params: Params): string;
 };
 
 interface Params {
-	[key: string]: string | number | boolean;
+  [key: string]: string | number | boolean;
 }
 
 export const replace = (string: string, params: Params = {}): string => {
-	for (const [key, value] of Object.entries(params)) {
-		const pattern = new RegExp("\\{" + key + "\\}", "g");
-		string = string.replace(pattern, value.toString());
-	}
+  for (const [key, value] of Object.entries(params)) {
+    const pattern = new RegExp(`\\{${key}\\}`, "g");
+    string = string.replace(pattern, value.toString());
+  }
 
-	return string;
+  return string;
 };
 
-export const translate = (
-	string: string | undefined | null,
-	params: Params = {},
-): string => {
-	if (!string) {
-		return "";
-	}
+export const translate = (string: string | undefined | null, params: Params = {}): string => {
+  if (!string) {
+    return "";
+  }
 
-	if (typeof Craft !== "undefined") {
-		return Craft.t("calendar", string, params);
-	}
+  if (typeof Craft !== "undefined") {
+    return Craft.t("calendar", string, params);
+  }
 
-	return replace(string, params);
+  return replace(string, params);
 };
 
 export default translate;

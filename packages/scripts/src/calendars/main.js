@@ -7,8 +7,6 @@ const $calendar = $("#solspace-calendar");
 const $miniCal = $("#calendar-mini-cal");
 
 $(() => {
-  "use strict";
-
   const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek, timeFormat } =
     $calendar.data();
   let { currentSiteId, canEditEvents, canQuickCreate, isMultiSite } = $calendar.data();
@@ -32,11 +30,11 @@ $(() => {
     },
   };
 
-  let customButtons = {
+  const customButtons = {
     datepicker: {
       text: Craft.t("calendar", "Pick a Date"),
       icon: "calendar",
-      click: function () {
+      click: () => {
         const button = $(".fc-datepicker-button:first");
         const { top, left } = button.offset();
         const height = button.outerHeight();
@@ -44,7 +42,7 @@ $(() => {
         button.datepicker(
           "dialog",
           $calendar.fullCalendar("getDate").format("YYYY-MM-DD"),
-          function (input) {
+          (input) => {
             const viewType = $calendar.fullCalendar("getView").type;
             // eslint-disable-next-line no-unused-vars
             const [_, year, month, date] = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input);
@@ -60,9 +58,7 @@ $(() => {
                 break;
             }
 
-            const url = Craft.getCpUrl(
-              "calendar/view/" + view + "/" + year + "/" + month + "/" + date,
-            );
+            const url = Craft.getCpUrl(`calendar/view/${view}/${year}/${month}/${date}`);
             history.pushState("data", "", url);
             $calendar.fullCalendar("gotoDate", input);
           },
@@ -70,12 +66,14 @@ $(() => {
           [left, top + height],
         );
 
-        $("#ui-datepicker-div.ui-datepicker-dialog + input[id^=dp]").css({ visibility: "hidden" });
+        $("#ui-datepicker-div.ui-datepicker-dialog + input[id^=dp]").css({
+          visibility: "hidden",
+        });
       },
     },
     refresh: {
       text: Craft.t("calendar", "Refresh"),
-      click: function () {
+      click: () => {
         $calendar.fullCalendar("refetchEvents");
       },
     },
@@ -88,17 +86,17 @@ $(() => {
   };
 
   if (isMultiSite) {
-    customButtons["siteButton"] = {
+    customButtons.siteButton = {
       text: siteMap[currentSiteId],
-      click: function (event) {
+      click: (event) => {
         const siteButton = $(".fc-siteButton-button", $calendar);
 
         if (siteButton.data("initialized") === undefined) {
           const $menu = $("<div>", { class: "menu" }).insertAfter(event.currentTarget);
           const $siteUl = $("<ul>").appendTo($menu);
 
-          for (let key in siteMap) {
-            if (!siteMap.hasOwnProperty(key)) {
+          for (const key in siteMap) {
+            if (!Object.hasOwn(siteMap, key)) {
               continue;
             }
 
@@ -113,7 +111,7 @@ $(() => {
           }
 
           new Garnish.MenuBtn(event.currentTarget, {
-            onOptionSelect: function (target) {
+            onOptionSelect: (target) => {
               const siteId = $(target).data("site-id");
 
               $calendar.data("current-site-id", siteId);
@@ -133,7 +131,7 @@ $(() => {
     now: new Date(),
     defaultDate: currentDay,
     defaultView: $calendar.data("view"),
-    nextDayThreshold: "0" + overlapThreshold + ":00:01",
+    nextDayThreshold: `0${overlapThreshold}:00:01`,
     fixedWeekCount: false,
     showNonCurrentDates: true,
     eventLimit: 5,
@@ -169,7 +167,7 @@ $(() => {
   }
 
   $(".fc-next-button, .fc-prev-button, .fc-today-button", $calendar).on({
-    click: function () {
+    click: () => {
       const viewType = $calendar.fullCalendar("getView").type;
       const date = $calendar.fullCalendar("getDate");
 
@@ -188,7 +186,7 @@ $(() => {
           break;
       }
 
-      const url = Craft.getCpUrl("calendar/view/" + view + "/" + year + "/" + month + "/" + day);
+      const url = Craft.getCpUrl(`calendar/view/${view}/${year}/${month}/${day}`);
 
       history.pushState("data", "", url);
     },
@@ -197,18 +195,18 @@ $(() => {
   $(".alert-dismissible a.close").on({
     click: function () {
       const $alert = $(this).parents(".alert:first");
-      Craft.postActionRequest("calendar/view/dismiss-demo-alert", {}, function () {
+      Craft.postActionRequest("calendar/view/dismiss-demo-alert", {}, () => {
         $alert.remove();
       });
     },
   });
 
   $(".calendar-list input").on({
-    change: function () {
+    change: () => {
       const storageData = {};
 
       $("ul.calendar-list input")
-        .map(function () {
+        .forEach(function () {
           storageData[$(this).val()] = $(this).is(":checked");
         })
         .get()
@@ -217,8 +215,8 @@ $(() => {
       localStorage.setItem(selectedCalendarsStorageKey, JSON.stringify(storageData));
 
       const usedCalendarIds = [];
-      for (let key in storageData) {
-        if (!storageData.hasOwnProperty(key)) {
+      for (const key in storageData) {
+        if (!Object.hasOwn(storageData, key)) {
           continue;
         }
 
@@ -234,7 +232,7 @@ $(() => {
   });
 
   $(".calendar-filters").on({
-    change: function () {
+    change: () => {
       $miniCal.fullCalendar("refetchEvents");
       $calendar.fullCalendar("refetchEvents");
     },
@@ -260,7 +258,7 @@ if (selectedCalendars !== null) {
   const usedCalendarIds = [];
   const allCalendarIds = $("ul.calendar-list input")
     .map(function () {
-      return parseInt($(this).val());
+      return parseInt($(this).val(), 10);
     })
     .get();
 

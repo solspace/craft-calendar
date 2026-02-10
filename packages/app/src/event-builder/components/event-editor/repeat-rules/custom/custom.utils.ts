@@ -17,7 +17,13 @@ export const weekdayChoices: WeekdayChoice[] = [
   {
     value: "WD",
     label: "Weekday (Mon-Fri)",
-    days: [RRule.MO.weekday, RRule.TU.weekday, RRule.WE.weekday, RRule.TH.weekday, RRule.FR.weekday],
+    days: [
+      RRule.MO.weekday,
+      RRule.TU.weekday,
+      RRule.WE.weekday,
+      RRule.TH.weekday,
+      RRule.FR.weekday,
+    ],
   },
   { value: "WEK", label: "Weekend Day (Sat/Sun)", days: [RRule.SA.weekday, RRule.SU.weekday] },
 ];

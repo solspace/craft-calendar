@@ -11,6 +11,7 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Solspace\Calendar\Resources\Bundles\EventIndexBundle;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -57,7 +58,7 @@ class EventsController extends BaseController
     /**
      * @throws HttpException
      * @throws SiteNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Exception
      * @throws InvalidConfigException
      */
     public function actionCreateEvent(?string $handle = null): Response
