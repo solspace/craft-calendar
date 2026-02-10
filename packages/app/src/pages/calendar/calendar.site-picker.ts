@@ -1,11 +1,12 @@
+import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { useMemo, useState } from "react";
-import type { CustomButtonInput, GetCalendarApi, SiteMap } from "./calendar.types";
+import type { CustomButtonInput, SiteMap } from "./calendar.types";
 
 type UseSitePickerProps = {
   $calendar: JQuery<HTMLElement>;
   currentSiteId: string | null;
   siteMap: SiteMap;
-  getApi: GetCalendarApi;
+  api: CalendarApi;
 };
 
 type UseSitePickerResult = {
@@ -17,15 +18,14 @@ export const useSitePicker = ({
   $calendar,
   currentSiteId,
   siteMap,
-  getApi,
+  api,
 }: UseSitePickerProps): UseSitePickerResult => {
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(currentSiteId);
   const siteEntries = useMemo(() => Object.entries(siteMap), [siteMap]);
   const hasSitePicker = siteEntries.length > 1;
 
-  const sitePickerText = selectedSiteId
-    ? (siteMap[selectedSiteId] ?? Craft.t("calendar", "Site Picker"))
-    : Craft.t("calendar", "Site Picker");
+  const hasSite = selectedSiteId && !!siteMap[selectedSiteId];
+  const sitePickerText = hasSite ? siteMap[selectedSiteId] : Craft.t("calendar", "Site Picker");
 
   const sitePickerButton = useMemo<CustomButtonInput | undefined>(() => {
     if (!hasSitePicker) {
@@ -62,7 +62,7 @@ export const useSitePicker = ({
 
               $calendar.data("current-site-id", siteId);
               setSelectedSiteId(siteId);
-              getApi()?.refetchEvents();
+              api.refetchEvents();
             },
           }).showMenu();
 
@@ -70,7 +70,7 @@ export const useSitePicker = ({
         }
       },
     };
-  }, [hasSitePicker, siteEntries, sitePickerText, $calendar, getApi]);
+  }, [hasSitePicker, siteEntries, sitePickerText, $calendar, api]);
 
   return { hasSitePicker, sitePickerButton };
 };

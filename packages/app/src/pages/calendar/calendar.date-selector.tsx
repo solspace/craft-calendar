@@ -1,18 +1,14 @@
 import { format } from "date-fns";
 import { type FC, type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import DatePickerControl from "react-datepicker";
-import type {
-  CustomButtonInput,
-  DatePickerPosition,
-  GetCalendarApi,
-  WeekStartDay,
-} from "./calendar.types";
+import type { CustomButtonInput, DatePickerPosition, WeekStartDay } from "./calendar.types";
 
 import "react-datepicker/dist/react-datepicker.css";
+import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { useViewSettings, type View } from "./calendar.persistence";
 
 type UseDateSelectorProps = {
-  getApi: GetCalendarApi;
+  api: CalendarApi;
   weekStartDay: WeekStartDay;
 };
 
@@ -67,7 +63,7 @@ const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
 };
 
 export const useDateSelector = ({
-  getApi,
+  api,
   weekStartDay,
 }: UseDateSelectorProps): UseDateSelectorResult => {
   const { view } = useViewSettings();
@@ -88,10 +84,6 @@ export const useDateSelector = ({
 
     const closeOnOutsideInteraction = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
-      if (!target) {
-        return;
-      }
-
       if (popoverRef.current?.contains(target)) {
         return;
       }
@@ -124,11 +116,6 @@ export const useDateSelector = ({
         return;
       }
 
-      const api = getApi();
-      if (!api) {
-        return;
-      }
-
       const url = Craft.getCpUrl(`calendar/${format(date, "yyyy/MM/dd")}`);
 
       history.pushState("data", "", url);
@@ -137,16 +124,11 @@ export const useDateSelector = ({
       setSelectedDate(date);
       closeDateSelector();
     },
-    [closeDateSelector, getApi],
+    [closeDateSelector, api],
   );
 
   const onDatePickerButtonClick = useCallback(
     (_event: MouseEvent, element: HTMLElement) => {
-      const api = getApi();
-      if (!api) {
-        return;
-      }
-
       const { bottom, right } = element.getBoundingClientRect();
 
       setSelectedDate(api.getDate());
@@ -156,7 +138,7 @@ export const useDateSelector = ({
         left: right,
       });
     },
-    [getApi],
+    [api],
   );
 
   const dateSelector =
@@ -172,11 +154,11 @@ export const useDateSelector = ({
     ) : null;
 
   return {
+    dateSelector,
     datePickerButton: {
       text: Craft.t("calendar", "Pick a Date"),
       icon: "datepicker",
       click: onDatePickerButtonClick,
     },
-    dateSelector,
   };
 };

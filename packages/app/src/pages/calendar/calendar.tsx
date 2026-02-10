@@ -22,52 +22,50 @@ export const Calendar: FC = () => {
   );
 
   const calendar = useRef<FullCalendar>(null);
-  const getApi = useCallback(() => calendar.current?.getApi(), []);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: The dependency is needed to get the latest calendar instance for the API.
+  const getApi = useCallback(() => calendar.current?.getApi(), [calendar.current]);
+  const api = useMemo(() => getApi(), [getApi]);
 
   const { hasSitePicker, sitePickerButton } = useSitePicker({
     $calendar,
     currentSiteId,
     siteMap,
-    getApi,
+    api,
   });
 
   const { datePickerButton, dateSelector } = useDateSelector({
-    getApi,
+    api,
     weekStartDay,
   });
 
   const changeUrl = useCallback(() => {
-    const api = getApi();
-    if (!api) {
-      return;
-    }
-
     const url = Craft.getCpUrl(`calendar/${format(api.getDate(), "yyyy/MM/dd")}`);
     history.pushState("data", "", url);
-  }, [getApi]);
+  }, [api]);
 
   const customButtons = useMemo(
     () =>
       createCustomButtons({
         onPrev: () => {
-          getApi()?.prev();
+          api.prev();
           changeUrl();
         },
         onNext: () => {
-          getApi()?.next();
+          api.next();
           changeUrl();
         },
         onToday: () => {
-          getApi()?.today();
+          api.today();
           changeUrl();
         },
         onRefresh: () => {
-          getApi()?.refetchEvents();
+          api.refetchEvents();
         },
         datePickerButton,
         sitePickerButton,
       }),
-    [datePickerButton, getApi, sitePickerButton, changeUrl],
+    [datePickerButton, api, sitePickerButton, changeUrl],
   );
 
   return (
@@ -83,6 +81,7 @@ export const Calendar: FC = () => {
         eventClick={console.log}
         dateClick={console.log}
         events={calendarEvents}
+        eventChange={console.log}
         headerToolbar={{
           start: "title",
           center: "dayGridMonth,timeGridWeek,timeGridDay",
@@ -93,7 +92,6 @@ export const Calendar: FC = () => {
             setView(view.type as View);
           }, 50);
         }}
-        eventChange={console.log}
       />
 
       {dateSelector}
