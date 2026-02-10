@@ -1,5 +1,4 @@
-@import '../shared/mixins';
-@import '../calendars/calendar';
+@use '../shared/mixins';
 
 div.fc.fc-unthemed {
   .fc-left h2 {

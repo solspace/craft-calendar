@@ -1,8 +1,8 @@
-@import '../shared/mixins';
+@use '../shared/mixins';
 
 .preferences-wrapper {
   .row {
-    @include clearfix;
+    @include mixins.clearfix;
 
     > .field {
       width: 49%;

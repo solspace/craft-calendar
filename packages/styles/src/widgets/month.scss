@@ -1,4 +1,5 @@
-@import '../shared/mixins';
+@use "sass:color";
+@use '../shared/mixins';
 
 /* MINI CALENDAR */
 
@@ -85,11 +86,10 @@
 
       &.fc-has-event {
         background-color: #cfd8e3;
-        @include border-radius(1px);
+        border-radius: 1px;
       }
-
       &:hover {
-        background-color: darken($color, 10%);
+        background-color: color.adjust($color, $lightness: -10%);
         color: #fff;
       }
 
@@ -99,7 +99,7 @@
         background-color: $color;
 
         &:hover {
-          background-color: darken($color, 10%);
+          background-color: color.adjust($color, $lightness: -10%);
           color: #ffffff;
         }
       }
@@ -140,7 +140,7 @@
     button.fc-button {
       background: transparent none;
       text-shadow: none;
-      @include box-shadow(none);
+      box-shadow: none;
       border: none;
 
       &,

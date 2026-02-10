@@ -1,4 +1,4 @@
-@import 'mixins';
+@use 'mixins';
 
 .ui-timepicker-with-duration .ui-timepicker-list {
   width: 14em;
@@ -10,7 +10,7 @@
       display: block;
       width: 26px;
 
-      @include border-radius(2px);
+      border-radius: 2px;
 
       line-height: 26px;
       text-align: center;

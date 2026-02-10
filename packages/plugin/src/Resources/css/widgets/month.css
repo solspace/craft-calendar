@@ -62,12 +62,10 @@
 }
 .calendar-mini-cal .fc-content-skeleton td.fc-has-event {
   background-color: #cfd8e3;
-  -webkit-border-radius: 1px;
-  -moz-border-radius: 1px;
   border-radius: 1px;
 }
 .calendar-mini-cal .fc-content-skeleton td:hover {
-  background-color: #5f656f;
+  background-color: rgb(95.2648221344, 100.9644268775, 110.7351778656);
   color: #fff;
 }
 .calendar-mini-cal .fc-content-skeleton td.fc-today {
@@ -75,7 +73,7 @@
   background-color: #e5422b;
 }
 .calendar-mini-cal .fc-content-skeleton td.fc-today:hover {
-  background-color: #c52e18;
+  background-color: rgb(196.8571428571, 45.5, 24.1428571429);
   color: #ffffff;
 }
 .calendar-mini-cal .fc-content-skeleton td:hover {
@@ -101,8 +99,6 @@
 .calendar-mini-cal .fc-toolbar button.fc-button {
   background: transparent none;
   text-shadow: none;
-  -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
   border: none;
 }

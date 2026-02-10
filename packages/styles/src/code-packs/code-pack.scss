@@ -1,8 +1,7 @@
-@import '../shared/mixins';
-@import '../shared/flexbox';
+@use '../shared/mixins';
 
 #components-wrapper {
-  @include clearfix;
+  @include mixins.clearfix;
   margin: 25px -10px 0;
 
   > div {
@@ -55,7 +54,7 @@ ul.directory-structure {
 
   &.routes {
     > li {
-      @include clearfix;
+      @include mixins.clearfix;
 
       .route {
         float: left;
@@ -87,7 +86,7 @@ ul.directory-structure {
 ul.section-structure {
   > li {
     padding-left: 10px;
-    @include clearfix;
+    @include mixins.clearfix;
     @extend %bordered-padding;
 
     > div {
