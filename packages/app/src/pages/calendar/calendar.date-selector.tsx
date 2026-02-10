@@ -2,22 +2,22 @@ import { format } from "date-fns";
 import { type FC, type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import DatePickerControl from "react-datepicker";
 import type {
+  CustomButtonInput,
   DatePickerPosition,
   GetCalendarApi,
-  MacroCustomButtonInput,
   WeekStartDay,
-} from "./macro.types";
+} from "./calendar.types";
 
 import "react-datepicker/dist/react-datepicker.css";
-import { useMacroViewSettings, type View } from "./macro.persistence";
+import { useViewSettings, type View } from "./calendar.persistence";
 
-type UseMacroDateSelectorProps = {
+type UseDateSelectorProps = {
   getApi: GetCalendarApi;
   weekStartDay: WeekStartDay;
 };
 
-type UseMacroDateSelectorResult = {
-  datePickerButton: MacroCustomButtonInput;
+type UseDateSelectorResult = {
+  datePickerButton: CustomButtonInput;
   dateSelector: ReactElement | null;
 };
 
@@ -66,11 +66,11 @@ const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
   );
 };
 
-export const useMacroDateSelector = ({
+export const useDateSelector = ({
   getApi,
   weekStartDay,
-}: UseMacroDateSelectorProps): UseMacroDateSelectorResult => {
-  const { view } = useMacroViewSettings();
+}: UseDateSelectorProps): UseDateSelectorResult => {
+  const { view } = useViewSettings();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<DatePickerPosition | null>(null);

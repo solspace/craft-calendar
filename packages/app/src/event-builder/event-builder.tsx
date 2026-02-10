@@ -1,5 +1,6 @@
+import { isDebugMode } from "@cal/utils/debug";
 import { format } from "date-fns";
-import type { FC } from "react";
+import { type FC, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { rrulestr } from "rrule";
 import { EventEditor } from "./components/event-editor/event.editor";
@@ -11,6 +12,7 @@ export const EventBuilder: FC = () => {
     eventSelectors.state,
   );
 
+  const isDebug = useMemo(isDebugMode, []);
   const occurrences = rrule
     ? rrulestr(rrule)
         .all((_, i) => i < 10)
@@ -21,10 +23,12 @@ export const EventBuilder: FC = () => {
     <EventBuilderWrapper>
       <EventEditor />
 
-      <code>
-        <pre>{rrule}</pre>
-        <pre>{JSON.stringify(occurrences, null, 2)}</pre>
-      </code>
+      {isDebug && (
+        <code>
+          <pre>{rrule}</pre>
+          <pre>{JSON.stringify(occurrences, null, 2)}</pre>
+        </code>
+      )}
     </EventBuilderWrapper>
   );
 };

@@ -1,14 +1,8 @@
-import type { CalendarData, SiteMap, WeekStartDay } from "./macro.types";
-
-type MacroCalendarData = {
-  currentDay?: string;
-  currentSiteId: string | null;
-  siteMap: SiteMap;
-  weekStartDay: WeekStartDay;
-};
+import type { CalendarData, SiteMap, WeekStartDay } from "./calendar.types";
 
 export const normalizeWeekStartDay = (value: number): WeekStartDay => {
   const normalized = ((value % 7) + 7) % 7;
+
   return normalized as WeekStartDay;
 };
 
@@ -37,18 +31,14 @@ const parseSiteMap = (siteMap: CalendarData["siteMap"]): SiteMap => {
   }, {});
 };
 
-export const getMacroCalendarData = (
-  $calendar: JQuery<HTMLElement>,
-): MacroCalendarData => {
+export const getMacroCalendarData = ($calendar: JQuery<HTMLElement>): CalendarData => {
   const data = ($calendar.data() ?? {}) as CalendarData;
-  const parsedFirstDayOfWeek = Number(data.firstDayOfWeek ?? 0);
+  const parsedWeekStartDay = Number(data.weekStartDay ?? 0);
 
   return {
     currentDay: data.currentDay,
     currentSiteId: data.currentSiteId ? String(data.currentSiteId) : null,
     siteMap: parseSiteMap(data.siteMap),
-    weekStartDay: normalizeWeekStartDay(
-      Number.isNaN(parsedFirstDayOfWeek) ? 0 : parsedFirstDayOfWeek,
-    ),
+    weekStartDay: normalizeWeekStartDay(Number.isNaN(parsedWeekStartDay) ? 0 : parsedWeekStartDay),
   };
 };

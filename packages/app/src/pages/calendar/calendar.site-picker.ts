@@ -1,31 +1,25 @@
 import { useMemo, useState } from "react";
-import type {
-  GetCalendarApi,
-  MacroCustomButtonInput,
-  SiteMap,
-} from "./macro.types";
+import type { CustomButtonInput, GetCalendarApi, SiteMap } from "./calendar.types";
 
-type UseMacroSitePickerProps = {
+type UseSitePickerProps = {
   $calendar: JQuery<HTMLElement>;
   currentSiteId: string | null;
   siteMap: SiteMap;
   getApi: GetCalendarApi;
 };
 
-type UseMacroSitePickerResult = {
+type UseSitePickerResult = {
   hasSitePicker: boolean;
-  sitePickerButton: MacroCustomButtonInput | undefined;
+  sitePickerButton: CustomButtonInput | undefined;
 };
 
-export const useMacroSitePicker = ({
+export const useSitePicker = ({
   $calendar,
   currentSiteId,
   siteMap,
   getApi,
-}: UseMacroSitePickerProps): UseMacroSitePickerResult => {
-  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(
-    currentSiteId,
-  );
+}: UseSitePickerProps): UseSitePickerResult => {
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(currentSiteId);
   const siteEntries = useMemo(() => Object.entries(siteMap), [siteMap]);
   const hasSitePicker = siteEntries.length > 1;
 
@@ -33,7 +27,7 @@ export const useMacroSitePicker = ({
     ? (siteMap[selectedSiteId] ?? Craft.t("calendar", "Site Picker"))
     : Craft.t("calendar", "Site Picker");
 
-  const sitePickerButton = useMemo<MacroCustomButtonInput | undefined>(() => {
+  const sitePickerButton = useMemo<CustomButtonInput | undefined>(() => {
     if (!hasSitePicker) {
       return undefined;
     }

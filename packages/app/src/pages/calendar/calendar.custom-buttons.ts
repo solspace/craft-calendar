@@ -1,12 +1,12 @@
-import type { MacroCustomButtonInput } from "./macro.types";
+import type { CustomButtonInput } from "./calendar.types";
 
-type CreateMacroCustomButtonsProps = {
+type CreateCustomButtonsProps = {
   onPrev: () => void;
   onNext: () => void;
   onToday: () => void;
   onRefresh: () => void;
-  datePickerButton: MacroCustomButtonInput;
-  sitePickerButton?: MacroCustomButtonInput;
+  datePickerButton: CustomButtonInput;
+  sitePickerButton?: CustomButtonInput;
 };
 
 export const getMacroHeaderToolbarEnd = (hasSitePicker: boolean): string =>
@@ -14,14 +14,14 @@ export const getMacroHeaderToolbarEnd = (hasSitePicker: boolean): string =>
     ? "sitepicker refresh datepicker prev,today,next"
     : "refresh datepicker prev,today,next";
 
-export const createMacroCustomButtons = ({
+export const createCustomButtons = ({
   onPrev,
   onNext,
   onToday,
   onRefresh,
   datePickerButton,
   sitePickerButton,
-}: CreateMacroCustomButtonsProps): Record<string, MacroCustomButtonInput> => {
+}: CreateCustomButtonsProps): Record<string, CustomButtonInput> => {
   return {
     prev: {
       text: Craft.t("calendar", "Previous"),

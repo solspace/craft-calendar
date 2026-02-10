@@ -1,18 +1,18 @@
 import { useLocalStorage } from "usehooks-ts";
 
-const KEY = "solspace-calendar-macro-view";
+const KEY = "solspace-calendar-view";
 
 export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay";
-type MacroViewSettings = {
+type ViewSettings = {
   view: View;
 };
 
-const defaultState: MacroViewSettings = {
+const defaultState: ViewSettings = {
   view: "dayGridMonth",
 };
 
-export const useMacroViewSettings = () => {
-  const [value, setValue] = useLocalStorage<MacroViewSettings>(KEY, defaultState);
+export const useViewSettings = () => {
+  const [value, setValue] = useLocalStorage<ViewSettings>(KEY, defaultState);
 
   const setView = (view: View) => {
     setValue({ view });

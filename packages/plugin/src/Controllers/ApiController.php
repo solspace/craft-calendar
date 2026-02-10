@@ -27,23 +27,19 @@ class ApiController extends BaseController
     public function actionEvents(): Response
     {
         $rangeStart = \Craft::$app->request->getQueryParam('start');
-        if ($rangeStart) {
-            $rangeStart = new Carbon($rangeStart);
-        }
+        $rangeStart = $rangeStart ? new Carbon($rangeStart) : null;
 
         $rangeEnd = \Craft::$app->request->getQueryParam('end');
-        if ($rangeEnd) {
-            $rangeEnd = new Carbon($rangeEnd);
-        }
+        $rangeEnd = $rangeEnd ? new Carbon($rangeEnd) : null;
 
         $calendars = \Craft::$app->request->post('calendars');
         $siteId = \Craft::$app->request->post('siteId');
-        $extraCriteria = \Craft::$app->request->post('criteria', []);
+        $criteria = \Craft::$app->request->post('criteria', []);
 
         $criteria = array_merge([
             'rangeStart' => $rangeStart,
             'rangeEnd' => $rangeEnd,
-        ], $extraCriteria);
+        ], $criteria);
 
         if ($calendars) {
             // calendars may be form array or comma-separated values

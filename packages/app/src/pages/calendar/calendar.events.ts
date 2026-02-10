@@ -1,7 +1,7 @@
 import type { EventInput, EventSourceFunc } from "@fullcalendar/core";
 import axios from "axios";
 
-export const macroEvents: EventSourceFunc = (info, success, failure) => {
+export const calendarEvents: EventSourceFunc = (info, success, failure) => {
   axios
     .get<EventInput[]>("/api/events", {
       params: {
