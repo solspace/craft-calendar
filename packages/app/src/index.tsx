@@ -4,8 +4,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "../config";
 
 import { App } from "@cal/app";
-import { Calendar } from "@cal/pages/calendar/calendar";
 import { generateUrl } from "@cal/utils/urls";
+import { Calendar } from "./pages/calendar/calendar";
 
 const container = document.getElementById("calendar-app");
 const root = ReactDOM.createRoot(container);
