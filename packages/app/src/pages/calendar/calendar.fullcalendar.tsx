@@ -23,7 +23,7 @@ export const CalendarFullcalendar: FC = () => {
   );
 
   const calendar = useRef<FullCalendar>(null);
-  const { setEvent, setParent } = usePopover();
+  const { onEventMouseEnter, onEventMouseLeave } = usePopover();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: The dependency is needed to get the latest calendar instance for the API.
   const getApi = useCallback(() => calendar.current?.getApi(), [calendar.current]);
@@ -84,14 +84,8 @@ export const CalendarFullcalendar: FC = () => {
         dateClick={console.log}
         events={calendarEvents}
         eventChange={console.log}
-        eventMouseEnter={(event) => {
-          setEvent(event.event);
-          setParent(event.el);
-        }}
-        eventMouseLeave={() => {
-          // setEvent(undefined);
-          // setParent(undefined);
-        }}
+        eventMouseEnter={onEventMouseEnter}
+        eventMouseLeave={onEventMouseLeave}
         headerToolbar={{
           start: "title",
           center: "dayGridMonth,timeGridWeek,timeGridDay",
