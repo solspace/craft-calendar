@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "npm run clean && npm run watch",
-    "build": "npm run clean && NODE_ENV=production npm run compile",
-    "watch": "webpack --watch",
+    "build": "npm run clean && npm run compile",
+    "watch": "node ./scripts/build.mjs --watch --mode development",
     "clean": "rm -rf ../plugin/src/Resources/js/scripts",
-    "compile": "webpack",
+    "compile": "node ./scripts/build.mjs --mode production",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "test": "jest --maxWorkers=4"
@@ -14,14 +14,6 @@
   "author": "Solspace Inc.",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.0",
-    "babel-loader": "^10.0.0",
-    "glob": "^13.0.2",
-    "webpack": "^5.105.1",
-    "webpack-cli": "^6.0.1"
-  },
-  "dependencies": {
-    "core-js": "^3.48.0"
+    "vite": "^7.3.1"
   }
 }
