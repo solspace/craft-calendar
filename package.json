@@ -8,8 +8,7 @@
     "packages/styles"
   ],
   "dependencies": {
-    "globals": "^17.0.0",
-    "lerna": "^9.0.3"
+    "globals": "^17.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
@@ -17,11 +16,11 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "dev": "lerna run --parallel dev",
-    "build": "lerna run --parallel build",
-    "lint": "lerna run --parallel lint",
-    "lint:fix": "lerna run --parallel lint:fix",
-    "test": "lerna run test"
+    "dev": "npm run dev --workspace @cal/app & npm run dev --workspace @cal/scripts & npm run dev --workspace @cal/styles & wait",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
   },
   "author": "Solspace, Inc.",
   "license": "ISC"

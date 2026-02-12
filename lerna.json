@@ -1,8 +1,0 @@
-{
-  "packages": [
-    "packages/app",
-    "packages/scripts",
-    "packages/styles"
-  ],
-  "version": "1.0.0"
-}
