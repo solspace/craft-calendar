@@ -1,6 +1,6 @@
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
-import classes from "@cal/utils/classes";
+import clsx from "clsx";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RRule } from "rrule";
@@ -21,7 +21,7 @@ export const ByWeek: FC = () => {
           <MatrixButton
             key={day.weekday}
             type="button"
-            className={classes(byweekday?.includes(day.weekday) && "active")}
+            className={clsx(byweekday?.includes(day.weekday) && "active")}
             onClick={() => {
               let values: number[] = byweekday ? [...byweekday] : [];
 

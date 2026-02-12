@@ -6,7 +6,7 @@ export const normalizeWeekStartDay = (value: number): WeekStartDay => {
   return normalized as WeekStartDay;
 };
 
-const parseSiteMap = (siteMap: CalendarData["siteMap"]): SiteMap => {
+const parseSiteMap = (siteMap: SiteMap): SiteMap => {
   if (!siteMap) {
     return {};
   }
@@ -34,9 +34,10 @@ const parseSiteMap = (siteMap: CalendarData["siteMap"]): SiteMap => {
 export const getMacroCalendarData = ($calendar: JQuery<HTMLElement>): CalendarData => {
   const data = ($calendar.data() ?? {}) as CalendarData;
   const parsedWeekStartDay = Number(data.weekStartDay ?? 0);
+  const currentDay = data.currentDay ? new Date(data.currentDay) : new Date();
 
   return {
-    currentDay: data.currentDay,
+    currentDay: currentDay,
     currentSiteId: data.currentSiteId ? String(data.currentSiteId) : null,
     siteMap: parseSiteMap(data.siteMap),
     weekStartDay: normalizeWeekStartDay(Number.isNaN(parsedWeekStartDay) ? 0 : parsedWeekStartDay),

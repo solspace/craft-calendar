@@ -16,7 +16,7 @@ export type CustomButtonInput = {
 };
 
 export type CalendarData = {
-  currentDay?: string;
+  currentDay?: Date;
   currentSiteId?: string;
   weekStartDay?: WeekStartDay;
   siteMap?: SiteMap;

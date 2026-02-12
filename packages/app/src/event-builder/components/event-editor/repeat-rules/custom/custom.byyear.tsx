@@ -2,7 +2,7 @@ import { Control } from "@cal/event-builder/components/controls/control";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
 import { Flex } from "@cal/styles/components";
-import classes from "@cal/utils/classes";
+import clsx from "clsx";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Dropdown, type Option } from "../../../controls/dropdown/dropdown";
@@ -89,7 +89,7 @@ export const ByYear: FC = () => {
               <MatrixButton
                 key={month.value}
                 type="button"
-                className={classes(isActive && "active")}
+                className={clsx(isActive && "active")}
                 onClick={() => {
                   let values = selectedMonths.filter((value) => value !== month.value);
                   if (!isActive) {

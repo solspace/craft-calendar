@@ -1,5 +1,5 @@
 import { Control } from "@cal/event-builder/components/controls/control";
-import classes from "@cal/utils/classes";
+import clsx from "clsx";
 import type { FC } from "react";
 import { DayMatrixWrapper, MatrixButton, MatrixPlaceholder } from "./custom.styles";
 
@@ -17,7 +17,7 @@ export const DayMatrix: FC<Props> = ({ label, values, onChange }) => {
           <MatrixButton
             key={day}
             type="button"
-            className={classes(values.includes(day) && "active")}
+            className={clsx(values.includes(day) && "active")}
             onClick={() => {
               let updated = values.filter((value) => value !== day);
               if (!values.includes(day)) {

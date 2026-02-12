@@ -1,4 +1,4 @@
-import classes from "@cal/utils/classes";
+import cslx from "clsx";
 import type { FC } from "react";
 import { Control, type ControlProps } from "../control";
 import { LightSwitchHandle, LightSwitchWrapper } from "./lightswitch.styles";
@@ -13,7 +13,7 @@ export const LightSwitch: FC<Props> = ({ enabled, errors, onClick, ...controlPro
   return (
     <Control {...controlProps}>
       <LightSwitchWrapper
-        className={classes(enabled && "on", errors && "error")}
+        className={cslx(enabled && "on", errors && "error")}
         onClick={() => onClick?.(!enabled)}
       >
         <LightSwitchHandle />
