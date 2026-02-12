@@ -20,6 +20,8 @@ return [
     'calendar/events/<elementId:\d+>' => 'elements/edit',
 
     // API calls
+    'calendar/api/events' => 'calendar/api/events',
+
     'calendar/events/api/first-occurrence-date' => 'calendar/events-api/first-occurrence-date',
     'calendar/events/api/modify-date' => 'calendar/events-api/modify-date',
     'calendar/events/api/modify-duration' => 'calendar/events-api/modify-duration',
@@ -36,6 +38,4 @@ return [
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
     'calendar/settings/ics' => 'calendar/settings/ics',
     'calendar/settings/demo-templates' => 'calendar/codepack/list-contents',
-
-    'calendar/api/events' => 'calendar/api/events',
 ];
