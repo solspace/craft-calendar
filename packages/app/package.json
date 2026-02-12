@@ -20,8 +20,7 @@
   "author": "Solspace Inc.",
   "license": "MIT",
   "sideEffects": [
-    "*.css",
-    "config/**"
+    "*.css"
   ],
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
@@ -58,6 +57,7 @@
     "@types/url-parse": "^1.4.11",
     "@types/webpack": "^5.28.5",
     "css-loader": "^7.1.3",
+    "dotenv": "^17.2.4",
     "react-refresh": "^0.18.0",
     "react-refresh-typescript": "^2.0.11",
     "style-loader": "^4.0.0",

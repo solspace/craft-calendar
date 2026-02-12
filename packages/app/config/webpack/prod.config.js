@@ -20,14 +20,29 @@ module.exports = merge(baseConfig, {
   },
 
   optimization: {
+    sideEffects: true,
+    providedExports: true,
     usedExports: true,
+    innerGraph: true,
+    concatenateModules: true,
+    mangleExports: "deterministic",
+    minimize: true,
     minimizer: [
       new TerserPlugin({
         parallel: true,
+        extractComments: false,
         terserOptions: {
-          compress: true,
-          ecma: 6,
+          compress: {
+            passes: 2,
+            pure_getters: true,
+          },
+          ecma: 2018,
+          module: true,
           mangle: true,
+          toplevel: true,
+          format: {
+            comments: false,
+          },
         },
       }),
     ],
