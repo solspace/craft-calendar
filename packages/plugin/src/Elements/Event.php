@@ -584,19 +584,19 @@ class Event extends Element implements \JsonSerializable
         $request = \Craft::$app->getRequest();
 
         $start = $request->getBodyParam('start');
-        $start = $start ? new Carbon((int) $start) : null;
+        $start = $start ? new Carbon((int) $start) : $this->startDate;
 
         $end = $request->getBodyParam('end');
-        $end = $end ? new Carbon((int) $end) : null;
+        $end = $end ? new Carbon((int) $end) : $this->endDate;
 
         $until = $request->getBodyParam('until');
-        $until = $until ? new Carbon((int) $until) : null;
+        $until = $until ? new Carbon((int) $until) : $this->until;
 
-        $allDay = (bool) $request->getBodyParam('allDay');
+        $allDay = (bool) $request->getBodyParam('allDay', $this->allDay);
 
-        $repeatType = $request->getBodyParam('repeatType');
-        $repeatEndType = $request->getBodyParam('repeatEndType');
-        $rrule = $request->getBodyParam('rrule');
+        $repeatType = $request->getBodyParam('repeatType', $this->repeatType);
+        $repeatEndType = $request->getBodyParam('repeatEndType', $this->repeatEndType);
+        $rrule = $request->getBodyParam('rrule', $this->rrule);
 
         $this->startDate = $start;
         $this->endDate = $end;
