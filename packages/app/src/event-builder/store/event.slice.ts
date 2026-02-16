@@ -50,19 +50,27 @@ const eventBuilderSlice = createSlice({
   reducers: {
     setStart: (state, action: PayloadAction<number>) => {
       const delta = state.end - state.start;
+
       state.start = action.payload;
       state.end = state.start + delta;
+
       if (state.until && state.repeatEndType === "ON_DATE") {
         state.until = alignUntilForState(state, state.until);
       }
+
       rebuildRRule(state);
     },
     setEnd: (state, action: PayloadAction<number>) => {
       state.end = action.payload;
     },
     setUntil: (state, action: PayloadAction<number | undefined>) => {
-      state.until =
-        action.payload === undefined ? undefined : alignUntilForState(state, action.payload);
+      const until = action.payload;
+      if (until === undefined) {
+        state.until = undefined;
+      } else {
+        state.until = alignUntilForState(state, until);
+      }
+
       rebuildRRule(state);
     },
     setAllDay: (state, action: PayloadAction<boolean>) => {
