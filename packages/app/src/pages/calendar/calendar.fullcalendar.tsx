@@ -1,3 +1,4 @@
+import { usePopover } from "@cal/contexts/popover/popover.context";
 import dayGrid from "@fullcalendar/daygrid";
 import interaction from "@fullcalendar/interaction";
 import list from "@fullcalendar/list";
@@ -12,10 +13,11 @@ import { calendarEvents } from "./calendar.events";
 import { useViewSettings, type View } from "./calendar.persistence";
 import { useSitePicker } from "./calendar.site-picker";
 import { CalendarWrapper } from "./calendar.styles";
-import { usePopover } from "./popover/popover.context";
+import { PopoverCreateEvent } from "./popovers/create-event/create-event";
 
 export const CalendarFullcalendar: FC = () => {
   const $calendar = useMemo(() => $("#calendar-app"), []);
+  const { showPopover } = usePopover();
   const { view, setView } = useViewSettings();
   const { currentDay, currentSiteId, siteMap, weekStartDay } = useMemo(
     () => getMacroCalendarData($calendar),
@@ -23,7 +25,6 @@ export const CalendarFullcalendar: FC = () => {
   );
 
   const calendar = useRef<FullCalendar>(null);
-  const { onEventMouseEnter, onEventMouseLeave } = usePopover();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: The dependency is needed to get the latest calendar instance for the API.
   const getApi = useCallback(() => calendar.current?.getApi(), [calendar.current]);
@@ -80,12 +81,16 @@ export const CalendarFullcalendar: FC = () => {
         initialView={view}
         initialDate={currentDay}
         firstDay={weekStartDay}
-        eventClick={console.log}
-        dateClick={console.log}
+        eventClick={(arg) => {
+          console.log(arg);
+          showPopover(<div>{arg.event.title}</div>, arg.el);
+        }}
+        dateClick={(arg) => {
+          console.log(arg);
+          showPopover(<PopoverCreateEvent />, arg.dayEl);
+        }}
         events={calendarEvents}
         eventChange={console.log}
-        eventMouseEnter={onEventMouseEnter}
-        eventMouseLeave={onEventMouseLeave}
         headerToolbar={{
           start: "title",
           center: "dayGridMonth,timeGridWeek,timeGridDay",
