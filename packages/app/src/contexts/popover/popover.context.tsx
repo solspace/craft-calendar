@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { usePopoverPosition } from "./popover.hooks";
-import { PopoverBridge, PopoverContainer } from "./popover.styles";
+import { PopoverArrow, PopoverBridge, PopoverContainer } from "./popover.styles";
 import type { ShowPopoverOptions } from "./popover.types";
 
 type PopoverContextType = {
@@ -44,17 +44,20 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
   };
 
   const hidePopover = useCallback(() => setState(undefined), []);
-  const coordinates = usePopoverPosition({ state, bridgeRef, popoverRef });
+  const layout = usePopoverPosition({ state, bridgeRef, popoverRef });
 
   const PopoverElement = state?.content && (
     <PopoverContainer
       ref={popoverRef}
       style={{
-        top: coordinates?.top ?? 0,
-        left: coordinates?.left ?? 0,
-        visibility: coordinates ? "visible" : "hidden",
+        top: layout?.top ?? 0,
+        left: layout?.left ?? 0,
+        visibility: layout ? "visible" : "hidden",
       }}
     >
+      {layout && (
+        <PopoverArrow side={layout.arrow.side} top={layout.arrow.top} left={layout.arrow.left} />
+      )}
       {state.content}
     </PopoverContainer>
   );

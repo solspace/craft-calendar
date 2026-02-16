@@ -3,20 +3,29 @@ import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { TextInput } from "@cal/components/controls/text-input/text-input";
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import translate from "@cal/utils/translations";
+import type { DateClickArg } from "@fullcalendar/interaction/index.js";
 import type { FC } from "react";
 import { useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { FlexTitle, PopoverCreateEventWrapper } from "./create-event.styles";
 
-export const PopoverCreateEvent: FC = () => {
+type Props = {
+  event: DateClickArg;
+};
+
+export const PopoverCreateEvent: FC<Props> = ({ event }) => {
   const { hidePopover } = usePopover();
 
   const referenceTime = useMemo(() => {
+    if (event.date) {
+      return Math.floor(event.date.getTime() / 1000);
+    }
+
     const date = new Date();
     date.setMinutes(0, 0, 0);
 
     return date.getTime() / 1000;
-  }, []);
+  }, [event]);
 
   const [title, setTitle] = useState("");
   const [allDay, setAllDay] = useState(true);

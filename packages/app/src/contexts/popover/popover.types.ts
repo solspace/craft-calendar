@@ -16,3 +16,18 @@ export type NormalizedPopoverOptions = {
   padding: number;
   closeDelayMs?: number;
 };
+
+export type PopoverArrowSide = "top" | "right" | "bottom" | "left";
+
+export type PopoverArrowLayout = {
+  side: PopoverArrowSide;
+  top?: number;
+  left?: number;
+};
+
+export type PopoverLayout = {
+  top: number;
+  left: number;
+  position: PopoverPosition;
+  arrow: PopoverArrowLayout;
+};

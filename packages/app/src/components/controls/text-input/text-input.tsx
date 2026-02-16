@@ -19,8 +19,9 @@ export const TextInput: FC<Props & ControlProps> = ({
 
   useEffect(() => {
     if (autofocus) {
-      console.log(autofocus, ref.current);
-      ref.current?.focus();
+      setTimeout(() => {
+        ref.current?.focus();
+      }, 10);
     }
   }, [autofocus]);
 

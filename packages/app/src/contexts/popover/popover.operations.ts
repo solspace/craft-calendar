@@ -1,6 +1,8 @@
 import type {
   NormalizedPopoverOptions,
   PopoverAlignment,
+  PopoverArrowLayout,
+  PopoverLayout,
   PopoverPosition,
   ShowPopoverOptions,
 } from "./popover.types";
@@ -182,4 +184,91 @@ export const resolvePopoverPlacement = ({
     viewportHeight,
     options.padding,
   );
+};
+
+type ResolveArrowLayoutParams = {
+  placement: {
+    position: PopoverPosition;
+    top: number;
+    left: number;
+  };
+  anchorRect: Rect;
+  popoverRect: Rect;
+  arrowPadding: number;
+};
+
+const toArrowSide = (position: PopoverPosition): PopoverArrowLayout["side"] => {
+  switch (position) {
+    case "top":
+      return "bottom";
+    case "right":
+      return "left";
+    case "left":
+      return "right";
+    default:
+      return "top";
+  }
+};
+
+export const resolvePopoverArrowLayout = ({
+  placement,
+  anchorRect,
+  popoverRect,
+  arrowPadding,
+}: ResolveArrowLayoutParams): PopoverArrowLayout => {
+  const side = toArrowSide(placement.position);
+
+  if (side === "top" || side === "bottom") {
+    const anchorCenterX = anchorRect.left + anchorRect.width / 2;
+    const left = clamp(
+      anchorCenterX - placement.left,
+      arrowPadding,
+      popoverRect.width - arrowPadding,
+    );
+
+    return { side, left };
+  }
+
+  const anchorCenterY = anchorRect.top + anchorRect.height / 2;
+  const top = clamp(anchorCenterY - placement.top, arrowPadding, popoverRect.height - arrowPadding);
+
+  return { side, top };
+};
+
+type ResolvePopoverLayoutParams = {
+  anchorRect: Rect;
+  popoverRect: Rect;
+  viewportWidth: number;
+  viewportHeight: number;
+  options: NormalizedPopoverOptions;
+  arrowPadding: number;
+};
+
+export const resolvePopoverLayout = ({
+  anchorRect,
+  popoverRect,
+  viewportWidth,
+  viewportHeight,
+  options,
+  arrowPadding,
+}: ResolvePopoverLayoutParams): PopoverLayout => {
+  const placement = resolvePopoverPlacement({
+    anchorRect,
+    popoverRect,
+    viewportWidth,
+    viewportHeight,
+    options,
+  });
+
+  return {
+    top: placement.top,
+    left: placement.left,
+    position: placement.position,
+    arrow: resolvePopoverArrowLayout({
+      placement,
+      anchorRect,
+      popoverRect,
+      arrowPadding,
+    }),
+  };
 };

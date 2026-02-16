@@ -1,15 +1,10 @@
 import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { normalizePopoverOptions, resolvePopoverPlacement } from "./popover.operations";
-import type { NormalizedPopoverOptions, ShowPopoverOptions } from "./popover.types";
+import { normalizePopoverOptions, resolvePopoverLayout } from "./popover.operations";
+import type { NormalizedPopoverOptions, PopoverLayout, ShowPopoverOptions } from "./popover.types";
 
 type PopoverState = {
   anchor: HTMLElement;
   options?: ShowPopoverOptions;
-};
-
-type Coordinates = {
-  top: number;
-  left: number;
 };
 
 type UsePopoverPositionParams = {
@@ -18,12 +13,14 @@ type UsePopoverPositionParams = {
   popoverRef: RefObject<HTMLDivElement | null>;
 };
 
+const ARROW_PADDING = 14;
+
 export const usePopoverPosition = ({
   state,
   bridgeRef,
   popoverRef,
-}: UsePopoverPositionParams): Coordinates | undefined => {
-  const [coordinates, setCoordinates] = useState<Coordinates>();
+}: UsePopoverPositionParams): PopoverLayout | undefined => {
+  const [layout, setLayout] = useState<PopoverLayout>();
 
   const normalizedOptions: NormalizedPopoverOptions | undefined = useMemo(() => {
     if (!state) {
@@ -35,7 +32,7 @@ export const usePopoverPosition = ({
 
   const calculate = useCallback(() => {
     if (!state || !normalizedOptions) {
-      setCoordinates(undefined);
+      setLayout(undefined);
       return;
     }
 
@@ -50,17 +47,19 @@ export const usePopoverPosition = ({
     const popoverRect = popover.getBoundingClientRect();
     const bridgeRect = bridge.getBoundingClientRect();
 
-    const placement = resolvePopoverPlacement({
+    const popoverLayout = resolvePopoverLayout({
       anchorRect,
       popoverRect,
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
       options: normalizedOptions,
+      arrowPadding: ARROW_PADDING,
     });
 
-    setCoordinates({
-      top: placement.top - bridgeRect.top,
-      left: placement.left - bridgeRect.left,
+    setLayout({
+      ...popoverLayout,
+      top: popoverLayout.top - bridgeRect.top,
+      left: popoverLayout.left - bridgeRect.left,
     });
   }, [state, normalizedOptions, bridgeRef, popoverRef]);
 
@@ -84,5 +83,5 @@ export const usePopoverPosition = ({
     };
   }, [state, calculate]);
 
-  return coordinates;
+  return layout;
 };
