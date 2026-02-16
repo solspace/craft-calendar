@@ -5,20 +5,22 @@ import {
   type ReactNode,
   useCallback,
   useContext,
-  useMemo,
+  useRef,
   useState,
 } from "react";
+import { usePopoverPosition } from "./popover.hooks";
 import { PopoverBridge, PopoverContainer } from "./popover.styles";
+import type { ShowPopoverOptions } from "./popover.types";
 
 type PopoverContextType = {
-  showPopover: (content: ReactNode, anchor: HTMLElement) => void;
+  showPopover: (content: ReactNode, anchor: HTMLElement, options?: ShowPopoverOptions) => void;
   hidePopover: () => void;
 };
 
 type PopoverState = {
   content: ReactNode;
   anchor: HTMLElement;
-  closeDelayMs?: number;
+  options?: ShowPopoverOptions;
 };
 
 const PopoverContext = createContext<PopoverContextType | null>(null);
@@ -34,23 +36,28 @@ export const usePopover = () => {
 
 export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, setState] = useState<PopoverState>();
+  const bridgeRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
-  const showPopover: PopoverContextType["showPopover"] = (content, anchor) => {
-    setState({ content, anchor });
+  const showPopover: PopoverContextType["showPopover"] = (content, anchor, options) => {
+    setState({ content, anchor, options });
   };
 
   const hidePopover = useCallback(() => setState(undefined), []);
+  const coordinates = usePopoverPosition({ state, bridgeRef, popoverRef });
 
-  const PopoverElement = useMemo(() => {
-    if (!state || !state.content) {
-      return null;
-    }
-
-    const top = state.anchor.offsetTop + state.anchor.offsetHeight;
-    const left = state.anchor.offsetLeft;
-
-    return <PopoverContainer style={{ top, left }}>{state.content}</PopoverContainer>;
-  }, [state]);
+  const PopoverElement = state?.content && (
+    <PopoverContainer
+      ref={popoverRef}
+      style={{
+        top: coordinates?.top ?? 0,
+        left: coordinates?.left ?? 0,
+        visibility: coordinates ? "visible" : "hidden",
+      }}
+    >
+      {state.content}
+    </PopoverContainer>
+  );
 
   return (
     <PopoverContext.Provider
@@ -59,7 +66,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
         hidePopover,
       }}
     >
-      <PopoverBridge>
+      <PopoverBridge ref={bridgeRef}>
         {PopoverElement}
         {children}
       </PopoverBridge>

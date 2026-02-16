@@ -87,7 +87,10 @@ export const CalendarFullcalendar: FC = () => {
         }}
         dateClick={(arg) => {
           console.log(arg);
-          showPopover(<PopoverCreateEvent />, arg.dayEl);
+          showPopover(<PopoverCreateEvent />, arg.dayEl, {
+            alignment: "center",
+            position: ["right", "bottom", "left"],
+          });
         }}
         events={calendarEvents}
         eventChange={console.log}
