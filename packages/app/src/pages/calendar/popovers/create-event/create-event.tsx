@@ -1,8 +1,7 @@
+import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-picker";
+import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
+import { TextInput } from "@cal/components/controls/text-input/text-input";
 import { usePopover } from "@cal/contexts/popover/popover.context";
-import { DatePicker } from "@cal/event-builder/components/controls/date-picker/date-picker";
-import { LightSwitch } from "@cal/event-builder/components/controls/lightswitch/lightswitch";
-import { TextInput } from "@cal/event-builder/components/controls/text-input/text-input";
-import CalendarIcon from "@cal/event-builder/components/event-editor/calendar.icon.svg";
 import translate from "@cal/utils/translations";
 import type { FC } from "react";
 import { useState } from "react";
@@ -41,7 +40,7 @@ export const PopoverCreateEvent: FC = () => {
         value={start}
         datePickerProps={{
           showIcon: true,
-          icon: <CalendarIcon />,
+          icon: <Icon />,
         }}
         onChange={(value) => {
           setStart(value);
@@ -53,7 +52,7 @@ export const PopoverCreateEvent: FC = () => {
         value={end}
         datePickerProps={{
           showIcon: true,
-          icon: <CalendarIcon />,
+          icon: <Icon />,
           minDate: new Date(start * 1000),
         }}
         onChange={(value) => {

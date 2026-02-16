@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { type FC, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { rrulestr } from "rrule";
-import { EventEditor } from "./components/event-editor/event.editor";
+import { Editor } from "./editor/editor";
 import { EventBuilderWrapper } from "./event-builder.styles";
 import { eventSelectors } from "./store/event.slice";
 
@@ -19,7 +19,7 @@ export const EventBuilder: FC = () => {
 
   return (
     <EventBuilderWrapper>
-      <EventEditor />
+      <Editor />
 
       {isDebug && (
         <code>

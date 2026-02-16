@@ -1,4 +1,4 @@
-import { Control } from "@cal/event-builder/components/controls/control";
+import { Control } from "@cal/components/controls/control";
 import clsx from "clsx";
 import type { FC } from "react";
 import { DayMatrixWrapper, MatrixButton, MatrixPlaceholder } from "./custom.styles";

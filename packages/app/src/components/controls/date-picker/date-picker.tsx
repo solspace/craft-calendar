@@ -5,6 +5,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
 import { Control, type ControlProps } from "../control";
 
+import CalendarIcon from "./calendar.icon.svg";
+
+export { CalendarIcon as Icon };
+
 type Props = {
   value: number | null;
   onChange?: (value: number | null) => void;

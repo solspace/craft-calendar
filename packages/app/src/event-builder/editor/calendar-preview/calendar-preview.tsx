@@ -1,3 +1,4 @@
+import { Control } from "@cal/components/controls/control";
 import { eventSelectors } from "@cal/event-builder/store/event.slice";
 import translate from "@cal/utils/translations";
 import dayGrid from "@fullcalendar/daygrid";
@@ -7,7 +8,6 @@ import type { FC } from "react";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { datetime, rrulestr } from "rrule";
-import { Control } from "../../controls/control";
 import {
   CalendarPreviewWrapper,
   DateItem,

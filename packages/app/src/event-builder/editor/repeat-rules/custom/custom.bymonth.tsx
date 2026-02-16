@@ -1,9 +1,9 @@
+import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdown";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
 import { Flex } from "@cal/styles/components";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Dropdown, type Option } from "../../../controls/dropdown/dropdown";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
 import { Interval } from "./interval";
 import { DayMatrix } from "./matrix.days";

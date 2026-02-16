@@ -1,3 +1,6 @@
+import { DatePicker } from "@cal/components/controls/date-picker/date-picker";
+import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdown";
+import { NumberInput } from "@cal/components/controls/number-input/number-input";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
 import type { RepeatEndType, RepeatType } from "@cal/event-builder/types";
@@ -5,9 +8,6 @@ import { Flex } from "@cal/styles/components";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Frequency } from "rrule";
-import { DatePicker } from "../../controls/date-picker/date-picker";
-import { Dropdown, type Option } from "../../controls/dropdown/dropdown";
-import { NumberInput } from "../../controls/number-input/number-input";
 import { CustomRules } from "./custom/custom-rules";
 import { RepeatRulesWrapper } from "./repeat-rules.styles";
 

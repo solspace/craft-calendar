@@ -1,4 +1,4 @@
-import { Dropdown, type Option } from "@cal/event-builder/components/controls/dropdown/dropdown";
+import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdown";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
 import { Flex } from "@cal/styles/components";

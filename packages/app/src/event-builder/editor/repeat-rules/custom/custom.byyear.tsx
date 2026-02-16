@@ -1,11 +1,11 @@
-import { Control } from "@cal/event-builder/components/controls/control";
+import { Control } from "@cal/components/controls/control";
+import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdown";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
 import { Flex } from "@cal/styles/components";
 import clsx from "clsx";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Dropdown, type Option } from "../../../controls/dropdown/dropdown";
 import { MatrixButton, MonthMatrixWrapper } from "./custom.styles";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
 import { Interval } from "./interval";
