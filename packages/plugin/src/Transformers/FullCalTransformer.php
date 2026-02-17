@@ -2,16 +2,37 @@
 
 namespace Solspace\Calendar\Transformers;
 
+use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\OccurrenceModel;
-use Solspace\Calendar\Records\OccurrenceRecord;
 
 class FullCalTransformer
 {
-    public function fromRecord(OccurrenceRecord $record): array
+    public function fromElement(Event $element): array
     {
+        $id = $element->id.'-'.$element->startDate->format('YmdHis');
+        $calendar = $element->getCalendar();
+
         return [
-            'id' => $record->id,
-            'startDate' => $record->startDate,
+            'id' => $id,
+            // 'groupId' => $model->event->id,
+
+            'title' => $element->title,
+            'slug' => $element->slug,
+            'url' => $element->getCpEditUrl(),
+
+            'start' => $element->startDate,
+            'end' => $element->endDate,
+            'allDay' => $element->allDay,
+            'multiDay' => $element->isMultiDay(),
+            'repeats' => $element->isRepeating(),
+
+            'calendar' => $calendar->id,
+            'backgroundColor' => $calendar->color,
+            'borderColor' => $calendar->getDarkerColor(),
+            'textColor' => $calendar->getContrastColor(),
+
+            'editable' => true,
+            'rrule' => $element->getRRuleRFCString(),
         ];
     }
 

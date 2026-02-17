@@ -20,7 +20,8 @@ return [
     'calendar/events/<elementId:\d+>' => 'elements/edit',
 
     // API calls
-    'calendar/api/events' => 'calendar/api/events',
+    'GET calendar/api/events' => 'calendar/api/events',
+    'POST calendar/api/events' => 'calendar/api/create-event',
 
     'calendar/events/api/first-occurrence-date' => 'calendar/events-api/first-occurrence-date',
     'calendar/events/api/modify-date' => 'calendar/events-api/modify-date',

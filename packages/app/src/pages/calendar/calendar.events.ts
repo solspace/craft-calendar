@@ -1,3 +1,4 @@
+import { craftFetch } from "@cal/utils/http";
 import type { EventInput, EventSourceFunc } from "@fullcalendar/core";
 
 export const calendarEvents: EventSourceFunc = (info, success, failure) => {
@@ -5,7 +6,7 @@ export const calendarEvents: EventSourceFunc = (info, success, failure) => {
   url.searchParams.set("start", info.start.toISOString());
   url.searchParams.set("end", info.end.toISOString());
 
-  return fetch(url)
+  return craftFetch(url)
     .then(async (response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok");

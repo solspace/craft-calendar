@@ -5,17 +5,27 @@ import { usePopover } from "@cal/contexts/popover/popover.context";
 import { Flex } from "@cal/styles/components";
 import translate from "@cal/utils/translations";
 import type { DateClickArg } from "@fullcalendar/interaction/index.js";
+import clsx from "clsx";
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
+import { useCreateEvent } from "./create-event.mutation";
 import { FlexTitle, PopoverCreateEventWrapper } from "./create-event.styles";
 
 type Props = {
   event: DateClickArg;
 };
 
+export type CreateEventState = {
+  title: string;
+  allDay: boolean;
+  start: number;
+  end: number;
+};
+
 export const PopoverCreateEvent: FC<Props> = ({ event }) => {
   const { hidePopover } = usePopover();
+  const { createEvent, isFetching } = useCreateEvent();
 
   const refDate = useMemo(() => {
     const date = new Date();
@@ -24,28 +34,29 @@ export const PopoverCreateEvent: FC<Props> = ({ event }) => {
     return date.getTime() / 1000;
   }, []);
 
-  const [title, setTitle] = useState("");
-  const [allDay, setAllDay] = useState(true);
-
-  const [start, setStart] = useState(refDate);
-  const [end, setEnd] = useState(refDate + 60 * 60);
+  const [eventState, setEventState] = useState<CreateEventState>({
+    title: "",
+    allDay: true,
+    start: refDate,
+    end: refDate + 60 * 60,
+  });
 
   useEffect(() => {
     if (!event) {
       return;
     }
 
-    setStart(event.date.getTime() / 1000);
-    setEnd(event.date.getTime() / 1000 + 60 * 60);
+    setEventState((prev) => ({
+      ...prev,
+      start: event.date.getTime() / 1000,
+      end: event.date.getTime() / 1000 + 60 * 60,
+    }));
   }, [event]);
 
-  const format = useMemo(() => {
-    if (allDay) {
-      return "yyyy-MM-dd";
-    }
-
-    return "yyyy-MM-dd h:mm aa";
-  }, [allDay]);
+  const format = useMemo(
+    () => (eventState.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd h:mm aa"),
+    [eventState],
+  );
 
   useEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -58,58 +69,60 @@ export const PopoverCreateEvent: FC<Props> = ({ event }) => {
       <FlexTitle>
         <TextInput
           autofocus
-          value={title}
+          value={eventState.title}
           placeholder={translate("Event Title")}
-          onChange={(value) => setTitle(value)}
+          onChange={(value) => setEventState((prev) => ({ ...prev, title: value }))}
         />
-        <LightSwitch enabled={allDay} onClick={(value) => setAllDay(value)} />
+        <LightSwitch
+          enabled={eventState.allDay}
+          onClick={(value) => setEventState((prev) => ({ ...prev, allDay: value }))}
+        />
       </FlexTitle>
 
       <div>
         <DatePicker
           label={translate("Start Date")}
-          value={start}
+          value={eventState.start}
           datePickerProps={{
             showIcon: true,
             icon: <Icon />,
             toggleCalendarOnIconClick: true,
             dateFormat: format,
-            showTimeSelect: !allDay,
+            showTimeSelect: !eventState.allDay,
             showMonthDropdown: true,
             showYearDropdown: true,
             dropdownMode: "select",
           }}
           onChange={(value) => {
-            setStart(value);
-            setEnd(value + 60 * 60);
+            setEventState((prev) => ({ ...prev, start: value, end: value + 60 * 60 }));
           }}
         />
         <DatePicker
           label={translate("End Date")}
-          value={end}
+          value={eventState.end}
           datePickerProps={{
             showIcon: true,
             icon: <Icon />,
             toggleCalendarOnIconClick: true,
-            minDate: new Date(start * 1000),
+            minDate: new Date(eventState.start * 1000),
             dateFormat: format,
-            showTimeSelect: !allDay,
+            showTimeSelect: !eventState.allDay,
             showMonthDropdown: true,
             showYearDropdown: true,
             dropdownMode: "select",
             filterTime: (time) => {
-              if (!start) {
+              if (!eventState.start) {
                 return true;
               }
 
-              const startDate = new Date(start * 1000);
+              const startDate = new Date(eventState.start * 1000);
               const selectedDate = new Date(time);
 
               return startDate.getTime() < selectedDate.getTime();
             },
           }}
           onChange={(value) => {
-            setEnd(value);
+            setEventState((prev) => ({ ...prev, end: value }));
           }}
         />
       </div>
@@ -117,11 +130,21 @@ export const PopoverCreateEvent: FC<Props> = ({ event }) => {
       <hr />
 
       <Flex>
-        <button type="button" className="btn small submit" disabled={!title}>
-          {translate("Create Event")}
+        <button
+          type="button"
+          className={clsx("btn small submit", isFetching && "disabled")}
+          disabled={!eventState.title || isFetching}
+          onClick={() => createEvent(eventState)}
+        >
+          {translate(isFetching ? "Creating Event..." : "Create Event")}
         </button>
 
-        <button type="button" className="btn small" onClick={() => hidePopover()}>
+        <button
+          type="button"
+          className={clsx("btn small", isFetching && "disabled")}
+          disabled={isFetching}
+          onClick={() => hidePopover()}
+        >
           {translate("Cancel")}
         </button>
       </Flex>

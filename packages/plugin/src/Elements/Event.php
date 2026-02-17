@@ -327,13 +327,9 @@ class Event extends Element implements \JsonSerializable
         return static::gqlTypeNameByContext($this->getCalendar());
     }
 
-    public function getCpEditUrl(): ?string
+    public function getPostEditUrl(): ?string
     {
-        if (!$this->isEditable()) {
-            return null;
-        }
-
-        return UrlHelper::cpUrl('calendar/events/'.$this->id);
+        return UrlHelper::cpUrl('calendar/events');
     }
 
     public function getCalendar(): CalendarModel
@@ -860,6 +856,15 @@ class Event extends Element implements \JsonSerializable
         }
 
         return $names;
+    }
+
+    protected function cpEditUrl(): ?string
+    {
+        if (!$this->isEditable()) {
+            return null;
+        }
+
+        return 'calendar/events/'.$this->getCanonicalId();
     }
 
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void

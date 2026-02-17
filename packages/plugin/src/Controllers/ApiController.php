@@ -3,13 +3,18 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
+use craft\base\Element;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Solspace\Calendar\Transformers\FullCalTransformer;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 class ApiController extends BaseController
 {
@@ -67,6 +72,56 @@ class ApiController extends BaseController
         $transformer = new FullCalTransformer();
 
         return $this->asJson(array_map([$transformer, 'fromModel'], $occurrences));
+    }
+
+    public function actionCreateEvent(?string $handle = null): Response
+    {
+        $request = \Craft::$app->getRequest();
+        $siteId = (int) $request->getParam('siteId');
+        $siteHandle = (string) $request->getParam('site');
+
+        $site = $siteId ? \Craft::$app->sites->getSiteById($siteId) : null;
+        if (!$site && $siteHandle) {
+            $site = \Craft::$app->sites->getSiteByHandle($siteHandle);
+        }
+
+        $site ??= \Craft::$app->sites->currentSite;
+
+        if ($handle) {
+            $calendar = $this->getCalendarService()->getCalendarByHandle($handle);
+            if (!$calendar) {
+                throw new HttpException(
+                    404,
+                    Calendar::t('Calendar with a handle "{handle}" could not be found', ['handle' => $handle])
+                );
+            }
+        } else {
+            $calendar = $this->getCalendarService()->getCalendarById(
+                $this->getCalendarService()->getFirstCalendarId()
+            );
+        }
+
+        if (!$calendar) {
+            throw new HttpException(404, Calendar::t('No calendars are available.'));
+        }
+
+        PermissionHelper::requireCalendarEditPermissions($calendar);
+
+        $locale = $site->language;
+        $locale = str_replace('_', '-', strtolower($locale));
+        EventEditBundle::$locale = $locale;
+
+        $event = Event::create($site->id, $calendar->id);
+        $event->setScenario(Element::SCENARIO_ESSENTIALS);
+        $success = \Craft::$app->getElements()->saveElement($event);
+
+        if (!$success) {
+            throw new ServerErrorHttpException(Calendar::t('Couldn’t create event.'));
+        }
+
+        $transformer = new FullCalTransformer();
+
+        return $this->asJson($transformer->fromElement($event));
     }
 
     /**

@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { addDays, getHours, setHours, startOfDay, subDays } from "date-fns";
 import { Frequency } from "rrule";
 import type { RepeatEndType, RepeatType } from "../types";
 import {
@@ -7,12 +8,9 @@ import {
   normalizeDays,
   rebuildRRule,
   resetByRulesForFreq,
-  setMidnight,
   toUnixSeconds,
 } from "./event.slice.operations";
 import type { RootState } from "./store";
-
-const SECONDS_IN_HOUR = 60 * 60;
 
 const defaultState: EventState = {
   start: Date.now(),
@@ -49,13 +47,18 @@ const eventBuilderSlice = createSlice({
   initialState: defaultState,
   reducers: {
     setStart: (state, action: PayloadAction<number>) => {
-      const delta = state.end - state.start;
+      const deltaEnd = state.end - state.start;
+      const deltaUntil = state.until ? state.until - state.start : undefined;
 
       state.start = action.payload;
-      state.end = state.start + delta;
+      state.end = state.start + deltaEnd;
 
       if (state.until && state.repeatEndType === "ON_DATE") {
         state.until = alignUntilForState(state, state.until);
+      }
+
+      if (deltaUntil !== undefined) {
+        state.until = state.start + deltaUntil;
       }
 
       rebuildRRule(state);
@@ -84,13 +87,15 @@ const eventBuilderSlice = createSlice({
       startDate.setHours(hour, 0, 0, 0);
       state.start = toUnixSeconds(startDate);
 
+      let endDate = new Date(state.end * 1000);
       if (enabled) {
-        const endDate = new Date(state.end * 1000);
-        setMidnight(endDate);
-        state.end = toUnixSeconds(endDate);
+        endDate = addDays(startOfDay(endDate), 1);
       } else {
-        state.end = toUnixSeconds(new Date(startDate.getTime() + SECONDS_IN_HOUR * 1000));
+        endDate = subDays(endDate, 1);
+        endDate = setHours(endDate, getHours(startDate) + 1);
       }
+
+      state.end = toUnixSeconds(endDate);
 
       if (state.until && state.repeatEndType === "ON_DATE") {
         state.until = alignUntilForState(state, state.until);
