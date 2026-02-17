@@ -2,6 +2,7 @@ import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-pick
 import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
+import translate from "@cal/utils/translations";
 import { type FC, useId, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CalendarPreview } from "./calendar-preview/calendar-preview";
@@ -49,6 +50,7 @@ export const Editor: FC = () => {
             showYearDropdown: true,
             dropdownMode: "select",
             dateFormat: format,
+            todayButton: translate("Today"),
           }}
         />
 
@@ -62,6 +64,7 @@ export const Editor: FC = () => {
             showIcon: true,
             icon: <Icon />,
             toggleCalendarOnIconClick: true,
+            minDate: new Date(start * 1000),
             showTimeSelect: !allDay,
             showMonthDropdown: true,
             showYearDropdown: true,

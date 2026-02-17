@@ -91,6 +91,11 @@ class Event extends Element implements \JsonSerializable
         parent::__construct($config);
     }
 
+    public function canCreateDrafts(User $user): bool
+    {
+        return true;
+    }
+
     public static function tableName(): string
     {
         return self::TABLE;
