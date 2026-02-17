@@ -26,6 +26,7 @@ const mountEventBuilder = (container: HTMLElement): void => {
   store.subscribe(() => {
     persistStateToInputs(store, container);
   });
+  persistStateToInputs(store, container);
 
   root.render(
     <Provider store={store}>

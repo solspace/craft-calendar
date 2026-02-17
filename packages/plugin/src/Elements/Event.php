@@ -588,14 +588,9 @@ class Event extends Element implements \JsonSerializable
 
         $request = \Craft::$app->getRequest();
 
-        $start = $request->getBodyParam('start');
-        $start = $start ? new Carbon((int) $start) : $this->startDate;
-
-        $end = $request->getBodyParam('end');
-        $end = $end ? new Carbon((int) $end) : $this->endDate;
-
-        $until = $request->getBodyParam('until');
-        $until = $until ? new Carbon((int) $until) : $this->until;
+        $start = $this->bodyParamToCarbon('start', $this->startDate, 'startDate');
+        $end = $this->bodyParamToCarbon('end', $this->endDate, 'endDate');
+        $until = $this->bodyParamToCarbon('until', $this->until);
 
         $allDay = (bool) $request->getBodyParam('allDay', $this->allDay);
 
@@ -1157,6 +1152,48 @@ class Event extends Element implements \JsonSerializable
 
         return $destructiveItems;
         */
+    }
+
+    private function bodyParamToCarbon(string $name, ?Carbon $fallback = null, ?string $fallbackName = null): ?Carbon
+    {
+        $request = \Craft::$app->getRequest();
+        $value = $request->getBodyParam($name);
+
+        if ((null === $value || '' === $value) && null !== $fallbackName) {
+            $value = $request->getBodyParam($fallbackName);
+        }
+
+        if (null === $value || '' === $value) {
+            return $fallback;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return Carbon::createFromInterface($value);
+        }
+
+        if (\is_array($value)) {
+            $date = (string) ($value['date'] ?? '');
+            $time = (string) ($value['time'] ?? '');
+            $value = trim($date.' '.$time);
+
+            if ('' === $value) {
+                return $fallback;
+            }
+        }
+
+        if (\is_numeric($value)) {
+            return Carbon::createFromTimestamp((int) $value);
+        }
+
+        if (\is_string($value)) {
+            try {
+                return new Carbon($value);
+            } catch (\Throwable) {
+                return $fallback;
+            }
+        }
+
+        return $fallback;
     }
 
     private function getOverlapThreshold(): int
