@@ -3,6 +3,7 @@ import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { eventActions, eventSelectors } from "@cal/event-builder/store/event.slice";
 import type { AppDispatch } from "@cal/event-builder/store/store";
 import translate from "@cal/utils/translations";
+import { addDays, getUnixTime, startOfDay, subDays } from "date-fns";
 import { type FC, useId, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CalendarPreview } from "./calendar-preview/calendar-preview";
@@ -24,6 +25,23 @@ export const Editor: FC = () => {
 
     return "yyyy-MM-dd h:mm aa";
   }, [allDay]);
+
+  const endForDisplay = useMemo(() => {
+    if (!allDay) return end;
+    return getUnixTime(subDays(new Date(end * 1000), 1)); // show previous day
+  }, [allDay, end]);
+
+  const handleEndChange = (value: number | null) => {
+    if (value == null) return;
+    if (!allDay) {
+      dispatch(eventActions.setEnd(value));
+      return;
+    }
+
+    const pickedDay = new Date(value * 1000);
+    const exclusiveEnd = addDays(startOfDay(pickedDay), 1);
+    dispatch(eventActions.setEnd(getUnixTime(exclusiveEnd)));
+  };
 
   return (
     <EventEditorWrapper>
@@ -57,8 +75,8 @@ export const Editor: FC = () => {
         <DatePicker
           id={endId}
           label="Ends"
-          value={end}
-          onChange={(value) => dispatch(eventActions.setEnd(value))}
+          value={endForDisplay}
+          onChange={handleEndChange}
           datePickerProps={{
             id: endId,
             showIcon: true,

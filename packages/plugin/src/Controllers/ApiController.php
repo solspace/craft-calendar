@@ -8,10 +8,7 @@ use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
-use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Solspace\Calendar\Transformers\FullCalTransformer;
-use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -77,42 +74,20 @@ class ApiController extends BaseController
     public function actionCreateEvent(?string $handle = null): Response
     {
         $request = \Craft::$app->getRequest();
-        $siteId = (int) $request->getParam('siteId');
-        $siteHandle = (string) $request->getParam('site');
 
-        $site = $siteId ? \Craft::$app->sites->getSiteById($siteId) : null;
-        if (!$site && $siteHandle) {
-            $site = \Craft::$app->sites->getSiteByHandle($siteHandle);
-        }
+        $siteId = \Craft::$app->sites->currentSite->id;
+        $calendarId = Calendar::getInstance()->calendars->getFirstCalendarId();
 
-        $site ??= \Craft::$app->sites->currentSite;
+        // TODO: add permission checks
 
-        if ($handle) {
-            $calendar = $this->getCalendarService()->getCalendarByHandle($handle);
-            if (!$calendar) {
-                throw new HttpException(
-                    404,
-                    Calendar::t('Calendar with a handle "{handle}" could not be found', ['handle' => $handle])
-                );
-            }
-        } else {
-            $calendar = $this->getCalendarService()->getCalendarById(
-                $this->getCalendarService()->getFirstCalendarId()
-            );
-        }
-
-        if (!$calendar) {
-            throw new HttpException(404, Calendar::t('No calendars are available.'));
-        }
-
-        PermissionHelper::requireCalendarEditPermissions($calendar);
-
-        $locale = $site->language;
-        $locale = str_replace('_', '-', strtolower($locale));
-        EventEditBundle::$locale = $locale;
-
-        $event = Event::create($site->id, $calendar->id);
+        $event = Event::create($siteId, $calendarId);
         $event->setScenario(Element::SCENARIO_ESSENTIALS);
+
+        $event->startDate = new Carbon($request->post('start'));
+        $event->endDate = new Carbon($request->post('end'));
+        $event->title = $request->post('title');
+        $event->allDay = (bool) $request->post('allDay');
+
         $success = \Craft::$app->getElements()->saveElement($event);
 
         if (!$success) {

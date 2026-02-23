@@ -5,6 +5,7 @@ export type Event = {
   start: number;
   end: number;
   until?: number;
+  timezone?: string;
 
   allDay: boolean;
   repeatType: RepeatType;

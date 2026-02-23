@@ -67,6 +67,7 @@
     "ts-loader": "^9.5.4",
     "typescript-plugin-styled-components": "^3.0.0",
     "url-loader": "^4.1.1",
+    "vitest": "^4.0.18",
     "webpack": "^5.105.1",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.3",

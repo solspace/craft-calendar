@@ -69,6 +69,7 @@ class Event extends Element implements \JsonSerializable
     public ?Carbon $startDate = null;
     public ?Carbon $endDate = null;
     public ?Carbon $until = null;
+    public ?string $timezone = null;
 
     public ?string $rrule = null;
     public ?string $repeatType = null;
@@ -584,9 +585,15 @@ class Event extends Element implements \JsonSerializable
 
         $request = \Craft::$app->getRequest();
 
-        $start = $this->bodyParamToCarbon('start', $this->startDate, 'startDate');
-        $end = $this->bodyParamToCarbon('end', $this->endDate, 'endDate');
-        $until = $this->bodyParamToCarbon('until', $this->until);
+        $timezone = $request->getBodyParam('timezone', $this->timezone);
+        if (!\is_string($timezone) || '' === trim($timezone)) {
+            $timezone = \Craft::$app->getTimeZone();
+        }
+        $timezone = trim((string) $timezone);
+
+        $start = $this->bodyParamToCarbon('start', $this->startDate, 'startDate', $timezone);
+        $end = $this->bodyParamToCarbon('end', $this->endDate, 'endDate', $timezone);
+        $until = $this->bodyParamToCarbon('until', $this->until, null, $timezone);
 
         $allDay = (bool) $request->getBodyParam('allDay', $this->allDay);
 
@@ -597,6 +604,7 @@ class Event extends Element implements \JsonSerializable
         $this->startDate = $start;
         $this->endDate = $end;
         $this->until = $until;
+        $this->timezone = '' !== $timezone ? $timezone : null;
         $this->allDay = $allDay;
 
         $this->repeatType = $repeatType;
@@ -614,6 +622,7 @@ class Event extends Element implements \JsonSerializable
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
             'until' => $this->until,
+            'timezone' => $this->timezone,
             'allDay' => (bool) $this->allDay,
             'rrule' => $this->rrule,
             'repeatType' => $this->repeatType,
@@ -654,6 +663,7 @@ class Event extends Element implements \JsonSerializable
                 'start' => $this->startDate->timestamp,
                 'end' => $this->endDate->timestamp,
                 'until' => $this->until?->timestamp,
+                'timezone' => $this->timezone,
 
                 'allDay' => $this->allDay,
                 'repeatType' => $this->repeatType,
@@ -672,6 +682,7 @@ class Event extends Element implements \JsonSerializable
             'slug' => $this->slug,
             'start' => $this->startDate->toAtomString(),
             'end' => $this->endDate->toAtomString(),
+            'timezone' => $this->timezone,
             'allDay' => $this->isAllDay(),
             'multiDay' => $this->isMultiDay(),
             'repeats' => $this->isRepeating(),
@@ -1159,8 +1170,12 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function bodyParamToCarbon(string $name, ?Carbon $fallback = null, ?string $fallbackName = null): ?Carbon
-    {
+    private function bodyParamToCarbon(
+        string $name,
+        ?Carbon $fallback = null,
+        ?string $fallbackName = null,
+        ?string $timezone = null,
+    ): ?Carbon {
         $request = \Craft::$app->getRequest();
         $value = $request->getBodyParam($name);
 
@@ -1187,11 +1202,15 @@ class Event extends Element implements \JsonSerializable
         }
 
         if (\is_numeric($value)) {
-            return Carbon::createFromTimestamp((int) $value);
+            return Carbon::createFromTimestampUTC((int) $value);
         }
 
         if (\is_string($value)) {
             try {
+                if (null !== $timezone && '' !== $timezone && !preg_match('/(?:Z|[+-]\d{2}:?\d{2})$/', $value)) {
+                    return Carbon::parse($value, $timezone);
+                }
+
                 return new Carbon($value);
             } catch (\Throwable) {
                 return $fallback;

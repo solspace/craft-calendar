@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { addDays, getHours, setHours, startOfDay, subDays } from "date-fns";
+import { addDays, getHours, getUnixTime, setHours, startOfDay, subDays } from "date-fns";
 import { Frequency } from "rrule";
 import type { RepeatEndType, RepeatType } from "../types";
 import {
@@ -8,13 +8,12 @@ import {
   normalizeDays,
   rebuildRRule,
   resetByRulesForFreq,
-  toUnixSeconds,
 } from "./event.slice.operations";
 import type { RootState } from "./store";
 
 const defaultState: EventState = {
-  start: Date.now(),
-  end: Date.now() + 60 * 60 * 1000,
+  start: Math.floor(Date.now() / 1000),
+  end: Math.floor(Date.now() / 1000) + 60 * 60,
   until: undefined,
 
   allDay: false,
@@ -24,7 +23,7 @@ const defaultState: EventState = {
 
   freq: Frequency.DAILY,
   interval: 1,
-  count: 1,
+  count: undefined,
 
   byweekday: undefined,
   bymonth: undefined,
@@ -85,7 +84,7 @@ const eventBuilderSlice = createSlice({
 
       const startDate = new Date(state.start * 1000);
       startDate.setHours(hour, 0, 0, 0);
-      state.start = toUnixSeconds(startDate);
+      state.start = getUnixTime(startDate);
 
       let endDate = new Date(state.end * 1000);
       if (enabled) {
@@ -95,7 +94,7 @@ const eventBuilderSlice = createSlice({
         endDate = setHours(endDate, getHours(startDate) + 1);
       }
 
-      state.end = toUnixSeconds(endDate);
+      state.end = getUnixTime(endDate);
 
       if (state.until && state.repeatEndType === "ON_DATE") {
         state.until = alignUntilForState(state, state.until);

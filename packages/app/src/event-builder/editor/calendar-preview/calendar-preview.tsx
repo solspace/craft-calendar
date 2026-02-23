@@ -1,13 +1,15 @@
 import { Control } from "@cal/components/controls/control";
 import { eventSelectors } from "@cal/event-builder/store/event.slice";
+import { UTCify, utcDateKey } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import dayGrid from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
-import { format } from "date-fns";
+import rrulePlugin from "@fullcalendar/rrule";
+import { addYears, format } from "date-fns";
 import type { FC } from "react";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { datetime, rrulestr } from "rrule";
+import { rrulestr } from "rrule";
 import {
   CalendarPreviewWrapper,
   DateItem,
@@ -18,34 +20,33 @@ import {
 const MAX_OCCURRENCES = 8;
 
 export const CalendarPreview: FC = () => {
-  const { rrule } = useSelector(eventSelectors.state);
+  const { rrule, start } = useSelector(eventSelectors.state);
   const [viewRange, setViewRange] = useState<{ start: Date; end: Date } | null>(null);
 
   const rruleObj = useMemo(() => (rrule ? rrulestr(rrule) : null), [rrule]);
 
-  const firstOccurrences: Date[] = useMemo(() => {
+  const events = useMemo(() => {
+    return [
+      {
+        start,
+        allDay: true,
+        rrule: rruleObj?.toString(),
+      },
+    ];
+  }, [rruleObj, start]);
+
+  const upcomingOccurrences: Date[] = useMemo(() => {
     if (!rruleObj || !viewRange) {
       return [];
     }
 
-    const start = viewRange.start;
-    const end = datetime(start.getFullYear() + 100, 1, 1, 0, 0, 0);
+    const start = UTCify(viewRange.start);
+    const end = UTCify(addYears(viewRange.start, 100));
 
     return rruleObj.between(start, end, true, (_, index) => index < MAX_OCCURRENCES);
   }, [rruleObj, viewRange]);
 
-  const occurrences = useMemo(() => {
-    if (!rrule || !viewRange) {
-      return new Set<string>();
-    }
-
-    const rule = rrulestr(rrule);
-    const occurrences = rule.between(viewRange.start, viewRange.end, true);
-
-    return new Set(occurrences.map((date) => format(date, "yyyy-MM-dd")));
-  }, [rrule, viewRange]);
-
-  if (!rrule) {
+  if (!rruleObj) {
     return <CalendarPreviewWrapper />;
   }
 
@@ -57,30 +58,42 @@ export const CalendarPreview: FC = () => {
           height={250}
           expandRows={false}
           themeSystem="bootstrap5"
-          plugins={[dayGrid]}
+          plugins={[dayGrid, rrulePlugin]}
           initialView="dayGridMonth"
+          timeZone="UTC"
           eventDisplay="none"
+          events={events}
           headerToolbar={{
             start: "title",
             end: "prev,today,next",
           }}
           datesSet={(info) => setViewRange({ start: info.start, end: info.end })}
-          dayCellClassNames={(info) =>
-            occurrences.has(format(info.date, "yyyy-MM-dd")) ? ["fc-has-event"] : []
-          }
+          dayCellClassNames={(info) => {
+            const events = info.view.calendar.getEvents();
+
+            const hasEvent = events.some((event) => {
+              const start = event.start;
+              if (!start) return false;
+
+              return utcDateKey(UTCify(start)) === utcDateKey(info.date);
+            });
+
+            return hasEvent ? "fc-has-event" : "";
+          }}
         />
       </Control>
+
       <OccurrencePreview>
-        {firstOccurrences.length === 0 ? (
+        {upcomingOccurrences.length === 0 ? (
           <p>
             {translate("No occurrences starting from")}
             <br />
             {format(viewRange?.start || new Date(), "PP")}
           </p>
         ) : (
-          <DateList $count={firstOccurrences.length}>
-            {firstOccurrences
-              .map((date) => format(date, "PP"))
+          <DateList $count={upcomingOccurrences.length}>
+            {upcomingOccurrences
+              .map((date) => utcDateKey(date))
               .map((date) => (
                 <DateItem key={date}>{date}</DateItem>
               ))}

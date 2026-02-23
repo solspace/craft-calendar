@@ -84,6 +84,7 @@ class EventQuery extends ElementQuery
     private \DateTime|string|null $until = null;
     private \DateTime|string|null $rangeStart = null;
     private \DateTime|string|null $rangeEnd = null;
+    private array|string|null $timezone = null;
 
     private bool $allDay = false;
     private bool $allowedCalendarsOnly = false;
@@ -285,6 +286,17 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
+    public function setTimezone(array|string|null $value = null): self
+    {
+        if (null !== $value && !\is_array($value)) {
+            $value = [$value];
+        }
+
+        $this->timezone = $value;
+
+        return $this;
+    }
+
     public function setRangeStart(mixed $rangeStart = null): self
     {
         $this->rangeStart = $this->parseCarbon($rangeStart);
@@ -336,6 +348,7 @@ class EventQuery extends ElementQuery
             $events.'.[[startDate]]',
             $events.'.[[endDate]]',
             $events.'.[[until]]',
+            $events.'.[[timezone]]',
             $events.'.[[allDay]]',
             $events.'.[[rrule]]',
             $events.'.[[repeatType]]',
@@ -511,6 +524,10 @@ class EventQuery extends ElementQuery
                     $this->extractDateAsFormattedString($this->until)
                 )
             );
+        }
+
+        if ($this->timezone) {
+            $this->subQuery->andWhere(Db::parseParam($events.'.[[timezone]]', $this->timezone));
         }
 
         if ($this->allowedCalendarsOnly) {

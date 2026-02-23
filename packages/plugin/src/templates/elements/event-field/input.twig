@@ -10,6 +10,7 @@
 		<input type="hidden" name="start" value="{{ event.getStartDate().toAtomString() }}"/>
 		<input type="hidden" name="end" value="{{ event.getEndDate().toAtomString() }}"/>
 		<input type="hidden" name="until" value="{{ event.getUntil() ? event.getUntil().toAtomString() : "" }}" />
+		<input type="hidden" name="timezone" value="{{ event.timezone ?? craft.app.timezone }}" />
 
 		<input type="hidden" name="allDay" value="{{ event.allDay ? 1 : 0 }}"/>
 		<input type="hidden" name="repeatType" value="{{ event.repeatType }}" />

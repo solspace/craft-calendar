@@ -1,3 +1,5 @@
+import { UTCify, UTCifyDateOnly } from "@cal/utils/date";
+import { getUnixTime } from "date-fns";
 import { Frequency, type Options, RRule } from "rrule";
 import type { Event } from "../types";
 
@@ -53,12 +55,24 @@ export const resetByRulesForFreq = (state: EventState, freq: Frequency) => {
 };
 
 export const rebuildRRule = (state: EventState) => {
-  console.log(`[rrule]: building (${state.repeatType}) from state:`, { ...state });
+  const { repeatEndType, allDay, interval, count } = state;
+
+  const startSource = new Date(state.start * 1000);
+  const untilSource = state.until ? new Date(state.until * 1000) : null;
+
+  const startDate = allDay ? UTCifyDateOnly(startSource) : UTCify(startSource);
+  const until =
+    repeatEndType === "ON_DATE" && state.until
+      ? allDay
+        ? UTCifyDateOnly(untilSource)
+        : UTCify(untilSource)
+      : undefined;
 
   let options: Partial<Options> = {
-    dtstart: new Date(state.start * 1000),
-    interval: state.interval,
-    count: state.count,
+    dtstart: startDate,
+    interval,
+    count: repeatEndType === "AFTER" ? count : undefined,
+    until: repeatEndType === "ON_DATE" ? until : undefined,
   };
 
   switch (state.repeatType) {
@@ -103,12 +117,6 @@ export const rebuildRRule = (state: EventState) => {
         freq: state.freq,
         interval: state.interval,
         count: state.repeatEndType !== "AFTER" ? undefined : state.count,
-        until:
-          state.repeatEndType !== "ON_DATE"
-            ? undefined
-            : state.until
-              ? new Date(state.until * 1000)
-              : undefined,
         byweekday,
         bymonth: state.bymonth,
         bymonthday: state.bymonthday,
@@ -124,15 +132,12 @@ export const rebuildRRule = (state: EventState) => {
   }
 
   if (options === null) {
-    console.log("[rrule]: skipping rrule, not repeating");
     state.rrule = undefined;
     return;
   }
 
   const rrule = new RRule(options);
   state.rrule = rrule.toString();
-
-  console.log("[rrule]: rrule built:", state.rrule, options);
 };
 
 const weekdayMap = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA, RRule.SU];
@@ -145,26 +150,17 @@ export const buildNthByweekday = (values?: number[], position?: number) => {
   return values.map((weekday) => weekdayMap[weekday]?.nth(position)).filter(Boolean);
 };
 
-export const toUnixSeconds = (date: Date) => Math.floor(date.getTime() / 1000);
-
-export const setMidnight = (date: Date) => {
-  date.setHours(0, 0, 0, 0);
-  return date;
-};
-
-export const alignToStartTime = (date: Date, start: Date) => {
-  date.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), 0);
-  return date;
-};
-
 export const alignUntilForState = (state: EventState, untilSeconds: number) => {
   const untilDate = new Date(untilSeconds * 1000);
 
   if (state.allDay) {
-    setMidnight(untilDate);
+    untilDate.setHours(0, 0, 0, 0);
   } else {
-    alignToStartTime(untilDate, new Date(state.start * 1000));
+    const startDate = new Date(state.start * 1000);
+
+    // Align Until time with Start time, so that the event doesn't end on the previous day
+    untilDate.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds(), 0);
   }
 
-  return toUnixSeconds(untilDate);
+  return getUnixTime(untilDate);
 };

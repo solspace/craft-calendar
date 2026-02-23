@@ -1,5 +1,5 @@
 import { isDebugMode } from "@cal/utils/debug";
-import { format } from "date-fns";
+import { format, formatISO } from "date-fns";
 import { type FC, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { rrulestr } from "rrule";
@@ -14,7 +14,7 @@ export const EventBuilder: FC = () => {
   const occurrences = rrule
     ? rrulestr(rrule)
         .all((_, i) => i < 10)
-        .map((date) => format(date, "yyyy-MM-dd HH:mm"))
+        .map((date) => `${format(date, "yyyy-MM-dd HH:mm")} [${formatISO(date)}]`)
     : [];
 
   return (
