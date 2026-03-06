@@ -398,6 +398,16 @@ class EventQuery extends ElementQuery
 
     public function count($q = '*', $db = null): null|bool|int|string
     {
+        if ($this->isElementIndexRequest()) {
+            // sort startDate, endDate, dateCreated, dateUpdated, and postDate before pagination / before event cache and excess cutoff
+            return parent::count($q, $db);
+        }
+
+        // If we save an event via the events edit page or via the slide out panel, dont use the cached events
+        if ($this->shouldBypassCachedQuery()) {
+            return parent::count($q, $db);
+        }
+
         $this->all($db);
 
         if (null === $this->totalCount) {
@@ -435,25 +445,25 @@ class EventQuery extends ElementQuery
      */
     public function all($db = null): array
     {
-        // If an array data is requested - return it as is, without
-        // fetching occurrences
+        // If an array data is requested - return it as is, without fetching occurrences
         if ($this->asArray) {
-            return parent::all();
+            $this->loadOccurrences = false;
+
+            return parent::all($db);
         }
 
         $configHash = $this->getConfigStateHash();
 
-        // Nasty elements index hack
-        if (!\Craft::$app->request->isConsoleRequest) {
-            $context = \Craft::$app->request->post('context');
-            if (\in_array($context, ['index', 'modal'], true)) {
-                $this->loadOccurrences = false;
-            }
-            // If we save an event via the events edit page or via the slide out panel, dont use the cached events
-            $action = \Craft::$app->request->post('action');
-            if (\in_array($action, ['elements/save', 'calendar/events/save-event'], true)) {
-                return parent::all();
-            }
+        if ($this->isElementIndexRequest()) {
+            $this->loadOccurrences = false;
+
+            // sort startDate, endDate, dateCreated, dateUpdated, and postDate before pagination / before event cache and excess cutoff
+            return parent::all($db);
+        }
+
+        // If we save an event via the events edit page or via the slide out panel, dont use the cached events
+        if ($this->shouldBypassCachedQuery()) {
+            return parent::all($db);
         }
 
         if (null === $this->events || self::$lastCachedConfigStateHash !== $configHash) {
@@ -1775,5 +1785,27 @@ class EventQuery extends ElementQuery
         ];
 
         return sha1(json_encode($data));
+    }
+
+    private function isElementIndexRequest(): bool
+    {
+        if (\Craft::$app->request->isConsoleRequest) {
+            return false;
+        }
+
+        $context = \Craft::$app->request->post('context');
+
+        return \in_array($context, ['index', 'modal'], true);
+    }
+
+    private function shouldBypassCachedQuery(): bool
+    {
+        if (\Craft::$app->request->isConsoleRequest) {
+            return false;
+        }
+
+        $action = \Craft::$app->request->post('action');
+
+        return \in_array($action, ['elements/save', 'calendar/events/save-event'], true);
     }
 }
