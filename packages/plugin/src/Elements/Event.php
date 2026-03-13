@@ -13,7 +13,6 @@ use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -53,11 +52,11 @@ class Event extends Element implements \JsonSerializable
     public const EVENT_TRANSFORM_JSON_VALUE = 'transform-json-value';
 
     private const MAX_OCCURRENCES = 5000;
-    private const CARBON_PROPERTIES = [
+    private const CARBON_PROPERTIES = ['postDate'];
+    private const CARBON_TZ_PROPERTIES = [
         'startDate',
         'endDate',
         'until',
-        'postDate',
     ];
 
     public ?int $calendarId = null;
@@ -83,9 +82,13 @@ class Event extends Element implements \JsonSerializable
     {
         foreach (self::CARBON_PROPERTIES as $property) {
             if (isset($config[$property]) && \is_string($config[$property])) {
-                $dateObject = DateTimeHelper::toDateTime($config[$property]);
+                $config[$property] = new Carbon($config[$property]);
+            }
+        }
 
-                $config[$property] = Carbon::createFromInterface($dateObject);
+        foreach (self::CARBON_TZ_PROPERTIES as $property) {
+            if (isset($config[$property]) && \is_string($config[$property])) {
+                $config[$property] = new Carbon($config[$property], $config['timezone'] ?? 'UTC');
             }
         }
 
@@ -451,6 +454,11 @@ class Event extends Element implements \JsonSerializable
         return $this->until;
     }
 
+    public function getTimezone(): ?string
+    {
+        return $this->timezone;
+    }
+
     /**
      * Returns the RFC compliant RRULE string
      * Or NULL if no rule present.
@@ -459,7 +467,7 @@ class Event extends Element implements \JsonSerializable
     {
         $rruleObject = $this->getRRuleObject();
         if ($rruleObject instanceof RRule) {
-            return $rruleObject->rfcString();
+            return $rruleObject->rfcString(false);
         }
 
         return null;
@@ -506,7 +514,7 @@ class Event extends Element implements \JsonSerializable
         return $this->dateCreated;
     }
 
-    public function getPostDate(): ?Carbon
+    public function getPostDate(): ?\DateTime
     {
         return $this->postDate;
     }

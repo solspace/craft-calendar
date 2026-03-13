@@ -1,5 +1,6 @@
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { useMemo, useState } from "react";
+import { clearCalendarEventsCache } from "./calendar.events";
 import type { CustomButtonInput, SiteMap } from "./calendar.types";
 
 type UseSitePickerProps = {
@@ -62,6 +63,7 @@ export const useSitePicker = ({
 
               $calendar.data("current-site-id", siteId);
               setSelectedSiteId(siteId);
+              clearCalendarEventsCache();
               api.refetchEvents();
             },
           }).showMenu();

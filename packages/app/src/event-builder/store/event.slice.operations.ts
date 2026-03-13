@@ -137,7 +137,9 @@ export const rebuildRRule = (state: EventState) => {
   }
 
   const rrule = new RRule(options);
-  state.rrule = rrule.toString();
+  const rruleString = parseRRuleDates(rrule.toString(), state.allDay);
+
+  state.rrule = rruleString;
 };
 
 const weekdayMap = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA, RRule.SU];
@@ -163,4 +165,23 @@ export const alignUntilForState = (state: EventState, untilSeconds: number) => {
   }
 
   return getUnixTime(untilDate);
+};
+
+const parseRRuleDates = (rruleString: string, allDay: boolean) => {
+  console.log(rruleString);
+  return rruleString
+    .replace(/DTSTART:(\d{8})T(\d{6})Z?/, (_, date, time) => {
+      if (allDay) {
+        return `DTSTART:${date}`;
+      }
+
+      return `DTSTART:${date}T${time}`;
+    })
+    .replace(/UNTIL=(\d{8})T(\d{6})Z?/, (_, date, time) => {
+      if (allDay) {
+        return `UNTIL=${date}`;
+      }
+
+      return `UNTIL=${date}T${time}`;
+    });
 };

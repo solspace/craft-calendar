@@ -30,6 +30,7 @@ class OccurrenceProvider
             $calendarIds[] = $occurrence['calendarId'];
         }
 
+        /** @var Event[] $events */
         $events = Event::find()->where(['id' => $eventIds])->indexBy('id')->all();
         $calendars = $this->calendarsService->getCalendars(['id' => $calendarIds]);
 
@@ -42,19 +43,18 @@ class OccurrenceProvider
                 continue;
             }
 
-            $startDate = new Carbon($occurrence['startDate']);
-            $endDate = new Carbon($occurrence['endDate']);
+            $startDate = new Carbon($occurrence['startDate'], $event->timezone);
+            $endDate = new Carbon($occurrence['endDate'], $event->timezone);
 
-            $model = new OccurrenceModel([
-                'event' => $events[$occurrence['eventId']],
-                'calendar' => $calendars[$occurrence['calendarId']],
-                'startDate' => $startDate,
-                'endDate' => $endDate,
-                'allDay' => $occurrence['allDay'] ?? false,
-                'dateCreated' => new Carbon($occurrence['dateCreated']),
-                'dateUpdated' => new Carbon($occurrence['dateUpdated']),
-                'uid' => $occurrence['uid'],
-            ]);
+            $model = new OccurrenceModel();
+            $model->event = $event;
+            $model->calendar = $calendar;
+            $model->startDate = $startDate;
+            $model->endDate = $endDate;
+            $model->allDay = $occurrence['allDay'] ?? false;
+            $model->dateCreated = new Carbon($occurrence['dateCreated']);
+            $model->dateUpdated = new Carbon($occurrence['dateUpdated']);
+            $model->uid = $occurrence['uid'];
 
             $models[] = $model;
         }

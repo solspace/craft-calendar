@@ -9,7 +9,7 @@ import { type FC, useCallback, useMemo, useRef } from "react";
 import { createCustomButtons, getMacroHeaderToolbarEnd } from "./calendar.custom-buttons";
 import { getMacroCalendarData } from "./calendar.data";
 import { useDateSelector } from "./calendar.date-selector";
-import { calendarEvents } from "./calendar.events";
+import { calendarEvents, clearCalendarEventsCache } from "./calendar.events";
 import { useViewSettings, type View } from "./calendar.persistence";
 import { useSitePicker } from "./calendar.site-picker";
 import { CalendarWrapper } from "./calendar.styles";
@@ -63,6 +63,7 @@ export const CalendarFullcalendar: FC = () => {
           changeUrl();
         },
         onRefresh: () => {
+          clearCalendarEventsCache();
           api.refetchEvents();
         },
         datePickerButton,

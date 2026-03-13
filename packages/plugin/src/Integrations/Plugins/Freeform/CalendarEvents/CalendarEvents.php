@@ -128,7 +128,7 @@ class CalendarEvents extends ElementIntegration
         $this->processMapping($entry, $form, $this->attributeMapping);
         $this->processMapping($entry, $form, $this->fieldMapping);
 
-        if (!$entry->postDate instanceof Carbon) {
+        if (!$entry->postDate instanceof \DateTime) {
             $entry->postDate = Carbon::parse($entry->postDate);
         }
 
