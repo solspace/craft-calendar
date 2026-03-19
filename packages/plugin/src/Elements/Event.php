@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\base\Field;
 use craft\db\Query;
-use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
@@ -141,10 +140,12 @@ class Event extends Element implements \JsonSerializable
             $endDate = $endDate->format('Y-m-d H:i:s');
         }
 
-        $this->startDateLocalized = new Carbon($startDate ?? 'now');
+        $craftTimezone = \Craft::$app->getTimeZone();
+
+        $this->startDateLocalized = new Carbon($startDate ?? 'now', $craftTimezone);
         $this->startDate = new Carbon($startDate ?? 'now', DateHelper::UTC);
         $this->initialStartDate = $this->startDate->copy();
-        $this->endDateLocalized = new Carbon($endDate ?? 'now');
+        $this->endDateLocalized = new Carbon($endDate ?? 'now', $craftTimezone);
         $this->endDate = new Carbon($endDate ?? 'now', DateHelper::UTC);
         $this->initialEndDate = $this->endDate->copy();
         $this->postDate = $this->postDate ? new Carbon($this->postDate) : null;
@@ -1237,17 +1238,17 @@ class Event extends Element implements \JsonSerializable
 
     public function canDuplicate(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     public function canDelete(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     public function canSave(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     /**
@@ -1534,21 +1535,33 @@ class Event extends Element implements \JsonSerializable
 
     public function attributes(): array
     {
-        $names = parent::attributes();
-        $names[] = 'authorId';
-        $names[] = 'author';
+        $names = [
+            'title',
+            'authorId',
+            'author',
+        ];
 
         // Hide Author from Craft Solo
         if (\Craft::Solo === \Craft::$app->getEdition()) {
             unset($names['authorId'], $names['author']);
         }
 
-        return $names;
+        return array_merge(array_filter($names), parent::attributes());
+    }
+
+    public function attributeLabels(): array
+    {
+        $labels = [
+            'title' => Calendar::t('Event'),
+        ];
+
+        return array_merge(array_filter($labels), parent::attributeLabels());
     }
 
     public function extraFields(): array
     {
         $names = parent::extraFields();
+        $names[] = 'title';
         $names[] = 'authorId';
         $names[] = 'author';
 
@@ -1597,6 +1610,7 @@ class Event extends Element implements \JsonSerializable
     protected static function defineTableAttributes(): array
     {
         $attributes = [
+            'title' => ['label' => Calendar::t('Event')],
             'slug' => ['label' => Calendar::t('Slug')],
             'name' => ['label' => Calendar::t('Calendar')],
             'startDate' => ['label' => Calendar::t('Start Date')],
@@ -1616,14 +1630,14 @@ class Event extends Element implements \JsonSerializable
             unset($attributes['authorId'], $attributes['author']);
         }
 
-        return $attributes;
+        return array_merge(array_filter($attributes), parent::defineTableAttributes());
     }
 
     protected static function defineSortOptions(): array
     {
         $attributes = [
+            'title' => Calendar::t('Event'),
             'authorId' => Calendar::t('Author ID'),
-            'title' => Calendar::t('Title'),
             'name' => Calendar::t('Calendar'),
             'startDate' => Calendar::t('Start Date'),
             'endDate' => Calendar::t('End Date'),
@@ -1644,11 +1658,11 @@ class Event extends Element implements \JsonSerializable
     protected static function defineSearchableAttributes(): array
     {
         $attributes = [
+            'title',
             'name',
             'authorId',
             'author',
             'id',
-            'title',
             'startDate',
             'endDate',
             'dateCreated',
@@ -1667,6 +1681,7 @@ class Event extends Element implements \JsonSerializable
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
+            'title',
             'name',
             'startDate',
             'endDate',
@@ -1710,6 +1725,27 @@ class Event extends Element implements \JsonSerializable
 
                 return $author ? Cp::elementHtml($author) : '';
 
+            case 'title':
+                $editUrl = $this->getCpEditUrl();
+                $titleHtml = $editUrl
+                    ? \sprintf(
+                        '<a href="%s" title="%s" class="label-link"><span>%s</span></a>',
+                        $editUrl,
+                        $this->title,
+                        $this->title,
+                    )
+                    : \sprintf(
+                        '<span>%s</span>',
+                        $this->title,
+                    );
+
+                return \sprintf(
+                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span>%s</div>',
+                    $this->getStatus(),
+                    Calendar::t(ucfirst($this->getStatus())),
+                    $titleHtml,
+                );
+
             case 'calendar':
                 return \sprintf(
                     '<div style="white-space: nowrap;"><span class="color-indicator" style="background-color: %s;"></span>%s</div>',
@@ -1726,9 +1762,14 @@ class Event extends Element implements \JsonSerializable
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
 
-            default:
-                return parent::tableAttributeHtml($attribute);
+            case 'startDate':
+                return $this->tableAttributeDate($this->startDateLocalized);
+
+            case 'endDate':
+                return $this->tableAttributeDate($this->endDateLocalized);
         }
+
+        return parent::tableAttributeHtml($attribute);
     }
 
     protected function attributeHtml(string $attribute): string
@@ -1739,6 +1780,27 @@ class Event extends Element implements \JsonSerializable
 
                 return $author ? Cp::elementChipHtml($author) : '';
 
+            case 'title':
+                $editUrl = $this->getCpEditUrl();
+                $titleHtml = $editUrl
+                    ? \sprintf(
+                        '<a href="%s" title="%s" class="label-link"><span>%s</span></a>',
+                        $editUrl,
+                        $this->title,
+                        $this->title,
+                    )
+                    : \sprintf(
+                        '<span>%s</span>',
+                        $this->title,
+                    );
+
+                return \sprintf(
+                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span>%s</div>',
+                    $this->getStatus(),
+                    Calendar::t(ucfirst($this->getStatus())),
+                    $titleHtml,
+                );
+
             case 'calendar':
                 return \sprintf(
                     '<div style="white-space: nowrap;"><span class="color-indicator" style="background-color: %s;"></span>%s</div>',
@@ -1755,9 +1817,14 @@ class Event extends Element implements \JsonSerializable
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
 
-            default:
-                return parent::attributeHtml($attribute);
+            case 'startDate':
+                return $this->attributeHtmlDate($this->startDateLocalized);
+
+            case 'endDate':
+                return $this->attributeHtmlDate($this->endDateLocalized);
         }
+
+        return parent::attributeHtml($attribute);
     }
 
     protected function route(): null|array|string
@@ -1850,6 +1917,60 @@ class Event extends Element implements \JsonSerializable
 
         return $destructiveItems;
         */
+    }
+
+    private function tableAttributeDate(null|\DateTimeInterface|string $date): string
+    {
+        $dt = $this->normalizeLocalizedDate($date);
+        if (!$dt) {
+            return '';
+        }
+
+        // All-day should be date-only
+        if ($this->allDay) {
+            return \Craft::$app->getFormatter()->asDate($dt);
+        }
+
+        // Timed events should display in LOCAL timezone
+        return \Craft::$app->getFormatter()->asTime($dt) ?: \Craft::$app->getFormatter()->asDatetime($dt);
+    }
+
+    private function attributeHtmlDate(null|\DateTimeInterface|string $date): string
+    {
+        $dt = $this->normalizeLocalizedDate($date);
+        if (!$dt) {
+            return '';
+        }
+
+        // All-day should be date-only
+        if ($this->allDay) {
+            return \Craft::$app->getFormatter()->asDate($dt);
+        }
+
+        // Timed events should display in LOCAL timezone
+        return ElementHelper::attributeHtml($dt);
+    }
+
+    private function normalizeLocalizedDate(null|\DateTimeInterface|string $date): ?\DateTimeInterface
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $timezone = new \DateTimeZone(\Craft::$app->getTimeZone());
+
+        if (\is_string($date)) {
+            return new \DateTime($date, $timezone);
+        }
+
+        // Convert any DateTimeInterface to the Craft timezone explicitly
+        $datetime = $date instanceof \DateTime
+            ? clone $date
+            : new \DateTime($date->format('Y-m-d H:i:s'), $date->getTimezone());
+
+        $datetime->setTimezone($timezone);
+
+        return $datetime;
     }
 
     private function hydrateSelectDates(): void

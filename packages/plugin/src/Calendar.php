@@ -8,6 +8,7 @@ use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\events\TemplateEvent;
 use craft\helpers\StringHelper;
 use craft\services\Dashboard;
 use craft\services\Elements;
@@ -17,6 +18,7 @@ use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use craft\web\View;
 use Solspace\Calendar\Controllers\ApiController;
 use Solspace\Calendar\Controllers\CalendarsController;
 use Solspace\Calendar\Controllers\CodePackController;
@@ -377,6 +379,17 @@ class Calendar extends Plugin
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->events, 'addSiteHandler']);
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->calendars, 'addSiteHandler']);
         Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, [$this->events, 'transferUserEvents']);
+        Event::on(View::class, View::EVENT_BEFORE_RENDER_TEMPLATE, function (TemplateEvent $event) {
+            $event->sender->registerCss('
+.elements .tableview table.data[data-name="Events"] thead th[data-attribute="title"]:nth-child(2) {
+  display: none !important;
+}
+
+.elements .tableview table.data[data-name="Events"] tbody tr > :is(th, td):nth-child(2) {
+  display: none !important;
+}
+');
+        });
     }
 
     private function initPermissions(): void
