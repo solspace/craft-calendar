@@ -1,5 +1,16 @@
 # Solspace Calendar Changelog
 
+## 5.0.27 - 2026-03-19
+
+### Changed
+- Replaced the **Title** column in the **Events** control panel page with a new **Event** column that displays the event title and properly respects **Manage Events** permissions.
+
+### Fixed
+- Fixed an issue where sorting by date columns such as _Date Created_ and _Date Updated_ in the **Events** control panel page was not always accurate.
+- Fixed an issue where **Manage Events** permissions did not display event titles correctly in the **Events** control panel page.
+- Fixed an issue where **Start Date** and **End Date** values were not localized correctly in the **Events** control panel page.
+- Fixed styling issues in the Calendar event date picker.
+
 ## 5.0.26 - 2026-01-14
 
 ### Added
