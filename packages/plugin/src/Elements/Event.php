@@ -1238,17 +1238,17 @@ class Event extends Element implements \JsonSerializable
 
     public function canDuplicate(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     public function canDelete(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     public function canSave(User $user): bool
     {
-        return $this->isEditable($this);
+        return $this->isEditable();
     }
 
     /**
@@ -1726,13 +1726,24 @@ class Event extends Element implements \JsonSerializable
                 return $author ? Cp::elementHtml($author) : '';
 
             case 'title':
+                $editUrl = $this->getCpEditUrl();
+                $titleHtml = $editUrl
+                    ? \sprintf(
+                        '<a href="%s" title="%s" class="label-link"><span>%s</span></a>',
+                        $editUrl,
+                        $this->title,
+                        $this->title,
+                    )
+                    : \sprintf(
+                        '<span>%s</span>',
+                        $this->title,
+                    );
+
                 return \sprintf(
-                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span><a href="%s" title="%s" class="label-link"><span>%s</span></a></div>',
+                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span>%s</div>',
                     $this->getStatus(),
                     Calendar::t(ucfirst($this->getStatus())),
-                    $this->getCpEditUrl(),
-                    $this->title,
-                    $this->title,
+                    $titleHtml,
                 );
 
             case 'calendar':
@@ -1770,13 +1781,24 @@ class Event extends Element implements \JsonSerializable
                 return $author ? Cp::elementChipHtml($author) : '';
 
             case 'title':
+                $editUrl = $this->getCpEditUrl();
+                $titleHtml = $editUrl
+                    ? \sprintf(
+                        '<a href="%s" title="%s" class="label-link"><span>%s</span></a>',
+                        $editUrl,
+                        $this->title,
+                        $this->title,
+                    )
+                    : \sprintf(
+                        '<span>%s</span>',
+                        $this->title,
+                    );
+
                 return \sprintf(
-                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span><a href="%s" title="%s" class="label-link"><span>%s</span></a></div>',
+                    '<div style="white-space: nowrap;"><span class="status %s" role="img" aria-label="Status: %s"></span>%s</div>',
                     $this->getStatus(),
                     Calendar::t(ucfirst($this->getStatus())),
-                    $this->getCpEditUrl(),
-                    $this->title,
-                    $this->title,
+                    $titleHtml,
                 );
 
             case 'calendar':
