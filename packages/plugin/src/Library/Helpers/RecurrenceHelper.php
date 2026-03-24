@@ -10,14 +10,14 @@ class RecurrenceHelper
     public const WEEKLY = 'WEEKLY';
     public const MONTHLY = 'MONTHLY';
     public const YEARLY = 'YEARLY';
-    public const SELECT_DATES = 'SELECT_DATES';
+    public const CUSTOM = 'CUSTOM';
 
     private static array $frequencyOptions = [
         self::DAILY => 'Day(s)',
         self::WEEKLY => 'Week(s)',
         self::MONTHLY => 'Month(s)',
         self::YEARLY => 'Year(s)',
-        self::SELECT_DATES => 'Select dates',
+        self::CUSTOM => 'Custom',
     ];
 
     private static array $repeatsByOptions = [
@@ -34,12 +34,10 @@ class RecurrenceHelper
      */
     public static function getFrequencyOptions(): array
     {
-        $translatedOptions = [];
-        foreach (self::$frequencyOptions as $key => $value) {
-            $translatedOptions[$key] = Calendar::t($value);
-        }
-
-        return $translatedOptions;
+        return array_map(
+            static fn ($value) => Calendar::t($value),
+            self::$frequencyOptions
+        );
     }
 
     /**
@@ -48,11 +46,9 @@ class RecurrenceHelper
      */
     public static function getRepeatsByOptions(): array
     {
-        $translatedOptions = [];
-        foreach (self::$repeatsByOptions as $key => $value) {
-            $translatedOptions[$key] = Calendar::t($value);
-        }
-
-        return $translatedOptions;
+        return array_map(
+            static fn ($value) => Calendar::t($value),
+            self::$repeatsByOptions
+        );
     }
 }

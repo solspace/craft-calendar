@@ -8,6 +8,8 @@ use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -28,15 +30,24 @@ class ApiController extends BaseController
 
     public function actionEvents(): Response
     {
-        $rangeStart = \Craft::$app->request->getQueryParam('start');
-        $rangeStart = $rangeStart ? new Carbon($rangeStart) : null;
+        $request = \Craft::$app->request;
 
-        $rangeEnd = \Craft::$app->request->getQueryParam('end');
-        $rangeEnd = $rangeEnd ? new Carbon($rangeEnd) : null;
+        $rangeStart = $request->getQueryParam('start');
+        if ($rangeStart) {
+            $rangeStart = new Carbon($rangeStart, DateHelper::UTC);
+        }
 
-        $calendars = \Craft::$app->request->post('calendars');
-        $siteId = \Craft::$app->request->post('siteId');
-        $criteria = \Craft::$app->request->post('criteria', []);
+        $rangeEnd = $request->getQueryParam('end');
+        if ($rangeEnd) {
+            $rangeEnd = new Carbon($rangeEnd, DateHelper::UTC);
+        }
+
+        $calendars = $request->getParam('calendars');
+        $siteId = $request->getParam('siteId');
+        $criteria = $request->getParam('criteria', []);
+        if (!\is_array($criteria)) {
+            $criteria = [];
+        }
 
         $criteria = array_merge([
             'rangeStart' => $rangeStart,
@@ -68,23 +79,27 @@ class ApiController extends BaseController
 
         $transformer = new FullCalTransformer();
 
-        return $this->asJson(array_map([$transformer, 'fromModel'], $occurrences));
+        return $this->asJson($transformer->fromList($occurrences));
     }
 
-    public function actionCreateEvent(?string $handle = null): Response
+    public function actionCreateEvent(): Response
     {
         $request = \Craft::$app->getRequest();
 
         $siteId = \Craft::$app->sites->currentSite->id;
         $calendarId = Calendar::getInstance()->calendars->getFirstCalendarId();
 
-        // TODO: add permission checks
-
         $event = Event::create($siteId, $calendarId);
         $event->setScenario(Element::SCENARIO_ESSENTIALS);
 
-        $event->startDate = new Carbon($request->post('start'));
-        $event->endDate = new Carbon($request->post('end'));
+        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+
+        $start = $request->post('start');
+        $end = $request->post('end');
+
+        $event->startDate = Carbon::createFromTimestampUTC((int) $start);
+        $event->endDate = Carbon::createFromTimestampUTC((int) $end);
+        $event->timezone = DateHelper::UTC;
         $event->title = $request->post('title');
         $event->allDay = (bool) $request->post('allDay');
 

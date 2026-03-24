@@ -11,7 +11,9 @@
     "typeRoots": ["config/@types", "./node_modules/@types", "../../node_modules/@types"],
     "paths": {
       "@cal/*": ["app/src/*"],
-      "@config/*": ["app/config/*"]
+      "@config/*": ["app/config/*"],
+      "@widgets/*": ["app/src/standalone/widgets/*"],
+      "@event-builder/*": ["app/src/standalone/event-builder/*"]
     }
   },
   "exclude": ["node_modules"]

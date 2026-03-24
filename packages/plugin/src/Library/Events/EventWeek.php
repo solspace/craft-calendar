@@ -3,8 +3,6 @@
 namespace Solspace\Calendar\Library\Events;
 
 use Carbon\CarbonInterval;
-use Solspace\Calendar\Elements\Db\EventQuery;
-use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Duration\DayDuration;
 
 class EventWeek extends AbstractEventCollection
@@ -14,30 +12,22 @@ class EventWeek extends AbstractEventCollection
         return CarbonInterval::week();
     }
 
-    /**
-     * Builds an iterable object.
-     */
-    protected function buildIterableObject(EventQuery $eventQuery): array
+    protected function buildIterableObject(): array
     {
         $dayList = [];
 
-        $targetDate = $this->getStartDate();
-        while ($this->getEndDate()->gt($targetDate)) {
-            $dayDuration = new DayDuration($targetDate, [], $this->getDuration()->getConfig());
-            $eventDay = new EventDay($dayDuration, $eventQuery);
+        $targetDate = $this->getStart();
+        while ($this->getEnd()->gt($targetDate)) {
+            $dayDuration = new DayDuration($targetDate, $this->getDuration()->getConfig());
+            $eventDay = new EventDay(
+                $dayDuration,
+                $this->occurrences->filterRange($targetDate, $targetDate->copy()->addDay())
+            );
 
             $dayList[] = $eventDay;
             $targetDate->addDay();
         }
 
         return $dayList;
-    }
-
-    /**
-     * @return Event[]
-     */
-    protected function buildEventCache(): array
-    {
-        return $this->getEventQuery()->getEventsByWeek($this->getDate());
     }
 }

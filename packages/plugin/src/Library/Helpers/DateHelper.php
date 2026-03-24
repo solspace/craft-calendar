@@ -36,6 +36,11 @@ class DateHelper
         12 => 'December',
     ];
 
+    public static function toLocalized(Carbon $date): Carbon
+    {
+        return new Carbon($date->toDateTimeString());
+    }
+
     public static function getCurrentWeekDay(Carbon $date): string
     {
         $weekDays = array_keys(self::$weekDays);

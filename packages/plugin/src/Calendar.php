@@ -32,6 +32,7 @@ use Solspace\Calendar\Services\FormatsService;
 use Solspace\Calendar\Services\SelectDatesService;
 use Solspace\Calendar\Services\SettingsService;
 use Solspace\Calendar\Services\ViewDataService;
+use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Solspace\Calendar\Twig\Extensions\CalendarTwigExtension;
 use Solspace\Calendar\Variables\CalendarVariable;
 use Solspace\Calendar\Widgets\AgendaWidget;
@@ -296,6 +297,8 @@ class Calendar extends Plugin
                 $event->rules = array_merge($event->rules, $routes);
             }
         );
+
+        \Craft::$app->view->registerTwigExtension(new CalendarGlobalExtension());
     }
 
     private function initTemplateVariables(): void

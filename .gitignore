@@ -22,3 +22,6 @@ cghooks.lock
 
 .env
 packages/app/config/webpack/certs
+
+# Ignore agentic config
+.agentic/

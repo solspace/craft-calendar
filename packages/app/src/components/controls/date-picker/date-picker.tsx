@@ -1,11 +1,11 @@
+import { localDisplayDateToUtcTimestamp, utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import { type FC, useEffect, useState } from "react";
 import DatePickerControl, { type DatePickerProps } from "react-datepicker";
-
-import "react-datepicker/dist/react-datepicker.css";
 import styled from "styled-components";
 import { Control, type ControlProps } from "../control";
 
 import CalendarIcon from "./calendar.icon.svg";
+import "react-datepicker/dist/react-datepicker.css";
 
 export { CalendarIcon as Icon };
 
@@ -16,10 +16,12 @@ type Props = {
 } & ControlProps;
 
 export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerProps }) => {
-  const [date, setDate] = useState<Date | null>(value ? new Date(value * 1000) : null);
+  const [date, setDate] = useState<Date | null>(
+    value !== null ? utcTimestampToLocalDisplayDate(value) : null,
+  );
 
   useEffect(() => {
-    setDate(value ? new Date(value * 1000) : null);
+    setDate(value !== null ? utcTimestampToLocalDisplayDate(value) : null);
   }, [value]);
 
   return (
@@ -32,7 +34,7 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
           className="text fullwidth"
           selected={date}
           onChange={(date: Date | null) => {
-            const time = date ? date.getTime() / 1000 : null;
+            const time = date ? localDisplayDateToUtcTimestamp(date) : null;
             if (onChange) {
               onChange(time);
             }

@@ -4,61 +4,48 @@ namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Library\Configurations\DurationConfiguration;
-use Solspace\Calendar\Library\Exceptions\DurationException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 abstract class AbstractDuration implements DurationInterface
 {
-    protected ?Carbon $startDate = null;
-
-    protected ?Carbon $startDateLocalized = null;
-
-    protected ?Carbon $endDate = null;
-
-    protected ?Carbon $endDateLocalized = null;
-
-    protected array $events = [];
-
+    protected Carbon $start;
+    protected Carbon $startLocalized;
+    protected Carbon $end;
+    protected Carbon $endLocalized;
     protected DurationConfiguration $config;
 
     final public function __construct(
         Carbon $targetDate,
-        array $events = [],
         array|DurationConfiguration $config = [],
     ) {
-        $this->events = $events;
         $this->config = \is_array($config) ? new DurationConfiguration($config) : $config;
         $this->init($targetDate);
 
-        $this->startDateLocalized = new Carbon($this->startDate->toDateTimeString());
-        $this->endDateLocalized = new Carbon($this->endDate->toDateTimeString());
+        $this->start = $this->start->setTimezone(DateHelper::UTC);
+        $this->end = $this->end->setTimezone(DateHelper::UTC);
 
-        if (null === $this->startDate) {
-            throw new DurationException('Init method hasn\'t instantiated a startDate');
-        }
-
-        if (null === $this->endDate) {
-            throw new DurationException('Init method hasn\'t instantiated an endDate');
-        }
+        $this->startLocalized = new Carbon($this->start->toDateTimeString());
+        $this->endLocalized = new Carbon($this->end->toDateTimeString());
     }
 
-    final public function getStartDate(): Carbon
+    final public function getStart(): Carbon
     {
-        return $this->startDate;
+        return $this->start;
     }
 
-    final public function getStartDateLocalized(): Carbon
+    final public function getStartLocalized(): Carbon
     {
-        return $this->startDateLocalized;
+        return $this->getStart();
     }
 
-    final public function getEndDate(): Carbon
+    final public function getEnd(): Carbon
     {
-        return $this->endDate;
+        return $this->end;
     }
 
-    final public function getEndDateLocalized(): Carbon
+    final public function getEndLocalized(): Carbon
     {
-        return $this->endDateLocalized;
+        return $this->getEnd();
     }
 
     /**
@@ -66,17 +53,12 @@ abstract class AbstractDuration implements DurationInterface
      */
     public function containsDate(Carbon $date): bool
     {
-        return $date->between($this->startDate, $this->endDate);
+        return $date->between($this->start, $this->end);
     }
 
     public function getConfig(): ?DurationConfiguration
     {
         return $this->config;
-    }
-
-    public function getEvents(): array
-    {
-        return $this->events;
     }
 
     /**

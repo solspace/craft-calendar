@@ -21,7 +21,7 @@ class HourDuration extends AbstractDuration
         $endDate->minute = 59;
         $endDate->second = 59;
 
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
+        $this->start = $startDate;
+        $this->end = $endDate;
     }
 }

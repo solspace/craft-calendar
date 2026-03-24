@@ -4,7 +4,9 @@ namespace Solspace\Calendar\Bundles\GraphQL\Interfaces;
 
 use GraphQL\Type\Definition\Type;
 use Solspace\Calendar\Bundles\GraphQL\Arguments\EventArguments;
+use Solspace\Calendar\Bundles\GraphQL\Arguments\OccurrenceArguments;
 use Solspace\Calendar\Bundles\GraphQL\Resolvers\EventResolver;
+use Solspace\Calendar\Bundles\GraphQL\Resolvers\OccurrenceResolver;
 use Solspace\Calendar\Bundles\GraphQL\Types\CalendarType;
 use Solspace\Calendar\Bundles\GraphQL\Types\Generators\CalendarGenerator;
 
@@ -121,6 +123,20 @@ class CalendarInterface extends AbstractInterface
                 'resolve' => EventResolver::class.'::resolveCount',
                 'args' => EventArguments::getArguments(),
                 'description' => "This query is used to return the number of calendar's events.",
+            ],
+            'occurrences' => [
+                'name' => 'occurrences',
+                'type' => Type::listOf(OccurrenceInterface::getType()),
+                'resolve' => OccurrenceResolver::class.'::resolve',
+                'args' => OccurrenceArguments::getArguments(),
+                'description' => "The calendar's persisted occurrences",
+            ],
+            'occurrenceCount' => [
+                'name' => 'occurrenceCount',
+                'type' => Type::nonNull(Type::int()),
+                'resolve' => OccurrenceResolver::class.'::resolveCount',
+                'args' => OccurrenceArguments::getArguments(),
+                'description' => "This query is used to return the number of calendar's occurrences.",
             ],
         ];
     }

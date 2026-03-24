@@ -4,8 +4,9 @@ namespace Solspace\Calendar\Services;
 
 use Carbon\Carbon;
 use craft\base\Component;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
-use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Library\Duration\DayDuration;
 use Solspace\Calendar\Library\Duration\DurationInterface;
 use Solspace\Calendar\Library\Duration\HourDuration;
@@ -15,63 +16,57 @@ use Solspace\Calendar\Library\Events\EventDay;
 use Solspace\Calendar\Library\Events\EventHour;
 use Solspace\Calendar\Library\Events\EventMonth;
 use Solspace\Calendar\Library\Events\EventWeek;
-use Solspace\Calendar\Library\Exceptions\DurationException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class ViewDataService extends Component
 {
-    /**
-     * @throws DurationException
-     */
+    public function __construct(
+        private OccurrenceProvider $occurrenceProvider,
+    ) {
+        parent::__construct([]);
+    }
+
     public function getMonth(?array $attributes = null): EventMonth
     {
         $targetDate = $this->getDateFromAttributes($attributes);
 
-        $duration = new MonthDuration($targetDate, [], $attributes);
-        $eventQuery = $this->getEventQuery($duration, $attributes);
+        $duration = new MonthDuration($targetDate, $attributes);
+        $occurrences = $this->getOccurrences($duration, $attributes);
 
-        return new EventMonth($duration, $eventQuery);
+        return new EventMonth($duration, $occurrences);
     }
 
-    /**
-     * @throws DurationException
-     */
     public function getWeek(?array $attributes = null): EventWeek
     {
         $targetDate = $this->getDateFromAttributes($attributes);
 
-        $duration = new WeekDuration($targetDate, [], $attributes);
-        $eventQuery = $this->getEventQuery($duration, $attributes);
+        $duration = new WeekDuration($targetDate, $attributes);
+        $occurrences = $this->getOccurrences($duration, $attributes);
 
-        return new EventWeek($duration, $eventQuery);
+        return new EventWeek($duration, $occurrences);
     }
 
-    /**
-     * @throws DurationException
-     */
     public function getDay(?array $attributes = null): EventDay
     {
-        $duration = new DayDuration($this->getDateFromAttributes($attributes), [], $attributes);
-        $eventList = $this->getEventQuery($duration, $attributes);
+        $duration = new DayDuration($this->getDateFromAttributes($attributes), $attributes);
+        $occurrences = $this->getOccurrences($duration, $attributes);
 
-        return new EventDay($duration, $eventList);
+        return new EventDay($duration, $occurrences);
     }
 
-    /**
-     * @throws DurationException
-     */
     public function getHour(?array $attributes = null): EventHour
     {
-        $duration = new HourDuration($this->getDateFromAttributes($attributes), [], $attributes);
-        $eventQuery = $this->getEventQuery($duration, $attributes);
+        $duration = new HourDuration($this->getDateFromAttributes($attributes), $attributes);
+        $occurrences = $this->getOccurrences($duration, $attributes);
 
-        return new EventHour($duration, $eventQuery);
+        return new EventHour($duration, $occurrences);
     }
 
-    private function getEventQuery(DurationInterface $duration, ?array $attributes = null): EventQuery
+    private function getOccurrences(DurationInterface $duration, ?array $attributes = null): OccurrenceList
     {
-        $eventService = Calendar::getInstance()->events;
+        $query = $this->occurrenceProvider->createQuery($this->assembleAttributes($duration, $attributes));
 
-        return $eventService->getEventQuery($this->assembleAttributes($duration, $attributes));
+        return $this->occurrenceProvider->getOccurrences($query);
     }
 
     /**
@@ -80,13 +75,7 @@ class ViewDataService extends Component
      */
     private function getDateFromAttributes(?array $attributes = null): Carbon
     {
-        if (null === $attributes || !isset($attributes['date'])) {
-            $date = 'now';
-        } else {
-            $date = $attributes['date'];
-        }
-
-        return new Carbon($date);
+        return new Carbon($attributes['date'] ?? 'now', DateHelper::UTC);
     }
 
     /**
@@ -95,19 +84,14 @@ class ViewDataService extends Component
      */
     private function getFirstDayFromAttributes(?array $attributes = null): int
     {
-        if (null !== $attributes && isset($attributes['firstDay'])) {
-            $firstDay = $attributes['firstDay'];
+        $firstDay = $attributes['firstDay'] ?? null;
+        if (is_numeric($firstDay)) {
+            return abs((int) $firstDay);
+        }
 
-            if (is_numeric($firstDay)) {
-                return abs((int) $attributes['firstDay']);
-            }
-
-            try {
-                $carbon = new Carbon($firstDay);
-
-                return $carbon->dayOfWeek;
-            } catch (\Exception $e) {
-            }
+        try {
+            return (new Carbon($firstDay, DateHelper::UTC))->dayOfWeek();
+        } catch (\Exception $e) {
         }
 
         return Calendar::getInstance()->settings->getFirstDayOfWeek();
@@ -123,8 +107,8 @@ class ViewDataService extends Component
         return array_merge(
             $attributes ?: [],
             [
-                'rangeStart' => $duration->getStartDate()->copy()->subWeek(),
-                'rangeEnd' => $duration->getEndDate()->copy()->addWeek(),
+                'rangeStart' => $duration->getStart(),
+                'rangeEnd' => $duration->getEnd(),
             ]
         );
     }

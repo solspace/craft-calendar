@@ -3,8 +3,10 @@
 namespace Solspace\Calendar\Variables;
 
 use craft\elements\db\ElementQueryInterface;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Events\EventDay;
 use Solspace\Calendar\Library\Events\EventHour;
@@ -18,11 +20,20 @@ use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
 use Solspace\Calendar\Services\SettingsService;
+use Solspace\Calendar\Services\ViewDataService;
 use yii\base\Exception;
-use yii\base\ExitException;
 
 class CalendarVariable
 {
+    private ViewDataService $viewService;
+    private OccurrenceProvider $occurrenceProvider;
+
+    public function __construct()
+    {
+        $this->viewService = Calendar::getInstance()->viewData;
+        $this->occurrenceProvider = \Craft::$container->get(OccurrenceProvider::class);
+    }
+
     public function showDemoTemplateBanner(): bool
     {
         if (!$this->settings()->isAdminChangesAllowed()) {
@@ -57,6 +68,11 @@ class CalendarVariable
         return Event::buildQuery($attributes);
     }
 
+    public function occurrences(array $criteria = []): OccurrenceQuery
+    {
+        return $this->occurrenceProvider->createQuery($criteria);
+    }
+
     public function formats(): FormatsService
     {
         return Calendar::getInstance()->formats;
@@ -66,6 +82,8 @@ class CalendarVariable
      * Get a single event.
      *
      * @param array $options - [occurrenceDate, occurrenceRangeStart, occurrenceRangeEnd, occurrenceLimit]
+     *
+     * @deprecated use `::events()` event query to fetch events instead
      *
      * @throws Exception
      */
@@ -80,7 +98,7 @@ class CalendarVariable
 
     public function isExportEnabled(): bool
     {
-        return Calendar::getInstance()->isPro();
+        return $this->isPro();
     }
 
     public function export(EventQuery $events, array $options = []): void
@@ -145,30 +163,22 @@ class CalendarVariable
 
     public function month(?array $attributes = null): EventMonth
     {
-        $viewDataService = Calendar::getInstance()->viewData;
-
-        return $viewDataService->getMonth($attributes);
+        return $this->viewService->getMonth($attributes);
     }
 
     public function week(?array $attributes = null): EventWeek
     {
-        $viewDataService = Calendar::getInstance()->viewData;
-
-        return $viewDataService->getWeek($attributes);
+        return $this->viewService->getWeek($attributes);
     }
 
     public function day(?array $attributes = null): EventDay
     {
-        $viewDataService = Calendar::getInstance()->viewData;
-
-        return $viewDataService->getDay($attributes);
+        return $this->viewService->getDay($attributes);
     }
 
     public function hour(?array $attributes = null): EventHour
     {
-        $viewDataService = Calendar::getInstance()->viewData;
-
-        return $viewDataService->getHour($attributes);
+        return $this->viewService->getHour($attributes);
     }
 
     public function settings(): SettingsService
@@ -244,19 +254,5 @@ class CalendarVariable
         ];
 
         return str_replace(array_keys($replacements), $replacements, $format);
-    }
-
-    /**
-     * https://github.com/solspace/craft-calendar/issues/122.
-     *
-     * Adds the first occurrence date to the list of select dates
-     *
-     * @throws ExitException
-     */
-    public function addFirstOccurrenceDate(Event $event): Event
-    {
-        $event->selectDates = Calendar::getInstance()->events->addFirstOccurrenceDate($event->selectDates);
-
-        return $event;
     }
 }

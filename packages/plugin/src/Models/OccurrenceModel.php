@@ -9,7 +9,9 @@ use Solspace\Calendar\Elements\Event;
 class OccurrenceModel extends Model
 {
     public Carbon $startDate;
+    public Carbon $startDateLocalized;
     public Carbon $endDate;
+    public Carbon $endDateLocalized;
     public bool $allDay = false;
 
     public Event $event;
@@ -18,6 +20,11 @@ class OccurrenceModel extends Model
     public \DateTime $dateCreated;
     public \DateTime $dateUpdated;
     public string $uid;
+
+    public function getId(): string
+    {
+        return $this->getOccurrenceKey();
+    }
 
     public function getOccurrenceKey(): string
     {

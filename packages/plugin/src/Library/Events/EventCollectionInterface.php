@@ -3,18 +3,19 @@
 namespace Solspace\Calendar\Library\Events;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
 
 interface EventCollectionInterface
 {
     public function getDate(): Carbon;
 
-    public function getStartDate(): Carbon;
+    public function getStart(): Carbon;
 
-    public function getEndDate(): Carbon;
+    public function getEnd(): Carbon;
 
-    /**
-     * @return Event[]
-     */
-    public function getEvents(): array;
+    public function getOccurrences(): OccurrenceList;
+
+    public function getOccurrenceCount(): int;
+
+    public function containsDate(Carbon $date): bool;
 }

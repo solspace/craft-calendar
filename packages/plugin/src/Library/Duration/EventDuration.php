@@ -5,15 +5,10 @@ namespace Solspace\Calendar\Library\Duration;
 class EventDuration
 {
     private ?int $years = null;
-
     private ?int $months = null;
-
     private ?int $days = null;
-
     private ?int $hours = null;
-
     private ?int $minutes = null;
-
     private ?int $seconds = null;
 
     /**

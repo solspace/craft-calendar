@@ -1,1 +1,269 @@
-var CalendarScripts_calendars_fullcalendar_methods=(function(t){"use strict";var _=Object.defineProperty;var S=Object.getOwnPropertySymbols;var Q=Object.prototype.hasOwnProperty,F=Object.prototype.propertyIsEnumerable;var I=(t,l,r)=>l in t?_(t,l,{enumerable:!0,configurable:!0,writable:!0,value:r}):t[l]=r,Y=(t,l)=>{for(var r in l||(l={}))Q.call(l,r)&&I(t,r,l[r]);if(S)for(var r of S(l))F.call(l,r)&&I(t,r,l[r]);return t};$("#solspace-calendar");const l=(e,a,n,s=!1)=>{if(!e.calendar)return;const d=$("<div>",{class:"buttons"}),i=$("<div>"),p=$("<div>",{class:"calendar-data",html:'<span class="color-indicator" style="background-color: '+e.backgroundColor+';"></span> '+e.calendar.name}),h=e.start,f=e.end;console.log(h,f);let o="dddd, MMMM D, YYYY";e.allDay?f.subtract(1,"days"):o=`${o} [${Craft.t("calendar","at")}] ${n}`;const D=$("<div>",{class:"event-date-range separator",html:'<div style="white-space: nowrap;"><label>'+Craft.t("calendar","Starts")+":</label> "+h.format(o)+'</div><div style="white-space: nowrap;"><label>'+Craft.t("calendar","Ends")+":</label> "+f.format(o)+"</div>"});let u="";e.repeats&&(u=$("<div>",{class:"event-repeats separator",html:'<div id="solspace-calendar-spinner" class="spinner"></div>'})),e.editable&&(d.append($("<a>",{class:"btn small submit",href:Craft.getCpUrl(`calendar/events/${e.id}${s?`/${e.site.handle}`:""}`),text:Craft.t("calendar","Edit")})),d.append($("<a>",{class:"btn small delete-event",href:Craft.getCpUrl("calendar/events/api/delete"),text:Craft.t("calendar","Delete"),data:{id:e.id}})),e.repeats&&d.append($("<a>",{class:"btn small delete-event-occurrence",href:Craft.getCpUrl("calendar/events/api/delete-occurrence"),text:Craft.t("calendar","Delete occurrence"),data:{id:e.id,date:e.start.toISOString()}}))),a.qtip({content:{title:e.title,button:!0,text:i.add(p).add(D).add(u).add(d)},style:{classes:"qtip-bootstrap qtip-event",tip:{width:30,height:15}},position:{my:"right center",at:"left center",adjust:{method:"shift flip"}},show:{solo:!0,delay:500},hide:{fixed:!0,delay:300},events:{show:C=>{window.qTipsEnabled||C.preventDefault(),e.repeats&&$.ajax({cache:!1,url:Craft.getCpUrl("calendar/events/api/first-occurrence-date"),type:"post",dataType:"json",data:{eventId:e.id,[Craft.csrfTokenName]:Craft.csrfTokenValue},success:c=>{c.success&&c.event&&Object.hasOwn(c.event,"readableRepeatRule")&&$(".event-repeats").html("<label>"+Craft.t("calendar","Repeats")+":</label> "+c.event.readableRepeatRule)}})},render:(C,c)=>{$("a.delete-event-occurrence",c.elements.content).click(function(){const m=$(this).attr("href"),k=$(this).data("id"),y=$(this).data("date");return confirm(Craft.t("calendar","Are you sure?"))&&$.ajax({url:m,type:"post",dataType:"json",data:{eventId:k,date:y,[Craft.csrfTokenName]:Craft.csrfTokenValue},success:T=>{if(!T.error){$("*[data-calendar-instance]").fullCalendar("refetchEvents"),c.destroy();return}console.warn(T.error)}}),!1}),$("a.delete-event",c.elements.content).click(function(){const m=$(this).attr("href"),k=$(this).data("id");return confirm(Craft.t("calendar","Are you sure you want to delete this event?"))&&$.ajax({url:m,type:"post",dataType:"json",data:{eventId:k,[Craft.csrfTokenName]:Craft.csrfTokenValue},success:y=>{if(!y.error){$("*[data-calendar-instance]").fullCalendar("removeEvents",e.id),c.destroy();return}console.warn(y.error)}}),!1})}}})},r=$("#solspace-calendar");let g=null;const E=(e,a)=>{if(e.allDay&&a.addClass("fc-event-all-day"),!e.end)return;if(!e.multiDay&&!e.allDay){a.addClass("fc-event-single-day");const d=$("<span />").addClass("fc-color-icon").css("background-color",e.backgroundColor).css("border-color",e.borderColor);$(".fc-content",a).prepend(d)}else a.addClass("fc-event-multi-day");e.enabled||a.addClass("fc-event-disabled"),a.addClass(`fc-color-${e.textColor}`);const{timeFormat:n,isMultiSite:s}=r.data();l(e,a,n,s!==void 0)},j=new moment,M=(e,a)=>{const n=a.parents(".fc-bg:first").siblings(".fc-content-skeleton").find(`thead > tr > td:eq(${a.index()})`),s=b(e),d=$("<a />").attr("href",s).html(n.html());n.html(d)},R=(e,a)=>{const n=a.parents("#solspace-calendar"),s=new moment(n.data("current-day"));e.name==="agendaWeek"&&$(".fc-day-header.fc-widget-header",a).each(function(){let i=$(this).html();const p=i.split(" ");i=`${p[0]} <span>${p[1]}</span>`;const h=new moment($(this).data("date")),f=b(h),o=$("<a />").attr("href",f).html(i);s.format("YYYYMMDD")===h.format("YYYYMMDD")&&o.addClass("fc-title-today"),$(this).html(o)}),$(".fc-localeButton-button",r).addClass("menubtn btn"),e.name==="agendaDay"&&$("thead.fc-head",a).remove()},v=(e,a,n,s)=>{$.ajax({url:Craft.getCpUrl(`calendar/events/api/modify-${e}`),type:"post",dataType:"json",data:{eventId:a.id,siteId:a.site.id,isAllDay:a.allDay,startDate:a.start.toISOString(),endDate:a.end?a.end.toISOString():null,deltaSeconds:parseInt(n.as("seconds"),10),[Craft.csrfTokenName]:Craft.csrfTokenValue},success:d=>{d.error?s():a.repeats&&$calendar.fullCalendar("refetchEvents")},error:()=>{s()}})},q=(e,a,n)=>{v("date",e,a,n)},V=(e,a,n)=>{v("duration",e,a,n)},O=e=>{window.location.href=Craft.getCpUrl(`calendar/events/${e.id}/${e.site.handle}`)},b=e=>{if(e.isValid()){const a=e.format("YYYY"),n=e.format("MM"),s=e.format("DD");return Craft.getCpUrl(`calendar/view/day/${a}/${n}/${s}`)}return""},U=(e,a,n,s)=>{w().fadeIn("fast");const d=$("ul.calendar-list");let i="*";d.length&&(i=$("input:checked",d).map(function(){return $(this).val()}).get().join());const{currentSiteId:p}=$("#solspace-calendar").data(),f=[...$("form.calendar-filters").serializeArray(),{name:"rangeStart",value:e.toISOString()},{name:"rangeEnd",value:a.toISOString()},{name:"calendars",value:i},{name:"siteId",value:p},{name:[Craft.csrfTokenName],value:Craft.csrfTokenValue}];$.ajax({url:Craft.getCpUrl("calendar/month"),data:$.param(f),type:"post",dataType:"json",success:o=>{const D=o.map(u=>{const C=Y({},u),c=new Date(u.start),m=u.end?new Date(u.end):null;return C.end=m,C.start=c,C});s(D),w().fadeOut("fast")}})},A=()=>{window.qTipsEnabled=!1,$("div.qtip:visible").qtip("hide")},N=()=>{window.qTipsEnabled=!0},w=()=>(g||(r.find(".fc-right").prepend('<div id="solspace-calendar-spinner" class="spinner" style="display: none;"></div>'),g=$("#solspace-calendar-spinner")),g);return t.closeAllQTips=A,t.enableQTips=N,t.eventClick=O,t.eventDateChange=q,t.eventDurationChange=V,t.eventRepositioned=v,t.getDayViewLink=b,t.getEvents=U,t.getSpinner=w,t.renderDay=M,t.renderEvent=E,t.renderView=R,t.today=j,Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),t})({});
+import { buildEventPopup } from "./popups";
+
+const $solspaceCalendar = $("#solspace-calendar");
+let $solspaceCalendarSpinner = null;
+
+/**
+ * Attaches additional classes to DOM objects
+ * based on event parameters
+ *
+ * @param event
+ * @param element
+ */
+export const renderEvent = (event, element) => {
+  if (event.allDay) {
+    element.addClass("fc-event-all-day");
+  }
+
+  if (!event.end) {
+    return;
+  }
+
+  if (!event.multiDay && !event.allDay) {
+    element.addClass("fc-event-single-day");
+    const colorIcon = $("<span />")
+      .addClass("fc-color-icon")
+      .css("background-color", event.backgroundColor)
+      .css("border-color", event.borderColor);
+    $(".fc-content", element).prepend(colorIcon);
+  } else {
+    element.addClass("fc-event-multi-day");
+  }
+
+  if (!event.enabled) {
+    element.addClass("fc-event-disabled");
+  }
+
+  element.addClass(`fc-color-${event.textColor}`);
+
+  const { timeFormat, isMultiSite } = $solspaceCalendar.data();
+
+  buildEventPopup(event, element, timeFormat, isMultiSite !== undefined);
+};
+
+export const today = new moment();
+
+/**
+ * Attaches links to day numbers
+ *
+ * @param date
+ * @param cell
+ */
+export const renderDay = (date, cell) => {
+  const dayNumberElement = cell
+    .parents(".fc-bg:first")
+    .siblings(".fc-content-skeleton")
+    .find(`thead > tr > td:eq(${cell.index()})`);
+
+  const link = getDayViewLink(date);
+  const anchor = $("<a />").attr("href", link).html(dayNumberElement.html());
+
+  dayNumberElement.html(anchor);
+};
+
+/**
+ *
+ * @param view
+ * @param element
+ */
+export const renderView = (view, element) => {
+  const calendar = element.parents("#solspace-calendar");
+  const currentDate = new moment(calendar.data("current-day"));
+
+  if (view.name === "agendaWeek") {
+    const $weekRows = $(".fc-day-header.fc-widget-header", element);
+
+    $weekRows.each(function () {
+      let content = $(this).html();
+      const dateParts = content.split(" ");
+
+      content = `${dateParts[0]} <span>${dateParts[1]}</span>`;
+
+      const date = new moment($(this).data("date"));
+      const link = getDayViewLink(date);
+
+      const $anchor = $("<a />").attr("href", link).html(content);
+
+      if (currentDate.format("YYYYMMDD") === date.format("YYYYMMDD")) {
+        $anchor.addClass("fc-title-today");
+      }
+
+      $(this).html($anchor);
+    });
+  }
+
+  $(".fc-localeButton-button", $solspaceCalendar).addClass("menubtn btn");
+
+  if (view.name === "agendaDay") {
+    $("thead.fc-head", element).remove();
+  }
+};
+
+/**
+ * Stores the event when it's repositioned
+ *
+ * @param modification
+ * @param event
+ * @param delta
+ * @param revertFunc
+ */
+export const eventRepositioned = (modification, event, delta, revertFunc) => {
+  $.ajax({
+    url: Craft.getCpUrl(`calendar/events/api/modify-${modification}`),
+    type: "post",
+    dataType: "json",
+    data: {
+      eventId: event.id,
+      siteId: event.site.id,
+      isAllDay: event.allDay,
+      startDate: event.start.toISOString(),
+      endDate: event.end ? event.end.toISOString() : null,
+      deltaSeconds: parseInt(delta.as("seconds"), 10),
+      [Craft.csrfTokenName]: Craft.csrfTokenValue,
+    },
+    success: (response) => {
+      if (response.error) {
+        revertFunc();
+      } else {
+        if (event.repeats) {
+          $calendar.fullCalendar("refetchEvents");
+        }
+      }
+    },
+    error: () => {
+      revertFunc();
+    },
+  });
+};
+
+/**
+ * Changes the event date
+ *
+ * @param event
+ * @param delta
+ * @param revertFunc
+ */
+export const eventDateChange = (event, delta, revertFunc) => {
+  eventRepositioned("date", event, delta, revertFunc);
+};
+
+/**
+ * Changes the event duration
+ *
+ * @param event
+ * @param delta
+ * @param revertFunc
+ */
+export const eventDurationChange = (event, delta, revertFunc) => {
+  eventRepositioned("duration", event, delta, revertFunc);
+};
+
+/**
+ * Opens the event edit page
+ *
+ * @param event
+ */
+export const eventClick = (event) => {
+  window.location.href = Craft.getCpUrl(`calendar/events/${event.id}/${event.site.handle}`);
+};
+
+/**
+ * Creates a link pointing to a certain date day view
+ *
+ * @param date - moment instance
+ *
+ * @returns string
+ */
+export const getDayViewLink = (date) => {
+  if (date.isValid()) {
+    const year = date.format("YYYY");
+    const month = date.format("MM");
+    const day = date.format("DD");
+
+    return Craft.getCpUrl(`calendar/view/day/${year}/${month}/${day}`);
+  }
+
+  return "";
+};
+
+/**
+ * AJAX POST to get a list of events for a given timeframe
+ *
+ * @param start
+ * @param end
+ * @param timezone
+ * @param callback
+ */
+export const getEvents = (start, end, _timezone, callback) => {
+  getSpinner().fadeIn("fast");
+
+  const $calendarList = $("ul.calendar-list");
+
+  let calendarIds = "*";
+  if ($calendarList.length) {
+    calendarIds = $("input:checked", $calendarList)
+      .map(function () {
+        return $(this).val();
+      })
+      .get()
+      .join();
+  }
+
+  const { currentSiteId } = $("#solspace-calendar").data();
+  const $calendarFilters = $("form.calendar-filters");
+
+  const dataArray = [
+    ...$calendarFilters.serializeArray(),
+    { name: "rangeStart", value: start.toISOString() },
+    { name: "rangeEnd", value: end.toISOString() },
+    { name: "calendars", value: calendarIds },
+    { name: "siteId", value: currentSiteId },
+    { name: [Craft.csrfTokenName], value: Craft.csrfTokenValue },
+  ];
+
+  $.ajax({
+    url: Craft.getCpUrl("calendar/month"),
+    data: $.param(dataArray),
+    type: "post",
+    dataType: "json",
+    success: (eventList) => {
+      const events = eventList.map((item) => {
+        const event = { ...item };
+
+        const start = new Date(item.start);
+        const end = item.end ? new Date(item.end) : null;
+
+        event.end = end;
+        event.start = start;
+
+        return event;
+      });
+
+      callback(events);
+      getSpinner().fadeOut("fast");
+    },
+  });
+};
+
+/**
+ * Closes all open qtips
+ */
+export const closeAllQTips = () => {
+  window.qTipsEnabled = false;
+  $("div.qtip:visible").qtip("hide");
+};
+
+export const enableQTips = () => {
+  window.qTipsEnabled = true;
+};
+
+export const getSpinner = () => {
+  if (!$solspaceCalendarSpinner) {
+    $solspaceCalendar
+      .find(".fc-right")
+      .prepend('<div id="solspace-calendar-spinner" class="spinner" style="display: none;"></div>');
+    $solspaceCalendarSpinner = $("#solspace-calendar-spinner");
+  }
+
+  return $solspaceCalendarSpinner;
+};

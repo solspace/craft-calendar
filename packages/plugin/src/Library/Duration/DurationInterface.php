@@ -12,7 +12,7 @@ interface DurationInterface
      */
     public function __construct(Carbon $targetDate);
 
-    public function getStartDate(): Carbon;
+    public function getStart(): Carbon;
 
-    public function getEndDate(): Carbon;
+    public function getEnd(): Carbon;
 }

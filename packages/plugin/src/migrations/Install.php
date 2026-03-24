@@ -56,7 +56,7 @@ class Install extends StreamlinedInstallMigration
                 ->addField('startDate', $this->dateTime()->notNull())
                 ->addField('endDate', $this->dateTime()->notNull())
                 ->addField('allDay', $this->boolean())
-                ->addField('rrule', $this->string())
+                ->addField('rrule', $this->longText())
                 ->addField('repeatType', $this->string(10)->defaultValue('NEVER'))
                 ->addField('repeatEndType', $this->string(10)->defaultValue('NEVER'))
                 ->addField('freq', $this->string())

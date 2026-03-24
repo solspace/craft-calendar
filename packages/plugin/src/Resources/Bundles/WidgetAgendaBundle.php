@@ -2,32 +2,31 @@
 
 namespace Solspace\Calendar\Resources\Bundles;
 
+use craft\helpers\App;
+
 class WidgetAgendaBundle extends CalendarAssetBundle
 {
     public function getScripts(): array
     {
-        $scripts = [
-            'external/js/fullcalendar/lib/moment.min.js',
-            'external/js/fullcalendar/fullcalendar.min.js',
-            'js/scripts/calendars/fullcalendar-methods.js',
-            'js/scripts/widgets/agenda.js',
-        ];
-
-        $calendarLocale = \Craft::$app->locale->id;
-        $calendarLocale = str_replace('_', '-', strtolower($calendarLocale));
-        $localeModulePath = __DIR__.'/../external/js/fullcalendar/locale/'.$calendarLocale.'.js';
-        if (file_exists($localeModulePath)) {
-            $scripts[] = 'external/js/fullcalendar/locale/'.$calendarLocale.'.js';
+        $clientPath = App::env('CAL_CLIENT_PATH') ?? null;
+        if ($clientPath) {
+            return [$this->getClientScript($clientPath)];
         }
 
-        return $scripts;
+        return [
+            'js/app/vendor.js',
+            'js/app/widget-agenda.js',
+        ];
     }
 
-    public function getStylesheets(): array
+    private function getClientScript(string $clientPath): array|string
     {
-        return [
-            'external/css/fullcalendar/fullcalendar.min.css',
-            'css/widgets/agenda.css',
-        ];
+        $clientPath = rtrim($clientPath, '/');
+
+        if (preg_match('/\.(?:m?js|tsx?)(?:\?.*)?$/', $clientPath)) {
+            return [$clientPath, ['type' => 'module']];
+        }
+
+        return $clientPath.'/widget-agenda.js';
     }
 }

@@ -3,16 +3,15 @@
 namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class WeekDuration extends AbstractDuration
 {
     protected function init(Carbon $targetDate): void
     {
-        $startDate = new Carbon($targetDate->toDateTimeString(), DateHelper::UTC);
+        $start = $targetDate->copy();
 
-        $startDate->startOfDay();
-        $day = $startDate->dayOfWeek;
+        $start->startOfDay();
+        $day = $start->dayOfWeek;
         $firstDay = $this->getConfig()->firstDay;
 
         $subDays = 0;
@@ -22,12 +21,12 @@ class WeekDuration extends AbstractDuration
             $subDays = 7 - $firstDay + $day;
         }
 
-        $startDate->subDays($subDays);
+        $start->subDays($subDays);
 
-        $endDate = $startDate->copy();
-        $endDate->addDays(6)->endOfDay();
+        $end = $start->copy();
+        $end->addWeek();
 
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
+        $this->start = $start;
+        $this->end = $end;
     }
 }

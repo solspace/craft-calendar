@@ -1,0 +1,115 @@
+{% extends "demo/layouts/_layout" %}
+
+{% set pageTitle = "Month" %}
+{% set page = "month" %}
+
+{% block content %}
+
+    <h1>Month View</h1>
+    <p class="lead">Below is full month calendar view, which allows you to see all your event occurrences.</p>
+    <hr /><br />
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment3 == "calendar" %}
+        {% set calendarHandle = segment4 %}
+        {% if segment5 %}
+            {% set targetDate = segment5~"-"~segment6~"-01" %}
+        {% endif %}
+    {% elseif segment3 is not empty %}
+        {% set targetDate = segment3~"-"~segment4~"-01" %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-9">
+
+            {% include "demo/layouts/_calendar_banner" %}
+
+            <div id="month_calendar">
+                {% set month = calendar.month({
+                    date: targetDate,
+                    calendar: calendarHandle,
+                }) %}
+
+                {% set occurrenceCount = month.occurrenceCount %}
+                {% set dateBoundsHelper = now.diff(month.nextDate)|date('%r%a') %}
+
+                <div class="row justify-content-between mb-3">
+                    <div class="col-3">
+                    {% if dateBoundsHelper > -365 %}
+                        <a class="btn btn-outline-secondary"
+                           href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.previousDate.format('Y/m') }}">
+                            <span class="fas fa-arrow-left"></span> {{ month.previousDate.format('F') }}
+                        </a>
+                    {% endif %}
+                    </div>
+
+                    <div class="col-auto">
+                        <h3>
+                            {% include "demo/layouts/_month_heading" with {month: month} only %} &nbsp;
+                            <span class="badge {{ occurrenceCount ? "badge-warning" : "badge-secondary" }}">
+                                {{ occurrenceCount }} event{{ occurrenceCount > 1 or occurrenceCount == 0 ? "s" }}
+                            </span>
+                        </h3>
+                    </div>
+
+                    <div class="col-3 clearfix">
+                    {% if dateBoundsHelper < 365 %}
+                        <a class="btn btn-outline-secondary float-right"
+                           href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.nextDate.format('Y/m') }}">
+                            {{ month.nextDate.format('F') }} <span class="fas fa-arrow-right"></span>
+                        </a>
+                    {% endif %}
+                    </div>
+                </div>
+
+                <table id="month_calendar_inner" class="table table-bordered">
+                    <thead>
+                    <tr id="days_of_week" class="active">
+                        {% for day in month|first %}
+                            <th class="day_of_week">
+                                {{ day.date.format('l') }}
+                            </th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for week in month %}
+                        <tr>
+                            {% for day in week %}
+                                {% if month.containsDate(day.date) %}
+                                <td class="day_cell{{ day.dateLocalized.isToday ? " today" }}">
+                                    <div class="date{{ day.occurrenceCount ? " has_events" }}">
+                                        <a class="num"
+                                           href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? "calendar/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
+                                            {{ day.date.format('j') }}
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <td class="day_cell out_of_range">
+                                    <div class="date">
+                                        <span class="num">
+                                            {{ day.date.format('j') }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+
+                                {% for occurrence in day.occurrences %}
+                                    {% include "demo/layouts/_occurrence" %}
+                                {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+            {% include "demo/layouts/_sidebar" %}
+        </div>
+    </div>
+
+{% endblock %}

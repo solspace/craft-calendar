@@ -1,1 +1,142 @@
-(function(){"use strict";$(()=>{setTimeout(()=>{const l=$(".event-creator");$(".lightswitch",l).on({change:function(){const t=$(".timewrapper",l);$("input",this).val()?t.fadeOut("fast"):t.fadeIn("fast")}}),l.each(function(){const t=$(this),{timeInterval:d,eventDuration:k}=t.data();$("ul.errors",t).empty();const u=$('input[name="startDate[date]"]',t),a=$('input[name="startDate[time]"]',t),r=$('input[name="endDate[date]"]',t),e=$('input[name="endDate[time]"]',t);a.timepicker("option","step",d),e.timepicker("option","step",d),u.datepicker("option","onSelect",i=>{r.datepicker("option","minDate",i),r.val(i)}),a.on("change",function(){const i=u.datepicker("getDate"),o=r.datepicker("getDate");let c=0;i&&o&&(c=Math.round((o-i)/(1e3*60*60*24)));const n=a.timepicker("getTime"),m=a.timepicker("getTime");if(n)if(m.setMinutes(n.getMinutes()+parseInt(k,10)),e.timepicker("option","durationTime",n),c===0){const p=a.timepicker("getTime");p.setMinutes(n.getMinutes()+parseInt(d,10)),e.timepicker("option","showDuration",!0),e.timepicker("option","minTime",p),$(this).val()&&e.timepicker("setTime",m)}else e.timepicker("option","showDuration",!1),e.timepicker("option","minTime","00:00"),$(this).val()&&e.timepicker("setTime",n)}),r.on("change",()=>{a.trigger("change")});const g=$("input[name=allDay]",t);g.parents(".lightswitch:first").data("lightswitch").turnOff(),$(".timewrapper",t).show(),$(".btn.submit",t).bind("click",()=>{const i=$("input[name=title]",t).val(),o=$("select[name=calendarId]",t).val(),c=moment(u.datepicker("getDate")),n=moment(a.timepicker("getTime")),m=moment(r.datepicker("getDate")),p=moment(e.timepicker("getTime")),h=g.val();let f=c.format("YYYY-MM-DD"),D=m.format("YYYY-MM-DD");return h||(f=`${f} ${n.format("HH:mm:ss")}`,D=`${D} ${p.format("HH:mm:ss")}`),$(".spinner",t).removeClass("hidden"),$.ajax({url:Craft.getCpUrl("calendar/events/api/create"),type:"post",dataType:"json",data:{startDate:f,endDate:D,allDay:h,[Craft.csrfTokenName]:Craft.csrfTokenValue,event:{title:i,calendarId:o}},success:s=>{$(".spinner",t).addClass("hidden"),s.error?($("ul.errors",t).empty().append($("<li />",{text:s.error})),Craft.cp.displayError(Craft.t("calendar","Couldn’t save event."))):s.event&&($("ul.errors",t).empty(),$("input[type=text]",t).val(""),Craft.cp.displayNotice(Craft.t("calendar","Event saved.")))},error:s=>{alert(s)}}),!1})})},200)})})();
+$(() => {
+  setTimeout(() => {
+    const $eventCreator = $(".event-creator");
+    const $allDay = $(".lightswitch", $eventCreator);
+    $allDay.on({
+      change: function () {
+        const $timeWrapper = $(".timewrapper", $eventCreator);
+
+        if ($("input", this).val()) {
+          $timeWrapper.fadeOut("fast");
+        } else {
+          $timeWrapper.fadeIn("fast");
+        }
+      },
+    });
+
+    $eventCreator.each(function () {
+      const $context = $(this);
+      const { timeInterval, eventDuration } = $context.data();
+
+      $("ul.errors", $context).empty();
+
+      const $startDate = $('input[name="startDate[date]"]', $context);
+      const $startTime = $('input[name="startDate[time]"]', $context);
+      const $endDate = $('input[name="endDate[date]"]', $context);
+      const $endTime = $('input[name="endDate[time]"]', $context);
+
+      $startTime.timepicker("option", "step", timeInterval);
+      $endTime.timepicker("option", "step", timeInterval);
+
+      $startDate.datepicker("option", "onSelect", (dateText) => {
+        $endDate.datepicker("option", "minDate", dateText);
+        $endDate.val(dateText);
+      });
+
+      $startTime.on("change", function () {
+        const startDate = $startDate.datepicker("getDate");
+        const endDate = $endDate.datepicker("getDate");
+
+        let diffInDays = 0;
+        if (startDate && endDate) {
+          diffInDays = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+        }
+
+        const currentTime = $startTime.timepicker("getTime");
+        const adjustedTime = $startTime.timepicker("getTime");
+
+        if (!currentTime) {
+          return;
+        }
+
+        adjustedTime.setMinutes(currentTime.getMinutes() + parseInt(eventDuration, 10));
+
+        $endTime.timepicker("option", "durationTime", currentTime);
+
+        if (diffInDays === 0) {
+          const minTime = $startTime.timepicker("getTime");
+          minTime.setMinutes(currentTime.getMinutes() + parseInt(timeInterval, 10));
+
+          $endTime.timepicker("option", "showDuration", true);
+          $endTime.timepicker("option", "minTime", minTime);
+          if ($(this).val()) {
+            $endTime.timepicker("setTime", adjustedTime);
+          }
+        } else {
+          $endTime.timepicker("option", "showDuration", false);
+          $endTime.timepicker("option", "minTime", "00:00");
+          if ($(this).val()) {
+            $endTime.timepicker("setTime", currentTime);
+          }
+        }
+      });
+
+      $endDate.on("change", () => {
+        $startTime.trigger("change");
+      });
+
+      const $allDayInput = $("input[name=allDay]", $context);
+      const lightswitch = $allDayInput.parents(".lightswitch:first");
+
+      lightswitch.data("lightswitch").turnOff();
+      $(".timewrapper", $context).show();
+
+      $(".btn.submit", $context).bind("click", () => {
+        const title = $("input[name=title]", $context).val();
+        const calendarId = $("select[name=calendarId]", $context).val();
+
+        const startDateValue = moment($startDate.datepicker("getDate"));
+        const startTimeValue = moment($startTime.timepicker("getTime"));
+        const endDateValue = moment($endDate.datepicker("getDate"));
+        const endTimeValue = moment($endTime.timepicker("getTime"));
+
+        const isAllDay = $allDayInput.val();
+
+        let startDateString = startDateValue.format("YYYY-MM-DD");
+        let endDateString = endDateValue.format("YYYY-MM-DD");
+        if (!isAllDay) {
+          startDateString = `${startDateString} ${startTimeValue.format("HH:mm:ss")}`;
+          endDateString = `${endDateString} ${endTimeValue.format("HH:mm:ss")}`;
+        }
+
+        $(".spinner", $context).removeClass("hidden");
+        $.ajax({
+          url: Craft.getCpUrl("calendar/events/api/create"),
+          type: "post",
+          dataType: "json",
+          data: {
+            startDate: startDateString,
+            endDate: endDateString,
+            allDay: isAllDay,
+            [Craft.csrfTokenName]: Craft.csrfTokenValue,
+            event: {
+              title: title,
+              calendarId: calendarId,
+            },
+          },
+          success: (response) => {
+            $(".spinner", $context).addClass("hidden");
+            if (response.error) {
+              $("ul.errors", $context)
+                .empty()
+                .append($("<li />", { text: response.error }));
+
+              Craft.cp.displayError(Craft.t("calendar", "Couldn’t save event."));
+            } else if (response.event) {
+              $("ul.errors", $context).empty();
+
+              $("input[type=text]", $context).val("");
+
+              Craft.cp.displayNotice(Craft.t("calendar", "Event saved."));
+            }
+          },
+          error: (response) => {
+            alert(response);
+          },
+        });
+
+        return false;
+      });
+    });
+  }, 200);
+});

@@ -31,7 +31,7 @@ class CodePackController extends BaseController
 
     /**
      * Show CodePack contents
-     * Provide means to prefix the CodePack.
+     * Provide the means to prefix the CodePack.
      */
     public function actionListContents(): Response
     {
@@ -58,7 +58,7 @@ class CodePackController extends BaseController
         $postInstallPrefix = \Craft::$app->session->getFlash(self::FLASH_VAR_KEY);
         if ($postInstallPrefix) {
             return $this->renderTemplate(
-                'calendar/codepack/_post_install',
+                'calendar/code-pack/_post_install',
                 [
                     'isCraft5' => $this->isCraft5,
                     'crumbs' => $crumbs,
@@ -69,7 +69,7 @@ class CodePackController extends BaseController
         }
 
         return $this->renderTemplate(
-            'calendar/codepack',
+            'calendar/code-pack',
             [
                 'isCraft5' => $this->isCraft5,
                 'crumbs' => $crumbs,
@@ -112,7 +112,7 @@ class CodePackController extends BaseController
             Calendar::getInstance()->settings->dismissDemoBanner();
         } catch (FileObjectException $exception) {
             return $this->renderTemplate(
-                'calendar/codepack',
+                'calendar/code-pack',
                 [
                     'isCraft5' => $this->isCraft5,
                     'crumbs' => $crumbs,

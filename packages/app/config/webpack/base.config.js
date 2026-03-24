@@ -8,7 +8,8 @@ module.exports = {
 
   entry: {
     app: path.resolve(__dirname, "../../src/index.tsx"),
-    "event-builder": path.resolve(__dirname, "../../src/event-builder/index.tsx"),
+    "event-builder": path.resolve(__dirname, "../../src/standalone/event-builder/index.tsx"),
+    "widget-agenda": path.resolve(__dirname, "../../src/standalone/widgets/agenda/index.tsx"),
   },
   output: {
     filename: "[name].js",
@@ -74,6 +75,8 @@ module.exports = {
     alias: {
       "@cal": path.resolve(__dirname, "../../src/"),
       "@config": path.resolve(__dirname, "../../config/"),
+      "@widgets": path.resolve(__dirname, "../../src/standalone/widgets/"),
+      "@event-builder": path.resolve(__dirname, "../../src/standalone/event-builder/"),
     },
   },
 };

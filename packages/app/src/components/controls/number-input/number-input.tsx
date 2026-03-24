@@ -2,7 +2,7 @@ import type { FC } from "react";
 import { Control, type ControlProps } from "../control";
 
 type Props = {
-  value?: number;
+  value?: number | null;
   onChange?: (value: number) => void;
 };
 

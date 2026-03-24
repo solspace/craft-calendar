@@ -95,16 +95,16 @@ class ExportCalendarToIcs extends AbstractExportCalendar
             $exportString .= \sprintf("DTEND;TZID=%s:%s\r\n", $timezone, $endDate->format(self::DATE_TIME_FORMAT));
         }
 
-        if ($event->isRepeating()) {
-            $rrule = $event->getRRule();
-            if ($rrule) {
-                // Normalize all line endings to "\n"
-                $rrule = preg_replace('/\r\n?/', "\n", $rrule);
-                // Split on newlines
-                [, $rrule] = explode("\n", $rrule, 2);
-                // Trim again to make sure nothing weird survived
-                $rrule = trim($rrule);
-                $exportString .= \sprintf("%s\r\n", $rrule);
+        $rrule = $event->getRRule();
+        if ($rrule) {
+            $rrule = preg_replace('/\r\n?/', "\n", $rrule);
+            $lines = array_filter(
+                explode("\n", $rrule),
+                static fn (string $line) => !str_starts_with($line, 'DTSTART:')
+            );
+
+            foreach ($lines as $line) {
+                $exportString .= \sprintf("%s\r\n", trim($line));
             }
         }
 

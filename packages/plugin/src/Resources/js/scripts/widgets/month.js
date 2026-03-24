@@ -1,1 +1,82 @@
-(function(){"use strict";$("#solspace-calendar"),$("#solspace-calendar"),new moment;const l=e=>{window.location.href=Craft.getCpUrl(`calendar/events/${e.id}/${e.site.handle}`)};document.querySelectorAll("*[data-mini-cal]").forEach(e=>{e=$(e);const{overlapThreshold:t=5,firstDayOfWeek:a=0,locale:i="en",currentDay:f=new moment}=e.data();e.fullCalendar({now:new moment,defaultDate:f,defaultView:"month",nextDayThreshold:`0${t}:00:01`,fixedWeekCount:!1,showNonCurrentDates:!0,eventLimit:1,firstDay:a,lang:i,height:"auto",columnFormat:"dd",viewRender:s,windowResize:s,eventClick:l,dayClick:n=>{window.location.href=Craft.getCpUrl(`calendar/view/day/${n.format("YYYY/MM/DD")}`)},events:(n,h)=>{$.ajax({url:Craft.getCpUrl("calendar/month"),data:{rangeStart:n.toISOString(),rangeEnd:h.toISOString(),nonEditable:!0,calendars:e.data("calendars"),siteId:e.data("siteId"),[Craft.csrfTokenName]:Craft.csrfTokenValue},type:"post",dataType:"json",success:c=>{$(".fc-content-skeleton .fc-day-top.fc-has-event").removeClass("fc-has-event");for(let o=0;o<c.length;o++){const d=c[o],r=moment(d.start).utc(),u=moment(d.end).utc();for(;r.isBefore(u);)$(".fc-content-skeleton .fc-day-top[data-date="+r.utc().format("YYYY-MM-DD")+"]").addClass("fc-has-event"),r.add(1,"days")}}})},header:{left:"prev",center:"title",right:"next"}})});const s=(e,t)=>{const a=$(".fc-content-skeleton",t);$(".fc-day-number",t).css({textAlign:"center",padding:0,minHeight:`${a.height()}px`,lineHeight:`${a.height()}px`})}})();
+import { eventClick } from "@cal/scripts/calendars/fullcalendar-methods";
+
+const miniCalList = document.querySelectorAll("*[data-mini-cal]");
+miniCalList.forEach((miniCal) => {
+  miniCal = $(miniCal);
+  const {
+    overlapThreshold = 5,
+    firstDayOfWeek = 0,
+    locale = "en",
+    currentDay = new moment(),
+  } = miniCal.data();
+
+  miniCal.fullCalendar({
+    now: new moment(),
+    defaultDate: currentDay,
+    defaultView: "month",
+    nextDayThreshold: `0${overlapThreshold}:00:01`,
+    fixedWeekCount: false,
+    showNonCurrentDates: true,
+    eventLimit: 1,
+    firstDay: firstDayOfWeek,
+    lang: locale,
+    height: "auto",
+    columnFormat: "dd",
+    viewRender: updateDayNumberDimensions,
+    windowResize: updateDayNumberDimensions,
+    eventClick,
+    dayClick: (date) => {
+      window.location.href = Craft.getCpUrl(`calendar/view/day/${date.format("YYYY/MM/DD")}`);
+    },
+    events: (start, end) => {
+      $.ajax({
+        url: Craft.getCpUrl("calendar/month"),
+        data: {
+          rangeStart: start.toISOString(),
+          rangeEnd: end.toISOString(),
+          nonEditable: true,
+          calendars: miniCal.data("calendars"),
+          siteId: miniCal.data("siteId"),
+          [Craft.csrfTokenName]: Craft.csrfTokenValue,
+        },
+        type: "post",
+        dataType: "json",
+        success: (eventList) => {
+          $(".fc-content-skeleton .fc-day-top.fc-has-event").removeClass("fc-has-event");
+
+          for (let i = 0; i < eventList.length; i++) {
+            const event = eventList[i];
+            const start = moment(event.start).utc();
+            const end = moment(event.end).utc();
+
+            while (start.isBefore(end)) {
+              $(
+                ".fc-content-skeleton .fc-day-top[data-date=" +
+                  start.utc().format("YYYY-MM-DD") +
+                  "]",
+              ).addClass("fc-has-event");
+
+              start.add(1, "days");
+            }
+          }
+        },
+      });
+    },
+    header: {
+      left: "prev",
+      center: "title",
+      right: "next",
+    },
+  });
+});
+
+const updateDayNumberDimensions = (_view, element) => {
+  const $skeleton = $(".fc-content-skeleton", element);
+
+  $(".fc-day-number", element).css({
+    textAlign: "center",
+    padding: 0,
+    minHeight: `${$skeleton.height()}px`,
+    lineHeight: `${$skeleton.height()}px`,
+  });
+};

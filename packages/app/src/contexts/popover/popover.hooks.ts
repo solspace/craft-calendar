@@ -1,9 +1,14 @@
 import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { normalizePopoverOptions, resolvePopoverLayout } from "./popover.operations";
-import type { NormalizedPopoverOptions, PopoverLayout, ShowPopoverOptions } from "./popover.types";
+import type {
+  NormalizedPopoverOptions,
+  PopoverAnchor,
+  PopoverLayout,
+  ShowPopoverOptions,
+} from "./popover.types";
 
 type PopoverState = {
-  anchor: HTMLElement;
+  anchor: PopoverAnchor;
   options?: ShowPopoverOptions;
 };
 
@@ -14,6 +19,23 @@ type UsePopoverPositionParams = {
 };
 
 const ARROW_PADDING = 14;
+
+const getAnchorRect = (anchor: PopoverAnchor): DOMRect | DOMRectReadOnly => {
+  if (anchor instanceof MouseEvent) {
+    const target = anchor.target;
+    if (target instanceof HTMLElement) {
+      const targetRect = target.getBoundingClientRect();
+      const left = targetRect.left + anchor.offsetX;
+      const top = targetRect.top + anchor.offsetY;
+
+      return new DOMRect(left, top, 1, 1);
+    }
+
+    return new DOMRect(anchor.clientX, anchor.clientY, 1, 1);
+  }
+
+  return anchor.getBoundingClientRect();
+};
 
 export const usePopoverPosition = ({
   state,
@@ -43,7 +65,7 @@ export const usePopoverPosition = ({
       return;
     }
 
-    const anchorRect = state.anchor.getBoundingClientRect();
+    const anchorRect = getAnchorRect(state.anchor);
     const popoverRect = popover.getBoundingClientRect();
     const bridgeRect = bridge.getBoundingClientRect();
 

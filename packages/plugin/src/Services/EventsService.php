@@ -2,7 +2,6 @@
 
 namespace Solspace\Calendar\Services;
 
-use Carbon\Carbon;
 use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -19,12 +18,11 @@ use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
-use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Models\SelectDateModel;
 use yii\base\Exception;
 use yii\web\HttpException;
 
@@ -45,6 +43,7 @@ class EventsService extends Component
             ->status($includeDisabled ? null : Element::STATUS_ENABLED)
             ->id($eventId)
             ->siteId($siteId)
+            ->one()
         ;
     }
 
@@ -83,6 +82,9 @@ class EventsService extends Component
         return $query->all();
     }
 
+    /**
+     * @return ElementQueryInterface|EventQuery
+     */
     public function getEventQuery(?array $criteria = null): ElementQueryInterface
     {
         return Event::buildQuery($criteria);
@@ -367,29 +369,6 @@ class EventsService extends Component
                 \Craft::$app->elements->deleteElementById($id, Event::class);
             }
         }
-    }
-
-    /**
-     * https://github.com/solspace/craft-calendar/issues/122.
-     *
-     * Adds the first occurrence date to the list of select dates
-     */
-    public function addFirstOccurrenceDate(array $selectDates): array
-    {
-        if (\array_key_exists(0, $selectDates) && !empty($selectDates[0]) && !empty($selectDates[0]->eventId)) {
-            $event = $this->getEventById($selectDates[0]->eventId, null, true);
-
-            if ($event) {
-                $firstOccurrenceDate = new SelectDateModel();
-                $firstOccurrenceDate->id = (int) $event->getId();
-                $firstOccurrenceDate->eventId = (int) $event->getId();
-                $firstOccurrenceDate->date = new Carbon($event->getStartDate(), DateHelper::UTC);
-
-                array_unshift($selectDates, $firstOccurrenceDate);
-            }
-        }
-
-        return $selectDates;
     }
 
     /**

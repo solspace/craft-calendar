@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Library\Configurations;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Library\Exceptions\ConfigurationException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 
 abstract class CalendarConfiguration
 {
@@ -55,7 +56,7 @@ abstract class CalendarConfiguration
         }
 
         if (\is_string($value)) {
-            return new Carbon($value);
+            return new Carbon($value, DateHelper::UTC);
         }
 
         if ($value instanceof Carbon) {
@@ -63,7 +64,7 @@ abstract class CalendarConfiguration
         }
 
         if ($value instanceof \DateTime) {
-            return new Carbon($value);
+            return new Carbon($value->format('Y-m-d H:i:s'), DateHelper::UTC);
         }
 
         return null;

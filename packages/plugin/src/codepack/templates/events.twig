@@ -1,0 +1,141 @@
+{% extends "demo/layouts/_layout" %}
+
+{% set pageTitle = "Events List" %}
+{% set page = "events" %}
+
+{% macro pager(pageInfo) %}
+    {% if pageInfo.total > 1 %}
+        <ul class="pagination">
+            {% if pageInfo.prevUrl %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ pageInfo.prevUrl }}">&laquo; Previous</a>
+                </li>
+            {% endif %}
+
+            {% for page, url in pageInfo.getPrevUrls(3) %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url }}">{{ page }}</a>
+                </li>
+            {% endfor %}
+
+
+            <li class="page-item active">
+                <a class="page-link" href="#">{{ pageInfo.currentPage }}</a>
+            </li>
+
+            {% for page, url in pageInfo.getNextUrls(3) %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url }}">{{ page }}</a>
+                </li>
+            {% endfor %}
+
+            {% if pageInfo.nextUrl %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ pageInfo.nextUrl }}">Next &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    {% endif %}
+{% endmacro %}
+{% from _self import pager %}
+
+{% block content %}
+
+{% if segment3 and segment4 and segment5 %}
+    {% set targetStartDate = segment3 ~ '-' ~ segment4 ~ '-01' %}
+    {% set targetEndDate = segment3 ~ '-' ~ segment4 ~ '-' ~ segment5 %}
+{% else %}
+    {% set targetStartDate = 'today' %}
+    {% set targetEndDate = '+30 days' %}
+{% endif %}
+
+    <h1>Events List</h1>
+    <p class="lead">
+        Below is list of upcoming events for your site.
+    </p>
+    <hr /><br />
+
+    <div class="row">
+        <div class="col-md-9">
+
+            <h3>List of Events</h3>
+            {% set eventOptions = {
+                rangeStart: targetStartDate,
+                rangeEnd: targetEndDate,
+                limit: 15
+            } %}
+
+            {% paginate calendar.occurrences(eventOptions) as pageInfo, occurrences %}
+
+            {% for occurrence in occurrences %}
+                {% set event = occurrence.event %}
+
+                <div class="card" style="border-color: {{ event.calendar.color }}; margin-bottom: 20px;">
+                    <h4 class="card-header d-flex justify-content-between align-items-center" style="color: {{ event.calendar.contrastColor }}; background-color: {{ event.calendar.lighterColor }};">
+                        {{ event.title }}&nbsp;&nbsp;
+                        <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format('Y/m/d') }}" class="btn btn-light btn-sm border-light border border-dark">View Event</a>
+                    </h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>
+                            {{ occurrence.startDate.format('l, F j, Y') }}
+                            {% if event.allDay %}
+                                (all day)
+                            {% else %}
+                                at {{ occurrence.startDate.format("g:ia") }} -
+                                {% if event.multiDay %}
+                                    <br />{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
+                                {% else %}
+                                    {{ occurrence.endDate.format("g:ia") }}
+                                {% endif %}
+                            {% endif %}
+                        </strong>
+                        </li>
+                        <li class="list-group-item">
+                            Calendar:&nbsp;
+                            <strong style="color: {{ event.calendar.color }};"><span class="fas fa-calendar-alt" aria-hidden="true"></span>&nbsp;{{ event.calendar.name }}</strong>
+                        </li>
+                        <li class="list-group-item">
+                            Location:&nbsp;
+                            {% if event['location'] is defined and event.location is not empty %}
+                                {{ event.location|striptags }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            Description:&nbsp;
+                            {% if event['description'] is defined and event.description is not empty %}
+                                {{ event.description|striptags }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+
+            {% else %}
+                <p>No events could be found within the specified time range (today until 6 months from today).</p>
+            {% endfor %}
+
+            {{ pager(pageInfo) }}
+        </div>
+
+        <div class="col-sm-12 col-md-3">
+            {% include "demo/layouts/_sidebar" %}
+            <br />
+            <h3>Events by Month</h3>
+            <div class="list-group">
+                {% set month = craft.calendar.month({date: targetStartDate, calendarId: 0}) %}
+                {% for date in month.dateRange(6, 6) %}
+                    <a href="{{ siteUrl }}demo/events/{{ date.format('Y/m') }}/{{ date.daysInMonth }}"
+                       class="list-group-item list-group-item-action text-dark {{ date == month.date ? "list-group-item-warning" }}">
+                        {{ date.format('M Y') }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

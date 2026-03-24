@@ -4,9 +4,10 @@ namespace Solspace\Calendar\Library\Events;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
-use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Duration\AbstractDuration;
+use Solspace\Calendar\Models\OccurrenceModel;
 
 /**
  * Class AbstractEventCollection
@@ -15,37 +16,23 @@ use Solspace\Calendar\Library\Duration\AbstractDuration;
  */
 abstract class AbstractEventCollection implements EventCollectionInterface, \Iterator
 {
-    protected ?bool $eventsBuilt = null;
+    protected OccurrenceList $occurrences;
+    protected ?OccurrenceList $allDayOccurrences = null;
+    protected ?OccurrenceList $timedOccurrences = null;
 
-    /** @var Event[] */
-    protected ?array $cachedEvents = null;
+    private array $iterableObject;
+    private Carbon $start;
+    private Carbon $end;
+    private AbstractDuration $duration;
 
-    /** @var Event[] */
-    protected ?array $events = null;
-
-    private ?array $iterableObject = null;
-
-    private ?EventQuery $eventQuery = null;
-
-    private ?Carbon $startDate = null;
-
-    private ?Carbon $endDate = null;
-
-    private ?AbstractDuration $duration = null;
-
-    /**
-     * AbstractEventCollection constructor.
-     * Sets start and end dates from $duration
-     * And builds the iterable object and populates the event list.
-     */
-    final public function __construct(AbstractDuration $duration, EventQuery $eventQuery)
+    public function __construct(AbstractDuration $duration, OccurrenceList $occurrences)
     {
         $this->duration = $duration;
-        $this->startDate = $duration->getStartDate();
-        $this->endDate = $duration->getEndDate();
-        $this->eventQuery = $eventQuery;
+        $this->start = $duration->getStart();
+        $this->end = $duration->getEnd();
+        $this->occurrences = $occurrences;
 
-        $this->iterableObject = $this->buildIterableObject($eventQuery);
+        $this->iterableObject = $this->buildIterableObject();
     }
 
     /**
@@ -53,38 +40,51 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
      * For EventMonth this date would be the instantiated date's first day
      * not the actual first day which might be in the previous month.
      */
-    final public function getDate(): Carbon
+    public function getDate(): Carbon
     {
-        return $this->duration->getStartDate()->copy();
+        return $this->duration->getStart()->copy();
+    }
+
+    public function getDateLocalized(): Carbon
+    {
+        return $this->duration->getStartLocalized()->copy();
+    }
+
+    public function getStart(): Carbon
+    {
+        return $this->start->copy();
     }
 
     /**
-     * Returns the localized start date of the event collection.
+     * Alias for ::getStart().
      */
-    final public function getDateLocalized(): Carbon
+    public function getStartDate(): Carbon
     {
-        return $this->duration->getStartDateLocalized()->copy();
+        return $this->getStart();
     }
 
-    final public function getStartDate(): Carbon
+    public function getEnd(): Carbon
     {
-        return $this->startDate->copy();
+        return $this->end->copy();
     }
 
-    final public function getEndDate(): Carbon
+    /**
+     * Alias for ::getEnd().
+     */
+    public function getEndDate(): Carbon
     {
-        return $this->endDate->copy();
+        return $this->getEnd();
     }
 
     /**
      * Returns a Carbon object with the duration interval set backwards by 1 iteration.
      */
-    final public function getPreviousDate(): Carbon
+    public function getPreviousDate(): Carbon
     {
         return $this->getDate()->copy()->sub($this->getInterval());
     }
 
-    final public function getPreviousDateLocalized(): Carbon
+    public function getPreviousDateLocalized(): Carbon
     {
         return $this->getDateLocalized()->copy()->sub($this->getInterval());
     }
@@ -92,12 +92,12 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /**
      * Returns a Carbon object with the duration interval set forward by 1 iteration.
      */
-    final public function getNextDate(): Carbon
+    public function getNextDate(): Carbon
     {
         return $this->getDate()->copy()->add($this->getInterval());
     }
 
-    final public function getNextDateLocalized(): Carbon
+    public function getNextDateLocalized(): Carbon
     {
         return $this->getDateLocalized()->copy()->add($this->getInterval());
     }
@@ -110,7 +110,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
      *
      * @return Carbon[]
      */
-    final public function getDateRange(int $before = 1, int $after = 1): array
+    public function getDateRange(int $before = 1, int $after = 1): array
     {
         $before = abs($before);
         $after = abs($after);
@@ -136,26 +136,44 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
         return $rangeList;
     }
 
-    /**
-     * @return Event[]
-     */
-    final public function getEvents(): array
+    public function getOccurrences(): OccurrenceList
     {
-        if (null === $this->cachedEvents) {
-            $this->cachedEvents = $this->buildEventCache();
+        return $this->occurrences;
+    }
+
+    public function getOccurrenceCount(): int
+    {
+        return \count($this->getOccurrences());
+    }
+
+    public function getAllDayOccurrences(): OccurrenceList
+    {
+        if (null === $this->allDayOccurrences) {
+            $this->allDayOccurrences = $this->occurrences->filter(static fn (OccurrenceModel $occurrence) => $occurrence->event->isAllDay());
         }
 
-        return $this->cachedEvents;
+        return $this->allDayOccurrences;
     }
 
-    final public function getEventCount(): int
+    public function getAllDayOccurrenceCount(): int
     {
-        return \count($this->getEvents());
+        return \count($this->getAllDayOccurrences());
     }
 
-    /**
-     * Checks if the given $date is contained in this object.
-     */
+    public function getTimedOccurrences(): OccurrenceList
+    {
+        if (null === $this->timedOccurrences) {
+            $this->timedOccurrences = $this->occurrences->filter(static fn (OccurrenceModel $occurrence) => !$occurrence->event->isAllDay());
+        }
+
+        return $this->timedOccurrences;
+    }
+
+    public function getTimedOccurrenceCount(): int
+    {
+        return \count($this->getTimedOccurrences());
+    }
+
     public function containsDate(Carbon $date): bool
     {
         return $this->duration->containsDate($date);
@@ -164,7 +182,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /**
      * Return the current element.
      *
-     * @see  http://php.net/manual/en/iterator.current.php
+     * @see   http://php.net/manual/en/iterator.current.php
      *
      * @return mixed can return any type
      *
@@ -178,7 +196,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /**
      * Move forward to next element.
      *
-     * @see  http://php.net/manual/en/iterator.next.php
+     * @see   http://php.net/manual/en/iterator.next.php
      * @since 5.0.0
      */
     public function next(): void
@@ -189,7 +207,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /**
      * Return the key of the current element.
      *
-     * @see  http://php.net/manual/en/iterator.key.php
+     * @see   http://php.net/manual/en/iterator.key.php
      *
      * @return null|int|string scalar on success, or null on failure
      *
@@ -203,7 +221,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /**
      * Checks if current position is valid.
      *
-     * @see  http://php.net/manual/en/iterator.valid.php
+     * @see   http://php.net/manual/en/iterator.valid.php
      *
      * @return bool The return value will be casted to boolean and then evaluated.
      *              Returns true on success or false on failure.
@@ -218,7 +236,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /**
      * Rewind the Iterator to the first element.
      *
-     * @see  http://php.net/manual/en/iterator.rewind.php
+     * @see   http://php.net/manual/en/iterator.rewind.php
      * @since 5.0.0
      */
     public function rewind(): void
@@ -226,22 +244,10 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
         reset($this->iterableObject);
     }
 
-    protected function getEventQuery(): EventQuery
-    {
-        return $this->eventQuery;
-    }
-
     protected function getDuration(): AbstractDuration
     {
         return $this->duration;
     }
-
-    /**
-     * Get an event list for caching.
-     *
-     * @return Event[]
-     */
-    abstract protected function buildEventCache(): array;
 
     /**
      * Gets the interval of this object.
@@ -251,5 +257,5 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     /**
      * Builds an iterable object.
      */
-    abstract protected function buildIterableObject(EventQuery $eventQuery): array;
+    abstract protected function buildIterableObject(): array;
 }

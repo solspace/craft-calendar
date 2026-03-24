@@ -20,6 +20,8 @@ use craft\models\FieldLayout;
 use craft\web\CpScreenResponseBehavior;
 use Illuminate\Support\Collection;
 use RRule\RRule;
+use RRule\RRuleInterface;
+use RRule\RSet;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Actions\DeleteEventAction;
 use Solspace\Calendar\Elements\Actions\SetStatusAction;
@@ -66,7 +68,9 @@ class Event extends Element implements \JsonSerializable
 
     public ?Carbon $postDate = null;
     public ?Carbon $startDate = null;
+    public ?Carbon $startDateLocalized = null;
     public ?Carbon $endDate = null;
+    public ?Carbon $endDateLocalized = null;
     public ?Carbon $until = null;
     public ?string $timezone = null;
 
@@ -78,6 +82,8 @@ class Event extends Element implements \JsonSerializable
     public ?int $interval = null;
     public ?int $count = null;
 
+    private bool $syncFromRequestOnSave = true;
+
     public function __construct($config = [])
     {
         foreach (self::CARBON_PROPERTIES as $property) {
@@ -88,11 +94,19 @@ class Event extends Element implements \JsonSerializable
 
         foreach (self::CARBON_TZ_PROPERTIES as $property) {
             if (isset($config[$property]) && \is_string($config[$property])) {
-                $config[$property] = new Carbon($config[$property], $config['timezone'] ?? 'UTC');
+                $config[$property] = new Carbon($config[$property], DateHelper::UTC);
             }
         }
 
         parent::__construct($config);
+
+        if ($this->startDate) {
+            $this->startDateLocalized = new Carbon($this->startDate->toDateTimeString());
+        }
+
+        if ($this->endDate) {
+            $this->endDateLocalized = new Carbon($this->endDate->toDateTimeString());
+        }
     }
 
     public function canCreateDrafts(User $user): bool
@@ -244,7 +258,7 @@ class Event extends Element implements \JsonSerializable
     {
         $settings = Calendar::getInstance()->settings;
 
-        $date = new Carbon();
+        $date = new Carbon('now', DateHelper::UTC);
         $date->setTime($date->hour, 0);
 
         $element = new self();
@@ -253,7 +267,7 @@ class Event extends Element implements \JsonSerializable
         $element->allDay = $settings->isAllDayDefault();
         $element->calendarId = $calendarId ?? Calendar::getInstance()->calendars->getFirstCalendarId();
         $element->authorId = \Craft::$app->user->getId();
-        $element->postDate = new Carbon();
+        $element->postDate = new Carbon('now', DateHelper::UTC);
         $element->enabled = true;
 
         if ($siteId) {
@@ -380,7 +394,7 @@ class Event extends Element implements \JsonSerializable
     {
         static $isHappening;
         if (null === $isHappening) {
-            $isHappening = $this->isHappeningOn(new Carbon('now'));
+            $isHappening = $this->isHappeningOn(new Carbon('now', DateHelper::UTC));
         }
 
         return $isHappening;
@@ -389,7 +403,9 @@ class Event extends Element implements \JsonSerializable
     public function isHappeningOn(\DateTime|string $date): bool
     {
         if (\is_string($date)) {
-            $date = new Carbon($date);
+            $date = new Carbon($date, DateHelper::UTC);
+        } elseif ($date instanceof \DateTimeInterface) {
+            $date = new Carbon($date->format('Y-m-d H:i:s'), DateHelper::UTC);
         }
 
         return $date->between($this->getStartDate(), $this->getEndDate());
@@ -413,13 +429,9 @@ class Event extends Element implements \JsonSerializable
      */
     public function getOccurrenceDatesBetween(?\DateTime $rangeStart = null, ?\DateTime $rangeEnd = null): array
     {
-        if (!$this->repeats()) {
-            return [];
-        }
-
         $rrule = $this->getRRuleObject();
 
-        return $rrule?->getOccurrencesBetween($rangeStart, $rangeEnd, self::MAX_OCCURRENCES);
+        return $rrule?->getOccurrencesBetween($rangeStart, $rangeEnd, self::MAX_OCCURRENCES) ?? [];
     }
 
     public function happensOn(\DateTime $date): bool
@@ -427,16 +439,12 @@ class Event extends Element implements \JsonSerializable
         $date = Carbon::createFromInterface($date);
         $date->setTime(0, 0);
 
-        if ($date->toDateString() === $this->getStartDate()->toDateString()) {
-            return true;
-        }
-
         $rrule = $this->getRRuleObject();
-        if (null === $rrule) {
-            return false;
+        if (null !== $rrule) {
+            return $rrule->occursAt($date);
         }
 
-        return $rrule->occursAt($date);
+        return $date->toDateString() === $this->getStartDate()->toDateString();
     }
 
     public function getStartDate(): Carbon
@@ -444,9 +452,19 @@ class Event extends Element implements \JsonSerializable
         return $this->startDate;
     }
 
+    public function getStartDateLocalized(): Carbon
+    {
+        return $this->startDateLocalized;
+    }
+
     public function getEndDate(): Carbon
     {
         return $this->endDate;
+    }
+
+    public function getEndDateLocalized(): Carbon
+    {
+        return $this->endDateLocalized;
     }
 
     public function getUntil(): ?Carbon
@@ -465,12 +483,7 @@ class Event extends Element implements \JsonSerializable
      */
     public function getRRuleRFCString(): ?string
     {
-        $rruleObject = $this->getRRuleObject();
-        if ($rruleObject instanceof RRule) {
-            return $rruleObject->rfcString(false);
-        }
-
-        return null;
+        return $this->rrule ?: null;
     }
 
     public function getHumanReadableRepeatsString(): ?string
@@ -485,7 +498,11 @@ class Event extends Element implements \JsonSerializable
         $locale = preg_replace('/^(\w+)_.*$/', '$1', $locale);
 
         $rruleObject = $this->getRRuleObject();
-        if ($rruleObject) {
+        if ($rruleObject instanceof RSet) {
+            $rruleObject = $rruleObject->getRRules()[0] ?? null;
+        }
+
+        if ($rruleObject instanceof RRule) {
             $string = $rruleObject->humanReadable([
                 'locale' => $locale,
                 'date_formatter' => static function (\DateTime $date) use ($format) {
@@ -546,13 +563,13 @@ class Event extends Element implements \JsonSerializable
         return $this->rrule;
     }
 
-    public function getRRuleObject(): ?RRule
+    public function getRRuleObject(): ?RRuleInterface
     {
-        if ($this->repeatType === self::REPEAT_NEVER || !$this->rrule) {
+        if (!$this->rrule) {
             return null;
         }
 
-        return new RRule($this->rrule);
+        return RRule::createFromRfcString($this->rrule, true);
     }
 
     public function getReadableRepeatRule(): ?string
@@ -591,6 +608,14 @@ class Event extends Element implements \JsonSerializable
 
         $this->updateTitle();
 
+        if (!$this->syncFromRequestOnSave) {
+            if (!$this->timezone || '' === trim((string) $this->timezone)) {
+                $this->timezone = \Craft::$app->getTimeZone();
+            }
+
+            return true;
+        }
+
         $request = \Craft::$app->getRequest();
 
         $timezone = $request->getBodyParam('timezone', $this->timezone);
@@ -620,6 +645,13 @@ class Event extends Element implements \JsonSerializable
         $this->rrule = $rrule;
 
         return true;
+    }
+
+    public function disableRequestSyncOnSave(): self
+    {
+        $this->syncFromRequestOnSave = false;
+
+        return $this;
     }
 
     public function afterSave(bool $isNew): void
@@ -671,7 +703,7 @@ class Event extends Element implements \JsonSerializable
                 'start' => $this->startDate->timestamp,
                 'end' => $this->endDate->timestamp,
                 'until' => $this->until?->timestamp,
-                'timezone' => $this->timezone,
+                'timezone' => $this->timezone ?: DateHelper::UTC,
 
                 'allDay' => $this->allDay,
                 'repeatType' => $this->repeatType,
@@ -1036,7 +1068,7 @@ class Event extends Element implements \JsonSerializable
 
                 return $author ? Cp::elementHtml($author) : '';
 
-            case 'calendar':
+            case 'name':
                 return \sprintf(
                     '<div style="white-space: nowrap;"><span class="color-indicator" style="background-color: %s;"></span>%s</div>',
                     $this->getCalendar()->color,
@@ -1065,7 +1097,7 @@ class Event extends Element implements \JsonSerializable
 
                 return $author ? Cp::elementChipHtml($author) : '';
 
-            case 'calendar':
+            case 'name':
                 return \sprintf(
                     '<div style="white-space: nowrap;"><span class="color-indicator" style="background-color: %s;"></span>%s</div>',
                     $this->getCalendar()->color,
@@ -1196,7 +1228,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         if ($value instanceof \DateTimeInterface) {
-            return Carbon::createFromInterface($value);
+            return new Carbon($value->format('Y-m-d H:i:s'), DateHelper::UTC);
         }
 
         if (\is_array($value)) {
@@ -1215,11 +1247,7 @@ class Event extends Element implements \JsonSerializable
 
         if (\is_string($value)) {
             try {
-                if (null !== $timezone && '' !== $timezone && !preg_match('/(?:Z|[+-]\d{2}:?\d{2})$/', $value)) {
-                    return Carbon::parse($value, $timezone);
-                }
-
-                return new Carbon($value);
+                return new Carbon($value, DateHelper::UTC);
             } catch (\Throwable) {
                 return $fallback;
             }

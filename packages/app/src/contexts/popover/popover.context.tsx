@@ -10,16 +10,16 @@ import {
 } from "react";
 import { usePopoverPosition } from "./popover.hooks";
 import { PopoverArrow, PopoverBridge, PopoverContainer } from "./popover.styles";
-import type { ShowPopoverOptions } from "./popover.types";
+import type { PopoverAnchor, ShowPopoverOptions } from "./popover.types";
 
 type PopoverContextType = {
-  showPopover: (content: ReactNode, anchor: HTMLElement, options?: ShowPopoverOptions) => void;
+  showPopover: (content: ReactNode, anchor: PopoverAnchor, options?: ShowPopoverOptions) => void;
   hidePopover: () => void;
 };
 
 type PopoverState = {
   content: ReactNode;
-  anchor: HTMLElement;
+  anchor: PopoverAnchor;
   options?: ShowPopoverOptions;
 };
 
@@ -39,9 +39,9 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
   const bridgeRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const showPopover: PopoverContextType["showPopover"] = (content, anchor, options) => {
+  const showPopover = useCallback<PopoverContextType["showPopover"]>((content, anchor, options) => {
     setState({ content, anchor, options });
-  };
+  }, []);
 
   const hidePopover = useCallback(() => setState(undefined), []);
   const layout = usePopoverPosition({ state, bridgeRef, popoverRef });

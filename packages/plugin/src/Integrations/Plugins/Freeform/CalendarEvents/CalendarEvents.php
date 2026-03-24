@@ -7,6 +7,7 @@ use craft\base\Element;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Freeform\Attributes\Integration\Type;
 use Solspace\Freeform\Attributes\Property\Flag;
 use Solspace\Freeform\Attributes\Property\Implementations\FieldMapping\FieldMapping;
@@ -133,11 +134,11 @@ class CalendarEvents extends ElementIntegration
         }
 
         if (!$entry->startDate instanceof Carbon) {
-            $entry->startDate = Carbon::parse($entry->startDate);
+            $entry->startDate = new Carbon((string) $entry->startDate, DateHelper::UTC);
         }
 
         if (!$entry->endDate instanceof Carbon) {
-            $entry->endDate = Carbon::parse($entry->endDate);
+            $entry->endDate = new Carbon((string) $entry->endDate, DateHelper::UTC);
         }
 
         return $entry;

@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Transformers;
 
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\OccurrenceModel;
 
@@ -34,6 +35,18 @@ class FullCalTransformer
             'editable' => true,
             'rrule' => $element->getRRuleRFCString(),
         ];
+    }
+
+    public function fromList(array|OccurrenceList $list): array
+    {
+        if ($list instanceof OccurrenceList) {
+            $list = $list->getOccurrences();
+        }
+
+        return array_map(
+            [$this, 'fromModel'],
+            $list,
+        );
     }
 
     public function fromModel(OccurrenceModel $model): array

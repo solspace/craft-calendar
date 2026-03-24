@@ -1,6 +1,8 @@
 export type PopoverPosition = "top" | "right" | "bottom" | "left";
 export type PopoverAlignment = "start" | "center" | "end";
 
+export type PopoverAnchor = HTMLElement | MouseEvent;
+
 export type ShowPopoverOptions = {
   position?: PopoverPosition | PopoverPosition[];
   alignment?: PopoverAlignment;

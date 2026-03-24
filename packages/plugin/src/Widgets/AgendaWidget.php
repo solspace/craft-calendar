@@ -48,16 +48,20 @@ class AgendaWidget extends AbstractWidget
 
         $calendarLocale = \Craft::$app->locale->id;
         $calendarLocale = str_replace('_', '-', strtolower($calendarLocale));
-        $localeModulePath = __DIR__.'/../js/lib/fullcalendar/locale/'.$calendarLocale.'.js';
-        if (!file_exists($localeModulePath)) {
-            $calendarLocale = 'en';
-        }
 
         return \Craft::$app->view->renderTemplate(
             'calendar/_widgets/agenda/body',
             [
-                'locale' => $calendarLocale,
                 'settings' => $this,
+                'configuration' => [
+                    'calendars' => $this->calendars,
+                    'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
+                    'defaultView' => $this->view,
+                    'language' => $calendarLocale,
+                    'overlapThreshold' => Calendar::getInstance()->settings->getOverlapThreshold(),
+                    'siteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
+                    'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),
+                ],
             ]
         );
     }

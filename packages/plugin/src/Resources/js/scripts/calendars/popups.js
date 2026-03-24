@@ -1,1 +1,419 @@
-var CalendarScripts_calendars_popups=(function(f){"use strict";let g=!1;const U=$("#solspace-calendar"),Y=(e,p)=>{g||(g=!0,$("<div />").qtip({content:{text:$("#event-creator"),title:Craft.t("calendar","New Event")},position:{my:"center",at:"center",target:$(window)},show:{ready:!0,modal:{on:!0,blur:!0}},hide:!1,style:{classes:"qtip-bootstrap dialogue",width:500},events:{render:(w,n)=>{const t=n.elements.content,{currentSiteId:T}=U.data();$("ul.errors",t).empty();const k=e.utc().format("HHmmss"),m=p.utc().format("HHmmss");let s=!1;k===m&&m==="000000"&&(p.subtract(1,"seconds"),s=!0);const l=D(e.toDate()),b=D(p.toDate()),r=$("#event-creator"),h=$('input[name="startDate[date]"]',r),a=$('input[name="startDate[time]"]',r),d=$('input[name="endDate[date]"]',r),i=$('input[name="endDate[time]"]',r);r.addClass("shown"),h.datepicker("setDate",l),d.datepicker("setDate",b),a.timepicker("setTime",l),i.timepicker("setTime",b);const c=$("input[name=allDay]"),o=c.parents(".lightswitch:first");$("input",o).val(s?1:""),s?(o.data("lightswitch").turnOn(),$(".timewrapper",r).hide()):(o.data("lightswitch").turnOff(),$(".timewrapper",r).show()),setTimeout(()=>{$("input[name=title]:first",t).val("").focus().bind("keypress",C=>{(C.which?C.which:C.keyCode)===13&&$("button.submit",t).trigger("click")})},100);const H=a.timepicker("option","timeFormat").replace("h","hh").replace("H","HH").replace("G","H").replace("g","h").replace("A","a").replace("i","mm");$("button.submit",t).unbind("click").click(function(C){const v=$(this),I=$("input[name=title]",t).val(),S=$("select[name=calendarId]",t).val(),j=moment(h.datepicker("getDate")),M=moment(a.val().replace(/(a|p)\.(m)\./gi,"$1$2"),H),x=moment(d.datepicker("getDate")),V=moment(i.val().replace(/(a|p)\.(m)\./gi,"$1$2"),H);v.prop("disabled",!0).addClass("disabled"),v.text(Craft.t("app","Saving...")),$.ajax({url:Craft.getCpUrl("calendar/events/api/create"),type:"post",dataType:"json",data:{siteId:T,startDate:`${j.format("YYYY-MM-DD")} ${M.format("HH:mm:ss")}`,endDate:`${x.format("YYYY-MM-DD")} ${V.format("HH:mm:ss")}`,allDay:c.val(),event:{title:I,calendarId:S},[Craft.csrfTokenName]:Craft.csrfTokenValue},success:u=>{if(u.error)$("ul.errors",t).empty().append($("<li />",{text:u.error}));else if(u.event){const y=u.event;y.allDay&&(y.end=moment(y.end).add(2,"s").utc().format()),$("*[data-calendar-instance]").fullCalendar("renderEvent",y),$("*[data-calendar-instance]").fullCalendar("unselect"),n.hide(C)}},error:({responseJSON:u})=>{Craft.cp.displayNotification("error",u.error)},complete:()=>{v.prop("disabled",!1).removeClass("disabled"),v.text(Craft.t("app","Save"))}})}),$("button.delete",t).unbind("click").click(()=>{n.hide()})},hide:(w,n)=>{$("#event-creator").removeClass("shown").insertAfter($("#solspace-calendar")),$("*[data-calendar-instance]").fullCalendar("unselect"),g=!1,n.destroy()}}}))},E=(e,p,w,n=!1)=>{if(!e.calendar)return;const t=$("<div>",{class:"buttons"}),T=$("<div>"),k=$("<div>",{class:"calendar-data",html:'<span class="color-indicator" style="background-color: '+e.backgroundColor+';"></span> '+e.calendar.name}),m=e.start,s=e.end;console.log(m,s);let l="dddd, MMMM D, YYYY";e.allDay?s.subtract(1,"days"):l=`${l} [${Craft.t("calendar","at")}] ${w}`;const b=$("<div>",{class:"event-date-range separator",html:'<div style="white-space: nowrap;"><label>'+Craft.t("calendar","Starts")+":</label> "+m.format(l)+'</div><div style="white-space: nowrap;"><label>'+Craft.t("calendar","Ends")+":</label> "+s.format(l)+"</div>"});let r="";e.repeats&&(r=$("<div>",{class:"event-repeats separator",html:'<div id="solspace-calendar-spinner" class="spinner"></div>'})),e.editable&&(t.append($("<a>",{class:"btn small submit",href:Craft.getCpUrl(`calendar/events/${e.id}${n?`/${e.site.handle}`:""}`),text:Craft.t("calendar","Edit")})),t.append($("<a>",{class:"btn small delete-event",href:Craft.getCpUrl("calendar/events/api/delete"),text:Craft.t("calendar","Delete"),data:{id:e.id}})),e.repeats&&t.append($("<a>",{class:"btn small delete-event-occurrence",href:Craft.getCpUrl("calendar/events/api/delete-occurrence"),text:Craft.t("calendar","Delete occurrence"),data:{id:e.id,date:e.start.toISOString()}}))),p.qtip({content:{title:e.title,button:!0,text:T.add(k).add(b).add(r).add(t)},style:{classes:"qtip-bootstrap qtip-event",tip:{width:30,height:15}},position:{my:"right center",at:"left center",adjust:{method:"shift flip"}},show:{solo:!0,delay:500},hide:{fixed:!0,delay:300},events:{show:h=>{window.qTipsEnabled||h.preventDefault(),e.repeats&&$.ajax({cache:!1,url:Craft.getCpUrl("calendar/events/api/first-occurrence-date"),type:"post",dataType:"json",data:{eventId:e.id,[Craft.csrfTokenName]:Craft.csrfTokenValue},success:a=>{a.success&&a.event&&Object.hasOwn(a.event,"readableRepeatRule")&&$(".event-repeats").html("<label>"+Craft.t("calendar","Repeats")+":</label> "+a.event.readableRepeatRule)}})},render:(h,a)=>{$("a.delete-event-occurrence",a.elements.content).click(function(){const d=$(this).attr("href"),i=$(this).data("id"),c=$(this).data("date");return confirm(Craft.t("calendar","Are you sure?"))&&$.ajax({url:d,type:"post",dataType:"json",data:{eventId:i,date:c,[Craft.csrfTokenName]:Craft.csrfTokenValue},success:o=>{if(!o.error){$("*[data-calendar-instance]").fullCalendar("refetchEvents"),a.destroy();return}console.warn(o.error)}}),!1}),$("a.delete-event",a.elements.content).click(function(){const d=$(this).attr("href"),i=$(this).data("id");return confirm(Craft.t("calendar","Are you sure you want to delete this event?"))&&$.ajax({url:d,type:"post",dataType:"json",data:{eventId:i,[Craft.csrfTokenName]:Craft.csrfTokenValue},success:c=>{if(!c.error){$("*[data-calendar-instance]").fullCalendar("removeEvents",e.id),a.destroy();return}console.warn(c.error)}}),!1})}}})},D=e=>new Date(e.getUTCFullYear(),e.getUTCMonth(),e.getUTCDate(),e.getUTCHours(),e.getUTCMinutes(),e.getUTCSeconds());return f.buildEventPopup=E,f.createDateAsUTC=D,f.showEventCreator=Y,Object.defineProperty(f,Symbol.toStringTag,{value:"Module"}),f})({});
+let eventCreatorShown = false;
+const $calendar = $("#solspace-calendar");
+
+/**
+ * qTip2 Modal window of "Event Create"
+ *
+ * @param start
+ * @param end
+ */
+export const showEventCreator = (start, end) => {
+  if (eventCreatorShown) {
+    return;
+  }
+
+  eventCreatorShown = true;
+
+  /*
+   * Since the dialogue isn't really a tooltip as such, we'll use a dummy
+   * out-of-DOM element as our target instead of an actual element like document.body
+   */
+  $("<div />").qtip({
+    content: {
+      text: $("#event-creator"),
+      title: Craft.t("calendar", "New Event"),
+    },
+    position: {
+      my: "center",
+      at: "center",
+      target: $(window),
+    },
+    show: {
+      ready: true,
+      modal: {
+        on: true,
+        blur: true,
+      },
+    },
+    hide: false,
+    style: {
+      classes: "qtip-bootstrap dialogue",
+      width: 500,
+    },
+    events: {
+      render: (_event, api) => {
+        const context = api.elements.content;
+        const { currentSiteId: siteId } = $calendar.data();
+
+        $("ul.errors", context).empty();
+
+        const startTime = start.utc().format("HHmmss"),
+          endTime = end.utc().format("HHmmss");
+
+        let isAllDay = false;
+        if (startTime === endTime && endTime === "000000") {
+          end.subtract(1, "seconds");
+          isAllDay = true;
+        }
+
+        const utcStart = createDateAsUTC(start.toDate());
+        const utcEnd = createDateAsUTC(end.toDate());
+        const $creator = $("#event-creator");
+        const $startDate = $('input[name="startDate[date]"]', $creator);
+        const $startTime = $('input[name="startDate[time]"]', $creator);
+        const $endDate = $('input[name="endDate[date]"]', $creator);
+        const $endTime = $('input[name="endDate[time]"]', $creator);
+
+        $creator.addClass("shown");
+
+        $startDate.datepicker("setDate", utcStart);
+        $endDate.datepicker("setDate", utcEnd);
+        $startTime.timepicker("setTime", utcStart);
+        $endTime.timepicker("setTime", utcEnd);
+
+        const $allDayInput = $("input[name=allDay]");
+        const lightswitch = $allDayInput.parents(".lightswitch:first");
+        $("input", lightswitch).val(isAllDay ? 1 : "");
+        if (isAllDay) {
+          lightswitch.data("lightswitch").turnOn();
+          $(".timewrapper", $creator).hide();
+        } else {
+          lightswitch.data("lightswitch").turnOff();
+          $(".timewrapper", $creator).show();
+        }
+
+        setTimeout(() => {
+          $("input[name=title]:first", context)
+            .val("")
+            .focus()
+            .bind("keypress", (e) => {
+              const key = e.which ? e.which : e.keyCode;
+
+              if (key === 13) {
+                // ENTER
+                $("button.submit", context).trigger("click");
+              }
+            });
+        }, 100);
+
+        const timeFormat = $startTime.timepicker("option", "timeFormat");
+        const momentTimeFormat = timeFormat
+          .replace("h", "hh")
+          .replace("H", "HH")
+          .replace("G", "H")
+          .replace("g", "h")
+          .replace("A", "a")
+          .replace("i", "mm");
+
+        $("button.submit", context)
+          .unbind("click")
+          .click(function (e) {
+            const self = $(this),
+              title = $("input[name=title]", context).val(),
+              calendarId = $("select[name=calendarId]", context).val(),
+              startDateValue = moment($startDate.datepicker("getDate")),
+              startTimeValue = moment(
+                $startTime.val().replace(/(a|p)\.(m)\./gi, "$1$2"),
+                momentTimeFormat,
+              ),
+              endDateValue = moment($endDate.datepicker("getDate")),
+              endTimeValue = moment(
+                $endTime.val().replace(/(a|p)\.(m)\./gi, "$1$2"),
+                momentTimeFormat,
+              );
+
+            self.prop("disabled", true).addClass("disabled");
+            self.text(Craft.t("app", "Saving..."));
+
+            $.ajax({
+              url: Craft.getCpUrl("calendar/events/api/create"),
+              type: "post",
+              dataType: "json",
+              data: {
+                siteId,
+                startDate: `${startDateValue.format("YYYY-MM-DD")} ${startTimeValue.format("HH:mm:ss")}`,
+                endDate: `${endDateValue.format("YYYY-MM-DD")} ${endTimeValue.format("HH:mm:ss")}`,
+                allDay: $allDayInput.val(),
+                event: {
+                  title: title,
+                  calendarId: calendarId,
+                },
+                [Craft.csrfTokenName]: Craft.csrfTokenValue,
+              },
+              success: (response) => {
+                if (response.error) {
+                  $("ul.errors", context)
+                    .empty()
+                    .append($("<li />", { text: response.error }));
+                } else if (response.event) {
+                  const event = response.event;
+                  if (event.allDay) {
+                    event.end = moment(event.end).add(2, "s").utc().format();
+                  }
+
+                  $("*[data-calendar-instance]").fullCalendar("renderEvent", event);
+                  $("*[data-calendar-instance]").fullCalendar("unselect");
+
+                  api.hide(e);
+                }
+              },
+              error: ({ responseJSON }) => {
+                Craft.cp.displayNotification("error", responseJSON.error);
+              },
+              complete: () => {
+                self.prop("disabled", false).removeClass("disabled");
+                self.text(Craft.t("app", "Save"));
+              },
+            });
+          });
+
+        $("button.delete", context)
+          .unbind("click")
+          .click(() => {
+            api.hide();
+          });
+      },
+      hide: (_event, api) => {
+        $("#event-creator").removeClass("shown").insertAfter($("#solspace-calendar"));
+        $("*[data-calendar-instance]").fullCalendar("unselect");
+        eventCreatorShown = false;
+        api.destroy();
+      },
+    },
+  });
+};
+
+/**
+ * Attaches a qTip2 popup on a given event
+ *
+ * @param event
+ * @param element
+ * @param calendarTimeFormat
+ * @param isMultiSite
+ */
+export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite = false) => {
+  if (!event.calendar) {
+    return;
+  }
+
+  const editButton = $("<div>", {
+    class: "buttons",
+  });
+
+  const qtipContent = $("<div>");
+  const calendarData = $("<div>", {
+    class: "calendar-data",
+    html:
+      '<span class="color-indicator" style="background-color: ' +
+      event.backgroundColor +
+      ';"></span> ' +
+      event.calendar.name,
+  });
+
+  const start = event.start;
+  const end = event.end;
+
+  console.log(start, end);
+
+  let dateFormat = "dddd, MMMM D, YYYY";
+  if (event.allDay) {
+    end.subtract(1, "days");
+  } else {
+    dateFormat = `${dateFormat} [${Craft.t("calendar", "at")}] ${calendarTimeFormat}`;
+  }
+
+  const eventRange = $("<div>", {
+    class: "event-date-range separator",
+    html:
+      '<div style="white-space: nowrap;"><label>' +
+      Craft.t("calendar", "Starts") +
+      ":</label> " +
+      start.format(dateFormat) +
+      "</div>" +
+      '<div style="white-space: nowrap;"><label>' +
+      Craft.t("calendar", "Ends") +
+      ":</label> " +
+      end.format(dateFormat) +
+      "</div>",
+  });
+
+  let eventRepeats = "";
+  if (event.repeats) {
+    eventRepeats = $("<div>", {
+      class: "event-repeats separator",
+      html: '<div id="solspace-calendar-spinner" class="spinner"></div>',
+    });
+  }
+
+  if (event.editable) {
+    editButton.append(
+      $("<a>", {
+        class: "btn small submit",
+        href: Craft.getCpUrl(
+          `calendar/events/${event.id}${isMultiSite ? `/${event.site.handle}` : ""}`,
+        ),
+        text: Craft.t("calendar", "Edit"),
+      }),
+    );
+
+    editButton.append(
+      $("<a>", {
+        class: "btn small delete-event",
+        href: Craft.getCpUrl("calendar/events/api/delete"),
+        text: Craft.t("calendar", "Delete"),
+        data: {
+          id: event.id,
+        },
+      }),
+    );
+
+    if (event.repeats) {
+      editButton.append(
+        $("<a>", {
+          class: "btn small delete-event-occurrence",
+          href: Craft.getCpUrl("calendar/events/api/delete-occurrence"),
+          text: Craft.t("calendar", "Delete occurrence"),
+          data: {
+            id: event.id,
+            date: event.start.toISOString(),
+          },
+        }),
+      );
+    }
+  }
+
+  element.qtip({
+    content: {
+      title: event.title,
+      button: true,
+      text: qtipContent.add(calendarData).add(eventRange).add(eventRepeats).add(editButton),
+    },
+    style: {
+      classes: "qtip-bootstrap qtip-event",
+      tip: {
+        width: 30,
+        height: 15,
+      },
+    },
+    position: {
+      my: "right center",
+      at: "left center",
+      adjust: {
+        method: "shift flip",
+      },
+    },
+    show: {
+      solo: true,
+      delay: 500,
+    },
+    hide: {
+      fixed: true,
+      delay: 300,
+    },
+    events: {
+      show: (e) => {
+        if (!window.qTipsEnabled) {
+          e.preventDefault();
+        }
+
+        if (event.repeats) {
+          $.ajax({
+            cache: false,
+            url: Craft.getCpUrl("calendar/events/api/first-occurrence-date"),
+            type: "post",
+            dataType: "json",
+            data: {
+              eventId: event.id,
+              [Craft.csrfTokenName]: Craft.csrfTokenValue,
+            },
+            success: (response) => {
+              if (
+                response.success &&
+                response.event &&
+                Object.hasOwn(response.event, "readableRepeatRule")
+              ) {
+                $(".event-repeats").html(
+                  "<label>" +
+                    Craft.t("calendar", "Repeats") +
+                    ":</label> " +
+                    response.event.readableRepeatRule,
+                );
+              }
+            },
+          });
+        }
+      },
+      render: (_e, api) => {
+        $("a.delete-event-occurrence", api.elements.content).click(function () {
+          const url = $(this).attr("href");
+          const eventId = $(this).data("id");
+          const date = $(this).data("date");
+
+          if (confirm(Craft.t("calendar", "Are you sure?"))) {
+            $.ajax({
+              url: url,
+              type: "post",
+              dataType: "json",
+              data: {
+                eventId: eventId,
+                date: date,
+                [Craft.csrfTokenName]: Craft.csrfTokenValue,
+              },
+              success: (response) => {
+                if (!response.error) {
+                  $("*[data-calendar-instance]").fullCalendar("refetchEvents");
+                  api.destroy();
+
+                  return;
+                }
+
+                console.warn(response.error);
+              },
+            });
+          }
+
+          return false;
+        });
+
+        $("a.delete-event", api.elements.content).click(function () {
+          const url = $(this).attr("href");
+          const eventId = $(this).data("id");
+
+          if (confirm(Craft.t("calendar", "Are you sure you want to delete this event?"))) {
+            $.ajax({
+              url: url,
+              type: "post",
+              dataType: "json",
+              data: {
+                eventId: eventId,
+                [Craft.csrfTokenName]: Craft.csrfTokenValue,
+              },
+              success: (response) => {
+                if (!response.error) {
+                  $("*[data-calendar-instance]").fullCalendar("removeEvents", event.id);
+                  api.destroy();
+
+                  return;
+                }
+
+                console.warn(response.error);
+              },
+            });
+          }
+
+          return false;
+        });
+      },
+    },
+  });
+};
+
+export const createDateAsUTC = (date) =>
+  new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes(),
+    date.getUTCSeconds(),
+  );

@@ -9,8 +9,6 @@ class EventIndexBundle extends CalendarAssetBundle
 
     public function getScripts(): array
     {
-        return [
-            'js/scripts/events/index.js',
-        ];
+        return [];
     }
 }

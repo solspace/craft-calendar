@@ -1,1 +1,101 @@
-(function(){"use strict";$("#solspace-calendar"),$("#solspace-calendar"),new moment;const n=e=>{window.location.href=Craft.getCpUrl(`calendar/events/${e.id}/${e.site.handle}`)},c={week:{columnFormat:"ddd D",timeFormat:"LT",slotLabelFormat:"LT"},day:{columnFormat:"",timeFormat:"LT",slotLabelFormat:"LT"}};document.querySelectorAll("*[data-calendar-agenda]").forEach(e=>{e=$(e);const{overlapThreshold:f,locale:i,firstDayOfWeek:m,currentDay:l,siteId:u,calendars:C,view:y}=e.data();e.fullCalendar({now:l,defaultDate:l,defaultView:y,nextDayThreshold:`0${f}:00:01`,fixedWeekCount:!1,eventLimit:3,lang:i,views:c,firstDay:m,height:500,scrollTime:moment().format("HH:mm:ss"),eventClick:n,eventRender:(a,t)=>{if(a.allDay&&t.addClass("fc-event-all-day"),!!a.end){if(!a.multiDay&&!a.allDay){t.addClass("fc-event-single-day");const r=$("<span />").addClass("fc-color-icon").css("background-color",a.backgroundColor).css("border-color",a.borderColor);$(".fc-content",t).prepend(r)}else t.addClass("fc-event-multi-day");a.enabled||t.addClass("fc-event-disabled"),t.addClass(`fc-color-${a.textColor}`)}},events:(a,t,r,h)=>{$.ajax({url:Craft.getCpUrl("calendar/month"),data:{rangeStart:a.toISOString(),rangeEnd:t.toISOString(),nonEditable:!0,calendars:C,siteId:u,[Craft.csrfTokenName]:Craft.csrfTokenValue},type:"post",dataType:"json",success:o=>{for(const[s,d]of o.entries())d.allDay&&(o[s].end=moment(d.end).add(2,"s").utc().format()),o[s].editable=!1;h(o)}})},customButtons:{refresh:{text:Craft.t("calendar","Refresh"),click:()=>{e.fullCalendar("refetchEvents")}}},header:{right:"prev,today,next",left:"title"}})})})();
+import { eventClick } from "@cal/scripts/calendars/fullcalendar-methods";
+
+const viewSpecificOptions = {
+  week: {
+    columnFormat: "ddd D",
+    timeFormat: "LT",
+    slotLabelFormat: "LT",
+  },
+  day: {
+    columnFormat: "",
+    timeFormat: "LT",
+    slotLabelFormat: "LT",
+  },
+};
+
+const agendaElements = document.querySelectorAll("*[data-calendar-agenda]");
+agendaElements.forEach((agenda) => {
+  agenda = $(agenda);
+
+  const { overlapThreshold, locale, firstDayOfWeek, currentDay, siteId, calendars, view } =
+    agenda.data();
+
+  agenda.fullCalendar({
+    now: currentDay,
+    defaultDate: currentDay,
+    defaultView: view,
+    nextDayThreshold: `0${overlapThreshold}:00:01`,
+    fixedWeekCount: false,
+    eventLimit: 3,
+    lang: locale,
+    views: viewSpecificOptions,
+    firstDay: firstDayOfWeek,
+    height: 500,
+    scrollTime: moment().format("HH:mm:ss"),
+    eventClick,
+    eventRender: (event, element) => {
+      if (event.allDay) {
+        element.addClass("fc-event-all-day");
+      }
+
+      if (!event.end) {
+        return;
+      }
+
+      if (!event.multiDay && !event.allDay) {
+        element.addClass("fc-event-single-day");
+        const colorIcon = $("<span />")
+          .addClass("fc-color-icon")
+          .css("background-color", event.backgroundColor)
+          .css("border-color", event.borderColor);
+        $(".fc-content", element).prepend(colorIcon);
+      } else {
+        element.addClass("fc-event-multi-day");
+      }
+
+      if (!event.enabled) {
+        element.addClass("fc-event-disabled");
+      }
+
+      element.addClass(`fc-color-${event.textColor}`);
+    },
+    events: (start, end, _timezone, callback) => {
+      $.ajax({
+        url: Craft.getCpUrl("calendar/month"),
+        data: {
+          rangeStart: start.toISOString(),
+          rangeEnd: end.toISOString(),
+          nonEditable: true,
+          calendars,
+          siteId,
+          [Craft.csrfTokenName]: Craft.csrfTokenValue,
+        },
+        type: "post",
+        dataType: "json",
+        success: (eventList) => {
+          for (const [i, event] of eventList.entries()) {
+            if (event.allDay) {
+              eventList[i].end = moment(event.end).add(2, "s").utc().format();
+            }
+
+            eventList[i].editable = false;
+          }
+
+          callback(eventList);
+        },
+      });
+    },
+    customButtons: {
+      refresh: {
+        text: Craft.t("calendar", "Refresh"),
+        click: () => {
+          agenda.fullCalendar("refetchEvents");
+        },
+      },
+    },
+    header: {
+      right: "prev,today,next",
+      left: "title",
+    },
+  });
+});

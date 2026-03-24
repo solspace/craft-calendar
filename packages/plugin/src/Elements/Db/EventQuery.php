@@ -11,6 +11,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Duration\DurationInterface;
 use Solspace\Calendar\Library\Exceptions\DateFormatException;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
@@ -93,6 +94,8 @@ class EventQuery extends ElementQuery
 
     private ?int $firstDay = null;
     private ?bool $noMultiDayGroup = null;
+
+    private bool $joinedTables = false;
 
     public function __construct(string $elementType, array $config = [])
     {
@@ -329,8 +332,12 @@ class EventQuery extends ElementQuery
         $users = Table::USERS;
 
         $this->joinElementTable($events);
-        $this->join('INNER JOIN', $calendar, "{$calendar}.[[id]] = {$events}.[[calendarId]]");
-        $this->join('LEFT JOIN', $users, "{$users}.[[id]] = {$events}.[[authorId]]");
+        if (!$this->joinedTables) {
+            $this->join('INNER JOIN', $calendar, "{$calendar}.[[id]] = {$events}.[[calendarId]]");
+            $this->join('LEFT JOIN', $users, "{$users}.[[id]] = {$events}.[[authorId]]");
+
+            $this->joinedTables = true;
+        }
 
         // TODO: decide if these are even needed, since we have occurrence lookup query
         // Check if occurrences exist for the event
@@ -668,8 +675,20 @@ class EventQuery extends ElementQuery
      */
     private function parseCarbon(mixed $value = null): ?Carbon
     {
+        if (null === $value || '' === $value) {
+            return null;
+        }
+
         try {
-            return Carbon::parse($value);
+            if ($value instanceof \DateTimeInterface) {
+                return new Carbon($value->format('Y-m-d H:i:s'), DateHelper::UTC);
+            }
+
+            if (\is_numeric($value)) {
+                return Carbon::createFromTimestampUTC((int) $value);
+            }
+
+            return new Carbon((string) $value, DateHelper::UTC);
         } catch (\Exception) {
             throw new DateFormatException(
                 \sprintf(

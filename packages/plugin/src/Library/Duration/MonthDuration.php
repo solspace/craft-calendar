@@ -3,19 +3,18 @@
 namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class MonthDuration extends AbstractDuration
 {
     protected function init(Carbon $targetDate): void
     {
-        $startDate = new Carbon($targetDate->toDateTimeString(), DateHelper::UTC);
-        $startDate->startOfMonth();
+        $start = $targetDate->copy();
+        $start->startOfMonth();
 
-        $endDate = $startDate->copy();
-        $endDate->endOfMonth();
+        $end = $start->copy();
+        $end->addMonth();
 
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
+        $this->start = $start;
+        $this->end = $end;
     }
 }

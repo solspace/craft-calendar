@@ -1,1 +1,36 @@
-(function(){"use strict";const e=$("#prefix"),r=$("#components-wrapper"),a=$("> div > ul.directory-structure",r),s=$(".btn.submit");let t=null;$(()=>{e.on({keyup:()=>{/[\\/]/gi.test(e.val())?(e.addClass("error"),s.addClass("disabled").prop("disabled",!0).prop("readonly",!0)):(e.removeClass("error"),s.removeClass("disabled").prop("disabled",!1).prop("readonly",!1)),clearTimeout(t),t=setTimeout(()=>{i()},50)}}),i()});function i(){a.each(function(){const o=$(this);$("> li > span[data-name]",o).each(function(){$(this).html(e.val()+$(this).data("name"))})})}})();
+const $prefix = $("#prefix");
+const $components = $("#components-wrapper");
+const firstFileLists = $("> div > ul.directory-structure", $components);
+const $submit = $(".btn.submit");
+
+let prefixTimeout = null;
+
+$(() => {
+  $prefix.on({
+    keyup: () => {
+      if (/[\\/]/gi.test($prefix.val())) {
+        $prefix.addClass("error");
+        $submit.addClass("disabled").prop("disabled", true).prop("readonly", true);
+      } else {
+        $prefix.removeClass("error");
+        $submit.removeClass("disabled").prop("disabled", false).prop("readonly", false);
+      }
+
+      clearTimeout(prefixTimeout);
+      prefixTimeout = setTimeout(() => {
+        updateFilePrefixes();
+      }, 50);
+    },
+  });
+
+  updateFilePrefixes();
+});
+
+function updateFilePrefixes() {
+  firstFileLists.each(function () {
+    const $fileList = $(this);
+    $("> li > span[data-name]", $fileList).each(function () {
+      $(this).html($prefix.val() + $(this).data("name"));
+    });
+  });
+}

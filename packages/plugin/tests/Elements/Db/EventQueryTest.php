@@ -160,7 +160,6 @@ class EventQueryTest extends TestCase
     private function callExtract(EventQuery $q, mixed $value): array|string
     {
         $method = new \ReflectionMethod(EventQuery::class, 'extractDateAsFormattedString');
-        $method->setAccessible(true);
 
         // @var array|string $response
         return $method->invoke($q, $value);

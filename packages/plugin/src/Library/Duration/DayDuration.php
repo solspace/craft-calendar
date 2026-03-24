@@ -3,23 +3,18 @@
 namespace Solspace\Calendar\Library\Duration;
 
 use Carbon\Carbon;
-use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class DayDuration extends AbstractDuration
 {
-    /**
-     * Duration constructor.
-     * Must get a valid start and end date from $targetDate.
-     */
     protected function init(Carbon $targetDate): void
     {
-        $startDate = new Carbon($targetDate->toDateTimeString(), DateHelper::UTC);
-        $startDate->setTime(0, 0, 0);
+        $start = $targetDate->copy();
+        $start->startOfDay();
 
-        $endDate = $startDate->copy();
-        $endDate->setTime(23, 59, 59);
+        $end = $start->copy();
+        $end->addDay();
 
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
+        $this->start = $start;
+        $this->end = $end;
     }
 }

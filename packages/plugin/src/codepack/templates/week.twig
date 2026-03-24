@@ -1,0 +1,141 @@
+{% extends "demo/layouts/_layout" %}
+
+{% set pageTitle = "Week" %}
+{% set page = "week" %}
+
+{% block content %}
+
+    <h1>Week View</h1>
+    <p class="lead">
+        Below is full week calendar view, which allows you to see all your event occurrences in a daily view.
+    </p>
+    <hr /><br />
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment3 == "calendar" %}
+        {% set calendarHandle = segment4 %}
+        {% if segment5 %}
+            {% set targetDate = segment5~"-"~segment6~"-"~segment7 %}
+        {% endif %}
+    {% elseif segment3 is not empty %}
+        {% set targetDate = segment3~"-"~segment4~"-"~segment5 %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-9">
+
+            {% include "demo/layouts/_calendar_banner" %}
+
+            <div id="week_calendar">
+                {% set week = calendar.week({
+                    date: targetDate,
+                    calendar: calendarHandle,
+                }) %}
+
+                {% set dateBoundsHelper = now.diff(week.nextDate)|date('%r%a') %}
+
+                <div class="row justify-content-between mb-3">
+                    <div class="col-2">
+                    {% if dateBoundsHelper > -365 %}
+                        <a class="btn btn-outline-secondary"
+                           href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.previousDate.format('Y/m/d') }}">
+                            <span class="fas fa-arrow-left"></span> Last Week
+                        </a>
+                    {% endif %}
+                    </div>
+
+                    <div class="col-auto">
+                        <h3>
+                            Week of {{ week.date.format("F j, Y") }} &nbsp;
+                            <span class="badge {{ week.occurrenceCount ? "badge-warning" : "badge-secondary" }}">
+                            {{ week.occurrenceCount }} event{{ week.occurrenceCount > 1 or week.occurrenceCount == 0 ? "s" }}
+                        </span>
+                        </h3>
+                    </div>
+
+                    <div class="col-2 clearfix">
+                    {% if dateBoundsHelper < 365 %}
+                        <a class="btn btn-outline-secondary float-right"
+                           href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.nextDate.format('Y/m/d') }}">
+                            Next Week <span class="fas fa-arrow-right"></span>
+                        </a>
+                    {% endif %}
+                    </div>
+                </div>
+
+                {% for day in week %}
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item list-group-item-{{ day.dateLocalized.isToday ? "warning" : "secondary" }}">
+                            <a class="text-dark font-weight-bold"
+                               href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? segment3~"/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
+                                {% if day.dateLocalized.isToday %}
+                                    TODAY
+                                {% else %}
+                                    {{ day.date.format('l, F j, Y') }}
+                                {% endif %}
+                            </a> &nbsp;
+                            {% if day.occurrenceCount %}
+                                <span class="badge badge-warning">
+                                    {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 ? "s" }}
+                                </span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item">
+                            {% if day.occurrences.count %}
+                                <ul class="list-group">
+                                    {% for occurrence in day.occurrences %}
+                                        {% set event = occurrence.event %}
+                                        <li class="list-group-item d-flex align-items-center justify-content-between"
+                                            style="border-left: 5px solid {{ event.calendar.color }};">
+                                            <div>
+                                                <span class="far fa-clock"></span>
+                                                {% if event.allDay %}
+                                                    All Day
+                                                {% else %}
+                                                    {% if event.multiDay %}
+                                                        {% if day.containsDate(occurrence.startDate) %}
+                                                            Starts {{ occurrence.startDate.format("g:ia") }}
+                                                        {% elseif day.containsDate(occurrence.endDate) %}
+                                                            Ends {{ occurrence.endDate.format("g:ia") }}
+                                                        {% else %}
+                                                            All Day
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {{ occurrence.startDate.format("g:ia") }} - {{ occurrence.endDate.format("g:ia") }}
+                                                    {% endif %}
+                                                {% endif %}
+                                                <b>
+                                                    <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format("Y/m/d") }}"
+                                                       class="calendar_event_title">
+                                                        {{ event.title }}</a>
+                                                </b>
+                                                {% if event['location'] is defined %}
+                                                    &nbsp;&nbsp;<i>{{ event.location }}</i>
+                                                {% endif %}
+                                            </div>
+
+                                            <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
+                                               class="badge"
+                                               style="background-color: {{ event.calendar.color }}; color: {{ event.calendar.contrastColor }};">
+                                                {{ event.calendar.name }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                No events for this day.
+                            {% endif %}
+                        </li>
+                    </ul>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            {% include "demo/layouts/_sidebar" %}
+        </div>
+
+    </div>
+
+{% endblock %}

@@ -22,13 +22,12 @@ return [
     // API calls
     'GET calendar/api/events' => 'calendar/api/events',
     'POST calendar/api/events' => 'calendar/api/create-event',
+    'POST calendar/api/events/delete' => 'calendar/events-api/delete',
+    'POST calendar/api/events/move' => 'calendar/events-api/move',
+    'POST calendar/api/events/resize' => 'calendar/events-api/resize',
 
     'calendar/events/api/first-occurrence-date' => 'calendar/events-api/first-occurrence-date',
-    'calendar/events/api/modify-date' => 'calendar/events-api/modify-date',
-    'calendar/events/api/modify-duration' => 'calendar/events-api/modify-duration',
     'calendar/events/api/create' => 'calendar/events-api/create',
-    'calendar/events/api/delete' => 'calendar/events-api/delete',
-    'calendar/events/api/delete-occurrence' => 'calendar/events-api/delete-occurrence',
     'calendar/events/api/attributes' => 'calendar/events-api/attributes',
     'calendar/events/api/custom-fields' => 'calendar/events-api/custom-fields',
 
@@ -38,5 +37,5 @@ return [
     'calendar/settings/events' => 'calendar/settings/events',
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
     'calendar/settings/ics' => 'calendar/settings/ics',
-    'calendar/settings/demo-templates' => 'calendar/codepack/list-contents',
+    'calendar/settings/demo-templates' => 'calendar/code-pack/list-contents',
 ];

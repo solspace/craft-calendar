@@ -1,0 +1,125 @@
+{% extends "calendar/layouts/_settings" %}
+{% import "_includes/forms" as forms %}
+
+{% set selectedSubnavItem = "settings" %}
+{% set title = "Demo Templates"|t('calendar') %}
+
+{% macro listFiles(file) %}
+    {% import _self as dir %}
+
+    {% set isFolder = file.isFolder %}
+    <li class="{{ isFolder ? 'dir' : 'file' }}">
+        <span>{{ file.name }}</span>
+        {% if isFolder %}
+            <ul>
+                {% for childFile in file.files %}
+                    {{ dir.listFiles(childFile) }}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </li>
+{% endmacro %}
+{% import _self as dir %}
+
+{% block actionButton %}{% endblock %}
+
+{% block content %}
+
+    <form method="post">
+        <input type="hidden" name="action" value="calendar/code-pack/install">
+        {{ redirectInput('calendar/settings/demo-templates') }}
+        <input type="hidden" name="{{ craft.app.config.general.csrfTokenName }}" value="{{ craft.app.request.csrfToken }}">
+
+        <table width="100%">
+            <tr>
+                <td width="95%">
+                    {{ forms.textField({
+                        label: "Install Path"|t('calendar'),
+                        instructions: "The folder name you'd like the demo templates installed to, relative to the Craft templates directory.",
+                        id: 'prefix',
+                        name: 'prefix',
+                        value: prefix,
+                        placeholder: "e.g. calendar-demo",
+                        autofocus: true
+                    }) }}
+                </td>
+                <td>
+                    <div class="buttons" style="margin: 40px 0 0 5px !important;">
+                        <input type="submit" class="btn submit" value="{{ 'Install'|t('app') }}" />
+                    </div>
+                </td>
+            </tr>
+            {% if exceptionMessage is defined %}
+                <tr>
+                    <td colspan="2">
+                        <div class="error">
+                            {{ exceptionMessage|raw }}
+                        </div>
+                    </td>
+                </tr>
+            {% endif %}
+        </table>
+    </form>
+
+    <hr />
+    <div class="field">
+        <p>The following templates, assets and routes will be installed and configured:</p>
+    </div>
+
+    <div id="components-wrapper">
+
+        {% if codePack.templates %}
+            <div>
+                <h3>{{ "Templates"|t('app') }}</h3>
+
+                <ul class="directory-structure">
+                    <li class="dir">
+                        <span data-name="/">demo</span>
+                    </li>
+                    <ul>
+                        {% for file in codePack.templates.contents %}
+                            {{ dir.listFiles(file) }}
+                        {% endfor %}
+                    </ul>
+                </ul>
+            </div>
+        {% endif %}
+
+        <div>
+        {% if codePack.assets %}
+            <h3>{{ "Assets"|t('app') }}</h3>
+
+            <ul class="directory-structure">
+                <li class="dir">
+                    <span data-name="/">demo</span>
+                </li>
+                <ul>
+                    {% for file in codePack.assets.contents %}
+                        {{ dir.listFiles(file) }}
+                    {% endfor %}
+                </ul>
+            </ul>
+        {% endif %}
+
+        {% if codePack.routes.data %}
+            <br />
+            <h3>{{ "Routes"|t('app') }}</h3>
+
+            <ul class="directory-structure routes">
+                {% for route in codePack.routes.data %}
+                    <li>
+                        <span class="route" data-name="/{{ route.urlPattern }}">
+                            demo/{{ route.urlPattern }}
+                        </span>
+
+                        <div class="template">
+                            {{ route.template }}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

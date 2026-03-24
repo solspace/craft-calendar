@@ -6,9 +6,6 @@ use craft\helpers\App;
 
 class EventEditBundle extends CalendarAssetBundle
 {
-    /** @var null|string - worst hack ever made */
-    public static ?string $locale = null;
-
     public function getScripts(): array
     {
         $clientPath = App::env('CAL_CLIENT_PATH') ?? null;
@@ -18,7 +15,7 @@ class EventEditBundle extends CalendarAssetBundle
 
         return [
             'js/event-builder/vendor.js',
-            'js/event-builder/app.js',
+            'js/event-builder/event-builder.js',
         ];
     }
 }

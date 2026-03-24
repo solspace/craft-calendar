@@ -5,8 +5,6 @@
 
 <div data-event-builder-scope>
 	<div data-event-builder>
-		<script type="application/json" data-event-builder-config>{{ event.builderConfig|json_encode|raw }}</script>
-
 		<input type="hidden" name="start" value="{{ event.getStartDate().toAtomString() }}"/>
 		<input type="hidden" name="end" value="{{ event.getEndDate().toAtomString() }}"/>
 		<input type="hidden" name="until" value="{{ event.getUntil() ? event.getUntil().toAtomString() : "" }}" />
@@ -17,8 +15,7 @@
 		<input type="hidden" name="repeatEndType" value="{{ event.repeatEndType }}" />
 		<input type="hidden" name="rrule" value="{{ event.rrule }}" />
 
-		<div data-event-builder-root></div>
+		<script type="application/json" data-config>{{ event.builderConfig | json_encode | raw }}</script>
+		<div data-root></div>
 	</div>
 </div>
-
-<input type="hidden" name="calendarId" value="{{ event.calendarId }}"/>

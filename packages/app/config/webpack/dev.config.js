@@ -29,6 +29,10 @@ if (existsSync(resolve(__dirname, "certs/key.pem"))) {
 }
 
 const clientDir = resolve(__dirname, "../../../plugin/src/Resources/js/app");
+const ignoredRuntimeErrors = new Set([
+  "ResizeObserver loop completed with undelivered notifications.",
+  "ResizeObserver loop limit exceeded",
+]);
 
 export default merge(baseConfig, {
   mode: "development",
@@ -51,6 +55,9 @@ export default merge(baseConfig, {
     },
     client: {
       webSocketURL: `https://${host}:${port}/ws`,
+      overlay: {
+        runtimeErrors: (error) => !ignoredRuntimeErrors.has(error.message),
+      },
     },
     headers: {
       "Access-Control-Allow-Origin": "*",

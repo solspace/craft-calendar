@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Carbon\Carbon;
 use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Resources\Bundles\CalendarAppBundle;
 use yii\web\Response;
 
@@ -46,7 +47,7 @@ class AppController extends BaseController
             }
         }
 
-        $currentDay = Carbon::createFromDate($year, $month, $day);
+        $currentDay = Carbon::createFromDate($year, $month, $day, DateHelper::UTC);
 
         $dateFormat = Calendar::getInstance()->formats->getDateFormat(null, Locale::FORMAT_PHP);
         $timeFormat = Calendar::getInstance()->formats->getTimeFormat(null, Locale::FORMAT_PHP);
@@ -56,20 +57,24 @@ class AppController extends BaseController
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles();
 
+        $configuration = [
+            'dateFormat' => $dateFormat,
+            'timeFormat' => $timeFormat,
+            'language' => $language,
+            'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
+            'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
+            'currentSiteId' => $selectedSiteId,
+            'currentDay' => $currentDay->toDateString(),
+            'siteMap' => $siteMap,
+            'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
+            'isMultiSite' => \Craft::$app->getIsMultiSite(),
+            'canEditEvents' => $user && $user->can('calendar-manageEvents') && !empty($calendarOptions),
+        ];
+
         $this->view->registerAssetBundle(CalendarAppBundle::class);
 
         return $this->renderTemplate('calendar/app', [
-            'currentDay' => $currentDay,
-            'calendarLanguage' => $language,
-            'calendarOptions' => $calendarOptions,
-            'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
-            'currentSiteId' => $currentSiteId,
-            'siteMap' => $siteMap,
-            'selectedSiteId' => $selectedSiteId,
-            'isMultiSite' => (bool) \Craft::$app->getIsMultiSite(),
-            'dateFormat' => $dateFormat,
-            'timeFormat' => $timeFormat,
-            'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
+            'configuration' => $configuration,
         ]);
     }
 }
