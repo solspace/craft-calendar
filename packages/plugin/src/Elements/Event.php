@@ -258,7 +258,7 @@ class Event extends Element implements \JsonSerializable
     {
         $settings = Calendar::getInstance()->settings;
 
-        $date = new Carbon('now', DateHelper::UTC);
+        $date = new Carbon('now');
         $date->setTime($date->hour, 0);
 
         $element = new self();

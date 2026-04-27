@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Bundles\Occurrences;
 use Carbon\Carbon;
 use craft\base\Element;
 use craft\events\ElementEvent;
+use craft\helpers\ElementHelper;
 use craft\services\Elements;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
@@ -39,6 +40,10 @@ class OccurrencePersistence implements BundleInterface
     {
         $element = $event->element;
         if (!$element instanceof CalendarEvent) {
+            return;
+        }
+
+        if (ElementHelper::isDraftOrRevision($element)) {
             return;
         }
 

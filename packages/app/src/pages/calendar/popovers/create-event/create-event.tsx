@@ -41,8 +41,11 @@ export const PopoverCreateEvent: FC<Props> = ({
     onSuccess: onConfirm,
   });
 
-  console.log(dateFormat, timeFormat);
-  const format = useMemo(() => (draft.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd h:mm aa"), [draft]);
+  const format = useMemo(
+    () =>
+      draft.allDay ? dateFormat.datepicker : `${dateFormat.datepicker} ${timeFormat.datepicker}`,
+    [dateFormat.datepicker, draft.allDay, timeFormat.datepicker],
+  );
   const displayEnd = useMemo(() => getCreateDraftDisplayEnd(draft), [draft]);
 
   useEventListener("keydown", (event) => {

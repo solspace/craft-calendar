@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Carbon\Carbon;
 use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Resources\Bundles\CalendarAppBundle;
 use yii\web\Response;
@@ -58,8 +59,16 @@ class AppController extends BaseController
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles();
 
         $configuration = [
-            'dateFormat' => $dateFormat,
-            'timeFormat' => $timeFormat,
+            'dateFormat' => [
+                'php' => $dateFormat,
+                'js' => DateFormatHelper::toJsDateFormat($dateFormat),
+                'datepicker' => DateFormatHelper::toDatePickerFormat($dateFormat),
+            ],
+            'timeFormat' => [
+                'php' => $timeFormat,
+                'js' => DateFormatHelper::toJsDateFormat($timeFormat),
+                'datepicker' => DateFormatHelper::toDatePickerFormat($timeFormat),
+            ],
             'language' => $language,
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),

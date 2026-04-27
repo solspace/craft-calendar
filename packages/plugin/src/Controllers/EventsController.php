@@ -9,7 +9,6 @@ use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Solspace\Calendar\Resources\Bundles\EventIndexBundle;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -93,10 +92,6 @@ class EventsController extends BaseController
         }
 
         PermissionHelper::requireCalendarEditPermissions($calendar);
-
-        $locale = $site->language;
-        $locale = str_replace('_', '-', strtolower($locale));
-        EventEditBundle::$locale = $locale;
 
         $event = Event::create($site->id, $calendar->id);
         $event->setScenario(Element::SCENARIO_ESSENTIALS);
