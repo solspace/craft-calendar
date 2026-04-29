@@ -4,8 +4,6 @@ import type { RootState } from "./store";
 
 const defaultState: AppConfig = {
   pro: false,
-  dateFormat: "yyyy-MM-dd",
-  timeFormat: "HH:mm",
 };
 
 const appSlice = createSlice({

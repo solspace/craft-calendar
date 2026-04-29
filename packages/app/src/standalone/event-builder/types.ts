@@ -17,7 +17,7 @@ export type Event = {
 
 export type AppConfig = {
   pro: boolean;
-  formats: DateFormats;
+  formats?: DateFormats;
 };
 
 export type BuilderConfig = {
