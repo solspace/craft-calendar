@@ -6,6 +6,14 @@ export const AgendaWidgetWrapper = styled(CalendarWrapper)`
     min-height: 500px;
   }
 
+  .fc-col-header-cell {
+    &-cushion {
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+  }
+
   .fc-header-toolbar.fc-toolbar {
     gap: 12px;
     margin-bottom: 8px;

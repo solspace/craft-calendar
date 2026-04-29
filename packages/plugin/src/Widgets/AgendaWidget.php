@@ -59,7 +59,7 @@ class AgendaWidget extends AbstractWidget
                     'calendars' => $this->calendars,
                     'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
                     'formats' => DateFormatHelper::toConfig(),
-                    'defaultView' => $this->view,
+                    'view' => $this->view,
                     'language' => $calendarLocale,
                     'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),
                     'overlapThreshold' => Calendar::getInstance()->settings->getOverlapThreshold(),
