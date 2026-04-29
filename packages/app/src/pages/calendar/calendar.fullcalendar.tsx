@@ -256,8 +256,6 @@ export const CalendarFullcalendar: FC = () => {
     );
   }, []);
 
-  console.log(formats);
-
   return (
     <CalendarWrapper>
       <FullCalendar

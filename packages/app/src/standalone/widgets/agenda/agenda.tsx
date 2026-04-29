@@ -7,6 +7,8 @@ import type { FC } from "react";
 import type { AgendaWidgetConfig } from "./agenda.types";
 
 export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => {
+  const { formats } = config;
+
   return (
     <AgendaWidgetWrapper>
       <FullCalendar
@@ -22,7 +24,7 @@ export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => 
         dayMaxEventRows
         height={500}
         events={calendarEvents}
-        eventTimeFormat={config.timeFormat.js}
+        eventTimeFormat={formats.time.short.js}
         headerToolbar={{
           start: "title",
           end: "prev,today,next",
