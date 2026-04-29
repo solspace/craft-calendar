@@ -35,17 +35,20 @@ export const PopoverCreateEvent: FC<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { dateFormat, timeFormat } = useConfig();
+  const { formats } = useConfig();
   const { createEvent, isFetching } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
   });
 
-  const format = useMemo(
-    () =>
-      draft.allDay ? dateFormat.datepicker : `${dateFormat.datepicker} ${timeFormat.datepicker}`,
-    [dateFormat.datepicker, draft.allDay, timeFormat.datepicker],
-  );
+  const format = useMemo(() => {
+    if (draft.allDay) {
+      return formats.date.short.icu;
+    }
+
+    return formats.datetime.short.icu;
+  }, [formats, draft.allDay]);
+
   const displayEnd = useMemo(() => getCreateDraftDisplayEnd(draft), [draft]);
 
   useEventListener("keydown", (event) => {

@@ -2,6 +2,7 @@ import { getBaseRRule } from "@cal/utils/rrule";
 import { configureStore } from "@reduxjs/toolkit";
 import { Frequency, type Weekday } from "rrule";
 import type { BuilderConfig } from "../types";
+import app from "./app.slice";
 import event from "./event.slice";
 
 type WeekdayNormalization = {
@@ -42,6 +43,7 @@ export const createEventBuilderStore = (initialState: BuilderConfig) => {
   const { byweekday, bysetpos } = normalizeByWeekday(baseRule?.options.byweekday);
 
   const preloadedState = {
+    app: initialState.app,
     event: {
       start: initialState.event.start,
       end: initialState.event.end,
@@ -64,6 +66,7 @@ export const createEventBuilderStore = (initialState: BuilderConfig) => {
 
   return configureStore({
     reducer: {
+      app,
       event,
     },
     preloadedState,

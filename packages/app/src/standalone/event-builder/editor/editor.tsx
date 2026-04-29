@@ -7,6 +7,7 @@ import type { AppDispatch } from "@event-builder/store/store";
 import { addDays, startOfDay, subDays } from "date-fns";
 import { type FC, useId, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { appSelectors } from "../store/app.slice";
 import { CalendarPreview } from "./calendar-preview/calendar-preview";
 import { EventEditorWrapper } from "./editor.styles";
 import { RepeatRules } from "./repeat-rules/repeat-rules";
@@ -18,14 +19,15 @@ export const Editor: FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const { start, end, allDay } = useSelector(eventSelectors.state);
+  const { date, time, datetime } = useSelector(appSelectors.formats);
 
   const format = useMemo(() => {
     if (allDay) {
-      return "yyyy-MM-dd";
+      return date.short.icu;
     }
 
-    return "yyyy-MM-dd h:mm aa";
-  }, [allDay]);
+    return datetime.short.icu;
+  }, [allDay, date, datetime]);
 
   const endForDisplay = useMemo(() => {
     if (!allDay) return end;
@@ -70,6 +72,7 @@ export const Editor: FC = () => {
             showYearDropdown: true,
             dropdownMode: "select",
             dateFormat: format,
+            timeFormat: time.short.icu,
             todayButton: translate("Today"),
           }}
         />
@@ -90,6 +93,7 @@ export const Editor: FC = () => {
             showYearDropdown: true,
             dropdownMode: "select",
             dateFormat: format,
+            timeFormat: time.short.icu,
             filterTime: (time) => {
               if (!start) {
                 return true;

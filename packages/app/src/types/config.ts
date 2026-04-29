@@ -5,15 +5,19 @@ export type FullCalendarDateFormat = Intl.DateTimeFormatOptions & {
   meridiem?: "lowercase" | "short" | "narrow" | boolean;
 };
 
-export type DateFormatConfig = {
+type FormatTypes = "date" | "time" | "datetime";
+type FormatLengths = "short" | "medium" | "long" | "full";
+
+type FormatOrigins = {
   php: string;
+  icu?: string;
   js: FullCalendarDateFormat;
-  datepicker: string;
 };
 
+export type DateFormats = Record<FormatTypes, Record<FormatLengths, FormatOrigins>>;
+
 export type CalendarConfig = {
-  dateFormat: DateFormatConfig;
-  timeFormat: DateFormatConfig;
+  formats: DateFormats;
   language: string;
   overlapThreshold: number;
   weekStartDay: WeekStartDay;

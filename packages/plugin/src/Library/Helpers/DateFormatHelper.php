@@ -2,8 +2,43 @@
 
 namespace Solspace\Calendar\Library\Helpers;
 
+use craft\i18n\Locale;
+use yii\helpers\FormatConverter;
+
 class DateFormatHelper
 {
+    public const TYPE_DATE = 'date';
+    public const TYPE_TIME = 'time';
+    public const TYPE_DATETIME = 'datetime';
+
+    public static function get(
+        string $type = self::TYPE_DATE,
+        string $format = Locale::FORMAT_ICU,
+        ?string $length = null,
+    ): string {
+        $locale = \Craft::$app->locale;
+
+        $type = match ($type) {
+            self::TYPE_DATE => 'date',
+            self::TYPE_TIME => 'time',
+            self::TYPE_DATETIME => 'datetime',
+            default => throw new \InvalidArgumentException("Invalid type: {$type}"),
+        };
+
+        $formatter = $locale->getFormatter();
+        $length ??= $formatter->dateFormat;
+
+        $dateFormats = $formatter->dateTimeFormats;
+        $dateFormat = $dateFormats[$length][$type];
+
+        return match ($format) {
+            Locale::FORMAT_ICU => $dateFormat,
+            Locale::FORMAT_PHP => FormatConverter::convertDateIcuToPhp($dateFormat),
+            Locale::FORMAT_JUI => FormatConverter::convertDateIcuToJui($dateFormat),
+            default => throw new \InvalidArgumentException("Invalid format: {$format}. Available formats: icu, php, jui"),
+        };
+    }
+
     public static function toJsDateFormat(string $phpFormat): array
     {
         $format = [];
@@ -69,6 +104,7 @@ class DateFormatHelper
                 case 'G':
                     $format['hour'] = 'numeric';
                     $format['hour12'] = false;
+                    $format['omitZeroMinute'] = true;
 
                     break;
 
@@ -81,6 +117,7 @@ class DateFormatHelper
                 case 'g':
                     $format['hour'] = 'numeric';
                     $format['hour12'] = true;
+                    $format['omitZeroMinute'] = true;
 
                     break;
 
@@ -109,103 +146,34 @@ class DateFormatHelper
         return $format;
     }
 
-    public static function toDatePickerFormat(string $phpFormat): string
+    public static function toConfig(): array
     {
-        $tokens = [
-            'd' => 'dd',
-            'D' => 'EEE',
-            'j' => 'd',
-            'l' => 'EEEE',
-            'N' => 'i',
-            'w' => 'e',
-            'z' => 'DDD',
-            'W' => 'II',
-            'F' => 'MMMM',
-            'm' => 'MM',
-            'M' => 'MMM',
-            'n' => 'M',
-            'o' => 'RRRR',
-            'Y' => 'yyyy',
-            'y' => 'yy',
-            'a' => 'aaa',
-            'A' => 'aa',
-            'g' => 'h',
-            'G' => 'H',
-            'h' => 'hh',
-            'H' => 'HH',
-            'i' => 'mm',
-            's' => 'ss',
-            'u' => 'SSSSSS',
-            'v' => 'SSS',
-            'O' => 'xx',
-            'P' => 'xxx',
-            'T' => 'zzz',
-            'c' => "yyyy-MM-dd'T'HH:mm:ssxxx",
-            'r' => 'EEE, dd MMM yyyy HH:mm:ss xx',
-            'U' => 't',
-        ];
+        static $config;
 
-        $format = '';
-        $literal = '';
-        $isEscaped = false;
-        $skipNextCharacter = false;
-        $characters = str_split($phpFormat);
+        if ($config === null) {
+            $formatFn = static function (string $type, string $length): array {
+                $icu = self::get($type, Locale::FORMAT_ICU, $length);
+                $php = self::get($type, Locale::FORMAT_PHP, $length);
+                $js = self::toJsDateFormat($php);
 
-        foreach ($characters as $index => $character) {
-            if ($skipNextCharacter) {
-                $skipNextCharacter = false;
+                return ['php' => $php, 'js' => $js, 'icu' => $icu];
+            };
 
-                continue;
-            }
+            $generatorFn = static function (string $type) use ($formatFn): array {
+                return [
+                    'short' => $formatFn($type, 'short'),
+                    'medium' => $formatFn($type, 'medium'),
+                    'long' => $formatFn($type, 'long'),
+                ];
+            };
 
-            if ($isEscaped) {
-                $literal .= $character;
-                $isEscaped = false;
-
-                continue;
-            }
-
-            if ('\\' === $character) {
-                $isEscaped = true;
-
-                continue;
-            }
-
-            if (('d' === $character || 'j' === $character) && 'S' === ($characters[$index + 1] ?? null)) {
-                $format .= self::escapeDatePickerLiteral($literal);
-                $literal = '';
-                $format .= 'do';
-                $skipNextCharacter = true;
-
-                continue;
-            }
-
-            if (isset($tokens[$character])) {
-                $format .= self::escapeDatePickerLiteral($literal);
-                $literal = '';
-                $format .= $tokens[$character];
-
-                continue;
-            }
-
-            $format .= self::escapeDatePickerLiteral($literal);
-            $literal = '';
-            $format .= self::escapeDatePickerLiteral($character);
+            $config = [
+                'date' => $generatorFn(self::TYPE_DATE),
+                'time' => $generatorFn(self::TYPE_TIME),
+                'datetime' => $generatorFn(self::TYPE_DATETIME),
+            ];
         }
 
-        return $format.self::escapeDatePickerLiteral($literal);
-    }
-
-    private static function escapeDatePickerLiteral(string $literal): string
-    {
-        if ('' === $literal) {
-            return '';
-        }
-
-        if (preg_match('/[A-Za-z]/', $literal)) {
-            return "'".str_replace("'", "''", $literal)."'";
-        }
-
-        return $literal;
+        return $config;
     }
 }

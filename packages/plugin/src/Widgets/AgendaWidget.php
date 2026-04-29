@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Widgets;
 
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Resources\Bundles\WidgetAgendaBundle;
 
 class AgendaWidget extends AbstractWidget
@@ -54,13 +55,14 @@ class AgendaWidget extends AbstractWidget
             [
                 'settings' => $this,
                 'configuration' => [
+                    'siteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
                     'calendars' => $this->calendars,
                     'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
+                    'formats' => DateFormatHelper::toConfig(),
                     'defaultView' => $this->view,
                     'language' => $calendarLocale,
-                    'overlapThreshold' => Calendar::getInstance()->settings->getOverlapThreshold(),
-                    'siteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
                     'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),
+                    'overlapThreshold' => Calendar::getInstance()->settings->getOverlapThreshold(),
                 ],
             ]
         );

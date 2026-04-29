@@ -22,6 +22,7 @@ export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => 
         dayMaxEventRows
         height={500}
         events={calendarEvents}
+        eventTimeFormat={config.timeFormat.js}
         headerToolbar={{
           start: "title",
           end: "prev,today,next",

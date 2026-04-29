@@ -46,7 +46,7 @@ import { PopoverViewEvent } from "./popovers/view-event/view-event";
 export const CalendarFullcalendar: FC = () => {
   const { hidePopover, showPopover } = usePopover();
   const { view, setView } = useViewSettings();
-  const { currentDay, weekStartDay, overlapThresholdString } = useConfig();
+  const { currentDay, language, formats, weekStartDay, overlapThresholdString } = useConfig();
 
   const calendar = useRef<FullCalendar>(null);
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
@@ -256,6 +256,8 @@ export const CalendarFullcalendar: FC = () => {
     );
   }, []);
 
+  console.log(formats);
+
   return (
     <CalendarWrapper>
       <FullCalendar
@@ -265,6 +267,7 @@ export const CalendarFullcalendar: FC = () => {
         customButtons={customButtons}
         initialView={view}
         initialDate={currentDay}
+        locale={language}
         timeZone="UTC"
         firstDay={weekStartDay}
         nextDayThreshold={overlapThresholdString}
@@ -281,6 +284,7 @@ export const CalendarFullcalendar: FC = () => {
         events={calendarEvents}
         eventClassNames={getCalendarEventClassNames}
         eventContent={renderCalendarEventContent}
+        eventTimeFormat={formats.time.short.js}
         eventDidMount={handleEventDidMount}
         eventWillUnmount={handleEventWillUnmount}
         eventClick={(arg) => {

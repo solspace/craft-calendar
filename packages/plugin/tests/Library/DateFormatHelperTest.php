@@ -45,6 +45,7 @@ class DateFormatHelperTest extends TestCase
                 [
                     'hour' => 'numeric',
                     'hour12' => true,
+                    'omitZeroMinute' => true,
                     'minute' => '2-digit',
                     'meridiem' => 'short',
                 ],
@@ -58,27 +59,6 @@ class DateFormatHelperTest extends TestCase
                     'second' => '2-digit',
                 ],
             ],
-        ];
-    }
-
-    /**
-     * @dataProvider datePickerFormatDataProvider
-     */
-    public function testToDatePickerFormat(string $phpFormat, string $expectedFormat): void
-    {
-        self::assertSame($expectedFormat, DateFormatHelper::toDatePickerFormat($phpFormat));
-    }
-
-    public function datePickerFormatDataProvider(): array
-    {
-        return [
-            ['Y-m-d', 'yyyy-MM-dd'],
-            ['n/j/y', 'M/d/yy'],
-            ['l, F j, Y', 'EEEE, MMMM d, yyyy'],
-            ['F jS, Y', 'MMMM do, yyyy'],
-            ['g:i A', 'h:mm aa'],
-            ['H:i:s', 'HH:mm:ss'],
-            ['Y-m-d \a\t g:i A', "yyyy-MM-dd 'at' h:mm aa"],
         ];
     }
 }

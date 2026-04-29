@@ -3,7 +3,6 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
-use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -50,34 +49,22 @@ class AppController extends BaseController
 
         $currentDay = Carbon::createFromDate($year, $month, $day, DateHelper::UTC);
 
-        $dateFormat = Calendar::getInstance()->formats->getDateFormat(null, Locale::FORMAT_PHP);
-        $timeFormat = Calendar::getInstance()->formats->getTimeFormat(null, Locale::FORMAT_PHP);
-
         $language = \Craft::$app->sites->currentSite->language;
         $language = str_replace('_', '-', strtolower($language));
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles();
 
         $configuration = [
-            'dateFormat' => [
-                'php' => $dateFormat,
-                'js' => DateFormatHelper::toJsDateFormat($dateFormat),
-                'datepicker' => DateFormatHelper::toDatePickerFormat($dateFormat),
-            ],
-            'timeFormat' => [
-                'php' => $timeFormat,
-                'js' => DateFormatHelper::toJsDateFormat($timeFormat),
-                'datepicker' => DateFormatHelper::toDatePickerFormat($timeFormat),
-            ],
-            'language' => $language,
-            'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
-            'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
-            'currentSiteId' => $selectedSiteId,
-            'currentDay' => $currentDay->toDateString(),
+            'formats' => DateFormatHelper::toConfig(),
             'siteMap' => $siteMap,
-            'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
-            'isMultiSite' => \Craft::$app->getIsMultiSite(),
+            'language' => $language,
+            'currentDay' => $currentDay->toDateString(),
+            'currentSiteId' => $selectedSiteId,
             'canEditEvents' => $user && $user->can('calendar-manageEvents') && !empty($calendarOptions),
+            'isMultiSite' => \Craft::$app->getIsMultiSite(),
+            'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
+            'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
+            'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
         ];
 
         $this->view->registerAssetBundle(CalendarAppBundle::class);

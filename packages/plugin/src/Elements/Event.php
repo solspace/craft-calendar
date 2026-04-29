@@ -29,6 +29,7 @@ use Solspace\Calendar\Elements\conditions\EventCondition;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
 use Solspace\Calendar\Library\Duration\EventDuration;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Models\CalendarModel;
@@ -695,9 +696,12 @@ class Event extends Element implements \JsonSerializable
 
     public function builderConfig(): array
     {
+        $plugin = Calendar::getInstance();
+
         return [
             'app' => [
-                'pro' => Calendar::getInstance()->isPro(),
+                'pro' => $plugin->isPro(),
+                'formats' => DateFormatHelper::toConfig(),
             ],
             'event' => [
                 'start' => $this->startDate->timestamp,
