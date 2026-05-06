@@ -222,13 +222,19 @@ export const clearCalendarEventsCache = () => {
   inflightRequests.clear();
 };
 
-export const calendarEvents: EventSourceFunc = (info, success, failure) => {
+export const calendarEvents: EventSourceFunc = (info, success, failure): Promise<EventInput[]> => {
   const start = info.start;
   const end = info.end;
 
   return fetchRange(start, end)
     .then((data) => {
       success(data);
+
+      return data;
     })
-    .catch(failure);
+    .catch((error) => {
+      failure(error);
+
+      return [] as EventInput[];
+    });
 };

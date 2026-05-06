@@ -3,8 +3,19 @@ import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { clearCalendarEventsCache } from "./calendar.events";
 import type { CustomButtonInput } from "./calendar.types";
 
-export const changeCalendarUrl = (date: Date) => {
-  const url = Craft.getCpUrl(`calendar/${utcDatePath(date)}`);
+export const changeCalendarUrl = (date?: Date) => {
+  let url: string;
+  if (date) {
+    url = Craft.getCpUrl(`calendar/${utcDatePath(date)}`);
+  } else {
+    const currentUrl = new URL(window.location.href);
+    if (/\/(day|week|month)$/.test(currentUrl.pathname)) {
+      currentUrl.pathname = currentUrl.pathname.replace(/\/(day|week|month)$/, "");
+    }
+
+    url = currentUrl.toString();
+  }
+
   history.pushState("data", "", url);
 };
 

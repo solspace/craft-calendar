@@ -45,7 +45,7 @@ import { PopoverViewEvent } from "./popovers/view-event/view-event";
 
 export const CalendarFullcalendar: FC = () => {
   const { hidePopover, showPopover } = usePopover();
-  const { view, setView } = useViewSettings();
+  const { view, setView, isReady } = useViewSettings();
   const { currentDay, language, formats, weekStartDay, overlapThresholdString } = useConfig();
 
   const calendar = useRef<FullCalendar>(null);
@@ -256,6 +256,10 @@ export const CalendarFullcalendar: FC = () => {
     );
   }, []);
 
+  if (!isReady) {
+    return null;
+  }
+
   return (
     <CalendarWrapper>
       <FullCalendar
@@ -343,6 +347,7 @@ export const CalendarFullcalendar: FC = () => {
         datesSet={({ view }) => {
           setTimeout(() => {
             setView(view.type as View);
+            changeCalendarUrl();
           }, 50);
         }}
       />

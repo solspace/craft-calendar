@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import { datepickerIcon, refreshIcon, siteIcon } from "./calendar.style.icons";
 
-export const CalendarWrapper = styled.div`
+export const CalendarBase = styled.div`
+
   position: relative;
 
   table:not(.data) {
@@ -36,35 +37,6 @@ export const CalendarWrapper = styled.div`
     --fc-event-selected-overlay-color: rgb(0 0 0 / 15%);
   }
 
-  .fc-header-toolbar.fc-toolbar {
-    align-items: center;
-    margin-bottom: 24px;
-
-    .fc-toolbar-chunk {
-      display: flex;
-      align-items: center;
-
-      &:first-child {
-        flex: 0 0 300px;
-      }
-
-      &:last-child {
-        display: flex;
-        justify-content: end;
-
-        flex: 0 0 300px;
-      }
-    }
-  }
-
-  .fc-toolbar-title {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 400;
-    line-height: 1.2;
-    color: #000;
-  }
-
   .fc-button.fc-button-primary {
     box-shadow: none;
     border: none;
@@ -79,43 +51,6 @@ export const CalendarWrapper = styled.div`
     &.fc-button-active {
       box-shadow: none;
       outline: none;
-    }
-  }
-
-  .fc-sitepicker-button,
-  .fc-refresh-button,
-  .fc-datepicker-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .fc-icon.fc-icon {
-    &-site,
-    &-refresh,
-    &-datepicker {
-      width: 20px;
-      height: 20px;
-      background-color: currentColor;
-      mask-repeat: no-repeat;
-      mask-position: center;
-      mask-size: contain;
-
-      &::before, &::after {
-        content: none;
-      }
-    }
-
-    &-site {
-      mask-image: url("${siteIcon}");
-    }
-
-    &-refresh {
-      mask-image: url("${refreshIcon}");
-    }
-
-    &-datepicker {
-      mask-image: url("${datepickerIcon}");
     }
   }
 
@@ -157,24 +92,6 @@ export const CalendarWrapper = styled.div`
 
   .fc-daygrid-day-top {
     padding: 2px;
-  }
-
-  .fc-daygrid-day-number {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 27px;
-    height: 27px;
-    padding: 0;
-    border-radius: 27px;
-    color: inherit;
-    font-size: 16px;
-    line-height: 1;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: none;
-    }
   }
 
   .fc-day-today .fc-daygrid-day-number {
@@ -385,6 +302,91 @@ export const CalendarWrapper = styled.div`
 
     &:hover {
       text-decoration: underline;
+    }
+  }`;
+
+export const CalendarWrapper = styled(CalendarBase)`
+  .fc-header-toolbar.fc-toolbar {
+    align-items: center;
+    margin-bottom: 24px;
+
+    .fc-toolbar-chunk {
+      display: flex;
+      align-items: center;
+
+      &:first-child {
+        flex: 0 0 300px;
+      }
+
+      &:last-child {
+        display: flex;
+        justify-content: end;
+
+        flex: 0 0 300px;
+      }
+    }
+  }
+
+  .fc-toolbar-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #000;
+  }
+
+  .fc-sitepicker-button,
+  .fc-refresh-button,
+  .fc-datepicker-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .fc-icon.fc-icon {
+    &-site,
+    &-refresh,
+    &-datepicker {
+      width: 20px;
+      height: 20px;
+      background-color: currentColor;
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
+
+      &::before, &::after {
+        content: none;
+      }
+    }
+
+    &-site {
+      mask-image: url("${siteIcon}");
+    }
+
+    &-refresh {
+      mask-image: url("${refreshIcon}");
+    }
+
+    &-datepicker {
+      mask-image: url("${datepickerIcon}");
+    }
+  }
+
+  .fc-daygrid-day-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    padding: 0;
+    border-radius: 27px;
+    color: inherit;
+    font-size: 16px;
+    line-height: 1;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: none;
     }
   }
 `;

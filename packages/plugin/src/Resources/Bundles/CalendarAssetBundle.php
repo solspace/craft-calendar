@@ -8,4 +8,9 @@ abstract class CalendarAssetBundle extends CpAssetBundle
     {
         return '@Solspace/Calendar/Resources';
     }
+
+    protected function getClientScript(string $clientPath, string $entry): string
+    {
+        return rtrim($clientPath, '/').'/'.$entry.'.js';
+    }
 }

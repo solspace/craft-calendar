@@ -3,7 +3,9 @@
 return [
     // App
     'calendar' => 'calendar/app',
+    'calendar/<view:day|week|month>' => 'calendar/app',
     'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/app',
+    'calendar/<year:\d+>/<month:\d+>/<day:\d+>/<view:day|week|month>' => 'calendar/app',
 
     // Calendars
     'calendar/calendars' => 'calendar/calendars/calendars-index',

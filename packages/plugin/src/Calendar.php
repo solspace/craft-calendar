@@ -36,7 +36,7 @@ use Solspace\Calendar\Twig\Extensions\CalendarTwigExtension;
 use Solspace\Calendar\Variables\CalendarVariable;
 use Solspace\Calendar\Widgets\AgendaWidget;
 use Solspace\Calendar\Widgets\EventWidget;
-use Solspace\Calendar\Widgets\MonthWidget;
+use Solspace\Calendar\Widgets\MiniWidget;
 use Solspace\Calendar\Widgets\UpcomingEventsWidget;
 use yii\base\Event;
 use yii\web\ForbiddenHttpException;
@@ -318,7 +318,7 @@ class Calendar extends Plugin
                 static function (RegisterComponentTypesEvent $event) {
                     $event->types[] = AgendaWidget::class;
                     $event->types[] = EventWidget::class;
-                    $event->types[] = MonthWidget::class;
+                    $event->types[] = MiniWidget::class;
                     $event->types[] = UpcomingEventsWidget::class;
                 }
             );

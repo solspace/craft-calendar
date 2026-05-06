@@ -4,16 +4,13 @@ namespace Solspace\Calendar\Widgets;
 
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
-use Solspace\Calendar\Resources\Bundles\WidgetMonthBundle;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
+use Solspace\Calendar\Resources\Bundles\WidgetMiniBundle;
 
-class MonthWidget extends AbstractWidget
+class MiniWidget extends AbstractWidget
 {
     public ?string $title = null;
-
-    public ?string $view = null;
-
     public array|string $calendars = '*';
-
     public ?int $siteId = null;
 
     public static function displayName(): string
@@ -24,6 +21,11 @@ class MonthWidget extends AbstractWidget
     public static function icon(): string
     {
         return '@calendar/icon-mask.svg';
+    }
+
+    public static function maxColspan(): ?int
+    {
+        return 1;
     }
 
     public function init(): void
@@ -44,20 +46,24 @@ class MonthWidget extends AbstractWidget
             );
         }
 
-        \Craft::$app->view->registerAssetBundle(WidgetMonthBundle::class);
+        \Craft::$app->view->registerAssetBundle(WidgetMiniBundle::class);
 
         $calendarLocale = \Craft::$app->locale->id;
         $calendarLocale = str_replace('_', '-', strtolower($calendarLocale));
-        $localeModulePath = __DIR__.'/../js/lib/fullcalendar/locale/'.$calendarLocale.'.js';
-        if (!file_exists($localeModulePath)) {
-            $calendarLocale = 'en';
-        }
 
         return \Craft::$app->view->renderTemplate(
-            'calendar/_widgets/month/body',
+            'calendar/_widgets/mini/body',
             [
-                'locale' => $calendarLocale,
                 'settings' => $this,
+                'configuration' => [
+                    'siteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
+                    'calendars' => $this->calendars,
+                    'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
+                    'formats' => DateFormatHelper::toConfig(),
+                    'language' => $calendarLocale,
+                    'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),
+                    'overlapThreshold' => Calendar::getInstance()->settings->getOverlapThreshold(),
+                ],
             ]
         );
     }
@@ -70,7 +76,7 @@ class MonthWidget extends AbstractWidget
         }
 
         return \Craft::$app->view->renderTemplate(
-            'calendar/_widgets/month/settings',
+            'calendar/_widgets/mini/settings',
             [
                 'calendars' => Calendar::getInstance()->calendars->getAllCalendarTitles(),
                 'settings' => $this,
@@ -84,5 +90,10 @@ class MonthWidget extends AbstractWidget
         return [
             [['calendars'], 'required'],
         ];
+    }
+
+    protected static function allowMultipleInstances(): bool
+    {
+        return false;
     }
 }

@@ -18,7 +18,7 @@ root.render(
       <Routes>
         <Route path="/" element={<App />}>
           <Route index element={<Calendar />} />
-          <Route path=":year/:month/:day" element={<Calendar />} />
+          <Route path=":year/:month/:day/:view?" element={<Calendar />} />
         </Route>
       </Routes>
     </BrowserRouter>
