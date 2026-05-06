@@ -2,7 +2,7 @@
 {% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
 {% set dateTimeFormat = dateFormat ~ " \\a\\t " ~ timeFormat %}
 
-{% set events = craft.calendar.events({
+{% set occurrences = craft.calendar.occurrences({
     rangeStart: now,
     limit: settings.limit,
     calendarId: settings.calendars,
@@ -11,7 +11,8 @@
 
 <table class="upcoming-events table bordered">
     <tbody>
-        {% for event in events.all %}
+        {% for occurrence in occurrences.all %}
+            {% set event = occurrence.event %}
             <tr>
                 <td>
                     {% if settings.calendars|length > 1 or settings.calendars == "*" %}
@@ -20,17 +21,19 @@
                               style="background-color: {{ event.calendar.color }}">
                         </span>
                     {% endif %}
+
                     <a href="{{ url('calendar/events/'~event.id) }}">{{ event.title }}</a>
+
                     <span>
                         {% if event.allDay %}
-                            {{ event.startDate.format(dateFormat) }}
+                            {{ occurrence.startDate.format(dateFormat) }}
                             {% if event.multiDay %}
-                                 - {{ event.endDate.format(dateFormat) }}
+                                 - {{ occurrence.endDate.format(dateFormat) }}
                             {% else %}
                                 ({{ "All Day"|t('calendar') }})
                             {% endif %}
                         {% else %}
-                            {{ event.startDate.format(dateTimeFormat) }}
+                            {{ occurrence.startDate.format(dateTimeFormat) }}
                         {% endif %}
                     </span>
                 </td>
