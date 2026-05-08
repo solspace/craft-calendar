@@ -1,7 +1,7 @@
 import * as Methods from '@cal/scripts/calendars/fullcalendar-methods';
 import { showEventCreator } from './popups';
 
-window.qTipsEnabled = true;
+window.calendarPopupsEnabled = true;
 const selectedCalendarsStorageKey = 'calendar-selectedCalendars';
 const $calendar = $('#solspace-calendar');
 const $miniCal = $('#calendar-mini-cal');
@@ -143,11 +143,11 @@ $(() => {
     events: Methods.getEvents,
     eventRender: Methods.renderEvent,
     dayRender: Methods.renderDay,
-    eventDragStart: Methods.closeAllQTips,
-    eventDragStop: Methods.enableQTips,
+    eventDragStart: Methods.closeAllPopups,
+    eventDragStop: Methods.enablePopups,
     eventDrop: Methods.eventDateChange,
-    eventResizeStart: Methods.closeAllQTips,
-    eventResizeStop: Methods.enableQTips,
+    eventResizeStart: Methods.closeAllPopups,
+    eventResizeStop: Methods.enablePopups,
     eventResize: Methods.eventDurationChange,
     selectable: canQuickCreate && canEditEvents,
     selectHelper: canQuickCreate && canEditEvents,

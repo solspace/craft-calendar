@@ -10,7 +10,8 @@ class CalendarViewBundle extends CalendarAssetBundle
             'external/js/json/jquery.json.js',
             'external/js/fullcalendar/lib/moment.min.js',
             'external/js/fullcalendar/fullcalendar.min.js',
-            'external/js/qtip/jquery.qtip.min.js',
+            'external/js/tippy/popper.min.js',
+            'external/js/tippy/tippy.umd.min.js',
             'js/scripts/calendars/main.js',
             'js/scripts/calendars/popups.js',
             'js/scripts/calendars/fullcalendar-methods.js',
@@ -30,7 +31,7 @@ class CalendarViewBundle extends CalendarAssetBundle
     {
         return [
             'external/css/fullcalendar/fullcalendar.min.css',
-            'external/css/qtip/jquery.qtip.min.css',
+            'external/css/tippy/tippy.css',
             'css/calendars/calendar.css',
         ];
     }
