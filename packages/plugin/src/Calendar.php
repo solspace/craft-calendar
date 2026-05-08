@@ -380,6 +380,10 @@ class Calendar extends Plugin
         Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, [$this->calendars, 'addSiteHandler']);
         Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, [$this->events, 'transferUserEvents']);
         Event::on(View::class, View::EVENT_BEFORE_RENDER_TEMPLATE, function (TemplateEvent $event) {
+            if (!\Craft::$app->getRequest()->getIsCpRequest()) {
+                return;
+            }
+
             $event->sender->registerCss('
 .elements .tableview table.data[data-name="Events"] thead th[data-attribute="title"]:nth-child(2) {
   display: none !important;
