@@ -31,7 +31,7 @@
 
 {% block footerJs %}
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.min.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/full-calendar.css">
@@ -39,11 +39,12 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.min.js"></script>
-    <script src="//cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/tippy.js@6/dist/tippy.umd.min.js"></script>
     <script src="//code.jquery.com/jquery-migrate-3.0.0.min.js"></script>
     <script>
         var calendarTimeFormat = "{{ craft.app.locale.getTimeFormat('short', 'php') }}";
-        var qTipsEnabled = true;
+        var popupsEnabled = true;
         var $calendar = $("#calendar-wrapper");
         var canEditEvents = {{ currentUser and currentUser.can('calendar-manageEvents') ? 'true' : 'false' }};
 
@@ -71,11 +72,11 @@
                 events: getEvents,
                 eventRender: renderEvent,
                 eventClick: eventClick,
-                eventDragStart: closeAllQTips,
-                eventDragStop: enableQTips,
+                eventDragStart: closeAllPopups,
+                eventDragStop: enablePopups,
                 eventDrop: eventDateChange,
-                eventResizeStart: closeAllQTips,
-                eventResizeStop: enableQTips,
+                eventResizeStart: closeAllPopups,
+                eventResizeStop: enablePopups,
                 eventResize: eventDurationChange,
                 selectable: canEditEvents,
                 selectHelper: canEditEvents,
@@ -194,7 +195,7 @@
         }
 
         /**
-         * Attaches a qTip2 popup on a given event
+         * Attaches a Tippy popup on a given event
          *
          * @param event
          * @param element
@@ -204,12 +205,6 @@
                 return;
             }
 
-            var qtipContent = $('<div>');
-            var calendarData = $('<div>', {
-                class: 'calendar-data',
-                html: '<span class="color-indicator" style="background-color: ' + event.backgroundColor + ';"></span> ' + event.calendar.name
-            });
-
             var start = moment(event.start);
             var end = moment(event.end);
 
@@ -217,184 +212,148 @@
             if (event.allDay) {
                 end.subtract(1, 'days');
             } else {
-                var timeFormat = calendarTimeFormat == "H:i" ? "HH:mm" : "h:mma"
+                var timeFormat = calendarTimeFormat === "H:i" ? "HH:mm" : "h:mma";
                 dateFormat = dateFormat + ' [at] ' + timeFormat;
             }
 
-            var eventRange = $('<div>', {
-                class: 'event-date-range separator',
-                html: '<div style="white-space: nowrap;"><label>Starts:</label>' + start.format(dateFormat) + '</div>' +
-                '<div style="white-space: nowrap;"><label>Ends:</label>' + end.format(dateFormat) + '</div>'
-            });
+            var popup = document.createElement('div');
+            popup.className = 'fc-event-popup';
 
-            var eventRepeats = '';
+            var titleBar = document.createElement('div');
+            titleBar.className = 'fc-event-popup__titlebar';
+            titleBar.innerHTML = '<span class="fc-event-popup__title">' + event.title + '</span><button class="fc-event-popup__close" aria-label="Close">&times;</button>';
+
+            popup.appendChild(titleBar);
+
+            var body = document.createElement('div');
+            body.className = 'fc-event-popup__body';
+            body.innerHTML += '<div class="calendar-data"><span class="color-indicator" style="background-color: ' + event.backgroundColor + ';"></span> ' + event.calendar.name + '</div>';
+            body.innerHTML += '<div class="event-date-range separator"><div style="white-space:nowrap"><label>{{ "Starts"|t }}:</label> ' + start.format(dateFormat) + '</div><div style="white-space:nowrap"><label>{{ "Ends"|t }}:</label> ' + end.format(dateFormat) + '</div></div>';
+
             if (event.repeats) {
-                eventRepeats = $('<div>', {
-                    class: 'event-repeats separator',
-                    html: '',
-                });
+                body.innerHTML += '<div class="event-repeats separator"></div>';
             }
 
             if (event.editable) {
-                var editButton = $('<div>', {
-                    class: 'buttons'
-                });
-
-                editButton.append($('<a>', {
-                    class: 'btn btn-outline-warning btn-sm submit',
-                    href: '{{ siteUrl }}demo/edit/event/' + event.id,
-                    text: '{{ "Edit"|t }}'
-                }));
-
-                editButton.append($('<a>', {
-                    class: 'btn btn-outline-danger text-danger btn-sm delete-event',
-                    text: "{{ 'Delete'|t }}",
-                    data: {
-                        id: event.id,
-                        action: 'calendar/events-api/delete'
-                    }
-                }));
+                var buttonsHtml = '<div class="buttons"><a class="btn btn-outline-warning btn-sm" href="{{ siteUrl }}demo/edit/event/' + event.id + '">{{ "Edit"|t }}</a><a class="btn btn-outline-danger text-danger btn-sm delete-event" href="#" data-id="' + event.id + '" data-action="calendar/events-api/delete">{{ "Delete"|t }}</a>';
 
                 if (event.repeats) {
-                    editButton.append($('<a>', {
-                        class: 'btn btn-outline-secondary btn-sm delete-event-occurrence',
-                        text: "{{ 'Delete Occurrence'|t }}",
-                        data: {
-                            id: event.id,
-                            date: event.start.toISOString(),
-                            action: 'calendar/events-api/delete-occurrence'
-                        }
-                    }));
+                    buttonsHtml += '<a class="btn btn-outline-secondary btn-sm delete-event-occurrence" href="#" data-id="' + event.id + '" data-date="' + event.start.toISOString() + '" data-action="calendar/events-api/delete-occurrence">{{ "Delete Occurrence"|t }}</a>';
                 }
+
+                buttonsHtml += '</div>';
+                body.innerHTML += buttonsHtml;
             }
 
-            element.qtip({
-                content: {
-                    title: event.title,
-                    button: true,
-                    text: qtipContent
-                            .add(calendarData)
-                            .add(eventRange)
-                            .add(eventRepeats)
-                            .add(editButton)
-                },
-                style: {
-                    classes: 'qtip-bootstrap qtip-event',
-                },
-                position: {
-                    my: 'top center',
-                    at: 'bottom center',
-                    viewport: $(window),
-                    adjust: {
-                        method: 'shift flip'
+            popup.appendChild(body);
+
+            var instance = tippy(element[0], {
+                arrow: true,
+                content: popup,
+                placement: 'auto',
+                interactive: true,
+                delay: [500, 300],
+                theme: 'fc-event',
+                appendTo: document.body,
+                onShow: function () {
+                    if (!popupsEnabled) {
+                        return false;
                     }
-                },
-                show: {
-                    solo: true,
-                    delay: 500
-                },
-                hide: {
-                    fixed: true,
-                    delay: 300
-                },
-                events: {
-                    show: function (e, api) {
-                        if (!qTipsEnabled) {
-                            e.preventDefault();
-                        }
 
-                        if (event.repeats) {
-                            var data = {
-                                eventId: event.id,
-                                action: 'calendar/events-api/first-occurrence-date'
-                            };
+                    if (event.repeats) {
+                        var data = {
+                            eventId: event.id,
+                            action: 'calendar/events-api/first-occurrence-date'
+                        };
 
-                            data[csrfTokenName] = csrfTokenValue;
+                        data[window.csrfTokenName] = window.csrfTokenValue;
 
-                            $.ajax({
-                                cache: false,
-                                type: 'post',
-                                dataType: 'json',
-                                data: data,
-                                success: function (response) {
-                                    if (response.success && response.event && response.event.hasOwnProperty('readableRepeatRule')) {
-                                        $('.event-repeats').html('<label>Repeats:</label> ' + response.event.readableRepeatRule);
+                        $.ajax({
+                            cache: false,
+                            type: 'post',
+                            dataType: 'json',
+                            data: data,
+                            success: function (response) {
+                                if (response.success && response.event && response.event.hasOwnProperty('readableRepeatRule')) {
+                                    var repeatsEl = popup.querySelector('.event-repeats');
+                                    if (repeatsEl) {
+                                        repeatsEl.innerHTML = '<label>{{ "Repeats"|t }}:</label> ' + response.event.readableRepeatRule;
                                     }
-                                },
-                            });
-                        }
-                    },
-                    render: function (e, api) {
-                        $('a.delete-event-occurrence', api.elements.content).click(function (e) {
-                            var action = $(this).data('action');
-                            var eventId = $(this).data('id');
-                            var date = $(this).data('date');
-
-                            if (confirm("{{ 'Are you sure?'|t }}")) {
-                                var data = {
-                                    eventId: eventId,
-                                    date: date,
-                                    action: action
-                                };
-
-                                data[csrfTokenName] = csrfTokenValue;
-
-                                $.ajax({
-                                    type: 'post',
-                                    dataType: 'json',
-                                    data: data,
-                                    success: function (response) {
-                                        if (!response.error) {
-                                            $calendar.fullCalendar('removeEvents', function (lookupEvent) {
-                                                return lookupEvent.id == event.id && lookupEvent.start.isSame(event.start);
-                                            });
-                                            api.destroy();
-
-                                            return;
-                                        }
-
-                                        alert(response.error);
-                                    }
-                                });
+                                }
                             }
-
-                            return false;
-                        });
-
-                        $('a.delete-event', api.elements.content).click(function (e) {
-                            var action = $(this).data('action');
-                            var eventId = $(this).data('id');
-
-                            if (confirm("{{ 'Are you sure you want to delete this event?'|t }}")) {
-                                var data = {
-                                    eventId: eventId,
-                                    action: action
-                                };
-
-                                data[csrfTokenName] = csrfTokenValue;
-
-                                $.ajax({
-                                    type: 'post',
-                                    dataType: 'json',
-                                    data: data,
-                                    success: function (response) {
-                                        if (!response.error) {
-                                            $calendar.fullCalendar('removeEvents', event.id);
-                                            api.destroy();
-
-                                            return;
-                                        }
-
-                                        alert(response.error);
-                                    }
-                                });
-                            }
-
-                            return false;
                         });
                     }
                 }
             });
+
+            popup.querySelector('.fc-event-popup__close').addEventListener('click', function () {
+                instance.hide();
+            });
+
+            var deleteEventEl = popup.querySelector('.delete-event');
+            if (deleteEventEl) {
+                deleteEventEl.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    if (confirm("{{ 'Are you sure you want to delete this event?'|t }}")) {
+                        var data = {
+                            eventId: this.dataset.id,
+                            action: this.dataset.action
+                        };
+
+                        data[window.csrfTokenName] = window.csrfTokenValue;
+
+                        $.ajax({
+                            type: 'post',
+                            dataType: 'json',
+                            data: data,
+                            success: function (response) {
+                                if (!response.error) {
+                                    $calendar.fullCalendar('removeEvents', event.id);
+                                    instance.destroy();
+
+                                    return;
+                                }
+
+                                alert(response.error);
+                            }
+                        });
+                    }
+                });
+            }
+
+            var deleteOccurrenceEl = popup.querySelector('.delete-event-occurrence');
+            if (deleteOccurrenceEl) {
+                deleteOccurrenceEl.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    if (confirm("{{ 'Are you sure?'|t }}")) {
+                        var data = {
+                            eventId: this.dataset.id,
+                            date: this.dataset.date,
+                            action: this.dataset.action
+                        };
+
+                        data[window.csrfTokenName] = window.csrfTokenValue;
+
+                        $.ajax({
+                            type: 'post',
+                            dataType: 'json',
+                            data: data,
+                            success: function (response) {
+                                if (!response.error) {
+                                    $calendar.fullCalendar('refetchEvents');
+                                    instance.destroy();
+
+                                    return;
+                                }
+
+                                alert(response.error);
+                            }
+                        });
+                    }
+                });
+            }
         }
 
         function eventDateChange(event, delta, revertFunc) {
@@ -436,162 +395,163 @@
             });
         }
 
-        function closeAllQTips() {
-            qTipsEnabled = false;
-            $('div.qtip:visible').qtip('hide');
+        function closeAllPopups() {
+            popupsEnabled = false;
+            tippy.hideAll();
         }
 
-        function enableQTips() {
-            qTipsEnabled = true;
+        function enablePopups() {
+            popupsEnabled = true;
+        }
+
+        var eventCreatorShown = false;
+
+        function closeEventCreatorModal(backdrop, modal) {
+            document.body.removeChild(backdrop);
+            document.body.removeChild(modal);
+
+            $('#event-creator').removeClass('shown').insertAfter($calendar);
+
+            $calendar.fullCalendar('unselect');
+
+            eventCreatorShown = false;
         }
 
         function showEventCreator(start, end) {
-            $('<div />').qtip({
-                content: {
-                    text: $('#event-creator'),
-                    title: "{{ "New Event"|t }}"
-                },
-                position: {
-                    my: 'center',
-                    at: 'center',
-                    target: $(window)
-                },
-                show: {
-                    ready: true,
-                    modal: {
-                        on: true,
-                        blur: false
-                    }
-                },
-                hide: false,
-                style: {
-                    classes: 'qtip-bootstrap dialogue',
-                    width: 500
-                },
-                events: {
-                    render: function (event, api) {
-                        var context = api.elements.content;
+            if (eventCreatorShown) {
+                return;
+            }
 
-                        $('ul.errors', context).empty();
+            eventCreatorShown = true;
 
-                        var startTime = start.utc().format('HHmmss');
-                        var endTime = end.utc().format('HHmmss');
+            var backdrop = document.createElement('div');
+            backdrop.className = 'fc-event-creator-backdrop';
 
-                        var isAllDay = false;
-                        if (startTime === endTime && endTime == "000000") {
-                            end.subtract(1, 'seconds');
-                            isAllDay = true;
+            var modal = document.createElement('div');
+            modal.className = 'fc-event-creator-modal';
+
+            var titleBar = document.createElement('div');
+            titleBar.className = 'fc-event-creator-modal__titlebar';
+            titleBar.innerHTML = '<span>{{ "New Event"|t }}</span><button class="fc-event-creator-modal__close" aria-label="{{ "Close"|t }}">&times;</button>';
+            modal.appendChild(titleBar);
+            modal.appendChild(document.getElementById('event-creator'));
+
+            document.body.appendChild(backdrop);
+            document.body.appendChild(modal);
+
+            backdrop.addEventListener('click', function () { closeEventCreatorModal(backdrop, modal); });
+            modal.querySelector('.fc-event-creator-modal__close').addEventListener('click', function () { closeEventCreatorModal(backdrop, modal); });
+
+            var $creator = $('#event-creator');
+            $creator.addClass('shown');
+            $('ul.errors', $creator).empty();
+
+            var startTime = start.utc().format('HHmmss');
+            var endTime = end.utc().format('HHmmss');
+
+            var isAllDay = false;
+            if (startTime === endTime && endTime === '000000') {
+                end.subtract(1, 'seconds');
+                isAllDay = true;
+            }
+
+            var utcStart = createDateAsUTC(start.toDate());
+            var utcEnd = createDateAsUTC(end.toDate());
+
+            var $startDate = $('input[name=startDate]', $creator);
+            var $startTime = $('input[name=startTime]', $creator);
+            var $endDate = $('input[name=endDate]', $creator);
+            var $endTime = $('input[name=endTime]', $creator);
+
+            $startDate.datepicker('setDate', utcStart);
+            $endDate.datepicker('setDate', utcEnd);
+            $startTime.timepicker('setTime', utcStart);
+            $endTime.timepicker('setTime', utcEnd);
+
+            var $allDayInput = $('input[name=allDay]');
+            $allDayInput.prop('checked', isAllDay);
+
+            if (isAllDay) {
+                $('.timewrapper', $creator).hide();
+            } else {
+                $('.timewrapper', $creator).show();
+            }
+
+            $('button.submit', $creator).unbind('click').click(function () {
+                var title = $('input[name=title]', $creator).val();
+                var calendarId = $('select[name=calendarId]', $creator).val();
+
+                var startDateValue = moment($startDate.datepicker('getDate'));
+                var startTimeValue = moment($startTime.timepicker('getTime'));
+                var endDateValue = moment($endDate.datepicker('getDate'));
+                var endTimeValue = moment($endTime.timepicker('getTime'));
+
+                var data = {
+                    action: 'calendar/events-api/create',
+                    startDate: startDateValue.format('YYYY-MM-DD') + ' ' + startTimeValue.format('HH:mm:ss'),
+                    endDate: endDateValue.format('YYYY-MM-DD') + ' ' + endTimeValue.format('HH:mm:ss'),
+                    allDay: $allDayInput.is(':checked') ? 1 : 0,
+                    event: { title: title, calendarId: calendarId }
+                };
+
+                data[window.csrfTokenName] = window.csrfTokenValue;
+
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    data: data,
+                    success: function (response) {
+                        if (response.event) {
+                            var newEvent = response.event;
+                            if (newEvent.allDay) {
+                                newEvent.end = moment(newEvent.end).add(2, 's').utc().format();
+                            }
+
+                            $calendar.fullCalendar('renderEvent', newEvent);
+                            $calendar.fullCalendar('unselect');
+
+                            closeEventCreatorModal(backdrop, modal);
                         }
-
-                        var utcStart = createDateAsUTC(start.toDate());
-                        var utcEnd = createDateAsUTC(end.toDate());
-
-                        $creator = $("#event-creator");
-                        $creator.addClass('shown');
-                        var $startDate = $('input[name=startDate]', $creator);
-                        var $startTime = $('input[name=startTime]', $creator);
-                        var $endDate = $('input[name=endDate]', $creator);
-                        var $endTime = $('input[name=endTime]', $creator);
-
-                        $startDate.datepicker('setDate', utcStart);
-                        $endDate.datepicker('setDate', utcEnd);
-                        $startTime.timepicker('setTime', utcStart);
-                        $endTime.timepicker('setTime', utcEnd);
-
-                        var $allDayInput = $('input[name=allDay]');
-                        $allDayInput.prop("checked", isAllDay);
-
-                        if (isAllDay) {
-                            $('.timewrapper', $creator).hide();
-                        } else {
-                            $('.timewrapper', $creator).show();
-                        }
-
-                        $("button.submit", context).unbind('click').click(function (e) {
-                            var title = $('input[name=title]', context).val();
-                            var calendarId = $('select[name=calendarId]', context).val();
-
-                            var startDateValue = moment($startDate.datepicker('getDate'));
-                            var startTimeValue = moment($startTime.timepicker('getTime'));
-                            var endDateValue = moment($endDate.datepicker('getDate'));
-                            var endTimeValue = moment($endTime.timepicker('getTime'));
-
-                            var data = {
-                                action: 'calendar/events-api/create',
-                                startDate: startDateValue.format('YYYY-MM-DD') + ' ' + startTimeValue.format('HH:mm:ss'),
-                                endDate: endDateValue.format('YYYY-MM-DD') + ' ' + endTimeValue.format('HH:mm:ss'),
-                                allDay: $allDayInput.is(":checked") ? 1 : 0,
-                                event: {
-                                    title: title,
-                                    calendarId: calendarId
-                                }
-                            };
-
-                            data[csrfTokenName] = csrfTokenValue;
-
-                            $.ajax({
-                                type: 'post',
-                                dataType: 'json',
-                                data: data,
-                                success: function (response) {
-                                    if (response.error) {
-                                        $('ul.errors', context)
-                                                .empty()
-                                                .append($('<li />', {text: response.error}));
-                                    } else if (response.event) {
-                                        const event = response.event;
-                                        if (event.allDay) {
-                                          event.end = moment(event.end).add(2, 's').utc().format();
-                                        }
-
-                                        $calendar.fullCalendar('renderEvent', event);
-                                        $calendar.fullCalendar('unselect');
-
-                                        api.hide(e);
-                                    }
-                                },
-                                error: function (response) {
-                                    alert(response);
-                                }
-                            });
-                        });
-
-                        $('button.delete', context).unbind('click').click(function (e) {
-                            api.hide();
-                        });
                     },
-                    hide: function (event, api) {
-                        $('#event-creator').removeClass('shown').insertAfter($calendar);
-                        $calendar.fullCalendar('unselect');
-                        api.destroy();
+                    error: function (xhr) {
+                        var responseJSON = xhr.responseJSON;
+                        if (responseJSON && responseJSON.message) {
+                            alert(responseJSON.message);
+                        }
                     }
-                }
+                });
             });
-        }
 
+            $('button.delete', $creator).unbind('click').click(function () {
+                closeEventCreatorModal(backdrop, modal);
+            });
+
+            setTimeout(function () {
+                $('input[name=title]:first', $creator).val('').focus();
+            }, 100);
+        }
 
         function createDateAsUTC(date) {
             return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
         }
-
     </script>
 
     <div id="event-creator">
         <div class="row">
             <div class="col-md-12">
-                <label>{{ "Title"|t }}</label>
+                <label for="title">{{ "Title"|t }}</label>
             </div>
             <div class="col-md-12">
-                <input class="form-control" type="text" name="title" />
+                <input class="form-control" type="text" name="title" id="title" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
-                <label>{{ "Calendar"|t }}</label>
+                <label for="calendarId">{{ "Calendar"|t }}</label>
             </div>
             <div class="col-md-12">
-                <select class="form-control" name="calendarId">
+                <select class="form-control" name="calendarId" id="calendarId">
                     {% for calendar in craft.calendar.allowedCalendars %}
                         <option value="{{ calendar.id }}">
                             {{ calendar.name }}
@@ -627,8 +587,8 @@
 
         <div class="row">
             <div class="col-md-12">
-                <label>
-                    <input type="checkbox" name="allDay" value="1" />
+                <label for="allDay">
+                    <input type="checkbox" name="allDay" id="allDay" value="1" />
                     {{ "All Day"|t }}
                 </label>
             </div>

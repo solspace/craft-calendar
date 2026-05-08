@@ -103,7 +103,7 @@ class EventQuery extends ElementQuery
 
     private null|Carbon|\DateTime|string $endsBeforeOrAt = null;
 
-    private bool $allDay = false;
+    private ?bool $allDay = null;
 
     private null|Carbon|\DateTime|string $until = null;
 
@@ -319,7 +319,7 @@ class EventQuery extends ElementQuery
     /**
      * @return $this
      */
-    public function setAllDay(bool $value): self
+    public function setAllDay(?bool $value): self
     {
         $this->allDay = $value;
 
@@ -1201,6 +1201,18 @@ class EventQuery extends ElementQuery
         $paddedRangeEnd = null;
         if ($recurrenceFrequency) {
             $paddedRangeEnd = $this->parseCarbon($relativeDate) ?? new Carbon(DateHelper::UTC);
+
+            /*
+             * Recurring events are only checked from start date + 6 months,
+             * so if the search range start is later than the event's start date,
+             * use the search range start as the starting point.
+             * Example: Event started in 25th October 2025, Calendar looks 6 months from October 2025, so up to 25th April 2026.
+             * Now it says "the search starts in April 2026, so look 6 months from there, up to 25th October 2026.
+             * This allows all recurring events to be included as we have an infinite end date.
+             */
+            if ($this->rangeStart && $this->rangeStart->gt($paddedRangeEnd)) {
+                $paddedRangeEnd = $this->rangeStart->copy();
+            }
 
             switch ($recurrenceFrequency) {
                 case RecurrenceHelper::DAILY:
