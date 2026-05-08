@@ -219,7 +219,9 @@ class EventsApiController extends BaseController
         $event->allDay = $isAllDay;
 
         if (Calendar::getInstance()->events->saveEvent($event, false, true)) {
-            return $this->asJson(['event' => $event]);
+            $savedEvent = Calendar::getInstance()->events->getEventById($event->id, $siteId) ?? $event;
+
+            return $this->asJson(['event' => $savedEvent]);
         }
 
         return $this->asFailure(Calendar::t('Could not save event'));

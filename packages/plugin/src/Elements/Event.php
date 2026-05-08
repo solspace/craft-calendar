@@ -1763,10 +1763,10 @@ class Event extends Element implements \JsonSerializable
                 return Calendar::t(ucfirst($this->getStatus()));
 
             case 'startDate':
-                return $this->tableAttributeDate($this->startDateLocalized);
+                return $this->attributeDate($this->startDateLocalized);
 
             case 'endDate':
-                return $this->tableAttributeDate($this->endDateLocalized);
+                return $this->attributeDate($this->endDateLocalized);
         }
 
         return parent::tableAttributeHtml($attribute);
@@ -1818,10 +1818,10 @@ class Event extends Element implements \JsonSerializable
                 return Calendar::t(ucfirst($this->getStatus()));
 
             case 'startDate':
-                return $this->attributeHtmlDate($this->startDateLocalized);
+                return $this->attributeDate($this->startDateLocalized);
 
             case 'endDate':
-                return $this->attributeHtmlDate($this->endDateLocalized);
+                return $this->attributeDate($this->endDateLocalized);
         }
 
         return parent::attributeHtml($attribute);
@@ -1919,7 +1919,7 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function tableAttributeDate(null|\DateTimeInterface|string $date): string
+    private function attributeDate(null|\DateTimeInterface|string $date): string
     {
         $dt = $this->normalizeLocalizedDate($date);
         if (!$dt) {
@@ -1928,27 +1928,11 @@ class Event extends Element implements \JsonSerializable
 
         // All-day should be date-only
         if ($this->allDay) {
-            return \Craft::$app->getFormatter()->asDate($dt);
+            return \Craft::$app->getFormatter()->asDate($dt, 'short');
         }
 
-        // Timed events should display in LOCAL timezone
-        return \Craft::$app->getFormatter()->asTime($dt) ?: \Craft::$app->getFormatter()->asDatetime($dt);
-    }
-
-    private function attributeHtmlDate(null|\DateTimeInterface|string $date): string
-    {
-        $dt = $this->normalizeLocalizedDate($date);
-        if (!$dt) {
-            return '';
-        }
-
-        // All-day should be date-only
-        if ($this->allDay) {
-            return \Craft::$app->getFormatter()->asDate($dt);
-        }
-
-        // Timed events should display in LOCAL timezone
-        return ElementHelper::attributeHtml($dt);
+        // Timed events should display full date+time in LOCAL timezone
+        return \Craft::$app->getFormatter()->asDatetime($dt, 'short');
     }
 
     private function normalizeLocalizedDate(null|\DateTimeInterface|string $date): ?\DateTimeInterface
