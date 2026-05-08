@@ -87,7 +87,8 @@ class EventQuery extends ElementQuery
     private \DateTime|string|null $rangeEnd = null;
     private array|string|null $timezone = null;
 
-    private bool $allDay = false;
+    private ?bool $allDay = null;
+
     private bool $allowedCalendarsOnly = false;
 
     private ?int $overlapThreshold = null;
@@ -268,7 +269,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setAllDay(bool $value): self
+    public function setAllDay(?bool $value): self
     {
         $this->allDay = $value;
 
