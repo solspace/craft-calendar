@@ -1919,7 +1919,7 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function attributeDate(\DateTimeInterface|string|null $date): string
+    private function attributeDate(null|\DateTimeInterface|string $date): string
     {
         $dt = $this->normalizeLocalizedDate($date);
         if (!$dt) {
@@ -1928,11 +1928,11 @@ class Event extends Element implements \JsonSerializable
 
         // All-day should be date-only
         if ($this->allDay) {
-            return \Craft::$app->getFormatter()->asDate($dt);
+            return \Craft::$app->getFormatter()->asDate($dt, 'short');
         }
 
         // Timed events should display full date+time in LOCAL timezone
-        return \Craft::$app->getFormatter()->asDatetime($dt);
+        return \Craft::$app->getFormatter()->asDatetime($dt, 'short');
     }
 
     private function normalizeLocalizedDate(null|\DateTimeInterface|string $date): ?\DateTimeInterface
