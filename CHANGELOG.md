@@ -1,5 +1,17 @@
 # Solspace Calendar Changelog
 
+## 5.0.28 - 2026-05-08
+
+### Changed
+- Migrated event popups in the CP Month/Week/Day views from **qTip JS** to **Tippy JS** to address some display issues.
+
+### Fixed
+- Fixed an issue where event content could fail to migrate correctly when multiple calendars used different field layouts while running the `calendar/events/fix-titles` and `calendar/events/fix-contents` console commands.
+- Fixed a `TypeError` in `EventQuery::setAllDay()` by allowing `null` values.
+- Fixed an issue where recurring events could be missing from the search index due to a six-month end date limit.
+- Fixed formatting of **Start Date** and **End Date** columns in the CP Events list view for timed vs. all-day events.
+- Fixed an issue where control panel-specific CSS was being registered on non-CP requests.
+
 ## 5.0.27 - 2026-03-19
 
 ### Changed
