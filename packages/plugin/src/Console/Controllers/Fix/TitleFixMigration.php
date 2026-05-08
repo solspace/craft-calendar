@@ -17,9 +17,8 @@ class TitleFixMigration extends BaseContentRefactorMigration
         foreach ($calendars as $calendar) {
             $fieldLayout = $calendar->getFieldLayout();
 
-            // update users
             $this->updateElements(
-                (new Query())->from(Event::TABLE),
+                (new Query())->from(Event::TABLE)->where(['calendarId' => $calendar->id]),
                 $fieldLayout,
             );
         }
