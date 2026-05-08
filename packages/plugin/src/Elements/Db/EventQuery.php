@@ -103,7 +103,7 @@ class EventQuery extends ElementQuery
 
     private null|Carbon|\DateTime|string $endsBeforeOrAt = null;
 
-    private bool $allDay = false;
+    private ?bool $allDay = null;
 
     private null|Carbon|\DateTime|string $until = null;
 
@@ -319,7 +319,7 @@ class EventQuery extends ElementQuery
     /**
      * @return $this
      */
-    public function setAllDay(bool $value): self
+    public function setAllDay(?bool $value): self
     {
         $this->allDay = $value;
 
