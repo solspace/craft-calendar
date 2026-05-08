@@ -175,24 +175,153 @@ div.fc.fc-unthemed {
       cursor: pointer;
     }
 
-.qtip-event {
-  max-width: 400px !important; }
-.qtip-event .qtip-content div > label {
+.tippy-box[data-theme~='fc-event'] {
+  background-color: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  max-width: 380px;
+  color: inherit;
+  font-size: inherit;
+}
+
+.tippy-box[data-theme~='fc-event'] > .tippy-arrow::before {
+  border-color: transparent;
+}
+
+.tippy-box[data-theme~='fc-event'][data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: #e8e8e8;
+}
+
+.tippy-box[data-theme~='fc-event'][data-placement^='bottom'] > .tippy-arrow::before {
+  border-bottom-color: #e8e8e8;
+}
+
+.tippy-box[data-theme~='fc-event'][data-placement^='left'] > .tippy-arrow::before {
+  border-left-color: #e8e8e8;
+}
+
+.tippy-box[data-theme~='fc-event'][data-placement^='right'] > .tippy-arrow::before {
+  border-right-color: #e8e8e8;
+}
+
+.tippy-box[data-theme~='fc-event'] .tippy-content {
+  padding: 0;
+}
+
+.fc-event-popup__titlebar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e8e8e8;
+  border-radius: 4px 4px 0 0;
+}
+
+.fc-event-popup__title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.fc-event-popup__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #666666;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.fc-event-popup__close:hover {
+  color: #000000;
+}
+
+.fc-event-popup__body {
+  padding: 12px 16px 0;
+}
+
+.fc-event-popup__body div > label {
   display: inline-block;
   width: 66px;
-  font-weight: bold; }
-.qtip-event .qtip-content div.separator {
+  font-weight: bold;
+}
+
+.fc-event-popup__body div.separator {
   margin-top: 5px;
   padding-top: 5px;
-  border-top: 1px dotted #e8e8e8; }
+  border-top: 1px dotted #e8e8e8;
+}
 
-.qtip-event .qtip-content div.separator label {
+.fc-event-popup__body div.separator label {
   margin-bottom: 0;
 }
 
-.qtip-event .btn {
-  float: right;
-  margin: 10px 5px 0 0;
+.fc-event-popup__body .buttons {
+  padding: 10px 0;
+  text-align: right;
+}
+
+.fc-event-popup__body .buttons .btn {
+  margin-left: 5px;
+}
+
+.fc-event-creator-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.fc-event-creator-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  max-width: 520px;
+  width: 90%;
+  z-index: 101;
+}
+
+.fc-event-creator-modal__titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e8e8e8;
+  border-radius: 6px 6px 0 0;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.fc-event-creator-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  color: #666;
+  padding: 0;
+}
+
+.fc-event-creator-modal__close:hover {
+  color: #000000;
+}
+
+.fc-event-creator-modal #event-creator {
+  padding: 20px;
+  position: static;
+  visibility: visible;
 }
 
 .color-indicator {
@@ -238,8 +367,12 @@ div.fc.fc-unthemed {
   color: #929292 !important;
 }
 
+.ui-datepicker {
+  z-index: 102 !important;
+}
+
 .ui-timepicker-wrapper {
-  z-index: 20001;
+  z-index: 102 !important;
 }
 
 ul.errors {

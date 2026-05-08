@@ -243,16 +243,13 @@ export const getEvents = (start, end, timezone, callback) => {
   });
 };
 
-/**
- * Closes all open qtips
- */
-export const closeAllQTips = () => {
-  window.qTipsEnabled = false;
-  $('div.qtip:visible').qtip('hide');
+export const closeAllPopups = () => {
+  window.calendarPopupsEnabled = false;
+  tippy.hideAll();
 };
 
-export const enableQTips = () => {
-  window.qTipsEnabled = true;
+export const enablePopups = () => {
+  window.calendarPopupsEnabled = true;
 };
 
 export const getSpinner = () => {
