@@ -13,7 +13,6 @@ use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 class ApiController extends BaseController
 {
@@ -86,11 +85,17 @@ class ApiController extends BaseController
     {
         $request = \Craft::$app->getRequest();
 
-        $siteId = \Craft::$app->sites->currentSite->id;
-        $calendarId = Calendar::getInstance()->calendars->getFirstCalendarId();
+        $scenario = match ($request->headers->get('X-Scenario')) {
+            'live' => Element::SCENARIO_LIVE,
+            default => Element::SCENARIO_ESSENTIALS,
+        };
+
+        $siteId = $request->post('siteId') ?? \Craft::$app->sites->currentSite->id;
+        $calendarId = $request->post('calendarId') ?? Calendar::getInstance()->calendars->getFirstCalendarId();
+        $refDate = new Carbon('now');
 
         $event = Event::create($siteId, $calendarId);
-        $event->setScenario(Element::SCENARIO_ESSENTIALS);
+        $event->setScenario($scenario);
 
         PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
@@ -99,14 +104,19 @@ class ApiController extends BaseController
 
         $event->startDate = Carbon::createFromTimestampUTC((int) $start);
         $event->endDate = Carbon::createFromTimestampUTC((int) $end);
-        $event->timezone = DateHelper::UTC;
+        $event->timezone = $refDate?->timezone?->getName() ?? DateHelper::UTC;
         $event->title = $request->post('title');
         $event->allDay = (bool) $request->post('allDay');
 
         $success = \Craft::$app->getElements()->saveElement($event);
 
         if (!$success) {
-            throw new ServerErrorHttpException(Calendar::t('Couldn’t create event.'));
+            $this->response->setStatusCode(400);
+
+            return $this->asJson([
+                'message' => 'Could not save event',
+                'errors' => $event->getErrorSummary(true),
+            ]);
         }
 
         $transformer = new FullCalTransformer();
@@ -114,9 +124,6 @@ class ApiController extends BaseController
         return $this->asJson($transformer->fromElement($event));
     }
 
-    /**
-     * @throws NotFoundHttpException
-     */
     public function actionIcs(): void
     {
         Calendar::getInstance()->requirePro();

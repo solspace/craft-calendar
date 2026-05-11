@@ -15,8 +15,12 @@ type Props = {
 export const Dropdown: FC<Props> = ({ options, value, onChange, ...controlProps }) => {
   return (
     <Control {...controlProps}>
-      <div className="select">
-        <select value={value} onChange={(event) => onChange?.(event.target.value)}>
+      <div className="select fullwidth">
+        <select
+          className="fullwidth"
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+        >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}

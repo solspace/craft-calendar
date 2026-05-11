@@ -7,6 +7,12 @@ type CraftElement = {
   hasThumb: boolean;
 };
 
+type ToastOptions = {
+  details?: string | JQuery | HTMLElement;
+  icon?: string;
+  iconLabel?: string;
+};
+
 declare namespace Craft {
   function createElementSelectorModal(
     elementType: string,
@@ -22,6 +28,12 @@ declare namespace Craft {
   function t(category: string, message: string, params?: Record<string, string>): string;
 
   function getCpUrl(path: string): string;
+
+  const cp: {
+    displaySuccess(message: string, options?: ToastOptions): void;
+    displayNotice(message: string, options?: ToastOptions): void;
+    displayError(message: string, options?: ToastOptions): void;
+  };
 
   const csrfTokenName: string;
   const csrfTokenValue: string;

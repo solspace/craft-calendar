@@ -5,11 +5,14 @@ namespace Solspace\Calendar\Widgets;
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Resources\Bundles\WidgetEventsBundle;
 
 class EventWidget extends AbstractWidget
 {
     public ?string $title = null;
+
+    public ?int $colspan = 1;
 
     public static function displayName(): string
     {
@@ -19,6 +22,11 @@ class EventWidget extends AbstractWidget
     public static function icon(): string
     {
         return '@calendar/icon-mask.svg';
+    }
+
+    public static function maxColspan(): ?int
+    {
+        return 1;
     }
 
     public function init(): void
@@ -45,8 +53,12 @@ class EventWidget extends AbstractWidget
             'calendar/_widgets/event/body',
             [
                 'event' => Event::create(),
-                'calendarOptions' => Calendar::getInstance()->calendars->getAllAllowedCalendarTitles(),
-                'settings' => $this,
+                'configuration' => [
+                    'calendars' => Calendar::getInstance()->calendars->getAllAllowedCalendarTitles(),
+                    'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
+                    'formats' => DateFormatHelper::toConfig(),
+                    'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),
+                ],
             ]
         );
     }

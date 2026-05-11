@@ -7,6 +7,7 @@ type Props = {
   $gap?: CSSProperties["gap"];
   $justifyContent?: CSSProperties["justifyContent"];
   $alignItems?: CSSProperties["alignItems"];
+  style?: CSSProperties;
 };
 
 export const Flex: FC<PropsWithChildren<Props>> = ({
@@ -15,6 +16,7 @@ export const Flex: FC<PropsWithChildren<Props>> = ({
   $gap = 16,
   $justifyContent = "start",
   $alignItems = "start",
+  style,
   children,
 }) => {
   return (
@@ -24,6 +26,7 @@ export const Flex: FC<PropsWithChildren<Props>> = ({
       $gap={$gap}
       $justifyContent={$justifyContent}
       $alignItems={$alignItems}
+      style={style}
     >
       {children}
     </FlexDiv>
