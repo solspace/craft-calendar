@@ -14,8 +14,8 @@ class EventEditBundle extends CalendarAssetBundle
         }
 
         return [
-            'js/event-builder/vendor.js',
-            'js/event-builder/event-builder.js',
+            'js/app/vendor.js',
+            'js/app/event-builder.js',
         ];
     }
 }

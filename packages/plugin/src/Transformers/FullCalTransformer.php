@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Transformers;
 
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\OccurrenceModel;
 
@@ -32,7 +33,7 @@ class FullCalTransformer
             'borderColor' => $calendar->getDarkerColor(),
             'textColor' => $calendar->getContrastColor(),
 
-            'editable' => true,
+            'editable' => Calendar::getInstance()->settings->allowEventsToBeModifiedByDragAndDrop(),
             'rrule' => $element->getRRuleRFCString(),
         ];
     }
@@ -70,7 +71,7 @@ class FullCalTransformer
             'borderColor' => $model->calendar->getDarkerColor(),
             'textColor' => $model->calendar->getContrastColor(),
 
-            'editable' => true,
+            'editable' => Calendar::getInstance()->settings->allowEventsToBeModifiedByDragAndDrop(),
             'rrule' => $model->event->getRRuleRFCString(),
         ];
     }

@@ -63,6 +63,7 @@ class AppController extends BaseController
             'canEditEvents' => $user && $user->can('calendar-manageEvents') && !empty($calendarOptions),
             'isMultiSite' => \Craft::$app->getIsMultiSite(),
             'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
+            'allowEventsToBeModifiedByDragAndDrop' => $this->getSettingsService()->allowEventsToBeModifiedByDragAndDrop(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
         ];

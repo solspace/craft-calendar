@@ -78,6 +78,15 @@
         }) }}
 
         {{ forms.lightswitchField({
+            label: "Allow events to be modified by drag and drop in Month/Week/Day views?"|t('calendar'),
+            instructions: "Allows all users with event creation privileges to use drag and drop to modify events."|t('calendar'),
+            id: 'allowEventsToBeModifiedByDragAndDrop',
+            name: 'settings[allowEventsToBeModifiedByDragAndDrop]',
+            on: settings.allowEventsToBeModifiedByDragAndDrop,
+            errors: settings.getErrors('allowEventsToBeModifiedByDragAndDrop')
+        }) }}
+
+        {{ forms.lightswitchField({
             label: "Allow new events to be created in Month/Week/Day views?"|t('calendar'),
             instructions: "Allows all users with event creation privileges to use the Quick Create event feature."|t('calendar'),
             id: 'quickCreateEnabled',
