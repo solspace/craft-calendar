@@ -226,7 +226,7 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
     body.innerHTML += '<div class="event-repeats separator"><div class="spinner"></div></div>';
   }
 
-  if (event.editable) {
+  if (event.canEdit) {
     let buttonsHtml =
       '<div class="buttons">' +
       '<a class="btn small submit" href="' +

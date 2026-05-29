@@ -10,9 +10,10 @@ $(() => {
   'use strict';
 
   const { currentDay, siteMap, overlapThreshold, language, firstDayOfWeek, timeFormat } = $calendar.data();
-  let { currentSiteId, canEditEvents, canQuickCreate, isMultiSite } = $calendar.data();
+  let { currentSiteId, canEditEvents, allowEventsToBeModifiedByDragAndDrop, canQuickCreate, isMultiSite } = $calendar.data();
 
   canEditEvents = canEditEvents !== undefined;
+  allowEventsToBeModifiedByDragAndDrop = allowEventsToBeModifiedByDragAndDrop !== undefined;
   canQuickCreate = canQuickCreate !== undefined;
   isMultiSite = isMultiSite !== undefined;
 
@@ -135,7 +136,7 @@ $(() => {
     showNonCurrentDates: true,
     eventLimit: 5,
     aspectRatio: 1.3,
-    editable: canEditEvents,
+    editable: canEditEvents && allowEventsToBeModifiedByDragAndDrop,
     lang: language,
     views: viewSpecificOptions,
     firstDay: firstDayOfWeek,
