@@ -327,15 +327,16 @@ class EventQuery extends ElementQuery
 
     protected function beforePrepare(): bool
     {
-        $events = Event::TABLE;
+        $eventsTable = Event::TABLE;
+        $eventsAlias = 'calendar_events';
         // $occurrences = OccurrenceRecord::TABLE;
         $calendar = CalendarRecord::TABLE;
         $users = Table::USERS;
 
-        $this->joinElementTable($events);
+        $this->joinElementTable($eventsTable);
         if (!$this->joinedTables) {
-            $this->join('INNER JOIN', $calendar, "{$calendar}.[[id]] = {$events}.[[calendarId]]");
-            $this->join('LEFT JOIN', $users, "{$users}.[[id]] = {$events}.[[authorId]]");
+            $this->join('INNER JOIN', $calendar, "{$calendar}.[[id]] = [[{$eventsAlias}.calendarId]]");
+            $this->join('LEFT JOIN', $users, "{$users}.[[id]] = [[{$eventsAlias}.authorId]]");
 
             $this->joinedTables = true;
         }
@@ -345,25 +346,25 @@ class EventQuery extends ElementQuery
         // $occExists = (new Query())
         //     ->select(new Expression('1'))
         //     ->from(["occ" => $occurrences])
-        //     ->where("[[occ.eventId]] = {$events}.[[id]]")
+        //     ->where("[[occ.eventId]] = [[{$eventsAlias}.id]]")
         // ;
         //
         // $this->subQuery->andWhere(['exists', $occExists]);
 
         $this->query->select([
-            $events.'.[[calendarId]]',
-            $events.'.[[authorId]]',
-            $events.'.[[startDate]]',
-            $events.'.[[endDate]]',
-            $events.'.[[until]]',
-            $events.'.[[timezone]]',
-            $events.'.[[allDay]]',
-            $events.'.[[rrule]]',
-            $events.'.[[repeatType]]',
-            $events.'.[[repeatEndType]]',
-            $events.'.[[postDate]]',
-            $events.'.[[dateCreated]]',
-            $events.'.[[dateUpdated]]',
+            "[[{$eventsAlias}.calendarId]]",
+            "[[{$eventsAlias}.authorId]]",
+            "[[{$eventsAlias}.startDate]]",
+            "[[{$eventsAlias}.endDate]]",
+            "[[{$eventsAlias}.until]]",
+            "[[{$eventsAlias}.timezone]]",
+            "[[{$eventsAlias}.allDay]]",
+            "[[{$eventsAlias}.rrule]]",
+            "[[{$eventsAlias}.repeatType]]",
+            "[[{$eventsAlias}.repeatEndType]]",
+            "[[{$eventsAlias}.postDate]]",
+            "[[{$eventsAlias}.dateCreated]]",
+            "[[{$eventsAlias}.dateUpdated]]",
             $users.'.[[username]]',
             $calendar.'.[[name]]',
         ]);
@@ -377,7 +378,7 @@ class EventQuery extends ElementQuery
             }
 
             if (!$isWildcard) {
-                $this->subQuery->andWhere(Db::parseParam($events.'.[[calendarId]]', $this->calendarId));
+                $this->subQuery->andWhere(Db::parseParam("[[{$eventsAlias}.calendarId]]", $this->calendarId));
             }
         }
 
@@ -390,14 +391,14 @@ class EventQuery extends ElementQuery
         }
 
         if ($this->authorId) {
-            $this->subQuery->andWhere(Db::parseParam($events.'.[[authorId]]', $this->authorId));
+            $this->subQuery->andWhere(Db::parseParam("[[{$eventsAlias}.authorId]]", $this->authorId));
         }
 
         if ($this->dateCreated) {
             $value = $this->dateCreated;
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[dateCreated]]',
+                    "[[{$eventsAlias}.dateCreated]]",
                     \is_array($value) ? $value : $this->extractDateAsFormattedString($value)
                 )
             );
@@ -407,7 +408,7 @@ class EventQuery extends ElementQuery
             $value = $this->dateUpdated;
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[dateUpdated]]',
+                    "[[{$eventsAlias}.dateUpdated]]",
                     \is_array($value) ? $value : $this->extractDateAsFormattedString($value)
                 )
             );
@@ -417,7 +418,7 @@ class EventQuery extends ElementQuery
             $value = $this->postDate;
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[postDate]]',
+                    "[[{$eventsAlias}.postDate]]",
                     \is_array($value) ? $value : $this->extractDateAsFormattedString($value)
                 )
             );
@@ -426,7 +427,7 @@ class EventQuery extends ElementQuery
         if ($this->startDate) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[startDate]]',
+                    "[[{$eventsAlias}.startDate]]",
                     $this->extractDateAsFormattedString($this->startDate)
                 )
             );
@@ -435,7 +436,7 @@ class EventQuery extends ElementQuery
         if ($this->startsBefore) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[startDate]]',
+                    "[[{$eventsAlias}.startDate]]",
                     $this->extractDateAsFormattedString($this->startsBefore),
                     '<'
                 )
@@ -445,7 +446,7 @@ class EventQuery extends ElementQuery
         if ($this->startsBeforeOrAt) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[startDate]]',
+                    "[[{$eventsAlias}.startDate]]",
                     $this->extractDateAsFormattedString($this->startsBeforeOrAt),
                     '<='
                 )
@@ -455,7 +456,7 @@ class EventQuery extends ElementQuery
         if ($this->startsAfter) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[startDate]]',
+                    "[[{$eventsAlias}.startDate]]",
                     $this->extractDateAsFormattedString($this->startsAfter),
                     '>'
                 )
@@ -465,7 +466,7 @@ class EventQuery extends ElementQuery
         if ($this->startsAfterOrAt) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[startDate]]',
+                    "[[{$eventsAlias}.startDate]]",
                     $this->extractDateAsFormattedString($this->startsAfterOrAt),
                     '>='
                 )
@@ -475,7 +476,7 @@ class EventQuery extends ElementQuery
         if ($this->endsAfter) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[endDate]]',
+                    "[[{$eventsAlias}.endDate]]",
                     $this->extractDateAsFormattedString($this->endsAfter),
                     '>'
                 )
@@ -485,7 +486,7 @@ class EventQuery extends ElementQuery
         if ($this->endsAfterOrAt) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[endDate]]',
+                    "[[{$eventsAlias}.endDate]]",
                     $this->extractDateAsFormattedString($this->endsAfterOrAt),
                     '>='
                 )
@@ -495,7 +496,7 @@ class EventQuery extends ElementQuery
         if ($this->endsBefore) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[endDate]]',
+                    "[[{$eventsAlias}.endDate]]",
                     $this->extractDateAsFormattedString($this->endsBefore),
                     '<'
                 )
@@ -505,7 +506,7 @@ class EventQuery extends ElementQuery
         if ($this->endsBeforeOrAt) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[endDate]]',
+                    "[[{$eventsAlias}.endDate]]",
                     $this->extractDateAsFormattedString($this->endsBeforeOrAt),
                     '<='
                 )
@@ -515,27 +516,27 @@ class EventQuery extends ElementQuery
         if ($this->endDate) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[endDate]]',
+                    "[[{$eventsAlias}.endDate]]",
                     $this->extractDateAsFormattedString($this->endDate)
                 )
             );
         }
 
         if ($this->allDay) {
-            $this->subQuery->andWhere(Db::parseParam($events.'.[[allDay]]', $this->allDay));
+            $this->subQuery->andWhere(Db::parseParam("[[{$eventsAlias}.allDay]]", $this->allDay));
         }
 
         if ($this->until) {
             $this->subQuery->andWhere(
                 Db::parseParam(
-                    $events.'.[[until]]',
+                    "[[{$eventsAlias}.until]]",
                     $this->extractDateAsFormattedString($this->until)
                 )
             );
         }
 
         if ($this->timezone) {
-            $this->subQuery->andWhere(Db::parseParam($events.'.[[timezone]]', $this->timezone));
+            $this->subQuery->andWhere(Db::parseParam("[[{$eventsAlias}.timezone]]", $this->timezone));
         }
 
         if ($this->allowedCalendarsOnly) {
@@ -548,7 +549,7 @@ class EventQuery extends ElementQuery
             }
 
             if (!PermissionHelper::isAdmin() && Calendar::getInstance()->settings->isAuthoredEventEditOnly()) {
-                $this->subQuery->andWhere($events.'.[[authorId]]', \Craft::$app->user->id);
+                $this->subQuery->andWhere(["[[{$eventsAlias}.authorId]]" => \Craft::$app->user->id]);
             }
         }
 
