@@ -33,7 +33,7 @@ class FullCalTransformer
             'borderColor' => $calendar->getDarkerColor(),
             'textColor' => $calendar->getContrastColor(),
 
-            'editable' => Calendar::getInstance()->settings->allowEventsToBeModifiedByDragAndDrop(),
+            'editable' => Calendar::getInstance()->settings->isDragAndDropEnabled(),
             'rrule' => $element->getRRuleRFCString(),
         ];
     }
@@ -71,7 +71,7 @@ class FullCalTransformer
             'borderColor' => $model->calendar->getDarkerColor(),
             'textColor' => $model->calendar->getContrastColor(),
 
-            'editable' => Calendar::getInstance()->settings->allowEventsToBeModifiedByDragAndDrop(),
+            'editable' => Calendar::getInstance()->settings->isDragAndDropEnabled(),
             'rrule' => $model->event->getRRuleRFCString(),
         ];
     }

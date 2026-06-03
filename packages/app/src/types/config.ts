@@ -24,7 +24,7 @@ export type CalendarConfig = {
   currentSiteId: number;
   currentDay: Date;
   siteMap: SiteMap;
-  allowEventsToBeModifiedByDragAndDrop: boolean;
+  isDragAndDropEnabled: boolean;
   isQuickCreateEnabled: boolean;
   isMultiSite: boolean;
   canEditEvents: boolean;

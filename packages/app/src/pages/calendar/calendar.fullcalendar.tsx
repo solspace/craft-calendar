@@ -46,7 +46,7 @@ import { PopoverViewEvent } from "./popovers/view-event/view-event";
 export const CalendarFullcalendar: FC = () => {
   const { hidePopover, showPopover } = usePopover();
   const { view, setView, isReady } = useViewSettings();
-  const { currentDay, language, formats, weekStartDay, overlapThresholdString, canEditEvents, allowEventsToBeModifiedByDragAndDrop } = useConfig();
+  const { currentDay, language, formats, weekStartDay, overlapThresholdString, canEditEvents, isDragAndDropEnabled } = useConfig();
 
   const calendar = useRef<FullCalendar>(null);
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
@@ -275,7 +275,7 @@ export const CalendarFullcalendar: FC = () => {
         nextDayThreshold={overlapThresholdString}
         fixedWeekCount
         dayMaxEventRows
-        editable={canEditEvents && allowEventsToBeModifiedByDragAndDrop}
+        editable={canEditEvents && isDragAndDropEnabled}
         selectable
         selectMirror={false}
         selectMinDistance={5}

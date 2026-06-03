@@ -1,10 +1,10 @@
+#components-wrapper {
+  margin: 25px -10px 0;
+}
 #components-wrapper:after {
   content: "";
   display: table;
   clear: both;
-}
-#components-wrapper {
-  margin: 25px -10px 0;
 }
 #components-wrapper > div {
   position: relative;
