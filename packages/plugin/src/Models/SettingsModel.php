@@ -13,7 +13,7 @@ class SettingsModel extends Model
     public const DEFAULT_ALL_DAY = false;
     public const DEFAULT_SHOW_MINI_CAL = true;
     public const DEFAULT_SHOW_DISABLED_EVENTS = true;
-    public const DEFAULT_ALLOW_EVENTS_TO_BE_MODIFIED_BY_DRAG_AND_DROP = true;
+    public const DEFAULT_IS_DRAG_AND_DROP_ENABLED = true;
     public const DEFAULT_VIEW = Calendar::VIEW_MONTH;
     public const DEFAULT_ALLOW_QUICK_CREATE = true;
     public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
@@ -37,7 +37,7 @@ class SettingsModel extends Model
 
     public null|array|bool $showDisabledEvents = null;
 
-    public null|array|bool $allowEventsToBeModifiedByDragAndDrop = null;
+    public null|array|bool $isDragAndDropEnabled = null;
 
     public null|array|bool $quickCreateEnabled = null;
 
@@ -96,7 +96,7 @@ class SettingsModel extends Model
         $this->defaultView = self::DEFAULT_VIEW;
         $this->guestAccess = null;
         $this->quickCreateEnabled = self::DEFAULT_ALLOW_QUICK_CREATE;
-        $this->allowEventsToBeModifiedByDragAndDrop = self::DEFAULT_ALLOW_EVENTS_TO_BE_MODIFIED_BY_DRAG_AND_DROP;
+        $this->isDragAndDropEnabled = self::DEFAULT_IS_DRAG_AND_DROP_ENABLED;
         $this->showDisabledEvents = self::DEFAULT_SHOW_DISABLED_EVENTS;
         $this->authoredEventEditOnly = self::DEFAULT_AUTHORED_EVENT_EDIT_ONLY;
         $this->firstDayOfWeek = self::DEFAULT_FIRST_DAY_OF_WEEK;

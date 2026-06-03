@@ -133,7 +133,7 @@ class ViewController extends BaseController
                 'calendarView' => $calendarView,
                 'calendarLanguage' => $language,
                 'calendarOptions' => $calendarOptions,
-                'allowEventsToBeModifiedByDragAndDrop' => $this->getSettingsService()->allowEventsToBeModifiedByDragAndDrop(),
+                'isDragAndDropEnabled' => $this->getSettingsService()->isDragAndDropEnabled(),
                 'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
                 'currentSiteId' => $currentSiteId,
                 'siteMap' => $siteMap,

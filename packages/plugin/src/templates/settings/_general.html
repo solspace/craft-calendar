@@ -80,10 +80,10 @@
         {{ forms.lightswitchField({
             label: "Allow events to be modified by drag and drop in Month/Week/Day views?"|t('calendar'),
             instructions: "Allows all users with event creation privileges to use drag and drop to modify events."|t('calendar'),
-            id: 'allowEventsToBeModifiedByDragAndDrop',
-            name: 'settings[allowEventsToBeModifiedByDragAndDrop]',
-            on: settings.allowEventsToBeModifiedByDragAndDrop,
-            errors: settings.getErrors('allowEventsToBeModifiedByDragAndDrop')
+            id: 'isDragAndDropEnabled',
+            name: 'settings[isDragAndDropEnabled]',
+            on: settings.isDragAndDropEnabled,
+            errors: settings.getErrors('isDragAndDropEnabled')
         }) }}
 
         {{ forms.lightswitchField({
