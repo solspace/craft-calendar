@@ -9,6 +9,12 @@
     { label: title, url: url("calendar/app"), current: true },
 ] %}
 
+{% block sidebar %}
+	<div id="calendar-sidebar">
+		<div data-sidebar-root></div>
+	</div>
+{% endblock %}
+
 {% block content %}
 
 	<div id="calendar-app">

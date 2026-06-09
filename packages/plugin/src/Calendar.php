@@ -9,6 +9,8 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\Fields;
@@ -17,6 +19,7 @@ use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\FieldTypes\CalendarFieldType;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
@@ -137,7 +140,7 @@ class Calendar extends Plugin
                 /** @var Gc $gc */
                 $gc = $event->sender;
                 $gc->deleteOrphanedFieldLayouts(
-                    \Solspace\Calendar\Elements\Event::class,
+                    CalendarEvent::class,
                     '{{%calendar_calendars}}',
                 );
             });
@@ -206,6 +209,7 @@ class Calendar extends Plugin
         $defaultCalendar->description = 'The default calendar';
         $defaultCalendar->hasTitleField = true;
         $defaultCalendar->titleLabel = 'Title';
+        $defaultCalendar->setFieldLayout($this->createDefaultCalendarFieldLayout());
 
         $siteSettings = [];
         foreach ($siteIds as $siteId) {
@@ -242,7 +246,7 @@ class Calendar extends Plugin
     protected function afterUninstall(): void
     {
         \Craft::$app->projectConfig->remove(self::CONFIG_PATH_ROOT);
-        \Craft::$app->fields->deleteLayoutsByType(\Solspace\Calendar\Elements\Event::class);
+        \Craft::$app->fields->deleteLayoutsByType(CalendarEvent::class);
     }
 
     protected function createSettingsModel(): ?Model
@@ -258,6 +262,24 @@ class Calendar extends Plugin
                 'settings' => $this->getSettings(),
             ]
         );
+    }
+
+    private function createDefaultCalendarFieldLayout(): FieldLayout
+    {
+        $layout = new FieldLayout();
+        $layout->uid = StringHelper::UUID();
+        $layout->type = CalendarEvent::class;
+
+        $tab = new FieldLayoutTab();
+        $tab->name = 'Content';
+        $tab->uid = StringHelper::UUID();
+        $tab->sortOrder = 1;
+        $tab->setLayout($layout);
+        $tab->setElements([]);
+
+        $layout->setTabs([$tab]);
+
+        return $layout;
     }
 
     private function initControllers(): void
@@ -343,7 +365,7 @@ class Calendar extends Plugin
             Elements::class,
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             static function (RegisterComponentTypesEvent $event) {
-                $event->types[] = \Solspace\Calendar\Elements\Event::class;
+                $event->types[] = CalendarEvent::class;
             }
         );
     }

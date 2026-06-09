@@ -27,6 +27,26 @@ class ApiController extends BaseController
         parent::__construct($id, $module, $config);
     }
 
+    public function actionCalendars(): Response
+    {
+        $calendars = array_map(
+            static fn ($calendar) => [
+                'id' => (int) $calendar->id,
+                'title' => $calendar->name ?? '',
+                'color' => [
+                    'base' => $calendar->color ?? '',
+                    'light' => $calendar->getLighterColor(),
+                    'dark' => $calendar->getDarkerColor(),
+                    'contrast' => $calendar->getContrastColor(),
+                ],
+                'description' => $calendar->description ?? '',
+            ],
+            $this->getCalendarService()->getAllAllowedCalendars(),
+        );
+
+        return $this->asJson(array_values($calendars));
+    }
+
     public function actionEvents(): Response
     {
         $request = \Craft::$app->request;

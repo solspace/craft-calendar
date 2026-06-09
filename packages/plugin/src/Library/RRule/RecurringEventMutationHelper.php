@@ -270,10 +270,6 @@ class RecurringEventMutationHelper
         $rdates = $this->uniqueDates($rdates, $allDay);
         $exdates = $this->uniqueDates($exdates, $allDay);
 
-        if (!$baseRule) {
-            $rdates = $this->appendDate($rdates, $eventStart, $allDay);
-        }
-
         if (!$baseRule && [] === $rdates && [] === $exdates) {
             return null;
         }

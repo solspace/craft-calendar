@@ -116,10 +116,25 @@ class Install extends StreamlinedInstallMigration
                 )
                 ->addIndex(['calendarId', 'startDate'], name: 'occurrences_calendar_start_idx')
                 ->addIndex(['calendarId', 'endDate'], name: 'occurrences_calendar_end_idx')
-                ->addIndex(['eventId', 'startDate'], true, name: 'occurrences_event_start_idx_unq')
+                ->addIndex(['calendarId', 'startDate', 'endDate'], name: 'occurrences_calendar_start_end_idx')
+                ->addIndex(['calendarId', 'endDate', 'startDate'], name: 'occurrences_calendar_end_start_idx')
                 ->addIndex(['eventId', 'endDate'], name: 'occurrences_event_end_idx')
                 ->addIndex(['startDate'], name: 'occurrences_start_date_idx')
-                ->addIndex(['endDate'], name: 'occurrences_end_date_idx'),
+                ->addIndex(['endDate'], name: 'occurrences_end_date_idx')
+                ->addIndex(['startDate', 'endDate'], name: 'occurrences_start_end_idx')
+                ->addIndex(['endDate', 'startDate'], name: 'occurrences_end_start_idx'),
+
+            (new Table('calendar_events_occurrence_windows'))
+                ->addField('eventId', $this->integer()->notNull())
+                ->addField('generatedThrough', $this->dateTime()->notNull())
+                ->addForeignKey(
+                    'eventId',
+                    'calendar_events',
+                    'id',
+                    ForeignKey::CASCADE,
+                    name: 'occurrence_windows_event_id_fk',
+                )
+                ->addIndex(['generatedThrough'], name: 'generated_through_idx'),
         ];
     }
 
@@ -128,5 +143,6 @@ class Install extends StreamlinedInstallMigration
         parent::afterUp();
 
         $this->addPrimaryKey('pk_calendar_events_occurrences', '{{%calendar_events_occurrences}}', ['eventId', 'startDate']);
+        $this->addPrimaryKey('pk_calendar_events_occurrence_windows', '{{%calendar_events_occurrence_windows}}', ['eventId']);
     }
 }
