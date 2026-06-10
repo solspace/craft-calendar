@@ -124,6 +124,7 @@ export const EventWidget: FC<{ config: EventWidgetConfig }> = ({ config }) => {
             showMonthDropdown: true,
             dropdownMode: "select",
             todayButton: translate("Today"),
+            calendarStartDay: config.weekStartDay,
           }}
         />
 
@@ -143,6 +144,7 @@ export const EventWidget: FC<{ config: EventWidgetConfig }> = ({ config }) => {
             showYearDropdown: true,
             showMonthDropdown: true,
             toggleCalendarOnIconClick: true,
+            calendarStartDay: config.weekStartDay,
             minDate: utcTimestampToLocalDisplayDate(start.value),
             filterTime: (time) => {
               if (!start.value) {

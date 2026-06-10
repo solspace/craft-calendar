@@ -35,7 +35,7 @@ export const PopoverCreateEvent: FC<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { formats } = useConfig();
+  const { formats, weekStartDay } = useConfig();
   const { createEvent, isFetching } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
@@ -85,6 +85,7 @@ export const PopoverCreateEvent: FC<Props> = ({
             showMonthDropdown: true,
             showYearDropdown: true,
             dropdownMode: "select",
+            calendarStartDay: weekStartDay,
           }}
           onChange={(value) => {
             if (value !== null) {
@@ -105,6 +106,7 @@ export const PopoverCreateEvent: FC<Props> = ({
             showMonthDropdown: true,
             showYearDropdown: true,
             dropdownMode: "select",
+            calendarStartDay: weekStartDay,
             filterTime: (time) => {
               if (!draft.start) {
                 return true;

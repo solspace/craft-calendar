@@ -87,6 +87,8 @@ class m260603_000000_V5ToV6Bridge extends Migration
 
     private function upAddOccurrencesAndTimezones(): void
     {
+        $serverTimezone = \Craft::$app->getTimeZone();
+
         if (!$this->db->columnExists('{{%calendar_calendars}}', 'defaultTimezone')) {
             $this->addColumn(
                 '{{%calendar_calendars}}',
@@ -102,6 +104,12 @@ class m260603_000000_V5ToV6Bridge extends Migration
                 $this->string(200)->after('authorId')
             );
         }
+
+        $this->update(
+            '{{%calendar_events}}',
+            ['timezone' => $serverTimezone],
+            ['or', ['timezone' => null], ['timezone' => '']],
+        );
 
         if (!$this->db->columnExists('{{%calendar_events}}', 'repeatType')) {
             $this->addColumn(

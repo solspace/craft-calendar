@@ -1,3 +1,4 @@
+import type { WeekStartDay } from "@cal/types/config";
 import { localDisplayDateToUtcTimestamp } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import clsx, { type ClassValue } from "clsx";
@@ -27,6 +28,7 @@ type FixedDateManagerProps = {
   popoverTitle: string;
   dates: number[];
   openToDate: Date;
+  weekStartDay: WeekStartDay;
   formatDate: (value: number) => string;
   filterDate: (date: Date) => boolean;
   onAdd: (value: number) => void;
@@ -40,6 +42,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
   popoverTitle,
   dates,
   openToDate,
+  weekStartDay,
   formatDate,
   filterDate,
   onAdd,
@@ -116,6 +119,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
             dropdownMode="select"
             todayButton={translate("Today")}
             openToDate={openToDate}
+            calendarStartDay={weekStartDay}
             filterDate={filterDate}
           />
         </PickerButtonWrapper>

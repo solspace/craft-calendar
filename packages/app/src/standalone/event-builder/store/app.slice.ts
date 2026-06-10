@@ -19,4 +19,5 @@ export const appSelectors = {
   config: (state: RootState) => state.app,
   isPro: (state: RootState) => state.app.pro,
   formats: (state: RootState) => state.app.formats,
+  weekStartDay: (state: RootState) => state.app.weekStartDay ?? 0,
 };

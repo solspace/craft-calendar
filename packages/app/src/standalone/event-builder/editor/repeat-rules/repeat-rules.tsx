@@ -3,6 +3,7 @@ import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdow
 import { NumberInput } from "@cal/components/controls/number-input/number-input";
 import { Flex } from "@cal/styles/components";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { appSelectors } from "@event-builder/store/app.slice";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import type { RepeatEndType, RepeatType } from "@event-builder/types";
@@ -40,6 +41,7 @@ const freqOptions: Option<Frequency>[] = [
 export const RepeatRules: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const state = useSelector(eventSelectors.state);
+  const weekStartDay = useSelector(appSelectors.weekStartDay);
   const { repeatType, repeatEndType, count, until, freq, start } = state;
   const showExclusions = repeatType !== "NEVER";
 
@@ -107,6 +109,7 @@ export const RepeatRules: FC = () => {
               onChange={(value) => dispatch(eventActions.setUntil(value))}
               datePickerProps={{
                 showTimeInput: false,
+                calendarStartDay: weekStartDay,
               }}
             />
           )}
@@ -122,6 +125,7 @@ export const RepeatRules: FC = () => {
         openToDate={pickerStartDate}
         formatDate={formatDate}
         filterDate={canAddOccurrence}
+        weekStartDay={weekStartDay}
         onAdd={(value) => addFixedDate("rdate", value)}
         onRemove={(value) => removeFixedDate("rdate", value)}
       />
@@ -136,6 +140,7 @@ export const RepeatRules: FC = () => {
           openToDate={pickerStartDate}
           formatDate={formatDate}
           filterDate={canExcludeOccurrence}
+          weekStartDay={weekStartDay}
           onAdd={(value) => addFixedDate("exdate", value)}
           onRemove={(value) => removeFixedDate("exdate", value)}
         />

@@ -20,6 +20,7 @@ export const Editor: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { start, end, allDay } = useSelector(eventSelectors.state);
   const { date, time, datetime } = useSelector(appSelectors.formats);
+  const weekStartDay = useSelector(appSelectors.weekStartDay);
 
   const format = useMemo(() => {
     if (allDay) {
@@ -74,6 +75,7 @@ export const Editor: FC = () => {
             dateFormat: format,
             timeFormat: time.short.icu,
             todayButton: translate("Today"),
+            calendarStartDay: weekStartDay,
           }}
         />
 
@@ -94,6 +96,7 @@ export const Editor: FC = () => {
             dropdownMode: "select",
             dateFormat: format,
             timeFormat: time.short.icu,
+            calendarStartDay: weekStartDay,
             filterTime: (time) => {
               if (!start) {
                 return true;

@@ -702,6 +702,7 @@ class Event extends Element implements \JsonSerializable
             'app' => [
                 'pro' => $plugin->isPro(),
                 'formats' => DateFormatHelper::toConfig(),
+                'weekStartDay' => $plugin->settings->getFirstDayOfWeek(),
             ],
             'event' => [
                 'start' => $this->startDate->timestamp,
