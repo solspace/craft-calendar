@@ -35,7 +35,7 @@ export const PopoverCreateEvent: FC<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { formats, weekStartDay } = useConfig();
+  const { formats, weekStartDay, eventDuration, timeInterval } = useConfig();
   const { createEvent, isFetching } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
@@ -68,7 +68,7 @@ export const PopoverCreateEvent: FC<Props> = ({
         />
         <LightSwitch
           enabled={draft.allDay}
-          onClick={(value) => onChange(setCreateDraftAllDay(draft, value))}
+          onClick={(value) => onChange(setCreateDraftAllDay(draft, value, { eventDuration }))}
         />
       </FlexTitle>
 
@@ -86,10 +86,11 @@ export const PopoverCreateEvent: FC<Props> = ({
             showYearDropdown: true,
             dropdownMode: "select",
             calendarStartDay: weekStartDay,
+            timeIntervals: timeInterval,
           }}
           onChange={(value) => {
             if (value !== null) {
-              onChange(setCreateDraftStart(draft, value));
+              onChange(setCreateDraftStart(draft, value, { eventDuration }));
             }
           }}
         />
@@ -107,6 +108,7 @@ export const PopoverCreateEvent: FC<Props> = ({
             showYearDropdown: true,
             dropdownMode: "select",
             calendarStartDay: weekStartDay,
+            timeIntervals: timeInterval,
             filterTime: (time) => {
               if (!draft.start) {
                 return true;
@@ -120,7 +122,7 @@ export const PopoverCreateEvent: FC<Props> = ({
           }}
           onChange={(value) => {
             if (value !== null) {
-              onChange(setCreateDraftEnd(draft, value));
+              onChange(setCreateDraftEnd(draft, value, { eventDuration }));
             }
           }}
         />

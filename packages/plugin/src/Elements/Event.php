@@ -703,6 +703,10 @@ class Event extends Element implements \JsonSerializable
                 'pro' => $plugin->isPro(),
                 'formats' => DateFormatHelper::toConfig(),
                 'weekStartDay' => $plugin->settings->getFirstDayOfWeek(),
+                'timeInterval' => $plugin->settings->getTimeInterval(),
+                'eventDuration' => $plugin->settings->getEventDuration(),
+                'allDayDefault' => $plugin->settings->isAllDayDefault(),
+                'overlapThreshold' => $plugin->settings->getOverlapThreshold(),
             ],
             'event' => [
                 'start' => $this->startDate->timestamp,

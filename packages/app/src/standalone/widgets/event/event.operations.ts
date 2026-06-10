@@ -1,17 +1,34 @@
 import { localDisplayDateToUtcTimestamp, utcTimestampToLocalDisplayDate } from "@cal/utils/date";
-import { addDays, addHours, setHours, setMinutes, setSeconds, startOfDay, subDays } from "date-fns";
+import {
+  addDays,
+  addMinutes,
+  setHours,
+  setMinutes,
+  setSeconds,
+  startOfDay,
+  subDays,
+} from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import type { EventWidgetConfig } from "./event.types";
 
 export const useEventState = (config: EventWidgetConfig) => {
   const { formats, calendars } = config;
   const refDate = setSeconds(setMinutes(new Date(), 0), 0);
+  const durationSeconds = Math.max(1, config.eventDuration) * 60;
 
   const [title, setTitle] = useState("");
   const [calendar, setCalendar] = useState<string>(Object.keys(calendars)[0] ?? "");
-  const [start, setStart] = useState<number>(localDisplayDateToUtcTimestamp(refDate));
-  const [end, setEnd] = useState<number>(localDisplayDateToUtcTimestamp(addHours(refDate, 1)));
-  const [allDay, setAllDay] = useState(false);
+  const [start, setStart] = useState<number>(
+    localDisplayDateToUtcTimestamp(config.allDayDefault ? startOfDay(refDate) : refDate),
+  );
+  const [end, setEnd] = useState<number>(
+    localDisplayDateToUtcTimestamp(
+      config.allDayDefault
+        ? addDays(startOfDay(refDate), 1)
+        : addMinutes(refDate, config.eventDuration),
+    ),
+  );
+  const [allDay, setAllDay] = useState(config.allDayDefault);
 
   const format = useMemo(() => {
     if (allDay) {
@@ -28,10 +45,8 @@ export const useEventState = (config: EventWidgetConfig) => {
   }, [allDay, end]);
 
   const handleStartChange = (value: number) => {
-    const deltaEnd = end - start;
-
     setStart(value);
-    setEnd(value + deltaEnd);
+    setEnd(value + (allDay ? end - start : durationSeconds));
   };
 
   const handleEndChange = (value: number | null) => {
@@ -62,7 +77,8 @@ export const useEventState = (config: EventWidgetConfig) => {
       endDate = addDays(startOfDay(endDate), 1);
     } else {
       endDate = subDays(endDate, 1);
-      endDate = setHours(endDate, startDate.getHours() + 1);
+      endDate = setHours(endDate, startDate.getHours());
+      endDate = addMinutes(endDate, config.eventDuration);
     }
 
     setEnd(localDisplayDateToUtcTimestamp(endDate));
@@ -71,10 +87,14 @@ export const useEventState = (config: EventWidgetConfig) => {
   const reset = useCallback(() => {
     const now = new Date();
     setTitle("");
-    setStart(localDisplayDateToUtcTimestamp(now));
-    setEnd(localDisplayDateToUtcTimestamp(addHours(now, 1)));
-    setAllDay(false);
-  }, []);
+    setStart(localDisplayDateToUtcTimestamp(config.allDayDefault ? startOfDay(now) : now));
+    setEnd(
+      localDisplayDateToUtcTimestamp(
+        config.allDayDefault ? addDays(startOfDay(now), 1) : addMinutes(now, config.eventDuration),
+      ),
+    );
+    setAllDay(config.allDayDefault);
+  }, [config.allDayDefault, config.eventDuration]);
 
   return {
     reset,

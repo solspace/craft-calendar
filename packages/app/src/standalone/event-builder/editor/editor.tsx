@@ -21,6 +21,8 @@ export const Editor: FC = () => {
   const { start, end, allDay } = useSelector(eventSelectors.state);
   const { date, time, datetime } = useSelector(appSelectors.formats);
   const weekStartDay = useSelector(appSelectors.weekStartDay);
+  const timeInterval = useSelector(appSelectors.timeInterval);
+  const eventDuration = useSelector(appSelectors.eventDuration);
 
   const format = useMemo(() => {
     if (allDay) {
@@ -55,7 +57,7 @@ export const Editor: FC = () => {
           id={allDayId}
           label="All Day"
           enabled={allDay}
-          onClick={(enabled) => dispatch(eventActions.setAllDay(enabled))}
+          onClick={(enabled) => dispatch(eventActions.setAllDay({ enabled, eventDuration }))}
         />
 
         <DatePicker
@@ -76,6 +78,7 @@ export const Editor: FC = () => {
             timeFormat: time.short.icu,
             todayButton: translate("Today"),
             calendarStartDay: weekStartDay,
+            timeIntervals: timeInterval,
           }}
         />
 
@@ -97,6 +100,7 @@ export const Editor: FC = () => {
             dateFormat: format,
             timeFormat: time.short.icu,
             calendarStartDay: weekStartDay,
+            timeIntervals: timeInterval,
             filterTime: (time) => {
               if (!start) {
                 return true;

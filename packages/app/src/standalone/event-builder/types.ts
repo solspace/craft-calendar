@@ -19,6 +19,10 @@ export type AppConfig = {
   pro: boolean;
   formats?: DateFormats;
   weekStartDay?: WeekStartDay;
+  timeInterval?: number;
+  eventDuration?: number;
+  allDayDefault?: boolean;
+  overlapThreshold?: number;
 };
 
 export type BuilderConfig = {

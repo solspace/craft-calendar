@@ -125,6 +125,7 @@ export const EventWidget: FC<{ config: EventWidgetConfig }> = ({ config }) => {
             dropdownMode: "select",
             todayButton: translate("Today"),
             calendarStartDay: config.weekStartDay,
+            timeIntervals: config.timeInterval,
           }}
         />
 
@@ -145,6 +146,7 @@ export const EventWidget: FC<{ config: EventWidgetConfig }> = ({ config }) => {
             showMonthDropdown: true,
             toggleCalendarOnIconClick: true,
             calendarStartDay: config.weekStartDay,
+            timeIntervals: config.timeInterval,
             minDate: utcTimestampToLocalDisplayDate(start.value),
             filterTime: (time) => {
               if (!start.value) {

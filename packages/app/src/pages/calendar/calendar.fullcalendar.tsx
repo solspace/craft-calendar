@@ -61,10 +61,26 @@ const weekHeaderDayFormatter = new Intl.DateTimeFormat(undefined, {
   timeZone: "UTC",
 });
 
+const formatDuration = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}:00`;
+};
+
 export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCalendarIds }) => {
   const { hidePopover, showPopover } = usePopover();
   const { view, setView, isReady } = useViewSettings();
-  const { currentDay, language, formats, weekStartDay, overlapThresholdString } = useConfig();
+  const {
+    currentDay,
+    language,
+    formats,
+    weekStartDay,
+    overlapThresholdString,
+    allDayDefault,
+    eventDuration,
+    timeInterval,
+  } = useConfig();
 
   const calendar = useRef<FullCalendar>(null);
   const calendarFilterKey = hiddenCalendarIds.join(",");
@@ -87,6 +103,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
   const { hasSitePicker, sitePickerButton } = useSitePicker(api);
   const { datePickerButton, dateSelector } = useDateSelector(api);
   const hiddenCalendarIdSet = useMemo(() => new Set(hiddenCalendarIds), [hiddenCalendarIds]);
+  const timeIntervalDuration = formatDuration(timeInterval);
   const events = useMemo(
     () => createCalendarEventsSource(hiddenCalendarIdSet),
     [hiddenCalendarIdSet],
@@ -207,10 +224,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
         .find((event) => isCreateDraftEvent(event))
         ?.remove();
       setDraftAnchorEl(null);
-      setDraft(buildCreateDraftFromSelection(selection));
+      setDraft(buildCreateDraftFromSelection(selection, { allDayDefault, eventDuration }));
       selection.view.calendar.unselect();
     },
-    [hidePopover],
+    [allDayDefault, eventDuration, hidePopover],
   );
 
   const handleEventDidMount = useCallback((arg: EventMountArg) => {
@@ -322,6 +339,8 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
         selectable
         selectMirror={false}
         selectMinDistance={5}
+        slotDuration={timeIntervalDuration}
+        snapDuration={timeIntervalDuration}
         navLinks
         navLinkDayClick={handleNavLinkDayClick}
         select={handleDraftSelection}
