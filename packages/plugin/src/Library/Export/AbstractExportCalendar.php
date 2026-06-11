@@ -69,9 +69,13 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
 
     final protected function prepareString(string $string): string
     {
-        $string = (string) preg_replace('/(\r\n|\r|\n)+/', ' ', $string);
-        $string = (string) str_replace([',', ';'], ['\,', '\;'], $string);
+        $string = (string) preg_replace('/\R/u', "\n", $string);
+        $string = (string) str_replace(
+            ['\\', ',', ';', "\n"],
+            ['\\\\', '\,', '\;', '\n'],
+            $string,
+        );
 
-        return (string) preg_replace('/^\h*\v+/m', '', $string);
+        return trim($string);
     }
 }

@@ -72,10 +72,10 @@ class ExportCalendarToIcs extends AbstractExportCalendar
         $exportString .= \sprintf("DTSTAMP:%s\r\n", $this->now->format(self::DATE_TIME_FORMAT));
 
         if ($description) {
-            $exportString .= \sprintf("DESCRIPTION:%s\r\n", $this->prepareString(strip_tags($description)));
+            $exportString .= \sprintf("DESCRIPTION:%s\r\n", $this->prepareString($this->htmlToText($description)));
         }
         if ($location) {
-            $exportString .= \sprintf("LOCATION:%s\r\n", $this->prepareString(strip_tags($location)));
+            $exportString .= \sprintf("LOCATION:%s\r\n", $this->prepareString($this->htmlToText($location)));
         }
 
         if ($event->isAllDay()) {
@@ -111,5 +111,14 @@ class ExportCalendarToIcs extends AbstractExportCalendar
         $exportString .= \sprintf("SUMMARY:%s\r\n", $this->prepareString($title));
 
         return $exportString."END:VEVENT\r\n";
+    }
+
+    private function htmlToText(mixed $value): string
+    {
+        $value = (string) $value;
+        $value = (string) preg_replace('/<\s*br\s*\/?>/i', "\n", $value);
+        $value = (string) preg_replace('/<\s*\/(p|div|li|h[1-6])\s*>/i', "\n", $value);
+
+        return html_entity_decode(strip_tags($value), \ENT_QUOTES | \ENT_HTML5, 'UTF-8');
     }
 }
