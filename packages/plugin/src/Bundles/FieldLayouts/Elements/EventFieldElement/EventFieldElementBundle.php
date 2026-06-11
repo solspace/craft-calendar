@@ -3,7 +3,6 @@
 namespace Solspace\Calendar\Bundles\FieldLayouts\Elements\EventFieldElement;
 
 use craft\events\DefineFieldLayoutFieldsEvent;
-use craft\fieldlayoutelements\TextField;
 use craft\fieldlayoutelements\TitleField;
 use craft\models\FieldLayout;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
@@ -31,22 +30,6 @@ class EventFieldElementBundle implements BundleInterface
                     ];
 
                     $event->fields[] = EventFieldElement::class;
-
-                    $event->fields[] = [
-                        'class' => TextField::class,
-                        'label' => 'Event Description',
-                        'attribute' => 'eventDescription',
-                        'requirable' => true,
-                        'translatable' => true,
-                    ];
-
-                    $event->fields[] = [
-                        'class' => TextField::class,
-                        'label' => 'Event Location',
-                        'attribute' => 'eventLocation',
-                        'requirable' => true,
-                        'translatable' => true,
-                    ];
                 }
             }
         );
