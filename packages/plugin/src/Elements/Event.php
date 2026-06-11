@@ -1131,7 +1131,7 @@ class Event extends Element implements \JsonSerializable
         }
     }
 
-    protected function route(): array|string|null
+    protected function route(): null|array|string
     {
         if (!$this->enabled) {
             return null;

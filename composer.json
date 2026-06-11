@@ -1,7 +1,7 @@
 {
   "name": "solspace/craft-calendar",
   "description": "The most powerful event management and calendaring plugin!",
-  "version": "5.0.26",
+  "version": "6.0.0-alpha.1",
   "type": "craft-plugin",
   "authors": [
     {
@@ -23,7 +23,6 @@
     "phpunit/phpunit": "^9.3.0",
     "friendsofphp/php-cs-fixer": "^v3.52.0",
     "brainmaestro/composer-git-hooks": "^2.8",
-    "putyourlightson/craft-blitz": "^4.23",
     "solspace/craft-freeform": "^5.12"
   },
   "autoload": {
