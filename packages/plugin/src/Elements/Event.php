@@ -32,6 +32,7 @@ use Solspace\Calendar\Library\Duration\EventDuration;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
 use Solspace\Calendar\Models\CalendarModel;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use yii\base\Event as BaseEvent;
@@ -634,6 +635,9 @@ class Event extends Element implements \JsonSerializable
         $repeatType = $request->getBodyParam('repeatType', $this->repeatType);
         $repeatEndType = $request->getBodyParam('repeatEndType', $this->repeatEndType);
         $rrule = $request->getBodyParam('rrule', $this->rrule);
+        if ($allDay && \is_string($rrule)) {
+            $rrule = RRuleStringNormalizer::normalizeAllDayRRule($rrule);
+        }
 
         $this->startDate = $start;
         $this->endDate = $end;

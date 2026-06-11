@@ -16,6 +16,7 @@ use RRule\RRuleInterface;
 use Solspace\Calendar\Bundles\FieldLayouts\Elements\EventFieldElement\EventFieldElement;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
 use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Records\OccurrenceWindowRecord;
 use yii\db\Expression;
@@ -637,7 +638,8 @@ class m260603_000000_V5ToV6Bridge extends Migration
             return '';
         }
 
-        $startLine = $this->formatDateLine('DTSTART', new Carbon($event['startDate'], DateHelper::UTC), (bool) $event['allDay']);
+        $allDay = (bool) $event['allDay'];
+        $startLine = $this->formatDateLine('DTSTART', new Carbon($event['startDate'], DateHelper::UTC), $allDay);
         $hasStart = false;
         foreach ($lines as &$line) {
             if (str_starts_with($line, 'DTSTART')) {
@@ -648,6 +650,8 @@ class m260603_000000_V5ToV6Bridge extends Migration
             if (str_starts_with($line, 'FREQ=')) {
                 $line = 'RRULE:'.$line;
             }
+
+            $line = RRuleStringNormalizer::normalizeLine($line, $allDay);
         }
         unset($line);
 
