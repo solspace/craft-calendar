@@ -51,9 +51,27 @@ const DatePickerWrapper = styled.div`
       width: 327px;
     }
 
+    &__header {
+      border-top-right-radius: 0.3rem;
+      border-top-left-radius: 0.3rem;
+    }
+
+    &__today-button, &__time {
+      border-bottom-left-radius: 0.3rem;
+      border-bottom-right-radius: 0.3rem;
+    }
+
+    &__time-container {
+      top: -1px;
+    }
+
     &__calendar-icon {
       width: 1.25em;
       height: 1.25em;
+    }
+
+    &__time-list {
+      height: 252px !important;
     }
 
     &__input-container {

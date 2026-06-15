@@ -99,6 +99,7 @@ export const Editor: FC = () => {
             dropdownMode: "select",
             dateFormat: format,
             timeFormat: time.short.icu,
+            todayButton: translate("Today"),
             calendarStartDay: weekStartDay,
             timeIntervals: timeInterval,
             filterTime: (time) => {
