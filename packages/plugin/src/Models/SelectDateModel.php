@@ -15,7 +15,7 @@ class SelectDateModel extends Model
 
     public ?int $eventId = null;
 
-    public null|Carbon|\DateTime $date = null;
+    public Carbon|\DateTime|null $date = null;
 
     public function __toString(): string
     {

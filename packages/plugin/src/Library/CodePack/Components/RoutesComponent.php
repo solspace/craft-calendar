@@ -95,7 +95,7 @@ class RoutesComponent extends AbstractJsonComponent
         $this->fileName = 'routes.json';
     }
 
-    private function findExistingRoute(array $uriParts, ?array $existingRoutes = null): null|int|string
+    private function findExistingRoute(array $uriParts, ?array $existingRoutes = null): int|string|null
     {
         if (!$existingRoutes) {
             return null;
