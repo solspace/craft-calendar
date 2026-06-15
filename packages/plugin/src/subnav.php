@@ -3,6 +3,11 @@
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 
+$subnav['overview'] = [
+    'label' => Calendar::t('Overview'),
+    'url' => 'calendar',
+];
+
 if (PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true)) {
     $subnav['events'] = [
         'label' => Calendar::t('Events'),

@@ -2,6 +2,7 @@
 {% import "_includes/forms" as forms %}
 
 {% set title = "Calendar"|t('calendar') %}
+{% set selectedSubnavItem = "overview" %}
 
 {% set crumbs = [
     { label: craft.calendar.name, url: url("calendar") },
