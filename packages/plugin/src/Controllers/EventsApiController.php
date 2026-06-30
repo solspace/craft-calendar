@@ -348,7 +348,7 @@ class EventsApiController extends BaseController
         $fields = [];
         foreach ($fieldLayout->getCustomFields() as $field) {
             $fields[] = [
-                'id' => $field->id,
+                'id' => $field->handle,
                 'label' => $field->name,
             ];
         }
