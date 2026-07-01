@@ -23,6 +23,7 @@
     "phpunit/phpunit": "^9.3.0",
     "friendsofphp/php-cs-fixer": "^v3.52.0",
     "brainmaestro/composer-git-hooks": "^2.8",
+    "putyourlightson/craft-blitz": "^4",
     "solspace/craft-freeform": "^5"
   },
   "autoload": {
