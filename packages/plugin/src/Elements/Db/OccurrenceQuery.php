@@ -415,7 +415,7 @@ class OccurrenceQuery extends ActiveQuery
 
         $eventQuery = clone $this->getEventQuery();
         $eventQuery->andWhere(
-            Event::TABLE.'.[[id]] = '.OccurrenceRecord::TABLE.'.[[eventId]]'
+            '[[calendar_events]].[[id]] = '.OccurrenceRecord::TABLE.'.[[eventId]]'
         );
 
         $this->andWhere(['exists', $eventQuery]);
