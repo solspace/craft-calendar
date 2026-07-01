@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
 const KEY = "solspace-calendar-view";
+const HIDDEN_CALENDARS_KEY = "solspace-calendar-hidden-calendars";
 
 export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay";
 type ViewSettings = {
@@ -51,5 +52,27 @@ export const useViewSettings = () => {
     view,
     setView,
     isReady,
+  };
+};
+
+export const useHiddenCalendarSettings = () => {
+  const [hiddenCalendarIds, setHiddenCalendarIds] = useLocalStorage<number[]>(
+    HIDDEN_CALENDARS_KEY,
+    [],
+  );
+
+  const toggleCalendarVisibility = (calendarId: number) => {
+    setHiddenCalendarIds((current) => {
+      if (current.includes(calendarId)) {
+        return current.filter((id) => id !== calendarId);
+      }
+
+      return [...current, calendarId];
+    });
+  };
+
+  return {
+    hiddenCalendarIds,
+    toggleCalendarVisibility,
   };
 };

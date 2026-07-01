@@ -222,19 +222,31 @@ export const clearCalendarEventsCache = () => {
   inflightRequests.clear();
 };
 
-export const calendarEvents: EventSourceFunc = (info, success, failure): Promise<EventInput[]> => {
-  const start = info.start;
-  const end = info.end;
+export const createCalendarEventsSource = (hiddenCalendarIds: Set<number>): EventSourceFunc => {
+  return (info, success, failure): Promise<EventInput[]> => {
+    const start = info.start;
+    const end = info.end;
 
-  return fetchRange(start, end)
-    .then((data) => {
-      success(data);
+    return fetchRange(start, end)
+      .then((data) => {
+        let events: EventInput[];
 
-      return data;
-    })
-    .catch((error) => {
-      failure(error);
+        if (hiddenCalendarIds.size) {
+          events = data.filter((event) => !hiddenCalendarIds.has(event.calendar));
+        } else {
+          events = data;
+        }
 
-      return [] as EventInput[];
-    });
+        success(events);
+
+        return events;
+      })
+      .catch((error) => {
+        failure(error);
+
+        return [] as EventInput[];
+      });
+  };
 };
+
+export const calendarEvents = createCalendarEventsSource(new Set<number>());

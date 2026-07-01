@@ -10,9 +10,7 @@ $finder = PhpCsFixer\Finder::create()
     )
 ;
 
-return (new PhpCsFixer\Config())
-    ->setUnsupportedPhpVersionAllowed(true)
-    ->setParallelConfig(\PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
+$config = (new PhpCsFixer\Config())
     ->setRules([
         '@Symfony' => true,
         '@Symfony:risky' => true,
@@ -36,3 +34,9 @@ return (new PhpCsFixer\Config())
     ->setFinder($finder)
     ->setCacheFile(__DIR__.'/.php-cs-fixer.cache')
 ;
+
+if (method_exists($config, 'setUnsupportedPhpVersionAllowed')) {
+    $config->setUnsupportedPhpVersionAllowed(true);
+}
+
+return $config;

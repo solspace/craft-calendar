@@ -34,7 +34,12 @@ import {
   getCalendarEventClickAction,
   renderCalendarEventContent,
 } from "./calendar.event-content";
-import { calendarEvents, getOccurrenceDateFromId, moveEvent, resizeEvent } from "./calendar.events";
+import {
+  createCalendarEventsSource,
+  getOccurrenceDateFromId,
+  moveEvent,
+  resizeEvent,
+} from "./calendar.events";
 import { useViewSettings, type View } from "./calendar.persistence";
 import { useSitePicker } from "./calendar.site-picker";
 import { CalendarWrapper } from "./calendar.styles";
@@ -43,14 +48,48 @@ import { PopoverCreateEvent } from "./popovers/create-event/create-event";
 import { PopoverModifyEvent } from "./popovers/modify-event/modify";
 import { PopoverViewEvent } from "./popovers/view-event/view-event";
 
-export const CalendarFullcalendar: FC = () => {
+type CalendarFullcalendarProps = {
+  hiddenCalendarIds: number[];
+};
+
+const weekHeaderWeekdayFormatter = new Intl.DateTimeFormat(undefined, {
+  weekday: "short",
+  timeZone: "UTC",
+});
+const weekHeaderDayFormatter = new Intl.DateTimeFormat(undefined, {
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+const formatDuration = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}:00`;
+};
+
+export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCalendarIds }) => {
   const { hidePopover, showPopover } = usePopover();
   const { view, setView, isReady } = useViewSettings();
-  const { currentDay, language, formats, weekStartDay, overlapThresholdString, canEditEvents, isDragAndDropEnabled } = useConfig();
+  const {
+    currentDay,
+    language,
+    formats,
+    weekStartDay,
+    overlapThresholdString,
+    allDayDefault,
+    eventDuration,
+    timeInterval,
+    canEditEvents,
+    isDragAndDropEnabled,
+  } = useConfig();
 
   const calendar = useRef<FullCalendar>(null);
+  const calendarFilterKey = hiddenCalendarIds.join(",");
+  const lastCalendarFilterKey = useRef<string | null>(null);
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
   const [draftAnchorEl, setDraftAnchorEl] = useState<HTMLElement | null>(null);
+  const [isFetchingEvents, setIsFetchingEvents] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: The dependency is needed to get the latest calendar instance for the API.
   const getApi = useCallback(() => calendar.current?.getApi(), [calendar.current]);
@@ -65,6 +104,12 @@ export const CalendarFullcalendar: FC = () => {
 
   const { hasSitePicker, sitePickerButton } = useSitePicker(api);
   const { datePickerButton, dateSelector } = useDateSelector(api);
+  const hiddenCalendarIdSet = useMemo(() => new Set(hiddenCalendarIds), [hiddenCalendarIds]);
+  const timeIntervalDuration = formatDuration(timeInterval);
+  const events = useMemo(
+    () => createCalendarEventsSource(hiddenCalendarIdSet),
+    [hiddenCalendarIdSet],
+  );
 
   const customButtons = useMemo(
     () =>
@@ -86,6 +131,30 @@ export const CalendarFullcalendar: FC = () => {
     setDraft(null);
     setDraftAnchorEl(null);
   }, []);
+
+  useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
+    const calendarApi = calendar.current?.getApi();
+    if (!calendarApi) {
+      return;
+    }
+
+    if (lastCalendarFilterKey.current === null) {
+      lastCalendarFilterKey.current = calendarFilterKey;
+
+      return;
+    }
+
+    if (lastCalendarFilterKey.current === calendarFilterKey) {
+      return;
+    }
+
+    lastCalendarFilterKey.current = calendarFilterKey;
+    calendarApi.refetchEvents();
+  }, [calendarFilterKey, isReady]);
 
   const cancelDraft = useCallback(() => {
     clearDraft();
@@ -157,10 +226,10 @@ export const CalendarFullcalendar: FC = () => {
         .find((event) => isCreateDraftEvent(event))
         ?.remove();
       setDraftAnchorEl(null);
-      setDraft(buildCreateDraftFromSelection(selection));
+      setDraft(buildCreateDraftFromSelection(selection, { allDayDefault, eventDuration }));
       selection.view.calendar.unselect();
     },
-    [hidePopover],
+    [allDayDefault, eventDuration, hidePopover],
   );
 
   const handleEventDidMount = useCallback((arg: EventMountArg) => {
@@ -239,14 +308,8 @@ export const CalendarFullcalendar: FC = () => {
       return arg.text;
     }
 
-    const weekday = new Intl.DateTimeFormat(undefined, {
-      weekday: "short",
-      timeZone: "UTC",
-    }).format(arg.date);
-    const dayNumber = new Intl.DateTimeFormat(undefined, {
-      day: "numeric",
-      timeZone: "UTC",
-    }).format(arg.date);
+    const weekday = weekHeaderWeekdayFormatter.format(arg.date);
+    const dayNumber = weekHeaderDayFormatter.format(arg.date);
 
     return (
       <>
@@ -261,7 +324,7 @@ export const CalendarFullcalendar: FC = () => {
   }
 
   return (
-    <CalendarWrapper>
+    <CalendarWrapper className={isFetchingEvents ? "is-fetching-events" : undefined}>
       <FullCalendar
         ref={calendar}
         themeSystem="bootstrap5"
@@ -279,15 +342,19 @@ export const CalendarFullcalendar: FC = () => {
         selectable
         selectMirror={false}
         selectMinDistance={5}
+        slotDuration={timeIntervalDuration}
+        snapDuration={timeIntervalDuration}
         navLinks
         navLinkDayClick={handleNavLinkDayClick}
         select={handleDraftSelection}
         dayHeaderClassNames={getDayHeaderClassNames}
         dayHeaderContent={renderDayHeaderContent}
-        events={calendarEvents}
+        events={events}
         eventClassNames={getCalendarEventClassNames}
         eventContent={renderCalendarEventContent}
+        progressiveEventRendering
         eventTimeFormat={formats.time.short.js}
+        loading={setIsFetchingEvents}
         eventDidMount={handleEventDidMount}
         eventWillUnmount={handleEventWillUnmount}
         eventClick={(arg) => {

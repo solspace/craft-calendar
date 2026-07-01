@@ -2,12 +2,19 @@
 {% import "_includes/forms" as forms %}
 
 {% set title = "Calendar"|t('calendar') %}
+{% set selectedSubnavItem = "overview" %}
 
 {% set crumbs = [
     { label: craft.calendar.name, url: url("calendar") },
     { label: "Events"|t("calendar"), url: url("calendar/events") },
     { label: title, url: url("calendar/app"), current: true },
 ] %}
+
+{% block sidebar %}
+	<div id="calendar-sidebar">
+		<div data-sidebar-root></div>
+	</div>
+{% endblock %}
 
 {% block content %}
 

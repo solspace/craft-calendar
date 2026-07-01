@@ -372,6 +372,16 @@ export const CalendarWrapper = styled(CalendarBase)`
     }
   }
 
+  &.is-fetching-events .fc-icon-refresh {
+    animation: calendar-refresh-spin 0.8s linear infinite;
+  }
+
+  @keyframes calendar-refresh-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .fc-daygrid-day-number {
     display: inline-flex;
     align-items: center;

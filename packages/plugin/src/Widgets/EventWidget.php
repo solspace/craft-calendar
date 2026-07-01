@@ -58,6 +58,10 @@ class EventWidget extends AbstractWidget
                     'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
                     'formats' => DateFormatHelper::toConfig(),
                     'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),
+                    'timeInterval' => Calendar::getInstance()->settings->getTimeInterval(),
+                    'eventDuration' => Calendar::getInstance()->settings->getEventDuration(),
+                    'allDayDefault' => Calendar::getInstance()->settings->isAllDayDefault(),
+                    'overlapThreshold' => Calendar::getInstance()->settings->getOverlapThreshold(),
                 ],
             ]
         );

@@ -270,10 +270,6 @@ class RecurringEventMutationHelper
         $rdates = $this->uniqueDates($rdates, $allDay);
         $exdates = $this->uniqueDates($exdates, $allDay);
 
-        if (!$baseRule) {
-            $rdates = $this->appendDate($rdates, $eventStart, $allDay);
-        }
-
         if (!$baseRule && [] === $rdates && [] === $exdates) {
             return null;
         }
@@ -300,29 +296,10 @@ class RecurringEventMutationHelper
         return implode(
             "\n",
             array_map(
-                fn (string $line) => $this->normalizeRfcLine($line, $allDay),
+                static fn (string $line) => RRuleStringNormalizer::normalizeLine($line, $allDay),
                 $lines,
             ),
         );
-    }
-
-    private function normalizeRfcLine(string $line, bool $allDay): string
-    {
-        if (str_starts_with($line, 'DTSTART')) {
-            $property = explode(':', $line, 2)[1] ?? '';
-
-            return $this->formatStartDateLine(Carbon::createFromFormat('Ymd\THis', $property, DateHelper::UTC), $allDay);
-        }
-
-        if (!str_starts_with($line, 'RRULE:')) {
-            return $line;
-        }
-
-        if (!$allDay) {
-            return $line;
-        }
-
-        return preg_replace('/UNTIL=(\d{8})T\d{6}Z?/', 'UNTIL=$1', $line) ?? $line;
     }
 
     private function formatStartDateLine(Carbon $date, bool $allDay): string

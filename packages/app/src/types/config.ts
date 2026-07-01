@@ -20,6 +20,9 @@ export type CalendarConfig = {
   formats: DateFormats;
   language: string;
   overlapThreshold: number;
+  timeInterval: number;
+  eventDuration: number;
+  allDayDefault: boolean;
   weekStartDay: WeekStartDay;
   currentSiteId: number;
   currentDay: Date;

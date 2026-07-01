@@ -5,10 +5,14 @@ namespace Solspace\Calendar\Elements\Db;
 use Carbon\Carbon;
 use craft\db\ActiveQuery;
 use craft\helpers\Db;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\OccurrenceModel;
+use Solspace\Calendar\Records\CalendarRecord;
+use Solspace\Calendar\Records\OccurrenceRecord;
+use Solspace\Calendar\Records\OccurrenceWindowRecord;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\db\Query;
 
@@ -189,14 +193,11 @@ class OccurrenceQuery extends ActiveQuery
 
     public function prepare($builder): Query
     {
-        $this->applyOccurrenceIdentityFilters();
+        $this->extendInfiniteOccurrenceWindows();
 
-        $eventIds = $this->resolveEventIds();
-        if ([] === $eventIds) {
-            $this->andWhere('0=1');
-        } elseif (null !== $eventIds) {
-            $this->andWhere(Db::parseParam('[[eventId]]', $eventIds));
-        }
+        $this->applyOccurrenceIdentityFilters();
+        $this->applyOccurrenceNativeFilters();
+        $this->applyEventExistsFilter();
 
         if ($this->startsBefore) {
             $this->andWhere('[[startDate]] < :startsBefore', ['startsBefore' => $this->resolveDate($this->startsBefore)]);
@@ -249,10 +250,6 @@ class OccurrenceQuery extends ActiveQuery
 
         $query = Event::find();
         $query->status($this->status);
-        $query->id($this->event);
-        $query->setCalendarId($this->calendarId);
-        $query->setCalendarUid($this->calendarUid);
-        $query->setCalendar($this->calendar);
         $query->site($this->site);
         $query->siteId = $this->siteId;
 
@@ -323,25 +320,146 @@ class OccurrenceQuery extends ActiveQuery
         return new Carbon($date, DateHelper::UTC);
     }
 
-    private function resolveEventIds(): ?array
+    private function extendInfiniteOccurrenceWindows(): void
     {
-        if (!$this->shouldLimitByEventQuery()) {
-            return null;
+        if (!$this->rangeEnd) {
+            return;
         }
 
-        return $this->getEventQuery()->ids();
+        $rangeEnd = $this->resolveDate($this->rangeEnd);
+        $materializer = new OccurrenceMaterializer();
+
+        foreach ($this->getOccurrenceWindowCandidateIds($rangeEnd) as $eventIds) {
+            $eventQuery = clone $this->getEventQuery();
+            $events = $eventQuery->id($eventIds)->all();
+
+            foreach ($events as $event) {
+                if (!$event->isInfinite()) {
+                    continue;
+                }
+
+                $materializer->extend($event, $rangeEnd);
+            }
+        }
+    }
+
+    private function getOccurrenceWindowCandidateIds(Carbon $rangeEnd): iterable
+    {
+        $query = (new Query())
+            ->select(['events.id'])
+            ->from(['events' => Event::TABLE])
+            ->innerJoin(
+                ['windows' => OccurrenceWindowRecord::TABLE],
+                '[[windows]].[[eventId]] = [[events]].[[id]]',
+            )
+            ->where(['not', ['events.rrule' => null]])
+            ->andWhere(['<>', 'events.rrule', ''])
+            ->andWhere(['<', 'windows.generatedThrough', Db::prepareDateForDb($rangeEnd)])
+            ->orderBy(['events.id' => \SORT_ASC])
+        ;
+
+        if (null !== $this->event) {
+            $query->andWhere(Db::parseParam('[[events]].[[id]]', $this->event));
+        }
+
+        if (null !== $this->calendarId && !$this->isWildcardValue($this->calendarId)) {
+            $query->andWhere(Db::parseParam('[[events]].[[calendarId]]', $this->calendarId));
+        }
+
+        $calendarIds = $this->resolveCalendarIds();
+        if ([] === $calendarIds) {
+            return;
+        }
+
+        if (null !== $calendarIds) {
+            $query->andWhere(Db::parseParam('[[events]].[[calendarId]]', $calendarIds));
+        }
+
+        foreach ($query->batch(100) as $rows) {
+            $eventIds = array_map('intval', array_column($rows, 'id'));
+            if ($eventIds) {
+                yield $eventIds;
+            }
+        }
+    }
+
+    private function applyOccurrenceNativeFilters(): void
+    {
+        if (null !== $this->event) {
+            $this->andWhere(Db::parseParam('[[eventId]]', $this->event));
+        }
+
+        if (null !== $this->calendarId && !$this->isWildcardValue($this->calendarId)) {
+            $this->andWhere(Db::parseParam('[[calendarId]]', $this->calendarId));
+        }
+
+        $calendarIds = $this->resolveCalendarIds();
+        if (null === $calendarIds) {
+            return;
+        }
+
+        if ([] === $calendarIds) {
+            $this->andWhere('0=1');
+
+            return;
+        }
+
+        $this->andWhere(Db::parseParam('[[calendarId]]', $calendarIds));
+    }
+
+    private function applyEventExistsFilter(): void
+    {
+        if (!$this->shouldLimitByEventQuery()) {
+            return;
+        }
+
+        $eventQuery = clone $this->getEventQuery();
+        $eventQuery->andWhere(
+            Event::TABLE.'.[[id]] = '.OccurrenceRecord::TABLE.'.[[eventId]]'
+        );
+
+        $this->andWhere(['exists', $eventQuery]);
     }
 
     private function shouldLimitByEventQuery(): bool
     {
         return null !== $this->eventQuery
             || null !== $this->status
-            || null !== $this->event
-            || null !== $this->calendarId
-            || null !== $this->calendarUid
-            || null !== $this->calendar
             || null !== $this->site
             || null !== $this->siteId;
+    }
+
+    private function resolveCalendarIds(): ?array
+    {
+        $conditions = ['and'];
+
+        if (null !== $this->calendarUid && !$this->isWildcardValue($this->calendarUid)) {
+            $conditions[] = Db::parseParam('[[uid]]', $this->calendarUid);
+        }
+
+        if (null !== $this->calendar && !$this->isWildcardValue($this->calendar)) {
+            $conditions[] = Db::parseParam('[[handle]]', $this->calendar);
+        }
+
+        if (1 === \count($conditions)) {
+            return null;
+        }
+
+        return (new Query())
+            ->select(['id'])
+            ->from(CalendarRecord::TABLE)
+            ->where($conditions)
+            ->column()
+        ;
+    }
+
+    private function isWildcardValue(mixed $value): bool
+    {
+        if ('*' === $value) {
+            return true;
+        }
+
+        return \is_array($value) && '*' === reset($value);
     }
 
     private function applyOccurrenceIdentityFilters(): void

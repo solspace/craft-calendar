@@ -114,6 +114,68 @@ class RecurringEventMutationHelperTest extends TestCase
         );
     }
 
+    public function testMoveRdateOnlySeriesShiftsAllFixedDates(): void
+    {
+        $helper = new RecurringEventMutationHelper();
+        $rrule = implode(
+            "\n",
+            [
+                'DTSTART:20260105T090000',
+                'RDATE:20260105T090000,20260112T090000,20260119T090000',
+            ]
+        );
+
+        $updated = $helper->moveSeriesRRule(
+            $rrule,
+            new Carbon('2026-01-05 09:00:00', 'UTC'),
+            new Carbon('2026-01-06 10:00:00', 'UTC'),
+            90000,
+            false,
+        );
+
+        self::assertSame(
+            implode(
+                "\n",
+                [
+                    'DTSTART:20260106T100000',
+                    'RDATE:20260106T100000,20260113T100000,20260120T100000',
+                ]
+            ),
+            $updated,
+        );
+    }
+
+    public function testMoveRdateOnlyOccurrenceUpdatesFixedDateInPlace(): void
+    {
+        $helper = new RecurringEventMutationHelper();
+        $rrule = implode(
+            "\n",
+            [
+                'DTSTART:20260105T090000',
+                'RDATE:20260105T090000,20260112T090000,20260119T090000',
+            ]
+        );
+
+        $updated = $helper->moveOccurrenceRRule(
+            $rrule,
+            new Carbon('2026-01-05 09:00:00', 'UTC'),
+            false,
+            new Carbon('2026-01-05 09:00:00', 'UTC'),
+            new Carbon('2026-01-06 10:00:00', 'UTC'),
+        );
+
+        self::assertSame(
+            implode(
+                "\n",
+                [
+                    'DTSTART:20260105T090000',
+                    'RDATE:20260106T100000,20260112T090000,20260119T090000',
+                ]
+            ),
+            $updated,
+        );
+    }
+
     public function testResizeSeriesUpdatesStartBoundariesAndUntil(): void
     {
         $helper = new RecurringEventMutationHelper();

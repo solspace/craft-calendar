@@ -1,7 +1,5 @@
 import {
   localDisplayDateToUtcTimestamp,
-  UTCify,
-  UTCifyDateOnly,
   utcDateKey,
   utcTimestampToLocalDisplayDate,
   utcToLocalDisplayDate,
@@ -12,7 +10,7 @@ import {
   buildRRuleString,
   type EventState,
 } from "@event-builder/store/event.slice.operations";
-import { addYears, endOfDay, format, startOfDay } from "date-fns";
+import { addYears, format, startOfDay } from "date-fns";
 import type { RRule, RRuleSet } from "rrule";
 
 const dedupeDates = (dates: Date[]): Date[] => {
@@ -27,7 +25,13 @@ const toStartTimestamp = (start: number): number =>
 const toOccurrenceTimestamp = (date: Date): number =>
   localDisplayDateToUtcTimestamp(startOfDay(utcToLocalDisplayDate(date)));
 
-const toDayTimestamp = (date: Date): number => localDisplayDateToUtcTimestamp(startOfDay(date));
+const toUtcDayStart = (date: Date): Date =>
+  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
+
+const toUtcDayEnd = (date: Date): Date =>
+  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
+
+const toUtcDayTimestamp = (date: Date): number => Math.floor(toUtcDayStart(date).getTime() / 1000);
 
 type FixedDateMutationInput = {
   baseRule: RRule | null;
@@ -76,9 +80,9 @@ export const getOccurrenceStatus = (
   previewRecurrence: PreviewRecurrence,
   date: Date,
 ): OccurrenceStatus => {
-  const timestamp = toDayTimestamp(date);
-  const rangeStart = UTCifyDateOnly(startOfDay(date));
-  const rangeEnd = UTCify(endOfDay(date));
+  const timestamp = toUtcDayTimestamp(date);
+  const rangeStart = toUtcDayStart(date);
+  const rangeEnd = toUtcDayEnd(date);
 
   const base = previewRecurrence.baseRule
     ? previewRecurrence.baseRule.between(rangeStart, rangeEnd, true).length > 0
@@ -105,10 +109,10 @@ export const buildPreviewEvents = (
     return [];
   }
 
-  const rangeStart = UTCifyDateOnly(startOfDay(viewRange.start));
-  const rangeEnd = UTCify(endOfDay(viewRange.end));
-  const viewStartTimestamp = toDayTimestamp(viewRange.start);
-  const viewEndTimestamp = toDayTimestamp(viewRange.end);
+  const rangeStart = toUtcDayStart(viewRange.start);
+  const rangeEnd = toUtcDayEnd(viewRange.end);
+  const viewStartTimestamp = toUtcDayTimestamp(viewRange.start);
+  const viewEndTimestamp = toUtcDayTimestamp(viewRange.end);
 
   let timestamps: number[] = [];
 
@@ -143,7 +147,7 @@ export const buildUpcomingOccurrences = (
   }
 
   if (!previewRecurrence.recurrenceSet) {
-    const fromTimestamp = toDayTimestamp(fromDate);
+    const fromTimestamp = toUtcDayTimestamp(fromDate);
 
     if (previewRecurrence.startTimestamp >= fromTimestamp) {
       return [previewRecurrence.startTimestamp];
@@ -154,8 +158,8 @@ export const buildUpcomingOccurrences = (
 
   const occurrences = previewRecurrence.recurrenceSet
     .between(
-      UTCifyDateOnly(startOfDay(fromDate)),
-      addYears(UTCify(endOfDay(fromDate)), 100),
+      toUtcDayStart(fromDate),
+      addYears(toUtcDayEnd(fromDate), 100),
       true,
       (_, index) => index < limit,
     )

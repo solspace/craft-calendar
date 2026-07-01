@@ -69,9 +69,43 @@ abstract class AbstractExportCalendar implements ExportCalendarInterface
 
     final protected function prepareString(string $string): string
     {
-        $string = (string) preg_replace('/(\r\n|\r|\n)+/', ' ', $string);
-        $string = (string) str_replace([',', ';'], ['\,', '\;'], $string);
+        $string = (string) preg_replace('/\R/u', "\n", $string);
+        $string = (string) str_replace(
+            ['\\', ',', ';', "\n"],
+            ['\\\\', '\,', '\;', '\n'],
+            $string,
+        );
 
-        return (string) preg_replace('/^\h*\v+/m', '', $string);
+        return trim($string);
+    }
+
+    final protected function foldLine(string $line): string
+    {
+        $characters = preg_split('//u', $line, -1, \PREG_SPLIT_NO_EMPTY);
+        if (!$characters) {
+            return $line;
+        }
+
+        $lines = [];
+        $current = '';
+        $limit = 75;
+
+        foreach ($characters as $character) {
+            if (\strlen($current.$character) > $limit) {
+                $lines[] = $current;
+                $current = $character;
+                $limit = 74;
+
+                continue;
+            }
+
+            $current .= $character;
+        }
+
+        if ('' !== $current) {
+            $lines[] = $current;
+        }
+
+        return implode("\r\n ", $lines);
     }
 }

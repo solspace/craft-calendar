@@ -66,6 +66,9 @@ class AppController extends BaseController
             'isDragAndDropEnabled' => $this->getSettingsService()->isDragAndDropEnabled(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
+            'timeInterval' => $this->getSettingsService()->getTimeInterval(),
+            'eventDuration' => $this->getSettingsService()->getEventDuration(),
+            'allDayDefault' => $this->getSettingsService()->isAllDayDefault(),
         ];
 
         $this->view->registerAssetBundle(CalendarAppBundle::class);

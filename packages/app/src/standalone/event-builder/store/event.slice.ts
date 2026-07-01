@@ -1,6 +1,6 @@
 import { localDisplayDateToUtcTimestamp, utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { addDays, setHours, startOfDay, subDays } from "date-fns";
+import { addDays, addMinutes, setHours, startOfDay, subDays } from "date-fns";
 import { Frequency } from "rrule";
 import type { RepeatEndType, RepeatType } from "../types";
 import {
@@ -76,8 +76,8 @@ const eventBuilderSlice = createSlice({
 
       rebuildRRule(state);
     },
-    setAllDay: (state, action: PayloadAction<boolean>) => {
-      const enabled = action.payload;
+    setAllDay: (state, action: PayloadAction<{ enabled: boolean; eventDuration: number }>) => {
+      const { enabled, eventDuration } = action.payload;
       state.allDay = enabled;
 
       const now = new Date();
@@ -92,7 +92,8 @@ const eventBuilderSlice = createSlice({
         endDate = addDays(startOfDay(endDate), 1);
       } else {
         endDate = subDays(endDate, 1);
-        endDate = setHours(endDate, startDate.getHours() + 1);
+        endDate = setHours(endDate, startDate.getHours());
+        endDate = addMinutes(endDate, eventDuration);
       }
 
       state.end = localDisplayDateToUtcTimestamp(endDate);

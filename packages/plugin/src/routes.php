@@ -22,6 +22,7 @@ return [
     'calendar/events/<elementId:\d+>' => 'elements/edit',
 
     // API calls
+    'GET calendar/api/calendars' => 'calendar/api/calendars',
     'GET calendar/api/events' => 'calendar/api/events',
     'POST calendar/api/events' => 'calendar/api/create-event',
     'POST calendar/api/events/delete' => 'calendar/events-api/delete',

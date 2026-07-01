@@ -15,6 +15,9 @@ class EventsApiController extends BaseController
 {
     public const EVENT_FIELD_NAME = 'calendarEvent';
 
+    private const SCOPE_OCCURRENCE = 'occurrence';
+    private const SCOPE_SERIES = 'series';
+
     public array|bool|int $allowAnonymous = true;
 
     public function actionMove(): Response
@@ -40,13 +43,13 @@ class EventsApiController extends BaseController
         $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
         $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
 
-        if ($event->isRepeating()) {
+        if ($this->hasOccurrenceSchedule($event)) {
             $occurrenceDate = $this->parseRequiredOccurrenceDate(
                 $request->getBodyParam('occurrenceDate'),
                 $event->isAllDay(),
             );
 
-            if ('occurrence' === $scope) {
+            if (self::SCOPE_OCCURRENCE === $scope) {
                 $this->getRecurringMutationHelper()->moveOccurrence($event, $occurrenceDate, $start, $allDay);
             } else {
                 $this->getRecurringMutationHelper()->moveSeries($event, $occurrenceDate, $start, $allDay);
@@ -87,7 +90,7 @@ class EventsApiController extends BaseController
         PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
         $scope = $this->parseScope($request->getBodyParam('scope'));
-        if ($event->isRepeating() && 'occurrence' === $scope) {
+        if ($this->hasOccurrenceSchedule($event) && self::SCOPE_OCCURRENCE === $scope) {
             $occurrenceDate = $this->parseRequiredOccurrenceDate(
                 $request->getBodyParam('occurrenceDate'),
                 $event->isAllDay(),
@@ -139,7 +142,7 @@ class EventsApiController extends BaseController
             $allDay,
         );
 
-        if ($event->isRepeating()) {
+        if ($this->hasOccurrenceSchedule($event)) {
             $this->getRecurringMutationHelper()->resizeSeries(
                 $event,
                 $allDay,
@@ -171,6 +174,11 @@ class EventsApiController extends BaseController
     private function getRecurringMutationHelper(): RecurringEventMutationHelper
     {
         return new RecurringEventMutationHelper();
+    }
+
+    private function hasOccurrenceSchedule(Event $event): bool
+    {
+        return null !== $event->getRRuleRFCString();
     }
 
     private function parseRequiredOccurrenceDate(mixed $value, bool $allDay): Carbon
@@ -227,7 +235,7 @@ class EventsApiController extends BaseController
 
     private function parseScope(mixed $value): string
     {
-        return 'occurrence' === $value ? 'occurrence' : 'series';
+        return self::SCOPE_OCCURRENCE === $value ? self::SCOPE_OCCURRENCE : self::SCOPE_SERIES;
     }
 
     private function parseSiteId(mixed $value): int
