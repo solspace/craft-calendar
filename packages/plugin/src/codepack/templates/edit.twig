@@ -1,0 +1,964 @@
+{% extends "demo/layouts/_layout" %}
+
+{% set pageTitle = "Event" %}
+{% set page = "edit" %}
+{% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
+{% set dateFormatJs = craft.app.locale.getDateFormat('short', 'jui') %}
+{% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
+
+{% block content %}
+    {% set eventId = segment4 == "" ? "new" : segment4 %}
+
+    <h1>Event Edit</h1>
+    <p class="lead">
+        Below is an individual event edit form, which allows you to edit core event details.
+    </p>
+    <hr /><br />
+
+    <div class="row">
+        <div class="col-12">
+            <div id="events_calendar">
+                {% set event = event ?? (eventId == 'new'
+                    ? craft.calendar.event('new')
+                    : craft.calendar.events({
+                        id: eventId,
+                        status: null,
+                    }).one())
+                %}
+
+                {% if event %}
+                    {% requireEventEditPermissions event %}
+                    {% set repeatInterval = 1 %}
+                    {% if event.rrule and 'INTERVAL=' in event.rrule %}
+                        {% set repeatInterval = event.rrule|split('INTERVAL=')|last|split(';')|first|split("\n")|first %}
+                    {% endif %}
+                    {% set repeatType = event.repeatType ?: 'NEVER' %}
+                    {% set repeatEndType = event.repeatEndType ?: (event.until ? 'ON_DATE' : 'NEVER') %}
+
+                    <form method="post">
+                        {{ csrfInput() }}
+                        <input type="hidden" name="action" value="calendar/events-api/save" />
+                        <input type="hidden" name="redirect" value="{{ (siteUrl~"demo/event/{id}")|hash }}" />
+                        <input type="hidden" name="eventId" value="{{ event.id }}" />
+                        <input type="hidden" name="siteId" value="{{ event.siteId ?? craft.app.sites.currentSite.id }}" />
+                        <input type="hidden" name="slug" value="{{ event.slug }}" />
+
+                        {% if errors is defined %}
+                            <div class="form-group row">
+                                <div class="col-sm-10 offset-sm-2">
+                                    {% for fieldErrors in errors %}
+                                        {% for error in fieldErrors %}
+                                            <div style="color: darkred;">&middot; {{ error }}</div>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">{{ "Title"|t }}</label>
+                            <div class="col-sm-10">
+                                <input type="text"
+                                       name="title"
+                                       value="{{ event.title }}"
+                                       placeholder="{{ "Title"|t }}"
+                                       class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">{{ "Calendar"|t }}</label>
+                            <div class="col-sm-10 col-md-5">
+                                <select name="calendarId" class="form-control">
+                                    {% for calendar in craft.calendar.allowedCalendars %}
+                                        <option value="{{ calendar.id }}" {{ calendar.id == event.calendar.id ? "selected" }}>
+                                            {{ calendar.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">{{ "Start Date"|t }}</label>
+                            <div class="col-sm-10">
+                                <input type="hidden" name="timezone" value="{{ event.timezone ?? craft.app.timezone }}" />
+                                <input type="hidden" name="rrule" value="{{ event.rrule }}" data-rrule-input />
+
+                                <div class="form-row">
+                                    <div class="col-md-4 col-sm-8">
+                                        <input type="text"
+                                               id="event-start-date"
+                                               value="{{ event.getStartDate()|date(dateFormat) }}"
+                                               class="form-control date-picker"
+                                               data-start-date />
+                                    </div>
+                                    <div class="col-md-2 col-sm-4" data-not-all-day>
+                                        <input type="text"
+                                               id="event-start-time"
+                                               value="{{ event.getStartDate()|date(timeFormat) }}"
+                                               class="form-control time-picker"
+                                               data-start-time />
+                                    </div>
+                                </div>
+                                <input type="hidden" name="start" value="{{ event.getStartDate()|date('Y-m-d\\TH:i') }}" data-start />
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label" data-not-multi-day>{{ "End Date"|t }}</label>
+                            <label class="col-sm-2 col-form-label" data-multi-day>{{ "End Time"|t }}</label>
+                            <div class="col-sm-10">
+                                <div class="form-row">
+                                    <div class="col-md-4 col-sm-8" data-not-multi-day>
+                                        <input type="text"
+                                               id="event-end-date"
+                                               value="{{ event.getEndDate()|date(dateFormat) }}"
+                                               class="form-control date-picker"
+                                               data-end-date />
+                                    </div>
+                                    <div class="col-md-2 col-sm-4" data-not-all-day>
+                                        <input type="text"
+                                               id="event-end-time"
+                                               value="{{ event.getEndDate()|date(timeFormat) }}"
+                                               class="form-control time-picker"
+                                               data-end-time />
+                                    </div>
+                                </div>
+                                <input type="hidden" name="end" value="{{ event.getEndDate()|date('Y-m-d\\TH:i') }}" data-end />
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-sm-2 col-form-label">{{ "All Day"|t }}</div>
+                            <div class="col-sm-10">
+                                <input type="hidden" name="allDay" value="0" />
+                                <input type="checkbox"
+                                       id="event-all-day"
+                                       name="allDay"
+                                       value="1"
+                                       data-toggle-button
+                                       {{ event.allDay ? 'checked' }} />
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-sm-2 col-form-label">{{ "Multi Day"|t }}</div>
+                            <div class="col-sm-10">
+                                <input type="checkbox"
+                                       id="event-multi-day"
+                                       data-toggle-button
+                                       {{ event.multiDay ?? event.isMultiDay ?? false ? 'checked' }} />
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">{{ "Repeats"|t }}</label>
+                            <div class="col-sm-10">
+                                <input type="checkbox"
+                                       id="event-repeats"
+                                       data-toggle-button
+                                       {{ repeatType != 'NEVER' ? 'checked' }} />
+                            </div>
+                        </div>
+
+                        <div class="form-group row" data-repeats>
+                            <label class="col-sm-2 col-form-label">{{ "Every"|t }}</label>
+                            <input type="hidden" name="repeatType" value="{{ repeatType }}" data-repeat-type-input />
+                            <div class="col-sm-2 col-4" data-invisible-for="CUSTOM">
+                                <input type="number"
+                                       min="1"
+                                       step="1"
+                                       value="{{ repeatInterval }}"
+                                       class="form-control"
+                                       data-repeat-interval />
+                            </div>
+                            <div class="col-sm-5 col-8">
+                                <select id="freq-selector" class="form-control" data-repeat-type>
+                                    <option value="DAILY" {{ repeatType == 'DAILY' ? 'selected' }}>{{ "Day(s)"|t }}</option>
+                                    <option value="WEEKLY" {{ repeatType == 'WEEKLY' ? 'selected' }}>{{ "Week(s)"|t }}</option>
+                                    <option value="MONTHLY" {{ repeatType == 'MONTHLY' ? 'selected' }}>{{ "Month(s)"|t }}</option>
+                                    <option value="YEARLY" {{ repeatType == 'YEARLY' ? 'selected' }}>{{ "Year(s)"|t }}</option>
+                                    <option value="CUSTOM" {{ repeatType == 'CUSTOM' ? 'selected' }}>{{ "Select Dates"|t }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row freq-items freq-list" data-weekly data-repeats>
+                            <div class="col-sm-10 offset-sm-2">
+                                {% for day, dayName in craft.calendar.weekDaysShort %}
+                                    <input type="checkbox"
+                                           id="repeats-by-weekday-{{ day }}"
+                                           value="{{ day }}"
+                                           data-by-day />
+                                    <label for="repeats-by-weekday-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group row freq-items" data-monthly data-repeats>
+                            <div class="col-4 col-sm-2 offset-sm-2" style="padding-top: 6px;">
+                                <label>
+                                    <input type="radio"
+                                           name="monthlyRepeatsBy"
+                                           value="byMonthDay"
+                                           data-toggle-switch
+                                           data-toggle-target="monthly"
+                                           checked />
+                                    {{ "Each"|t }}
+                                </label>
+                            </div>
+                            <div class="col-4 col-sm-2" style="padding-top: 6px; text-align: right;">
+                                <label>
+                                    <input type="radio"
+                                           name="monthlyRepeatsBy"
+                                           value="byDay"
+                                           data-toggle-switch
+                                           data-toggle-target="monthly" />
+                                    {{ "On the"|t }}
+                                </label>
+                            </div>
+                            <div class="col-4 col-sm-2">
+                                <select class="form-control" data-monthly-by-day-interval>
+                                    {% for interval, intervalTitle in craft.calendar.repeatsByOptions %}
+                                        <option value="{{ interval }}">{{ intervalTitle|t }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row freq-items freq-list" data-monthly data-toggled-by="byDay" data-repeats>
+                            <div class="col-sm-10 offset-sm-2">
+                                {% for day, dayName in craft.calendar.weekDaysShort %}
+                                    <input type="checkbox"
+                                           id="repeats-by-month-week-day-{{ day }}"
+                                           value="{{ day }}"
+                                           data-monthly-by-day />
+                                    <label for="repeats-by-month-week-day-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group row freq-items freq-list" data-monthly data-toggled-by="byMonthDay" data-repeats>
+                            <div class="col-sm-10 offset-sm-2">
+                                {% for day, dayName in craft.calendar.monthDays %}
+                                    <input type="checkbox"
+                                           id="repeats-by-month-day-{{ day }}"
+                                           value="{{ day }}"
+                                           data-by-month-day />
+                                    <label for="repeats-by-month-day-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group row freq-items" data-yearly data-repeats>
+                            <div class="col-5 col-sm-2 offset-sm-2" style="padding-top: 6px;">
+                                <label>
+                                    <input type="checkbox"
+                                           value="byDay"
+                                           data-toggle-switch
+                                           data-toggle-target="yearly"
+                                           data-yearly-by-day-enabled />
+                                    {{ "On the"|t }}
+                                </label>
+                            </div>
+                            <div class="col-7 col-sm-2">
+                                <select class="form-control" data-yearly-by-day-interval>
+                                    {% for interval, intervalTitle in craft.calendar.repeatsByOptions %}
+                                        <option value="{{ interval }}">{{ intervalTitle|t }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row freq-items freq-list" data-yearly data-toggled-by="byDay" data-repeats>
+                            <div class="col-sm-10 offset-sm-2">
+                                {% for day, dayName in craft.calendar.weekDaysShort %}
+                                    <input type="checkbox"
+                                           id="repeats-by-year-week-day-{{ day }}"
+                                           value="{{ day }}"
+                                           data-yearly-by-day />
+                                    <label for="repeats-by-year-week-day-{{ day }}">{{ dayName }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group row freq-items freq-list freq-list-large" data-yearly data-toggled-by="byDay" data-repeats>
+                            <div class="col-sm-6 offset-sm-2 clearfix">
+                                <div class="row">
+                                    {% for month, monthName in craft.calendar.monthNames %}
+                                        <div class="col-4">
+                                            <input type="checkbox"
+                                                   id="repeats-by-month-{{ month }}"
+                                                   value="{{ month }}"
+                                                   data-by-month />
+                                            <label for="repeats-by-month-{{ month }}">{{ monthName }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row" data-hide-for="CUSTOM" data-repeats>
+                            <label class="col-sm-2 col-form-label">{{ "End Repeat"|t }}</label>
+                            <div class="col-sm-2 col-6">
+                                <select name="repeatEndType" class="form-control" data-repeat-end-type>
+                                    <option value="NEVER" {{ repeatEndType == 'NEVER' ? 'selected' }}>{{ "Never ends"|t }}</option>
+                                    <option value="ON_DATE" {{ repeatEndType == 'ON_DATE' ? 'selected' }}>{{ "On date"|t }}</option>
+                                    <option value="AFTER" {{ repeatEndType == 'AFTER' ? 'selected' }}>{{ "After"|t }}</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2 col-6" data-until-row>
+                                <input type="hidden"
+                                       name="until"
+                                       value="{{ event.getUntil() ? event.getUntil()|date('Y-m-d') : '' }}"
+                                       data-until-input />
+                                <input type="text"
+                                       value="{{ event.getUntil() ? event.getUntil()|date(dateFormat) : '' }}"
+                                       class="form-control date-picker"
+                                       data-until />
+                            </div>
+                            <div class="col-sm-3 col-6" data-count-row>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="number"
+                                               min="1"
+                                               step="1"
+                                               value="{{ event.count ?: 1 }}"
+                                               class="form-control"
+                                               data-repeat-count />
+                                    </div>
+                                    <div class="col-6" style="padding-top: 6px;">{{ "times"|t }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row" data-repeats data-hide-for="CUSTOM">
+                            <label class="col-sm-2 col-form-label">{{ "Except on"|t }}</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control date-picker" data-exdate-input />
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-secondary" data-add-exdate>{{ "Add"|t }}</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group row exception-list" data-repeats data-hide-for="CUSTOM" data-exdate-list></div>
+
+                        <div class="form-group row" data-repeats data-show-for="CUSTOM">
+                            <label class="col-sm-2 col-form-label">{{ "On select dates"|t }}</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control date-picker" data-rdate-input />
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-secondary" data-add-rdate>{{ "Add"|t }}</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group row select-dates-list" data-repeats data-show-for="CUSTOM" data-rdate-list></div>
+
+                        {% if event['location'] is defined %}
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">{{ "Location"|t }}</label>
+                                <div class="col-sm-10">
+                                    <input type="text"
+                                           name="fields[location]"
+                                           value="{{ event.location }}"
+                                           placeholder="{{ "Location"|t }}"
+                                           class="form-control" />
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if event['description'] is defined %}
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">{{ "Description"|t }}</label>
+                                <div class="col-sm-10">
+                                    <textarea
+                                            name="fields[description]"
+                                            placeholder="{{ "Description"|t }}"
+                                            class="form-control">{{ event.description }}</textarea>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group row">
+                            <div class="col-12 col-sm-10 offset-sm-2">
+                                <button type="submit" class="btn btn-success">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-danger" role="alert">
+                        <p class="lead">
+                            Sorry, no event was found.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footerJs %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/timepicker@1.11.12/jquery.timepicker.min.js"></script>
+    <script>
+        (function () {
+            var dateFormat = "{{ dateFormatJs }}";
+            var timeFormat = "{{ timeFormat }}";
+            var form = document.querySelector('form');
+            var rruleInput = document.querySelector('[data-rrule-input]');
+            var startInput = document.querySelector('[data-start]');
+            var endInput = document.querySelector('[data-end]');
+            var startDate = document.querySelector('[data-start-date]');
+            var startTime = document.querySelector('[data-start-time]');
+            var endDate = document.querySelector('[data-end-date]');
+            var endTime = document.querySelector('[data-end-time]');
+            var allDay = document.querySelector('#event-all-day');
+            var multiDay = document.querySelector('#event-multi-day');
+            var repeats = document.querySelector('#event-repeats');
+            var repeatType = document.querySelector('[data-repeat-type]');
+            var repeatTypeInput = document.querySelector('[data-repeat-type-input]');
+            var repeatInterval = document.querySelector('[data-repeat-interval]');
+            var repeatEndType = document.querySelector('[data-repeat-end-type]');
+            var until = document.querySelector('[data-until]');
+            var untilInput = document.querySelector('[data-until-input]');
+            var untilRow = document.querySelector('[data-until-row]');
+            var countRow = document.querySelector('[data-count-row]');
+            var repeatCount = document.querySelector('[data-repeat-count]');
+            var exdateInput = document.querySelector('[data-exdate-input]');
+            var exdateList = document.querySelector('[data-exdate-list]');
+            var addExdate = document.querySelector('[data-add-exdate]');
+            var rdateInput = document.querySelector('[data-rdate-input]');
+            var rdateList = document.querySelector('[data-rdate-list]');
+            var addRdate = document.querySelector('[data-add-rdate]');
+            var exdates = [];
+            var rdates = [];
+
+            if (!form || !rruleInput || !startInput || !endInput || !startDate || !startTime || !endDate || !endTime || !allDay || !multiDay || !repeats || !repeatType || !repeatTypeInput || !untilInput) {
+                return;
+            }
+
+            if (window.jQuery) {
+                $('.date-picker').datepicker({
+                    dateFormat: dateFormat,
+                    firstDay: {{ craft.calendar.settings.firstDayOfWeek }},
+                });
+
+                if ($.fn.timepicker) {
+                    $('.time-picker').timepicker({
+                        timeFormat: timeFormat,
+                    });
+                }
+            }
+
+            function checkedValues(selector) {
+                return Array.prototype.slice.call(document.querySelectorAll(selector + ':checked')).map(function (input) {
+                    return input.value;
+                });
+            }
+
+            function pad(value) {
+                return String(value).padStart(2, '0');
+            }
+
+            function dateToIso(date) {
+                return date ? date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) : '';
+            }
+
+            function fieldIsoDate(field) {
+                var date = null;
+
+                if (window.jQuery && $.fn.datepicker) {
+                    date = $(field).datepicker('getDate');
+                    if (date) {
+                        return dateToIso(date);
+                    }
+                }
+
+                if (/^\d{4}-\d{2}-\d{2}/.test(field.value)) {
+                    return field.value.substr(0, 10);
+                }
+
+                date = new Date(field.value);
+
+                return Number.isNaN(date.getTime()) ? '' : dateToIso(date);
+            }
+
+            function setFieldIsoDate(field, value) {
+                var date;
+
+                if (!value) {
+                    field.value = '';
+                    return;
+                }
+
+                date = new Date(value + 'T00:00:00');
+
+                if (window.jQuery && $.fn.datepicker) {
+                    $(field).datepicker('setDate', date);
+                } else {
+                    field.value = value;
+                }
+            }
+
+            function fieldTime(field) {
+                var match;
+                var hour;
+                var minute;
+                var period;
+                var time = null;
+
+                if (window.jQuery && $.fn.timepicker) {
+                    time = $(field).timepicker('getTime');
+                    if (time) {
+                        return pad(time.getHours()) + ':' + pad(time.getMinutes());
+                    }
+                }
+
+                match = String(field.value || '').trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
+                if (!match) {
+                    return field.value || '00:00';
+                }
+
+                hour = parseInt(match[1], 10);
+                minute = match[2] || '00';
+                period = match[3] ? match[3].toLowerCase() : null;
+
+                if (period === 'pm' && hour < 12) {
+                    hour += 12;
+                }
+
+                if (period === 'am' && hour === 12) {
+                    hour = 0;
+                }
+
+                return pad(hour) + ':' + minute;
+            }
+
+            function formatDate(value) {
+                return value ? value.replace(/-/g, '') : '';
+            }
+
+            function formatDateTime(dateValue, timeValue) {
+                return formatDate(dateValue) + 'T' + (timeValue || '00:00').replace(':', '') + '00';
+            }
+
+            function formatUntil(value) {
+                return allDay.checked ? formatDate(value) : formatDateTime(value, fieldTime(startTime));
+            }
+
+            function formatUntilInput(value) {
+                return allDay.checked || !value ? value : value + 'T' + fieldTime(startTime);
+            }
+
+            function prettyDate(value) {
+                if (!value) {
+                    return '';
+                }
+
+                var date = new Date(value + 'T00:00:00');
+                return date.toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            function uniqueDates(dates) {
+                return dates.filter(function (date, index, list) {
+                    return date && list.indexOf(date) === index;
+                }).sort();
+            }
+
+            function setCheckedValues(selector, values) {
+                document.querySelectorAll(selector).forEach(function (input) {
+                    input.checked = values.indexOf(input.value) !== -1;
+                });
+            }
+
+            function setSelectValue(selector, value) {
+                var field = document.querySelector(selector);
+                if (field && value !== undefined && value !== null && value !== '') {
+                    field.value = value;
+                }
+            }
+
+            function parseRuleParts(line) {
+                var parts = {};
+                if (!line) {
+                    return parts;
+                }
+
+                line.replace(/^RRULE:/, '').split(';').forEach(function (part) {
+                    var bits = part.split('=');
+                    parts[bits[0]] = bits[1] || '';
+                });
+
+                return parts;
+            }
+
+            function dateFromRRuleValue(value) {
+                return value ? value.substr(0, 4) + '-' + value.substr(4, 2) + '-' + value.substr(6, 2) : '';
+            }
+
+            function renderDateList(target, dates, inputName, removeCallback) {
+                target.innerHTML = '';
+
+                uniqueDates(dates).forEach(function (date) {
+                    var wrapper = document.createElement('div');
+                    var input = document.createElement('input');
+                    var remove = document.createElement('a');
+
+                    wrapper.className = 'col-12 col-sm-10 offset-sm-2';
+                    input.type = 'hidden';
+                    input.name = inputName;
+                    input.value = date;
+                    remove.href = 'javascript:;';
+                    remove.style.color = 'darkred';
+                    remove.style.textDecoration = 'none';
+                    remove.innerHTML = '<span class="far fa-times-circle"></span>';
+                    remove.addEventListener('click', function () {
+                        removeCallback(date);
+                    });
+
+                    wrapper.appendChild(remove);
+                    wrapper.appendChild(document.createTextNode(' ' + prettyDate(date)));
+                    wrapper.appendChild(input);
+                    target.appendChild(wrapper);
+                });
+            }
+
+            function renderLists() {
+                renderDateList(exdateList, exdates, 'exceptions[]', function (date) {
+                    exdates = exdates.filter(function (value) {
+                        return value !== date;
+                    });
+                    renderLists();
+                    updateRRule();
+                });
+
+                renderDateList(rdateList, rdates, 'selectDates[]', function (date) {
+                    rdates = rdates.filter(function (value) {
+                        return value !== date;
+                    });
+                    renderLists();
+                    updateRRule();
+                });
+            }
+
+            function syncDates() {
+                var startDateValue = fieldIsoDate(startDate);
+                var endDateValue = fieldIsoDate(endDate);
+                var startTimeValue = fieldTime(startTime) || '00:00';
+                var endTimeValue = fieldTime(endTime) || startTimeValue;
+
+                startInput.value = startDateValue + 'T' + (allDay.checked ? '00:00' : startTimeValue);
+
+                if (allDay.checked && !multiDay.checked) {
+                    endInput.value = startDateValue + 'T23:59';
+                    setFieldIsoDate(endDate, startDateValue);
+                    return;
+                }
+
+                if (!multiDay.checked) {
+                    endDateValue = startDateValue;
+                    setFieldIsoDate(endDate, startDateValue);
+                }
+
+                endInput.value = endDateValue + 'T' + (allDay.checked ? '23:59' : endTimeValue);
+            }
+
+            function updateToggleButton(input) {
+                var button = input.nextElementSibling;
+                if (!button || !button.hasAttribute('data-toggle-proxy')) {
+                    return;
+                }
+
+                button.className = 'btn btn-' + (input.checked ? 'primary' : 'secondary');
+                button.textContent = input.checked ? 'On' : 'Off';
+            }
+
+            function updateVisibility() {
+                var isRepeating = repeats.checked;
+                var frequency = repeatType.value;
+                var isSelectDates = frequency === 'CUSTOM';
+                var monthlyMode = document.querySelector('input[name="monthlyRepeatsBy"]:checked');
+                var yearlyByDay = document.querySelector('[data-yearly-by-day-enabled]');
+
+                document.querySelectorAll('[data-not-all-day]').forEach(function (element) {
+                    element.classList.toggle('d-none', allDay.checked);
+                });
+
+                document.querySelectorAll('[data-not-multi-day]').forEach(function (element) {
+                    element.classList.toggle('d-none', !multiDay.checked);
+                });
+
+                document.querySelectorAll('[data-multi-day]').forEach(function (element) {
+                    element.classList.toggle('d-none', multiDay.checked);
+                });
+
+                document.querySelectorAll('[data-repeats]').forEach(function (element) {
+                    element.classList.toggle('d-none', !isRepeating);
+                });
+
+                document.querySelectorAll('[data-invisible-for]').forEach(function (element) {
+                    element.style.visibility = isRepeating && element.getAttribute('data-invisible-for') === frequency ? 'hidden' : 'visible';
+                });
+
+                document.querySelectorAll('[data-hide-for]').forEach(function (element) {
+                    element.style.display = isRepeating && element.getAttribute('data-hide-for') === frequency ? 'none' : '';
+                });
+
+                document.querySelectorAll('[data-show-for]').forEach(function (element) {
+                    element.style.display = isRepeating && element.getAttribute('data-show-for') === frequency ? '' : 'none';
+                });
+
+                document.querySelectorAll('.freq-items').forEach(function (element) {
+                    var show = isRepeating && !isSelectDates && element.hasAttribute('data-' + frequency.toLowerCase());
+
+                    if (element.hasAttribute('data-toggled-by')) {
+                        if (frequency === 'MONTHLY') {
+                            show = show && monthlyMode && monthlyMode.value === element.getAttribute('data-toggled-by');
+                        }
+
+                        if (frequency === 'YEARLY') {
+                            show = show && yearlyByDay && yearlyByDay.checked;
+                        }
+                    }
+
+                    element.style.display = show ? '' : 'none';
+                });
+
+                untilRow.style.display = isRepeating && repeatEndType.value === 'ON_DATE' && !isSelectDates ? '' : 'none';
+                countRow.style.display = isRepeating && repeatEndType.value === 'AFTER' && !isSelectDates ? '' : 'none';
+            }
+
+            function updateRRule() {
+                var frequency = repeatType.value;
+                var isRepeating = repeats.checked;
+                var isSelectDates = frequency === 'CUSTOM';
+                var interval = Math.max(parseInt(repeatInterval.value, 10) || 1, 1);
+                var ruleParts = [];
+                var lines = [];
+                var byDay = [];
+                var byMonthDay = [];
+                var byMonth = [];
+
+                syncDates();
+                updateVisibility();
+
+                if (!isRepeating) {
+                    repeatTypeInput.value = 'NEVER';
+                    repeatEndType.value = 'NEVER';
+                    untilInput.value = '';
+                    setFieldIsoDate(until, '');
+                    rruleInput.value = '';
+                    return;
+                }
+
+                untilInput.value = repeatEndType.value === 'ON_DATE' ? formatUntilInput(fieldIsoDate(until)) : '';
+                lines.push('DTSTART:' + (allDay.checked ? formatDate(fieldIsoDate(startDate)) : formatDateTime(fieldIsoDate(startDate), fieldTime(startTime))));
+
+                if (isSelectDates) {
+                    repeatTypeInput.value = 'CUSTOM';
+                    repeatEndType.value = 'NEVER';
+                    untilInput.value = '';
+                    if (rdates.length) {
+                        lines.push('RDATE' + (allDay.checked ? ';VALUE=DATE' : '') + ':' + uniqueDates(rdates).map(function (date) {
+                            return allDay.checked ? formatDate(date) : formatDateTime(date, fieldTime(startTime));
+                        }).join(','));
+                    }
+
+                    rruleInput.value = lines.join('\n');
+                    return;
+                }
+
+                ruleParts.push('FREQ=' + frequency);
+                ruleParts.push('INTERVAL=' + interval);
+
+                if (frequency === 'WEEKLY') {
+                    byDay = checkedValues('[data-by-day]');
+                }
+
+                if (frequency === 'MONTHLY') {
+                    if (document.querySelector('input[name="monthlyRepeatsBy"]:checked').value === 'byDay') {
+                        byDay = checkedValues('[data-monthly-by-day]').map(function (day) {
+                            return document.querySelector('[data-monthly-by-day-interval]').value + day;
+                        });
+                    } else {
+                        byMonthDay = checkedValues('[data-by-month-day]');
+                    }
+                }
+
+                if (frequency === 'YEARLY' && document.querySelector('[data-yearly-by-day-enabled]').checked) {
+                    byDay = checkedValues('[data-yearly-by-day]').map(function (day) {
+                        return document.querySelector('[data-yearly-by-day-interval]').value + day;
+                    });
+                    byMonth = checkedValues('[data-by-month]');
+                }
+
+                if (byDay.length) {
+                    ruleParts.push('BYDAY=' + byDay.join(','));
+                }
+
+                if (byMonthDay.length) {
+                    ruleParts.push('BYMONTHDAY=' + byMonthDay.join(','));
+                }
+
+                if (byMonth.length) {
+                    ruleParts.push('BYMONTH=' + byMonth.join(','));
+                }
+
+                repeatTypeInput.value = byDay.length || byMonthDay.length || byMonth.length ? 'CUSTOM' : frequency;
+
+                if (repeatEndType.value === 'ON_DATE' && fieldIsoDate(until)) {
+                    ruleParts.push('UNTIL=' + formatUntil(fieldIsoDate(until)));
+                }
+
+                if (repeatEndType.value === 'AFTER') {
+                    ruleParts.push('COUNT=' + Math.max(parseInt(repeatCount.value, 10) || 1, 1));
+                }
+
+                lines.push('RRULE:' + ruleParts.join(';'));
+
+                if (exdates.length) {
+                    lines.push('EXDATE' + (allDay.checked ? ';VALUE=DATE' : '') + ':' + uniqueDates(exdates).map(function (date) {
+                        return allDay.checked ? formatDate(date) : formatDateTime(date, fieldTime(startTime));
+                    }).join(','));
+                }
+
+                rruleInput.value = lines.join('\n');
+            }
+
+            function hydrateFromRRule() {
+                var ruleLine = '';
+                var parts;
+
+                (rruleInput.value || '').split(/\r?\n/).forEach(function (line) {
+                    if (line.indexOf('RRULE:') === 0) {
+                        ruleLine = line;
+                    }
+
+                    if (line.indexOf('RDATE') === 0) {
+                        rdates = line.split(':').pop().split(',').map(dateFromRRuleValue);
+                    }
+
+                    if (line.indexOf('EXDATE') === 0) {
+                        exdates = line.split(':').pop().split(',').map(dateFromRRuleValue);
+                    }
+                });
+
+                if (!ruleLine && rdates.length) {
+                    repeats.checked = true;
+                    repeatType.value = 'CUSTOM';
+                    renderLists();
+                    return;
+                }
+
+                if (!ruleLine) {
+                    renderLists();
+                    return;
+                }
+
+                parts = parseRuleParts(ruleLine);
+                repeats.checked = true;
+                repeatType.value = parts.FREQ || repeatType.value;
+                repeatInterval.value = parts.INTERVAL || repeatInterval.value;
+
+                if (parts.COUNT) {
+                    repeatEndType.value = 'AFTER';
+                    repeatCount.value = parts.COUNT;
+                } else if (parts.UNTIL) {
+                    repeatEndType.value = 'ON_DATE';
+                    untilInput.value = dateFromRRuleValue(parts.UNTIL);
+                    setFieldIsoDate(until, untilInput.value);
+                }
+
+                if (parts.BYDAY) {
+                    var byDays = parts.BYDAY.split(',');
+                    var plainDays = byDays.map(function (day) {
+                        return day.replace(/^-?\d/, '');
+                    });
+                    var interval = byDays[0].replace(/[A-Z]/g, '');
+
+                    setCheckedValues('[data-by-day]', plainDays);
+                    setCheckedValues('[data-monthly-by-day]', plainDays);
+                    setCheckedValues('[data-yearly-by-day]', plainDays);
+
+                    if (repeatType.value === 'MONTHLY') {
+                        document.querySelector('input[name="monthlyRepeatsBy"][value="byDay"]').checked = true;
+                        setSelectValue('[data-monthly-by-day-interval]', interval);
+                    }
+
+                    if (repeatType.value === 'YEARLY') {
+                        document.querySelector('[data-yearly-by-day-enabled]').checked = true;
+                        setSelectValue('[data-yearly-by-day-interval]', interval);
+                    }
+                }
+
+                if (parts.BYMONTHDAY) {
+                    document.querySelector('input[name="monthlyRepeatsBy"][value="byMonthDay"]').checked = true;
+                    setCheckedValues('[data-by-month-day]', parts.BYMONTHDAY.split(','));
+                }
+
+                if (parts.BYMONTH) {
+                    setCheckedValues('[data-by-month]', parts.BYMONTH.split(','));
+                }
+
+                renderLists();
+            }
+
+            document.querySelectorAll('[data-toggle-button]').forEach(function (input) {
+                var button = document.createElement('button');
+                button.type = 'button';
+                button.setAttribute('data-toggle-proxy', '');
+                input.classList.add('d-none');
+                input.parentNode.insertBefore(button, input.nextSibling);
+
+                button.addEventListener('click', function () {
+                    input.checked = !input.checked;
+                    input.dispatchEvent(new Event('change'));
+                });
+
+                updateToggleButton(input);
+            });
+
+            document.querySelectorAll('input, select').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    if (input.hasAttribute('data-toggle-button')) {
+                        updateToggleButton(input);
+                    }
+
+                    updateRRule();
+                });
+                input.addEventListener('input', updateRRule);
+            });
+
+            addExdate.addEventListener('click', function () {
+                exdates = uniqueDates(exdates.concat([fieldIsoDate(exdateInput)]));
+                exdateInput.value = '';
+                renderLists();
+                updateRRule();
+            });
+
+            addRdate.addEventListener('click', function () {
+                rdates = uniqueDates(rdates.concat([fieldIsoDate(rdateInput)]));
+                rdateInput.value = '';
+                renderLists();
+                updateRRule();
+            });
+
+            form.addEventListener('submit', updateRRule);
+            hydrateFromRRule();
+            updateRRule();
+        })();
+    </script>
+{% endblock %}

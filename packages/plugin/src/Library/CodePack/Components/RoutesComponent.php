@@ -25,6 +25,11 @@ class RoutesComponent extends AbstractJsonComponent
         $data = $this->getData();
         $demoFolder = $prefix.'/';
 
+        if (version_compare(\Craft::$app->getVersion(), '3.1', '>=') && $existingRoutes) {
+            $this->deleteExistingCodePackRoutes($data, $existingRoutes);
+            $existingRoutes = $config->get('routes');
+        }
+
         foreach ($data as $route) {
             if (isset($route->urlParts, $route->template) && \is_array($route->urlParts)) {
                 $urlParts = $route->urlParts;
@@ -108,5 +113,54 @@ class RoutesComponent extends AbstractJsonComponent
         }
 
         return null;
+    }
+
+    private function deleteExistingCodePackRoutes(array $codePackRoutes, array $existingRoutes): void
+    {
+        $routeService = \Craft::$app->routes;
+        $codePackRoutes[] = (object) [
+            'urlParts' => ['resources\/event_data\/', ['number', '\\\\d+']],
+            'template' => '/resources/event_data',
+        ];
+
+        foreach ($existingRoutes as $uuid => $existingRoute) {
+            foreach ($codePackRoutes as $codePackRoute) {
+                if ($this->isCodePackRoute($existingRoute, $codePackRoute)) {
+                    $routeService->deleteRouteByUid($uuid);
+                    break;
+                }
+            }
+        }
+    }
+
+    private function isCodePackRoute(array $existingRoute, object $codePackRoute): bool
+    {
+        if (
+            !isset($existingRoute['uriParts'], $existingRoute['template'], $codePackRoute->urlParts, $codePackRoute->template)
+            || !\is_array($existingRoute['uriParts'])
+            || !\is_array($codePackRoute->urlParts)
+        ) {
+            return false;
+        }
+
+        $codePackUriParts = $codePackRoute->urlParts;
+        array_walk_recursive($codePackUriParts, static function (&$value) {
+            $value = stripslashes($value);
+        });
+
+        $existingUriParts = $existingRoute['uriParts'];
+        $existingFirstPart = array_shift($existingUriParts);
+        $codePackFirstPart = array_shift($codePackUriParts);
+
+        if (!\is_string($existingFirstPart) || !\is_string($codePackFirstPart)) {
+            return false;
+        }
+
+        $existingTemplate = (string) $existingRoute['template'];
+        $codePackTemplate = (string) $codePackRoute->template;
+
+        return str_ends_with($existingFirstPart, $codePackFirstPart)
+            && Json::encode($existingUriParts) === Json::encode($codePackUriParts)
+            && str_ends_with($existingTemplate, $codePackTemplate);
     }
 }

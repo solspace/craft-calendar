@@ -95,8 +95,8 @@
     "template": "/fullcalendar"
   },
   {
-    "urlParts": ["resources\\/event_data\\/",["number","\\\\d+"]],
-    "urlPattern": "resources/event_data/{id}",
-    "template": "/resources/event_data"
+    "urlParts": ["resources\\/event\\.json"],
+    "urlPattern": "resources/event.json",
+    "template": "/resources/event.json"
   }
 ]

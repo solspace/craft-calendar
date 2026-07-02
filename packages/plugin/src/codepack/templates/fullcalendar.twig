@@ -46,9 +46,32 @@
         var qTipsEnabled = true;
         var $calendar = $("#calendar-wrapper");
         var canEditEvents = {{ currentUser and currentUser.can('calendar-manageEvents') ? 'true' : 'false' }};
+        var eventCreatorApi = null;
 
         window.csrfTokenName = '{{ craft.app.config.general.csrfTokenName }}';
         window.csrfTokenValue = '{{ craft.app.request.csrfToken }}';
+        window.calendarData = {
+            {% for calendar in craft.calendar.allowedCalendars %}
+                "{{ calendar.id }}": {
+                    id: {{ calendar.id }},
+                    name: "{{ calendar.name|e('js') }}",
+                    handle: "{{ calendar.handle|e('js') }}",
+                    color: "{{ calendar.color|e('js') }}"
+                }{{ not loop.last ? ',' : '' }}
+            {% endfor %}
+        };
+
+        function getEventElementId(event) {
+            return String(event.id).split('-')[0];
+        }
+
+        function eventHasError(response) {
+            return response && (response.error || response.message || response.success === false);
+        }
+
+        function getEventError(response, fallback) {
+            return response && (response.error || response.message) ? (response.error || response.message) : fallback;
+        }
 
         {% set defaultDate = now.format("Y-m-d") %}
         {% if segment3 and segment4 and segment5 %}
@@ -149,7 +172,7 @@
                       eventList[i].end = moment(event.end).add(2, 's').utc().format();
                     }
                     if (event.repeats) {
-                      eventList[i].url = '{{ siteUrl }}calendar-demo/event/' + event.id + '/' + moment(event.start).utc().format('YYYY/MM/DD');
+                      eventList[i].url = '{{ siteUrl }}demo/event/' + getEventElementId(event) + '/' + moment(event.start).utc().format('YYYY/MM/DD');
                     }
                   }
 
@@ -190,7 +213,7 @@
             var month = date.format('MM');
             var day = date.format('DD');
 
-            window.location.href = '{{ siteUrl }}demo/event/' + event.id + '/' + year + '/' + month + '/' + day;
+            window.location.href = '{{ siteUrl }}demo/event/' + getEventElementId(event) + '/' + year + '/' + month + '/' + day;
         }
 
         /**
@@ -205,9 +228,10 @@
             }
 
             var qtipContent = $('<div>');
+            var calendar = typeof event.calendar === 'object' ? event.calendar : window.calendarData[event.calendar];
             var calendarData = $('<div>', {
                 class: 'calendar-data',
-                html: '<span class="color-indicator" style="background-color: ' + event.backgroundColor + ';"></span> ' + event.calendar.name
+                html: '<span class="color-indicator" style="background-color: ' + event.backgroundColor + ';"></span> ' + (calendar ? calendar.name : '')
             });
 
             var start = event.start;
@@ -244,27 +268,27 @@
 
                 editButton.append($('<a>', {
                     class: 'btn btn-outline-warning btn-sm submit',
-                    href: '{{ siteUrl }}demo/edit/event/' + event.id,
+                    href: '{{ siteUrl }}demo/edit/event/' + getEventElementId(event),
                     text: '{{ "Edit"|t }}'
                 }));
 
                 editButton.append($('<a>', {
                     class: 'btn btn-outline-danger text-danger btn-sm delete-event',
-                    text: "{{ 'Delete'|t }}",
-                    data: {
-                        id: event.id,
-                        action: 'calendar/events-api/delete'
-                    }
-                }));
+                        text: "{{ 'Delete'|t }}",
+                        data: {
+                            id: getEventElementId(event),
+                            action: 'calendar/events-api/delete'
+                        }
+                    }));
 
                 if (event.repeats) {
                     editButton.append($('<a>', {
                         class: 'btn btn-outline-secondary btn-sm delete-event-occurrence',
                         text: "{{ 'Delete Occurrence'|t }}",
                         data: {
-                            id: event.id,
+                            id: getEventElementId(event),
                             date: event.start.toISOString(),
-                            action: 'calendar/events-api/delete-occurrence'
+                            action: 'calendar/events-api/delete'
                         }
                     }));
                 }
@@ -305,25 +329,8 @@
                             e.preventDefault();
                         }
 
-                        if (event.repeats) {
-                            var data = {
-                                eventId: event.id,
-                                action: 'calendar/events-api/first-occurrence-date'
-                            };
-
-                            data[csrfTokenName] = csrfTokenValue;
-
-                            $.ajax({
-                                cache: false,
-                                type: 'post',
-                                dataType: 'json',
-                                data: data,
-                                success: function (response) {
-                                    if (response.success && response.event && response.event.hasOwnProperty('readableRepeatRule')) {
-                                        $('.event-repeats').html('<label>Repeats:</label> ' + response.event.readableRepeatRule);
-                                    }
-                                },
-                            });
+                        if (event.repeats && event.rrule) {
+                            $('.event-repeats').html('<label>Repeats:</label> ' + event.rrule.replace(/\n/g, '<br>'));
                         }
                     },
                     render: function (e, api) {
@@ -335,8 +342,9 @@
                             if (confirm("{{ 'Are you sure?'|t }}")) {
                                 var data = {
                                     eventId: eventId,
-                                    date: date,
-                                    action: action
+                                    action: action,
+                                    occurrenceDate: date,
+                                    scope: 'occurrence'
                                 };
 
                                 data[csrfTokenName] = csrfTokenValue;
@@ -346,7 +354,7 @@
                                     dataType: 'json',
                                     data: data,
                                     success: function (response) {
-                                        if (!response.error) {
+                                        if (!eventHasError(response)) {
                                             $calendar.fullCalendar('removeEvents', function (lookupEvent) {
                                                 return lookupEvent.id == event.id && lookupEvent.start.isSame(event.start);
                                             });
@@ -355,7 +363,10 @@
                                             return;
                                         }
 
-                                        alert(response.error);
+                                        alert(getEventError(response, "{{ 'Could not delete event.'|t }}"));
+                                    },
+                                    error: function (response) {
+                                        alert(getEventError(response.responseJSON, "{{ 'Could not delete event.'|t }}"));
                                     }
                                 });
                             }
@@ -380,14 +391,17 @@
                                     dataType: 'json',
                                     data: data,
                                     success: function (response) {
-                                        if (!response.error) {
+                                        if (!eventHasError(response)) {
                                             $calendar.fullCalendar('removeEvents', event.id);
                                             api.destroy();
 
                                             return;
                                         }
 
-                                        alert(response.error);
+                                        alert(getEventError(response, "{{ 'Could not delete event.'|t }}"));
+                                    },
+                                    error: function (response) {
+                                        alert(getEventError(response.responseJSON, "{{ 'Could not delete event.'|t }}"));
                                     }
                                 });
                             }
@@ -408,13 +422,21 @@
         }
 
         function eventRepositioned(modification, event, delta, revertFunc) {
+            var isDateChange = modification === "Date";
+            var oldStart = event.start ? moment(event.start).subtract(delta).toISOString() : null;
+            var oldEnd = event.end ? moment(event.end).subtract(delta).toISOString() : null;
             var data = {
-                action: "calendar/events-api/modify-" + modification.toLowerCase(),
-                eventId: event.id,
-                isAllDay: event.allDay,
-                startDate: event.start.toISOString(),
-                endDate: event.end ? event.end.toISOString() : null,
-                deltaSeconds: delta.as("seconds")
+                action: "calendar/events-api/" + (isDateChange ? "move" : "resize"),
+                eventId: getEventElementId(event),
+                allDay: event.allDay ? 1 : 0,
+                start: event.start ? event.start.toISOString() : null,
+                end: event.end ? event.end.toISOString() : null,
+                oldStart: oldStart,
+                oldEnd: oldEnd,
+                startDeltaSeconds: isDateChange ? delta.as("seconds") : 0,
+                endDeltaSeconds: isDateChange ? delta.as("seconds") : delta.as("seconds"),
+                occurrenceDate: oldStart,
+                scope: "series"
             };
 
             data[csrfTokenName] = csrfTokenValue;
@@ -424,7 +446,7 @@
                 dataType: 'json',
                 data: data,
                 success: function (response) {
-                    if (response.error) {
+                    if (eventHasError(response)) {
                         revertFunc();
                     } else {
                         if (event.repeats) {
@@ -448,7 +470,11 @@
         }
 
         function showEventCreator(start, end) {
-            $('<div />').qtip({
+            if (eventCreatorApi) {
+                return;
+            }
+
+            var $dialog = $('<div />').qtip({
                 content: {
                     text: $('#event-creator'),
                     title: "{{ "New Event"|t }}"
@@ -519,14 +545,12 @@
                             var endTimeValue = moment($endTime.timepicker('getTime'));
 
                             var data = {
-                                action: 'calendar/events-api/create',
-                                startDate: startDateValue.format('YYYY-MM-DD') + ' ' + startTimeValue.format('HH:mm:ss'),
-                                endDate: endDateValue.format('YYYY-MM-DD') + ' ' + endTimeValue.format('HH:mm:ss'),
+                                action: 'calendar/api/create-event',
+                                start: moment.utc(startDateValue.format('YYYY-MM-DD') + ' ' + startTimeValue.format('HH:mm:ss')).unix(),
+                                end: moment.utc(endDateValue.format('YYYY-MM-DD') + ' ' + endTimeValue.format('HH:mm:ss')).unix(),
                                 allDay: $allDayInput.is(":checked") ? 1 : 0,
-                                event: {
-                                    title: title,
-                                    calendarId: calendarId
-                                }
+                                title: title,
+                                calendarId: calendarId
                             };
 
                             data[csrfTokenName] = csrfTokenValue;
@@ -536,24 +560,25 @@
                                 dataType: 'json',
                                 data: data,
                                 success: function (response) {
-                                    if (response.error) {
+                                    if (eventHasError(response)) {
                                         $('ul.errors', context)
                                                 .empty()
-                                                .append($('<li />', {text: response.error}));
-                                    } else if (response.event) {
-                                        const event = response.event;
-                                        if (event.allDay) {
-                                          event.end = moment(event.end).add(2, 's').utc().format();
+                                                .append($('<li />', {text: getEventError(response, "{{ 'Could not save event.'|t }}")}));
+                                    } else if (response.id) {
+                                        if (response.allDay) {
+                                          response.end = moment(response.end).add(2, 's').utc().format();
                                         }
 
-                                        $calendar.fullCalendar('renderEvent', event);
+                                        $calendar.fullCalendar('renderEvent', response);
                                         $calendar.fullCalendar('unselect');
 
                                         api.hide(e);
                                     }
                                 },
                                 error: function (response) {
-                                    alert(response);
+                                    $('ul.errors', context)
+                                            .empty()
+                                            .append($('<li />', {text: getEventError(response.responseJSON, "{{ 'Could not save event.'|t }}")}));
                                 }
                             });
                         });
@@ -565,10 +590,13 @@
                     hide: function (event, api) {
                         $('#event-creator').removeClass('shown').insertAfter($calendar);
                         $calendar.fullCalendar('unselect');
+                        eventCreatorApi = null;
                         api.destroy();
                     }
                 }
             });
+
+            eventCreatorApi = $dialog.qtip('api');
         }
 
 

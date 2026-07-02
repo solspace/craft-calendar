@@ -3,12 +3,15 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
+use craft\base\Element;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
+use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class EventsApiController extends BaseController
@@ -19,6 +22,72 @@ class EventsApiController extends BaseController
     private const SCOPE_SERIES = 'series';
 
     public array|bool|int $allowAnonymous = true;
+
+    public function actionSave(): ?Response
+    {
+        $this->requirePostRequest();
+
+        $request = \Craft::$app->request;
+        $eventId = (int) $request->getBodyParam('eventId');
+        $siteId = $this->parseSiteId($request->getBodyParam('siteId'));
+        $calendarId = (int) $request->getBodyParam('calendarId');
+
+        if ($eventId) {
+            $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
+            if (!$event) {
+                throw new NotFoundHttpException(Calendar::t('Event could not be found'));
+            }
+        } else {
+            $event = Event::create(
+                $siteId ?? \Craft::$app->sites->currentSite->id,
+                $calendarId ?: Calendar::getInstance()->calendars->getFirstCalendarId(),
+            );
+            $event->setScenario(Element::SCENARIO_LIVE);
+        }
+
+        if ($calendarId) {
+            $event->calendarId = $calendarId;
+        }
+
+        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+
+        $event->title = (string) $request->getBodyParam('title', $event->title);
+        $slug = $request->getBodyParam('slug');
+        if (null !== $slug && '' !== $slug) {
+            $event->slug = $slug;
+        }
+        $event->setFieldValuesFromRequest('fields');
+
+        if (!$this->getEventsService()->saveEvent($event)) {
+            $message = implode(' ', $event->getErrorSummary(true)) ?: Calendar::t('Could not save event');
+
+            if ($request->getAcceptsJson()) {
+                return $this->asFailure($message);
+            }
+
+            \Craft::$app->session->setError($message);
+            \Craft::$app->urlManager->setRouteParams([
+                'event' => $event,
+                'errors' => $event->getErrors(),
+            ]);
+
+            return null;
+        }
+
+        if ($request->getAcceptsJson()) {
+            $transformer = new FullCalTransformer();
+
+            return $this->asJson([
+                'success' => true,
+                'event' => $transformer->fromElement($event),
+            ]);
+        }
+
+        \Craft::$app->session->setNotice(Calendar::t('Event saved.'));
+        \Craft::$app->session->setFlash('calendar_event_saved', true);
+
+        return $this->redirectToPostedUrl($event);
+    }
 
     public function actionMove(): Response
     {

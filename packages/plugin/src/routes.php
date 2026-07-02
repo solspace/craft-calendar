@@ -25,6 +25,7 @@ return [
     'GET calendar/api/calendars' => 'calendar/api/calendars',
     'GET calendar/api/events' => 'calendar/api/events',
     'POST calendar/api/events' => 'calendar/api/create-event',
+    'POST calendar/api/events/save' => 'calendar/events-api/save',
     'POST calendar/api/events/delete' => 'calendar/events-api/delete',
     'POST calendar/api/events/move' => 'calendar/events-api/move',
     'POST calendar/api/events/resize' => 'calendar/events-api/resize',

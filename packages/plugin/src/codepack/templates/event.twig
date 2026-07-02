@@ -30,10 +30,27 @@
                 {% endif %}
 
                 {% if event is not defined %}
-                    {% set event = calendar.event(segment3, {targetDate: occurrenceDate}) %}
+                    {% set event = craft.calendar.events({
+                        id: segment3,
+                        status: null,
+                    }).one() %}
                 {% endif %}
 
                 {% if event %}
+                    {% set occurrence = null %}
+                    {% if occurrenceDate %}
+                        {% set occurrence = craft.calendar.occurrences({
+                            event: event.id,
+                            rangeStart: occurrenceDate,
+                            rangeEnd: occurrenceDate ~ " 23:59:59",
+                            status: null,
+                        }).one() %}
+                    {% endif %}
+
+                    {% set displayStartDate = occurrence ? occurrence.startDate : event.startDate %}
+                    {% set displayEndDate = occurrence ? occurrence.endDate : event.endDate %}
+                    {% set displayAllDay = occurrence ? occurrence.allDay : event.allDay %}
+                    {% set displayMultiDay = displayStartDate.format('Y-m-d') != displayEndDate.format('Y-m-d') %}
 
                     <div class="btn-group float-right" role="group" aria-label="actions">
                         {% if craft.calendar.exportEnabled %}
@@ -78,16 +95,16 @@
                         <tr>
                             <th>Date</th>
                             <td>
-                                {{ event.startDate.format('l, F j, Y') }}
+                                {{ displayStartDate.format('l, F j, Y') }}
 
-                                {% if event.allDay %}
+                                {% if displayAllDay %}
                                     (all day)
                                 {% else %}
-                                    at {{ event.startDate.format("g:ia") }} -
-                                    {% if event.multiDay %}
-                                        <br />{{ event.endDate.format("l, F j, Y \\a\\t g:ia") }}
+                                    at {{ displayStartDate.format("g:ia") }} -
+                                    {% if displayMultiDay %}
+                                        <br />{{ displayEndDate.format("l, F j, Y \\a\\t g:ia") }}
                                     {% else %}
-                                        {{ event.endDate.format("g:ia") }}
+                                        {{ displayEndDate.format("g:ia") }}
                                     {% endif %}
                                 {% endif %}
                             </td>
@@ -121,15 +138,18 @@
                         <tr>
                             <th>Upcoming Recurrences</th>
                             <td>
-                                {% set occurrences = event.occurrences({
+                                {% set occurrences = craft.calendar.occurrences({
+                                    event: event.id,
                                     rangeStart: 'today',
                                     rangeEnd: '+6 months',
                                     limit: 10,
-                                }) %}
+                                    status: null,
+                                }).all() %}
 
                                 {% if occurrences %}
                                     <ul class="list-group">
                                         {% for occurrence in occurrences %}
+                                            {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
                                             <li class="list-group-item d-flex align-items-center" style="border-left: 5px solid {{ occurrence.calendar.color }};">
                                                 <small class="mr-auto">
                                                     <span class="far fa-clock"></span>&nbsp;
@@ -139,7 +159,7 @@
                                                         (all day)
                                                     {% else %}
                                                         at {{ occurrence.startDate.format("g:ia") }}
-                                                        {% if occurrence.multiDay %}
+                                                        {% if occurrenceMultiDay %}
                                                             <br />{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
                                                         {% else %}
                                                             {{ occurrence.endDate.format("g:ia") }}
@@ -147,7 +167,7 @@
                                                     {% endif %}
                                                 </small>
 
-                                                <a href="{{ siteUrl }}demo/event/{{ occurrence.id }}/{{ occurrence.startDate.format("Y/m/d") }}" class="badge mr-2"
+                                                <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format("Y/m/d") }}" class="badge mr-2"
                                                    style="background-color: {{ occurrence.calendar.color }}; color: {{ occurrence.calendar.contrastColor }} !important;">
                                                     View Recurrence
                                                 </a>

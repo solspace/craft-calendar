@@ -1,15 +1,17 @@
 $(document).ready(function () {
-  $('[data-toggle="popover"]').popover({
-    trigger: "hover",
-    placement: "bottom",
-    html: true,
-    title: function () {
-      return $(".qtip .title", $(this)).html();
-    },
-    content: function () {
-      return $(".qtip .content", $(this)).html();
-    },
-  });
+  if ($.fn.popover) {
+    $('[data-toggle="popover"]').popover({
+      trigger: "hover",
+      placement: "bottom",
+      html: true,
+      title: function () {
+        return $(".qtip .title", $(this)).html();
+      },
+      content: function () {
+        return $(".qtip .content", $(this)).html();
+      },
+    });
+  }
 
   var $cal = $("#mini-cal-wrapper");
 

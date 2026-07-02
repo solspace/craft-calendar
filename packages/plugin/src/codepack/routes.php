@@ -24,5 +24,5 @@ return [
     'demo/edit/event/new' => 'demo/edit',
     'demo/export/calendar/(?P<id>\d+)' => 'demo/export',
     'demo/fullcalendar/(?P<slug>[^\/]+)/(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})' => 'demo/fullcalendar',
-    'demo/resources/event_data/(?P<id>\d+)' => 'demo/resources/event_data',
+    'demo/resources/event.json' => 'demo/resources/event.json',
 ];

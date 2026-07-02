@@ -13,6 +13,7 @@ footer p {
 
 .navbar-brand {
 	margin-right: 25px;
+	flex: 0 0 auto;
 }
 .navbar-brand img {
 	width: 30px;
@@ -20,9 +21,27 @@ footer p {
 	margin-right: 10px;
 }
 .navbar-nav .nav-item {
-	margin-right: 10px;
+	margin-right: 6px;
+}
+.navbar .nav-link {
+	padding-left: .35rem !important;
+	padding-right: .35rem !important;
+	white-space: nowrap;
+}
+.navbar .navbar-collapse {
+	min-width: 0;
+}
+.navbar .navbar-nav {
+	flex: 1 1 auto;
+	min-width: 0;
+	flex-wrap: wrap;
 }
 
+@media (max-width: 1199.98px) {
+	.navbar-nav .nav-item {
+		margin-right: 4px;
+	}
+}
 
 /* MONTH CALENDAR */
 
