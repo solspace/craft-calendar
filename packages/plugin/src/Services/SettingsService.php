@@ -53,6 +53,11 @@ class SettingsService extends Component
         return $this->getSettingsModel()->showDisabledEvents;
     }
 
+    public function isDragAndDropEnabled(): bool
+    {
+        return $this->getSettingsModel()->isDragAndDropEnabled;
+    }
+
     public function isQuickCreateEnabled(): bool
     {
         return $this->getSettingsModel()->quickCreateEnabled;
