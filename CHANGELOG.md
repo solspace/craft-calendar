@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 5.0.29 - 2026-07-03
+
+### Added
+- Added the ability to disable drag-and-drop event editing in the control panel Month/Week/Day views.
+
+### Fixed
+- Fixed an issue where the field mapping source for the Freeform element integration was stored as a numeric ID instead of the field handle.
+- Fixed a tooltip positioning issue in the control panel Month/Week/Day views.
+
 ## 5.0.28 - 2026-05-08
 
 ### Changed
