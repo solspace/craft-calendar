@@ -1,5 +1,6 @@
 let eventCreatorShown = false;
 const $calendar = $('#solspace-calendar');
+const popupInstances = new Set();
 
 const closeEventCreatorModal = (backdrop, modal) => {
   document.body.removeChild(backdrop);
@@ -174,6 +175,14 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
     return;
   }
 
+  if (!window.calendarPopupsEnabled) {
+    return;
+  }
+
+  if (element[0]._tippy) {
+    element[0]._tippy.destroy();
+  }
+
   const start = moment(event.start);
   const end = moment(event.end);
 
@@ -226,7 +235,7 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
     body.innerHTML += '<div class="event-repeats separator"><div class="spinner"></div></div>';
   }
 
-  if (event.editable) {
+  if (event.canEdit) {
     let buttonsHtml =
       '<div class="buttons">' +
       '<a class="btn small submit" href="' +
@@ -269,6 +278,9 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
     delay: [500, 300],
     theme: 'calendar-event',
     appendTo: document.body,
+    onDestroy() {
+      popupInstances.delete(instance);
+    },
     onShow() {
       if (!window.calendarPopupsEnabled) {
         return false;
@@ -297,6 +309,8 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
       }
     },
   });
+
+  popupInstances.add(instance);
 
   popup.querySelector('.sc-event-popup__close').addEventListener('click', () => instance.hide());
 
@@ -360,6 +374,11 @@ export const buildEventPopup = (event, element, calendarTimeFormat, isMultiSite 
       }
     });
   }
+};
+
+export const hideAllPopups = () => {
+  popupInstances.forEach((instance) => instance.destroy());
+  popupInstances.clear();
 };
 
 export const createDateAsUTC = (date) =>

@@ -1,4 +1,4 @@
-import { buildEventPopup } from './popups';
+import { buildEventPopup, hideAllPopups } from './popups';
 
 const $solspaceCalendar = $('#solspace-calendar');
 let $solspaceCalendarSpinner = null;
@@ -245,7 +245,7 @@ export const getEvents = (start, end, timezone, callback) => {
 
 export const closeAllPopups = () => {
   window.calendarPopupsEnabled = false;
-  tippy.hideAll();
+  hideAllPopups();
 };
 
 export const enablePopups = () => {
