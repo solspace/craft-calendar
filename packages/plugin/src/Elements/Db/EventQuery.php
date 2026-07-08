@@ -495,8 +495,12 @@ class EventQuery extends ElementQuery
             $this->cacheSingleEvents($ids);
             $this->cacheRecurringEvents($ids);
 
+            // If the order relies on event field values (not just dates), results can only be cut down to $limit/$offset after
+            // they've been fully built and sorted by their real values so we need to make sure valid results are not chopped off
+            $orderByNeedsEventData = $this->orderByNeedsEventData();
+
             // Order the dates in a chronological order
-            if ($this->shouldOrderByStartDate() || $this->shouldOrderByEndDate()) {
+            if (!$orderByNeedsEventData && ($this->shouldOrderByStartDate() || $this->shouldOrderByEndDate())) {
                 $this->orderDates($this->eventCache);
             }
 
@@ -510,11 +514,19 @@ class EventQuery extends ElementQuery
 
             $this->totalCount = \count($this->eventCache);
 
-            // Remove excess dates based on ::$limit and ::$offset
-            $this->cutOffExcess($this->eventCache);
+            if (!$orderByNeedsEventData) {
+                // Remove excess dates based on $limit and $offset
+                $this->cutOffExcess($this->eventCache);
+            }
 
             $this->cacheToStorage();
             $this->orderEvents($this->events);
+
+            if ($orderByNeedsEventData) {
+                // Remove excess events based on $limit and $offset, now that they've been sorted by their real values
+                $this->cutOffExcess($this->events);
+            }
+
             $this->indexEvents($this->events);
 
             // Build up an event cache, to be accessed later
@@ -1819,5 +1831,33 @@ class EventQuery extends ElementQuery
         $action = \Craft::$app->request->post('action');
 
         return \in_array($action, ['elements/save', 'calendar/events/save-event'], true);
+    }
+
+    /**
+     * Checks whether the requested order relies on event field values rather than just dates (e.g. a custom field like "isToday").
+     *
+     * Random/shuffle selection doesn't need this, since it doesn't rank events by any field value in the first place.
+     */
+    private function orderByNeedsEventData(): bool
+    {
+        if ($this->shouldRandomize() || $this->shuffle) {
+            return false;
+        }
+
+        if (\is_array($this->orderBy)) {
+            foreach (array_keys($this->orderBy) as $key) {
+                if (!preg_match('/\.?(startDate|endDate)$/', $key)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (null === $this->orderBy || 'RAND()' === $this->orderBy) {
+            return false;
+        }
+
+        return !preg_match('/\.?(startDate|endDate)$/', $this->orderBy);
     }
 }

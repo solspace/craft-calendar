@@ -157,6 +157,17 @@ class EventQueryTest extends TestCase
         $this->callExtract($query, $input);
     }
 
+    #[DataProvider('orderByNeedsEventDataProvider')]
+    /** @dataProvider \Solspace\Tests\Unit\Calendar\Elements\Db\EventQueryTest::orderByNeedsEventDataProvider */
+    public function testOrderByNeedsEventData(null|array|string $orderBy, bool $shuffle, bool $expected): void
+    {
+        $query = $this->makeQuery();
+        $query->orderBy = $orderBy;
+        $query->setShuffle($shuffle);
+
+        $this->assertSame($expected, $this->callOrderByNeedsEventData($query));
+    }
+
     private function callExtract(EventQuery $q, mixed $value): array|string
     {
         $method = new \ReflectionMethod(EventQuery::class, 'extractDateAsFormattedString');
@@ -174,5 +185,30 @@ class EventQueryTest extends TestCase
             ->onlyMethods([])
             ->getMock()
         ;
+    }
+
+    private static function orderByNeedsEventDataProvider(): array
+    {
+        return [
+            'default startDate only' => [null, false, false],
+            'string startDate' => ['startDate', false, false],
+            'string endDate' => ['endDate', false, false],
+            'string RAND()' => ['RAND()', false, false],
+            'string custom field' => ['isToday DESC', false, true],
+            'array startDate only' => [['startDate' => \SORT_ASC], false, false],
+            'array startDate and endDate' => [['startDate' => \SORT_ASC, 'endDate' => \SORT_ASC], false, false],
+            'array RAND()' => [['RAND()' => \SORT_ASC], false, false],
+            'array custom field alone' => [['isToday' => \SORT_DESC], false, true],
+            'array custom field plus startDate' => [['isToday' => \SORT_DESC, 'startDate' => \SORT_ASC], false, true],
+            'custom field with shuffle enabled' => [['isToday' => \SORT_DESC, 'startDate' => \SORT_ASC], true, false],
+        ];
+    }
+
+    private function callOrderByNeedsEventData(EventQuery $q): bool
+    {
+        $method = new \ReflectionMethod(EventQuery::class, 'orderByNeedsEventData');
+        $method->setAccessible(true);
+
+        return $method->invoke($q);
     }
 }
