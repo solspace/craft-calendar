@@ -38,7 +38,7 @@ class SettingsModel extends Model
     public array|bool|null $showDisabledEvents = null;
 
     public array|bool|null $quickCreateEnabled = null;
-    public null|array|bool $isDragAndDropEnabled = null;
+    public array|bool|null $isDragAndDropEnabled = null;
 
     public ?string $defaultView = null;
 

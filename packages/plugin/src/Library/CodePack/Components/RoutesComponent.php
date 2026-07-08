@@ -119,7 +119,7 @@ class RoutesComponent extends AbstractJsonComponent
     {
         $routeService = \Craft::$app->routes;
         $codePackRoutes[] = (object) [
-            'urlParts' => ['resources\/event_data\/', ['number', '\\\\d+']],
+            'urlParts' => ['resources\/event_data\/', ['number', '\\\d+']],
             'template' => '/resources/event_data',
         ];
 
@@ -127,6 +127,7 @@ class RoutesComponent extends AbstractJsonComponent
             foreach ($codePackRoutes as $codePackRoute) {
                 if ($this->isCodePackRoute($existingRoute, $codePackRoute)) {
                     $routeService->deleteRouteByUid($uuid);
+
                     break;
                 }
             }

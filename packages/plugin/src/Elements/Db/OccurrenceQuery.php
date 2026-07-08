@@ -18,6 +18,21 @@ use yii\db\Query;
 
 class OccurrenceQuery extends ActiveQuery
 {
+    /**
+     * Occurrence table columns that can be sorted.
+     * Anything else in $orderBy is assumed to be a custom field on the Event's field layout.
+     */
+    private const NATIVE_ORDER_COLUMNS = [
+        'uid',
+        'eventId',
+        'calendarId',
+        'allDay',
+        'startDate',
+        'endDate',
+        'dateCreated',
+        'dateUpdated',
+    ];
+
     public ?string $status = Event::STATUS_ENABLED;
 
     public array|string|null $id = null;
@@ -315,6 +330,49 @@ class OccurrenceQuery extends ActiveQuery
         return $result;
     }
 
+    public function all($db = null): array
+    {
+        if (!$this->orderByCustomField()) {
+            return parent::all($db);
+        }
+
+        // The requested order depends on Event custom field values which aren't columns on the occurrences table.
+        // Let the DB return every match unordered and unlimited and then sort and cut excess once the real events have been built.
+        $orderBy = $this->orderBy;
+        $limit = $this->limit;
+        $offset = $this->offset;
+        $indexBy = $this->indexBy;
+
+        $this->orderBy = null;
+        $this->limit = null;
+        $this->offset = null;
+        $this->indexBy = null;
+
+        $models = parent::all($db);
+
+        $this->orderBy = $orderBy;
+        $this->limit = $limit;
+        $this->offset = $offset;
+        $this->indexBy = $indexBy;
+
+        $this->sortByOrderCriteria($models, $orderBy);
+
+        if (null !== $limit && $limit >= 0) {
+            $models = \array_slice($models, $offset ?: 0, $limit);
+        }
+
+        if (!$indexBy) {
+            return $models;
+        }
+
+        $indexed = [];
+        foreach ($models as $model) {
+            $indexed[$model[$indexBy]] = $model;
+        }
+
+        return $indexed;
+    }
+
     private function resolveDate(mixed $date): Carbon
     {
         return new Carbon($date, DateHelper::UTC);
@@ -515,5 +573,61 @@ class OccurrenceQuery extends ActiveQuery
             ['eventId' => (int) $eventId],
             ['startDate' => $startDate->format('Y-m-d H:i:s')],
         ];
+    }
+
+    private function orderByCustomField(): bool
+    {
+        if (!\is_array($this->orderBy) || [] === $this->orderBy) {
+            return false;
+        }
+
+        foreach (array_keys($this->orderBy) as $key) {
+            if (!\in_array($key, self::NATIVE_ORDER_COLUMNS, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param OccurrenceModel[] $models
+     */
+    private function sortByOrderCriteria(array &$models, array $orderBy): void
+    {
+        usort(
+            $models,
+            function (OccurrenceModel $modelA, OccurrenceModel $modelB) use ($orderBy) {
+                foreach ($orderBy as $key => $direction) {
+                    $valueA = $this->resolveOrderValue($modelA, $key);
+                    $valueB = $this->resolveOrderValue($modelB, $key);
+
+                    $comparison = $valueA <=> $valueB;
+
+                    if (0 === $comparison) {
+                        continue;
+                    }
+
+                    return \SORT_ASC === $direction ? $comparison : -$comparison;
+                }
+
+                return 0;
+            }
+        );
+    }
+
+    private function resolveOrderValue(OccurrenceModel $model, string $key): mixed
+    {
+        return match ($key) {
+            'uid' => $model->uid,
+            'eventId' => $model->event->id,
+            'calendarId' => $model->calendar->id,
+            'allDay' => $model->allDay,
+            'startDate' => $model->startDate,
+            'endDate' => $model->endDate,
+            'dateCreated' => $model->dateCreated,
+            'dateUpdated' => $model->dateUpdated,
+            default => $model->event->canGetProperty($key) ? $model->event->{$key} : null,
+        };
     }
 }
