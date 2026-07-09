@@ -38,6 +38,8 @@ const freqOptions: Option<Frequency>[] = [
   { value: Frequency.YEARLY, label: "Yearly" },
 ];
 
+const repeatCountDebounceMs = 300;
+
 export const RepeatRules: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const state = useSelector(eventSelectors.state);
@@ -100,6 +102,7 @@ export const RepeatRules: FC = () => {
               label="Times"
               value={count}
               min={1}
+              debounceMs={repeatCountDebounceMs}
               onChange={(value) => dispatch(eventActions.setCount(value))}
             />
           )}
