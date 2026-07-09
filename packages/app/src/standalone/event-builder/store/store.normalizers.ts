@@ -52,3 +52,7 @@ export const normalizeRepeatType = (value: unknown): RepeatType => {
 export const normalizeRepeatEndType = (value: unknown): RepeatEndType => {
   return repeatEndTypes.has(value as RepeatEndType) ? (value as RepeatEndType) : "NEVER";
 };
+
+export const normalizeRepeatCount = (value: unknown): number => {
+  return typeof value === "number" && Number.isFinite(value) && value >= 1 ? value : 1;
+};

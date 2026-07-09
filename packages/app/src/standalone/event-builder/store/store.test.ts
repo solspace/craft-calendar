@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BuilderConfig, RepeatEndType, RepeatType } from "../types";
+import { eventActions } from "./event.slice";
 import { createEventBuilderStore } from "./store";
 
 const baseConfig = (): BuilderConfig => ({
@@ -25,5 +26,18 @@ describe("createEventBuilderStore", () => {
 
     expect(store.getState().event.repeatType).toBe("NEVER");
     expect(store.getState().event.repeatEndType).toBe("NEVER");
+  });
+
+  it("normalizes invalid repeat counts to one", () => {
+    const store = createEventBuilderStore(baseConfig());
+
+    store.dispatch(eventActions.setRepeatEndType("AFTER"));
+    expect(store.getState().event.count).toBe(1);
+
+    store.dispatch(eventActions.setCount(0));
+    expect(store.getState().event.count).toBe(1);
+
+    store.dispatch(eventActions.setCount(Number.NaN));
+    expect(store.getState().event.count).toBe(1);
   });
 });

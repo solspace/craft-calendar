@@ -99,6 +99,7 @@ export const RepeatRules: FC = () => {
             <NumberInput
               label="Times"
               value={count}
+              min={1}
               onChange={(value) => dispatch(eventActions.setCount(value))}
             />
           )}

@@ -6,6 +6,7 @@ import app from "./app.slice";
 import event from "./event.slice";
 import {
   normalizeByWeekday,
+  normalizeRepeatCount,
   normalizeRepeatEndType,
   normalizeRepeatType,
 } from "./store.normalizers";
@@ -14,6 +15,8 @@ export const createEventBuilderStore = (initialState: BuilderConfig) => {
   const baseRule = getBaseRRule(initialState.event.rrule);
 
   const { byweekday, bysetpos } = normalizeByWeekday(baseRule?.options.byweekday);
+  const repeatType = normalizeRepeatType(initialState.event.repeatType);
+  const repeatEndType = normalizeRepeatEndType(initialState.event.repeatEndType);
 
   const preloadedState = {
     app: initialState.app,
@@ -23,12 +26,15 @@ export const createEventBuilderStore = (initialState: BuilderConfig) => {
       until: initialState.event.until,
       timezone: initialState.event.timezone,
       allDay: initialState.event.allDay,
-      repeatType: normalizeRepeatType(initialState.event.repeatType),
-      repeatEndType: normalizeRepeatEndType(initialState.event.repeatEndType),
+      repeatType,
+      repeatEndType,
       rrule: initialState.event.rrule,
       freq: baseRule?.options.freq || Frequency.DAILY,
       interval: baseRule?.options.interval || 1,
-      count: baseRule?.options.count || null,
+      count:
+        repeatEndType === "AFTER"
+          ? normalizeRepeatCount(baseRule?.options.count)
+          : baseRule?.options.count || null,
       byweekday,
       bymonth: baseRule?.options.bymonth,
       bymonthday: baseRule?.options.bymonthday,
