@@ -59,7 +59,6 @@ export const Editor: FC = () => {
           enabled={allDay}
           onClick={(enabled) => dispatch(eventActions.setAllDay({ enabled, eventDuration }))}
         />
-
         <DatePicker
           id={startId}
           label="Starts"
@@ -81,7 +80,6 @@ export const Editor: FC = () => {
             timeIntervals: timeInterval,
           }}
         />
-
         <DatePicker
           id={endId}
           label="Ends"

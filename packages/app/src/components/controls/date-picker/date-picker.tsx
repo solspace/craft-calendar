@@ -4,7 +4,7 @@ import DatePickerControl, { type DatePickerProps } from "react-datepicker";
 import styled from "styled-components";
 import { Control, type ControlProps } from "../control";
 
-import CalendarIcon from "./calendar.icon.svg";
+import { CalendarIcon } from "./calendar.icon";
 import "react-datepicker/dist/react-datepicker.css";
 
 export { CalendarIcon as Icon };

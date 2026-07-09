@@ -3,8 +3,8 @@ import type { AppDispatch } from "@event-builder/store/store";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-import DownIcon from "./icon.down.svg";
-import UpIcon from "./icon.up.svg";
+import { DownIcon } from "./icon.down";
+import { UpIcon } from "./icon.up";
 
 type Props = {
   noun?: string;

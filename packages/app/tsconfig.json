@@ -4,9 +4,11 @@
     "outDir": "../plugin/src/Resources/js/app/",
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM"],
+    "target": "ES2020",
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "types": ["node", "jquery"],
     "typeRoots": ["config/@types", "./node_modules/@types", "../../node_modules/@types"],
     "paths": {

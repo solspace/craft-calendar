@@ -2,9 +2,11 @@
   "name": "root",
   "private": true,
   "description": "Calendar plugin for Craft",
+  "engines": {
+    "pnpm": ">=11"
+  },
   "workspaces": [
     "packages/app",
-    "packages/scripts",
     "packages/styles"
   ],
   "dependencies": {
@@ -12,14 +14,15 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",
+    "concurrently": "^10.0.3",
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "dev": "npm run dev --workspace @cal/app & npm run dev --workspace @cal/scripts & npm run dev --workspace @cal/styles & wait",
-    "build": "npm run build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "lint:fix": "npm run lint:fix --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "dev": "concurrently -n app,styles \"pnpm --filter @cal/app dev\" \"pnpm --filter @cal/styles dev\"",
+    "build": "pnpm -r --if-present build",
+    "lint": "pnpm -r --if-present lint",
+    "lint:fix": "pnpm -r --if-present lint:fix",
+    "test": "pnpm -r --if-present test"
   },
   "author": "Solspace, Inc.",
   "license": "ISC"
