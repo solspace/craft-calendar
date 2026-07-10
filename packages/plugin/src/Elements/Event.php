@@ -1242,10 +1242,6 @@ class Event extends Element implements \JsonSerializable
             return $fallback;
         }
 
-        if ($value instanceof \DateTimeInterface) {
-            return new Carbon($value->format('Y-m-d H:i:s'), DateHelper::UTC);
-        }
-
         if (\is_array($value)) {
             $date = (string) ($value['date'] ?? '');
             $time = (string) ($value['time'] ?? '');
@@ -1256,19 +1252,11 @@ class Event extends Element implements \JsonSerializable
             }
         }
 
-        if (\is_numeric($value)) {
-            return Carbon::createFromTimestampUTC((int) $value);
+        try {
+            return DateHelper::parseFloatingCarbon($value);
+        } catch (\Throwable) {
+            return $fallback;
         }
-
-        if (\is_string($value)) {
-            try {
-                return new Carbon($value, DateHelper::UTC);
-            } catch (\Throwable) {
-                return $fallback;
-            }
-        }
-
-        return $fallback;
     }
 
     private function getOverlapThreshold(): int

@@ -262,7 +262,7 @@ class EventsApiController extends BaseController
         }
 
         try {
-            $date = new Carbon((string) $value, DateHelper::UTC);
+            $date = DateHelper::parseFloatingCarbon($value);
         } catch (\Throwable) {
             throw new BadRequestHttpException(
                 Calendar::t('Date value is invalid "{date}"', ['date' => $value])

@@ -65,6 +65,27 @@ class DateHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider floatingCarbonDataProvider
+     */
+    public function testParseFloatingCarbonPreservesWallTime(mixed $input, string $expected): void
+    {
+        self::assertSame($expected, DateHelper::parseFloatingCarbon($input)->toDateTimeString());
+    }
+
+    public function floatingCarbonDataProvider(): array
+    {
+        return [
+            ['2024-01-20', '2024-01-20 00:00:00'],
+            ['2024-01-20T06:30:15', '2024-01-20 06:30:15'],
+            ['2024-01-20T06:30:15Z', '2024-01-20 06:30:15'],
+            ['2024-01-20T06:30:15+02:00', '2024-01-20 06:30:15'],
+            ['2024-01-20 06:30:15-0500', '2024-01-20 06:30:15'],
+            [1705732215, '2024-01-20 06:30:15'],
+            [new \DateTime('2024-01-20 06:30:15', new \DateTimeZone('Europe/Riga')), '2024-01-20 06:30:15'],
+        ];
+    }
+
+    /**
      * @dataProvider diffInMonthsDataProvider
      */
     public function testDiffInMonths(string $dateStringA, string $dateStringB, int $expectedResult): void

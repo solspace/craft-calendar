@@ -1,4 +1,4 @@
-import { utcDateKey } from "@cal/utils/date";
+import { utcDateKey, utcDateTimeString } from "@cal/utils/date";
 import { craftFetch } from "@cal/utils/http";
 import type { EventApi, EventInput, EventSourceFunc } from "@fullcalendar/core";
 
@@ -80,10 +80,10 @@ const serializeEventDate = (value: Date | null, allDay: boolean): string | null 
   }
 
   if (allDay) {
-    return value.toISOString().slice(0, 10);
+    return utcDateKey(value);
   }
 
-  return value.toISOString();
+  return utcDateTimeString(value);
 };
 
 const diffSeconds = (next: Date | null, previous: Date | null): number | null => {

@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Transformers;
 
+use Carbon\Carbon;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -22,8 +23,8 @@ class FullCalTransformer
             'slug' => $element->slug,
             'url' => $element->getCpEditUrl(),
 
-            'start' => $element->startDate,
-            'end' => $element->endDate,
+            'start' => $this->formatFloatingDate($element->startDate, (bool) $element->allDay),
+            'end' => $this->formatFloatingDate($element->endDate, (bool) $element->allDay),
             'allDay' => $element->allDay,
             'multiDay' => $element->isMultiDay(),
             'repeats' => $element->isRepeating(),
@@ -60,8 +61,8 @@ class FullCalTransformer
             'slug' => $model->event->slug,
             'url' => $model->event->getCpEditUrl(),
 
-            'start' => $model->startDate,
-            'end' => $model->endDate,
+            'start' => $this->formatFloatingDate($model->startDate, $model->allDay),
+            'end' => $this->formatFloatingDate($model->endDate, $model->allDay),
             'allDay' => $model->allDay,
             'multiDay' => $model->event->isMultiDay(),
             'repeats' => $model->event->isRepeating(),
@@ -79,5 +80,10 @@ class FullCalTransformer
     public function fromArray(array $data): array
     {
         return $data;
+    }
+
+    private function formatFloatingDate(Carbon $date, bool $allDay): string
+    {
+        return $date->format($allDay ? 'Y-m-d' : 'Y-m-d\TH:i:s');
     }
 }

@@ -1,90 +1,165 @@
-import { setHours, setMilliseconds, setMinutes, setSeconds } from "date-fns";
+import { Temporal } from "temporal-polyfill";
+
+/*
+ * Calendar times are floating wall times: 09:00 stays 09:00 for everyone.
+ *
+ * FullCalendar, react-datepicker, and rrule still require JS Date objects, so this module uses
+ * "UTC-carrier" Dates at those boundaries. A UTC-carrier Date is not an instant; its UTC fields
+ * carry the floating calendar date/time.
+ */
 
 const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
 const WALL_TIME_WITH_OPTIONAL_ZONE =
-  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?$/;
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(\.\d{1,3})?)?(?:Z|[+-]\d{2}:?\d{2})?$/;
 
-const toDate = (value: Date | string): Date =>
-  typeof value === "string" ? new Date(value) : value;
+type FloatingPlainDate = Temporal.PlainDate;
+type FloatingPlainDateTime = Temporal.PlainDateTime;
 
-/**
- * Converts a date or date string to a Date object in UTC.
- * If the input is a date-only string (YYYY-MM-DD), it will be treated as UTC midnight of that date.
- * If the input is a wall time string with an optional time zone, it will be parsed accordingly.
- * For other date strings, it will be parsed by the Date constructor and then converted to UTC.
- */
-export const UTCify = (value: Date | string): Date => {
-  if (typeof value === "string") {
-    const dateOnlyMatch = value.match(DATE_ONLY);
-    if (dateOnlyMatch) {
-      const [, year, month, day] = dateOnlyMatch;
+const pad = (value: number): string => String(value).padStart(2, "0");
 
-      return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 0, 0, 0, 0));
-    }
+const formatPlainDate = (date: FloatingPlainDate): string =>
+  `${date.year}-${pad(date.month)}-${pad(date.day)}`;
 
-    const match = value.match(WALL_TIME_WITH_OPTIONAL_ZONE);
+const formatPlainDateTime = (date: FloatingPlainDateTime): string =>
+  `${date.year}-${pad(date.month)}-${pad(date.day)}T${pad(date.hour)}:${pad(date.minute)}:${pad(date.second)}`;
 
-    if (match) {
-      const [, year, month, day, hour, minute, second = "0", fraction = ""] = match;
-      const milliseconds = fraction ? Number(fraction.slice(1).padEnd(3, "0")) : 0;
-
-      return new Date(
-        Date.UTC(
-          Number(year),
-          Number(month) - 1,
-          Number(day),
-          Number(hour),
-          Number(minute),
-          Number(second),
-          milliseconds,
-        ),
-      );
-    }
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      throw new Error(`Invalid date string passed to UTCify: ${value}`);
-    }
-  }
-
-  const date = toDate(value);
-
-  return new Date(
-    Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      date.getMinutes(),
-      date.getSeconds(),
-      date.getMilliseconds(),
-    ),
+const localDisplayDateToFloatingDateTime = (date: Date): FloatingPlainDateTime =>
+  new Temporal.PlainDateTime(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    date.getMilliseconds(),
   );
-};
 
-/**
- * Converts a date or date string to a Date object in UTC, treating date-only inputs as UTC midnight.
- * This is useful for cases where you want to ensure that a date-only value is always interpreted as UTC,
- * regardless of the local time zone.
- */
-export const UTCifyDateOnly = (value: Date | string): Date => {
-  const date = setHours(setMinutes(setSeconds(setMilliseconds(value, 0), 0), 0), 0);
-
-  return UTCify(date);
-};
-
-export const utcToLocalDisplayDate = (value: Date | string): Date => {
-  const date = toDate(value);
-
-  return new Date(
+const utcCarrierDateToFloatingDateTime = (date: Date): FloatingPlainDateTime =>
+  new Temporal.PlainDateTime(
     date.getUTCFullYear(),
-    date.getUTCMonth(),
+    date.getUTCMonth() + 1,
     date.getUTCDate(),
     date.getUTCHours(),
     date.getUTCMinutes(),
     date.getUTCSeconds(),
     date.getUTCMilliseconds(),
   );
+
+const floatingDateTimeToUtcCarrierDate = (date: FloatingPlainDateTime): Date =>
+  new Date(
+    Date.UTC(
+      date.year,
+      date.month - 1,
+      date.day,
+      date.hour,
+      date.minute,
+      date.second,
+      date.millisecond,
+    ),
+  );
+
+const floatingDateTimeToLocalDisplayDate = (date: FloatingPlainDateTime): Date =>
+  new Date(
+    date.year,
+    date.month - 1,
+    date.day,
+    date.hour,
+    date.minute,
+    date.second,
+    date.millisecond,
+  );
+
+const parseFloatingDateString = (value: string): FloatingPlainDate | null => {
+  const match = value.match(DATE_ONLY);
+  if (!match) {
+    return null;
+  }
+
+  const [, year, month, day] = match;
+
+  return new Temporal.PlainDate(Number(year), Number(month), Number(day));
+};
+
+const parseFloatingDateTimeString = (value: string): FloatingPlainDateTime | null => {
+  const date = parseFloatingDateString(value);
+  if (date) {
+    return date.toPlainDateTime();
+  }
+
+  const match = value.match(WALL_TIME_WITH_OPTIONAL_ZONE);
+  if (!match) {
+    return null;
+  }
+
+  const [, year, month, day, hour, minute, second = "0", fraction = ""] = match;
+  const millisecond = fraction ? Number(fraction.slice(1).padEnd(3, "0")) : 0;
+
+  return new Temporal.PlainDateTime(
+    Number(year),
+    Number(month),
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second),
+    millisecond,
+  );
+};
+
+const toFloatingDateTime = (value: Date | string): FloatingPlainDateTime => {
+  if (typeof value !== "string") {
+    return localDisplayDateToFloatingDateTime(value);
+  }
+
+  const floatingDateTime = parseFloatingDateTimeString(value);
+  if (floatingDateTime) {
+    return floatingDateTime;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Invalid date string passed to toFloatingDateTime: ${value}`);
+  }
+
+  return localDisplayDateToFloatingDateTime(parsed);
+};
+
+const toFloatingDate = (value: Date | string): FloatingPlainDate =>
+  toFloatingDateTime(value).toPlainDate();
+
+// UTC-carrier bridge for libraries that still require JS Date objects.
+
+/**
+ * Converts a floating wall time into a UTC-carrier Date.
+ * The returned Date is not an instant; its UTC fields carry the calendar wall time.
+ */
+export const UTCify = (value: Date | string): Date =>
+  floatingDateTimeToUtcCarrierDate(toFloatingDateTime(value));
+
+/**
+ * Converts a floating date into a UTC-carrier Date at midnight.
+ */
+export const UTCifyDateOnly = (value: Date | string): Date => {
+  const date = toFloatingDate(value);
+
+  return floatingDateTimeToUtcCarrierDate(date.toPlainDateTime());
+};
+
+// Display bridge for date-picker controls.
+
+export const utcToLocalDisplayDate = (value: Date | string): Date => {
+  if (typeof value === "string") {
+    const floatingDateTime = parseFloatingDateTimeString(value);
+    if (floatingDateTime) {
+      return floatingDateTimeToLocalDisplayDate(floatingDateTime);
+    }
+  }
+
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid date string passed to utcToLocalDisplayDate: ${value}`);
+  }
+
+  return floatingDateTimeToLocalDisplayDate(utcCarrierDateToFloatingDateTime(date));
 };
 
 export const utcTimestampToLocalDisplayDate = (timestamp: number): Date =>
@@ -92,6 +167,11 @@ export const utcTimestampToLocalDisplayDate = (timestamp: number): Date =>
 
 export const localDisplayDateToUtcTimestamp = (value: Date): number =>
   Math.floor(UTCify(value).getTime() / 1000);
+
+// API/query serialization helpers.
+
+export const utcDateTimeString = (date: Date): string =>
+  formatPlainDateTime(utcCarrierDateToFloatingDateTime(date));
 
 export const utcDateKey = (date: Date | string): string => {
   if (typeof date === "string") {
@@ -109,31 +189,19 @@ export const utcDateKey = (date: Date | string): string => {
     throw new Error(`Invalid date string passed to utcDateKey: ${date}`);
   }
 
-  const year = String(date.getUTCFullYear());
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  return formatPlainDate(utcCarrierDateToFloatingDateTime(date).toPlainDate());
 };
 
 export const utcDatePath = (date: Date): string => utcDateKey(date).replaceAll("-", "/");
 
+// UTC-carrier date arithmetic.
+
 export const shiftUtcDateByDays = (date: Date, days: number): Date =>
-  new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate() + days,
-      date.getUTCHours(),
-      date.getUTCMinutes(),
-      date.getUTCSeconds(),
-      date.getUTCMilliseconds(),
-    ),
-  );
+  floatingDateTimeToUtcCarrierDate(utcCarrierDateToFloatingDateTime(date).add({ days }));
 
 export const utcDifferenceInDays = (start: Date, end: Date): number => {
-  const startTime = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
-  const endTime = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
+  const startDate = utcCarrierDateToFloatingDateTime(start).toPlainDate();
+  const endDate = utcCarrierDateToFloatingDateTime(end).toPlainDate();
 
-  return Math.round((endTime - startTime) / (24 * 60 * 60 * 1000));
+  return startDate.until(endDate).days;
 };

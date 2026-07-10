@@ -41,6 +41,36 @@ class DateHelper
         return new Carbon($date->toDateTimeString());
     }
 
+    public static function parseFloatingCarbon(mixed $value): Carbon
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return new Carbon($value->format('Y-m-d H:i:s'), self::UTC);
+        }
+
+        if (\is_numeric($value)) {
+            return Carbon::createFromTimestampUTC((int) $value);
+        }
+
+        if (!\is_string($value)) {
+            throw new \InvalidArgumentException(\sprintf(
+                'Invalid floating date value type: %s',
+                \is_object($value) ? $value::class : \gettype($value),
+            ));
+        }
+
+        $value = trim($value);
+        if ('' === $value) {
+            throw new \InvalidArgumentException('Invalid empty floating date value');
+        }
+
+        $floatingDate = self::parseFloatingDateString($value);
+        if ($floatingDate instanceof Carbon) {
+            return $floatingDate;
+        }
+
+        return new Carbon($value, self::UTC);
+    }
+
     public static function getCurrentWeekDay(Carbon $date): string
     {
         $weekDays = array_keys(self::$weekDays);
@@ -383,6 +413,34 @@ class DateHelper
         $appended = [self::FLOATING_TIMEZONE => 'Floating Timezone (recommended)'];
 
         return array_merge($appended, $timezoneOptions);
+    }
+
+    private static function parseFloatingDateString(string $value): ?Carbon
+    {
+        if (!preg_match(
+            '/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/',
+            $value,
+            $matches,
+        )) {
+            return null;
+        }
+
+        $dateTime = \sprintf(
+            '%04d-%02d-%02d %02d:%02d:%02d',
+            (int) $matches[1],
+            (int) $matches[2],
+            (int) $matches[3],
+            isset($matches[4]) && '' !== $matches[4] ? (int) $matches[4] : 0,
+            isset($matches[5]) && '' !== $matches[5] ? (int) $matches[5] : 0,
+            isset($matches[6]) && '' !== $matches[6] ? (int) $matches[6] : 0,
+        );
+
+        $date = Carbon::createFromFormat('!Y-m-d H:i:s', $dateTime, self::UTC);
+        if (!$date instanceof Carbon || $date->format('Y-m-d H:i:s') !== $dateTime) {
+            throw new \InvalidArgumentException(\sprintf('Invalid floating date value: %s', $value));
+        }
+
+        return $date;
     }
 
     /**
