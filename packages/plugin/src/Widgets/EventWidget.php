@@ -48,13 +48,15 @@ class EventWidget extends AbstractWidget
         }
 
         \Craft::$app->view->registerAssetBundle(WidgetEventsBundle::class);
+        $currentSiteId = \Craft::$app->sites->currentSite->id;
 
         return \Craft::$app->view->renderTemplate(
             'calendar/_widgets/event/body',
             [
                 'event' => Event::create(),
                 'configuration' => [
-                    'calendars' => Calendar::getInstance()->calendars->getAllAllowedCalendarTitles(),
+                    'calendars' => Calendar::getInstance()->calendars->getAllAllowedCalendarTitles($currentSiteId),
+                    'currentSiteId' => $currentSiteId,
                     'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
                     'formats' => DateFormatHelper::toConfig(),
                     'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),

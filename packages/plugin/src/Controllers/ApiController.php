@@ -9,7 +9,6 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
-use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -110,14 +109,14 @@ class ApiController extends BaseController
             default => Element::SCENARIO_ESSENTIALS,
         };
 
-        $siteId = $request->post('siteId') ?? \Craft::$app->sites->currentSite->id;
-        $calendarId = $request->post('calendarId') ?? Calendar::getInstance()->calendars->getFirstCalendarId();
+        $siteId = $this->resolveEventSiteId($request->post('siteId'));
+        $calendar = $this->resolveEventCalendar($request->post('calendarId'), $siteId);
         $refDate = new Carbon('now');
 
-        $event = Event::create($siteId, $calendarId);
-        $event->setScenario($scenario);
+        $this->getEventsService()->requireEventCreatePermissions($calendar);
 
-        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+        $event = Event::create($siteId, $calendar->id);
+        $event->setScenario($scenario);
 
         $start = $request->post('start');
         $end = $request->post('end');

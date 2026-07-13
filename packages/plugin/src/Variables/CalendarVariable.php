@@ -90,10 +90,19 @@ class CalendarVariable
     public function event(int|string $id, array $options = []): ?Event
     {
         if ('new' === $id) {
-            return Event::create(\Craft::$app->sites->currentSite->id);
+            return $this->createEvent();
         }
 
         return null;
+    }
+
+    public function createEvent(?int $siteId = null, ?int $calendarId = null): Event
+    {
+        if (!$siteId) {
+            $siteId = \Craft::$app->sites->currentSite->id;
+        }
+
+        return Event::create($siteId, $calendarId);
     }
 
     public function isExportEnabled(): bool

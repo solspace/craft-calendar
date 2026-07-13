@@ -7,7 +7,6 @@ use craft\base\Element;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
-use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\BadRequestHttpException;
@@ -29,27 +28,31 @@ class EventsApiController extends BaseController
 
         $request = \Craft::$app->request;
         $eventId = (int) $request->getBodyParam('eventId');
-        $siteId = $this->parseSiteId($request->getBodyParam('siteId'));
-        $calendarId = (int) $request->getBodyParam('calendarId');
+        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
+        $calendarId = $request->getBodyParam('calendarId');
 
         if ($eventId) {
             $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
             if (!$event) {
                 throw new NotFoundHttpException(Calendar::t('Event could not be found'));
             }
+
+            $this->getEventsService()->requireEventEditPermissions($event);
+
+            if ($calendarId) {
+                $calendar = $this->resolveEventCalendar($calendarId, $siteId);
+                if ((int) $calendar->id !== (int) $event->calendarId) {
+                    $this->getEventsService()->requireEventCreatePermissions($calendar);
+                    $event->calendarId = $calendar->id;
+                }
+            }
         } else {
-            $event = Event::create(
-                $siteId ?? \Craft::$app->sites->currentSite->id,
-                $calendarId ?: Calendar::getInstance()->calendars->getFirstCalendarId(),
-            );
+            $calendar = $this->resolveEventCalendar($calendarId, $siteId);
+            $this->getEventsService()->requireEventCreatePermissions($calendar);
+
+            $event = Event::create($siteId, $calendar->id);
             $event->setScenario(Element::SCENARIO_LIVE);
         }
-
-        if ($calendarId) {
-            $event->calendarId = $calendarId;
-        }
-
-        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
 
         $event->title = (string) $request->getBodyParam('title', $event->title);
         $slug = $request->getBodyParam('slug');
@@ -99,13 +102,13 @@ class EventsApiController extends BaseController
             return $this->asFailure(Calendar::t('Event ID is required'));
         }
 
-        $siteId = $this->parseSiteId($request->getBodyParam('siteId'));
+        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
         $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
         if (!$event) {
             return $this->asFailure(Calendar::t('Event could not be found'));
         }
 
-        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+        $this->getEventsService()->requireEventEditPermissions($event);
 
         $scope = $this->parseScope($request->getBodyParam('scope'));
         $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
@@ -150,13 +153,13 @@ class EventsApiController extends BaseController
             return $this->asFailure(Calendar::t('Event ID is required'));
         }
 
-        $siteId = $this->parseSiteId($request->getBodyParam('siteId'));
+        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
         $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
         if (!$event) {
             return $this->asFailure(Calendar::t('Event could not be found'));
         }
 
-        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+        $this->getEventsService()->requireEventEditPermissions($event);
 
         $scope = $this->parseScope($request->getBodyParam('scope'));
         if ($this->hasOccurrenceSchedule($event) && self::SCOPE_OCCURRENCE === $scope) {
@@ -187,13 +190,13 @@ class EventsApiController extends BaseController
             return $this->asFailure(Calendar::t('Event ID is required'));
         }
 
-        $siteId = $this->parseSiteId($request->getBodyParam('siteId'));
+        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
         $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
         if (!$event) {
             return $this->asFailure(Calendar::t('Event could not be found'));
         }
 
-        PermissionHelper::requireCalendarEditPermissions($event->getCalendar());
+        $this->getEventsService()->requireEventEditPermissions($event);
 
         $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
         $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
@@ -305,15 +308,6 @@ class EventsApiController extends BaseController
     private function parseScope(mixed $value): string
     {
         return self::SCOPE_OCCURRENCE === $value ? self::SCOPE_OCCURRENCE : self::SCOPE_SERIES;
-    }
-
-    private function parseSiteId(mixed $value): int
-    {
-        if (null === $value || '' === (string) $value) {
-            return \Craft::$app->sites->currentSite->id;
-        }
-
-        return (int) $value;
     }
 
     private function parseDeltaSeconds(

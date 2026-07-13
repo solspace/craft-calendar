@@ -1,4 +1,5 @@
 import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-picker";
+import { Dropdown } from "@cal/components/controls/dropdown/dropdown";
 import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { TextInput } from "@cal/components/controls/text-input/text-input";
 import {
@@ -14,7 +15,7 @@ import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import clsx from "clsx";
 import type { FC } from "react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { useConfig } from "../../context/config.context";
 import { useCreateEvent } from "./create-event.mutation";
@@ -35,8 +36,17 @@ export const PopoverCreateEvent: FC<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { formats, weekStartDay, eventDuration, timeInterval } = useConfig();
-  const { createEvent, isFetching } = useCreateEvent({
+  const { calendars, formats, weekStartDay, eventDuration, timeInterval } = useConfig();
+  const calendarOptions = useMemo(
+    () =>
+      Object.entries(calendars).map(([value, label]) => ({
+        value: Number(value),
+        label,
+      })),
+    [calendars],
+  );
+  const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
+  const { createEvent, error, isFetching } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
   });
@@ -73,6 +83,12 @@ export const PopoverCreateEvent: FC<Props> = ({
       </FlexTitle>
 
       <div>
+        <Dropdown
+          label={translate("Calendar")}
+          value={calendarId}
+          options={calendarOptions}
+          onChange={(value) => setCalendarId(Number(value))}
+        />
         <DatePicker
           label={translate("Start Date")}
           value={draft.start}
@@ -130,12 +146,14 @@ export const PopoverCreateEvent: FC<Props> = ({
 
       <hr />
 
+      {error && <p className="error">{error}</p>}
+
       <Flex>
         <button
           type="button"
           className={clsx("btn small submit", isFetching && "disabled")}
-          disabled={!draft.title || isFetching}
-          onClick={() => createEvent(draft)}
+          disabled={!draft.title || !calendarId || isFetching}
+          onClick={() => createEvent(draft, calendarId)}
         >
           {translate(isFetching ? "Creating Event..." : "Create Event")}
         </button>

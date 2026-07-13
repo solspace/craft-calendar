@@ -1,7 +1,7 @@
 {
   "package_name": "Calendar Demo Templates",
   "package_desc": "This package includes a set of sample templates that help demonstrate Calendar's abilities and get you better acquainted with it.",
-  "package_version": "1.0.0",
+  "package_version": "2.0.0",
   "vendor": "Solspace, Inc.",
   "vendor_url": "https://docs.solspace.com",
   "docs_url": "https://docs.solspace.com/craft/calendar/v6/"

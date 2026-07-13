@@ -5,6 +5,7 @@ import { generateUrl } from "@cal/utils/urls";
 import { useCallback, useState } from "react";
 import { clearCalendarEventsCache } from "../../calendar.events";
 import { useConfig } from "../../context/config.context";
+import { buildCreateEventPayload } from "./create-event.operations";
 
 type UseCreateEventOptions = {
   refetchEvents?: () => void;
@@ -15,16 +16,12 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
   const { hidePopover } = usePopover();
   const { currentSiteId } = useConfig();
   const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const createEvent = useCallback(
-    async (event: CalendarCreateDraft) => {
-      if (!event) {
-        return;
-      }
-
+    async (event: CalendarCreateDraft, calendarId: number) => {
       setIsFetching(true);
-
-      const { title, start, end, allDay } = event;
+      setError(null);
 
       try {
         const response = await craftFetch(generateUrl("/api/events"), {
@@ -32,17 +29,23 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            title: title || "New Event",
-            start,
-            end,
-            allDay,
-            siteId: currentSiteId,
-          }),
+          body: JSON.stringify(buildCreateEventPayload(event, calendarId, currentSiteId)),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to create event");
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            // The fallback below handles non-JSON error responses.
+          }
+
+          let message = payload?.message || "Failed to create event";
+          if (Array.isArray(payload?.errors)) {
+            message = payload.errors.join(" ");
+          }
+
+          throw new Error(message);
         }
 
         await response.json();
@@ -52,7 +55,11 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
         onSuccess?.();
         hidePopover();
       } catch (error) {
-        console.error("Error creating event:", error);
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Failed to create event");
+        }
       } finally {
         setIsFetching(false);
       }
@@ -62,6 +69,7 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
 
   return {
     createEvent,
+    error,
     isFetching,
   };
 };

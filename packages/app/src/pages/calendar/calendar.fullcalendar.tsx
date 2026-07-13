@@ -82,7 +82,9 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
     timeInterval,
     canEditEvents,
     isDragAndDropEnabled,
+    isQuickCreateEnabled,
   } = useConfig();
+  const canCreateEvents = canEditEvents && isQuickCreateEnabled;
 
   const calendar = useRef<FullCalendar>(null);
   const calendarFilterKey = hiddenCalendarIds.join(",");
@@ -339,14 +341,14 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
         fixedWeekCount
         dayMaxEventRows
         editable={canEditEvents && isDragAndDropEnabled}
-        selectable
+        selectable={canCreateEvents}
         selectMirror={false}
         selectMinDistance={5}
         slotDuration={timeIntervalDuration}
         snapDuration={timeIntervalDuration}
         navLinks
         navLinkDayClick={handleNavLinkDayClick}
-        select={handleDraftSelection}
+        select={canCreateEvents ? handleDraftSelection : undefined}
         dayHeaderClassNames={getDayHeaderClassNames}
         dayHeaderContent={renderDayHeaderContent}
         events={events}

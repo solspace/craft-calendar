@@ -303,46 +303,59 @@ footer p {
 	background-color: #fcf8e4;
 }
 
-.freq-list input[type=checkbox] {
-	display: none;
+.event-editor-card {
+	padding: 1.25rem;
+	margin-bottom: 1.5rem;
+	background: #f8f9fa;
+	border: 1px solid #e2e5e8;
+	border-radius: 0.35rem;
 }
 
-.freq-list input[type=checkbox] + label {
-	display: inline-block;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-
-	cursor: pointer;
-
-	width: 30px;
-	height: 30px;
-	padding: 3px 0 0;
-
-	border-radius: 4px;
-
-	background: #ebebeb;
-	text-align: center;
-	font-weight: normal;
+.event-editor-card legend {
+	width: auto;
+	padding: 0 0.4rem;
+	margin-left: -0.4rem;
+	font-size: 1rem;
+	font-weight: 600;
 }
 
-.freq-list input[type=checkbox]:checked + label {
-	background: #c8c8c8;
-	color: #FFF;
+.fixed-date-manager {
+	padding-top: 1rem;
+	margin-top: 1rem;
+	border-top: 1px solid #dee2e6;
 }
 
-.freq-list.freq-list-large input[type=checkbox] + label {
-	display: block;
-	width: 100%;
-	padding: 3px 10px 0;
+.fixed-date-manager h3 {
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-transform: uppercase;
 }
 
-.freq-list.freq-list-large > div div.row {
-	margin-left: -2px;
-	margin-right: -2px;
+.fixed-date-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	padding: 0;
+	margin: 0;
+	list-style: none;
 }
 
-.freq-list.freq-list-large > div div.col-xs-4 {
-	padding-left: 2px;
-	padding-right: 2px;
+.fixed-date-list li {
+	display: inline-flex;
+	align-items: center;
+	padding-left: 0.65rem;
+	font-family: monospace;
+	background: #fff;
+	border: 1px solid #dee2e6;
+	border-radius: 0.25rem;
+}
+
+@media (max-width: 575.98px) {
+	.event-editor-card {
+		padding: 1rem;
+	}
+
+	.event-editor-card [data-time-field] {
+		margin-top: 0.5rem;
+	}
 }

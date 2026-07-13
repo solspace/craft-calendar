@@ -52,9 +52,10 @@ class AppController extends BaseController
         $language = \Craft::$app->sites->currentSite->language;
         $language = str_replace('_', '-', strtolower($language));
 
-        $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles();
+        $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
 
         $configuration = [
+            'calendars' => $calendarOptions,
             'formats' => DateFormatHelper::toConfig(),
             'siteMap' => $siteMap,
             'language' => $language,

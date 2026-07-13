@@ -32,6 +32,7 @@ use Solspace\Calendar\Library\Duration\EventDuration;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\RRule\EventRecurrenceValidator;
 use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
 use Solspace\Calendar\Models\CalendarModel;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -50,6 +51,10 @@ class Event extends Element implements \JsonSerializable
     public const REPEAT_MONTHLY = 'MONTHLY';
     public const REPEAT_YEARLY = 'YEARLY';
     public const REPEAT_CUSTOM = 'CUSTOM';
+
+    public const REPEAT_END_NEVER = 'NEVER';
+    public const REPEAT_END_AFTER = 'AFTER';
+    public const REPEAT_END_ON_DATE = 'ON_DATE';
 
     public const SPAN_LIMIT_DAYS = 365;
 
@@ -77,8 +82,8 @@ class Event extends Element implements \JsonSerializable
     public ?string $timezone = null;
 
     public ?string $rrule = null;
-    public ?string $repeatType = null;
-    public ?string $repeatEndType = null;
+    public ?string $repeatType = self::REPEAT_NEVER;
+    public ?string $repeatEndType = self::REPEAT_END_NEVER;
     public ?bool $allDay = null;
     public ?string $freq = null;
     public ?int $interval = null;
@@ -86,8 +91,29 @@ class Event extends Element implements \JsonSerializable
 
     private bool $syncFromRequestOnSave = true;
 
+    private ?int $persistedCalendarId = null;
+
+    private ?string $persistedRRule = null;
+
+    private ?string $persistedRepeatType = null;
+
+    private ?string $persistedRepeatEndType = null;
+
     public function __construct($config = [])
     {
+        if (\is_array($config) && !empty($config['id'])) {
+            if (isset($config['calendarId'])) {
+                $this->persistedCalendarId = (int) $config['calendarId'];
+            }
+
+            $this->persistedRRule = self::normalizeRRule(
+                $config['rrule'] ?? null,
+                (bool) ($config['allDay'] ?? false),
+            );
+            $this->persistedRepeatType = $config['repeatType'] ?? null;
+            $this->persistedRepeatEndType = $config['repeatEndType'] ?? null;
+        }
+
         foreach (self::CARBON_PROPERTIES as $property) {
             if (isset($config[$property]) && \is_string($config[$property])) {
                 $config[$property] = new Carbon($config[$property]);
@@ -629,20 +655,23 @@ class Event extends Element implements \JsonSerializable
         $start = $this->bodyParamToCarbon('start', $this->startDate, 'startDate', $timezone);
         $end = $this->bodyParamToCarbon('end', $this->endDate, 'endDate', $timezone);
         $until = $this->bodyParamToCarbon('until', $this->until, null, $timezone);
+        if ('' === $request->getBodyParam('until')) {
+            $until = null;
+        }
 
         $allDay = (bool) $request->getBodyParam('allDay', $this->allDay);
 
         $repeatType = $request->getBodyParam('repeatType', $this->repeatType);
         $repeatEndType = $request->getBodyParam('repeatEndType', $this->repeatEndType);
         $rrule = $request->getBodyParam('rrule', $this->rrule);
-        if ($allDay && \is_string($rrule)) {
-            $rrule = RRuleStringNormalizer::normalizeAllDayRRule($rrule);
+        if (\is_string($rrule)) {
+            $rrule = self::normalizeRRule($rrule, $allDay);
         }
 
         $this->startDate = $start;
         $this->endDate = $end;
         $this->until = $until;
-        $this->timezone = '' !== $timezone ? $timezone : null;
+        $this->timezone = $timezone;
         $this->allDay = $allDay;
 
         $this->repeatType = $repeatType;
@@ -691,6 +720,11 @@ class Event extends Element implements \JsonSerializable
         }
 
         parent::afterSave($isNew);
+
+        $this->persistedCalendarId = $this->calendarId;
+        $this->persistedRRule = self::normalizeRRule($this->rrule, $this->isAllDay());
+        $this->persistedRepeatType = $this->repeatType;
+        $this->persistedRepeatEndType = $this->repeatEndType;
     }
 
     public function getFieldLayout(): ?FieldLayout
@@ -782,8 +816,39 @@ class Event extends Element implements \JsonSerializable
         $rules = parent::rules();
         $rules[] = [['startDate'], 'validateDates'];
         $rules[] = [['startDate', 'endDate'], 'required'];
+        $rules[] = [['rrule'], 'validateRecurrence', 'skipOnEmpty' => false];
 
         return $rules;
+    }
+
+    public function validateRecurrence(): void
+    {
+        if (!$this->hasRecurrenceChanged()) {
+            return;
+        }
+
+        $validator = new EventRecurrenceValidator();
+        $errors = $validator->validate($this->repeatType, $this->repeatEndType, $this->rrule);
+
+        foreach ($errors as $attribute => $messages) {
+            foreach ($messages as $message) {
+                $this->addError($attribute, Calendar::t($message));
+            }
+        }
+
+        if ($errors || !$this->rrule) {
+            return;
+        }
+
+        $plugin = Calendar::getInstance();
+        if (!$plugin->isPro()) {
+            $this->addError('rrule', Calendar::t('Repeating events require Calendar Pro.'));
+        }
+
+        $calendar = $plugin->calendars->getCalendarById($this->calendarId);
+        if ($calendar && !$calendar->allowRepeatingEvents) {
+            $this->addError('rrule', Calendar::t('Repeating events are not allowed in the selected calendar.'));
+        }
     }
 
     public function validateDates(): void
@@ -1267,6 +1332,36 @@ class Event extends Element implements \JsonSerializable
         }
 
         return $overlapThreshold;
+    }
+
+    private function hasRecurrenceChanged(): bool
+    {
+        if (!$this->id) {
+            return true;
+        }
+
+        return $this->persistedCalendarId !== $this->calendarId
+            || $this->persistedRRule !== self::normalizeRRule($this->rrule, $this->isAllDay())
+            || $this->persistedRepeatType !== $this->repeatType
+            || $this->persistedRepeatEndType !== $this->repeatEndType;
+    }
+
+    private static function normalizeRRule(?string $rrule, bool $allDay): ?string
+    {
+        if (!$rrule) {
+            return null;
+        }
+
+        $rrule = str_replace(["\r\n", "\r"], "\n", trim($rrule));
+        if (!$rrule) {
+            return null;
+        }
+
+        if ($allDay) {
+            return RRuleStringNormalizer::normalizeAllDayRRule($rrule);
+        }
+
+        return $rrule;
     }
 
     /**

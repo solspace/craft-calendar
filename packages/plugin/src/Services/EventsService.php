@@ -23,7 +23,9 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Models\CalendarModel;
 use yii\base\Exception;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 
 class EventsService extends Component
@@ -300,23 +302,48 @@ class EventsService extends Component
 
     public function canEditEvent(Event|int $event): bool
     {
-        /** @var SettingsService $settings */
-        $settings = Calendar::getInstance()->settings;
-        $settingsModel = $settings->getSettingsModel();
-        $guestAccess = $settingsModel->guestAccess;
-
-        $eventModel = null;
         if ($event instanceof Event) {
             $eventModel = $event;
-        } elseif (is_numeric($event)) {
-            $eventModel = $this->getEventById($event);
+        } else {
+            $eventModel = $this->getEventById($event, null, true);
         }
 
-        if ((null === $eventModel || !$eventModel->id) && null !== $guestAccess) {
-            return true;
+        if (!$eventModel) {
+            return false;
         }
 
-        return PermissionHelper::canEditEvent($event);
+        if (!$eventModel->id) {
+            $calendar = Calendar::getInstance()->calendars->getCalendarById($eventModel->calendarId);
+
+            return $calendar && $this->canCreateEvent($calendar);
+        }
+
+        if (!\Craft::$app->request->getIsConsoleRequest() && !\Craft::$app->getUser()->getId()) {
+            return false;
+        }
+
+        return PermissionHelper::canEditEvent($eventModel);
+    }
+
+    public function canCreateEvent(CalendarModel|int $calendar): bool
+    {
+        if (\is_int($calendar)) {
+            $calendar = Calendar::getInstance()->calendars->getCalendarById($calendar);
+        }
+
+        if (!$calendar) {
+            return false;
+        }
+
+        return PermissionHelper::canEditCalendar($calendar)
+            || Calendar::getInstance()->calendars->isCalendarPublic($calendar);
+    }
+
+    public function requireEventCreatePermissions(CalendarModel|int $calendar): void
+    {
+        if (!$this->canCreateEvent($calendar)) {
+            throw new ForbiddenHttpException('User is not permitted to create events in this calendar');
+        }
     }
 
     /**
