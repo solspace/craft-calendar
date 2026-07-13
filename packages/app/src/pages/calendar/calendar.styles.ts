@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { datepickerIcon, refreshIcon, siteIcon } from "./calendar.style.icons";
+import { datepickerIcon, refreshIcon } from "./calendar.style.icons";
 
 export const CalendarBase = styled.div`
 
@@ -343,8 +343,20 @@ export const CalendarWrapper = styled(CalendarBase)`
     gap: 6px;
   }
 
+  .calendar-sitepicker-craft-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    line-height: 1;
+  }
+
+  .calendar-sitepicker-craft-icon::before {
+    font-size: 20px;
+  }
+
   .fc-icon.fc-icon {
-    &-site,
     &-refresh,
     &-datepicker {
       width: 20px;
@@ -357,10 +369,6 @@ export const CalendarWrapper = styled(CalendarBase)`
       &::before, &::after {
         content: none;
       }
-    }
-
-    &-site {
-      mask-image: url("${siteIcon}");
     }
 
     &-refresh {

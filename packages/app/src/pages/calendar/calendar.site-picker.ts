@@ -1,8 +1,27 @@
 import type { CalendarApi } from "@fullcalendar/core/index.js";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { clearCalendarEventsCache } from "./calendar.events";
 import type { CustomButtonInput } from "./calendar.types";
 import { useConfig } from "./context/config.context";
+
+const SITE_PICKER_BUTTON_SELECTOR = ".fc-sitepicker-button";
+const CRAFT_SITE_ICON_CLASS = "calendar-sitepicker-craft-icon";
+
+type MenuButton = {
+  showMenu: () => void;
+};
+
+const decorateSitePickerButtonIcon = (): void => {
+  const icon = document.querySelector<HTMLElement>(`${SITE_PICKER_BUTTON_SELECTOR} .fc-icon-site`);
+  if (!icon) {
+    return;
+  }
+
+  icon.classList.remove("fc-icon", "fc-icon-site");
+  icon.classList.add(CRAFT_SITE_ICON_CLASS);
+  icon.setAttribute("data-icon", "world");
+  icon.setAttribute("aria-hidden", "true");
+};
 
 type UseSitePickerResult = {
   hasSitePicker: boolean;
@@ -18,6 +37,20 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
   const hasSite = selectedSiteId && !!siteMap?.[selectedSiteId];
   const sitePickerText = hasSite ? siteMap![selectedSiteId] : Craft.t("calendar", "Site Picker");
 
+  useEffect(() => {
+    if (!hasSitePicker) {
+      return undefined;
+    }
+
+    decorateSitePickerButtonIcon();
+
+    const root = document.querySelector("#calendar-app") ?? document.body;
+    const observer = new MutationObserver(decorateSitePickerButtonIcon);
+    observer.observe(root, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [hasSitePicker]);
+
   const sitePickerButton = useMemo<CustomButtonInput | undefined>(() => {
     if (!hasSitePicker) {
       return undefined;
@@ -27,8 +60,14 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
       text: sitePickerText,
       icon: "site",
       click: (event: MouseEvent, element: HTMLElement) => {
-        const siteButton = $(".fc-sitepicker-button");
-        if (siteButton.data("initialized") === undefined) {
+        const siteButton = $(element);
+        let menuButton = siteButton.data("menuButton") as MenuButton | undefined;
+
+        event.preventDefault();
+
+        if (!menuButton) {
+          siteButton.addClass("menubtn");
+
           const $menu = $("<div>", { class: "menu" }).insertAfter(element);
           const $siteUl = $("<ul>").appendTo($menu);
 
@@ -43,7 +82,7 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
               .appendTo($siteUl);
           }
 
-          new Garnish.MenuBtn(event.currentTarget as Element, {
+          menuButton = new Garnish.MenuBtn(element, {
             onOptionSelect: (target) => {
               const siteId = Number($(target).data("site-id"));
 
@@ -56,10 +95,12 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
               clearCalendarEventsCache();
               api.refetchEvents();
             },
-          }).showMenu();
+          });
 
-          siteButton.data("initialized", true);
+          siteButton.data("menuButton", menuButton);
         }
+
+        menuButton.showMenu();
       },
     };
   }, [hasSitePicker, siteEntries, sitePickerText, setCurrentSiteId, api]);
