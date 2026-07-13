@@ -10,6 +10,7 @@ import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import {
   buildOccurrenceDateForState,
   buildRRuleString,
+  removeMatchingDate,
 } from "@event-builder/store/event.slice.operations";
 import type { AppDispatch } from "@event-builder/store/store";
 import { endOfDay, startOfDay } from "date-fns";
@@ -110,7 +111,10 @@ export const useRRuleUpdates = () => {
 
     updateFixedDates(({ baseRule: nextBaseRule, rdates, exdates }) => ({
       baseRule: nextBaseRule,
-      rdates: type === "rdate" ? [...rdates, occurrenceDate] : rdates,
+      rdates:
+        type === "rdate"
+          ? [...rdates, occurrenceDate]
+          : removeMatchingDate(rdates, occurrenceDate.getTime()),
       exdates: type === "exdate" ? [...exdates, occurrenceDate] : exdates,
     }));
   };
@@ -121,10 +125,8 @@ export const useRRuleUpdates = () => {
 
     updateFixedDates(({ baseRule: nextBaseRule, rdates, exdates }) => ({
       baseRule: nextBaseRule,
-      rdates:
-        type === "rdate" ? rdates.filter((date) => date.getTime() !== occurrenceTime) : rdates,
-      exdates:
-        type === "exdate" ? exdates.filter((date) => date.getTime() !== occurrenceTime) : exdates,
+      rdates: type === "rdate" ? removeMatchingDate(rdates, occurrenceTime) : rdates,
+      exdates: type === "exdate" ? removeMatchingDate(exdates, occurrenceTime) : exdates,
     }));
   };
 

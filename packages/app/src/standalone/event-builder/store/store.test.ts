@@ -40,4 +40,17 @@ describe("createEventBuilderStore", () => {
     store.dispatch(eventActions.setCount(Number.NaN));
     expect(store.getState().event.count).toBe(1);
   });
+
+  it("removes custom occurrences when enabling a repeat rule", () => {
+    const config = baseConfig();
+    config.event.rrule = ["DTSTART:20260906T070000", "RDATE:20260913T070000,20260914T070000"].join(
+      "\n",
+    );
+    const store = createEventBuilderStore(config);
+
+    store.dispatch(eventActions.setRepeatType("DAILY"));
+
+    expect(store.getState().event.rrule).toContain("RRULE:FREQ=DAILY");
+    expect(store.getState().event.rrule).not.toContain("RDATE");
+  });
 });

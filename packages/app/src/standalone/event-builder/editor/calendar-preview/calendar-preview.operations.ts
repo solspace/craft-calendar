@@ -9,6 +9,7 @@ import {
   buildOccurrenceDateForState,
   buildRRuleString,
   type EventState,
+  removeMatchingDate,
 } from "@event-builder/store/event.slice.operations";
 import { addYears, format, startOfDay } from "date-fns";
 import type { RRule, RRuleSet } from "rrule";
@@ -178,17 +179,28 @@ export const buildNextRRuleForDateMutation = (
   const occurrenceDate = buildOccurrenceDateForState(state, timestamp);
   const occurrenceTime = occurrenceDate.getTime();
 
-  const next = mutateFixedDates(previewRecurrence, ({ baseRule, rdates, exdates }) => ({
-    baseRule,
-    rdates: buildNextFixedDateList(rdates, occurrenceDate, occurrenceTime, type === "rdate", add),
-    exdates: buildNextFixedDateList(
-      exdates,
+  const next = mutateFixedDates(previewRecurrence, ({ baseRule, rdates, exdates }) => {
+    const nextRDates = buildNextFixedDateList(
+      rdates,
       occurrenceDate,
       occurrenceTime,
-      type === "exdate",
+      type === "rdate",
       add,
-    ),
-  }));
+    );
+
+    return {
+      baseRule,
+      rdates:
+        type === "exdate" && add ? removeMatchingDate(nextRDates, occurrenceTime) : nextRDates,
+      exdates: buildNextFixedDateList(
+        exdates,
+        occurrenceDate,
+        occurrenceTime,
+        type === "exdate",
+        add,
+      ),
+    };
+  });
 
   return buildRRuleString(
     state,
@@ -223,7 +235,7 @@ const buildNextFixedDateList = (
     return [...dates, occurrenceDate];
   }
 
-  return dates.filter((date) => date.getTime() !== occurrenceTime);
+  return removeMatchingDate(dates, occurrenceTime);
 };
 
 const getMutableRDates = (previewRecurrence: PreviewRecurrence): Date[] => {

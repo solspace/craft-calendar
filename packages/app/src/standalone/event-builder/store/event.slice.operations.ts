@@ -78,6 +78,15 @@ export const rebuildRRule = (state: EventState) => {
   state.rrule = [...buildBaseLines(state, baseRRule), ...fixedDateLines].join("\n");
 };
 
+export const removeRDates = (rruleString?: string): string | undefined => {
+  const lines = rruleString?.split(/\r?\n/).filter((line) => !line.trim().startsWith("RDATE"));
+
+  return lines?.length ? lines.join("\n") : undefined;
+};
+
+export const removeMatchingDate = (dates: Date[], timestamp: number): Date[] =>
+  dates.filter((date) => date.getTime() !== timestamp);
+
 const buildBaseRRule = (state: EventState): RRule | null => {
   const { repeatEndType, allDay, interval, count } = state;
 

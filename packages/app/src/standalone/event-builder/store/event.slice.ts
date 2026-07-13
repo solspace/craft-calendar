@@ -8,6 +8,7 @@ import {
   type EventState,
   normalizeDays,
   rebuildRRule,
+  removeRDates,
   resetByRulesForFreq,
 } from "./event.slice.operations";
 import type { RootState } from "./store";
@@ -106,6 +107,10 @@ const eventBuilderSlice = createSlice({
       rebuildRRule(state);
     },
     setRepeatType: (state, action: PayloadAction<RepeatType>) => {
+      if (state.repeatType === "NEVER" && action.payload !== "NEVER") {
+        state.rrule = removeRDates(state.rrule);
+      }
+
       state.repeatType = action.payload;
       rebuildRRule(state);
     },
