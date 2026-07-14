@@ -167,7 +167,7 @@ class EventsService extends Component
     /**
      * @throws \Throwable
      */
-    public function deleteEventById(int $eventId): bool
+    public function deleteEventById(int $eventId, bool $hardDelete = false): bool
     {
         $event = $this->getEventById($eventId, null, true);
 
@@ -175,13 +175,13 @@ class EventsService extends Component
             return false;
         }
 
-        return $this->deleteEvent($event);
+        return $this->deleteEvent($event, $hardDelete);
     }
 
     /**
      * @throws \Throwable
      */
-    public function deleteEvent(Event $event): bool
+    public function deleteEvent(Event $event, bool $hardDelete = false): bool
     {
         $deleteEvent = new DeleteElementEvent($event);
         $this->trigger(self::EVENT_BEFORE_DELETE, $deleteEvent);
@@ -192,7 +192,7 @@ class EventsService extends Component
             $transaction = \Craft::$app->db->beginTransaction();
 
             try {
-                $isDeleted = \Craft::$app->elements->deleteElementById($event->id, Event::class);
+                $isDeleted = \Craft::$app->elements->deleteElement($event, $hardDelete);
 
                 if ($isDeleted) {
                     if (null !== $transaction) {
