@@ -45,8 +45,8 @@
       "_date-B-YCzvOK.js"
     ]
   },
-  "_rrule-DA1ZKeyl.js": {
-    "file": "assets/rrule-DA1ZKeyl.js",
+  "_rrule-CObB8Nrs.js": {
+    "file": "assets/rrule-CObB8Nrs.js",
     "name": "rrule"
   },
   "_text-input-DKVJyDnz.js": {
@@ -65,32 +65,32 @@
     ]
   },
   "src/index.tsx": {
-    "file": "assets/app-kwnCWfCf.js",
+    "file": "assets/app-D-_m9AU9.js",
     "name": "app",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-B-YCzvOK.js",
+      "_rrule-CObB8Nrs.js",
       "_components-DEesaL-G.js",
       "_dist-Dxlx9seu.js",
       "_interaction-D4ecfs1r.js",
       "_timegrid-CMqX77TR.js",
       "_calendar.styles-C7hcKdWQ.js",
-      "_text-input-DKVJyDnz.js",
-      "_rrule-DA1ZKeyl.js"
+      "_text-input-DKVJyDnz.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-lnVNBnu7.js",
+    "file": "assets/event-builder-CTsMlniQ.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-B-YCzvOK.js",
+      "_rrule-CObB8Nrs.js",
       "_components-DEesaL-G.js",
       "_dist-Dxlx9seu.js",
-      "_interaction-D4ecfs1r.js",
-      "_rrule-DA1ZKeyl.js"
+      "_interaction-D4ecfs1r.js"
     ]
   },
   "src/standalone/widgets/agenda/index.tsx": {

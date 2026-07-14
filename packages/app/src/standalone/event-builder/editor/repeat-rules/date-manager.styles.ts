@@ -86,12 +86,13 @@ export const CountBadge = styled.button`
 
 export const DatesPopover = styled.div`
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
   z-index: 20;
 
-  width: min(350px, 80vw);
+  box-sizing: border-box;
+  width: min(350px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
   padding: 14px;
+  overflow-y: auto;
 
   background: white;
   border: 1px solid var(--gray-250, var(--gray-200));

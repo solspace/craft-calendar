@@ -5,7 +5,7 @@ import clsx, { type ClassValue } from "clsx";
 import { startOfDay } from "date-fns";
 import { type FC, forwardRef, useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { useCloseOnOutsideInteraction } from "./date-manager.hooks";
+import { useCloseOnOutsideInteraction, useDatePopoverPosition } from "./date-manager.hooks";
 import {
   ActionButton,
   BadgeWrapper,
@@ -49,8 +49,15 @@ export const DateManager: FC<FixedDateManagerProps> = ({
   onRemove,
 }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const badgeRef = useRef(null);
-  const popoverRef = useRef(null);
+  const badgeWrapperRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const popoverPosition = useDatePopoverPosition(
+    isPopoverOpen,
+    badgeRef,
+    popoverRef,
+    badgeWrapperRef,
+  );
 
   useEffect(() => {
     if (dates.length === 0) {
@@ -67,7 +74,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
       <SectionHeading>{translate(title)}</SectionHeading>
 
       <FixedDatesToolbar>
-        <BadgeWrapper>
+        <BadgeWrapper ref={badgeWrapperRef}>
           <CountBadge
             ref={badgeRef}
             type="button"
@@ -85,7 +92,14 @@ export const DateManager: FC<FixedDateManagerProps> = ({
           </CountBadge>
 
           {isPopoverOpen && (
-            <DatesPopover ref={popoverRef}>
+            <DatesPopover
+              ref={popoverRef}
+              style={{
+                top: popoverPosition?.top ?? 0,
+                left: popoverPosition?.left ?? 0,
+                visibility: popoverPosition ? "visible" : "hidden",
+              }}
+            >
               <DatesPopoverTitle>{translate(popoverTitle)}</DatesPopoverTitle>
               <DateList>
                 {dates.map((value) => (
