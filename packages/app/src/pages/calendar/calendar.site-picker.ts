@@ -59,46 +59,42 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
     return {
       text: sitePickerText,
       icon: "site",
-      click: (event: MouseEvent, element: HTMLElement) => {
-        const siteButton = $(element);
-        let menuButton = siteButton.data("menuButton") as MenuButton | undefined;
-
+      click: (event: MouseEvent) => {
         event.preventDefault();
 
-        if (!menuButton) {
-          siteButton.addClass("menubtn");
-
-          const $menu = $("<div>", { class: "menu" }).insertAfter(element);
-          const $siteUl = $("<ul>").appendTo($menu);
-
-          for (const [siteId, siteName] of siteEntries) {
-            $("<li>")
-              .append(
-                $("<a>", {
-                  "data-site-id": siteId,
-                  text: siteName,
-                }),
-              )
-              .appendTo($siteUl);
-          }
-
-          menuButton = new Garnish.MenuBtn(element, {
-            onOptionSelect: (target) => {
-              const siteId = Number($(target).data("site-id"));
-
-              if (!siteId) {
-                return;
-              }
-
-              setCurrentSiteId(siteId);
-              setSelectedSiteId(siteId);
-              clearCalendarEventsCache();
-              api.refetchEvents();
-            },
-          });
-
-          siteButton.data("menuButton", menuButton);
+        const siteButton = $(event.currentTarget as HTMLElement);
+        if (siteButton.data("menubtn")) {
+          return;
         }
+
+        const $menu = $("<div>", { class: "menu" }).insertAfter(siteButton);
+        const $siteUl = $("<ul>").appendTo($menu);
+
+        for (const [siteId, siteName] of siteEntries) {
+          $("<li>")
+            .append(
+              $("<a>", {
+                "data-site-id": siteId,
+                text: siteName,
+              }),
+            )
+            .appendTo($siteUl);
+        }
+
+        const menuButton: MenuButton = new Garnish.MenuBtn(siteButton[0], {
+          onOptionSelect: (target) => {
+            const siteId = Number($(target).data("site-id"));
+
+            if (!siteId) {
+              return;
+            }
+
+            setCurrentSiteId(siteId);
+            setSelectedSiteId(siteId);
+            clearCalendarEventsCache();
+            api.refetchEvents();
+          },
+        });
 
         menuButton.showMenu();
       },
