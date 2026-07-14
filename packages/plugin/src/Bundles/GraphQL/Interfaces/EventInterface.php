@@ -9,6 +9,8 @@ use Solspace\Calendar\Bundles\GraphQL\Types\Generators\EventGenerator;
 
 class EventInterface extends AbstractInterface
 {
+    public const RRULE_DESCRIPTION = "The event's RFC 5545 recurrence rule. Include a DTSTART line and one or more recurrence lines. Example: `DTSTART:20260714T090000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=6`. All-day example: `DTSTART;VALUE=DATE:20260714\nRRULE:FREQ=DAILY;COUNT=3`. You can also include `RDATE` and `EXDATE` lines.";
+
     public static function getName(): string
     {
         return 'CalendarEventInterface';
@@ -45,6 +47,11 @@ class EventInterface extends AbstractInterface
                         'name' => 'uid',
                         'type' => Type::string(),
                         'description' => "The event's UUID",
+                    ],
+                    'draftId' => [
+                        'name' => 'draftId',
+                        'type' => Type::int(),
+                        'description' => 'The draft ID from the drafts table.',
                     ],
                     'typeHandle' => [
                         'name' => 'typeHandle',
@@ -144,7 +151,7 @@ class EventInterface extends AbstractInterface
                     'rrule' => [
                         'name' => 'rrule',
                         'type' => Type::string(),
-                        'description' => "The event's RRule",
+                        'description' => self::RRULE_DESCRIPTION,
                     ],
                     'freq' => [
                         'name' => 'freq',

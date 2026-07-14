@@ -71,7 +71,9 @@ class CalendarsService extends Component
     public function getAllAllowedCalendars(): array
     {
         $isAdmin = PermissionHelper::isAdmin();
-        $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
+        $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS)
+            || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_READ)
+            || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
 
         /** @var SettingsService $settings */
         $settings = Calendar::getInstance()->settings;
@@ -82,7 +84,16 @@ class CalendarsService extends Component
         }
 
         if (null === $this->allowedCalendarCache) {
-            $allowedUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
+            $readUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_READ_INDIVIDUAL);
+            $manageUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
+            $allowedUids = [];
+            if (\is_array($readUids)) {
+                $allowedUids = array_merge($allowedUids, $readUids);
+            }
+            if (\is_array($manageUids)) {
+                $allowedUids = array_merge($allowedUids, $manageUids);
+            }
+            $allowedUids = array_values(array_unique($allowedUids));
             $allowedCalendarIds = [];
             if (\is_array($allowedUids)) {
                 $allowedCalendarIds = array_map(static function ($uid) {

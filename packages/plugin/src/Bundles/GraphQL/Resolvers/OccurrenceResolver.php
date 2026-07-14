@@ -15,6 +15,10 @@ class OccurrenceResolver
     public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareQuery($source, $arguments);
+        if (false === $query) {
+            return [];
+        }
+
         $value = $query->all();
 
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
@@ -23,6 +27,10 @@ class OccurrenceResolver
     public static function resolveOne(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareQuery($source, $arguments);
+        if (false === $query) {
+            return null;
+        }
+
         $value = $query->one();
 
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
@@ -30,10 +38,15 @@ class OccurrenceResolver
 
     public static function resolveCount(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): int
     {
-        return (int) self::prepareQuery($source, $arguments)->count();
+        $query = self::prepareQuery($source, $arguments);
+        if (false === $query) {
+            return 0;
+        }
+
+        return (int) $query->count();
     }
 
-    private static function prepareQuery(mixed $source, array $arguments): OccurrenceQuery
+    private static function prepareQuery(mixed $source, array $arguments): false|OccurrenceQuery
     {
         if ($source instanceof CalendarModel) {
             $arguments['calendarId'] = [$source->id];
@@ -41,8 +54,11 @@ class OccurrenceResolver
             $arguments['event'] = [$source->id];
         }
 
-        $calendarUids = GqlPermissions::allowedCalendarUids();
-        if ([] !== $calendarUids) {
+        $calendarUids = GqlPermissions::allowedEventCalendarUids();
+        if ([] === $calendarUids) {
+            return false;
+        }
+        if (\is_array($calendarUids)) {
             $arguments['calendarUid'] = $calendarUids;
         }
 

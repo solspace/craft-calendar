@@ -86,12 +86,12 @@ class CalendarInterface extends AbstractInterface
                 'description' => "The calendar's title translation key format",
             ],
             'descriptionFieldHandle' => [
-                'name' => 'name',
+                'name' => 'descriptionFieldHandle',
                 'type' => Type::string(),
                 'description' => "The calendar's description field handle",
             ],
             'locationFieldHandle' => [
-                'name' => 'name',
+                'name' => 'locationFieldHandle',
                 'type' => Type::string(),
                 'description' => "The calendar's location field handle",
             ],
@@ -101,7 +101,7 @@ class CalendarInterface extends AbstractInterface
                 'description' => "The calendar's ICS hash",
             ],
             'icsTimezone' => [
-                'name' => 'name',
+                'name' => 'icsTimezone',
                 'type' => Type::string(),
                 'description' => "The calendar's ICS timezone",
             ],
@@ -115,28 +115,28 @@ class CalendarInterface extends AbstractInterface
                 'type' => Type::listOf(EventInterface::getType()),
                 'resolve' => EventResolver::class.'::resolve',
                 'args' => EventArguments::getArguments(),
-                'description' => "The calendar's events",
+                'description' => 'This query is used to query Events',
             ],
             'eventCount' => [
                 'name' => 'eventCount',
                 'type' => Type::nonNull(Type::int()),
                 'resolve' => EventResolver::class.'::resolveCount',
                 'args' => EventArguments::getArguments(),
-                'description' => "This query is used to return the number of calendar's events.",
+                'description' => 'This query is used to return the number of Events.',
             ],
             'occurrences' => [
                 'name' => 'occurrences',
                 'type' => Type::listOf(OccurrenceInterface::getType()),
                 'resolve' => OccurrenceResolver::class.'::resolve',
                 'args' => OccurrenceArguments::getArguments(),
-                'description' => "The calendar's persisted occurrences",
+                'description' => 'This query is used to query Occurrences',
             ],
             'occurrenceCount' => [
                 'name' => 'occurrenceCount',
                 'type' => Type::nonNull(Type::int()),
                 'resolve' => OccurrenceResolver::class.'::resolveCount',
                 'args' => OccurrenceArguments::getArguments(),
-                'description' => "This query is used to return the number of calendar's occurrences.",
+                'description' => 'This query is used to return the number of Occurrences',
             ],
         ];
     }

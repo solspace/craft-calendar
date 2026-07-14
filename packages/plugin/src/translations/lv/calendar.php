@@ -221,11 +221,35 @@ $settings = [
 ];
 $permissions = [
     '"{name}" calendar' => '"{name}" kalendārs',
-    'Administrate Calendars' => 'Administrēt kalendārus',
-    'Manage events in' => 'Menedžēt pasākumus šādiem kalendāriem',
-    'Create Calendars' => 'Izveidot kalendārus',
-    'Edit Calendars' => 'Rediģēt kalendārus',
+    'Access Events' => 'Piekļūt pasākumiem',
+    'Read All Events' => 'Lasīt visus pasākumus',
+    "If you'd like to give users access to read events in all calendars, check off this checkbox. It will also override any selections in the 'Read Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "Ja vēlaties lietotājiem piešķirt piekļuvi lasīt pasākumus visos kalendāros, atzīmējiet šo izvēles rūtiņu. Tā aizstās arī visas izvēles iestatījumos 'Lasīt pasākumus pēc kalendāra'. 'Pārvaldīt' tiesības aizstās arī visas 'Lasīt' tiesības.",
+    'Read Events by Calendar' => 'Lasīt pasākumus pēc kalendāra',
+    "If you'd like to give users access to read events in only some calendars, check off the ones here. These selections will be overridden by the 'Read All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "Ja vēlaties lietotājiem piešķirt piekļuvi lasīt pasākumus tikai dažos kalendāros, atzīmējiet tos šeit. Šīs izvēles aizstās izvēles rūtiņa 'Lasīt visus pasākumus'. 'Pārvaldīt' tiesības aizstās arī visas 'Lasīt' tiesības.",
+    'Manage All Events' => 'Pārvaldīt visus pasākumus',
+    "If you'd like to give users access to manage events in all calendars, check off this checkbox. It will also override any selections in the 'Manage Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "Ja vēlaties lietotājiem piešķirt piekļuvi pārvaldīt pasākumus visos kalendāros, atzīmējiet šo izvēles rūtiņu. Tā aizstās arī visas izvēles iestatījumos 'Pārvaldīt pasākumus pēc kalendāra'. 'Pārvaldīt' tiesības aizstās arī visas 'Lasīt' tiesības.",
+    'Manage Events by Calendar' => 'Pārvaldīt pasākumus pēc kalendāra',
+    "If you'd like to give users access to manage events in only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "Ja vēlaties lietotājiem piešķirt piekļuvi pārvaldīt pasākumus tikai dažos kalendāros, atzīmējiet tos šeit. Šīs izvēles aizstās izvēles rūtiņa 'Pārvaldīt visus pasākumus'. 'Pārvaldīt' tiesības aizstās arī visas 'Lasīt' tiesības.",
+    'Access Calendars' => 'Piekļūt kalendāriem',
+    'Create New Calendars' => 'Izveidot jaunus kalendārus',
     'Delete Calendars' => 'Dzēst kalendārus',
+    'Manage All Calendars' => 'Pārvaldīt visus kalendārus',
+    "If you'd like to give users access to manage all calendars, check off this checkbox. It will also override any selections in the 'Manage Calendars Individually' settings." => "Ja vēlaties lietotājiem piešķirt piekļuvi pārvaldīt visus kalendārus, atzīmējiet šo izvēles rūtiņu. Tā aizstās arī visas izvēles iestatījumos 'Pārvaldīt kalendārus atsevišķi'.",
+    'Manage Calendars Individually' => 'Pārvaldīt kalendārus atsevišķi',
+    "If you'd like to give users access to manage only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Calendars' checkbox." => "Ja vēlaties lietotājiem piešķirt piekļuvi pārvaldīt tikai dažus kalendārus, atzīmējiet tos šeit. Šīs izvēles aizstās izvēles rūtiņa 'Pārvaldīt visus kalendārus'.",
+];
+$graphql = [
+    'Save an event draft in the "{calendar}" calendar.' => 'Saglabāt pasākuma melnrakstu kalendārā "{calendar}".',
+    'Publish a Calendar event draft and return the event ID.' => 'Publicēt kalendāra pasākuma melnrakstu un atgriezt pasākuma ID.',
+    'The ID of the draft.' => 'Melnraksta ID.',
+    'The ID of the draft to update. Omit it to create a new draft event.' => 'Atjaunināmā melnraksta ID. Izlaidiet, lai izveidotu jaunu pasākuma melnrakstu.',
+    'The ID of the draft to publish.' => 'Publicējamā melnraksta ID.',
+    'The site ID to publish the draft in.' => 'Vietnes ID, kurā publicēt melnrakstu.',
+    'Whether a provisional draft should be looked up.' => 'Vai meklēt pagaidu melnrakstu.',
+    'Whether the draft is provisional.' => 'Vai melnraksts ir pagaidu melnraksts.',
+    'The name of the draft.' => 'Melnraksta nosaukums.',
+    'Notes for the draft.' => 'Melnraksta piezīmes.',
+    'The ID of the draft creator.' => 'Melnraksta autora ID.',
 ];
 
-return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions);
+return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions, $graphql);

@@ -25,6 +25,6 @@ class EventType extends AbstractObjectType
             return GqlEntityRegistry::prefixTypeName($context->getGqlTypeName());
         }
 
-        return static::resolveType($context);
+        return parent::resolveType($context);
     }
 }

@@ -68,13 +68,34 @@ class Calendar extends Plugin
     public const VIEW_CALENDARS = 'calendars';
     public const VIEW_RESOURCES = 'resources';
 
-    public const PERMISSION_CALENDARS = 'calendar-manageCalendars';
-    public const PERMISSION_CREATE_CALENDARS = 'calendar-createCalendars';
-    public const PERMISSION_EDIT_CALENDARS = 'calendar-editCalendars';
-    public const PERMISSION_DELETE_CALENDARS = 'calendar-deleteCalendars';
-    public const PERMISSION_EVENTS = 'calendar-manageEvents';
-    public const PERMISSION_EVENTS_FOR = 'calendar-manageEventsFor';
-    public const PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
+    public const PERMISSION_CALENDARS_ACCESS = 'calendar-calendarsAccess';
+    public const PERMISSION_CALENDARS_CREATE = 'calendar-calendarsCreate';
+    public const PERMISSION_CALENDARS_DELETE = 'calendar-calendarsDelete';
+    public const PERMISSION_CALENDARS_MANAGE = 'calendar-calendarsManage';
+    public const PERMISSION_CALENDARS_MANAGE_INDIVIDUAL = 'calendar-calendarsManageIndividual';
+    public const PERMISSION_EVENTS_ACCESS = 'calendar-eventsAccess';
+    public const PERMISSION_EVENTS_READ = 'calendar-eventsRead';
+    public const PERMISSION_EVENTS_READ_INDIVIDUAL = 'calendar-eventsReadIndividual';
+    public const PERMISSION_EVENTS_MANAGE = 'calendar-eventsManage';
+    public const PERMISSION_EVENTS_MANAGE_INDIVIDUAL = 'calendar-eventsManageIndividual';
+    public const PERMISSION_CALENDARS = self::PERMISSION_CALENDARS_ACCESS;
+    public const PERMISSION_CREATE_CALENDARS = self::PERMISSION_CALENDARS_CREATE;
+    public const PERMISSION_EDIT_CALENDARS = self::PERMISSION_CALENDARS_MANAGE;
+    public const PERMISSION_EDIT_CALENDARS_INDIVIDUAL = self::PERMISSION_CALENDARS_MANAGE_INDIVIDUAL;
+    public const PERMISSION_DELETE_CALENDARS = self::PERMISSION_CALENDARS_DELETE;
+    public const PERMISSION_EVENTS = self::PERMISSION_EVENTS_ACCESS;
+    public const PERMISSION_EVENTS_FOR = self::PERMISSION_EVENTS_MANAGE_INDIVIDUAL;
+    public const PERMISSION_EVENTS_FOR_ALL = self::PERMISSION_EVENTS_MANAGE;
+    public const LEGACY_PERMISSION_CALENDARS = 'calendar-manageCalendars';
+    public const LEGACY_PERMISSION_CREATE_CALENDARS = 'calendar-createCalendars';
+    public const LEGACY_PERMISSION_EDIT_CALENDARS = 'calendar-editCalendars';
+    public const LEGACY_PERMISSION_EDIT_CALENDARS_INDIVIDUAL = 'calendar-editCalendarsIndividual';
+    public const LEGACY_PERMISSION_DELETE_CALENDARS = 'calendar-deleteCalendars';
+    public const LEGACY_PERMISSION_EVENTS = 'calendar-manageEvents';
+    public const LEGACY_PERMISSION_EVENTS_READ = 'calendar-readEvents';
+    public const LEGACY_PERMISSION_EVENTS_READ_INDIVIDUAL = 'calendar-readEventsIndividual';
+    public const LEGACY_PERMISSION_EVENTS_FOR = 'calendar-manageEventsFor';
+    public const LEGACY_PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
     public const PERMISSION_SETTINGS = 'calendar-settings';
     public const PERMISSION_RESOURCES = 'calendar-resources';
 
@@ -389,14 +410,18 @@ class Calendar extends Plugin
                 function (RegisterUserPermissionsEvent $event) {
                     $calendars = $this->calendars->getAllCalendars();
 
-                    $editEventsPermissions = [
-                        self::PERMISSION_EVENTS_FOR_ALL => [
-                            'label' => self::t('All calendars'),
-                        ],
-                    ];
+                    $calendarPermissions = [];
+                    $readEventsPermissions = [];
+                    $editEventsPermissions = [];
                     foreach ($calendars as $calendar) {
                         $suffix = ':'.$calendar->uid;
 
+                        $calendarPermissions[self::PERMISSION_EDIT_CALENDARS_INDIVIDUAL.$suffix] = [
+                            'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
+                        ];
+                        $readEventsPermissions[self::PERMISSION_EVENTS_READ_INDIVIDUAL.$suffix] = [
+                            'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
+                        ];
                         $editEventsPermissions[self::PERMISSION_EVENTS_FOR.$suffix] = [
                             'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
                         ];
@@ -404,28 +429,47 @@ class Calendar extends Plugin
 
                     $permissions = [
                         self::PERMISSION_CALENDARS => [
-                            'label' => self::t('Administrate Calendars'),
+                            'label' => self::t('Access Calendars'),
                             'nested' => [
                                 self::PERMISSION_CREATE_CALENDARS => [
-                                    'label' => self::t(
-                                        'Create Calendars'
-                                    ),
-                                ],
-                                self::PERMISSION_EDIT_CALENDARS => [
-                                    'label' => self::t(
-                                        'Edit Calendars'
-                                    ),
+                                    'label' => self::t('Create New Calendars'),
                                 ],
                                 self::PERMISSION_DELETE_CALENDARS => [
-                                    'label' => self::t(
-                                        'Delete Calendars'
-                                    ),
+                                    'label' => self::t('Delete Calendars'),
+                                ],
+                                self::PERMISSION_EDIT_CALENDARS => [
+                                    'label' => self::t('Manage All Calendars'),
+                                    'info' => self::t("If you'd like to give users access to manage all calendars, check off this checkbox. It will also override any selections in the 'Manage Calendars Individually' settings."),
+                                ],
+                                self::PERMISSION_EDIT_CALENDARS_INDIVIDUAL => [
+                                    'label' => self::t('Manage Calendars Individually'),
+                                    'info' => self::t("If you'd like to give users access to manage only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Calendars' checkbox."),
+                                    'nested' => $calendarPermissions,
                                 ],
                             ],
                         ],
                         self::PERMISSION_EVENTS => [
-                            'label' => self::t('Manage events in'),
-                            'nested' => $editEventsPermissions,
+                            'label' => self::t('Access Events'),
+                            'nested' => [
+                                self::PERMISSION_EVENTS_READ => [
+                                    'label' => self::t('Read All Events'),
+                                    'info' => self::t("If you'd like to give users access to read events in all calendars, check off this checkbox. It will also override any selections in the 'Read Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions."),
+                                ],
+                                self::PERMISSION_EVENTS_READ_INDIVIDUAL => [
+                                    'label' => self::t('Read Events by Calendar'),
+                                    'info' => self::t("If you'd like to give users access to read events in only some calendars, check off the ones here. These selections will be overridden by the 'Read All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions."),
+                                    'nested' => $readEventsPermissions,
+                                ],
+                                self::PERMISSION_EVENTS_FOR_ALL => [
+                                    'label' => self::t('Manage All Events'),
+                                    'info' => self::t("If you'd like to give users access to manage events in all calendars, check off this checkbox. It will also override any selections in the 'Manage Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions."),
+                                ],
+                                self::PERMISSION_EVENTS_FOR => [
+                                    'label' => self::t('Manage Events by Calendar'),
+                                    'info' => self::t("If you'd like to give users access to manage events in only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions."),
+                                    'nested' => $editEventsPermissions,
+                                ],
+                            ],
                         ],
                         self::PERMISSION_SETTINGS => ['label' => self::t('Access Settings')],
                     ];

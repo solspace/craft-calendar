@@ -541,10 +541,17 @@ class EventQuery extends ElementQuery
 
         if ($this->allowedCalendarsOnly) {
             $isAdmin = PermissionHelper::isAdmin();
-            $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
+            $canAccessAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS)
+                || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_READ)
+                || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
 
-            if (!$isAdmin && !$canManageAll) {
-                $allowedUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
+            if (!$isAdmin && !$canAccessAll) {
+                $readUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_READ_INDIVIDUAL);
+                $manageUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
+                $allowedUids = array_values(array_unique(array_merge(
+                    \is_array($readUids) ? $readUids : [],
+                    \is_array($manageUids) ? $manageUids : []
+                )));
                 $this->subQuery->andWhere(Db::parseParam($calendar.'.[[uid]]', $allowedUids));
             }
 

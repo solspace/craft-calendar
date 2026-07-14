@@ -227,11 +227,35 @@ $settings = [
 ];
 $permissions = [
     '"{name}" calendar' => '"{name}" Kalender',
-    'Administrate Calendars' => 'Kalender verwalten',
-    'Manage events in' => 'Ereignisse verwalten in',
-    'Create Calendars' => 'Kalender erstellen',
-    'Edit Calendars' => 'Kalender editieren',
+    'Access Events' => 'Zugriff auf Ereignisse',
+    'Read All Events' => 'Alle Ereignisse lesen',
+    'Read Events by Calendar' => 'Ereignisse nach Kalender lesen',
+    "If you'd like to give users access to read events in all calendars, check off this checkbox. It will also override any selections in the 'Read Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "Wenn Sie Benutzern Zugriff zum Lesen von Ereignissen in allen Kalendern geben möchten, aktivieren Sie dieses Kontrollkästchen. Es überschreibt alle Auswahlen in den Einstellungen 'Ereignisse nach Kalender lesen'. 'Verwalten'-Berechtigungen überschreiben außerdem alle 'Lesen'-Berechtigungen.",
+    "If you'd like to give users access to read events in only some calendars, check off the ones here. These selections will be overridden by the 'Read All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "Wenn Sie Benutzern Zugriff zum Lesen von Ereignissen nur in bestimmten Kalendern geben möchten, wählen Sie diese hier aus. Diese Auswahlen werden durch das Kontrollkästchen 'Alle Ereignisse lesen' überschrieben. 'Verwalten'-Berechtigungen überschreiben außerdem alle 'Lesen'-Berechtigungen.",
+    'Manage All Events' => 'Alle Ereignisse verwalten',
+    "If you'd like to give users access to manage events in all calendars, check off this checkbox. It will also override any selections in the 'Manage Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "Wenn Sie Benutzern Zugriff zum Verwalten von Ereignissen in allen Kalendern geben möchten, aktivieren Sie dieses Kontrollkästchen. Es überschreibt alle Auswahlen in den Einstellungen 'Ereignisse nach Kalender verwalten'. 'Verwalten'-Berechtigungen überschreiben außerdem alle 'Lesen'-Berechtigungen.",
+    'Manage Events by Calendar' => 'Ereignisse nach Kalender verwalten',
+    "If you'd like to give users access to manage events in only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "Wenn Sie Benutzern Zugriff zum Verwalten von Ereignissen nur in bestimmten Kalendern geben möchten, wählen Sie diese hier aus. Diese Auswahlen werden durch das Kontrollkästchen 'Alle Ereignisse verwalten' überschrieben. 'Verwalten'-Berechtigungen überschreiben außerdem alle 'Lesen'-Berechtigungen.",
+    'Access Calendars' => 'Zugriff auf Kalender',
+    'Create New Calendars' => 'Neue Kalender erstellen',
     'Delete Calendars' => 'Kalender löschen',
+    'Manage All Calendars' => 'Alle Kalender verwalten',
+    "If you'd like to give users access to manage all calendars, check off this checkbox. It will also override any selections in the 'Manage Calendars Individually' settings." => "Wenn Sie Benutzern Zugriff zum Verwalten aller Kalender geben möchten, aktivieren Sie dieses Kontrollkästchen. Es überschreibt alle Auswahlen in den Einstellungen 'Kalender einzeln verwalten'.",
+    'Manage Calendars Individually' => 'Kalender einzeln verwalten',
+    "If you'd like to give users access to manage only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Calendars' checkbox." => "Wenn Sie Benutzern Zugriff zum Verwalten nur bestimmter Kalender geben möchten, wählen Sie diese hier aus. Diese Auswahlen werden durch das Kontrollkästchen 'Alle Kalender verwalten' überschrieben.",
+];
+$graphql = [
+    'Save an event draft in the "{calendar}" calendar.' => 'Einen Ereignis-Entwurf im Kalender "{calendar}" speichern.',
+    'Publish a Calendar event draft and return the event ID.' => 'Einen Kalenderereignis-Entwurf veröffentlichen und die Ereignis-ID zurückgeben.',
+    'The ID of the draft.' => 'Die ID des Entwurfs.',
+    'The ID of the draft to update. Omit it to create a new draft event.' => 'Die ID des zu aktualisierenden Entwurfs. Weglassen, um einen neuen Ereignis-Entwurf zu erstellen.',
+    'The ID of the draft to publish.' => 'Die ID des zu veröffentlichenden Entwurfs.',
+    'The site ID to publish the draft in.' => 'Die Website-ID, in der der Entwurf veröffentlicht werden soll.',
+    'Whether a provisional draft should be looked up.' => 'Ob nach einem vorläufigen Entwurf gesucht werden soll.',
+    'Whether the draft is provisional.' => 'Ob der Entwurf vorläufig ist.',
+    'The name of the draft.' => 'Der Name des Entwurfs.',
+    'Notes for the draft.' => 'Notizen zum Entwurf.',
+    'The ID of the draft creator.' => 'Die ID des Entwurf-Erstellers.',
 ];
 
-return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions);
+return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions, $graphql);

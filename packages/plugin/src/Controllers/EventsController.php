@@ -115,7 +115,7 @@ class EventsController extends BaseController
      */
     private function requireEventPermission(): void
     {
-        $hasPermission = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true);
+        $hasPermission = PermissionHelper::canAccessEvents();
 
         if (!$hasPermission) {
             PermissionHelper::requirePermission('trigger-calendar-event-access-denied');

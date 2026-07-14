@@ -8,7 +8,7 @@ $subnav['overview'] = [
     'url' => 'calendar',
 ];
 
-if (PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true)) {
+if (PermissionHelper::canAccessEvents()) {
     $subnav['events'] = [
         'label' => Calendar::t('Events'),
         'url' => 'calendar/events',
@@ -20,7 +20,7 @@ if (version_compare(Craft::$app->getVersion(), '3.1', '>=')) {
     $isAllowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 }
 
-if (PermissionHelper::checkPermission(Calendar::PERMISSION_CALENDARS) && $isAllowAdminChanges) {
+if (PermissionHelper::canAccessCalendars() && $isAllowAdminChanges) {
     $subnav['calendars'] = [
         'label' => Calendar::t('Calendars'),
         'url' => 'calendar/calendars',

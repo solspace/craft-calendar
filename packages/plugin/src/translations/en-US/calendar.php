@@ -239,11 +239,35 @@ $settings = [
 ];
 $permissions = [
     '"{name}" calendar' => '"{name}" calendar',
-    'Administrate Calendars' => 'Administrate Calendars',
-    'Manage events in' => 'Manage events in',
-    'Create Calendars' => 'Create Calendars',
-    'Edit Calendars' => 'Edit Calendars',
+    'Access Events' => 'Access Events',
+    'Read All Events' => 'Read All Events',
+    "If you'd like to give users access to read events in all calendars, check off this checkbox. It will also override any selections in the 'Read Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "If you'd like to give users access to read events in all calendars, check off this checkbox. It will also override any selections in the 'Read Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions.",
+    'Read Events by Calendar' => 'Read Events by Calendar',
+    "If you'd like to give users access to read events in only some calendars, check off the ones here. These selections will be overridden by the 'Read All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "If you'd like to give users access to read events in only some calendars, check off the ones here. These selections will be overridden by the 'Read All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions.",
+    'Manage All Events' => 'Manage All Events',
+    "If you'd like to give users access to manage events in all calendars, check off this checkbox. It will also override any selections in the 'Manage Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "If you'd like to give users access to manage events in all calendars, check off this checkbox. It will also override any selections in the 'Manage Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions.",
+    'Manage Events by Calendar' => 'Manage Events by Calendar',
+    "If you'd like to give users access to manage events in only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "If you'd like to give users access to manage events in only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions.",
+    'Access Calendars' => 'Access Calendars',
+    'Create New Calendars' => 'Create New Calendars',
     'Delete Calendars' => 'Delete Calendars',
+    'Manage All Calendars' => 'Manage All Calendars',
+    "If you'd like to give users access to manage all calendars, check off this checkbox. It will also override any selections in the 'Manage Calendars Individually' settings." => "If you'd like to give users access to manage all calendars, check off this checkbox. It will also override any selections in the 'Manage Calendars Individually' settings.",
+    'Manage Calendars Individually' => 'Manage Calendars Individually',
+    "If you'd like to give users access to manage only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Calendars' checkbox." => "If you'd like to give users access to manage only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Calendars' checkbox.",
+];
+$graphql = [
+    'Save an event draft in the "{calendar}" calendar.' => 'Save an event draft in the "{calendar}" calendar.',
+    'Publish a Calendar event draft and return the event ID.' => 'Publish a Calendar event draft and return the event ID.',
+    'The ID of the draft.' => 'The ID of the draft.',
+    'The ID of the draft to update. Omit it to create a new draft event.' => 'The ID of the draft to update. Omit it to create a new draft event.',
+    'The ID of the draft to publish.' => 'The ID of the draft to publish.',
+    'The site ID to publish the draft in.' => 'The site ID to publish the draft in.',
+    'Whether a provisional draft should be looked up.' => 'Whether a provisional draft should be looked up.',
+    'Whether the draft is provisional.' => 'Whether the draft is provisional.',
+    'The name of the draft.' => 'The name of the draft.',
+    'Notes for the draft.' => 'Notes for the draft.',
+    'The ID of the draft creator.' => 'The ID of the draft creator.',
 ];
 
-return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions);
+return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions, $graphql);

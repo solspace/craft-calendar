@@ -33,8 +33,8 @@ class SettingsController extends BaseController
     {
         $defaultView = $this->getSettingsService()->getSettingsModel()->defaultView;
 
-        $canAccessCalendars = PermissionHelper::checkPermission(Calendar::PERMISSION_CALENDARS);
-        $canAccessEvents = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS);
+        $canAccessCalendars = PermissionHelper::canAccessCalendars();
+        $canAccessEvents = PermissionHelper::canAccessEvents();
 
         $isEventsView = Calendar::VIEW_EVENTS === $defaultView;
         $isCalendarsView = Calendar::VIEW_CALENDARS === $defaultView;

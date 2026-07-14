@@ -220,11 +220,35 @@ $settings = [
 ];
 $permissions = [
     '"{name}" calendar' => '"{name}" kalender',
-    'Administrate Calendars' => 'Beheer kalenders',
-    'Manage events in' => 'Beheer evenementen in',
-    'Create Calendars' => 'Create Calendars',
-    'Edit Calendars' => 'Edit Calendars',
-    'Delete Calendars' => 'Delete Calendars',
+    'Access Events' => 'Toegang tot evenementen',
+    'Read All Events' => 'Alle evenementen lezen',
+    "If you'd like to give users access to read events in all calendars, check off this checkbox. It will also override any selections in the 'Read Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "Als u gebruikers toegang wilt geven om evenementen in alle kalenders te lezen, vinkt u dit selectievakje aan. Dit overschrijft ook alle selecties in de instellingen voor 'Evenementen per kalender lezen'. 'Beheer'-rechten overschrijven ook alle 'Lees'-rechten.",
+    'Read Events by Calendar' => 'Evenementen per kalender lezen',
+    "If you'd like to give users access to read events in only some calendars, check off the ones here. These selections will be overridden by the 'Read All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "Als u gebruikers toegang wilt geven om evenementen in alleen bepaalde kalenders te lezen, vinkt u die hier aan. Deze selecties worden overschreven door het selectievakje 'Alle evenementen lezen'. 'Beheer'-rechten overschrijven ook alle 'Lees'-rechten.",
+    'Manage All Events' => 'Alle evenementen beheren',
+    "If you'd like to give users access to manage events in all calendars, check off this checkbox. It will also override any selections in the 'Manage Events by Calendar' settings. 'Manage' permissions will also override any 'Read' permissions." => "Als u gebruikers toegang wilt geven om evenementen in alle kalenders te beheren, vinkt u dit selectievakje aan. Dit overschrijft ook alle selecties in de instellingen voor 'Evenementen per kalender beheren'. 'Beheer'-rechten overschrijven ook alle 'Lees'-rechten.",
+    'Manage Events by Calendar' => 'Evenementen per kalender beheren',
+    "If you'd like to give users access to manage events in only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Events' checkbox. 'Manage' permissions will also override any 'Read' permissions." => "Als u gebruikers toegang wilt geven om evenementen in alleen bepaalde kalenders te beheren, vinkt u die hier aan. Deze selecties worden overschreven door het selectievakje 'Alle evenementen beheren'. 'Beheer'-rechten overschrijven ook alle 'Lees'-rechten.",
+    'Access Calendars' => 'Toegang tot kalenders',
+    'Create New Calendars' => 'Nieuwe kalenders maken',
+    'Delete Calendars' => 'Kalenders verwijderen',
+    'Manage All Calendars' => 'Alle kalenders beheren',
+    "If you'd like to give users access to manage all calendars, check off this checkbox. It will also override any selections in the 'Manage Calendars Individually' settings." => "Als u gebruikers toegang wilt geven om alle kalenders te beheren, vinkt u dit selectievakje aan. Dit overschrijft ook alle selecties in de instellingen voor 'Kalenders afzonderlijk beheren'.",
+    'Manage Calendars Individually' => 'Kalenders afzonderlijk beheren',
+    "If you'd like to give users access to manage only some calendars, check off the ones here. These selections will be overridden by the 'Manage All Calendars' checkbox." => "Als u gebruikers toegang wilt geven om alleen bepaalde kalenders te beheren, vinkt u die hier aan. Deze selecties worden overschreven door het selectievakje 'Alle kalenders beheren'.",
+];
+$graphql = [
+    'Save an event draft in the "{calendar}" calendar.' => 'Een evenementconcept opslaan in de kalender "{calendar}".',
+    'Publish a Calendar event draft and return the event ID.' => 'Een concept van een kalenderevenement publiceren en de evenement-ID teruggeven.',
+    'The ID of the draft.' => 'De ID van het concept.',
+    'The ID of the draft to update. Omit it to create a new draft event.' => 'De ID van het concept dat bijgewerkt moet worden. Laat leeg om een nieuw evenementconcept te maken.',
+    'The ID of the draft to publish.' => 'De ID van het concept dat gepubliceerd moet worden.',
+    'The site ID to publish the draft in.' => 'De site-ID waarin het concept gepubliceerd moet worden.',
+    'Whether a provisional draft should be looked up.' => 'Of er naar een voorlopig concept gezocht moet worden.',
+    'Whether the draft is provisional.' => 'Of het concept voorlopig is.',
+    'The name of the draft.' => 'De naam van het concept.',
+    'Notes for the draft.' => 'Notities voor het concept.',
+    'The ID of the draft creator.' => 'De ID van de conceptmaker.',
 ];
 
-return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions);
+return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions, $graphql);

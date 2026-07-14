@@ -177,6 +177,11 @@ class Event extends Element implements \JsonSerializable
         return true;
     }
 
+    public static function hasContent(): bool
+    {
+        return true;
+    }
+
     public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription(
@@ -366,6 +371,16 @@ class Event extends Element implements \JsonSerializable
         }
 
         return parent::gqlTypeNameByContext($context);
+    }
+
+    public static function gqlMutationNameByContext(mixed $context): string
+    {
+        return 'save_'.self::gqlTypeNameByContext($context);
+    }
+
+    public static function gqlDraftMutationNameByContext(mixed $context): string
+    {
+        return 'save_'.$context->handle.'_Draft';
     }
 
     public function getGqlTypeName(): string

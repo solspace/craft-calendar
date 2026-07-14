@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Bundles\GraphQL\Arguments;
 
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\gql\base\ElementArguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 use Solspace\Calendar\Elements\Event;
 
@@ -19,6 +20,12 @@ class EventArguments extends ElementArguments
                     'name' => 'id',
                     'type' => Type::listOf(Type::int()),
                     'description' => "Filter events by their ID's",
+                ],
+                'loadOccurrences' => [
+                    'name' => 'loadOccurrences',
+                    'type' => QueryArgument::getType(),
+                    'description' => 'Deprecated and no longer used.',
+                    'deprecationReason' => 'This argument has no effect. Query the `occurrences` query instead.',
                 ],
                 'calendarId' => [
                     'name' => 'calendarId',

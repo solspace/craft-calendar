@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Resources\Bundles\CalendarAppBundle;
 use yii\web\Response;
 
@@ -61,7 +62,12 @@ class AppController extends BaseController
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),
             'currentSiteId' => $selectedSiteId,
-            'canEditEvents' => $user && $user->can('calendar-manageEvents') && !empty($calendarOptions),
+            'canEditEvents' => $user
+                && (
+                    PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL)
+                    || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true)
+                )
+                && !empty($calendarOptions),
             'isMultiSite' => \Craft::$app->getIsMultiSite(),
             'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
             'isDragAndDropEnabled' => $this->getSettingsService()->isDragAndDropEnabled(),

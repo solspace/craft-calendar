@@ -27,9 +27,9 @@ class m210929_131016_PermissionsMigrationForProjectConfig extends Migration
         // Now add the new permissions to existing users where applicable
         foreach ($permissions as $oldPermission => $newPermission) {
             $userIds = (new Query())
-                ->select(['upu.userId'])
-                ->from(['upu' => Table::USERPERMISSIONS_USERS])
-                ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[upu.permissionId]]')
+                ->select(['userpermissions_users.userId'])
+                ->from(['userpermissions_users' => Table::USERPERMISSIONS_USERS])
+                ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[userpermissions_users.permissionId]]')
                 ->where(['up.name' => $oldPermission])
                 ->column($this->db)
             ;
