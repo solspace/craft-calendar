@@ -25,6 +25,7 @@ class EventArguments extends ElementArguments
                     'name' => 'loadOccurrences',
                     'type' => QueryArgument::getType(),
                     'description' => 'Should occurrences be loaded',
+                    'deprecationReason' => 'This argument has no effect in Calendar 6. Query the `occurrences` field instead.',
                 ],
                 'calendarId' => [
                     'name' => 'calendarId',
