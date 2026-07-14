@@ -319,6 +319,157 @@ footer p {
 	font-weight: 600;
 }
 
+.custom-rule-builder {
+	--rule-accent: #e5422b;
+	--rule-border: #dfe3e7;
+	--rule-surface: #ffffff;
+	padding: 1rem;
+	margin: 0.5rem 0 1.25rem;
+	background: var(--rule-surface);
+	border: 1px solid var(--rule-border);
+	border-left: 4px solid var(--rule-accent);
+	border-radius: 0.35rem;
+	box-shadow: 0 0.2rem 0.7rem rgba(38, 46, 54, 0.06);
+}
+
+.custom-rule-builder__lead {
+	display: flex;
+	gap: 0.55rem;
+	align-items: center;
+	padding-bottom: 1rem;
+	font-weight: 600;
+	border-bottom: 1px solid var(--rule-border);
+}
+
+.custom-rule-builder__lead input {
+	width: 5rem;
+}
+
+.custom-rule-builder__lead select {
+	width: auto;
+	min-width: 9rem;
+}
+
+.custom-rule-panel {
+	padding-top: 1rem;
+}
+
+.custom-rule-panel p {
+	margin: 0;
+	color: #67717b;
+}
+
+.custom-rule-label {
+	display: block;
+	margin-bottom: 0.55rem;
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	color: #5b6570;
+	text-transform: uppercase;
+}
+
+.custom-rule-choice,
+.custom-rule-nth {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	margin-bottom: 0.85rem;
+}
+
+.custom-rule-choice label {
+	flex: 0 0 auto;
+	margin: 0;
+	font-weight: 600;
+}
+
+.custom-rule-choice select {
+	max-width: 19rem;
+}
+
+.custom-rule-nth select {
+	max-width: 13rem;
+}
+
+.rule-matrix {
+	display: grid;
+	gap: 1px;
+	overflow: hidden;
+	background: var(--rule-border);
+	border: 1px solid var(--rule-border);
+	border-radius: 0.3rem;
+}
+
+.rule-matrix--week {
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.rule-matrix--days {
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+.rule-matrix--months {
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	margin-bottom: 1rem;
+}
+
+.rule-matrix__button {
+	min-height: 2.4rem;
+	padding: 0.35rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: #47515b;
+	cursor: pointer;
+	background: #f7f8f9;
+	border: 0;
+	transition: color 120ms ease, background-color 120ms ease;
+}
+
+.rule-matrix__button:hover {
+	background: #eceff1;
+}
+
+.rule-matrix__button:focus-visible {
+	position: relative;
+	z-index: 1;
+	outline: 2px solid var(--rule-accent);
+	outline-offset: -2px;
+}
+
+.rule-matrix__button.active {
+	color: #fff;
+	background: var(--rule-accent);
+}
+
+.rule-matrix__button--wide {
+	grid-column: span 2;
+}
+
+.custom-rule-advanced {
+	padding-top: 0.9rem;
+	margin-top: 1rem;
+	border-top: 1px dashed var(--rule-border);
+}
+
+.custom-rule-advanced summary {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: #67717b;
+	cursor: pointer;
+}
+
+.custom-rule-advanced__fields {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75rem;
+	padding-top: 0.85rem;
+}
+
+.custom-rule-advanced__fields label {
+	font-size: 0.78rem;
+	font-weight: 600;
+}
+
 .fixed-date-manager {
 	padding-top: 1rem;
 	margin-top: 1rem;
@@ -357,5 +508,34 @@ footer p {
 
 	.event-editor-card [data-time-field] {
 		margin-top: 0.5rem;
+	}
+
+	.custom-rule-builder__lead,
+	.custom-rule-choice,
+	.custom-rule-nth {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.custom-rule-builder__lead input,
+	.custom-rule-builder__lead select,
+	.custom-rule-choice select,
+	.custom-rule-nth select {
+		width: 100%;
+		max-width: none;
+	}
+
+	.rule-matrix--days,
+	.rule-matrix--months {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	.rule-matrix--week {
+		grid-template-columns: repeat(7, minmax(2.25rem, 1fr));
+		overflow-x: auto;
+	}
+
+	.custom-rule-advanced__fields {
+		grid-template-columns: 1fr;
 	}
 }

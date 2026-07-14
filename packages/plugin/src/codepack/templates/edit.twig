@@ -166,59 +166,157 @@
                                 </div>
                             </div>
 
-                            <div data-custom-rule hidden>
-                                <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-frequency">{{ 'Frequency'|t }}</label>
-                                    <div class="col-sm-5 col-md-4">
-                                        <select id="event-frequency" class="form-control" data-frequency>
-                                            <option value="DAILY">{{ 'Daily'|t }}</option>
-                                            <option value="WEEKLY">{{ 'Weekly'|t }}</option>
-                                            <option value="MONTHLY">{{ 'Monthly'|t }}</option>
-                                            <option value="YEARLY">{{ 'Yearly'|t }}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-sm-3 col-md-2">
-                                        <input class="form-control" type="number" min="1" step="1" value="1" data-interval aria-label="{{ 'Interval'|t }}">
+                            <div class="custom-rule-builder" data-custom-rule hidden>
+                                <div class="custom-rule-builder__lead">
+                                    <span>{{ 'Every'|t }}</span>
+                                    <input class="form-control" type="number" min="1" step="1" value="1" data-interval aria-label="{{ 'Interval'|t }}">
+                                    <select id="event-frequency" class="form-control" data-frequency aria-label="{{ 'Frequency'|t }}">
+                                        <option value="DAILY">{{ 'day(s)'|t }}</option>
+                                        <option value="WEEKLY">{{ 'week(s)'|t }}</option>
+                                        <option value="MONTHLY">{{ 'month(s)'|t }}</option>
+                                        <option value="YEARLY">{{ 'year(s)'|t }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="custom-rule-panel" data-frequency-panel="DAILY">
+                                    <p>{{ 'The event repeats at the selected start time.'|t }}</p>
+                                </div>
+
+                                <div class="custom-rule-panel" data-frequency-panel="WEEKLY" hidden>
+                                    <span class="custom-rule-label">{{ 'Repeat on'|t }}</span>
+                                    <div class="rule-matrix rule-matrix--week" data-weekday-matrix>
+                                        {% for value, label in {
+                                            MO: 'Mon'|t,
+                                            TU: 'Tue'|t,
+                                            WE: 'Wed'|t,
+                                            TH: 'Thu'|t,
+                                            FR: 'Fri'|t,
+                                            SA: 'Sat'|t,
+                                            SU: 'Sun'|t,
+                                        } %}
+                                            <button type="button" class="rule-matrix__button" data-weekday="{{ value }}" aria-pressed="false">{{ label }}</button>
+                                        {% endfor %}
                                     </div>
                                 </div>
 
-                                <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-by-day">BYDAY</label>
-                                    <div class="col-sm-10">
-                                        <input id="event-by-day" class="form-control" type="text" placeholder="MO,WE or 1MO" data-by-day>
+                                <div class="custom-rule-panel" data-frequency-panel="MONTHLY" hidden>
+                                    <div class="custom-rule-choice">
+                                        <label for="monthly-rule-mode">{{ 'Repeat on'|t }}</label>
+                                        <select id="monthly-rule-mode" class="form-control" data-monthly-mode>
+                                            <option value="MONTHDAY">{{ 'specific days of the month'|t }}</option>
+                                            <option value="WEEKDAY">{{ 'an ordinal weekday'|t }}</option>
+                                        </select>
+                                    </div>
+
+                                    <div data-monthly-monthday>
+                                        <div class="rule-matrix rule-matrix--days" data-monthday-matrix>
+                                            {% for day in 1..31 %}
+                                                <button type="button" class="rule-matrix__button" data-monthday="{{ day }}" aria-pressed="false">{{ day }}</button>
+                                            {% endfor %}
+                                            <button type="button" class="rule-matrix__button rule-matrix__button--wide" data-monthday="-1" aria-pressed="false">{{ 'Last'|t }}</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="custom-rule-nth" data-monthly-weekday hidden>
+                                        <select class="form-control" data-monthly-position aria-label="{{ 'Position'|t }}">
+                                            <option value="1">{{ 'First'|t }}</option>
+                                            <option value="2">{{ 'Second'|t }}</option>
+                                            <option value="3">{{ 'Third'|t }}</option>
+                                            <option value="4">{{ 'Fourth'|t }}</option>
+                                            <option value="-1">{{ 'Last'|t }}</option>
+                                        </select>
+                                        <select class="form-control" data-monthly-weekday-choice aria-label="{{ 'Weekday'|t }}">
+                                            <option value="MO">{{ 'Monday'|t }}</option>
+                                            <option value="TU">{{ 'Tuesday'|t }}</option>
+                                            <option value="WE">{{ 'Wednesday'|t }}</option>
+                                            <option value="TH">{{ 'Thursday'|t }}</option>
+                                            <option value="FR">{{ 'Friday'|t }}</option>
+                                            <option value="SA">{{ 'Saturday'|t }}</option>
+                                            <option value="SU">{{ 'Sunday'|t }}</option>
+                                            <option value="WD">{{ 'Weekday (Mon-Fri)'|t }}</option>
+                                            <option value="WEK">{{ 'Weekend day (Sat-Sun)'|t }}</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-by-month-day">BYMONTHDAY</label>
-                                    <div class="col-sm-10">
-                                        <input id="event-by-month-day" class="form-control" type="text" placeholder="1,15,-1" data-by-month-day>
+
+                                <div class="custom-rule-panel" data-frequency-panel="YEARLY" hidden>
+                                    <span class="custom-rule-label">{{ 'In'|t }}</span>
+                                    <div class="rule-matrix rule-matrix--months" data-month-matrix>
+                                        {% for month, label in {
+                                            1: 'Jan'|t,
+                                            2: 'Feb'|t,
+                                            3: 'Mar'|t,
+                                            4: 'Apr'|t,
+                                            5: 'May'|t,
+                                            6: 'Jun'|t,
+                                            7: 'Jul'|t,
+                                            8: 'Aug'|t,
+                                            9: 'Sep'|t,
+                                            10: 'Oct'|t,
+                                            11: 'Nov'|t,
+                                            12: 'Dec'|t,
+                                        } %}
+                                            <button type="button" class="rule-matrix__button" data-month="{{ month }}" aria-pressed="false">{{ label }}</button>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="custom-rule-choice">
+                                        <label for="yearly-rule-mode">{{ 'Repeat on'|t }}</label>
+                                        <select id="yearly-rule-mode" class="form-control" data-yearly-mode>
+                                            <option value="MONTHDAY">{{ 'specific dates'|t }}</option>
+                                            <option value="WEEKDAY">{{ 'an ordinal weekday'|t }}</option>
+                                        </select>
+                                    </div>
+
+                                    <div data-yearly-monthday>
+                                        <div class="rule-matrix rule-matrix--days" data-yearly-monthday-matrix>
+                                            {% for day in 1..31 %}
+                                                <button type="button" class="rule-matrix__button" data-yearly-monthday="{{ day }}" aria-pressed="false">{{ day }}</button>
+                                            {% endfor %}
+                                            <button type="button" class="rule-matrix__button rule-matrix__button--wide" data-yearly-monthday="-1" aria-pressed="false">{{ 'Last'|t }}</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="custom-rule-nth" data-yearly-weekday hidden>
+                                        <select class="form-control" data-yearly-position aria-label="{{ 'Position'|t }}">
+                                            <option value="1">{{ 'First'|t }}</option>
+                                            <option value="2">{{ 'Second'|t }}</option>
+                                            <option value="3">{{ 'Third'|t }}</option>
+                                            <option value="4">{{ 'Fourth'|t }}</option>
+                                            <option value="-1">{{ 'Last'|t }}</option>
+                                        </select>
+                                        <select class="form-control" data-yearly-weekday-choice aria-label="{{ 'Weekday'|t }}">
+                                            <option value="MO">{{ 'Monday'|t }}</option>
+                                            <option value="TU">{{ 'Tuesday'|t }}</option>
+                                            <option value="WE">{{ 'Wednesday'|t }}</option>
+                                            <option value="TH">{{ 'Thursday'|t }}</option>
+                                            <option value="FR">{{ 'Friday'|t }}</option>
+                                            <option value="SA">{{ 'Saturday'|t }}</option>
+                                            <option value="SU">{{ 'Sunday'|t }}</option>
+                                            <option value="WD">{{ 'Weekday (Mon-Fri)'|t }}</option>
+                                            <option value="WEK">{{ 'Weekend day (Sat-Sun)'|t }}</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-by-month">BYMONTH</label>
-                                    <div class="col-sm-10">
-                                        <input id="event-by-month" class="form-control" type="text" placeholder="1,6,12" data-by-month>
+
+                                <input type="hidden" data-by-day>
+                                <input type="hidden" data-by-month-day>
+                                <input type="hidden" data-by-month>
+                                <input type="hidden" data-by-set-position>
+
+                                <details class="custom-rule-advanced">
+                                    <summary>{{ 'Advanced RFC options'|t }}</summary>
+                                    <div class="custom-rule-advanced__fields">
+                                        <div>
+                                            <label for="event-by-year-day">{{ 'Year days'|t }}</label>
+                                            <input id="event-by-year-day" class="form-control" type="text" placeholder="1,100,-1" data-by-year-day>
+                                        </div>
+                                        <div>
+                                            <label for="event-extra-rule-parts">{{ 'Additional rule parts'|t }}</label>
+                                            <input id="event-extra-rule-parts" class="form-control" type="text" placeholder="BYWEEKNO=1;WKST=MO" data-extra-rule-parts>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-by-year-day">BYYEARDAY</label>
-                                    <div class="col-sm-10">
-                                        <input id="event-by-year-day" class="form-control" type="text" placeholder="1,100,-1" data-by-year-day>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-by-set-position">BYSETPOS</label>
-                                    <div class="col-sm-10">
-                                        <input id="event-by-set-position" class="form-control" type="text" placeholder="1,-1" data-by-set-position>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-extra-rule-parts">{{ 'Additional parts'|t }}</label>
-                                    <div class="col-sm-10">
-                                        <input id="event-extra-rule-parts" class="form-control" type="text" placeholder="BYWEEKNO=1;WKST=MO" data-extra-rule-parts>
-                                        <small class="form-text text-muted">{{ 'Semicolon-separated RFC rule parts not covered above.'|t }}</small>
-                                    </div>
-                                </div>
+                                </details>
                             </div>
 
                             <div data-repeat-end-row hidden>
@@ -341,6 +439,16 @@
                 byYearDay: form.querySelector("[data-by-year-day]"),
                 bySetPosition: form.querySelector("[data-by-set-position]"),
                 extraRuleParts: form.querySelector("[data-extra-rule-parts]"),
+                monthlyMode: form.querySelector("[data-monthly-mode]"),
+                monthlyPosition: form.querySelector("[data-monthly-position]"),
+                monthlyWeekdayChoice: form.querySelector("[data-monthly-weekday-choice]"),
+                yearlyMode: form.querySelector("[data-yearly-mode]"),
+                yearlyPosition: form.querySelector("[data-yearly-position]"),
+                yearlyWeekdayChoice: form.querySelector("[data-yearly-weekday-choice]"),
+                weekdayMatrix: form.querySelector("[data-weekday-matrix]"),
+                monthdayMatrix: form.querySelector("[data-monthday-matrix]"),
+                monthMatrix: form.querySelector("[data-month-matrix]"),
+                yearlyMonthdayMatrix: form.querySelector("[data-yearly-monthday-matrix]"),
             } : null;
             let rdates = [];
             let exdates = [];
@@ -357,6 +465,7 @@
             let endTimeDirty = false;
             let complexRuleLocked = false;
             let previousRepeatType = config.repeatType || "NEVER";
+            let previousCustomFrequency = "DAILY";
             let lastStartClock = fields.start.value.slice(11).split(":").map(Number);
             const originalStartSeconds = fields.start.value.slice(17, 19) || "00";
             const originalEndSeconds = fields.end.value.slice(17, 19) || "00";
@@ -386,6 +495,146 @@
                     const [name, value = ""] = part.split("=", 2);
                     return [name, value];
                 }));
+            }
+
+            const weekdayChoices = {
+                MO: ["MO"],
+                TU: ["TU"],
+                WE: ["WE"],
+                TH: ["TH"],
+                FR: ["FR"],
+                SA: ["SA"],
+                SU: ["SU"],
+                WD: ["MO", "TU", "WE", "TH", "FR"],
+                WEK: ["SA", "SU"],
+            };
+
+            function selectedMatrixValues(matrix, attribute) {
+                return [...matrix.querySelectorAll(`[${attribute}].active`)].map((button) => button.getAttribute(attribute));
+            }
+
+            function setMatrixValues(matrix, attribute, values, fallback) {
+                const selected = values.length ? values.map(String) : [String(fallback)];
+                matrix.querySelectorAll(`[${attribute}]`).forEach((button) => {
+                    const active = selected.includes(button.getAttribute(attribute));
+                    button.classList.toggle("active", active);
+                    button.setAttribute("aria-pressed", active ? "true" : "false");
+                });
+            }
+
+            function startDateDefaults() {
+                const date = new Date(`${fields.startDate.value}T00:00:00`);
+                const weekdayCodes = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+                return {
+                    day: date.getDate(),
+                    month: date.getMonth() + 1,
+                    weekday: weekdayCodes[date.getDay()],
+                };
+            }
+
+            function weekdayChoiceFor(days, fallback) {
+                const normalized = [...new Set(days)].sort().join(",");
+                const match = Object.entries(weekdayChoices).find(([, values]) => [...values].sort().join(",") === normalized);
+                return match ? match[0] : fallback;
+            }
+
+            function parseNthWeekday(byDay, bySetPosition) {
+                const days = String(byDay || "").split(",").filter(Boolean);
+                let position = Number.parseInt(String(bySetPosition || ""), 10) || 1;
+                const normalizedDays = days.map((day) => {
+                    const match = /^(-?\d+)(MO|TU|WE|TH|FR|SA|SU)$/.exec(day);
+                    if (!match) return day;
+                    position = Number.parseInt(match[1], 10);
+                    return match[2];
+                });
+
+                return { days: normalizedDays, position };
+            }
+
+            function updateCustomRuleVisibility() {
+                if (!recurrence) return;
+                const frequency = recurrence.frequency.value;
+                form.querySelectorAll("[data-frequency-panel]").forEach((panel) => {
+                    panel.hidden = panel.getAttribute("data-frequency-panel") !== frequency;
+                });
+
+                form.querySelector("[data-monthly-monthday]").hidden = recurrence.monthlyMode.value !== "MONTHDAY";
+                form.querySelector("[data-monthly-weekday]").hidden = recurrence.monthlyMode.value !== "WEEKDAY";
+                form.querySelector("[data-yearly-monthday]").hidden = recurrence.yearlyMode.value !== "MONTHDAY";
+                form.querySelector("[data-yearly-weekday]").hidden = recurrence.yearlyMode.value !== "WEEKDAY";
+            }
+
+            function synchronizeCustomRuleControls() {
+                if (!recurrence || recurrence.repeatType.value !== "CUSTOM") return;
+
+                const frequency = recurrence.frequency.value;
+                recurrence.byDay.value = "";
+                recurrence.byMonthDay.value = "";
+                recurrence.byMonth.value = "";
+                recurrence.bySetPosition.value = "";
+
+                if (frequency === "WEEKLY") {
+                    recurrence.byDay.value = selectedMatrixValues(recurrence.weekdayMatrix, "data-weekday").join(",");
+                }
+
+                if (frequency === "MONTHLY") {
+                    if (recurrence.monthlyMode.value === "MONTHDAY") {
+                        recurrence.byMonthDay.value = selectedMatrixValues(recurrence.monthdayMatrix, "data-monthday").join(",");
+                    } else {
+                        recurrence.byDay.value = weekdayChoices[recurrence.monthlyWeekdayChoice.value].join(",");
+                        recurrence.bySetPosition.value = recurrence.monthlyPosition.value;
+                    }
+                }
+
+                if (frequency === "YEARLY") {
+                    recurrence.byMonth.value = selectedMatrixValues(recurrence.monthMatrix, "data-month").join(",");
+                    if (recurrence.yearlyMode.value === "MONTHDAY") {
+                        recurrence.byMonthDay.value = selectedMatrixValues(recurrence.yearlyMonthdayMatrix, "data-yearly-monthday").join(",");
+                    } else {
+                        recurrence.byDay.value = weekdayChoices[recurrence.yearlyWeekdayChoice.value].join(",");
+                        recurrence.bySetPosition.value = recurrence.yearlyPosition.value;
+                    }
+                }
+            }
+
+            function hydrateCustomRuleControls(ruleParts) {
+                if (!recurrence) return;
+                const defaults = startDateDefaults();
+                const nthWeekday = parseNthWeekday(ruleParts.BYDAY, ruleParts.BYSETPOS);
+                const monthDays = String(ruleParts.BYMONTHDAY || "").split(",").filter(Boolean);
+                const months = String(ruleParts.BYMONTH || "").split(",").filter(Boolean);
+                const weekdays = nthWeekday.days.length ? nthWeekday.days : [defaults.weekday];
+                const weekdayChoice = weekdayChoiceFor(weekdays, defaults.weekday);
+                const weekdayMode = Boolean(ruleParts.BYSETPOS) || String(ruleParts.BYDAY || "").split(",").some((day) => /^-?\d/.test(day));
+
+                setMatrixValues(recurrence.weekdayMatrix, "data-weekday", weekdays, defaults.weekday);
+                setMatrixValues(recurrence.monthdayMatrix, "data-monthday", monthDays, defaults.day);
+                setMatrixValues(recurrence.yearlyMonthdayMatrix, "data-yearly-monthday", monthDays, defaults.day);
+                setMatrixValues(recurrence.monthMatrix, "data-month", months, defaults.month);
+
+                recurrence.monthlyMode.value = weekdayMode ? "WEEKDAY" : "MONTHDAY";
+                recurrence.yearlyMode.value = weekdayMode ? "WEEKDAY" : "MONTHDAY";
+                recurrence.monthlyPosition.value = String(nthWeekday.position);
+                recurrence.yearlyPosition.value = String(nthWeekday.position);
+                recurrence.monthlyWeekdayChoice.value = weekdayChoice;
+                recurrence.yearlyWeekdayChoice.value = weekdayChoice;
+                updateCustomRuleVisibility();
+            }
+
+            function bindRuleMatrix(matrix, attribute) {
+                matrix.querySelectorAll(`[${attribute}]`).forEach((button) => {
+                    button.addEventListener("click", () => {
+                        const activeButtons = matrix.querySelectorAll(`[${attribute}].active`);
+                        if (button.classList.contains("active") && activeButtons.length === 1) return;
+
+                        const active = !button.classList.contains("active");
+                        button.classList.toggle("active", active);
+                        button.setAttribute("aria-pressed", active ? "true" : "false");
+                        ruleDirty = true;
+                        synchronizeCustomRuleControls();
+                        synchronize();
+                    });
+                });
             }
 
             function renderDateList(target, dates, removeDate) {
@@ -437,6 +686,7 @@
                 customRule.querySelectorAll("input, select").forEach((field) => {
                     field.disabled = customRule.hidden;
                 });
+                if (!customRule.hidden) updateCustomRuleVisibility();
                 recurrence.count.disabled = recurrence.repeatEnd.value !== "AFTER";
                 recurrence.untilDate.disabled = recurrence.repeatEnd.value !== "ON_DATE";
 
@@ -469,6 +719,7 @@
                 fields.repeatTypeValue.value = repeatType;
                 fields.repeatEndValue.value = repeats ? recurrence.repeatEnd.value : "NEVER";
                 fields.until.value = "";
+                synchronizeCustomRuleControls();
 
                 if (!repeats && rdates.length === 0) {
                     return "";
@@ -486,21 +737,24 @@
                         `FREQ=${frequency}`,
                         `INTERVAL=${Math.max(Number.parseInt(recurrence.interval.value, 10) || 1, 1)}`,
                     ];
-                    [
-                        ["BYDAY", recurrence.byDay.value],
-                        ["BYMONTHDAY", recurrence.byMonthDay.value],
-                        ["BYMONTH", recurrence.byMonth.value],
-                        ["BYYEARDAY", recurrence.byYearDay.value],
-                        ["BYSETPOS", recurrence.bySetPosition.value],
-                    ].forEach(([name, value]) => {
-                        const normalized = value.replaceAll(" ", "").toUpperCase();
-                        if (normalized) parts.push(`${name}=${normalized}`);
-                    });
+                    const preserveRuleDetails = repeatType === "CUSTOM" || repeatType === config.repeatType;
+                    if (preserveRuleDetails) {
+                        [
+                            ["BYDAY", recurrence.byDay.value],
+                            ["BYMONTHDAY", recurrence.byMonthDay.value],
+                            ["BYMONTH", recurrence.byMonth.value],
+                            ["BYYEARDAY", recurrence.byYearDay.value],
+                            ["BYSETPOS", recurrence.bySetPosition.value],
+                        ].forEach(([name, value]) => {
+                            const normalized = value.replaceAll(" ", "").toUpperCase();
+                            if (normalized) parts.push(`${name}=${normalized}`);
+                        });
 
-                    String(recurrence.extraRuleParts.value || "").split(";").forEach((part) => {
-                        const normalized = part.trim().toUpperCase();
-                        if (normalized) parts.push(normalized);
-                    });
+                        String(recurrence.extraRuleParts.value || "").split(";").forEach((part) => {
+                            const normalized = part.trim().toUpperCase();
+                            if (normalized) parts.push(normalized);
+                        });
+                    }
 
                     if (recurrence.repeatEnd.value === "AFTER") {
                         parts.push(`COUNT=${Math.max(Number.parseInt(recurrence.count.value, 10) || 1, 1)}`);
@@ -611,6 +865,7 @@
                 recurrence.repeatType.value = config.repeatType || "NEVER";
                 recurrence.repeatEnd.value = config.repeatEndType || "NEVER";
                 recurrence.frequency.value = ruleParts.FREQ || "DAILY";
+                previousCustomFrequency = recurrence.frequency.value;
                 recurrence.interval.value = ruleParts.INTERVAL || "1";
                 recurrence.count.value = ruleParts.COUNT || "1";
                 recurrence.byDay.value = ruleParts.BYDAY || "";
@@ -627,6 +882,7 @@
                     .join(";");
                 recurrence.untilDate.value = ruleParts.UNTIL ? dateFromRfc(ruleParts.UNTIL) : "";
                 complexRuleLocked = originalRruleLines.length > 1;
+                hydrateCustomRuleControls(ruleParts);
 
                 if (recurrence.repeatType.value === "NEVER") {
                     rdates = rdates.filter((date) => date !== fields.startDate.value);
@@ -643,6 +899,23 @@
                 url.searchParams.set("calendarId", calendarSelector.value);
                 window.location.assign(url.toString());
             });
+
+            if (recurrence) {
+                bindRuleMatrix(recurrence.weekdayMatrix, "data-weekday");
+                bindRuleMatrix(recurrence.monthdayMatrix, "data-monthday");
+                bindRuleMatrix(recurrence.monthMatrix, "data-month");
+                bindRuleMatrix(recurrence.yearlyMonthdayMatrix, "data-yearly-monthday");
+                [recurrence.frequency, recurrence.monthlyMode, recurrence.yearlyMode].forEach((field) => {
+                    field.addEventListener("change", updateCustomRuleVisibility);
+                });
+                recurrence.frequency.addEventListener("change", () => {
+                    if (recurrence.frequency.value !== previousCustomFrequency) {
+                        recurrence.byYearDay.value = "";
+                        recurrence.extraRuleParts.value = "";
+                        previousCustomFrequency = recurrence.frequency.value;
+                    }
+                });
+            }
 
             fields.allDay.addEventListener("change", () => {
                 fixedDatesDirty = true;
