@@ -114,6 +114,7 @@ export const RepeatRules: FC = () => {
               datePickerProps={{
                 showTimeInput: false,
                 calendarStartDay: weekStartDay,
+                minDate: pickerStartDate,
               }}
             />
           )}
