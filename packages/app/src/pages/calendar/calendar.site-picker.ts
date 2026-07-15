@@ -18,7 +18,22 @@ const updateSiteUrlParam = (siteHandle?: string): void => {
 
   const url = new URL(window.location.href);
   url.searchParams.set("site", siteHandle);
-  history.pushState("data", "", url.toString());
+  // A site switch is a context toggle, not a navigation, so avoid piling up history entries.
+  history.replaceState("data", "", url.toString());
+};
+
+const updateNewEventLinkSites = (siteHandle?: string): void => {
+  if (!siteHandle) {
+    return;
+  }
+
+  const links = document.querySelectorAll<HTMLAnchorElement>('a[href*="calendar/events/new/"]');
+
+  links.forEach((link) => {
+    const url = new URL(link.href, window.location.origin);
+    url.searchParams.set("site", siteHandle);
+    link.href = url.toString();
+  });
 };
 
 const decorateSitePickerButtonIcon = (): void => {
@@ -99,9 +114,12 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
               return;
             }
 
+            const siteHandle = siteHandleMap?.[siteId];
+
             setCurrentSiteId(siteId);
             setSelectedSiteId(siteId);
-            updateSiteUrlParam(siteHandleMap?.[siteId]);
+            updateSiteUrlParam(siteHandle);
+            updateNewEventLinkSites(siteHandle);
             clearCalendarEventsCache();
             api.refetchEvents();
           },
