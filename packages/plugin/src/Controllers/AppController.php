@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
+use craft\helpers\Cp;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -15,7 +16,12 @@ class AppController extends BaseController
     public function actionIndex(?string $year = null, ?string $month = null, ?string $day = null): Response
     {
         $enabledSiteIds = Calendar::getInstance()->calendarSites->getAllEnabledSiteIds();
-        $currentSiteId = \Craft::$app->sites->currentSite->id;
+
+        // Cp::requestedSite() honors the CP's "?site=" query param, unlike
+        // Craft::$app->sites->currentSite, which is resolved from the request's
+        // hostname and is not aware of the site selected in the CP.
+        $requestedSite = Cp::requestedSite();
+        $currentSiteId = $requestedSite?->id ?? \Craft::$app->sites->currentSite->id;
         $selectedSiteId = null;
 
         $user = \Craft::$app->getUser()->getIdentity();
@@ -52,7 +58,7 @@ class AppController extends BaseController
 
         $currentDay = Carbon::createFromDate($year, $month, $day, DateHelper::UTC);
 
-        $language = \Craft::$app->sites->currentSite->language;
+        $language = ($requestedSite ?? \Craft::$app->sites->currentSite)->language;
         $language = str_replace('_', '-', strtolower($language));
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
