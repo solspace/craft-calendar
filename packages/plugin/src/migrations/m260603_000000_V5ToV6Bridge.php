@@ -14,6 +14,7 @@ use craft\models\FieldLayoutTab;
 use RRule\RRule;
 use RRule\RRuleInterface;
 use Solspace\Calendar\Bundles\FieldLayouts\Elements\EventFieldElement\EventFieldElement;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
@@ -256,14 +257,14 @@ class m260603_000000_V5ToV6Bridge extends Migration
             $element = $this->extractFirstEventFieldElement($tabs) ?? new EventFieldElement();
             $element->uid ??= StringHelper::UUID();
 
-            [$tabIndex, $elementIndex] = $this->getEventFieldInsertPosition($tabs, (bool) $calendar['hasTitleField']);
+            [$tabIndex, $elementIndex] = $this->getEventFieldInsertPosition($tabs, (bool) $calendar['hasTitleField'], (string) ($calendar['titleLabel'] ?? ''));
 
             $elements = $tabs[$tabIndex]->getElements();
             array_splice($elements, $elementIndex, 0, [$element]);
             $tabs[$tabIndex]->setElements($elements);
 
             $layout->setTabs($tabs);
-            $this->saveCalendarFieldLayout((int) $calendar['id'], $layout);
+            $this->saveCalendarFieldLayout((int) $calendar['id'], (string) $calendar['uid'], $layout);
         }
     }
 
@@ -298,6 +299,8 @@ class m260603_000000_V5ToV6Bridge extends Migration
             if ($modified) {
                 $layout->setTabs($tabs);
                 \Craft::$app->getFields()->saveLayout($layout);
+
+                $this->syncFieldLayoutToProjectConfig((string) $calendar['uid'], $layout);
             }
         }
     }
@@ -305,7 +308,7 @@ class m260603_000000_V5ToV6Bridge extends Migration
     private function getCalendarLayoutRows(): array
     {
         return (new Query())
-            ->select(['id', 'fieldLayoutId', 'hasTitleField'])
+            ->select(['id', 'uid', 'fieldLayoutId', 'hasTitleField', 'titleLabel'])
             ->from('{{%calendar_calendars}}')
             ->orderBy(['id' => \SORT_ASC])
             ->all()
@@ -363,32 +366,54 @@ class m260603_000000_V5ToV6Bridge extends Migration
         return $eventFieldElement;
     }
 
-    private function getEventFieldInsertPosition(array $tabs, bool $hasTitleField): array
+    /**
+     * @param FieldLayoutTab[] $tabs
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function getEventFieldInsertPosition(array &$tabs, bool $hasTitleField, string $titleLabel): array
     {
-        if ($hasTitleField) {
-            foreach ($tabs as $tabIndex => $tab) {
-                foreach ($tab->getElements() as $elementIndex => $element) {
-                    if ($element instanceof TitleField) {
-                        return [$tabIndex, $elementIndex + 1];
-                    }
+        if (!$hasTitleField) {
+            return [0, 0];
+        }
+
+        foreach ($tabs as $tabIndex => $tab) {
+            foreach ($tab->getElements() as $elementIndex => $element) {
+                if ($element instanceof TitleField) {
+                    return [$tabIndex, $elementIndex + 1];
                 }
             }
         }
 
-        return [0, 0];
+        $titleField = new TitleField();
+        $titleField->uid = StringHelper::UUID();
+
+        if ('' !== $titleLabel) {
+            $titleField->label = $titleLabel;
+        }
+
+        $elements = $tabs[0]->getElements();
+        array_unshift($elements, $titleField);
+        $tabs[0]->setElements($elements);
+
+        return [0, 1];
     }
 
-    private function saveCalendarFieldLayout(int $calendarId, FieldLayout $layout): void
+    private function saveCalendarFieldLayout(int $calendarId, string $calendarUid, FieldLayout $layout): void
     {
         \Craft::$app->getFields()->saveLayout($layout);
 
-        if ($layout->id) {
-            $this->update(
-                '{{%calendar_calendars}}',
-                ['fieldLayoutId' => $layout->id],
-                ['id' => $calendarId],
-            );
+        if (!$layout->id) {
+            return;
         }
+
+        $this->update(
+            '{{%calendar_calendars}}',
+            ['fieldLayoutId' => $layout->id],
+            ['id' => $calendarId],
+        );
+
+        $this->syncFieldLayoutToProjectConfig($calendarUid, $layout);
     }
 
     private function upRewriteLegacyRRules(): void
@@ -469,15 +494,17 @@ class m260603_000000_V5ToV6Bridge extends Migration
 
     private function resolveRepeatEndType(array $event): string
     {
-        if (null !== ($event['count'] ?? null) && '' !== $event['count']) {
-            return 'AFTER';
+        // A count of 0 means "no count", not "repeat zero times".
+        $count = $this->normalizeRulePartValue($event['count'] ?? null);
+        if (null !== $count && (int) $count > 0) {
+            return Event::REPEAT_END_AFTER;
         }
 
         if (!empty($event['until'])) {
-            return 'ON_DATE';
+            return Event::REPEAT_END_ON_DATE;
         }
 
-        return Event::REPEAT_NEVER;
+        return Event::REPEAT_END_NEVER;
     }
 
     private function hasLegacyByParts(array $event): bool
@@ -692,9 +719,16 @@ class m260603_000000_V5ToV6Bridge extends Migration
             ] as $column => $property
         ) {
             $value = $this->normalizeRulePartValue($event[$column] ?? null);
-            if (null !== $value) {
-                $parts[] = $property.'='.$value;
+            if (null === $value) {
+                continue;
             }
+
+            // COUNT=0 is not a valid rule part, and a count of 0 means "no count".
+            if ('count' === $column && (int) $value <= 0) {
+                continue;
+            }
+
+            $parts[] = $property.'='.$value;
         }
 
         if (!empty($event['until'])) {
@@ -985,5 +1019,30 @@ class m260603_000000_V5ToV6Bridge extends Migration
             ['eventId', 'generatedThrough', 'dateCreated', 'dateUpdated', 'uid'],
             $rows,
         );
+    }
+
+    /**
+     * Calendars are stored in project config, so any layout saved in the DB
+     * would be wiped again the next time the project config is applied via the CP.
+     * Keep the two in sync.
+     */
+    private function syncFieldLayoutToProjectConfig(string $calendarUid, ?FieldLayout $layout): void
+    {
+        $projectConfig = \Craft::$app->getProjectConfig();
+        if ($projectConfig->readOnly) {
+            return;
+        }
+
+        $path = Calendar::CONFIG_CALENDAR_PATH.'.'.$calendarUid;
+        if (null === $projectConfig->get($path)) {
+            return;
+        }
+
+        $config = null;
+        if ($layout && $layout->getConfig()) {
+            $config = array_merge(['uid' => $layout->uid], $layout->getConfig());
+        }
+
+        $projectConfig->set($path.'.fieldLayout', $config);
     }
 }
