@@ -11,7 +11,7 @@ import type {
   EventMountArg,
 } from "@fullcalendar/core/index.js";
 import dayGrid from "@fullcalendar/daygrid";
-import interaction, { type EventResizeDoneArg } from "@fullcalendar/interaction";
+import interaction, { type DateClickArg, type EventResizeDoneArg } from "@fullcalendar/interaction";
 import list from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGrid from "@fullcalendar/timegrid";
@@ -235,6 +235,31 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
     [allDayDefault, eventDuration, hidePopover],
   );
 
+  // selectMinDistance requires a drag, so a plain click/tap never starts a selection.
+  // Double-clicking a date (month view), day (week view), or hour (day view) creates
+  // a single-cell draft the same way a drag-select would, matching Calendar 5.
+  const handleDateDoubleClick = useCallback(
+    (arg: DateClickArg) => {
+      if (arg.jsEvent.detail < 2) {
+        return;
+      }
+
+      hidePopover();
+      api
+        .getEvents()
+        .find((event) => isCreateDraftEvent(event))
+        ?.remove();
+      setDraftAnchorEl(null);
+      setDraft(
+        buildCreateDraftFromSelection(
+          { start: arg.date, end: arg.date, allDay: arg.allDay },
+          { allDayDefault, eventDuration },
+        ),
+      );
+    },
+    [api, allDayDefault, eventDuration, hidePopover],
+  );
+
   const handleEventDidMount = useCallback((arg: EventMountArg) => {
     if (isCreateDraftEvent(arg.event)) {
       setDraftAnchorEl(arg.el);
@@ -350,6 +375,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
         navLinks
         navLinkDayClick={handleNavLinkDayClick}
         select={canCreateEvents ? handleDraftSelection : undefined}
+        dateClick={canCreateEvents ? handleDateDoubleClick : undefined}
         dayHeaderClassNames={getDayHeaderClassNames}
         dayHeaderContent={renderDayHeaderContent}
         events={events}
