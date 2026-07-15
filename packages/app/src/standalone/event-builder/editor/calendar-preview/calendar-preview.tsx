@@ -30,7 +30,11 @@ export const CalendarPreview: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const state = useSelector(eventSelectors.state);
   const { repeatType, start, rrule } = state;
-  const [viewRange, setViewRange] = useState<{ start: Date; end: Date } | null>(null);
+  const [viewRange, setViewRange] = useState<{
+    start: Date;
+    end: Date;
+    currentStart: Date;
+  } | null>(null);
 
   const previewRecurrence = useMemo(() => buildPreviewRecurrence(rrule, start), [rrule, start]);
 
@@ -103,7 +107,13 @@ export const CalendarPreview: FC = () => {
             start: "title",
             end: "prev,today,next",
           }}
-          datesSet={(info) => setViewRange({ start: info.start, end: info.end })}
+          datesSet={(info) =>
+            setViewRange({
+              start: info.start,
+              end: info.end,
+              currentStart: info.view.currentStart,
+            })
+          }
           dayCellClassNames={(info) => {
             const status = getStatus(info.date);
 
@@ -122,7 +132,7 @@ export const CalendarPreview: FC = () => {
           <p>
             {translate("No occurrences starting from")}
             <br />
-            {format(viewRange?.start || new Date(), "PP")}
+            {format(viewRange?.currentStart ?? new Date(), "PP")}
           </p>
         ) : (
           <DateList $count={upcomingOccurrences.length}>
