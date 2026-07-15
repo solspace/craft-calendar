@@ -10,8 +10,8 @@
     "file": "assets/components-BMkzam91.css",
     "src": "_components-BMkzam91.css"
   },
-  "_components-DEesaL-G.js": {
-    "file": "assets/components-DEesaL-G.js",
+  "_components-D3ZwHWFs.js": {
+    "file": "assets/components-D3ZwHWFs.js",
     "name": "components",
     "imports": [
       "_date-B-YCzvOK.js"
@@ -49,12 +49,12 @@
     "file": "assets/rrule-CObB8Nrs.js",
     "name": "rrule"
   },
-  "_text-input-DKVJyDnz.js": {
-    "file": "assets/text-input-DKVJyDnz.js",
+  "_text-input-CofECDY-.js": {
+    "file": "assets/text-input-CofECDY-.js",
     "name": "text-input",
     "imports": [
       "_date-B-YCzvOK.js",
-      "_components-DEesaL-G.js"
+      "_components-D3ZwHWFs.js"
     ]
   },
   "_timegrid-CMqX77TR.js": {
@@ -65,30 +65,30 @@
     ]
   },
   "src/index.tsx": {
-    "file": "assets/app-D-_m9AU9.js",
+    "file": "assets/app-Dr2iZ_Ls.js",
     "name": "app",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-B-YCzvOK.js",
       "_rrule-CObB8Nrs.js",
-      "_components-DEesaL-G.js",
+      "_components-D3ZwHWFs.js",
       "_dist-Dxlx9seu.js",
       "_interaction-D4ecfs1r.js",
       "_timegrid-CMqX77TR.js",
       "_calendar.styles-C7hcKdWQ.js",
-      "_text-input-DKVJyDnz.js"
+      "_text-input-CofECDY-.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-DdPs382n.js",
+    "file": "assets/event-builder-BKIQavTH.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-B-YCzvOK.js",
       "_rrule-CObB8Nrs.js",
-      "_components-DEesaL-G.js",
+      "_components-D3ZwHWFs.js",
       "_dist-Dxlx9seu.js",
       "_interaction-D4ecfs1r.js"
     ]
@@ -107,14 +107,14 @@
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-CmHktw0u.js",
+    "file": "assets/widget-event-DYgqr_tP.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-B-YCzvOK.js",
-      "_components-DEesaL-G.js",
-      "_text-input-DKVJyDnz.js",
+      "_components-D3ZwHWFs.js",
+      "_text-input-CofECDY-.js",
       "_loader-DTu3I0Ct.js"
     ]
   },

@@ -12,7 +12,7 @@ export const Control: FC<PropsWithChildren<ControlProps>> = ({ label, id, style,
     <div className="field" style={style}>
       {label !== undefined && (
         <div className="heading">
-          <label htmlFor={id}>{translate(label)}</label>
+          <label htmlFor={id}>{label === "" ? "\u00A0" : translate(label)}</label>
         </div>
       )}
       <div className="input">{children}</div>
