@@ -28,6 +28,7 @@ export type CalendarConfig = {
   currentSiteId: number;
   currentDay: Date;
   siteMap: SiteMap;
+  siteHandleMap: SiteMap;
   isDragAndDropEnabled: boolean;
   isQuickCreateEnabled: boolean;
   isMultiSite: boolean;

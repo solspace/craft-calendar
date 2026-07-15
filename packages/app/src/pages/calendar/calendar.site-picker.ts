@@ -11,6 +11,16 @@ type MenuButton = {
   showMenu: () => void;
 };
 
+const updateSiteUrlParam = (siteHandle?: string): void => {
+  if (!siteHandle) {
+    return;
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("site", siteHandle);
+  history.pushState("data", "", url.toString());
+};
+
 const decorateSitePickerButtonIcon = (): void => {
   const icon = document.querySelector<HTMLElement>(`${SITE_PICKER_BUTTON_SELECTOR} .fc-icon-site`);
   if (!icon) {
@@ -29,7 +39,7 @@ type UseSitePickerResult = {
 };
 
 export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
-  const { currentSiteId, setCurrentSiteId, siteMap } = useConfig();
+  const { currentSiteId, setCurrentSiteId, siteMap, siteHandleMap } = useConfig();
   const [selectedSiteId, setSelectedSiteId] = useState<number>(currentSiteId);
   const siteEntries = useMemo(() => Object.entries(siteMap ?? {}), [siteMap]);
   const hasSitePicker = siteEntries.length > 1;
@@ -91,6 +101,7 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
 
             setCurrentSiteId(siteId);
             setSelectedSiteId(siteId);
+            updateSiteUrlParam(siteHandleMap?.[siteId]);
             clearCalendarEventsCache();
             api.refetchEvents();
           },
@@ -99,7 +110,7 @@ export const useSitePicker = (api: CalendarApi): UseSitePickerResult => {
         menuButton.showMenu();
       },
     };
-  }, [hasSitePicker, siteEntries, sitePickerText, setCurrentSiteId, api]);
+  }, [hasSitePicker, siteEntries, sitePickerText, setCurrentSiteId, siteHandleMap, api]);
 
   return { hasSitePicker, sitePickerButton };
 };

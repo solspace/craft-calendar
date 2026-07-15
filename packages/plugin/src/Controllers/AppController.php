@@ -21,6 +21,7 @@ class AppController extends BaseController
         $user = \Craft::$app->getUser()->getIdentity();
 
         $siteMap = [];
+        $siteHandleMap = [];
         if (\Craft::$app->getIsMultiSite()) {
             foreach (\Craft::$app->sites->getAllSites() as $site) {
                 if (!$user->can('editSite:'.$site->uid)) {
@@ -36,6 +37,7 @@ class AppController extends BaseController
                 }
 
                 $siteMap[$site->id] = $site->name;
+                $siteHandleMap[$site->id] = $site->handle;
             }
         }
 
@@ -59,6 +61,7 @@ class AppController extends BaseController
             'calendars' => $calendarOptions,
             'formats' => DateFormatHelper::toConfig(),
             'siteMap' => $siteMap,
+            'siteHandleMap' => $siteHandleMap,
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),
             'currentSiteId' => $selectedSiteId,
