@@ -2,6 +2,7 @@
 
 return [
     // App
+    'calendar/default-view' => 'calendar/settings/default-view',
     'calendar' => 'calendar/app',
     'calendar/<view:day|week|month>' => 'calendar/app',
     'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/app',

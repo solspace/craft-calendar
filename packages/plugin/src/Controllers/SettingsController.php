@@ -33,21 +33,25 @@ class SettingsController extends BaseController
     {
         $defaultView = $this->getSettingsService()->getSettingsModel()->defaultView;
 
-        $canAccessCalendars = PermissionHelper::canAccessCalendars();
-        $canAccessEvents = PermissionHelper::canAccessEvents();
-
-        $isEventsView = Calendar::VIEW_EVENTS === $defaultView;
-        $isCalendarsView = Calendar::VIEW_CALENDARS === $defaultView;
-
-        if ($isEventsView && $canAccessEvents) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/events'));
+        // Preserve the CP's selected site (if any) across the redirect.
+        $siteParams = [];
+        if ($site = \Craft::$app->request->getQueryParam('site')) {
+            $siteParams['site'] = $site;
         }
 
-        if ($isCalendarsView && $canAccessCalendars) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/calendars'));
+        if (Calendar::VIEW_EVENTS === $defaultView && PermissionHelper::canAccessEvents()) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/events', $siteParams));
         }
 
-        return $this->redirect(UrlHelper::cpUrl('calendar'));
+        if (Calendar::VIEW_CALENDARS === $defaultView && PermissionHelper::canAccessCalendars()) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/calendars', $siteParams));
+        }
+
+        if (\in_array($defaultView, ['month', 'week', 'day'], true)) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/'.$defaultView, $siteParams));
+        }
+
+        return $this->redirect(UrlHelper::cpUrl('calendar', $siteParams));
     }
 
     /**
