@@ -263,6 +263,11 @@ class Calendar extends Plugin
         $navItem = parent::getCpNavItem();
         $navItem['subnav'] = include __DIR__.'/subnav.php';
 
+        $defaultView = $this->settings->getSettingsModel()->defaultView;
+        if ($defaultView && self::VIEW_DASHBOARD !== $defaultView) {
+            $navItem['url'] = 'calendar/'.$defaultView;
+        }
+
         return $navItem;
     }
 
