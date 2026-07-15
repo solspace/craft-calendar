@@ -43,11 +43,6 @@ class SettingsService extends Component
         return $this->getSettingsModel()->isDemoBannerDisabled();
     }
 
-    public function isMiniCalEnabled(): bool
-    {
-        return $this->getSettingsModel()->isMiniCalEnabled();
-    }
-
     public function showDisabledEvents(): bool
     {
         return $this->getSettingsModel()->showDisabledEvents;

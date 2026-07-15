@@ -11,7 +11,6 @@ class SettingsModel extends Model
     public const DEFAULT_TIME_INTERVAL = 30;
     public const DEFAULT_DURATION = 60;
     public const DEFAULT_ALL_DAY = false;
-    public const DEFAULT_SHOW_MINI_CAL = true;
     public const DEFAULT_SHOW_DISABLED_EVENTS = true;
     public const DEFAULT_VIEW = Calendar::VIEW_DASHBOARD;
     public const DEFAULT_IS_DRAG_AND_DROP_ENABLED = true;
@@ -32,8 +31,6 @@ class SettingsModel extends Model
     public ?bool $allDay = null;
 
     public ?bool $demoBannerDisabled = null;
-
-    public array|bool|null $showMiniCal = null;
 
     public array|bool|null $showDisabledEvents = null;
 
@@ -91,7 +88,6 @@ class SettingsModel extends Model
         $this->eventDuration = self::DEFAULT_DURATION;
         $this->allDay = self::DEFAULT_ALL_DAY;
         $this->demoBannerDisabled = null;
-        $this->showMiniCal = self::DEFAULT_SHOW_MINI_CAL;
         $this->defaultView = self::DEFAULT_VIEW;
         $this->guestAccess = null;
         $this->quickCreateEnabled = self::DEFAULT_ALLOW_QUICK_CREATE;
@@ -120,11 +116,6 @@ class SettingsModel extends Model
     public function isDemoBannerDisabled(): bool
     {
         return (bool) $this->demoBannerDisabled;
-    }
-
-    public function isMiniCalEnabled(): string
-    {
-        return (bool) $this->showMiniCal;
     }
 
     public function getFirstDayOfWeek(): int

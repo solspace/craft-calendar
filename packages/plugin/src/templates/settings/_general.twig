@@ -60,15 +60,6 @@
         }) }}
 
         {{ forms.lightswitchField({
-            label: "Display Mini Calendar & Calendars list in Month/Week/Day views?"|t('calendar'),
-            instructions: "Displays a side menu with mini calendar and list of calendars, allowing you to filter your event results."|t('calendar'),
-            id: 'showMiniCal',
-            name: 'settings[showMiniCal]',
-            on: settings.showMiniCal,
-            errors: settings.getErrors('showMiniCal')
-        }) }}
-
-        {{ forms.lightswitchField({
             label: "Include Disabled Events in Month/Week/Day views?"|t('calendar'),
             instructions: "Events that are disabled will be displayed in the views with faded styles."|t('calendar'),
             id: 'showDisabledEvents',
