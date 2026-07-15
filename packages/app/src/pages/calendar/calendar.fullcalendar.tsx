@@ -83,6 +83,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
     canEditEvents,
     isDragAndDropEnabled,
     isQuickCreateEnabled,
+    currentSiteId,
   } = useConfig();
   const canCreateEvents = canEditEvents && isQuickCreateEnabled;
 
@@ -109,8 +110,8 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
   const hiddenCalendarIdSet = useMemo(() => new Set(hiddenCalendarIds), [hiddenCalendarIds]);
   const timeIntervalDuration = formatDuration(timeInterval);
   const events = useMemo(
-    () => createCalendarEventsSource(hiddenCalendarIdSet),
-    [hiddenCalendarIdSet],
+    () => createCalendarEventsSource(hiddenCalendarIdSet, currentSiteId),
+    [hiddenCalendarIdSet, currentSiteId],
   );
 
   const customButtons = useMemo(

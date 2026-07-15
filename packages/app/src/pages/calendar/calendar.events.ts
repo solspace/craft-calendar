@@ -29,13 +29,14 @@ type DeleteEventArgs = EventMutationArgs & {
   scope?: EventMutationScope;
 };
 
-const toRangeKey = (startIso: string, endIso: string): string => `${startIso}|${endIso}`;
+const toRangeKey = (startIso: string, endIso: string, siteId?: number): string =>
+  `${startIso}|${endIso}|${siteId ?? ""}`;
 
-const fetchRange = (start: Date, end: Date): Promise<EventInput[]> => {
+const fetchRange = (start: Date, end: Date, siteId?: number): Promise<EventInput[]> => {
   const startIso = utcDateKey(start);
   const endIso = utcDateKey(end);
 
-  const key = toRangeKey(startIso, endIso);
+  const key = toRangeKey(startIso, endIso, siteId);
   const cached = rangeCache.get(key);
 
   if (cached) {
@@ -50,7 +51,9 @@ const fetchRange = (start: Date, end: Date): Promise<EventInput[]> => {
   const url = new URL(Craft.getCpUrl("calendar/api/events"), window.location.origin);
   url.searchParams.set("start", startIso);
   url.searchParams.set("end", endIso);
-  //url.searchParams.set("siteId", );
+  if (siteId !== undefined) {
+    url.searchParams.set("siteId", String(siteId));
+  }
 
   const request = craftFetch(url)
     .then(async (response) => {
@@ -222,12 +225,15 @@ export const clearCalendarEventsCache = () => {
   inflightRequests.clear();
 };
 
-export const createCalendarEventsSource = (hiddenCalendarIds: Set<number>): EventSourceFunc => {
+export const createCalendarEventsSource = (
+  hiddenCalendarIds: Set<number>,
+  siteId?: number,
+): EventSourceFunc => {
   return (info, success, failure): Promise<EventInput[]> => {
     const start = info.start;
     const end = info.end;
 
-    return fetchRange(start, end)
+    return fetchRange(start, end, siteId)
       .then((data) => {
         let events: EventInput[];
 
