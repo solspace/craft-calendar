@@ -943,6 +943,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         $screen->selectedSubnavItem('events');
+        $existingCrumbs = \is_array($screen->crumbs) ? $screen->crumbs : [];
         $screen->crumbs([
             [
                 'label' => Calendar::t('Calendar'),
@@ -952,6 +953,7 @@ class Event extends Element implements \JsonSerializable
                 'label' => Calendar::t('Events'),
                 'url' => UrlHelper::cpUrl('calendar/events'),
             ],
+            ...$existingCrumbs,
         ]);
     }
 
