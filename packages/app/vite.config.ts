@@ -66,7 +66,7 @@ export default defineConfig(({ command, mode }) => {
       target: "es2020",
       rollupOptions: {
         input: {
-          app: path.resolve(__dirname, "./src/index.tsx"),
+          overview: path.resolve(__dirname, "./src/index.tsx"),
           "event-builder": path.resolve(__dirname, "./src/standalone/event-builder/index.tsx"),
           "widget-agenda": path.resolve(__dirname, "./src/standalone/widgets/agenda/index.tsx"),
           "widget-event": path.resolve(__dirname, "./src/standalone/widgets/event/index.tsx"),

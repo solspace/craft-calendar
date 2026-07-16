@@ -21,7 +21,6 @@ export const changeCalendarUrl = (date?: Date) => {
 
 type Options = {
   datePickerButton: CustomButtonInput;
-  sitePickerButton?: CustomButtonInput;
 };
 
 type CreateCustomButtons = (
@@ -29,16 +28,13 @@ type CreateCustomButtons = (
   options: Options,
 ) => Record<string, CustomButtonInput>;
 
-export const getMacroHeaderToolbarEnd = (hasSitePicker: boolean): string =>
-  hasSitePicker
-    ? "sitepicker refresh datepicker prev,today,next"
-    : "refresh datepicker prev,today,next";
+export const headerToolbarEnd = "refresh datepicker prev,today,next";
 
 export const createCustomButtons: CreateCustomButtons = (
   api,
-  { datePickerButton, sitePickerButton },
+  { datePickerButton },
 ): Record<string, CustomButtonInput> => {
-  const buttons: Record<string, CustomButtonInput> = {
+  return {
     prev: {
       text: Craft.t("calendar", "Previous"),
       icon: "chevron-left",
@@ -65,10 +61,4 @@ export const createCustomButtons: CreateCustomButtons = (
     },
     datepicker: datePickerButton,
   };
-
-  if (sitePickerButton) {
-    buttons.sitepicker = sitePickerButton;
-  }
-
-  return buttons;
 };

@@ -11,11 +11,4 @@ class CalendarViewBundle extends CalendarAssetBundle
             'js/scripts/widgets/month.js',
         ];
     }
-
-    public function getStylesheets(): array
-    {
-        return [
-            'css/calendars/calendar.css',
-        ];
-    }
 }

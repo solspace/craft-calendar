@@ -22,7 +22,7 @@ class ClientAssetsService extends Component
     private const ENV_LEGACY_CLIENT_PATH = 'CAL_CLIENT_PATH';
 
     private const ENTRY_SOURCES = [
-        'app' => 'src/index.tsx',
+        'overview' => 'src/index.tsx',
         'event-builder' => 'src/standalone/event-builder/index.tsx',
         'widget-agenda' => 'src/standalone/widgets/agenda/index.tsx',
         'widget-event' => 'src/standalone/widgets/event/index.tsx',

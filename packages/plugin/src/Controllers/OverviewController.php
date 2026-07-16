@@ -4,70 +4,83 @@ namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
 use craft\helpers\Cp;
+use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
-use Solspace\Calendar\Resources\Bundles\CalendarAppBundle;
+use Solspace\Calendar\Library\Helpers\SitesHelper;
+use Solspace\Calendar\Resources\Bundles\OverviewBundle;
 use yii\web\Response;
 
-class AppController extends BaseController
+class OverviewController extends BaseController
 {
+    private bool $isCraft5 = true;
+
+    public function init(): void
+    {
+        $this->isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');
+
+        parent::init();
+    }
+
     public function actionIndex(?string $year = null, ?string $month = null, ?string $day = null): Response
     {
+        $site = SitesHelper::getCurrentCpSite();
+        $sites = SitesHelper::getEditableSites();
+
+        $crumbs = [];
+
+        if ($this->isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
+            $crumbs[] = [
+                'id' => 'site-crumb',
+                'icon' => Cp::earthIcon(),
+                'label' => \Craft::t('site', $site->name),
+                'menu' => [
+                    'label' => \Craft::t('site', 'Select site'),
+                    'items' => Cp::siteMenuItems($sites, $site),
+                ],
+            ];
+        }
+
+        $crumbs[] = [
+            'label' => Calendar::t(Calendar::getInstance()->name),
+            'url' => UrlHelper::cpUrl('calendar'),
+        ];
+
+        $crumbs[] = [
+            'label' => Calendar::t('Overview'),
+            'url' => UrlHelper::cpUrl('calendar/overview'),
+            'current' => true,
+        ];
+
         $enabledSiteIds = Calendar::getInstance()->calendarSites->getAllEnabledSiteIds();
 
-        // Cp::requestedSite() honors the CP's "?site=" query param, unlike
-        // Craft::$app->sites->currentSite, which is resolved from the request's
-        // hostname and is not aware of the site selected in the CP.
-        $requestedSite = Cp::requestedSite();
-        $currentSiteId = $requestedSite?->id ?? \Craft::$app->sites->currentSite->id;
-        $selectedSiteId = null;
+        $currentSiteId = $site?->id;
+
+        $language = str_replace('_', '-', strtolower($site->language));
 
         $user = \Craft::$app->getUser()->getIdentity();
 
-        $siteMap = [];
-        $siteHandleMap = [];
-        if (\Craft::$app->getIsMultiSite()) {
-            foreach (\Craft::$app->sites->getAllSites() as $site) {
-                if (!$user->can('editSite:'.$site->uid)) {
-                    continue;
-                }
-
-                if (!\in_array($site->id, $enabledSiteIds)) {
-                    continue;
-                }
-
-                if ($site->id === $currentSiteId) {
-                    $selectedSiteId = $currentSiteId;
-                }
-
-                $siteMap[$site->id] = $site->name;
-                $siteHandleMap[$site->id] = $site->handle;
+        $selectableSiteIds = [];
+        foreach ($sites as $editableSite) {
+            if (\in_array($editableSite->id, $enabledSiteIds)) {
+                $selectableSiteIds[] = $editableSite->id;
             }
         }
 
-        if (null === $selectedSiteId) {
-            if (empty($siteMap)) {
-                $selectedSiteId = $currentSiteId;
-            } else {
-                $siteIds = array_keys($siteMap);
-                $selectedSiteId = reset($siteIds);
-            }
+        $selectedSiteId = $currentSiteId;
+        if (!empty($selectableSiteIds) && !\in_array($currentSiteId, $selectableSiteIds)) {
+            $selectedSiteId = reset($selectableSiteIds);
         }
 
         $currentDay = Carbon::createFromDate($year, $month, $day, DateHelper::UTC);
-
-        $language = ($requestedSite ?? \Craft::$app->sites->currentSite)->language;
-        $language = str_replace('_', '-', strtolower($language));
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
 
         $configuration = [
             'calendars' => $calendarOptions,
             'formats' => DateFormatHelper::toConfig(),
-            'siteMap' => $siteMap,
-            'siteHandleMap' => $siteHandleMap,
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),
             'currentSiteId' => $selectedSiteId,
@@ -87,9 +100,11 @@ class AppController extends BaseController
             'allDayDefault' => $this->getSettingsService()->isAllDayDefault(),
         ];
 
-        $this->view->registerAssetBundle(CalendarAppBundle::class);
+        $this->view->registerAssetBundle(OverviewBundle::class);
 
-        return $this->renderTemplate('calendar/app', [
+        return $this->renderTemplate('calendar/overview', [
+            'isCraft5' => $this->isCraft5,
+            'crumbs' => $crumbs,
             'configuration' => $configuration,
         ]);
     }

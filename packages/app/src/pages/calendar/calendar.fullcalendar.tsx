@@ -15,6 +15,7 @@ import interaction, { type DateClickArg, type EventResizeDoneArg } from "@fullca
 import list from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGrid from "@fullcalendar/timegrid";
+import { addDays } from "date-fns";
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   buildCreateDraftEventInput,
@@ -26,7 +27,7 @@ import {
 import {
   changeCalendarUrl,
   createCustomButtons,
-  getMacroHeaderToolbarEnd,
+  headerToolbarEnd,
 } from "./calendar.custom-buttons";
 import { useDateSelector } from "./calendar.date-selector";
 import {
@@ -41,7 +42,6 @@ import {
   resizeEvent,
 } from "./calendar.events";
 import { useViewSettings, type View } from "./calendar.persistence";
-import { useSitePicker } from "./calendar.site-picker";
 import { CalendarWrapper } from "./calendar.styles";
 import { useConfig } from "./context/config.context";
 import { PopoverCreateEvent } from "./popovers/create-event/create-event";
@@ -105,7 +105,6 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
     [],
   );
 
-  const { hasSitePicker, sitePickerButton } = useSitePicker(api);
   const { datePickerButton, dateSelector } = useDateSelector(api);
   const hiddenCalendarIdSet = useMemo(() => new Set(hiddenCalendarIds), [hiddenCalendarIds]);
   const timeIntervalDuration = formatDuration(timeInterval);
@@ -118,9 +117,8 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
     () =>
       createCustomButtons(api, {
         datePickerButton,
-        sitePickerButton,
       }),
-    [datePickerButton, api, sitePickerButton],
+    [datePickerButton, api],
   );
 
   const isRecurringEvent = (event: EventApi) =>
@@ -252,8 +250,15 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
       setDraftAnchorEl(null);
       setDraft(
         buildCreateDraftFromSelection(
-          { start: arg.date, end: arg.date, allDay: arg.allDay },
-          { allDayDefault, eventDuration },
+          {
+            start: arg.date,
+            end: arg.allDay ? addDays(arg.date, 1) : arg.date,
+            allDay: arg.allDay,
+          },
+          {
+            allDayDefault,
+            eventDuration,
+          },
         ),
       );
     },
@@ -433,7 +438,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
         headerToolbar={{
           start: "title",
           center: "dayGridMonth,timeGridWeek,timeGridDay",
-          end: getMacroHeaderToolbarEnd(hasSitePicker),
+          end: headerToolbarEnd,
         }}
         buttonText={{
           dayGridMonth: Craft.t("calendar", "Month"),

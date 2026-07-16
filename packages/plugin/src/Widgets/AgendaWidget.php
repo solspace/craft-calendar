@@ -55,7 +55,7 @@ class AgendaWidget extends AbstractWidget
             [
                 'settings' => $this,
                 'configuration' => [
-                    'siteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
+                    'currentSiteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
                     'calendars' => $this->calendars,
                     'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
                     'formats' => DateFormatHelper::toConfig(),

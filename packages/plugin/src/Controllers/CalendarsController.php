@@ -22,7 +22,6 @@ use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
-use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -448,8 +447,6 @@ class CalendarsController extends BaseController
                 'name' => $field->name,
             ];
         }
-
-        \Craft::$app->view->registerAssetBundle(CalendarEditBundle::class);
 
         $site = SitesHelper::getCurrentCpSite();
         $sites = SitesHelper::getEditableSites();

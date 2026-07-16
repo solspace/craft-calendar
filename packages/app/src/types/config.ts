@@ -1,4 +1,3 @@
-export type SiteMap = Record<string, string>;
 export type WeekStartDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export type FullCalendarDateFormat = Intl.DateTimeFormatOptions & {
@@ -27,8 +26,6 @@ export type CalendarConfig = {
   weekStartDay: WeekStartDay;
   currentSiteId: number;
   currentDay: Date;
-  siteMap: SiteMap;
-  siteHandleMap: SiteMap;
   isDragAndDropEnabled: boolean;
   isQuickCreateEnabled: boolean;
   isMultiSite: boolean;

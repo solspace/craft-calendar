@@ -29,14 +29,34 @@ type DeleteEventArgs = EventMutationArgs & {
   scope?: EventMutationScope;
 };
 
-const toRangeKey = (startIso: string, endIso: string, siteId?: number): string =>
-  `${startIso}|${endIso}|${siteId ?? ""}`;
+const normalizeCalendarsParam = (calendars?: string | string[]): string | undefined => {
+  if (calendars === undefined || calendars === "*") {
+    return undefined;
+  }
 
-const fetchRange = (start: Date, end: Date, siteId?: number): Promise<EventInput[]> => {
+  const value = Array.isArray(calendars) ? calendars.join(",") : calendars;
+
+  return "" === value ? undefined : value;
+};
+
+const toRangeKey = (
+  startIso: string,
+  endIso: string,
+  siteId?: number,
+  calendars?: string,
+): string => `${startIso}|${endIso}|${siteId ?? ""}|${calendars ?? ""}`;
+
+const fetchRange = (
+  start: Date,
+  end: Date,
+  siteId?: number,
+  calendars?: string | string[],
+): Promise<EventInput[]> => {
   const startIso = utcDateKey(start);
   const endIso = utcDateKey(end);
+  const calendarsParam = normalizeCalendarsParam(calendars);
 
-  const key = toRangeKey(startIso, endIso, siteId);
+  const key = toRangeKey(startIso, endIso, siteId, calendarsParam);
   const cached = rangeCache.get(key);
 
   if (cached) {
@@ -53,6 +73,9 @@ const fetchRange = (start: Date, end: Date, siteId?: number): Promise<EventInput
   url.searchParams.set("end", endIso);
   if (siteId !== undefined) {
     url.searchParams.set("siteId", String(siteId));
+  }
+  if (calendarsParam !== undefined) {
+    url.searchParams.set("calendars", calendarsParam);
   }
 
   const request = craftFetch(url)
@@ -228,12 +251,13 @@ export const clearCalendarEventsCache = () => {
 export const createCalendarEventsSource = (
   hiddenCalendarIds: Set<number>,
   siteId?: number,
+  calendars?: string | string[],
 ): EventSourceFunc => {
   return (info, success, failure): Promise<EventInput[]> => {
     const start = info.start;
     const end = info.end;
 
-    return fetchRange(start, end, siteId)
+    return fetchRange(start, end, siteId, calendars)
       .then((data) => {
         let events: EventInput[];
 
@@ -254,5 +278,3 @@ export const createCalendarEventsSource = (
       });
   };
 };
-
-export const calendarEvents = createCalendarEventsSource(new Set<number>());

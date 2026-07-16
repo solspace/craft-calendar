@@ -52,15 +52,15 @@ export const registerLoader = <C extends object>(
     observer.observe(document.documentElement, { childList: true, subtree: true });
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startObserver);
-  } else {
-    startObserver();
-  }
-
   const scanForWidgets = (root: ParentNode = document): void => {
     root
       .querySelectorAll<HTMLElement>(`[data-calendar-widget="${widgetName}"]:not([data-mounted])`)
       .forEach(mountWidget);
   };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startObserver);
+  } else {
+    startObserver();
+  }
 };

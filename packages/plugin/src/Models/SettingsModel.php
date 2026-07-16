@@ -12,7 +12,7 @@ class SettingsModel extends Model
     public const DEFAULT_DURATION = 60;
     public const DEFAULT_ALL_DAY = false;
     public const DEFAULT_SHOW_DISABLED_EVENTS = true;
-    public const DEFAULT_VIEW = Calendar::VIEW_DASHBOARD;
+    public const DEFAULT_VIEW = Calendar::VIEW_OVERVIEW;
     public const DEFAULT_IS_DRAG_AND_DROP_ENABLED = true;
     public const DEFAULT_ALLOW_QUICK_CREATE = true;
     public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;

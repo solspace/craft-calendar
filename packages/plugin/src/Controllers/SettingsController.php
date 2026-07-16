@@ -47,11 +47,7 @@ class SettingsController extends BaseController
             return $this->redirect(UrlHelper::cpUrl('calendar/calendars', $siteParams));
         }
 
-        if (\in_array($defaultView, ['month', 'week', 'day'], true)) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/'.$defaultView, $siteParams));
-        }
-
-        return $this->redirect(UrlHelper::cpUrl('calendar', $siteParams));
+        return $this->redirect(UrlHelper::cpUrl('calendar/overview', $siteParams));
     }
 
     /**

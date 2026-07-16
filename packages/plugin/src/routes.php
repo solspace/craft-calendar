@@ -1,12 +1,11 @@
 <?php
 
 return [
-    // App
-    'calendar/default-view' => 'calendar/settings/default-view',
-    'calendar' => 'calendar/app',
-    'calendar/<view:day|week|month>' => 'calendar/app',
-    'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/app',
-    'calendar/<year:\d+>/<month:\d+>/<day:\d+>/<view:day|week|month>' => 'calendar/app',
+    // Overview
+    'calendar' => 'calendar/settings/default-view',
+    'calendar/overview' => 'calendar/overview',
+    'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/overview',
+    'calendar/<year:\d+>/<month:\d+>/<day:\d+>/<view:day|week|month>' => 'calendar/overview',
 
     // Calendars
     'calendar/calendars' => 'calendar/calendars/calendars-index',

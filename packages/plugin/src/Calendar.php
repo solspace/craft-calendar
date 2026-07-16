@@ -63,7 +63,7 @@ class Calendar extends Plugin
 
     public const FIELD_LAYOUT_TYPE = 'Calendar_Event';
 
-    public const VIEW_DASHBOARD = 'dashboard';
+    public const VIEW_OVERVIEW = 'overview';
     public const VIEW_EVENTS = 'events';
     public const VIEW_CALENDARS = 'calendars';
     public const VIEW_RESOURCES = 'resources';
@@ -262,7 +262,6 @@ class Calendar extends Plugin
     {
         $navItem = parent::getCpNavItem();
         $navItem['subnav'] = include __DIR__.'/subnav.php';
-        $navItem['url'] = 'calendar/default-view';
 
         return $navItem;
     }

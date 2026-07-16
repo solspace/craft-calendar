@@ -335,25 +335,11 @@ export const CalendarWrapper = styled(CalendarBase)`
     color: #000;
   }
 
-  .fc-sitepicker-button,
   .fc-refresh-button,
   .fc-datepicker-button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-  }
-
-  .calendar-sitepicker-craft-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    line-height: 1;
-  }
-
-  .calendar-sitepicker-craft-icon::before {
-    font-size: 20px;
   }
 
   .fc-icon.fc-icon {
