@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { Control, type ControlProps } from "../control";
 
 import { CalendarIcon } from "./calendar.icon";
+import { datePickerTheme } from "./date-picker.theme";
 import "react-datepicker/dist/react-datepicker.css";
 
 export { CalendarIcon as Icon };
@@ -46,6 +47,8 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
 };
 
 const DatePickerWrapper = styled.div`
+  ${datePickerTheme}
+
   .react-datepicker {
     &-popper {
       width: 327px;
@@ -54,6 +57,10 @@ const DatePickerWrapper = styled.div`
     &__header {
       border-top-right-radius: 0.3rem;
       border-top-left-radius: 0.3rem;
+    }
+
+    &__current-month {
+      display: none;
     }
 
     &__today-button, &__time {

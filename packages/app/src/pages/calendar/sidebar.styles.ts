@@ -43,7 +43,7 @@ export const CalendarCheckboxInput = styled.input`
   }
 
   &:checked + span {
-    border: 1px solid var(--calendar-color-dark);
+    border: 1px solid var(--calendar-color);
   }
 
   &:checked + span:after {
@@ -58,16 +58,15 @@ export const CalendarCheckbox = styled.span`
   height: 15px;
 
   border: 1px solid var(--calendar-color);
-  border-radius: 4px;
-  background-color: var(--calendar-color-light);
-
+  border-radius: 50%;
+  background-color: var(--calendar-color);
 
   &:after {
     content: "";
 
     position: absolute;
-    top: 2px;
-    left: 4.5px;
+    top: 50%;
+    left: 50%;
 
     width: 4px;
     height: 7px;
@@ -76,7 +75,7 @@ export const CalendarCheckbox = styled.span`
     border-width: 0 2px 2px 0;
 
     opacity: 0;
-    transform: rotate(45deg);
+    transform: translate(-50%, -60%) rotate(45deg);
   }
 `;
 

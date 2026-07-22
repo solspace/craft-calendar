@@ -1,3 +1,4 @@
+import { datePickerTheme } from "@cal/components/controls/date-picker/date-picker.theme";
 import styled from "styled-components";
 
 export const FixedDatesSection = styled.div`
@@ -31,6 +32,12 @@ export const PickerButtonWrapper = styled.div`
 
   .react-datepicker-popper {
     z-index: 20;
+  }
+
+  ${datePickerTheme}
+
+  .react-datepicker__current-month {
+    display: none;
   }
 `;
 

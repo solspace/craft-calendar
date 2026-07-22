@@ -61,6 +61,18 @@ const weekHeaderDayFormatter = new Intl.DateTimeFormat(undefined, {
   timeZone: "UTC",
 });
 
+const calendarViewOptions = {
+  dayGridMonth: {
+    dayHeaderFormat: {
+      weekday: "long" as const,
+    },
+  },
+};
+
+const hoverPopoverOptions: ShowPopoverOptions = {
+  closeDelayMs: 300,
+};
+
 const formatDuration = (minutes: number): string => {
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
@@ -90,6 +102,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
   const calendar = useRef<FullCalendar>(null);
   const calendarFilterKey = hiddenCalendarIds.join(",");
   const lastCalendarFilterKey = useRef<string | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
   const [draftAnchorEl, setDraftAnchorEl] = useState<HTMLElement | null>(null);
   const [isFetchingEvents, setIsFetchingEvents] = useState(false);
@@ -265,6 +278,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
     [api, allDayDefault, eventDuration, hidePopover],
   );
 
+  useEffect(() => () => clearTimeout(hoverTimer.current), []);
+
+  const cancelHoverPopover = useCallback(() => clearTimeout(hoverTimer.current), []);
+
   const handleEventDidMount = useCallback((arg: EventMountArg) => {
     if (isCreateDraftEvent(arg.event)) {
       setDraftAnchorEl(arg.el);
@@ -366,6 +383,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
         initialView={view}
         initialDate={currentDay}
         locale={language}
+        views={calendarViewOptions}
         timeZone="UTC"
         firstDay={weekStartDay}
         nextDayThreshold={overlapThresholdString}
@@ -391,9 +409,29 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
         loading={setIsFetchingEvents}
         eventDidMount={handleEventDidMount}
         eventWillUnmount={handleEventWillUnmount}
+        eventMouseEnter={(arg) => {
+          if (arg.view.type !== "dayGridMonth") {
+            return;
+          }
+
+          if (getCalendarEventClickAction(arg.event, arg.jsEvent.target) === "ignore") {
+            return;
+          }
+
+          clearTimeout(hoverTimer.current);
+          hoverTimer.current = setTimeout(
+            () => showPopover(<PopoverViewEvent fcEvent={arg} />, arg.el, hoverPopoverOptions),
+            300,
+          );
+
+          arg.jsEvent.preventDefault();
+          arg.jsEvent.stopPropagation();
+        }}
+        eventMouseLeave={cancelHoverPopover}
+        eventDragStart={cancelHoverPopover}
+        eventResizeStart={cancelHoverPopover}
         eventClick={(arg) => {
-          const action = getCalendarEventClickAction(arg.event, arg.jsEvent.target);
-          if (action !== "open") {
+          if (getCalendarEventClickAction(arg.event, arg.jsEvent.target) !== "open") {
             return;
           }
 

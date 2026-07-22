@@ -28,7 +28,7 @@ type CreateCustomButtons = (
   options: Options,
 ) => Record<string, CustomButtonInput>;
 
-export const headerToolbarEnd = "refresh datepicker prev,today,next";
+export const headerToolbarEnd = "refresh prev,today,datepicker,next";
 
 export const createCustomButtons: CreateCustomButtons = (
   api,

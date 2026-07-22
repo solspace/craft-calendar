@@ -91,15 +91,14 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
             borderColor: event.borderColor,
           }}
         />
-        {timeText ? <div className="fc-event-time">{timeText}</div> : null}
         <div className="fc-event-title-container">{titleContent}</div>
+        {timeText ? <div className="fc-event-time">{timeText}</div> : null}
       </div>
     );
   }
 
   return (
     <div className="fc-event-main-frame">
-      {timeText ? <div className="fc-event-time">{timeText}</div> : null}
       <div className="fc-event-title-container">{titleContent}</div>
     </div>
   );

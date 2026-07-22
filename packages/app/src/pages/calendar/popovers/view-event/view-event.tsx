@@ -128,6 +128,10 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
               return;
             }
 
+            if (!window.confirm(translate("Are you sure you want to delete this event?"))) {
+              return;
+            }
+
             void handleDelete();
           }}
         >
