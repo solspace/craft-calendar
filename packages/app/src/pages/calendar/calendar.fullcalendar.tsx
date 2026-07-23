@@ -71,6 +71,7 @@ const calendarViewOptions = {
 
 const hoverPopoverOptions: ShowPopoverOptions = {
   closeDelayMs: 300,
+  position: ["bottom", "top", "right", "left"],
 };
 
 const formatDuration = (minutes: number): string => {
