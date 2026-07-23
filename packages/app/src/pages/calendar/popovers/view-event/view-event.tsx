@@ -19,14 +19,19 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { hidePopover, showPopover } = usePopover();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
+  useEventListener("keydown", (keyboardEvent) => {
+    if (keyboardEvent.key === "Escape") {
       hidePopover();
     }
   });
 
   const event = fcEvent.event;
   const { end, allDay } = event;
+
+  const calendarName = event.extendedProps.calendarName;
+
+  const calendarColor =
+    event.extendedProps.calendarColor ?? event.backgroundColor ?? event.borderColor ?? "#607d9f";
 
   const endForDisplay = useMemo(() => {
     if (!allDay) {
@@ -36,10 +41,9 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     return subDays(end as Date, 1);
   }, [allDay, end]);
 
-  const isRecurring = Boolean(event?.extendedProps?.rrule);
+  const isRecurring = Boolean(event.extendedProps.rrule);
   const rruleText = isRecurring ? getRRuleText(event.extendedProps.rrule) : null;
   const occurrenceDate = getOccurrenceDateFromId(String(event.id), event.allDay);
-
   const dateFormat = event.allDay ? "PP" : "PPp";
 
   const handleDelete = async () => {
@@ -102,13 +106,30 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     <PopoverWrapper>
       <h1>{event.title}</h1>
 
+      {calendarName && (
+        <div className="calendar-label">
+          <span
+            className="calendar-label-dot"
+            style={{ backgroundColor: calendarColor }}
+            aria-hidden="true"
+          />
+          <span>{calendarName}</span>
+        </div>
+      )}
+
+      <hr />
+
       <div>
         <b>{translate("Starts")}:</b> {format(event.start!, dateFormat)}
         <br />
         <b>{translate("Ends")}:</b> {format(endForDisplay!, dateFormat)}
       </div>
 
-      {rruleText && <div>{rruleText}</div>}
+      {rruleText && (
+        <div>
+          <b>{translate("Repeats")}:</b> {rruleText}
+        </div>
+      )}
 
       <hr />
 

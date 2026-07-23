@@ -263,7 +263,7 @@ $color-todayHighlight: #e5422b;
       }
 
       .fc-title {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: bold;
       }
     }
@@ -303,7 +303,7 @@ $color-todayHighlight: #e5422b;
 
       &.fc-event-all-day,
       &.fc-event-multi-day {
-        padding: 2px 4px 1px;
+        padding: 0px 5px 0px;
 
         border: none !important;
         @include border-radius(0);
@@ -344,7 +344,7 @@ $color-todayHighlight: #e5422b;
           margin: 0 5px 0 0;
 
           @include border-radius($size);
-          border: 1px solid transparent;
+          border: 0px solid transparent;
         }
 
         .fc-title {

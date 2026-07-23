@@ -30,6 +30,8 @@ class FullCalTransformer
             'repeats' => $element->isRepeating(),
 
             'calendar' => $calendar->id,
+            'calendarName' => $calendar->name,
+            'calendarColor' => $calendar->color,
             'backgroundColor' => $calendar->color,
             'borderColor' => $calendar->getDarkerColor(),
             'textColor' => $calendar->getContrastColor(),
@@ -68,6 +70,8 @@ class FullCalTransformer
             'repeats' => $model->event->isRepeating(),
 
             'calendar' => $model->calendar->id,
+            'calendarName' => $model->calendar->name,
+            'calendarColor' => $model->calendar->color,
             'backgroundColor' => $model->calendar->color,
             'borderColor' => $model->calendar->getDarkerColor(),
             'textColor' => $model->calendar->getContrastColor(),

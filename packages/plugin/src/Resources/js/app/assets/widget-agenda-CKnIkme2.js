@@ -1,4 +1,4 @@
-import{_ as e,d as t,h as n,p as r}from"./date-DHm29epU.js";import{n as i,t as a}from"./dist-DgGuNF4E.js";import{t as o}from"./timegrid-Drf6zlY9.js";import{i as s,n as c}from"./calendar.styles-BJzDU9pJ.js";import{t as l}from"./loader-Bd6o1-jj.js";var u=t(c)`
+import{_ as e,d as t,h as n,p as r}from"./date-DHm29epU.js";import{n as i,t as a}from"./dist-DgGuNF4E.js";import{t as o}from"./timegrid-Drf6zlY9.js";import{i as s,n as c}from"./calendar.styles-C0FusbZu.js";import{t as l}from"./loader-Bd6o1-jj.js";var u=t(c)`
   .fc {
     min-height: 500px;
   }
@@ -7,7 +7,7 @@ import{_ as e,d as t,h as n,p as r}from"./date-DHm29epU.js";import{n as i,t as a
     &-cushion {
       overflow: hidden;
       white-space: nowrap;
-      font-size: 12px;
+      font-size: 11px;
     }
   }
 

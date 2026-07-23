@@ -17,7 +17,7 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
   }
 
   .fc {
-    --fc-border-color: var(--gray-200);
+    --fc-border-color: var(--gray-150);
     --fc-page-bg-color: #ffffff;
     --fc-neutral-bg-color: #f4f7fc;
     --fc-today-bg-color: #ffffff;
@@ -26,12 +26,23 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
     --fc-button-border-color: rgb(96 125 159 / 25%);
     --fc-button-hover-bg-color: #bac6d6;
     --fc-button-hover-border-color: #bac6d6;
-    --fc-button-active-color: #ffffff;
-    --fc-button-active-bg-color: var(--button-bg--active);
+    --fc-button-active-bg-color: var(--gray-500);
     --fc-button-active-border-color: #ffffff;
     --fc-more-link-bg-color: transparent;
     --fc-more-link-text-color: #606060;
     --fc-event-selected-overlay-color: rgb(0 0 0 / 15%);
+  }
+
+  .fc .fc-button:not(.fc-button-group > .fc-button) {
+    border-radius: var(--radius-lg);
+  }
+
+  .fc .fc-button-group > .fc-button:first-child {
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  }
+
+  .fc .fc-button-group > .fc-button:last-child {
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   }
 
   .fc-button.fc-button-primary {
@@ -60,6 +71,11 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
       outline: none;
     }
 
+    &.fc-button-active,
+    &.fc-button-active:focus {
+      color: #ffffff;
+    }
+
     &:focus-visible {
       outline: 2px solid var(--button-bg--active);
       outline-offset: 1px;
@@ -82,13 +98,13 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
   }
 
   .fc-col-header-cell {
-    background: var(--gray-100);
+    background: var(--gray-150);
   }
 
   .fc-col-header-cell-cushion {
     display: block;
     padding: 5px 7px;
-    color: var(--gray-500);
+    color: var(--gray-700);
     font-size: 18px;
     font-weight: 400;
     text-align: right;
@@ -105,12 +121,12 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
     }
 
     .fc-daygrid-day {
-      background: #fbfdff;
+      background: #ffffff;
     }
     
     .fc-daygrid-day.fc-day-sat:not(.fc-day-other):not(.fc-day-today),
     .fc-daygrid-day.fc-day-sun:not(.fc-day-other):not(.fc-day-today) {
-      background-color: #fbfdff;
+      background-color: #fcfdff;
     }
 
     .fc-daygrid-day.fc-day-other {
@@ -133,7 +149,7 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
   .fc-day-today .fc-daygrid-day-number {
     background-color: var(--primary-button-bg);
     color: #ffffff;
-    font-weight: 700;
+    font-weight: 400;
   }
 
   .fc-timeGridWeek-view {
@@ -180,7 +196,7 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
 
     .fc-timegrid-col.fc-day-sat:not(.fc-day-today),
     .fc-timegrid-col.fc-day-sun:not(.fc-day-today) {
-      background-color: #fbfdff;
+      background-color: #fcfdff;
     }
   }
 
@@ -221,13 +237,13 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
     }
 
     .fc-event-title {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
     }
   }
 
   .fc-daygrid-event-harness .fc-daygrid-event {
-    margin: 1px 2px 0;
+    margin: 1px 3px 0;
     border-radius: 3px;
   }
 
@@ -238,15 +254,19 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
     }
 
     .fc-event-title {
-      font-size: 12px;
+      font-size: 11px;
     }
 
     &.fc-event-all-day,
     &.fc-event-multi-day {
-      padding: 2px 4px 1px;
+      padding: 0px 5px 0px;
       border: none !important;
       border-radius: 4px;
     }
+  }
+
+  .fc-daygrid-dot-event {
+    padding: 0px;
   }
 
   .fc-daygrid-dot-event.fc-event-single-day,
@@ -274,7 +294,7 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
       flex: 0 0 auto;
       width: 4px;
       height: 12px;
-      border: 1px solid transparent;
+      border: 0px solid transparent;
       border-radius: 2px;
     }
 
@@ -445,7 +465,7 @@ import{d as e,i as t,o as n}from"./date-DHm29epU.js";var r=()=>{let e=window.Cra
     height: 27px;
     padding: 0;
     border-radius: 27px;
-    color: inherit;
+    color: var(--gray-500);
     font-size: 16px;
     line-height: 1;
     text-decoration: none;

@@ -66,26 +66,26 @@ class EventQuery extends ElementQuery
     private ?array $calendarUid = null;
     private ?array $calendar = null;
 
-    private array|int|string|null $authorId = null;
+    private null|array|int|string $authorId = null;
 
-    private \DateTime|string|null $postDate = null;
-    private \DateTime|string|null $startDate = null;
-    private \DateTime|string|null $endDate = null;
+    private null|\DateTime|string $postDate = null;
+    private null|\DateTime|string $startDate = null;
+    private null|\DateTime|string $endDate = null;
 
-    private \DateTime|string|null $startsBefore = null;
-    private \DateTime|string|null $startsBeforeOrAt = null;
-    private \DateTime|string|null $startsAfter = null;
-    private \DateTime|string|null $startsAfterOrAt = null;
+    private null|\DateTime|string $startsBefore = null;
+    private null|\DateTime|string $startsBeforeOrAt = null;
+    private null|\DateTime|string $startsAfter = null;
+    private null|\DateTime|string $startsAfterOrAt = null;
 
-    private \DateTime|string|null $endsAfter = null;
-    private \DateTime|string|null $endsAfterOrAt = null;
-    private \DateTime|string|null $endsBefore = null;
-    private \DateTime|string|null $endsBeforeOrAt = null;
+    private null|\DateTime|string $endsAfter = null;
+    private null|\DateTime|string $endsAfterOrAt = null;
+    private null|\DateTime|string $endsBefore = null;
+    private null|\DateTime|string $endsBeforeOrAt = null;
 
-    private \DateTime|string|null $until = null;
-    private \DateTime|string|null $rangeStart = null;
-    private \DateTime|string|null $rangeEnd = null;
-    private array|string|null $timezone = null;
+    private null|\DateTime|string $until = null;
+    private null|\DateTime|string $rangeStart = null;
+    private null|\DateTime|string $rangeEnd = null;
+    private null|array|string $timezone = null;
 
     private ?bool $allDay = null;
 
@@ -106,7 +106,7 @@ class EventQuery extends ElementQuery
         parent::__construct($elementType, $config);
     }
 
-    public function setCalendarId(array|int|string|null $value = null): self
+    public function setCalendarId(null|array|int|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -117,7 +117,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setCalendarUid(array|string|null $value = null): self
+    public function setCalendarUid(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -128,7 +128,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setCalendar(array|string|null $value = null): self
+    public function setCalendar(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -139,7 +139,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setAuthorId(array|int|string|null $value = null): self
+    public function setAuthorId(null|array|int|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -290,7 +290,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setTimezone(array|string|null $value = null): self
+    public function setTimezone(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];

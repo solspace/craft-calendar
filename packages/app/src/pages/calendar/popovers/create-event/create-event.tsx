@@ -151,7 +151,7 @@ export const PopoverCreateEvent: FC<Props> = ({
       <Flex>
         <button
           type="button"
-          className={clsx("btn small submit", isFetching && "disabled")}
+          className={clsx("btn submit", isFetching && "disabled")}
           disabled={!draft.title || !calendarId || isFetching}
           onClick={() => createEvent(draft, calendarId)}
         >
@@ -160,7 +160,7 @@ export const PopoverCreateEvent: FC<Props> = ({
 
         <button
           type="button"
-          className={clsx("btn small", isFetching && "disabled")}
+          className={clsx("btn", isFetching && "disabled")}
           disabled={isFetching}
           onClick={onCancel}
         >
