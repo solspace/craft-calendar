@@ -103,6 +103,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
   const calendarFilterKey = hiddenCalendarIds.join(",");
   const lastCalendarFilterKey = useRef<string | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const isDraggingRef = useRef(false);
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
   const [draftAnchorEl, setDraftAnchorEl] = useState<HTMLElement | null>(null);
   const [isFetchingEvents, setIsFetchingEvents] = useState(false);
@@ -282,6 +283,16 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
 
   const cancelHoverPopover = useCallback(() => clearTimeout(hoverTimer.current), []);
 
+  const dismissPopoverForInteraction = useCallback(() => {
+    isDraggingRef.current = true;
+    clearTimeout(hoverTimer.current);
+    hidePopover();
+  }, [hidePopover]);
+
+  const endInteraction = useCallback(() => {
+    isDraggingRef.current = false;
+  }, []);
+
   const handleEventDidMount = useCallback((arg: EventMountArg) => {
     if (isCreateDraftEvent(arg.event)) {
       setDraftAnchorEl(arg.el);
@@ -414,6 +425,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
             return;
           }
 
+          if (isDraggingRef.current) {
+            return;
+          }
+
           if (getCalendarEventClickAction(arg.event, arg.jsEvent.target) === "ignore") {
             return;
           }
@@ -428,8 +443,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
           arg.jsEvent.stopPropagation();
         }}
         eventMouseLeave={cancelHoverPopover}
-        eventDragStart={cancelHoverPopover}
-        eventResizeStart={cancelHoverPopover}
+        eventDragStart={dismissPopoverForInteraction}
+        eventDragStop={endInteraction}
+        eventResizeStart={dismissPopoverForInteraction}
+        eventResizeStop={endInteraction}
         eventClick={(arg) => {
           if (getCalendarEventClickAction(arg.event, arg.jsEvent.target) !== "open") {
             return;
