@@ -10,8 +10,8 @@
     "file": "assets/components-BMkzam91.css",
     "src": "_components-BMkzam91.css"
   },
-  "_components-CzBQsDWV.js": {
-    "file": "assets/components-CzBQsDWV.js",
+  "_components-X9ritUFQ.js": {
+    "file": "assets/components-X9ritUFQ.js",
     "name": "components",
     "imports": [
       "_date-DHm29epU.js"
@@ -49,12 +49,12 @@
     "file": "assets/rrule-7b6Rmlwt.js",
     "name": "rrule"
   },
-  "_text-input-BdVZ4pyZ.js": {
-    "file": "assets/text-input-BdVZ4pyZ.js",
+  "_text-input-C0RBseum.js": {
+    "file": "assets/text-input-C0RBseum.js",
     "name": "text-input",
     "imports": [
       "_date-DHm29epU.js",
-      "_components-CzBQsDWV.js"
+      "_components-X9ritUFQ.js"
     ]
   },
   "_timegrid-Drf6zlY9.js": {
@@ -65,30 +65,30 @@
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-DS7ZBhtV.js",
+    "file": "assets/overview-BgRRJWE1.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-CzBQsDWV.js",
+      "_components-X9ritUFQ.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js",
       "_timegrid-Drf6zlY9.js",
       "_calendar.styles-C0FusbZu.js",
-      "_text-input-BdVZ4pyZ.js"
+      "_text-input-C0RBseum.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-BU-g4sDL.js",
+    "file": "assets/event-builder-5U_Efi2F.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-CzBQsDWV.js",
+      "_components-X9ritUFQ.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js"
     ]
@@ -107,14 +107,14 @@
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-CPmGvpzQ.js",
+    "file": "assets/widget-event-FO20_aLU.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
-      "_components-CzBQsDWV.js",
-      "_text-input-BdVZ4pyZ.js",
+      "_components-X9ritUFQ.js",
+      "_text-input-C0RBseum.js",
       "_loader-Bd6o1-jj.js"
     ]
   },

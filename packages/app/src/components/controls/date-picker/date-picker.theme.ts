@@ -38,6 +38,10 @@ export const datePickerTheme = css`
     }
   }
 
+  .react-datepicker:has(.react-datepicker__time-container) .react-datepicker__navigation--next {
+    right: 85px;
+  }
+
   .react-datepicker__day--today:not(.react-datepicker__day--selected):not(
       .react-datepicker__day--keyboard-selected
     ) {

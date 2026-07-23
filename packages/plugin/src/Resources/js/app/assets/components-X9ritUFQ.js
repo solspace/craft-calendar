@@ -36,6 +36,10 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
     }
   }
 
+  .react-datepicker:has(.react-datepicker__time-container) .react-datepicker__navigation--next {
+    right: 85px;
+  }
+
   .react-datepicker__day--today:not(.react-datepicker__day--selected):not(
       .react-datepicker__day--keyboard-selected
     ) {
@@ -104,6 +108,10 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
   .react-datepicker {
     &-popper {
       width: 327px;
+
+      &:has(.react-datepicker__time-container) {
+        width: 380px;
+      }
     }
 
     &__header {
