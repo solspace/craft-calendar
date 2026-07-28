@@ -113,6 +113,9 @@ export const RepeatRules: FC = () => {
               onChange={(value) => dispatch(eventActions.setUntil(value))}
               datePickerProps={{
                 showTimeInput: false,
+                showMonthDropdown: true,
+                showYearDropdown: true,
+                dropdownMode: "select",
                 calendarStartDay: weekStartDay,
                 minDate: pickerStartDate,
               }}
