@@ -19,7 +19,13 @@ import { useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { useConfig } from "../../context/config.context";
 import { useCreateEvent } from "./create-event.mutation";
-import { FlexTitle, PopoverCreateEventWrapper } from "./create-event.styles";
+import {
+  AllDayLabel,
+  AllDayRow,
+  Fields,
+  FlexTitle,
+  PopoverCreateEventWrapper,
+} from "./create-event.styles";
 
 type Props = {
   draft: CalendarCreateDraft;
@@ -76,21 +82,32 @@ export const PopoverCreateEvent: FC<Props> = ({
           placeholder={translate("Event Title")}
           onChange={(value) => onChange(setCreateDraftTitle(draft, value))}
         />
-        <LightSwitch
-          enabled={draft.allDay}
-          onClick={(value) => onChange(setCreateDraftAllDay(draft, value, { eventDuration }))}
-        />
       </FlexTitle>
 
-      <div>
+      <Fields>
         <Dropdown
           label={translate("Calendar")}
           value={calendarId}
           options={calendarOptions}
           onChange={(value) => setCalendarId(Number(value))}
         />
+
+        <hr />
+
+        <AllDayRow>
+          <LightSwitch
+            enabled={draft.allDay}
+            onClick={(value) => onChange(setCreateDraftAllDay(draft, value, { eventDuration }))}
+          />
+          <AllDayLabel
+            onClick={() => onChange(setCreateDraftAllDay(draft, !draft.allDay, { eventDuration }))}
+          >
+            {translate("All Day")}
+          </AllDayLabel>
+        </AllDayRow>
+
         <DatePicker
-          label={translate("Start Date")}
+          label={translate("Starts")}
           value={draft.start}
           datePickerProps={{
             showIcon: true,
@@ -111,7 +128,7 @@ export const PopoverCreateEvent: FC<Props> = ({
           }}
         />
         <DatePicker
-          label={translate("End Date")}
+          label={translate("Ends")}
           value={displayEnd}
           datePickerProps={{
             showIcon: true,
@@ -142,7 +159,7 @@ export const PopoverCreateEvent: FC<Props> = ({
             }
           }}
         />
-      </div>
+      </Fields>
 
       <hr />
 
