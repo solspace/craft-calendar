@@ -51,6 +51,7 @@ const DatePickerWrapper = styled.div`
 
   .react-datepicker {
     &-popper {
+      z-index: 13;
       width: 327px;
 
       &:has(.react-datepicker__time-container) {

@@ -63,12 +63,18 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
   .react-datepicker__month-select,
   .react-datepicker__year-select {
     margin: 0;
+    background-color: #ffffff;
 
     &:focus,
     &:focus-visible {
       outline: none;
       box-shadow: none;
     }
+  }
+
+  .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle {
+    fill: #f8f9fd;
+    color: #f8f9fd;
   }
 
   .react-datepicker__day--keyboard-selected {
@@ -115,6 +121,7 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
 
   .react-datepicker {
     &-popper {
+      z-index: 13;
       width: 327px;
 
       &:has(.react-datepicker__time-container) {

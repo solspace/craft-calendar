@@ -65,12 +65,18 @@ export const datePickerTheme = css`
   .react-datepicker__month-select,
   .react-datepicker__year-select {
     margin: 0;
+    background-color: #ffffff;
 
     &:focus,
     &:focus-visible {
       outline: none;
       box-shadow: none;
     }
+  }
+
+  .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle {
+    fill: #f8f9fd;
+    color: #f8f9fd;
   }
 
   .react-datepicker__day--keyboard-selected {
