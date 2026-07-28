@@ -60,7 +60,7 @@ export const ByMonth: FC = () => {
       <Interval noun="month" />
       <div className="field">
         <Dropdown
-          label="Repeat On"
+          label="Repeat on"
           value={mode}
           options={modeOptions}
           onChange={(value) => {
@@ -75,7 +75,7 @@ export const ByMonth: FC = () => {
 
       {mode === "MONTHDAY" && (
         <DayMatrix
-          label={"Days of month"}
+          label={"Days of Month"}
           values={selectedMonthDays}
           onChange={(values) => setMonthDayMode(values)}
         />

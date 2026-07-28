@@ -25,7 +25,7 @@ export const weekdayChoices: WeekdayChoice[] = [
       RRule.FR.weekday,
     ],
   },
-  { value: "WEK", label: "Weekend Day (Sat/Sun)", days: [RRule.SA.weekday, RRule.SU.weekday] },
+  { value: "WEK", label: "Weekend (Sat/Sun)", days: [RRule.SA.weekday, RRule.SU.weekday] },
 ];
 
 const normalizeDays = (values?: number[]) => {

@@ -118,7 +118,7 @@ export const ByYear: FC = () => {
 
       <div className="field">
         <Dropdown
-          label="Repeat On"
+          label="Repeat on"
           value={mode}
           options={modeOptions}
           onChange={(value) => {
@@ -133,7 +133,7 @@ export const ByYear: FC = () => {
 
       {mode === "MONTHDAY" && (
         <DayMatrix
-          label="Days of month"
+          label="Days of Month"
           values={selectedMonthDays}
           onChange={(values) => setMonthDayMode(selectedMonths, values)}
         />
