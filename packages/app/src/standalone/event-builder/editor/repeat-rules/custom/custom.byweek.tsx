@@ -7,7 +7,15 @@ import { RRule } from "rrule";
 import { MatrixButton, WeekMatrixWrapper } from "./custom.styles";
 import { Interval } from "./interval";
 
-const days = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA, RRule.SU];
+const days = [
+  { weekday: RRule.SU, label: "Sun" },
+  { weekday: RRule.MO, label: "Mon" },
+  { weekday: RRule.TU, label: "Tue" },
+  { weekday: RRule.WE, label: "Wed" },
+  { weekday: RRule.TH, label: "Thu" },
+  { weekday: RRule.FR, label: "Fri" },
+  { weekday: RRule.SA, label: "Sat" },
+];
 
 export const ByWeek: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -17,18 +25,18 @@ export const ByWeek: FC = () => {
     <div>
       <Interval noun="week" />
       <WeekMatrixWrapper className="field">
-        {days.map((day) => (
+        {days.map(({ weekday, label }) => (
           <MatrixButton
-            key={day.weekday}
+            key={weekday.weekday}
             type="button"
-            className={clsx(byweekday?.includes(day.weekday) && "active")}
+            className={clsx(byweekday?.includes(weekday.weekday) && "active")}
             onClick={() => {
               let values: number[] = byweekday ? [...byweekday] : [];
 
-              if (values.includes(day.weekday)) {
-                values = values.filter((d) => d !== day.weekday);
+              if (values.includes(weekday.weekday)) {
+                values = values.filter((day) => day !== weekday.weekday);
               } else {
-                values.push(day.weekday);
+                values.push(weekday.weekday);
               }
 
               if (values.length === 0) {
@@ -38,7 +46,7 @@ export const ByWeek: FC = () => {
               dispatch(eventActions.setDays({ type: "byweekday", values }));
             }}
           >
-            {day.toString()}
+            {label}
           </MatrixButton>
         ))}
       </WeekMatrixWrapper>

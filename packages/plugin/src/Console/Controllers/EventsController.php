@@ -22,7 +22,7 @@ class EventsController extends Controller
     /**
      * @var null|int|string the ID(s) of the elements to resave
      */
-    public int|string|null $elementId = null;
+    public null|int|string $elementId = null;
 
     /**
      * @var null|string the UUID(s) of the elements to resave

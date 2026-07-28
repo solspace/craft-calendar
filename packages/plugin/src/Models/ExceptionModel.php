@@ -15,5 +15,5 @@ class ExceptionModel extends Model
 
     public ?int $eventId = null;
 
-    public Carbon|\DateTime|null $date = null;
+    public null|Carbon|\DateTime $date = null;
 }

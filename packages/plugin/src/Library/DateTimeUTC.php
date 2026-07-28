@@ -9,7 +9,7 @@ class DateTimeUTC extends \DateTime
      *
      * @return null|\DateTime|false
      */
-    public static function createFromString(array|string $date, mixed $timezone = \DateTimeZone::UTC): bool|\DateTime|null
+    public static function createFromString(array|string $date, mixed $timezone = \DateTimeZone::UTC): null|bool|\DateTime
     {
         $date = parent::createFromString($date, $timezone, false);
 
