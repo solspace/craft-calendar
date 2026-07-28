@@ -38,7 +38,8 @@ export const datePickerTheme = css`
     }
   }
 
-  .react-datepicker:has(.react-datepicker__time-container) .react-datepicker__navigation--next {
+  .react-datepicker:not(:has(.react-datepicker__today-button)):has(.react-datepicker__time-container)
+    .react-datepicker__navigation--next {
     right: 85px;
   }
 
@@ -72,10 +73,17 @@ export const datePickerTheme = css`
     }
   }
 
-  .react-datepicker__day--selected,
-  .react-datepicker__day--keyboard-selected,
-  .react-datepicker__day--selected:not([aria-disabled="true"]):hover,
+  .react-datepicker__day--keyboard-selected {
+    background-color: transparent;
+    color: inherit;
+  }
+
   .react-datepicker__day--keyboard-selected:not([aria-disabled="true"]):hover {
+    background-color: var(--gray-100);
+  }
+
+  .react-datepicker__day--selected,
+  .react-datepicker__day--selected:not([aria-disabled="true"]):hover {
     background-color: var(--bg-selection-dark);
     color: #ffffff;
   }

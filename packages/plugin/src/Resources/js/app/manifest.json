@@ -6,12 +6,8 @@
       "_date-DHm29epU.js"
     ]
   },
-  "_components-BMkzam91.css": {
-    "file": "assets/components-BMkzam91.css",
-    "src": "_components-BMkzam91.css"
-  },
-  "_components-X9ritUFQ.js": {
-    "file": "assets/components-X9ritUFQ.js",
+  "_components-7EDbIkcL.js": {
+    "file": "assets/components-7EDbIkcL.js",
     "name": "components",
     "imports": [
       "_date-DHm29epU.js"
@@ -19,6 +15,10 @@
     "css": [
       "assets/components-BMkzam91.css"
     ]
+  },
+  "_components-BMkzam91.css": {
+    "file": "assets/components-BMkzam91.css",
+    "src": "_components-BMkzam91.css"
   },
   "_date-DHm29epU.js": {
     "file": "assets/date-DHm29epU.js",
@@ -49,12 +49,12 @@
     "file": "assets/rrule-7b6Rmlwt.js",
     "name": "rrule"
   },
-  "_text-input-C0RBseum.js": {
-    "file": "assets/text-input-C0RBseum.js",
+  "_text-input-JBx2PJ78.js": {
+    "file": "assets/text-input-JBx2PJ78.js",
     "name": "text-input",
     "imports": [
       "_date-DHm29epU.js",
-      "_components-X9ritUFQ.js"
+      "_components-7EDbIkcL.js"
     ]
   },
   "_timegrid-Drf6zlY9.js": {
@@ -65,30 +65,30 @@
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-vWxRbRSR.js",
+    "file": "assets/overview-BfkI_OO1.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-X9ritUFQ.js",
+      "_components-7EDbIkcL.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js",
       "_timegrid-Drf6zlY9.js",
       "_calendar.styles-C0FusbZu.js",
-      "_text-input-C0RBseum.js"
+      "_text-input-JBx2PJ78.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-5U_Efi2F.js",
+    "file": "assets/event-builder-DdEWQySK.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-X9ritUFQ.js",
+      "_components-7EDbIkcL.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js"
     ]
@@ -107,14 +107,14 @@
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-FO20_aLU.js",
+    "file": "assets/widget-event-5ju5sUt-.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
-      "_components-X9ritUFQ.js",
-      "_text-input-C0RBseum.js",
+      "_components-7EDbIkcL.js",
+      "_text-input-JBx2PJ78.js",
       "_loader-Bd6o1-jj.js"
     ]
   },

@@ -36,7 +36,8 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
     }
   }
 
-  .react-datepicker:has(.react-datepicker__time-container) .react-datepicker__navigation--next {
+  .react-datepicker:not(:has(.react-datepicker__today-button)):has(.react-datepicker__time-container)
+    .react-datepicker__navigation--next {
     right: 85px;
   }
 
@@ -70,10 +71,17 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
     }
   }
 
-  .react-datepicker__day--selected,
-  .react-datepicker__day--keyboard-selected,
-  .react-datepicker__day--selected:not([aria-disabled="true"]):hover,
+  .react-datepicker__day--keyboard-selected {
+    background-color: transparent;
+    color: inherit;
+  }
+
   .react-datepicker__day--keyboard-selected:not([aria-disabled="true"]):hover {
+    background-color: var(--gray-100);
+  }
+
+  .react-datepicker__day--selected,
+  .react-datepicker__day--selected:not([aria-disabled="true"]):hover {
     background-color: var(--bg-selection-dark);
     color: #ffffff;
   }
