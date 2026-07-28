@@ -35,14 +35,14 @@ class OccurrenceQuery extends ActiveQuery
 
     public ?string $status = Event::STATUS_ENABLED;
 
-    public null|array|string $id = null;
-    public null|array|string $uid = null;
-    public null|array|int|string $event = null;
-    public null|array|int|string $calendarId = null;
-    public null|array|string $calendarUid = null;
-    public null|array|int|string $calendar = null;
-    public null|array|int|string $site = null;
-    public null|array|int|string $siteId = null;
+    public array|string|null $id = null;
+    public array|string|null $uid = null;
+    public array|int|string|null $event = null;
+    public array|int|string|null $calendarId = null;
+    public array|string|null $calendarUid = null;
+    public array|int|string|null $calendar = null;
+    public array|int|string|null $site = null;
+    public array|int|string|null $siteId = null;
     public ?EventQuery $eventQuery = null;
 
     public mixed $startsBefore = null;
@@ -75,56 +75,56 @@ class OccurrenceQuery extends ActiveQuery
         return $this->setEventQuery($eventQuery);
     }
 
-    public function id(null|array|int|string $id): self
+    public function id(array|int|string|null $id): self
     {
         $this->id = $id;
 
         return $this;
     }
 
-    public function uid(null|array|string $uid): self
+    public function uid(array|string|null $uid): self
     {
         $this->uid = $uid;
 
         return $this;
     }
 
-    public function event(null|array|int|string $event): self
+    public function event(array|int|string|null $event): self
     {
         $this->event = $event;
 
         return $this;
     }
 
-    public function setCalendarId(null|array|int|string $calendarId): self
+    public function setCalendarId(array|int|string|null $calendarId): self
     {
         $this->calendarId = $calendarId;
 
         return $this;
     }
 
-    public function setCalendarUid(null|array|string $calendarUid): self
+    public function setCalendarUid(array|string|null $calendarUid): self
     {
         $this->calendarUid = $calendarUid;
 
         return $this;
     }
 
-    public function calendar(null|array|int|string $calendar): self
+    public function calendar(array|int|string|null $calendar): self
     {
         $this->calendar = $calendar;
 
         return $this;
     }
 
-    public function site(null|array|int|string $site): self
+    public function site(array|int|string|null $site): self
     {
         $this->site = $site;
 
         return $this;
     }
 
-    public function setSiteId(null|array|int|string $siteId): self
+    public function setSiteId(array|int|string|null $siteId): self
     {
         $this->siteId = $siteId;
 

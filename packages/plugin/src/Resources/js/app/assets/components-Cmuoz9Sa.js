@@ -164,113 +164,7 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
       }
     }
   }
-`,Xp=({options:e,value:t,onChange:n,...r})=>(0,d.jsx)(Gp,{...r,children:(0,d.jsx)(`div`,{className:`select fullwidth`,children:(0,d.jsx)(`select`,{className:`fullwidth`,value:t,onChange:e=>n?.(e.target.value),children:e.map(e=>(0,d.jsx)(`option`,{value:e.value,children:e.label},e.value))})})});t.div`
-  box-shadow:
-    0 0 0 1px #cdd8e4,
-    0 2px 12px rgb(205 216 228 / 50%);
-`;var Zp={easeOut:`cubic-bezier(0.25, 0.1, 0.25, 1)`,easeIn:`cubic-bezier(0.42, 0, 1, 1)`,easeInOut:`cubic-bezier(0.42, 0, 0.58, 1)`,bounce:{easeOut:`cubic-bezier(0.175, 0.885, 0.32, 1.275)`}},Qp={hairline:`rgba(51,64,77,.1)`,hr:`rgb(from var(--gray-800) r g b/10%)`,inputBorder:`rgba(96,125,159,0.25)`,barelyVisible:`rgb(154 165 177 / 75%)`,link:`#1f5fea`,elements:{dropdown:`#dfe5ec`},error:`#cf1124`,warning:`var(--warning-color)`,success:`var(--success-color)`,notice:`var(--notice-color)`,enabled:`var(--enabled-color)`,pending:`var(--pending-color)`,disabled:`var(--disabled-color)`,white:`var(--white)`,black:`var(--black)`,gray050:`var(--gray-050)`,gray100:`var(--gray-100)`,gray200:`var(--gray-200)`,gray250:`#b4c3d3`,gray300:`var(--gray-300)`,gray350:`var(--gray-350)`,gray400:`var(--gray-400)`,gray500:`var(--gray-500)`,gray550:`var(--gray-550)`,gray600:`var(--gray-600)`,gray700:`var(--gray-700)`,gray800:`var(--gray-800)`,gray900:`var(--gray-900)`,gray1000:`var(--gray-1000)`,blue050:`var(--blue-050)`,blue100:`var(--blue-100)`,blue200:`var(--blue-200)`,blue300:`var(--blue-300)`,blue400:`var(--blue-400)`,blue500:`var(--blue-500)`,blue600:`var(--blue-600)`,blue700:`var(--blue-700)`,blue800:`var(--blue-800)`,blue900:`var(--blue-900)`,cyan050:`var(--cyan-050)`,cyan100:`var(--cyan-100)`,cyan200:`var(--cyan-200)`,cyan300:`var(--cyan-300)`,cyan400:`var(--cyan-400)`,cyan500:`var(--cyan-500)`,cyan600:`var(--cyan-600)`,cyan700:`var(--cyan-700)`,cyan800:`var(--cyan-800)`,cyan900:`var(--cyan-900)`,pink050:`var(--pink-050)`,pink100:`var(--pink-100)`,pink200:`var(--pink-200)`,pink300:`var(--pink-300)`,pink400:`var(--pink-400)`,pink500:`var(--pink-500)`,pink600:`var(--pink-600)`,pink700:`var(--pink-700)`,pink800:`var(--pink-800)`,pink900:`var(--pink-900)`,red050:`var(--red-050)`,red100:`var(--red-100)`,red200:`var(--red-200)`,red300:`var(--red-300)`,red400:`var(--red-400)`,red500:`var(--red-500)`,red600:`var(--red-600)`,red700:`var(--red-700)`,red800:`var(--red-800)`,red900:`var(--red-900)`,yellow050:`var(--yellow-050)`,yellow100:`var(--yellow-100)`,yellow200:`var(--yellow-200)`,yellow300:`var(--yellow-300)`,yellow400:`var(--yellow-400)`,yellow500:`var(--yellow-500)`,yellow600:`var(--yellow-600)`,yellow700:`var(--yellow-700)`,yellow800:`var(--yellow-800)`,yellow900:`var(--yellow-900)`,teal050:`var(--teal-050)`,teal100:`var(--teal-100)`,teal200:`var(--teal-200)`,teal300:`var(--teal-300)`,teal400:`var(--teal-400)`,teal500:`var(--teal-500)`,teal550:`var(--teal-550)`,teal600:`var(--teal-600)`,teal700:`var(--teal-700)`,teal800:`var(--teal-800)`,teal900:`var(--teal-900)`,green600:`var(--green-600)`},$p=t.div`
-  display: block;
-
-  width: 18px;
-  height: 18px;
-
-  inset-inline-start: calc(50% - 9px);
-  inset-block-start: 2px;
-
-  border: 0 solid #e5e7eb;
-  border-radius: 9px;
-
-  background-color: ${Qp.white};
-  box-shadow: inset 0 0 0 1px var(--_lightswitch-border-color);
-
-  transition: transform 0.2s ${Zp.bounce.easeOut};
-
-  &:before {
-    content: '';
-
-    position: absolute;
-
-    width: 10px;
-    height: 12px;
-
-    box-sizing: border-box;
-    inset-block-start: 50%;
-    inset-inline-start: 50%;
-
-    transform: translateX(-50%) translateY(-50%);
-  }
-`,em=t.div`
-  position: relative;
-  cursor: pointer;
-
-  width: 34px;
-  padding: 2px;
-
-  border-radius: 11px;
-  border: none;
-  background-image: linear-gradient(to right, var(--gray-400), var(--gray-400));
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
-
-  transition: background-color 0.2s ${Zp.easeOut};
-
-  &.craft-5_8 {
-    --_lightswitch-border-color: var(
-      --lightswitch-border-color,
-      hsl(from var(--input-border-color) h s l/80%)
-    );
-
-    box-shadow: inset 0 0 0 1px var(--_lightswitch-border-color);
-    background-image: linear-gradient(
-      to right,
-      var(--gray-200),
-      var(--gray-200)
-    );
-
-    transition: background-image 0.1s linear;
-  }
-
-  &.on {
-    background-image: linear-gradient(
-      to right,
-      var(--enabled-color),
-      var(--enabled-color)
-    );
-
-    &.craft-5_8 {
-      --_lightswitch-border-color: oklch(
-        from var(--bg-enabled) calc(l - 0.1) c h
-      );
-
-      background-image: linear-gradient(
-        to right,
-        var(--bg-enabled),
-        var(--bg-enabled)
-      );
-    }
-
-    ${$p} {
-      transform: translateX(12px);
-    }
-
-    &.craft-5_8 {
-      ${$p} {
-        &:before {
-          background-color: var(--enabled-color);
-          mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3C!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc.--%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7l233.4-233.3c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
-          mask-repeat: none;
-        }
-      }
-    }
-  }
-
-  &.error {
-    background-image: linear-gradient(
-      to right,
-      var(--error-color),
-      var(--error-color)
-    );
-  }
-`,tm=({enabled:e,errors:t,onClick:n,...r})=>(0,d.jsx)(Gp,{...r,children:(0,d.jsx)(em,{className:B(e&&`on`,t&&`error`),onClick:()=>n?.(!e),children:(0,d.jsx)($p,{})})}),nm=({className:e,$direction:t=`row`,$gap:n=16,$justifyContent:r=`start`,$alignItems:i=`start`,style:a,children:o})=>(0,d.jsx)(rm,{className:e,$direction:t,$gap:n,$justifyContent:r,$alignItems:i,style:a,children:o}),rm=t.div`
+`,Xp=({options:e,value:t,onChange:n,...r})=>(0,d.jsx)(Gp,{...r,children:(0,d.jsx)(`div`,{className:`select fullwidth`,children:(0,d.jsx)(`select`,{className:`fullwidth`,value:t,onChange:e=>n?.(e.target.value),children:e.map(e=>(0,d.jsx)(`option`,{value:e.value,children:e.label},e.value))})})}),Zp=({enabled:e,errors:t,onClick:n,...r})=>(0,d.jsx)(Gp,{...r,children:(0,d.jsx)(`button`,{type:`button`,role:`switch`,"aria-checked":e??!1,className:B(`lightswitch`,e&&`on`,t&&`error`),onClick:()=>n?.(!e),children:(0,d.jsx)(`div`,{className:`lightswitch-container`,children:(0,d.jsx)(`div`,{className:`handle`})})})}),Qp=({className:e,$direction:t=`row`,$gap:n=16,$justifyContent:r=`start`,$alignItems:i=`start`,style:a,children:o})=>(0,d.jsx)($p,{className:e,$direction:t,$gap:n,$justifyContent:r,$alignItems:i,style:a,children:o}),$p=t.div`
   display: flex;
   flex-direction: ${e=>e.$direction};
   justify-content: ${e=>e.$justifyContent};
@@ -280,4 +174,4 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
   .field {
     margin-block: 0;
   }
-`;export{C,w as S,A as _,Xp as a,ce as b,Kp as c,B as d,pr as f,gt as g,Hn as h,Qp as i,Gp as l,ur as m,tm as n,Jp as o,dr as p,Zp as r,qp as s,nm as t,Hp as u,we as v,p as w,ae as x,fe as y};
+`;export{p as S,fe as _,qp as a,w as b,Hp as c,dr as d,ur as f,we as g,A as h,Jp as i,B as l,gt as m,Zp as n,Kp as o,Hn as p,Xp as r,Gp as s,Qp as t,pr as u,ce as v,C as x,ae as y};

@@ -6,8 +6,12 @@
       "_date-DHm29epU.js"
     ]
   },
-  "_components-2bBYFyPH.js": {
-    "file": "assets/components-2bBYFyPH.js",
+  "_components-BMkzam91.css": {
+    "file": "assets/components-BMkzam91.css",
+    "src": "_components-BMkzam91.css"
+  },
+  "_components-Cmuoz9Sa.js": {
+    "file": "assets/components-Cmuoz9Sa.js",
     "name": "components",
     "imports": [
       "_date-DHm29epU.js"
@@ -15,10 +19,6 @@
     "css": [
       "assets/components-BMkzam91.css"
     ]
-  },
-  "_components-BMkzam91.css": {
-    "file": "assets/components-BMkzam91.css",
-    "src": "_components-BMkzam91.css"
   },
   "_date-DHm29epU.js": {
     "file": "assets/date-DHm29epU.js",
@@ -49,14 +49,6 @@
     "file": "assets/rrule-7b6Rmlwt.js",
     "name": "rrule"
   },
-  "_text-input-BQTCjRRT.js": {
-    "file": "assets/text-input-BQTCjRRT.js",
-    "name": "text-input",
-    "imports": [
-      "_date-DHm29epU.js",
-      "_components-2bBYFyPH.js"
-    ]
-  },
   "_timegrid-Drf6zlY9.js": {
     "file": "assets/timegrid-Drf6zlY9.js",
     "name": "timegrid",
@@ -64,31 +56,39 @@
       "_dist-DgGuNF4E.js"
     ]
   },
+  "_variables-FfZUj14X.js": {
+    "file": "assets/variables-FfZUj14X.js",
+    "name": "variables",
+    "imports": [
+      "_date-DHm29epU.js",
+      "_components-Cmuoz9Sa.js"
+    ]
+  },
   "src/index.tsx": {
-    "file": "assets/overview-Dy6GElDI.js",
+    "file": "assets/overview-D1lLWJpY.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-2bBYFyPH.js",
+      "_components-Cmuoz9Sa.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js",
       "_timegrid-Drf6zlY9.js",
       "_calendar.styles-C0FusbZu.js",
-      "_text-input-BQTCjRRT.js"
+      "_variables-FfZUj14X.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-CnLb0EEk.js",
+    "file": "assets/event-builder-DM5dxBBV.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-2bBYFyPH.js",
+      "_components-Cmuoz9Sa.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js"
     ]
@@ -107,14 +107,14 @@
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-s8qnlAUM.js",
+    "file": "assets/widget-event-DIK938Z0.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
-      "_components-2bBYFyPH.js",
-      "_text-input-BQTCjRRT.js",
+      "_components-Cmuoz9Sa.js",
+      "_variables-FfZUj14X.js",
       "_loader-Bd6o1-jj.js"
     ]
   },
