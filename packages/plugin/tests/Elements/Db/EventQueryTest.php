@@ -5,6 +5,7 @@ namespace Solspace\Tests\Unit\Calendar\Elements\Db;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Elements\Event;
 
 /**
  * @internal
@@ -157,6 +158,55 @@ class EventQueryTest extends TestCase
         $this->callExtract($query, $input);
     }
 
+    #[DataProvider('orderByNeedsEventDataProvider')]
+    /** @dataProvider \Solspace\Tests\Unit\Calendar\Elements\Db\EventQueryTest::orderByNeedsEventDataProvider */
+    public function testOrderByNeedsEventData(array|string|null $orderBy, bool $shuffle, bool $expected): void
+    {
+        $query = $this->makeQuery();
+        $query->orderBy = $orderBy;
+        $query->setShuffle($shuffle);
+
+        $this->assertSame($expected, $this->callOrderByNeedsEventData($query));
+    }
+
+    public function testOrderByMultipleCriteriaBreaksTiesUsingSecondCriterion(): void
+    {
+        $query = $this->makeQuery();
+
+        // All share the same startDate, so ordering must fall through to id ASC.
+        $eventA = $this->makeEvent(id: 3, startDate: '2026-08-01 00:00:00');
+        $eventB = $this->makeEvent(id: 1, startDate: '2026-08-01 00:00:00');
+        $eventC = $this->makeEvent(id: 2, startDate: '2026-08-01 00:00:00');
+
+        $query->orderBy = ['startDate' => \SORT_ASC, 'id' => \SORT_ASC];
+
+        $events = [$eventA, $eventB, $eventC];
+        $this->callOrderByMultipleCriteria($query, $events);
+
+        $this->assertSame([$eventB, $eventC, $eventA], $events);
+    }
+
+    private function makeEvent(int $id, string $startDate): Event
+    {
+        $event = $this->getMockBuilder(Event::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods([])
+            ->getMock()
+        ;
+        $event->id = $id;
+        $event->startDate = new Carbon($startDate, 'UTC');
+
+        return $event;
+    }
+
+    private function callOrderByMultipleCriteria(EventQuery $q, array &$events): void
+    {
+        $method = new \ReflectionMethod(EventQuery::class, 'orderByMultipleCriteria');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($q, [&$events]);
+    }
+
     private function callExtract(EventQuery $q, mixed $value): array|string
     {
         $method = new \ReflectionMethod(EventQuery::class, 'extractDateAsFormattedString');
@@ -174,5 +224,89 @@ class EventQueryTest extends TestCase
             ->onlyMethods([])
             ->getMock()
         ;
+    }
+
+    private static function orderByNeedsEventDataProvider(): array
+    {
+        return [
+            'default startDate only' => [
+                null,
+                false,
+                false,
+            ],
+            'string startDate' => [
+                'startDate',
+                false,
+                false,
+            ],
+            'string endDate' => [
+                'endDate',
+                false,
+                false,
+            ],
+            'string RAND()' => [
+                'RAND()',
+                false,
+                false,
+            ],
+            'string custom field' => [
+                'isToday DESC',
+                false,
+                true,
+            ],
+            'array startDate only' => [
+                [
+                    'startDate' => \SORT_ASC,
+                ],
+                false,
+                false,
+            ],
+            'array startDate and endDate' => [
+                [
+                    'startDate' => \SORT_ASC,
+                    'endDate' => \SORT_ASC,
+                ],
+                false,
+                false,
+            ],
+            'array RAND()' => [
+                [
+                    'RAND()' => \SORT_ASC,
+                ],
+                false,
+                false,
+            ],
+            'array custom field alone' => [
+                [
+                    'isToday' => \SORT_DESC,
+                ],
+                false,
+                true,
+            ],
+            'array custom field plus startDate' => [
+                [
+                    'isToday' => \SORT_DESC,
+                    'startDate' => \SORT_ASC,
+                ],
+                false,
+                true,
+            ],
+            'custom field with shuffle enabled' => [
+                [
+                    'isToday' => \SORT_DESC,
+                    'startDate' => \SORT_ASC,
+                ],
+                true,
+                false,
+            ],
+        ];
+    }
+
+    private function callOrderByNeedsEventData(EventQuery $q): bool
+    {
+        $method = new \ReflectionMethod(EventQuery::class, 'orderByNeedsEventData');
+        $method->setAccessible(true);
+
+        return $method->invoke($q);
     }
 }
