@@ -12,6 +12,8 @@ use Solspace\Calendar\Bundles\GraphQL\Types\SolspaceCalendarType;
 
 class SolspaceCalendarInterface extends AbstractInterface
 {
+    public const DEPRECATION_REASON = 'The legacy `solspace_calendar` GraphQL wrapper is deprecated in Calendar 6. Use the top-level Calendar GraphQL queries after upgrading.';
+
     public static function getName(): string
     {
         return 'SolspaceCalendarInterface';
@@ -39,6 +41,7 @@ class SolspaceCalendarInterface extends AbstractInterface
                 'name' => 'version',
                 'type' => Type::string(),
                 'description' => 'Solspace Calendar version',
+                'deprecationReason' => self::DEPRECATION_REASON,
             ],
             'calendars' => [
                 'name' => 'calendars',
@@ -46,6 +49,7 @@ class SolspaceCalendarInterface extends AbstractInterface
                 'resolve' => CalendarResolver::class.'::resolve',
                 'args' => CalendarArguments::getArguments(),
                 'description' => 'Solspace Calendar calendars',
+                'deprecationReason' => self::DEPRECATION_REASON,
             ],
             'calendar' => [
                 'name' => 'calendar',
@@ -53,6 +57,7 @@ class SolspaceCalendarInterface extends AbstractInterface
                 'resolve' => CalendarResolver::class.'::resolveOne',
                 'args' => CalendarArguments::getArguments(),
                 'description' => 'Solspace Calendar calendar',
+                'deprecationReason' => self::DEPRECATION_REASON,
             ],
             'events' => [
                 'name' => 'events',
@@ -60,6 +65,7 @@ class SolspaceCalendarInterface extends AbstractInterface
                 'resolve' => EventResolver::class.'::resolve',
                 'args' => EventArguments::getArguments(),
                 'description' => 'Solspace Calendar events',
+                'deprecationReason' => self::DEPRECATION_REASON,
             ],
             'event' => [
                 'name' => 'event',
@@ -67,6 +73,7 @@ class SolspaceCalendarInterface extends AbstractInterface
                 'resolve' => EventResolver::class.'::resolveOne',
                 'args' => EventArguments::getArguments(),
                 'description' => 'Solspace Calendar event',
+                'deprecationReason' => self::DEPRECATION_REASON,
             ],
             'eventCount' => [
                 'name' => 'eventCount',
@@ -74,6 +81,7 @@ class SolspaceCalendarInterface extends AbstractInterface
                 'resolve' => EventResolver::class.'::resolveCount',
                 'args' => EventArguments::getArguments(),
                 'description' => "This query is used to return the number of calendar's events.",
+                'deprecationReason' => self::DEPRECATION_REASON,
             ],
         ];
     }
