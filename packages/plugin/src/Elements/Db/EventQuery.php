@@ -79,39 +79,39 @@ class EventQuery extends ElementQuery
 
     private ?array $calendar = null;
 
-    private array|int|string|null $authorId = null;
+    private null|array|int|string $authorId = null;
 
-    private Carbon|\DateTime|string|null $postDate = null;
+    private null|Carbon|\DateTime|string $postDate = null;
 
-    private Carbon|\DateTime|string|null $startDate = null;
+    private null|Carbon|\DateTime|string $startDate = null;
 
-    private Carbon|\DateTime|string|null $endDate = null;
+    private null|Carbon|\DateTime|string $endDate = null;
 
-    private Carbon|\DateTime|string|null $startsBefore = null;
+    private null|Carbon|\DateTime|string $startsBefore = null;
 
-    private Carbon|\DateTime|string|null $startsBeforeOrAt = null;
+    private null|Carbon|\DateTime|string $startsBeforeOrAt = null;
 
-    private Carbon|\DateTime|string|null $startsAfter = null;
+    private null|Carbon|\DateTime|string $startsAfter = null;
 
-    private Carbon|\DateTime|string|null $startsAfterOrAt = null;
+    private null|Carbon|\DateTime|string $startsAfterOrAt = null;
 
-    private Carbon|\DateTime|string|null $endsAfter = null;
+    private null|Carbon|\DateTime|string $endsAfter = null;
 
-    private Carbon|\DateTime|string|null $endsAfterOrAt = null;
+    private null|Carbon|\DateTime|string $endsAfterOrAt = null;
 
-    private Carbon|\DateTime|string|null $endsBefore = null;
+    private null|Carbon|\DateTime|string $endsBefore = null;
 
-    private Carbon|\DateTime|string|null $endsBeforeOrAt = null;
+    private null|Carbon|\DateTime|string $endsBeforeOrAt = null;
 
     private ?bool $allDay = null;
 
-    private Carbon|\DateTime|string|null $until = null;
+    private null|Carbon|\DateTime|string $until = null;
 
     private bool $allowedCalendarsOnly = false;
 
-    private Carbon|\DateTime|string|null $rangeStart = null;
+    private null|Carbon|\DateTime|string $rangeStart = null;
 
-    private Carbon|\DateTime|string|null $rangeEnd = null;
+    private null|Carbon|\DateTime|string $rangeEnd = null;
 
     private bool|int|string $loadOccurrences = true;
 
@@ -153,7 +153,7 @@ class EventQuery extends ElementQuery
         parent::__construct($elementType, $config);
     }
 
-    public function setCalendarId(array|int|string|null $value = null): self
+    public function setCalendarId(null|array|int|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -164,7 +164,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setCalendarUid(array|string|null $value = null): self
+    public function setCalendarUid(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -175,7 +175,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setCalendar(array|string|null $value = null): self
+    public function setCalendar(null|array|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -186,7 +186,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setAuthorId(array|int|string|null $value = null): self
+    public function setAuthorId(null|array|int|string $value = null): self
     {
         if (null !== $value && !\is_array($value)) {
             $value = [$value];
@@ -239,77 +239,77 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setPostDate(Carbon|\DateTime|string|null $value = null): self
+    public function setPostDate(null|Carbon|\DateTime|string $value = null): self
     {
         $this->postDate = $value;
 
         return $this;
     }
 
-    public function setStartDate(Carbon|\DateTime|string|null $value = null): self
+    public function setStartDate(null|Carbon|\DateTime|string $value = null): self
     {
         $this->startDate = $this->parseCarbon($value);
 
         return $this;
     }
 
-    public function setEndDate(Carbon|\DateTime|string|null $value = null): self
+    public function setEndDate(null|Carbon|\DateTime|string $value = null): self
     {
         $this->endDate = $this->parseCarbon($value);
 
         return $this;
     }
 
-    public function setStartsBefore(Carbon|\DateTime|string|null $startsBefore): self
+    public function setStartsBefore(null|Carbon|\DateTime|string $startsBefore): self
     {
         $this->startsBefore = $this->parseCarbon($startsBefore);
 
         return $this;
     }
 
-    public function setStartsBeforeOrAt(Carbon|\DateTime|string|null $startsBeforeOrAt): self
+    public function setStartsBeforeOrAt(null|Carbon|\DateTime|string $startsBeforeOrAt): self
     {
         $this->startsBeforeOrAt = $this->parseCarbon($startsBeforeOrAt);
 
         return $this;
     }
 
-    public function setStartsAfter(Carbon|\DateTime|string|null $startsAfter): self
+    public function setStartsAfter(null|Carbon|\DateTime|string $startsAfter): self
     {
         $this->startsAfter = $this->parseCarbon($startsAfter);
 
         return $this;
     }
 
-    public function setStartsAfterOrAt(Carbon|\DateTime|string|null $startsAfterOrAt): self
+    public function setStartsAfterOrAt(null|Carbon|\DateTime|string $startsAfterOrAt): self
     {
         $this->startsAfterOrAt = $this->parseCarbon($startsAfterOrAt);
 
         return $this;
     }
 
-    public function setEndsAfter(Carbon|\DateTime|string|null $endsAfter): self
+    public function setEndsAfter(null|Carbon|\DateTime|string $endsAfter): self
     {
         $this->endsAfter = $this->parseCarbon($endsAfter);
 
         return $this;
     }
 
-    public function setEndsAfterOrAt(Carbon|\DateTime|string|null $endsAfterOrAt): self
+    public function setEndsAfterOrAt(null|Carbon|\DateTime|string $endsAfterOrAt): self
     {
         $this->endsAfterOrAt = $this->parseCarbon($endsAfterOrAt);
 
         return $this;
     }
 
-    public function setEndsBefore(Carbon|\DateTime|string|null $endsBefore): self
+    public function setEndsBefore(null|Carbon|\DateTime|string $endsBefore): self
     {
         $this->endsBefore = $this->parseCarbon($endsBefore);
 
         return $this;
     }
 
-    public function setEndsBeforeOrAt(Carbon|\DateTime|string|null $endsBeforeOrAt): self
+    public function setEndsBeforeOrAt(null|Carbon|\DateTime|string $endsBeforeOrAt): self
     {
         $this->endsBeforeOrAt = $this->parseCarbon($endsBeforeOrAt);
 
@@ -326,7 +326,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setUntil(Carbon|\DateTime|string|null $value = null): self
+    public function setUntil(null|Carbon|\DateTime|string $value = null): self
     {
         $this->until = $this->parseCarbon($value);
 
@@ -340,14 +340,14 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setRangeStart(Carbon|\DateTime|string|null $rangeStart = null): self
+    public function setRangeStart(null|Carbon|\DateTime|string $rangeStart = null): self
     {
         $this->rangeStart = $this->parseCarbon($rangeStart);
 
         return $this;
     }
 
-    public function setRangeEnd(Carbon|\DateTime|string|null $rangeEnd = null): self
+    public function setRangeEnd(null|Carbon|\DateTime|string $rangeEnd = null): self
     {
         $this->rangeEnd = $this->parseCarbon($rangeEnd);
         if ('000000' === $this->rangeEnd->format('His')) {
@@ -357,12 +357,12 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function setDateRangeStart(Carbon|\DateTime|string|null $rangeStart = null): self
+    public function setDateRangeStart(null|Carbon|\DateTime|string $rangeStart = null): self
     {
         return $this->setRangeStart($rangeStart);
     }
 
-    public function setDateRangeEnd(Carbon|\DateTime|string|null $rangeEnd = null): self
+    public function setDateRangeEnd(null|Carbon|\DateTime|string $rangeEnd = null): self
     {
         return $this->setRangeEnd($rangeEnd);
     }
@@ -396,7 +396,7 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
-    public function count($q = '*', $db = null): bool|int|string|null
+    public function count($q = '*', $db = null): null|bool|int|string
     {
         if ($this->isElementIndexRequest()) {
             // sort startDate, endDate, dateCreated, dateUpdated, and postDate before pagination / before event cache and excess cutoff
@@ -422,7 +422,7 @@ class EventQuery extends ElementQuery
      *
      * @return null|array|ElementInterface
      */
-    public function one($db = null): array|Model|null
+    public function one($db = null): null|array|Model
     {
         $oldLimit = $this->limit;
         $this->limit = 1;
@@ -542,7 +542,7 @@ class EventQuery extends ElementQuery
         return array_chunk($this->all($db), $batchSize);
     }
 
-    public function nth(int $n, ?Connection $db = null): array|Model|null
+    public function nth(int $n, ?Connection $db = null): null|array|Model
     {
         $this->all($db);
 
@@ -1192,7 +1192,7 @@ class EventQuery extends ElementQuery
         }
     }
 
-    private function getPaddedRangeStart(Carbon|\DateTime|string|null $relativeDate = null): Carbon|\DateTime|string|null
+    private function getPaddedRangeStart(null|Carbon|\DateTime|string $relativeDate = null): null|Carbon|\DateTime|string
     {
         $paddedRangeStart = null;
         if ($this->rangeStart) {
@@ -1204,7 +1204,7 @@ class EventQuery extends ElementQuery
         return $paddedRangeStart;
     }
 
-    private function getPaddedRangeEnd(Carbon|\DateTime|string|null $relativeDate = null, ?string $recurrenceFrequency = null): Carbon|\DateTime|string|null
+    private function getPaddedRangeEnd(null|Carbon|\DateTime|string $relativeDate = null, ?string $recurrenceFrequency = null): null|Carbon|\DateTime|string
     {
         if ($this->rangeEnd) {
             return $this->rangeEnd->copy()->addWeek();
@@ -1611,7 +1611,7 @@ class EventQuery extends ElementQuery
     /**
      * Makes a Carbon instance from a given value.
      */
-    private function parseCarbon(Carbon|\DateTime|string|null $value = null): ?Carbon
+    private function parseCarbon(null|Carbon|\DateTime|string $value = null): ?Carbon
     {
         if (null === $value) {
             return null;
@@ -1706,7 +1706,7 @@ class EventQuery extends ElementQuery
     /**
      * Returns the first order by field.
      */
-    private function getOrderByField(): array|string|null
+    private function getOrderByField(): null|array|string
     {
         if (\is_array($this->orderBy) && \count($this->orderBy)) {
             $keys = array_keys($this->orderBy);

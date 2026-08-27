@@ -160,7 +160,7 @@ class EventQueryTest extends TestCase
 
     #[DataProvider('orderByNeedsEventDataProvider')]
     /** @dataProvider \Solspace\Tests\Unit\Calendar\Elements\Db\EventQueryTest::orderByNeedsEventDataProvider */
-    public function testOrderByNeedsEventData(array|string|null $orderBy, bool $shuffle, bool $expected): void
+    public function testOrderByNeedsEventData(null|array|string $orderBy, bool $shuffle, bool $expected): void
     {
         $query = $this->makeQuery();
         $query->orderBy = $orderBy;

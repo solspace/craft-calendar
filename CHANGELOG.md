@@ -1,5 +1,14 @@
 # Solspace Calendar Changelog
 
+## 5.0.30 - 2026-08-27
+
+### Changed
+- Added deprecation messages for upcoming GraphQL query changes.
+
+### Fixed
+- Fixed an issue where GraphQL event queries could truncate results before applying non-date `orderBy` criteria.
+- Fixed handling of multiple `orderBy` criteria when using Carbon date values.
+
 ## 5.0.29 - 2026-07-03
 
 ### Added
