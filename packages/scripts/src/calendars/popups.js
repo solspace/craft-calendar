@@ -3,9 +3,13 @@ const $calendar = $('#solspace-calendar');
 const popupInstances = new Set();
 
 const closeEventCreatorModal = (backdrop, modal) => {
+  if (!eventCreatorShown) {
+    return;
+  }
+
+  $('#event-creator').removeClass('shown').insertAfter($('#solspace-calendar'));
   document.body.removeChild(backdrop);
   document.body.removeChild(modal);
-  $('#event-creator').removeClass('shown').insertAfter($('#solspace-calendar'));
   $('*[data-calendar-instance]').fullCalendar('unselect');
   eventCreatorShown = false;
 };
@@ -154,6 +158,7 @@ export const showEventCreator = (start, end) => {
     $('input[name=title]:first', $creator)
       .val('')
       .focus()
+      .unbind('keypress')
       .bind('keypress', function (event) {
         if ((event.which ? event.which : event.keyCode) === 13) {
           $('button.submit', $creator).trigger('click');
