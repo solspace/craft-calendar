@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.31 - 2026-08-31
+
+### Fixed
+- Fixed an issue when adding additional events in the CP Month, Week, and Day views.
+
 ## 5.0.30 - 2026-08-27
 
 ### Changed
