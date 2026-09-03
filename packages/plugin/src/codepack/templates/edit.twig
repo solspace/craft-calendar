@@ -153,7 +153,7 @@
                             </div>
 
                             <div class="form-group row">
-                                <label class="col-sm-2 col-form-label" for="event-repeat-type">{{ 'Repeat'|t }}</label>
+                                <label class="col-sm-2 col-form-label" for="event-repeat-type">{{ 'Repeats'|t }}</label>
                                 <div class="col-sm-5 col-md-4">
                                     <select id="event-repeat-type" class="form-control" data-repeat-type>
                                         <option value="NEVER">{{ 'Never'|t }}</option>
@@ -321,7 +321,7 @@
 
                             <div data-repeat-end-row hidden>
                                 <div class="form-group row">
-                                    <label class="col-sm-2 col-form-label" for="event-repeat-end">{{ 'Repeat End'|t }}</label>
+                                    <label class="col-sm-2 col-form-label" for="event-repeat-end">{{ 'Ends'|t }}</label>
                                     <div class="col-sm-5 col-md-4">
                                         <select id="event-repeat-end" class="form-control" data-repeat-end>
                                             <option value="NEVER">{{ 'Never'|t }}</option>
@@ -339,16 +339,16 @@
                             </div>
 
                             <div class="fixed-date-manager">
-                                <h3>{{ 'Custom Occurrences'|t }}</h3>
+                                <h3>{{ 'Additional Dates'|t }}</h3>
                                 <div class="form-inline">
                                     <input class="form-control mr-2 mb-2" type="date" data-rdate-picker>
-                                    <button class="btn btn-outline-success mb-2" type="button" data-add-rdate>{{ 'Add Occurrence'|t }}</button>
+                                    <button class="btn btn-outline-success mb-2" type="button" data-add-rdate>{{ 'Add Dates'|t }}</button>
                                 </div>
                                 <ul class="fixed-date-list" data-rdate-list></ul>
                             </div>
 
                             <div class="fixed-date-manager" data-exceptions hidden>
-                                <h3>{{ 'Exceptions'|t }}</h3>
+                                <h3>{{ 'Excluded Dates'|t }}</h3>
                                 <div class="form-inline">
                                     <input class="form-control mr-2 mb-2" type="date" data-exdate-picker>
                                     <button class="btn btn-outline-danger mb-2" type="button" data-add-exdate>{{ 'Exclude Occurrence'|t }}</button>

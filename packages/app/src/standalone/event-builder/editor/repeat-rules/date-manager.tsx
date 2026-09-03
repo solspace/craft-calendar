@@ -23,6 +23,7 @@ import type { PickerTriggerProps } from "./repeat-rules.types";
 
 type FixedDateManagerProps = {
   title: string;
+  description?: string;
   actionLabel: string;
   actionClass?: ClassValue;
   popoverTitle: string;
@@ -37,6 +38,7 @@ type FixedDateManagerProps = {
 
 export const DateManager: FC<FixedDateManagerProps> = ({
   title,
+  description,
   actionLabel,
   actionClass,
   popoverTitle,
@@ -72,6 +74,12 @@ export const DateManager: FC<FixedDateManagerProps> = ({
   return (
     <FixedDatesSection>
       <SectionHeading>{translate(title)}</SectionHeading>
+
+      {description && (
+        <div className="instructions">
+          <p>{description}</p>
+        </div>
+      )}
 
       <FixedDatesToolbar>
         <BadgeWrapper ref={badgeWrapperRef}>

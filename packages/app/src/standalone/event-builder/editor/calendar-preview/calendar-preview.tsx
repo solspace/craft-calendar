@@ -92,7 +92,7 @@ export const CalendarPreview: FC = () => {
 
   return (
     <CalendarPreviewWrapper>
-      <Control label="Recurrence Preview">
+      <Control label="Schedule Preview">
         <FullCalendar
           aspectRatio={2}
           height={250}
