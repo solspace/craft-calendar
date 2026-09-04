@@ -62,7 +62,7 @@
                         </a>
                     </li>
                     {% if event.id %}
-                        <li><a class="formsubmit" data-action="elements/duplicate" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new event"|t('calendar') }}</a>
+                        <li><a class="formsubmit" data-param="eventId" data-value="" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new event"|t('calendar') }}</a>
                         </li>
                         {% if isCraft5 is defined and not isCraft5 %}
                             <hr>
