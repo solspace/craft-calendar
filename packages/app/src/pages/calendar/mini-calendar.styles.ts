@@ -68,7 +68,6 @@ export const MiniCalendarGrid = styled.div`
 
 export const MiniCalendarDay = styled.button<{
   $isCurrentMonth: boolean;
-  $isSelected: boolean;
   $isToday: boolean;
 }>`
   justify-self: center;
@@ -92,9 +91,6 @@ export const MiniCalendarDay = styled.button<{
   cursor: pointer;
   font-size: 13px;
   line-height: 1;
-
-  ${({ $isSelected, $isToday }) =>
-    $isSelected && !$isToday && "box-shadow: inset 0 0 0 2px var(--gray-300);"}
 
   &:hover {
     background: ${({ $isToday }) => ($isToday ? "var(--primary-button-bg)" : "var(--gray-100)")};

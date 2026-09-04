@@ -77,7 +77,6 @@ export const MiniCalendar: FC<MiniCalendarProps> = ({ selectedDate, onDateSelect
   }, [visibleMonth, weekStartDay]);
 
   const todayKey = utcDateKey(new Date());
-  const selectedDateKey = utcDateKey(selectedDate);
 
   return (
     <MiniCalendarWrapper>
@@ -116,7 +115,6 @@ export const MiniCalendar: FC<MiniCalendarProps> = ({ selectedDate, onDateSelect
               })}
               type="button"
               $isCurrentMonth={day.getUTCMonth() === visibleMonth.getUTCMonth()}
-              $isSelected={dateKey === selectedDateKey}
               $isToday={dateKey === todayKey}
               onClick={() => onDateSelect(day)}
             >
