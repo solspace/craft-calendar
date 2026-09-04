@@ -1,12 +1,4 @@
 import { utcDateKey } from "@cal/utils/date";
-import {
-  addDays,
-  addMonths,
-  differenceInCalendarDays,
-  endOfMonth,
-  endOfWeek,
-  startOfWeek,
-} from "date-fns";
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useConfig } from "./context/config.context";
@@ -25,7 +17,11 @@ type MiniCalendarProps = {
 };
 
 const utcDate = (year: number, month: number, day: number) => new Date(Date.UTC(year, month, day));
+
 const startOfUtcMonth = (date: Date) => utcDate(date.getUTCFullYear(), date.getUTCMonth(), 1);
+
+const addUtcMonths = (date: Date, months: number) =>
+  utcDate(date.getUTCFullYear(), date.getUTCMonth() + months, 1);
 
 export const MiniCalendar: FC<MiniCalendarProps> = ({ selectedDate, onDateSelect }) => {
   const { language, weekStartDay } = useConfig();
@@ -36,33 +32,51 @@ export const MiniCalendar: FC<MiniCalendarProps> = ({ selectedDate, onDateSelect
   }, [selectedDate]);
 
   const monthFormatter = useMemo(
-    () => new Intl.DateTimeFormat(language, { month: "long", year: "numeric", timeZone: "UTC" }),
+    () =>
+      new Intl.DateTimeFormat(language, {
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC",
+      }),
     [language],
   );
 
   const weekdayFormatter = useMemo(
-    () => new Intl.DateTimeFormat(language, { weekday: "narrow", timeZone: "UTC" }),
+    () =>
+      new Intl.DateTimeFormat(language, {
+        weekday: "narrow",
+        timeZone: "UTC",
+      }),
     [language],
   );
 
   const weekdays = useMemo(
     () =>
       Array.from({ length: 7 }, (_, index) =>
-        weekdayFormatter.format(addDays(utcDate(2023, 0, 1), weekStartDay + index)),
+        weekdayFormatter.format(utcDate(2023, 0, 1 + weekStartDay + index)),
       ),
     [weekStartDay, weekdayFormatter],
   );
 
   const days = useMemo(() => {
-    const firstDay = startOfWeek(visibleMonth, { weekStartsOn: weekStartDay });
-    const lastDay = endOfWeek(endOfMonth(visibleMonth), { weekStartsOn: weekStartDay });
-    const dayCount = differenceInCalendarDays(lastDay, firstDay) + 1;
+    const year = visibleMonth.getUTCFullYear();
+    const month = visibleMonth.getUTCMonth();
 
-    return Array.from({ length: dayCount }, (_, index) => addDays(firstDay, index));
+    const firstDayOfMonth = utcDate(year, month, 1);
+    const lastDayOfMonth = utcDate(year, month + 1, 0);
+
+    const leadingDayCount = (firstDayOfMonth.getUTCDay() - weekStartDay + 7) % 7;
+    const lastWeekday = (weekStartDay + 6) % 7;
+    const trailingDayCount = (lastWeekday - lastDayOfMonth.getUTCDay() + 7) % 7;
+
+    const dayCount = leadingDayCount + lastDayOfMonth.getUTCDate() + trailingDayCount;
+
+    return Array.from({ length: dayCount }, (_, index) =>
+      utcDate(year, month, 1 - leadingDayCount + index),
+    );
   }, [visibleMonth, weekStartDay]);
 
   const todayKey = utcDateKey(new Date());
-
   const selectedDateKey = utcDateKey(selectedDate);
 
   return (
@@ -71,14 +85,16 @@ export const MiniCalendar: FC<MiniCalendarProps> = ({ selectedDate, onDateSelect
         <MiniCalendarMonthButton
           aria-label={Craft.t("calendar", "Previous month")}
           type="button"
-          onClick={() => setVisibleMonth((month) => addMonths(month, -1))}
+          onClick={() => setVisibleMonth((month) => addUtcMonths(month, -1))}
         />
+
         <span>{monthFormatter.format(visibleMonth)}</span>
+
         <MiniCalendarMonthButton
           aria-label={Craft.t("calendar", "Next month")}
           type="button"
           $next
-          onClick={() => setVisibleMonth((month) => addMonths(month, 1))}
+          onClick={() => setVisibleMonth((month) => addUtcMonths(month, 1))}
         />
       </MiniCalendarHeader>
 
@@ -95,7 +111,9 @@ export const MiniCalendar: FC<MiniCalendarProps> = ({ selectedDate, onDateSelect
           return (
             <MiniCalendarDay
               key={dateKey}
-              aria-label={day.toLocaleDateString(language, { timeZone: "UTC" })}
+              aria-label={day.toLocaleDateString(language, {
+                timeZone: "UTC",
+              })}
               type="button"
               $isCurrentMonth={day.getUTCMonth() === visibleMonth.getUTCMonth()}
               $isSelected={dateKey === selectedDateKey}

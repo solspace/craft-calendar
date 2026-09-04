@@ -1,4 +1,4 @@
-import{_ as e,d as t,h as n,p as r}from"./date-DHm29epU.js";import{l as i,s as a}from"./components-g4Y3Kyg2.js";var o=e(n()),s=r(),c=({value:e,placeholder:t,autofocus:n,className:r,onChange:c,...l})=>{let u=(0,o.useRef)(null);return(0,o.useEffect)(()=>{n&&setTimeout(()=>{u.current?.focus()},10)},[n]),(0,s.jsx)(a,{...l,children:(0,s.jsx)(`input`,{ref:u,type:`text`,className:i(`text`,r),placeholder:t,value:e??``,onChange:e=>c?.(e.target.value)})})};t.div`
+import{_ as e,d as t,h as n,p as r}from"./date-DHm29epU.js";import{l as i,s as a}from"./components-Cmuoz9Sa.js";var o=e(n()),s=r(),c=({value:e,placeholder:t,autofocus:n,className:r,onChange:c,...l})=>{let u=(0,o.useRef)(null);return(0,o.useEffect)(()=>{n&&setTimeout(()=>{u.current?.focus()},10)},[n]),(0,s.jsx)(a,{...l,children:(0,s.jsx)(`input`,{ref:u,type:`text`,className:i(`text`,r),placeholder:t,value:e??``,onChange:e=>c?.(e.target.value)})})};t.div`
   box-shadow:
     0 0 0 1px #cdd8e4,
     0 2px 12px rgb(205 216 228 / 50%);
