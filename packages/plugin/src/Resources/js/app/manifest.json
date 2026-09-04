@@ -10,8 +10,8 @@
     "file": "assets/components-BMkzam91.css",
     "src": "_components-BMkzam91.css"
   },
-  "_components-Cmuoz9Sa.js": {
-    "file": "assets/components-Cmuoz9Sa.js",
+  "_components-g4Y3Kyg2.js": {
+    "file": "assets/components-g4Y3Kyg2.js",
     "name": "components",
     "imports": [
       "_date-DHm29epU.js"
@@ -56,39 +56,39 @@
       "_dist-DgGuNF4E.js"
     ]
   },
-  "_variables-FfZUj14X.js": {
-    "file": "assets/variables-FfZUj14X.js",
+  "_variables-DqB5Z1Qm.js": {
+    "file": "assets/variables-DqB5Z1Qm.js",
     "name": "variables",
     "imports": [
       "_date-DHm29epU.js",
-      "_components-Cmuoz9Sa.js"
+      "_components-g4Y3Kyg2.js"
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-D1lLWJpY.js",
+    "file": "assets/overview-B0G3dDUZ.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-Cmuoz9Sa.js",
+      "_components-g4Y3Kyg2.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js",
       "_timegrid-Drf6zlY9.js",
       "_calendar.styles-C0FusbZu.js",
-      "_variables-FfZUj14X.js"
+      "_variables-DqB5Z1Qm.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-NxMMreIz.js",
+    "file": "assets/event-builder-B2yloTX3.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
       "_rrule-7b6Rmlwt.js",
-      "_components-Cmuoz9Sa.js",
+      "_components-g4Y3Kyg2.js",
       "_dist-DgGuNF4E.js",
       "_interaction-DMXpF6lk.js"
     ]
@@ -107,14 +107,14 @@
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-DIK938Z0.js",
+    "file": "assets/widget-event-BpGoXv9t.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
       "_date-DHm29epU.js",
-      "_components-Cmuoz9Sa.js",
-      "_variables-FfZUj14X.js",
+      "_components-g4Y3Kyg2.js",
+      "_variables-DqB5Z1Qm.js",
       "_loader-Bd6o1-jj.js"
     ]
   },

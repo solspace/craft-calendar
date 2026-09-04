@@ -5,6 +5,18 @@ export const SidebarWrapper = styled.div`
   padding: 0;
 `;
 
+export const SidebarContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const SidebarDivider = styled.hr`
+  width: 100%;
+  margin: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--gray-200);
+`;
+
 export const CalendarList = styled.ul`
   display: flex;
   flex-direction: column;

@@ -5,6 +5,7 @@ import translate from "@cal/utils/translations";
 import type {
   CalendarApi,
   DateSelectArg,
+  DatesSetArg,
   DayHeaderContentArg,
   EventApi,
   EventDropArg,
@@ -50,6 +51,10 @@ import { PopoverViewEvent } from "./popovers/view-event/view-event";
 
 type CalendarFullcalendarProps = {
   hiddenCalendarIds: number[];
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
+  miniDateSelection: Date | null;
+  onMiniDateSelectionHandled: () => void;
 };
 
 const weekHeaderWeekdayFormatter = new Intl.DateTimeFormat(undefined, {
@@ -81,7 +86,13 @@ const formatDuration = (minutes: number): string => {
   return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}:00`;
 };
 
-export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCalendarIds }) => {
+export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
+  hiddenCalendarIds,
+  selectedDate,
+  onDateChange,
+  miniDateSelection,
+  onMiniDateSelectionHandled,
+}) => {
   const { hidePopover, showPopover } = usePopover();
   const { view, setView, isReady } = useViewSettings();
   const {
@@ -281,6 +292,28 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
   );
 
   useEffect(() => () => clearTimeout(hoverTimer.current), []);
+
+  useEffect(() => {
+    const calendarApi = calendar.current?.getApi();
+    if (!calendarApi || !miniDateSelection) {
+      return;
+    }
+
+    calendarApi.changeView("timeGridDay", miniDateSelection);
+
+    changeCalendarUrl(miniDateSelection);
+
+    onMiniDateSelectionHandled();
+  }, [miniDateSelection, onMiniDateSelectionHandled]);
+
+  useEffect(() => {
+    const calendarApi = calendar.current?.getApi();
+    if (!calendarApi || utcDateKey(calendarApi.getDate()) === utcDateKey(selectedDate)) {
+      return;
+    }
+
+    calendarApi.gotoDate(selectedDate);
+  }, [selectedDate]);
 
   const cancelHoverPopover = useCallback(() => clearTimeout(hoverTimer.current), []);
 
@@ -502,7 +535,9 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
           timeGridDay: Craft.t("calendar", "Day"),
           today: Craft.t("calendar", "Today"),
         }}
-        datesSet={({ view }) => {
+        datesSet={({ view }: DatesSetArg) => {
+          onDateChange(view.calendar.getDate());
+
           setTimeout(() => {
             setView(view.type as View);
             changeCalendarUrl();
