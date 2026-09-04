@@ -79,7 +79,7 @@ export const MiniCalendarDay = styled.button<{
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: ${({ $isToday }) => ($isToday ? "50%" : "3px")};
   background: ${({ $isToday }) => ($isToday ? "var(--primary-button-bg)" : "transparent")};
   color: ${({ $isCurrentMonth, $isToday }) => {
     if ($isToday) {
@@ -93,6 +93,6 @@ export const MiniCalendarDay = styled.button<{
   line-height: 1;
 
   &:hover {
-    background: ${({ $isToday }) => ($isToday ? "var(--primary-button-bg)" : "var(--gray-100)")};
+    background: ${({ $isToday }) => ($isToday ? "var(--primary-button-bg)" : "var(--gray-200)")};
   }
 `;

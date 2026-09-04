@@ -254,7 +254,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: ${({$isToday:e})=>e?`50%`:`3px`};
   background: ${({$isToday:e})=>e?`var(--primary-button-bg)`:`transparent`};
   color: ${({$isCurrentMonth:e,$isToday:t})=>t?`var(--white)`:e?`var(--gray-500)`:`var(--gray-300)`};
   cursor: pointer;
@@ -262,7 +262,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   line-height: 1;
 
   &:hover {
-    background: ${({$isToday:e})=>e?`var(--primary-button-bg)`:`var(--gray-100)`};
+    background: ${({$isToday:e})=>e?`var(--primary-button-bg)`:`var(--gray-200)`};
   }
 `,Sa=(e,t,n)=>new Date(Date.UTC(e,t,n)),Ca=e=>Sa(e.getUTCFullYear(),e.getUTCMonth(),1),wa=(e,t)=>Sa(e.getUTCFullYear(),e.getUTCMonth()+t,1),Ta=({selectedDate:e,onDateSelect:t})=>{let{language:n,weekStartDay:r}=$(),[i,a]=(0,z.useState)(()=>Ca(e));(0,z.useEffect)(()=>{a(Ca(e))},[e]);let o=(0,z.useMemo)(()=>new Intl.DateTimeFormat(n,{month:`long`,year:`numeric`,timeZone:`UTC`}),[n]),c=(0,z.useMemo)(()=>new Intl.DateTimeFormat(n,{weekday:`narrow`,timeZone:`UTC`}),[n]),l=(0,z.useMemo)(()=>Array.from({length:7},(e,t)=>c.format(Sa(2023,0,1+r+t))),[r,c]),u=(0,z.useMemo)(()=>{let e=i.getUTCFullYear(),t=i.getUTCMonth(),n=Sa(e,t,1),a=Sa(e,t+1,0),o=(n.getUTCDay()-r+7)%7,s=((r+6)%7-a.getUTCDay()+7)%7,c=o+a.getUTCDate()+s;return Array.from({length:c},(n,r)=>Sa(e,t,1-o+r))},[i,r]),d=s(new Date);return(0,Y.jsxs)(ga,{children:[(0,Y.jsxs)(_a,{children:[(0,Y.jsx)(va,{"aria-label":Craft.t(`calendar`,`Previous month`),type:`button`,onClick:()=>a(e=>wa(e,-1))}),(0,Y.jsx)(`span`,{children:o.format(i)}),(0,Y.jsx)(va,{"aria-label":Craft.t(`calendar`,`Next month`),type:`button`,$next:!0,onClick:()=>a(e=>wa(e,1))})]}),(0,Y.jsx)(ya,{children:l.map((e,t)=>(0,Y.jsx)(`span`,{children:e},`${e}-${t}`))}),(0,Y.jsx)(ba,{children:u.map(e=>{let r=s(e);return(0,Y.jsx)(xa,{"aria-label":e.toLocaleDateString(n,{timeZone:`UTC`}),type:`button`,$isCurrentMonth:e.getUTCMonth()===i.getUTCMonth(),$isToday:r===d,onClick:()=>t(e),children:e.getUTCDate()},r)})})]})},Ea=c`
   100% {
