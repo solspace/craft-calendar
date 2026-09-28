@@ -1,8 +1,8 @@
 {% if segment3 == "calendar" %}
     {% set calendar = craft.calendar.calendar({handle: segment4}) %}
     {% if calendar %}
-        <div class="alert mb-4" role="status"
-                style="--bs-alert-color: {{ calendar.contrastColor }}; --bs-alert-bg: {{ calendar.lighterColor }}; --bs-alert-border-color: {{ calendar.color }};">
+        <div class="alert calendar-filter-banner mb-4" role="status"
+                style="--calendar-color: {{ calendar.color }}; --calendar-surface: {{ calendar.lighterColor }}; --calendar-contrast: {{ calendar.contrastColor }};">
             <span class="fas fa-calendar-alt" aria-hidden="true"></span>&nbsp;
             Events for <strong>{{ calendar.name }}</strong> calendar
         </div>

@@ -35,6 +35,12 @@ body {
 	color: var(--calendar-contrast);
 }
 
+.calendar-filter-banner {
+	--bs-alert-color: var(--calendar-contrast);
+	--bs-alert-bg: var(--calendar-surface);
+	--bs-alert-border-color: var(--calendar-color);
+}
+
 .calendar-filter-link,
 .calendar-filter-link:hover,
 .calendar-filter-link:focus-visible {
@@ -47,6 +53,28 @@ body {
 	border-inline-start: 5px solid var(--calendar-color);
 	background-color: var(--calendar-surface);
 	color: var(--calendar-contrast);
+}
+
+[data-bs-theme="dark"] .calendar-tinted-header,
+[data-bs-theme="dark"] .calendar-filter-link[aria-current="page"],
+[data-bs-theme="dark"] #month_calendar .day_cell .all_day,
+[data-bs-theme="dark"] #month_calendar .day_cell .multi_day {
+	background-color: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-body-bg));
+	color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .calendar-filter-link[aria-current="page"]:hover,
+[data-bs-theme="dark"] .calendar-filter-link[aria-current="page"]:focus-visible,
+[data-bs-theme="dark"] #month_calendar .day_cell .all_day a,
+[data-bs-theme="dark"] #month_calendar .day_cell .multi_day a,
+[data-bs-theme="dark"] #month_calendar .day_cell .all_day a:hover,
+[data-bs-theme="dark"] #month_calendar .day_cell .multi_day a:hover {
+	color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .calendar-filter-banner {
+	--bs-alert-color: var(--bs-body-color);
+	--bs-alert-bg: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-body-bg));
 }
 
 .calendar-details-label {
@@ -175,7 +203,7 @@ body {
 	background: var(--bs-tertiary-bg);
 }
 #month_calendar .out_of_range .date {
-	color: #aeaeae;
+	color: var(--bs-tertiary-color);
 }
 #month_calendar .day_cell.today .date .num {
 	display: inline-grid;
@@ -200,7 +228,7 @@ body {
 }
 #month_calendar #month_year th {
 	padding: 5px;
-	color: #000;
+	color: var(--bs-heading-color);
 }
 #month_calendar #month_year th.left {
 	text-align: left;
@@ -364,8 +392,8 @@ body {
 .event-editor-card {
 	padding: 1.25rem;
 	margin-bottom: 1.5rem;
-	background: #f8f9fa;
-	border: 1px solid #e2e5e8;
+	background: var(--bs-tertiary-bg);
+	border: 1px solid var(--bs-border-color);
 	border-radius: 0.35rem;
 }
 
@@ -379,15 +407,15 @@ body {
 
 .custom-rule-builder {
 	--rule-accent: #e5422b;
-	--rule-border: #dfe3e7;
-	--rule-surface: #ffffff;
+	--rule-border: var(--bs-border-color);
+	--rule-surface: var(--bs-body-bg);
 	padding: 1rem;
 	margin: 0.5rem 0 1.25rem;
 	background: var(--rule-surface);
 	border: 1px solid var(--rule-border);
 	border-left: 4px solid var(--rule-accent);
 	border-radius: 0.35rem;
-	box-shadow: 0 0.2rem 0.7rem rgba(38, 46, 54, 0.06);
+	box-shadow: var(--bs-box-shadow-sm);
 }
 
 .custom-rule-builder__lead {
@@ -414,7 +442,7 @@ body {
 
 .custom-rule-panel p {
 	margin: 0;
-	color: #67717b;
+	color: var(--bs-secondary-color);
 }
 
 .custom-rule-label {
@@ -423,7 +451,7 @@ body {
 	font-size: 0.78rem;
 	font-weight: 700;
 	letter-spacing: 0.04em;
-	color: #5b6570;
+	color: var(--bs-secondary-color);
 	text-transform: uppercase;
 }
 
@@ -476,15 +504,15 @@ body {
 	padding: 0.35rem;
 	font-size: 0.8rem;
 	font-weight: 600;
-	color: #47515b;
+	color: var(--bs-body-color);
 	cursor: pointer;
-	background: #f7f8f9;
+	background: var(--bs-tertiary-bg);
 	border: 0;
 	transition: color 120ms ease, background-color 120ms ease;
 }
 
 .rule-matrix__button:hover {
-	background: #eceff1;
+	background: var(--bs-secondary-bg);
 }
 
 .rule-matrix__button:focus-visible {
@@ -512,7 +540,7 @@ body {
 .custom-rule-advanced summary {
 	font-size: 0.8rem;
 	font-weight: 600;
-	color: #67717b;
+	color: var(--bs-secondary-color);
 	cursor: pointer;
 }
 
@@ -531,7 +559,7 @@ body {
 .fixed-date-manager {
 	padding-top: 1rem;
 	margin-top: 1rem;
-	border-top: 1px solid #dee2e6;
+	border-top: 1px solid var(--bs-border-color);
 }
 
 .fixed-date-manager h3 {
@@ -554,8 +582,8 @@ body {
 	align-items: center;
 	padding-left: 0.65rem;
 	font-family: monospace;
-	background: #fff;
-	border: 1px solid #dee2e6;
+	background: var(--bs-body-bg);
+	border: 1px solid var(--bs-border-color);
 	border-radius: 0.25rem;
 }
 

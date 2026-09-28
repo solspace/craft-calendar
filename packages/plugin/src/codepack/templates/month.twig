@@ -44,7 +44,7 @@
                         <h1 class="visually-hidden">{{ month.date.format('F Y') }}</h1>
                         <div class="d-flex flex-wrap align-items-center justify-content-center gap-2">
                             {% include "demo/layouts/_month_heading" with {month: month} only %}
-                            <span class="badge rounded-pill text-bg-light border text-body-secondary fw-normal fs-6">
+                            <span class="badge rounded-pill bg-body-tertiary border text-body-secondary fw-normal fs-6">
                                 {{ occurrenceCount }} event{{ occurrenceCount > 1 or occurrenceCount == 0 ? "s" }}
                             </span>
                         </div>

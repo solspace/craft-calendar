@@ -6,6 +6,8 @@ The event editor and FullCalendar page scripts now live in `assets/js/event-edit
 
 The Week and Day views now share `templates/layouts/_agenda_event.twig`. Copy this partial when merging either view into an existing demo installation.
 
+The demo now includes `assets/js/theme.js` and a Light, Dark, and Auto menu in the shared layout. Copy the script and merge the updated stylesheets and layout when updating an existing installation. Auto follows the system appearance; an explicit choice is saved in the browser.
+
 ## Version 2.0
 
 Version 2.0 updates event creation for the Calendar 6 API.
