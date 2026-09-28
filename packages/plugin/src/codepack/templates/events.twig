@@ -143,15 +143,31 @@
             {% include "demo/layouts/_sidebar" %}
             <section class="card border-0 rounded-4 shadow-sm mt-4">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">Events by Month</h2>
-                    <div class="list-group">
-                        {% set month = craft.calendar.month({date: targetStartDate, calendarId: 0}) %}
-                        {% for date in month.dateRange(6, 6) %}
-                            <a href="{{ siteUrl }}demo/events/{{ date.format('Y/m') }}/{{ date.daysInMonth }}"
-                                class="list-group-item list-group-item-action {{ isMonthView and date == month.date ? 'bg-primary-subtle text-primary-emphasis border-primary-subtle' }}"{% if isMonthView and date == month.date %} aria-current="page"{% endif %}>
-                                {{ date.format('M Y') }}
-                            </a>
-                        {% endfor %}
+                    {% set month = craft.calendar.month({date: targetStartDate, calendarId: 0}) %}
+                    <h2 class="h6 text-body-secondary mb-2">Browse by month</h2>
+                    <div class="dropdown">
+                        <button id="events-month-menu" type="button"
+                            class="btn btn-outline-secondary d-flex align-items-center justify-content-between gap-2 w-100"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span><span class="far fa-calendar-alt me-2" aria-hidden="true"></span>{{ isMonthView ? month.date.format('F Y') : 'Upcoming events' }}</span>
+                            <span class="fas fa-chevron-down small" aria-hidden="true"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end w-100 events-month-menu" aria-labelledby="events-month-menu">
+                            <li>
+                                <a href="{{ siteUrl }}demo/events" class="dropdown-item{{ not isMonthView ? ' active' }}"{% if not isMonthView %} aria-current="page"{% endif %}>
+                                    Upcoming events
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% for date in month.dateRange(6, 6) %}
+                                <li>
+                                    <a href="{{ siteUrl }}demo/events/{{ date.format('Y/m') }}/{{ date.daysInMonth }}"
+                                        class="dropdown-item{{ isMonthView and date == month.date ? ' active' }}"{% if isMonthView and date == month.date %} aria-current="page"{% endif %}>
+                                        {{ date.format('F Y') }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
             </section>

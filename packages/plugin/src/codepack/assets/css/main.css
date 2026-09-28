@@ -371,7 +371,13 @@ body {
 	font-size: .875rem;
 	overflow-wrap: anywhere;
 }
+
 /* EVENT AGENDAS */
+
+.events-month-menu {
+	max-height: min(20rem, calc(100vh - 8rem));
+	overflow-y: auto;
+}
 
 .calendar-agenda-event::before {
 	position: absolute;
