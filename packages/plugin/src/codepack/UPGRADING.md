@@ -4,6 +4,8 @@ Version 2.1 updates the demo to Bootstrap 5.3.8. The included templates use Boot
 
 The event editor and FullCalendar page scripts now live in `assets/js/event-editor.js` and `assets/js/full-calendar.js`. If you customized either inline script in a previously installed template, merge those changes into the corresponding new asset. Keep the JSON configuration in the Twig template for Craft values and translated labels.
 
+The Week and Day views now share `templates/layouts/_agenda_event.twig`. Copy this partial when merging either view into an existing demo installation.
+
 ## Version 2.0
 
 Version 2.0 updates event creation for the Calendar 6 API.

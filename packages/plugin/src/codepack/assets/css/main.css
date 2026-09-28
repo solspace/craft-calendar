@@ -206,49 +206,22 @@ body {
 
 /* WEEK CALENDAR */
 
-#week_calendar .week-date {
+#week_calendar .week-date,
+#day_calendar .day-time {
 	flex: 0 0 8rem;
 }
 
-#week_calendar .week-events {
+#week_calendar .week-events,
+#day_calendar .day-events {
 	min-width: 0;
 }
 
 @media (max-width: 575.98px) {
-	#week_calendar .week-date {
+	#week_calendar .week-date,
+	#day_calendar .day-time {
 		flex-basis: auto;
 	}
 }
-
-/* DAY CALENDAR */
-
-#day_calendar .header div {
-	float: left;
-	width: 15%;
-}
-#day_calendar .header div.left {
-	padding-left: 10px;
-}
-#day_calendar .header div.center {
-	width: 65%;
-	text-align: center;
-}
-#day_calendar .header div.right {
-	text-align: right;
-	padding-right: 10px;
-}
-#day_calendar ul.list-group {
-	margin-bottom: 0px;
-}
-.list-group-item .calendar_event_title {
-	color: #3a3a3a;
-	text-decoration: underline;
-}
-.list-group-item .calendar_event_title:hover {
-	color: #4f4f4f;
-	text-decoration: none;
-}
-
 
 /* MINI CALENDAR */
 
