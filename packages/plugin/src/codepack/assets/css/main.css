@@ -304,6 +304,9 @@ body {
 #mini_calendar td.has_events .mini_calendar_date a {
 	font-weight: 600;
 }
+#mini_calendar td.has_events .mini_calendar_day_number {
+	transform: translateY(-0.15rem);
+}
 #mini_calendar td.has_events .mini_calendar_date a::after {
 	position: absolute;
 	bottom: 0.15rem;
@@ -324,6 +327,7 @@ body {
 #mini_calendar td.today.has_events .mini_calendar_date a:hover .mini_calendar_day_number {
 	background-color: var(--bs-primary);
 	color: var(--bs-white);
+	font-weight: 600;
 }
 
 .event-editor-card {
