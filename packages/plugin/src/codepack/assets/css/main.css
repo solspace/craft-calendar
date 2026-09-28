@@ -204,7 +204,18 @@ body {
 }
 
 
-/* WEEK CALENDAR */
+/* WEEK AND DAY AGENDAS */
+
+.calendar-agenda-event::before {
+	position: absolute;
+	top: .5rem;
+	bottom: .5rem;
+	left: 0;
+	width: .2rem;
+	border-radius: var(--bs-border-radius-pill);
+	background-color: var(--calendar-accent);
+	content: "";
+}
 
 #week_calendar .week-date,
 #day_calendar .day-time {

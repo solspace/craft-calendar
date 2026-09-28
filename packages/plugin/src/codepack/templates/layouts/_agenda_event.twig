@@ -1,7 +1,7 @@
 {% set event = occurrence.event %}
 
-<li class="d-flex flex-wrap align-items-center justify-content-between gap-2 {{ day.dateLocalized.isToday ? 'bg-body' : 'bg-body-tertiary' }} rounded-3 px-3 py-2"
-    style="border-left: 3px solid {{ event.calendar.color }};">
+<li class="calendar-agenda-event position-relative d-flex flex-wrap align-items-center justify-content-between gap-2 {{ day.dateLocalized.isToday ? 'bg-body' : 'bg-body-tertiary' }} rounded-3 px-3 py-2"
+    style="--calendar-accent: {{ event.calendar.color }};">
     <div>
         <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format('Y/m/d') }}"
             class="fw-semibold link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
