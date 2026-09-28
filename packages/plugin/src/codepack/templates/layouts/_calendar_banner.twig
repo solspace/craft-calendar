@@ -2,7 +2,7 @@
     {% set calendar = craft.calendar.calendar({handle: segment4}) %}
     {% if calendar %}
         <div class="alert mb-4" role="status"
-                style="color: {{ calendar.contrastColor }}; background-color: {{ calendar.lighterColor }}; border-color: {{ calendar.color }};">
+                style="--bs-alert-color: {{ calendar.contrastColor }}; --bs-alert-bg: {{ calendar.lighterColor }}; --bs-alert-border-color: {{ calendar.color }};">
             <span class="fas fa-calendar-alt" aria-hidden="true"></span>&nbsp;
             Events for <strong>{{ calendar.name }}</strong> calendar
         </div>

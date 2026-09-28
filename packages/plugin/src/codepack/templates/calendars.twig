@@ -16,8 +16,8 @@
             {% for calendar in calendars %}
 
                 <div class="card mb-4 border-0 rounded-4 shadow-sm overflow-hidden">
-                    <h2 class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center fs-5 mb-0 py-3"
-                        style="color: {{ calendar.contrastColor }}; background-color: {{ calendar.lighterColor }};">
+                    <h2 class="card-header calendar-tinted-header d-flex flex-wrap gap-2 justify-content-between align-items-center fs-5 mb-0 py-3"
+                        style="--calendar-surface: {{ calendar.lighterColor }}; --calendar-contrast: {{ calendar.contrastColor }};">
                         <span>
                             <span class="fas fa-calendar-alt" aria-hidden="true"></span>&nbsp;
                             {{ calendar.name }}

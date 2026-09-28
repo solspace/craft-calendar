@@ -89,7 +89,7 @@
                                 </a>
                             </div>
                             <article class="calendar-agenda-event position-relative flex-grow-1 bg-body-tertiary rounded-3 px-3 py-2"
-                                style="--calendar-accent: {{ event.calendar.color }};">
+                                style="--calendar-color: {{ event.calendar.color }};">
                                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                                     <div>
                                         <h2 class="h6 mb-1">
@@ -115,7 +115,7 @@
                                     </div>
                                     <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
                                         class="badge rounded-pill text-bg-light border text-decoration-none fw-normal">
-                                        <span class="fas fa-calendar-alt me-1" style="color: {{ event.calendar.color }};" aria-hidden="true"></span>
+                                        <span class="fas fa-calendar-alt calendar-color-icon me-1" aria-hidden="true"></span>
                                         {{ event.calendar.name }}
                                     </a>
                                 </div>
