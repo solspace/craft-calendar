@@ -152,7 +152,7 @@
                             <span><span class="far fa-calendar-alt me-2" aria-hidden="true"></span>{{ isMonthView ? month.date.format('F Y') : 'Upcoming events' }}</span>
                             <span class="fas fa-chevron-down small" aria-hidden="true"></span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end w-100 events-month-menu" aria-labelledby="events-month-menu">
+                        <ul class="dropdown-menu dropdown-menu-end w-100 sidebar-dropdown-menu" aria-labelledby="events-month-menu">
                             <li>
                                 <a href="{{ siteUrl }}demo/events" class="dropdown-item{{ not isMonthView ? ' active' }}"{% if not isMonthView %} aria-current="page"{% endif %}>
                                     Upcoming events

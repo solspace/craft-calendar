@@ -5,34 +5,47 @@
             {% include "demo/layouts/_mini_cal" %}
         </div>
 
-        <h2 class="h5 border-top pt-3 mb-3">
-            {% if segment2 in ["month", "week", "day"] %}
-                Filter by Calendar
-            {% else %}
-                Calendars
-            {% endif %}
-        </h2>
-        <div class="list-group small">
-            {% set calendars = craft.calendar.calendars({
-                limit: 10,
-                order: "name",
-                sort: "asc"
-            }) %}
+        {% set isCalendarView = segment2 in ["month", "week", "day"] %}
+        {% set selectedHandle = isCalendarView and segment3 == "calendar" ? segment4 : (segment2 == "calendars" ? segment3 : null) %}
+        {% set calendars = craft.calendar.calendars({
+            order: "name",
+            sort: "asc"
+        }) %}
+        {% set selectedCalendar = selectedHandle ? calendars|filter(calendar => calendar.handle == selectedHandle)|first : null %}
+        {% set datePath = isCalendarView ? targetDate|date(segment2 == "month" ? 'Y/m' : 'Y/m/d') : null %}
+        {% set allSelected = not selectedHandle and (isCalendarView or segment2 == "calendars") %}
 
-            {% for calendar in calendars %}
-                {% if segment2 in ["month", "week", "day"] %}
-                    {% set urlPart = segment2~"/calendar" %}
-                {% else %}
-                    {% set urlPart = "calendars" %}
+        <h2 class="h6 text-body-secondary border-top pt-3 mb-2">{{ isCalendarView ? 'Filter by calendar' : 'Calendars' }}</h2>
+        <div class="dropdown">
+            <button id="sidebar-calendar-menu" type="button"
+                class="btn btn-outline-secondary d-flex align-items-center justify-content-between gap-2 w-100"
+                data-bs-toggle="dropdown" aria-expanded="false"{% if selectedCalendar %} style="--calendar-color: {{ selectedCalendar.color }};"{% endif %}>
+                <span class="d-flex align-items-center gap-2 text-truncate">
+                    <span class="fas fa-calendar-alt{{ selectedCalendar ? ' calendar-color-icon' : '' }}" aria-hidden="true"></span>
+                    <span class="text-truncate">{{ selectedCalendar ? selectedCalendar.name : 'All calendars' }}</span>
+                </span>
+                <span class="fas fa-chevron-down small flex-shrink-0" aria-hidden="true"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end w-100 sidebar-dropdown-menu" aria-labelledby="sidebar-calendar-menu">
+                <li>
+                    <a href="{{ siteUrl }}demo/{{ isCalendarView ? segment2 ~ '/' ~ datePath : 'calendars' }}"
+                        class="dropdown-item{{ allSelected ? ' active' : '' }}"{% if allSelected %} aria-current="page"{% endif %}>
+                        All calendars
+                    </a>
+                </li>
+                {% if calendars|length %}
+                    <li><hr class="dropdown-divider"></li>
                 {% endif %}
-
-                <a href="{{ siteUrl }}demo/{{ urlPart }}/{{ calendar.handle }}"
-                    class="list-group-item list-group-item-action calendar-filter-link"
-                    style="--calendar-color: {{ calendar.color }}; --calendar-surface: {{ calendar.lighterColor }}; --calendar-contrast: {{ calendar.contrastColor }};"{% if segment3 == calendar.handle or segment4 == calendar.handle %} aria-current="page"{% endif %}>
-                    <span class="fas fa-calendar-alt calendar-color-icon" aria-hidden="true"></span>&nbsp;
-                    {{ calendar.name }}
-                </a>
-            {% endfor %}
+                {% for calendar in calendars %}
+                    <li>
+                        <a href="{{ siteUrl }}demo/{{ isCalendarView ? segment2 ~ '/calendar' : 'calendars' }}/{{ calendar.handle }}{{ isCalendarView ? '/' ~ datePath : '' }}"
+                            class="dropdown-item{{ selectedHandle == calendar.handle ? ' active' : '' }}"
+                            style="--calendar-color: {{ calendar.color }};"{% if selectedHandle == calendar.handle %} aria-current="page"{% endif %}>
+                            <span class="fas fa-calendar-alt calendar-color-icon me-2" aria-hidden="true"></span>{{ calendar.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </aside>

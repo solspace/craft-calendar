@@ -36,30 +36,6 @@ body {
 	--bs-alert-border-color: var(--calendar-color);
 }
 
-.calendar-filter-link,
-.calendar-filter-link:hover,
-.calendar-filter-link:focus-visible {
-	color: var(--calendar-color);
-}
-
-.calendar-filter-link[aria-current="page"],
-.calendar-filter-link[aria-current="page"]:hover,
-.calendar-filter-link[aria-current="page"]:focus-visible {
-	border-inline-start: 5px solid var(--calendar-color);
-	background-color: var(--calendar-surface);
-	color: var(--calendar-contrast);
-}
-
-[data-bs-theme="dark"] .calendar-filter-link[aria-current="page"] {
-	background-color: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-body-bg));
-	color: var(--bs-body-color);
-}
-
-[data-bs-theme="dark"] .calendar-filter-link[aria-current="page"]:hover,
-[data-bs-theme="dark"] .calendar-filter-link[aria-current="page"]:focus-visible {
-	color: var(--bs-body-color);
-}
-
 [data-bs-theme="dark"] .calendar-filter-banner {
 	--bs-alert-color: var(--bs-body-color);
 	--bs-alert-bg: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-body-bg));
@@ -374,7 +350,7 @@ body {
 
 /* EVENT AGENDAS */
 
-.events-month-menu {
+.sidebar-dropdown-menu {
 	max-height: min(20rem, calc(100vh - 8rem));
 	overflow-y: auto;
 }
