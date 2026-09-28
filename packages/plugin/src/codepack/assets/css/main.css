@@ -240,30 +240,30 @@ body {
 	padding: 0;
 	margin: 0;
 	text-align: center;
-}
-#mini_calendar th {
-	padding: .75rem 0;
-	border-color: var(--bs-border-color);
+	border: 0;
 }
 #mini_calendar thead tr:first-child th {
-	border-inline: 0;
-	border-block: 1px solid var(--bs-border-color);
-	background-color: var(--bs-body-bg);
-}
-#mini_calendar thead tr:first-child th:first-child {
-	border-inline-start: 1px solid var(--bs-border-color);
-}
-#mini_calendar thead tr:first-child th:last-child {
-	border-inline-end: 1px solid var(--bs-border-color);
+	padding: .25rem 0 .75rem;
+	border-bottom: 1px solid rgba(var(--bs-body-color-rgb), .1);
 }
 #mini_calendar .mini_calendar_days th {
-	background-color: var(--bs-tertiary-bg);
-	border: 1px solid var(--bs-border-color);
+	padding: .75rem 0 .25rem;
+	color: var(--bs-secondary-color);
+	font-size: .875rem;
+	font-weight: 600;
+}
+#mini_calendar tbody tr + tr td {
+	border-top: 1px solid rgba(var(--bs-body-color-rgb), .1);
 }
 #mini_calendar th a {
 	color: var(--bs-body-color);
 	font-size: 15px;
 	text-decoration: none;
+	border-radius: var(--bs-border-radius);
+}
+#mini_calendar th a:hover,
+#mini_calendar th a:focus-visible {
+	background-color: var(--bs-tertiary-bg);
 }
 #mini_calendar .mini_calendar_date {
 	position: relative;
@@ -303,11 +303,13 @@ body {
 #mini_calendar .middot {
 	color: var(--bs-tertiary-color);
 }
-#mini_calendar td.has_events .mini_calendar_date a:hover .mini_calendar_day_number {
+#mini_calendar td.has_events .mini_calendar_date a:hover .mini_calendar_day_number,
+#mini_calendar td.has_events .mini_calendar_date a:focus-visible .mini_calendar_day_number {
 	background-color: var(--bs-primary-bg-subtle);
 }
 #mini_calendar td.today .mini_calendar_day_number,
-#mini_calendar td.today.has_events .mini_calendar_date a:hover .mini_calendar_day_number {
+#mini_calendar td.today.has_events .mini_calendar_date a:hover .mini_calendar_day_number,
+#mini_calendar td.today.has_events .mini_calendar_date a:focus-visible .mini_calendar_day_number {
 	background-color: var(--bs-primary);
 	color: var(--bs-white);
 	font-weight: 600;
