@@ -2,11 +2,10 @@
     <button id="calendar-month-menu"
             type="button"
             class="btn btn-secondary dropdown-toggle"
-            data-toggle="dropdown"
-            aria-haspopup="true"
+            data-bs-toggle="dropdown"
             aria-expanded="false"
     >
-        <strong>{{ month.date.format('F Y') }}</strong> <span class="caret"></span>
+        <strong>{{ month.date.format('F Y') }}</strong>
     </button>
     <div class="dropdown-menu">
         {% for date in month.dateRange(-6, 6) %}

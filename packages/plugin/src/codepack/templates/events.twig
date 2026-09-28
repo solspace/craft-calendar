@@ -5,7 +5,7 @@
 
 {% macro pager(pageInfo) %}
     {% if pageInfo.total > 1 %}
-        <ul class="pagination">
+        <ul class="pagination" aria-label="Events pages">
             {% if pageInfo.prevUrl %}
                 <li class="page-item">
                     <a class="page-link" href="{{ pageInfo.prevUrl }}">&laquo; Previous</a>
@@ -19,8 +19,8 @@
             {% endfor %}
 
 
-            <li class="page-item active">
-                <a class="page-link" href="#">{{ pageInfo.currentPage }}</a>
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ pageInfo.currentPage }}</span>
             </li>
 
             {% for page, url in pageInfo.getNextUrls(3) %}
@@ -58,7 +58,7 @@
     <div class="row">
         <div class="col-md-9">
 
-            <h3>List of Events</h3>
+            <h2>List of Events</h2>
             {% set eventOptions = {
                 rangeStart: targetStartDate,
                 rangeEnd: targetEndDate,
@@ -70,11 +70,11 @@
             {% for occurrence in occurrences %}
                 {% set event = occurrence.event %}
 
-                <div class="card" style="border-color: {{ event.calendar.color }}; margin-bottom: 20px;">
-                    <h4 class="card-header d-flex justify-content-between align-items-center" style="color: {{ event.calendar.contrastColor }}; background-color: {{ event.calendar.lighterColor }};">
+                <div class="card mb-4" style="border-color: {{ event.calendar.color }};">
+                    <h3 class="card-header d-flex justify-content-between align-items-center" style="color: {{ event.calendar.contrastColor }}; background-color: {{ event.calendar.lighterColor }};">
                         {{ event.title }}&nbsp;&nbsp;
-                        <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format('Y/m/d') }}" class="btn btn-light btn-sm border-light border border-dark">View Event</a>
-                    </h4>
+                        <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format('Y/m/d') }}" class="btn btn-light btn-sm border">View Event</a>
+                    </h3>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
                             <strong>
@@ -124,7 +124,7 @@
         <div class="col-sm-12 col-md-3">
             {% include "demo/layouts/_sidebar" %}
             <br />
-            <h3>Events by Month</h3>
+            <h2>Events by Month</h2>
             <div class="list-group">
                 {% set month = craft.calendar.month({date: targetStartDate, calendarId: 0}) %}
                 {% for date in month.dateRange(6, 6) %}

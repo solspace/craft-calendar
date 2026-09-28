@@ -1,45 +1,22 @@
 /* Calendar Demo Styles */
 
 body {
-	margin-top: 100px !important;
-}
-footer {
-	margin-top: 50px;
-	padding: 25px 0;
-}
-footer p {
-	margin-bottom: 0;
+	padding-top: 6rem;
 }
 
-.navbar-brand {
-	margin-right: 25px;
-	flex: 0 0 auto;
+.visually-hidden-focusable {
+	z-index: 1040;
+	top: .5rem;
+	left: .5rem;
 }
+
 .navbar-brand img {
-	width: 30px;
-	height: 30px;
-	margin-right: 10px;
-}
-.navbar-nav .nav-item {
-	margin-right: 6px;
-}
-.navbar .nav-link {
-	padding-left: .35rem !important;
-	padding-right: .35rem !important;
-	white-space: nowrap;
-}
-.navbar .navbar-collapse {
-	min-width: 0;
-}
-.navbar .navbar-nav {
-	flex: 1 1 auto;
-	min-width: 0;
-	flex-wrap: wrap;
+	margin-inline-end: .5rem;
 }
 
-@media (max-width: 1199.98px) {
-	.navbar-nav .nav-item {
-		margin-right: 4px;
+@media (max-width: 767.98px) {
+	#month_calendar_inner {
+		min-width: 42rem;
 	}
 }
 
@@ -273,7 +250,7 @@ footer p {
 	display: block;
 	color: #fff;
 }
-#mini_calendar td div, #mini_calendar td.has_events div #mini_calendar td.mini_calendar_pad div {
+#mini_calendar td div {
 	vertical-align: middle;
 	text-align: center;
 	padding: 6px;

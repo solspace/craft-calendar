@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Demo Templates for Calendar">
     <meta name="author" content="Solspace">
     <title>Calendar Demo | {{ pageTitle ? pageTitle : "Home" }}</title>
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/main.css">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/demo/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/demo/favicon/favicon-32x32.png">
@@ -28,74 +27,73 @@
 {% set segment6 = craft.app.request.segment(6) %}
 {% set segment7 = craft.app.request.segment(7) %}
 
-<body role="document">
+<body id="top">
+<a class="visually-hidden-focusable position-absolute bg-white p-2" href="#main-content">Skip to main content</a>
 
 {% if page is not defined %}
     {% set page = "month" %}
 {% endif %}
 
-<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-xl bg-dark fixed-top" data-bs-theme="dark" aria-label="Main navigation">
     <a class="navbar-brand" href="{{ siteUrl }}demo/">
-        <img src="{{ siteUrl }}assets/demo/images/icon.svg" alt="Calendar Demo">
+        <img src="{{ siteUrl }}assets/demo/images/icon.svg" alt="" width="30" height="30">
         Calendar Demo
     </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item {{ page == 'month' ? 'active' }}">
-                <a class="nav-link" href="{{ siteUrl }}demo/month">Month</a>
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+                <a class="nav-link{{ page == 'month' ? ' active' }}" href="{{ siteUrl }}demo/month"{% if page == 'month' %} aria-current="page"{% endif %}>Month</a>
             </li>
-            <li class="nav-item {{ page == 'week' ? 'active' }}">
-                <a class="nav-link" href="{{ siteUrl }}demo/week">Week</a>
+            <li class="nav-item">
+                <a class="nav-link{{ page == 'week' ? ' active' }}" href="{{ siteUrl }}demo/week"{% if page == 'week' %} aria-current="page"{% endif %}>Week</a>
             </li>
-            <li class="nav-item {{ page == 'day' ? 'active' }}">
-                <a class="nav-link" href="{{ siteUrl }}demo/day">Day</a>
+            <li class="nav-item">
+                <a class="nav-link{{ page == 'day' ? ' active' }}" href="{{ siteUrl }}demo/day"{% if page == 'day' %} aria-current="page"{% endif %}>Day</a>
             </li>
-            <li class="nav-item {{ page == 'events' ? 'active' }}">
-                <a class="nav-link" href="{{ siteUrl }}demo/events">Events List</a>
+            <li class="nav-item">
+                <a class="nav-link{{ page == 'events' ? ' active' }}" href="{{ siteUrl }}demo/events"{% if page == 'events' %} aria-current="page"{% endif %}>Events List</a>
             </li>
-            <li class="nav-item {{ page == 'calendars' ? 'active' }}">
-                <a class="nav-link" href="{{ siteUrl }}demo/calendars">Calendars</a>
+            <li class="nav-item">
+                <a class="nav-link{{ page == 'calendars' ? ' active' }}" href="{{ siteUrl }}demo/calendars"{% if page == 'calendars' %} aria-current="page"{% endif %}>Calendars</a>
             </li>
-            <li class="nav-item {{ page == 'fullcalendar' ? 'active' }}">
-                <a class="nav-link" href="{{ siteUrl }}demo/fullcalendar">Full Calendar</a>
+            <li class="nav-item">
+                <a class="nav-link{{ page == 'fullcalendar' ? ' active' }}" href="{{ siteUrl }}demo/fullcalendar"{% if page == 'fullcalendar' %} aria-current="page"{% endif %}>Full Calendar</a>
             </li>
-            <li class="nav-item {{ page == 'edit' ? 'active' }}">
-                <a class="nav-link" href="{{ siteUrl }}demo/edit/event/new">Create</a>
+            <li class="nav-item">
+                <a class="nav-link{{ page == 'edit' ? ' active' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' %} aria-current="page"{% endif %}>Create</a>
             </li>
         </ul>
         <div class="navbar-nav dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                data-bs-toggle="dropdown" aria-expanded="false">
                 Resources
             </a>
-            <div class="dropdown-menu dropdown-menu-right text-right" aria-labelledby="navbarDropdown">
+            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" href="https://plugins.craftcms.com/calendar">Plugin Store</a>
-                <a class="dropdown-item" href="https://docs.solspace.com/craft/calendar/v5/">Documentation</a>
+                <a class="dropdown-item" href="https://docs.solspace.com/craft/calendar/v6/">Documentation</a>
                 <a class="dropdown-item" href="https://docs.solspace.com/support/">Support</a>
             </div>
         </div>
     </div>
 </nav>
 
-<div class="container">
+<main id="main-content" class="container pb-5" tabindex="-1">
     {% block content %}{% endblock %}
-</div>
+</main>
 
-<footer class="bg-light text-muted">
+<footer class="bg-body-tertiary text-body-secondary py-4 mt-5">
     <div class="container">
-        <p class="float-right">
-            <a href="#">Back to top</a>
+        <p class="float-end mb-0">
+            <a href="#top">Back to top</a>
         </p>
-        <p><a href="https://docs.solspace.com/craft/calendar">Calendar</a> for Craft CMS. &copy; 2010-{{ "now"|date("Y") }} <a href="https://solspace.com">Solspace, Inc.</a></p>
+        <p class="mb-0"><a href="https://docs.solspace.com/craft/calendar/v6/">Calendar</a> for Craft CMS. &copy; 2010-{{ "now"|date("Y") }} <a href="https://solspace.com">Solspace, Inc.</a></p>
     </div>
 </footer>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="{{ siteUrl }}assets/demo/js/main.js"></script>
 
 {% block footerJs %}{% endblock %}

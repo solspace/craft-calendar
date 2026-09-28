@@ -47,17 +47,17 @@
                     </div>
 
                     <div class="col-auto">
-                        <h3>
+                        <h2>
                             {{ day.date.format('l, F j, Y') }} &nbsp;
-                            <span class="badge {{ day.occurrenceCount ? "badge-warning" : "badge-secondary" }}">
+                            <span class="badge {{ day.occurrenceCount ? "text-bg-warning" : "text-bg-secondary" }}">
                                 {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
                             </span>
-                        </h3>
+                        </h2>
                     </div>
 
                     <div class="col-2 clearfix">
                     {% if dateBoundsHelper < 365 %}
-                        <a class="btn btn-outline-secondary float-right"
+                        <a class="btn btn-outline-secondary float-end"
                            href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ day.nextDate.format('Y/m/d') }}">
                             Next <span class="fas fa-arrow-right"></span>
                         </a>
@@ -65,18 +65,21 @@
                     </div>
                 </div>
 
+                <div class="table-responsive">
                 <table class="table">
+                    <caption class="visually-hidden">Events for {{ day.date.format('F j, Y') }}</caption>
+                    <tbody>
                     <tr>
-                        <td style="width:15%;">
+                        <th scope="row" style="width:15%;">
                             {% if day.allDayOccurrenceCount %}
                                 <strong>All Day</strong>
-                                <span class="badge badge-warning float-right">
+                                <span class="badge text-bg-warning float-end">
                                     {{ day.allDayOccurrenceCount }}
                                 </span>
                             {% else %}
                                 All Day
                             {% endif %}
-                        </td>
+                        </th>
                         <td>
                             {% if day.allDayOccurrences %}
                                 <ul class="list-group">
@@ -111,16 +114,16 @@
 
                     {% for hour in day %}
                         <tr>
-                            <td>
+                            <th scope="row">
                                 {% if hour.occurrenceCount %}
                                     <strong>{{ hour.date.format('g a') }}</strong>
-                                    <span class="badge badge-warning float-right">
+                                    <span class="badge text-bg-warning float-end">
                                         {{ hour.occurrenceCount }}
                                     </span>
                                 {% else %}
                                     {{ hour.date.format('g a') }}
                                 {% endif %}
-                            </td>
+                            </th>
                             <td>
                                 {% if hour.occurrences.count %}
                                     <ul class="list-group">
@@ -167,7 +170,9 @@
                             </td>
                         </tr>
                     {% endfor %}
+                    </tbody>
                 </table>
+                </div>
             </div>
         </div>
 

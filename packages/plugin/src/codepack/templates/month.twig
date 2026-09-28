@@ -45,17 +45,17 @@
                     </div>
 
                     <div class="col-auto">
-                        <h3>
+                        <h2>
                             {% include "demo/layouts/_month_heading" with {month: month} only %} &nbsp;
-                            <span class="badge {{ occurrenceCount ? "badge-warning" : "badge-secondary" }}">
+                            <span class="badge {{ occurrenceCount ? "text-bg-warning" : "text-bg-secondary" }}">
                                 {{ occurrenceCount }} event{{ occurrenceCount > 1 or occurrenceCount == 0 ? "s" }}
                             </span>
-                        </h3>
+                        </h2>
                     </div>
 
                     <div class="col-3 clearfix">
                     {% if dateBoundsHelper < 365 %}
-                        <a class="btn btn-outline-secondary float-right"
+                        <a class="btn btn-outline-secondary float-end"
                            href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.nextDate.format('Y/m') }}">
                             {{ month.nextDate.format('F') }} <span class="fas fa-arrow-right"></span>
                         </a>
@@ -63,11 +63,13 @@
                     </div>
                 </div>
 
+                <div class="table-responsive">
                 <table id="month_calendar_inner" class="table table-bordered">
+                    <caption class="visually-hidden">Events for {{ month.date.format('F Y') }}</caption>
                     <thead>
                     <tr id="days_of_week" class="active">
                         {% for day in month|first %}
-                            <th class="day_of_week">
+                            <th class="day_of_week" scope="col">
                                 {{ day.date.format('l') }}
                             </th>
                         {% endfor %}
@@ -80,7 +82,7 @@
                                 {% if month.containsDate(day.date) %}
                                 <td class="day_cell{{ day.dateLocalized.isToday ? " today" }}">
                                     <div class="date{{ day.occurrenceCount ? " has_events" }}">
-                                        <a class="num"
+                                        <a aria-label="{{ day.date.format('F j, Y') }}" class="num"
                                            href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? "calendar/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
                                             {{ day.date.format('j') }}
                                         </a>
@@ -103,6 +105,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
 
         </div>

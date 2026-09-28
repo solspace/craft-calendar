@@ -13,7 +13,7 @@
 
 		<div class="col-md-9">
 
-			<h3>Events by Calendar</h3>
+			<h2>Events by Calendar</h2>
 			{% set calendars = craft.calendar.calendars({
 				handle: segment3 ? segment3 : null,
 				orderBy: "name",
@@ -22,28 +22,26 @@
 
 			{% for calendar in calendars %}
 
-				<div class="card" style="border-color: {{ calendar.color }}; margin-bottom: 20px;">
-					<h4 class="card-header d-flex justify-content-between align-items-center"
+				<div class="card mb-4" style="border-color: {{ calendar.color }};">
+					<h3 class="card-header d-flex justify-content-between align-items-center"
 					    style="color: {{ calendar.contrastColor }}; background-color: {{ calendar.lighterColor }};">
 						<span>
 							<span class="fas fa-calendar-alt" aria-hidden="true"></span>&nbsp;
 							{{ calendar.name }}
 						</span>
 						{% if craft.calendar.exportEnabled %}
-							<a href="{{ siteUrl }}demo/export/calendar/{{ calendar.id }}" class="btn btn-light btn-sm border-light border border-dark">
+							<a href="{{ siteUrl }}demo/export/calendar/{{ calendar.id }}" class="btn btn-light btn-sm border">
 								<span class="fas fa-file-export"></span>&nbsp;
 								Export Events
 							</a>
 						{% endif %}
-					</h4>
+					</h3>
 					<ul class="list-group list-group-flush">
 					{% if craft.calendar.exportEnabled and calendar.icsUrl %}
 						<li class="list-group-item">
 							<div class="input-group">
-								<div class="input-group-prepend">
-									<div class="input-group-text">ICS Subscribe</div>
-								</div>
-								<input type="text" class="form-control" value="{{ calendar.icsUrl }}" onclick="this.select();">
+								<label class="input-group-text" for="ics-url-{{ calendar.id }}">ICS Subscribe</label>
+								<input id="ics-url-{{ calendar.id }}" type="text" class="form-control" value="{{ calendar.icsUrl }}" readonly onclick="this.select();">
 							</div>
 						</li>
 					{% endif %}
@@ -53,13 +51,13 @@
 						</li>
 						<li class="list-group-item">
 							<strong>View events by:&nbsp;</strong>
-							<a href="{{ siteUrl }}demo/month/calendar/{{ calendar.handle }}" class="btn btn-secondary btn-sm">Month</a>
-							<a href="{{ siteUrl }}demo/week/calendar/{{ calendar.handle }}" class="btn btn-secondary btn-sm">Week</a>
-							<a href="{{ siteUrl }}demo/day/calendar/{{ calendar.handle }}" class="btn btn-secondary btn-sm">Day</a>
+							<a href="{{ siteUrl }}demo/month/calendar/{{ calendar.handle }}" class="btn btn-secondary btn-sm me-1 mb-1">Month</a>
+							<a href="{{ siteUrl }}demo/week/calendar/{{ calendar.handle }}" class="btn btn-secondary btn-sm me-1 mb-1">Week</a>
+							<a href="{{ siteUrl }}demo/day/calendar/{{ calendar.handle }}" class="btn btn-secondary btn-sm me-1 mb-1">Day</a>
 						</li>
 						<li class="list-group-item">
 							<strong>Upcoming Events:</strong>
-							<div class="list-group" style="margin-top: 10px;">
+							<div class="list-group mt-2">
 								{% set occurrences = craft.calendar.occurrences({
 									rangeStart: "today",
 									rangeEnd: "6 months",

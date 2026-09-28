@@ -1,15 +1,15 @@
-<div id="mini-cal-wrapper">
+<div id="mini-cal-wrapper" aria-live="polite">
     {# Use include because we're using AJAX #}
     {% include "demo/layouts/_mini_cal" %}
 </div>
 
-<h3>
+<h2 class="h4">
     {% if segment2 in ["month", "week", "day"] %}
 	    Filter by Calendar
     {% else %}
 	    Calendars
     {% endif %}
-</h3>
+</h2>
 <div class="list-group">
     {% set calendars = craft.calendar.calendars({
         limit: 10,
@@ -31,7 +31,7 @@
         {% endif %}
 
         <a href="{{ siteUrl }}demo/{{ urlPart }}/{{ calendar.handle }}"
-           class="list-group-item list-group-item-action" style="{{ style }}">
+           class="list-group-item list-group-item-action" style="{{ style }}"{% if segment3 == calendar.handle or segment4 == calendar.handle %} aria-current="page"{% endif %}>
             <span class="fas fa-calendar-alt" style="color: {{ calendar.color }};" aria-hidden="true"></span>&nbsp;
             {{ calendar.name }}
         </a>

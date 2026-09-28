@@ -80,26 +80,26 @@
                         </div>
                     {% endif %}
 
-                    <div class="form-group row">
+                    <div class="row mb-3">
                         <label class="col-sm-2 col-form-label" for="event-title">{{ 'Title'|t }}</label>
                         <div class="col-sm-10">
                             <input id="event-title" type="text" name="title" value="{{ event.title }}" class="form-control" required>
                         </div>
                     </div>
 
-                    <div class="form-group row">
+                    <div class="row mb-3">
                         <label class="col-sm-2 col-form-label" for="event-calendar">{{ 'Calendar'|t }}</label>
                         <div class="col-sm-10 col-md-5">
                             {% if event.id %}
                                 <input type="hidden" name="calendarId" value="{{ event.calendarId }}">
                                 <input id="event-calendar" type="text" class="form-control" value="{{ event.calendar.name }}" readonly>
                             {% else %}
-                                <select id="event-calendar" name="calendarId" class="form-control" data-calendar-selector>
+                                <select id="event-calendar" name="calendarId" class="form-select" data-calendar-selector>
                                     {% for calendar in allowedCalendars %}
                                         <option value="{{ calendar.id }}" {{ calendar.id == event.calendarId ? 'selected' }}>{{ calendar.name }}</option>
                                     {% endfor %}
                                 </select>
-                                <small class="form-text text-muted">
+                                <small class="form-text text-body-secondary">
                                     {{ 'Changing the calendar reloads this new event with the selected calendar’s settings.'|t }}
                                 </small>
                             {% endif %}
@@ -109,7 +109,7 @@
                     <fieldset class="event-editor-card">
                         <legend>{{ 'Schedule'|t }}</legend>
 
-                        <div class="form-group row">
+                        <div class="row mb-3">
                             <div class="col-sm-2 col-form-label">{{ 'All Day'|t }}</div>
                             <div class="col-sm-10">
                                 <input type="hidden" name="allDay" value="{{ event.allDay ? 1 : 0 }}" data-all-day-value>
@@ -120,26 +120,26 @@
                             </div>
                         </div>
 
-                        <div class="form-group row">
+                        <div class="row mb-3">
                             <label class="col-sm-2 col-form-label" for="event-start-date">{{ 'Starts'|t }}</label>
                             <div class="col-sm-5 col-md-4">
                                 <input id="event-start-date" class="form-control" type="date" value="{{ event.getStartDate().format('Y-m-d') }}" data-start-date required {{ scheduleLocked ? 'disabled' }}>
                             </div>
                             <div class="col-sm-3 col-md-2" data-time-field>
-                                <input class="form-control" type="time" value="{{ event.getStartDate().format('H:i') }}" data-start-time required {{ scheduleLocked ? 'disabled' }}>
+                                <input class="form-control" type="time" aria-label="{{ 'Start time'|t }}" value="{{ event.getStartDate().format('H:i') }}" data-start-time required {{ scheduleLocked ? 'disabled' }}>
                             </div>
                         </div>
 
-                        <div class="form-group row">
+                        <div class="row mb-3">
                             <label class="col-sm-2 col-form-label" for="event-end-date">{{ 'Ends'|t }}</label>
                             <div class="col-sm-5 col-md-4">
                                 <input id="event-end-date" class="form-control" type="date" value="{{ event.getEndDate().format('Y-m-d') }}" data-end-date required {{ scheduleLocked ? 'disabled' }}>
-                                <small class="form-text text-muted" data-all-day-help hidden>
+                                <small class="form-text text-body-secondary" data-all-day-help hidden>
                                     {{ 'For all-day events, this is the exclusive end date.'|t }}
                                 </small>
                             </div>
                             <div class="col-sm-3 col-md-2" data-time-field>
-                                <input class="form-control" type="time" value="{{ event.getEndDate().format('H:i') }}" data-end-time required {{ scheduleLocked ? 'disabled' }}>
+                                <input class="form-control" type="time" aria-label="{{ 'End time'|t }}" value="{{ event.getEndDate().format('H:i') }}" data-end-time required {{ scheduleLocked ? 'disabled' }}>
                             </div>
                         </div>
                     </fieldset>
@@ -152,10 +152,10 @@
                                 {{ 'This event contains multiple RRULE lines. The schedule is preserved but this simplified demo does not edit multi-rule sets.'|t }}
                             </div>
 
-                            <div class="form-group row">
+                            <div class="row mb-3">
                                 <label class="col-sm-2 col-form-label" for="event-repeat-type">{{ 'Repeats'|t }}</label>
                                 <div class="col-sm-5 col-md-4">
-                                    <select id="event-repeat-type" class="form-control" data-repeat-type>
+                                    <select id="event-repeat-type" class="form-select" data-repeat-type>
                                         <option value="NEVER">{{ 'Never'|t }}</option>
                                         <option value="DAILY">{{ 'Every Day'|t }}</option>
                                         <option value="WEEKLY">{{ 'Every Week'|t }}</option>
@@ -170,7 +170,7 @@
                                 <div class="custom-rule-builder__lead">
                                     <span>{{ 'Every'|t }}</span>
                                     <input class="form-control" type="number" min="1" step="1" value="1" data-interval aria-label="{{ 'Interval'|t }}">
-                                    <select id="event-frequency" class="form-control" data-frequency aria-label="{{ 'Frequency'|t }}">
+                                    <select id="event-frequency" class="form-select" data-frequency aria-label="{{ 'Frequency'|t }}">
                                         <option value="DAILY">{{ 'day(s)'|t }}</option>
                                         <option value="WEEKLY">{{ 'week(s)'|t }}</option>
                                         <option value="MONTHLY">{{ 'month(s)'|t }}</option>
@@ -202,7 +202,7 @@
                                 <div class="custom-rule-panel" data-frequency-panel="MONTHLY" hidden>
                                     <div class="custom-rule-choice">
                                         <label for="monthly-rule-mode">{{ 'Repeat on'|t }}</label>
-                                        <select id="monthly-rule-mode" class="form-control" data-monthly-mode>
+                                        <select id="monthly-rule-mode" class="form-select" data-monthly-mode>
                                             <option value="MONTHDAY">{{ 'specific days of the month'|t }}</option>
                                             <option value="WEEKDAY">{{ 'an ordinal weekday'|t }}</option>
                                         </select>
@@ -218,14 +218,14 @@
                                     </div>
 
                                     <div class="custom-rule-nth" data-monthly-weekday hidden>
-                                        <select class="form-control" data-monthly-position aria-label="{{ 'Position'|t }}">
+                                        <select class="form-select" data-monthly-position aria-label="{{ 'Position'|t }}">
                                             <option value="1">{{ 'First'|t }}</option>
                                             <option value="2">{{ 'Second'|t }}</option>
                                             <option value="3">{{ 'Third'|t }}</option>
                                             <option value="4">{{ 'Fourth'|t }}</option>
                                             <option value="-1">{{ 'Last'|t }}</option>
                                         </select>
-                                        <select class="form-control" data-monthly-weekday-choice aria-label="{{ 'Weekday'|t }}">
+                                        <select class="form-select" data-monthly-weekday-choice aria-label="{{ 'Weekday'|t }}">
                                             <option value="MO">{{ 'Monday'|t }}</option>
                                             <option value="TU">{{ 'Tuesday'|t }}</option>
                                             <option value="WE">{{ 'Wednesday'|t }}</option>
@@ -262,7 +262,7 @@
 
                                     <div class="custom-rule-choice">
                                         <label for="yearly-rule-mode">{{ 'Repeat on'|t }}</label>
-                                        <select id="yearly-rule-mode" class="form-control" data-yearly-mode>
+                                        <select id="yearly-rule-mode" class="form-select" data-yearly-mode>
                                             <option value="MONTHDAY">{{ 'specific dates'|t }}</option>
                                             <option value="WEEKDAY">{{ 'an ordinal weekday'|t }}</option>
                                         </select>
@@ -278,14 +278,14 @@
                                     </div>
 
                                     <div class="custom-rule-nth" data-yearly-weekday hidden>
-                                        <select class="form-control" data-yearly-position aria-label="{{ 'Position'|t }}">
+                                        <select class="form-select" data-yearly-position aria-label="{{ 'Position'|t }}">
                                             <option value="1">{{ 'First'|t }}</option>
                                             <option value="2">{{ 'Second'|t }}</option>
                                             <option value="3">{{ 'Third'|t }}</option>
                                             <option value="4">{{ 'Fourth'|t }}</option>
                                             <option value="-1">{{ 'Last'|t }}</option>
                                         </select>
-                                        <select class="form-control" data-yearly-weekday-choice aria-label="{{ 'Weekday'|t }}">
+                                        <select class="form-select" data-yearly-weekday-choice aria-label="{{ 'Weekday'|t }}">
                                             <option value="MO">{{ 'Monday'|t }}</option>
                                             <option value="TU">{{ 'Tuesday'|t }}</option>
                                             <option value="WE">{{ 'Wednesday'|t }}</option>
@@ -320,10 +320,10 @@
                             </div>
 
                             <div data-repeat-end-row hidden>
-                                <div class="form-group row">
+                                <div class="row mb-3">
                                     <label class="col-sm-2 col-form-label" for="event-repeat-end">{{ 'Ends'|t }}</label>
                                     <div class="col-sm-5 col-md-4">
-                                        <select id="event-repeat-end" class="form-control" data-repeat-end>
+                                        <select id="event-repeat-end" class="form-select" data-repeat-end>
                                             <option value="NEVER">{{ 'Never'|t }}</option>
                                             <option value="AFTER">{{ 'After a number of occurrences'|t }}</option>
                                             <option value="ON_DATE">{{ 'On a date'|t }}</option>
@@ -340,18 +340,18 @@
 
                             <div class="fixed-date-manager">
                                 <h3>{{ 'Additional Dates'|t }}</h3>
-                                <div class="form-inline">
-                                    <input class="form-control mr-2 mb-2" type="date" data-rdate-picker>
-                                    <button class="btn btn-outline-success mb-2" type="button" data-add-rdate>{{ 'Add Dates'|t }}</button>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <input class="form-control w-auto" type="date" data-rdate-picker aria-label="{{ 'Additional date'|t }}">
+                                    <button class="btn btn-outline-success" type="button" data-add-rdate>{{ 'Add Dates'|t }}</button>
                                 </div>
                                 <ul class="fixed-date-list" data-rdate-list></ul>
                             </div>
 
                             <div class="fixed-date-manager" data-exceptions hidden>
                                 <h3>{{ 'Excluded Dates'|t }}</h3>
-                                <div class="form-inline">
-                                    <input class="form-control mr-2 mb-2" type="date" data-exdate-picker>
-                                    <button class="btn btn-outline-danger mb-2" type="button" data-add-exdate>{{ 'Exclude Occurrence'|t }}</button>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <input class="form-control w-auto" type="date" data-exdate-picker aria-label="{{ 'Excluded date'|t }}">
+                                    <button class="btn btn-outline-danger" type="button" data-add-exdate>{{ 'Exclude Occurrence'|t }}</button>
                                 </div>
                                 <ul class="fixed-date-list" data-exdate-list></ul>
                             </div>
@@ -363,7 +363,7 @@
                     {% endif %}
 
                     {% if event['location'] is defined %}
-                        <div class="form-group row">
+                        <div class="row mb-3">
                             <label class="col-sm-2 col-form-label" for="event-location">{{ 'Location'|t }}</label>
                             <div class="col-sm-10">
                                 <input id="event-location" type="text" name="fields[location]" value="{{ event.location }}" class="form-control">
@@ -372,7 +372,7 @@
                     {% endif %}
 
                     {% if event['description'] is defined %}
-                        <div class="form-group row">
+                        <div class="row mb-3">
                             <label class="col-sm-2 col-form-label" for="event-description">{{ 'Description'|t }}</label>
                             <div class="col-sm-10">
                                 <textarea id="event-description" name="fields[description]" class="form-control">{{ event.description }}</textarea>
@@ -380,7 +380,7 @@
                         </div>
                     {% endif %}
 
-                    <div class="form-group row">
+                    <div class="row mb-3">
                         <div class="col-12 col-sm-10 offset-sm-2">
                             <button type="submit" class="btn btn-success">{{ 'Save Event'|t }}</button>
                         </div>

@@ -82,15 +82,13 @@
     <hr><br>
 
     {% if canCreateEvents %}
-        <p class="text-muted calendar-create-hint">
+        <p class="text-body-secondary calendar-create-hint">
             {{ 'Select a date or time range to quickly create an event.'|t }}
         </p>
     {% endif %}
 
     <div id="calendar-errors" class="alert alert-danger calendar-page-error" role="alert" aria-live="assertive" hidden>
-        <button type="button" class="close" aria-label="{{ 'Close'|t }}" data-dismiss-calendar-error>
-            <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close float-end" aria-label="{{ 'Close'|t }}" data-dismiss-calendar-error></button>
         <span data-calendar-error-message></span>
     </div>
 
@@ -162,14 +160,14 @@
                     </div>
 
                     <div class="calendar-dialog__body">
-                        <div class="form-group">
-                            <label for="event-title">{{ 'Title'|t }}</label>
+                        <div class="mb-3">
+                            <label class="form-label" for="event-title">{{ 'Title'|t }}</label>
                             <input id="event-title" class="form-control" type="text" name="title" autocomplete="off" required>
                         </div>
 
-                        <div class="form-group">
-                            <label for="event-calendar">{{ 'Calendar'|t }}</label>
-                            <select id="event-calendar" class="form-control" name="calendarId" required>
+                        <div class="mb-3">
+                            <label class="form-label" for="event-calendar">{{ 'Calendar'|t }}</label>
+                            <select id="event-calendar" class="form-select" name="calendarId" required>
                                 {% for calendar in editableCalendars %}
                                     <option value="{{ calendar.id }}">{{ calendar.name }}</option>
                                 {% endfor %}
@@ -182,26 +180,26 @@
                         </div>
 
                         <div data-all-day-fields hidden>
-                            <div class="form-group">
-                                <label for="event-start-date">{{ 'Start Date'|t }}</label>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-start-date">{{ 'Start Date'|t }}</label>
                                 <input id="event-start-date" class="form-control" type="date" name="startDate">
                             </div>
-                            <div class="form-group">
-                                <label for="event-end-date">{{ 'End Date (exclusive)'|t }}</label>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-end-date">{{ 'End Date (exclusive)'|t }}</label>
                                 <input id="event-end-date" class="form-control" type="date" name="endDate">
-                                <small class="form-text text-muted">
+                                <small class="form-text text-body-secondary">
                                     {{ 'All-day events end at midnight before this date.'|t }}
                                 </small>
                             </div>
                         </div>
 
                         <div data-timed-fields>
-                            <div class="form-group">
-                                <label for="event-start-datetime">{{ 'Starts'|t }}</label>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-start-datetime">{{ 'Starts'|t }}</label>
                                 <input id="event-start-datetime" class="form-control" type="datetime-local" name="startDateTime" step="60">
                             </div>
-                            <div class="form-group">
-                                <label for="event-end-datetime">{{ 'Ends'|t }}</label>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-end-datetime">{{ 'Ends'|t }}</label>
                                 <input id="event-end-datetime" class="form-control" type="datetime-local" name="endDateTime" step="60">
                             </div>
                         </div>
