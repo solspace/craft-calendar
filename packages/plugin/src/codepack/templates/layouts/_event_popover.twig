@@ -4,52 +4,37 @@
 {% set displayMultiDay = displayStartDate.format('Y-m-d') != displayEndDate.format('Y-m-d') %}
 
 <div class="qtip d-none">
-    <div class="title">
-        {{ event.title }}
-        <span class='event_time'>
-            <span class='far fa-clock'></span>
-            {% if displayAllDay %}
-                All Day
-                {% if displayMultiDay %}
-                    ({{ event.duration.days }} days)
-                {% endif %}
-            {% else %}
-                {% if displayMultiDay %}
-                    {% if day.containsDate(displayStartDate) %}
-                        Starts {{ displayStartDate.format('g:ia') }}
-                    {% elseif day.containsDate(displayEndDate) %}
-                        Ends {{ displayEndDate.format('g:ia') }}
-                    {% else %}
-                        All Day
-                    {% endif %}
-                    ({{ event.duration.days }} days)
-                {% else %}
-                    {{ displayStartDate.format('g:ia') }} - {{ displayEndDate.format('g:ia') }}
-                    ({{ event.duration.humanReadable }})
-                {% endif %}
-            {% endif %}
-            </span>
-    </div>
+    <div class="title">{{ event.title }}</div>
     <div class="content">
-        <span class='fas fa-calendar-alt' style='color: {{ event.calendar.color }};'></span>
-        <span style='color: {{ event.calendar.color }};'>{{ event.calendar.name }}</span>
-        <hr />
-        {% if displayAllDay %}
-            {% if displayMultiDay %}
-                <b>Starts</b> {{ displayStartDate.format('F j, Y') }}<br />
-                <b>Ends</b> {{ displayEndDate.format('F j, Y') }}
-            {% else %}
-                {{ displayStartDate.format('F j, Y') }} (All Day)
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="badge text-bg-light border">
+                <span class="fas fa-calendar-alt" aria-hidden="true"></span> {{ event.calendar.name }}
+            </span>
+            {% if displayAllDay %}
+                <span class="badge text-bg-secondary">All day</span>
             {% endif %}
-        {% else %}
-            <b>Starts</b> {{ displayStartDate.format('F j, Y \\a\\t g:ia') }}<br />
-            <b>Ends</b> {{ displayEndDate.format('F j, Y \\a\\t g:ia') }}
-        {% endif %}
-
+        </div>
+        <div class="border-top pt-2">
+            <div class="d-flex justify-content-between gap-3 mb-1">
+                <span class="text-body-secondary">Starts</span>
+                <span class="text-end fw-medium">
+                    {{ displayStartDate.format(displayAllDay ? 'M j, Y' : 'M j, Y g:ia') }}
+                </span>
+            </div>
+            {% if not displayAllDay or displayMultiDay %}
+                <div class="d-flex justify-content-between gap-3">
+                    <span class="text-body-secondary">Ends</span>
+                    <span class="text-end fw-medium">
+                        {{ displayEndDate.format(displayAllDay ? 'M j, Y' : 'M j, Y g:ia') }}
+                    </span>
+                </div>
+            {% endif %}
+        </div>
         {% if event.repeating %}
-            <hr />
-            <span class='fas fa-redo'></span>&nbsp;<b>Repeats</b>
-            {{ event.readableRepeatRule }}
+            <div class="border-top mt-2 pt-2">
+                <span class="text-body-secondary">Repeats</span>
+                <div>{{ event.readableRepeatRule }}</div>
+            </div>
         {% endif %}
     </div>
 </div>

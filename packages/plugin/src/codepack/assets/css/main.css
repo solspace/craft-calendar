@@ -54,6 +54,10 @@ body {
 }
 #month_calendar .event a {
 	color: var(--bs-body-color);
+	text-decoration: none;
+}
+#month_calendar .event a:hover,
+#month_calendar .event a:focus-visible {
 	text-decoration: underline;
 }
 #month_calendar .day_cell .all_day, #month_calendar .day_cell .multi_day {
@@ -153,11 +157,20 @@ body {
 #month_calendar #month_year th.right {
 	text-align: right;
 }
-.popover-header span.event_time {
-	display: block;
-	color: #4f4f4f;
-	font-size: 85%;
-	margin-top: 5px;
+.calendar-event-popover {
+	--bs-popover-max-width: 21rem;
+	--bs-popover-header-bg: var(--bs-body-bg);
+	--bs-popover-header-color: var(--bs-emphasis-color);
+	--bs-popover-border-color: var(--bs-border-color);
+	box-shadow: var(--bs-box-shadow);
+}
+.calendar-event-popover .popover-header {
+	font-size: 1rem;
+	font-weight: 600;
+}
+.calendar-event-popover .popover-body {
+	font-size: .875rem;
+	overflow-wrap: anywhere;
 }
 #month_calendar .calendar-color {
 	background-color: #9f9f9f;
@@ -245,6 +258,7 @@ body {
 #mini_calendar th a {
 	color: var(--bs-body-color);
 	font-size: 15px;
+	text-decoration: none;
 }
 #mini_calendar td a {
 	display: block;
@@ -264,6 +278,7 @@ body {
 	display: block;
 	padding: 6px;
 	background-color: var(--bs-secondary-bg);
+	text-decoration: none;
 }
 #mini_calendar td.has_events .middot {
 	display: block;
@@ -274,7 +289,7 @@ body {
 }
 #mini_calendar td.has_events div a:hover {
 	background: var(--bs-primary-bg-subtle);
-	text-decoration: none;
+	text-decoration: underline;
 }
 #mini_calendar td.today div, #mini_calendar td.today div a {
 	background-color: var(--bs-warning-bg-subtle);

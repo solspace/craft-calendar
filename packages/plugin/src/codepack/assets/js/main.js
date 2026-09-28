@@ -5,9 +5,11 @@ document.querySelectorAll("[data-calendar-popover]").forEach((link) => {
   const event = link.closest(".event");
   new window.bootstrap.Popover(link, {
     trigger: "hover focus",
-    placement: "bottom",
+    placement: "auto",
+    container: "body",
+    customClass: "calendar-event-popover",
     html: true,
-    title: event?.querySelector(".qtip .title")?.innerHTML ?? "",
+    title: event?.querySelector(".qtip .title")?.textContent?.trim() ?? "",
     content: event?.querySelector(".qtip .content")?.innerHTML ?? "",
   });
 });
