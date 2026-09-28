@@ -9,8 +9,14 @@ document.querySelectorAll("[data-calendar-popover]").forEach((link) => {
     container: "body",
     customClass: "calendar-event-popover",
     html: true,
-    title: event?.querySelector(".qtip .title")?.textContent?.trim() ?? "",
+    title: event?.querySelector(".qtip .title")?.innerHTML ?? "",
     content: event?.querySelector(".qtip .content")?.innerHTML ?? "",
+  });
+
+  link.addEventListener("inserted.bs.popover", () => {
+    const popoverId = link.getAttribute("aria-describedby");
+    const icon = popoverId && document.getElementById(popoverId)?.querySelector(".calendar-popover-icon");
+    if (icon) icon.style.color = link.dataset.calendarColor;
   });
 });
 
