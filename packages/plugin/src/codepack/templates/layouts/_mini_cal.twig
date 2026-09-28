@@ -19,7 +19,7 @@
 {% set dateBoundsHelper = now.diff(month.nextDate)|date('%r%a') %}
 
 <div id="mini_calendar">
-    <table class="table table-bordered">
+    <table class="table table-bordered table-sm mb-0">
         <caption class="visually-hidden" tabindex="-1">Mini calendar for {{ month.date.format('F Y') }}</caption>
         <thead>
         <tr>

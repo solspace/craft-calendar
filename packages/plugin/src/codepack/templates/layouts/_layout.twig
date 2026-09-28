@@ -27,14 +27,14 @@
 {% set segment6 = craft.app.request.segment(6) %}
 {% set segment7 = craft.app.request.segment(7) %}
 
-<body id="top">
+<body id="top" class="bg-body-tertiary">
 <a class="visually-hidden-focusable position-absolute bg-white p-2" href="#main-content">Skip to main content</a>
 
 {% if page is not defined %}
     {% set page = "month" %}
 {% endif %}
 
-<nav class="navbar navbar-expand-xl bg-dark fixed-top" data-bs-theme="dark" aria-label="Main navigation">
+<nav class="navbar navbar-expand-xl bg-dark fixed-top shadow-sm" data-bs-theme="dark" aria-label="Main navigation">
     <a class="navbar-brand" href="{{ siteUrl }}demo/">
         <img src="{{ siteUrl }}assets/demo/images/icon.svg" alt="" width="30" height="30">
         Calendar Demo
@@ -43,27 +43,27 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto">
+        <ul class="navbar-nav me-auto gap-xl-1">
             <li class="nav-item">
-                <a class="nav-link{{ page == 'month' ? ' active' }}" href="{{ siteUrl }}demo/month"{% if page == 'month' %} aria-current="page"{% endif %}>Month</a>
+                <a class="nav-link px-2 rounded-2{{ page == 'month' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/month"{% if page == 'month' %} aria-current="page"{% endif %}>Month</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link{{ page == 'week' ? ' active' }}" href="{{ siteUrl }}demo/week"{% if page == 'week' %} aria-current="page"{% endif %}>Week</a>
+                <a class="nav-link px-2 rounded-2{{ page == 'week' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/week"{% if page == 'week' %} aria-current="page"{% endif %}>Week</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link{{ page == 'day' ? ' active' }}" href="{{ siteUrl }}demo/day"{% if page == 'day' %} aria-current="page"{% endif %}>Day</a>
+                <a class="nav-link px-2 rounded-2{{ page == 'day' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/day"{% if page == 'day' %} aria-current="page"{% endif %}>Day</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link{{ page == 'events' ? ' active' }}" href="{{ siteUrl }}demo/events"{% if page == 'events' %} aria-current="page"{% endif %}>Events List</a>
+                <a class="nav-link px-2 rounded-2{{ page == 'events' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/events"{% if page == 'events' %} aria-current="page"{% endif %}>Events List</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link{{ page == 'calendars' ? ' active' }}" href="{{ siteUrl }}demo/calendars"{% if page == 'calendars' %} aria-current="page"{% endif %}>Calendars</a>
+                <a class="nav-link px-2 rounded-2{{ page == 'calendars' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/calendars"{% if page == 'calendars' %} aria-current="page"{% endif %}>Calendars</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link{{ page == 'fullcalendar' ? ' active' }}" href="{{ siteUrl }}demo/fullcalendar"{% if page == 'fullcalendar' %} aria-current="page"{% endif %}>Full Calendar</a>
+                <a class="nav-link px-2 rounded-2{{ page == 'fullcalendar' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/fullcalendar"{% if page == 'fullcalendar' %} aria-current="page"{% endif %}>Full Calendar</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link{{ page == 'edit' ? ' active' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' %} aria-current="page"{% endif %}>Create</a>
+                <a class="nav-link px-2 rounded-2{{ page == 'edit' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' %} aria-current="page"{% endif %}>Create</a>
             </li>
         </ul>
         <div class="navbar-nav dropdown">
@@ -80,7 +80,7 @@
     </div>
 </nav>
 
-<main id="main-content" class="container pb-5" tabindex="-1">
+<main id="main-content" class="container py-3 pb-5" tabindex="-1">
     {% block content %}{% endblock %}
 </main>
 

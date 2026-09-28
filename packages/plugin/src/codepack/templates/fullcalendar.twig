@@ -74,12 +74,10 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Full Calendar</h1>
-    <p class="lead">
-        Below is an implementation of the <a href="https://fullcalendar.io">FullCalendar.io</a> JS library.
-        Users with appropriate administrative privileges can also create and modify events.
-    </p>
-    <hr><br>
+    <header class="bg-body border rounded-4 shadow-sm p-4 p-lg-5 mb-4">
+        <h1 class="display-6 fw-semibold mb-2">Full Calendar</h1>
+        <p class="lead text-body-secondary mb-0">Explore events in an interactive calendar built with <a href="https://fullcalendar.io">FullCalendar</a>. Users with appropriate permissions can also create and edit events.</p>
+    </header>
 
     {% if canCreateEvents %}
         <p class="text-body-secondary calendar-create-hint">
@@ -94,7 +92,7 @@
 
     <div class="row">
         <div class="col-12">
-            <div id="calendar-wrapper"></div>
+            <div id="calendar-wrapper" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4"></div>
             <noscript>
                 <div class="alert alert-warning">{{ 'JavaScript is required to display this calendar.'|t }}</div>
             </noscript>

@@ -5,24 +5,22 @@
 
 {% block content %}
 
-	<h1>Event View</h1>
-	<p class="lead">
-		Below is an individual event view, which allows you to see full details and occurrences for the given event.
-	</p>
-    <hr /><br />
+	<header class="bg-body border rounded-4 shadow-sm p-4 p-lg-5 mb-4">
+        <h1 class="display-6 fw-semibold mb-2">Event View</h1>
+        <p class="lead text-body-secondary mb-0">View event details and upcoming occurrences.</p>
+    </header>
 
     {% set eventSaved = craft.app.session.getFlash('calendar_event_saved') %}
     {% if eventSaved %}
-        <div class="alert alert-success alert-dismissible" role="alert">
+        <div class="alert alert-success alert-dismissible mb-4" role="status">
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             Event saved successfully!
         </div>
-		<br />
     {% endif %}
 
-	<div class="row">
-		<div class="col-md-9">
-			<div id="events_calendar">
+	<div class="row g-4">
+		<div class="col-lg-9">
+			<section id="events_calendar" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4">
 
                 {% set occurrenceDate = null %}
                 {% if segment4 and segment5 and segment6 %}
@@ -52,7 +50,7 @@
                     {% set displayAllDay = occurrence ? occurrence.allDay : event.allDay %}
                     {% set displayMultiDay = displayStartDate.format('Y-m-d') != displayEndDate.format('Y-m-d') %}
 
-                    <div class="btn-group float-end" role="group" aria-label="Event actions">
+                    <div class="btn-group float-end mb-3" role="group" aria-label="Event actions">
                         {% if craft.calendar.exportEnabled %}
                             <a href="{{ siteUrl }}demo/export/event/{{ segment3 }}"
                                class="btn btn-primary btn-sm"
@@ -198,11 +196,11 @@
                         </p>
                     </div>
                 {% endif %}
-			</div>
+			</section>
 
 		</div>
 
-		<div class="col-md-3">
+		<div class="col-lg-3">
             {% include "demo/layouts/_sidebar" %}
 		</div>
 

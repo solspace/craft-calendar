@@ -1,6 +1,6 @@
 # Calendar Demo Templates 2.1
 
-Version 2.1 updates the demo to Bootstrap 5.3.8. The included templates use Bootstrap 5 classes and data attributes, with no jQuery dependency for popovers or mini calendar navigation. If your site extends the demo layout, check any Bootstrap 4 overrides and update custom dropdown, badge, and form styles when merging.
+Version 2.1 updates the demo to Bootstrap 5.3.8. The included templates use Bootstrap 5 classes and data attributes, with no jQuery dependency for popovers or mini calendar navigation. The pages also use Bootstrap cards, responsive spacing, and a more compact calendar layout. If your site extends the demo layout, check any Bootstrap 4 overrides and update custom dropdown, badge, and form styles when merging.
 
 ## Version 2.0
 

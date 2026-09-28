@@ -1,40 +1,43 @@
-<div id="mini-cal-wrapper" aria-live="polite">
-    {# Use include because we're using AJAX #}
-    {% include "demo/layouts/_mini_cal" %}
-</div>
+<aside class="card border-0 rounded-4 shadow-sm">
+    <div class="card-body">
+        <div id="mini-cal-wrapper" aria-live="polite">
+            {# Use include because we're using AJAX #}
+            {% include "demo/layouts/_mini_cal" %}
+        </div>
 
-<h2 class="h4">
-    {% if segment2 in ["month", "week", "day"] %}
-	    Filter by Calendar
-    {% else %}
-	    Calendars
-    {% endif %}
-</h2>
-<div class="list-group">
-    {% set calendars = craft.calendar.calendars({
-        limit: 10,
-        order: "name",
-        sort: "asc"
-    }) %}
+        <h2 class="h5 mb-3">
+            {% if segment2 in ["month", "week", "day"] %}
+                Filter by Calendar
+            {% else %}
+                Calendars
+            {% endif %}
+        </h2>
+        <div class="list-group small">
+            {% set calendars = craft.calendar.calendars({
+                limit: 10,
+                order: "name",
+                sort: "asc"
+            }) %}
 
-    {% for calendar in calendars %}
-        {% if segment2 in ["month", "week", "day"] %}
-            {% set urlPart = segment2~"/calendar" %}
-        {% else %}
-            {% set urlPart = "calendars" %}
-        {% endif %}
+            {% for calendar in calendars %}
+                {% if segment2 in ["month", "week", "day"] %}
+                    {% set urlPart = segment2~"/calendar" %}
+                {% else %}
+                    {% set urlPart = "calendars" %}
+                {% endif %}
 
-        {% if segment3 == calendar.handle or segment4 == calendar.handle %}
-            {% set style = "background-color: "~calendar.lighterColor~"; border-left: 5px solid "~calendar.color~"; color: "~calendar.contrastColor~";" %}
-        {% else %}
-            {% set style = "color: "~calendar.color~";" %}
-        {% endif %}
+                {% if segment3 == calendar.handle or segment4 == calendar.handle %}
+                    {% set style = "background-color: "~calendar.lighterColor~"; border-left: 5px solid "~calendar.color~"; color: "~calendar.contrastColor~";" %}
+                {% else %}
+                    {% set style = "color: "~calendar.color~";" %}
+                {% endif %}
 
-        <a href="{{ siteUrl }}demo/{{ urlPart }}/{{ calendar.handle }}"
-           class="list-group-item list-group-item-action" style="{{ style }}"{% if segment3 == calendar.handle or segment4 == calendar.handle %} aria-current="page"{% endif %}>
-            <span class="fas fa-calendar-alt" style="color: {{ calendar.color }};" aria-hidden="true"></span>&nbsp;
-            {{ calendar.name }}
-        </a>
-    {% endfor %}
-
-</div>
+                <a href="{{ siteUrl }}demo/{{ urlPart }}/{{ calendar.handle }}"
+                   class="list-group-item list-group-item-action" style="{{ style }}"{% if segment3 == calendar.handle or segment4 == calendar.handle %} aria-current="page"{% endif %}>
+                    <span class="fas fa-calendar-alt" style="color: {{ calendar.color }};" aria-hidden="true"></span>&nbsp;
+                    {{ calendar.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</aside>

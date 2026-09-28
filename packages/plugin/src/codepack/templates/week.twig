@@ -5,11 +5,10 @@
 
 {% block content %}
 
-    <h1>Week View</h1>
-    <p class="lead">
-        Below is full week calendar view, which allows you to see all your event occurrences in a daily view.
-    </p>
-    <hr /><br />
+    <header class="bg-body border rounded-4 shadow-sm p-4 p-lg-5 mb-4">
+        <h1 class="display-6 fw-semibold mb-2">Week View</h1>
+        <p class="lead text-body-secondary mb-0">See your events day by day for the selected week.</p>
+    </header>
 
     {% set targetDate = "today" %}
     {% set calendarHandle = null %}
@@ -22,12 +21,12 @@
         {% set targetDate = segment3~"-"~segment4~"-"~segment5 %}
     {% endif %}
 
-    <div class="row">
-        <div class="col-md-9">
+    <div class="row g-4">
+        <div class="col-lg-9">
 
             {% include "demo/layouts/_calendar_banner" %}
 
-            <div id="week_calendar">
+            <section id="week_calendar" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4">
                 {% set week = calendar.week({
                     date: targetDate,
                     calendar: calendarHandle,
@@ -35,17 +34,17 @@
 
                 {% set dateBoundsHelper = now.diff(week.nextDate)|date('%r%a') %}
 
-                <div class="row justify-content-between mb-3">
-                    <div class="col-2">
+                <div class="row align-items-center g-2 mb-3">
+                    <div class="col-6 col-md-3 order-1 order-md-0">
                     {% if dateBoundsHelper > -365 %}
-                        <a class="btn btn-outline-secondary"
+                        <a class="btn btn-outline-secondary btn-sm"
                            href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.previousDate.format('Y/m/d') }}">
-                            <span class="fas fa-arrow-left"></span> Last Week
+                            <span class="fas fa-arrow-left" aria-hidden="true"></span> Last Week
                         </a>
                     {% endif %}
                     </div>
 
-                    <div class="col-auto">
+                    <div class="col-12 col-md-6 order-0 text-center">
                         <h2>
                             Week of {{ week.date.format("F j, Y") }} &nbsp;
                             <span class="badge {{ week.occurrenceCount ? "text-bg-warning" : "text-bg-secondary" }}">
@@ -54,11 +53,11 @@
                         </h2>
                     </div>
 
-                    <div class="col-2 clearfix">
+                    <div class="col-6 col-md-3 order-2 text-end">
                     {% if dateBoundsHelper < 365 %}
-                        <a class="btn btn-outline-secondary float-end"
+                        <a class="btn btn-outline-secondary btn-sm"
                            href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.nextDate.format('Y/m/d') }}">
-                            Next Week <span class="fas fa-arrow-right"></span>
+                            Next Week <span class="fas fa-arrow-right" aria-hidden="true"></span>
                         </a>
                     {% endif %}
                     </div>
@@ -129,10 +128,10 @@
                         </li>
                     </ul>
                 {% endfor %}
-            </div>
+            </section>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3">
             {% include "demo/layouts/_sidebar" %}
         </div>
 
