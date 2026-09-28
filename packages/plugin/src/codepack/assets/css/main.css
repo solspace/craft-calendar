@@ -204,6 +204,22 @@ body {
 }
 
 
+/* WEEK CALENDAR */
+
+#week_calendar .week-date {
+	flex: 0 0 8rem;
+}
+
+#week_calendar .week-events {
+	min-width: 0;
+}
+
+@media (max-width: 575.98px) {
+	#week_calendar .week-date {
+		flex-basis: auto;
+	}
+}
+
 /* DAY CALENDAR */
 
 #day_calendar .header div {

@@ -60,9 +60,9 @@
 
                 <div class="border-top">
                     {% for day in week %}
-                        <section class="row g-2 align-items-center py-2 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle border-start border-primary border-3 rounded-3' }}{{ not loop.first ? ' border-top' }}"
+                        <section class="d-flex flex-column flex-sm-row align-items-start gap-2 gap-sm-3 py-2 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle border-start border-primary border-3 rounded-3' }}{{ not loop.first ? ' border-top' }}"
                             aria-labelledby="week-day-{{ day.date.format('Y-m-d') }}">
-                            <div class="col-sm-3 col-xl-2">
+                            <div class="week-date pt-sm-2">
                                 <h2 id="week-day-{{ day.date.format('Y-m-d') }}" class="h6 mb-0">
                                     <a class="d-inline-flex align-items-center gap-2 link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
                                         href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? segment3~'/'~segment4~'/' }}{{ day.date.format('Y/m/d') }}"
@@ -78,7 +78,7 @@
                                     {% endif %}
                                 </h2>
                             </div>
-                            <div class="col-sm-9 col-xl-10">
+                            <div class="week-events flex-grow-1 align-self-stretch">
                                 {% if day.occurrences.count %}
                                     <ul class="list-unstyled d-grid gap-2 mb-0">
                                         {% for occurrence in day.occurrences %}
@@ -120,7 +120,7 @@
                                         {% endfor %}
                                     </ul>
                                 {% else %}
-                                    <span class="small text-body-secondary">No events</span>
+                                    <span class="d-inline-block pt-sm-2 small text-body-secondary">No events</span>
                                 {% endif %}
                             </div>
                         </section>
