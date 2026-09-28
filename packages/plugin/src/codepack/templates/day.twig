@@ -24,7 +24,7 @@
             {% set day = craft.calendar.day({
                 date: targetDate,
                 calendar: calendarHandle,
-                orderBy: 'startDate ASC',
+                orderBy: {startDate: constant('SORT_ASC')},
             }) %}
 
             {% set dateBoundsHelper = now.diff(day.nextDate)|date('%r%a') %}
