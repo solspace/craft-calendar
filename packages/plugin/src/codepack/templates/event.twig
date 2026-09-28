@@ -5,11 +5,6 @@
 
 {% block content %}
 
-	<header class="bg-body border rounded-4 shadow-sm p-3 p-md-4 mb-4">
-        <h1 class="h2 fw-semibold mb-1">Event View</h1>
-        <p class="text-body-secondary mb-0">View event details and upcoming occurrences.</p>
-    </header>
-
     {% set eventSaved = craft.app.session.getFlash('calendar_event_saved') %}
     {% if eventSaved %}
         <div class="alert alert-success alert-dismissible mb-4" role="status">
@@ -70,7 +65,7 @@
                         {% endif %}
                     </div>
 
-                    <h2>{{ event.title }}</h2>
+                    <h1 class="h4 mb-3">{{ event.title }}</h1>
 
                     <div class="table-responsive">
                     <table class="table table-striped mt-3">
@@ -190,6 +185,7 @@
                     </div>
 
                 {% else %}
+                    <h1 class="visually-hidden">Event</h1>
                     <div class="alert alert-danger" role="alert">
                         <p class="lead">
                             Sorry, no event was found.

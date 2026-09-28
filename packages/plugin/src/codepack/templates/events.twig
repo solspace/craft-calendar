@@ -49,15 +49,10 @@
     {% set targetEndDate = '+30 days' %}
 {% endif %}
 
-    <header class="bg-body border rounded-4 shadow-sm p-3 p-md-4 mb-4">
-        <h1 class="h2 fw-semibold mb-1">Events List</h1>
-        <p class="text-body-secondary mb-0">Browse upcoming events across your calendars.</p>
-    </header>
-
     <div class="row g-4">
         <div class="col-lg-9">
 
-            <h2 class="h4 mb-3">List of Events</h2>
+            <h1 class="h4 mb-3">List of Events</h1>
             {% set eventOptions = {
                 rangeStart: targetStartDate,
                 rangeEnd: targetEndDate,
@@ -70,10 +65,10 @@
                 {% set event = occurrence.event %}
 
                 <div class="card mb-4 border-0 rounded-4 shadow-sm overflow-hidden">
-                    <h3 class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center fs-5 mb-0 py-3" style="color: {{ event.calendar.contrastColor }}; background-color: {{ event.calendar.lighterColor }};">
+                    <h2 class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center fs-5 mb-0 py-3" style="color: {{ event.calendar.contrastColor }}; background-color: {{ event.calendar.lighterColor }};">
                         {{ event.title }}&nbsp;&nbsp;
                         <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format('Y/m/d') }}" class="btn btn-light btn-sm border">View Event</a>
-                    </h3>
+                    </h2>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
                             <strong>

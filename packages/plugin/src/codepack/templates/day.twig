@@ -5,11 +5,6 @@
 
 {% block content %}
 
-    <header class="bg-body border rounded-4 shadow-sm p-3 p-md-4 mb-4">
-        <h1 class="h2 fw-semibold mb-1">Day View</h1>
-        <p class="text-body-secondary mb-0">See your events and their times for the selected day.</p>
-    </header>
-
     {% set targetDate = "today" %}
     {% set calendarHandle = null %}
     {% if segment3 == "calendar" %}
@@ -46,7 +41,7 @@
                     </div>
 
                     <div class="col-12 col-md-6 order-0 text-center">
-                        <h2>
+                        <h1 class="h4 mb-0">
                             {{ day.date.format('l, F j, Y') }}
                             {% if day.dateLocalized.isToday %}
                                 <span class="badge text-bg-primary align-middle fs-6">Today</span>
@@ -54,7 +49,7 @@
                             <span class="badge {{ day.occurrenceCount ? "text-bg-warning" : "text-bg-secondary" }}">
                                 {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
                             </span>
-                        </h2>
+                        </h1>
                     </div>
 
                     <div class="col-6 col-md-3 order-2 text-end">

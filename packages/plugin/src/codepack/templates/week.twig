@@ -5,11 +5,6 @@
 
 {% block content %}
 
-    <header class="bg-body border rounded-4 shadow-sm p-3 p-md-4 mb-4">
-        <h1 class="h2 fw-semibold mb-1">Week View</h1>
-        <p class="text-body-secondary mb-0">See your events day by day for the selected week.</p>
-    </header>
-
     {% set targetDate = "today" %}
     {% set calendarHandle = null %}
     {% if segment3 == "calendar" %}
@@ -45,12 +40,12 @@
                     </div>
 
                     <div class="col-12 col-md-6 order-0 text-center">
-                        <h2>
+                        <h1 class="h4 mb-0">
                             Week of {{ week.date.format("F j, Y") }} &nbsp;
                             <span class="badge {{ week.occurrenceCount ? "text-bg-warning" : "text-bg-secondary" }}">
                             {{ week.occurrenceCount }} event{{ week.occurrenceCount > 1 or week.occurrenceCount == 0 ? "s" }}
                         </span>
-                        </h2>
+                        </h1>
                     </div>
 
                     <div class="col-6 col-md-3 order-2 text-end">

@@ -36,11 +36,7 @@
 {% endif %}
 
 {% block content %}
-    <h1>{{ routeEventId == 'new' ? 'Create Event'|t : 'Edit Event'|t }}</h1>
-    <p class="lead">
-        {{ 'This vanilla JavaScript example submits Calendar’s current event and recurrence fields.'|t }}
-    </p>
-    <hr><br>
+    <h1 class="h4 mb-4">{{ routeEventId == 'new' ? 'Create Event'|t : 'Edit Event'|t }}</h1>
 
     <div class="row">
         <div class="col-12">
@@ -339,7 +335,7 @@
                             </div>
 
                             <div class="fixed-date-manager">
-                                <h3>{{ 'Additional Dates'|t }}</h3>
+                                <h2 class="h5">{{ 'Additional Dates'|t }}</h2>
                                 <div class="d-flex flex-wrap gap-2">
                                     <input class="form-control w-auto" type="date" data-rdate-picker aria-label="{{ 'Additional date'|t }}">
                                     <button class="btn btn-outline-success" type="button" data-add-rdate>{{ 'Add Dates'|t }}</button>
@@ -348,7 +344,7 @@
                             </div>
 
                             <div class="fixed-date-manager" data-exceptions hidden>
-                                <h3>{{ 'Excluded Dates'|t }}</h3>
+                                <h2 class="h5">{{ 'Excluded Dates'|t }}</h2>
                                 <div class="d-flex flex-wrap gap-2">
                                     <input class="form-control w-auto" type="date" data-exdate-picker aria-label="{{ 'Excluded date'|t }}">
                                     <button class="btn btn-outline-danger" type="button" data-add-exdate>{{ 'Exclude Occurrence'|t }}</button>
