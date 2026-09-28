@@ -284,13 +284,13 @@ body {
 	position: relative;
 	display: grid;
 	place-items: center;
-	min-height: 2.4rem;
+	min-height: 2.6rem;
 }
 #mini_calendar .mini_calendar_date a {
 	display: grid;
 	place-items: center;
 	width: 100%;
-	min-height: 2.4rem;
+	min-height: 2.6rem;
 	color: var(--bs-body-color);
 	text-decoration: none;
 }
@@ -304,12 +304,9 @@ body {
 #mini_calendar td.has_events .mini_calendar_date a {
 	font-weight: 600;
 }
-#mini_calendar td.has_events .mini_calendar_day_number {
-	transform: translateY(-0.15rem);
-}
 #mini_calendar td.has_events .mini_calendar_date a::after {
 	position: absolute;
-	bottom: 0.15rem;
+	bottom: 0.1rem;
 	left: 50%;
 	transform: translateX(-50%);
 	width: 0.25rem;
