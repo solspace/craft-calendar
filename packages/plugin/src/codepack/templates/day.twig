@@ -47,7 +47,10 @@
 
                     <div class="col-12 col-md-6 order-0 text-center">
                         <h2>
-                            {{ day.date.format('l, F j, Y') }} &nbsp;
+                            {{ day.date.format('l, F j, Y') }}
+                            {% if day.dateLocalized.isToday %}
+                                <span class="badge text-bg-primary align-middle fs-6">Today</span>
+                            {% endif %}
                             <span class="badge {{ day.occurrenceCount ? "text-bg-warning" : "text-bg-secondary" }}">
                                 {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
                             </span>

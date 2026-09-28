@@ -65,8 +65,8 @@
 
                 {% for day in week %}
                     <ul class="list-group mb-4">
-                        <li class="list-group-item list-group-item-{{ day.dateLocalized.isToday ? "warning" : "secondary" }}">
-                            <a class="text-dark fw-bold" aria-label="{{ day.date.format('l, F j, Y') }}"
+                        <li class="list-group-item list-group-item-{{ day.dateLocalized.isToday ? "primary" : "secondary" }}">
+                            <a class="text-body-emphasis fw-bold" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}"
                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? segment3~"/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
                                 {% if day.dateLocalized.isToday %}
                                     TODAY

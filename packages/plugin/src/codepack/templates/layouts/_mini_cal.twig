@@ -52,18 +52,14 @@
             <tr>
                 {% for day in week %}
                     {% set count = day.occurrenceCount %}
-                    <td class="
-                            {{ month.containsDate(day.date) ? 'mini_calendar_pad'}}
-                            {{ count ? 'has_events' }}
-                            {{ day.date.isToday ? 'today' }}
-                        ">
+                    <td class="{{ month.containsDate(day.date) ? 'mini_calendar_pad' }}{{ count ? ' has_events' }}{{ day.date.isToday ? ' today' }}">
                         <div class="mini_calendar_date">
                             {% if month.containsDate(day.date) %}
                                 {% if count %}
-                                    <a href="{{ siteUrl }}demo/day/{{ day.date.format('Y/m/d') }}" aria-label="{{ day.date.format('F j, Y') }}: {{ count }} event{{ count == 1 ? '' : 's' }}">
+                                    <a href="{{ siteUrl }}demo/day/{{ day.date.format('Y/m/d') }}" aria-label="{{ day.date.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}: {{ count }} event{{ count == 1 ? '' : 's' }}">
                                 {% endif %}
 
-                                {{ day.date.format('j') }}
+                                <span class="mini_calendar_day_number">{% if day.date.isToday and not count %}<span class="visually-hidden">Today, </span>{% endif %}{{ day.date.format('j') }}</span>
 
                                 {% if count %}
                                     </a>

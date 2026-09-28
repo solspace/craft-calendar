@@ -83,7 +83,7 @@
                                 {% if month.containsDate(day.date) %}
                                 <td class="day_cell{{ day.dateLocalized.isToday ? " today" }}">
                                     <div class="date{{ day.occurrenceCount ? " has_events" }}">
-                                        <a aria-label="{{ day.date.format('F j, Y') }}" class="num"
+                                        <a aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}" class="num"
                                            href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? "calendar/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
                                             {{ day.date.format('j') }}
                                         </a>
