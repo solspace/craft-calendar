@@ -3,27 +3,29 @@
 {% set classes = classes ~ (event.allDay ? " all_day") %}
 {% if event.multiDay %}
     {% set classes = classes ~ " multi_day" %}
-    {% set classes = classes ~ (day.containsDate(event.startDateLocalized) ? " first_day") %}
-    {% set classes = classes ~ (day.containsDate(event.endDateLocalized) ? " last_day") %}
+    {% set classes = classes ~ (day.containsDate(occurrence.startDate) ? " first_day") %}
+    {% set classes = classes ~ (day.containsDate(occurrence.endDate) ? " last_day") %}
 {% endif %}
 
 <div class="event tips{{ classes }}"
     style="--calendar-color: {{ event.calendar.color }}; --calendar-surface: {{ event.calendar.lighterColor }}; --calendar-contrast: {{ event.calendar.contrastColor }};">
     {% if event.multiDay %}
         <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
-            data-calendar-popover data-calendar-color="{{ event.calendar.color }}">
-            {% autoescape false %}
-                {{ day.containsDate(occurrence.startDate) or day.containsDate(occurrence.endDate) ? event.title : "&nbsp;"|raw }}
-            {% endautoescape %}
+            data-calendar-popover data-calendar-color="{{ event.calendar.color }}" aria-label="{{ event.title }}">
+            {% if day.containsDate(occurrence.startDate) or day.containsDate(occurrence.endDate) %}
+                {{ event.title }}
+            {% else %}
+                &nbsp;
+            {% endif %}
         </a>
     {% else %}
-        {% if not event.allDay %}
-            <span class="calendar-color"></span>
-        {% endif %}
         <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
             data-calendar-popover data-calendar-color="{{ event.calendar.color }}">
             {{ event.title }}
         </a>
+        {% if not event.allDay %}
+            <span class="event-time">{{ occurrence.startDate.format('g:ia') }}</span>
+        {% endif %}
     {% endif %}
 
     {% include "demo/layouts/_event_popover" %}

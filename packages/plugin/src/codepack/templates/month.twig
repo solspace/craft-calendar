@@ -41,9 +41,8 @@
                     </div>
 
                     <div class="col-12 col-md-6 order-0 text-center">
-                        <h1 class="visually-hidden">{{ month.date.format('F Y') }}</h1>
                         <div class="d-flex flex-wrap align-items-center justify-content-center gap-2">
-                            {% include "demo/layouts/_month_heading" with {month: month} only %}
+                            {% include "demo/layouts/_month_heading" with {month: month, calendarHandle: calendarHandle} only %}
                             <span class="badge rounded-pill bg-body-tertiary border text-body-secondary fw-normal fs-6">
                                 {{ occurrenceCount }} event{{ occurrenceCount > 1 or occurrenceCount == 0 ? "s" }}
                             </span>
@@ -64,9 +63,9 @@
                     <table id="month_calendar_inner" class="table table-bordered mb-0">
                         <caption class="visually-hidden">Events for {{ month.date.format('F Y') }}</caption>
                         <thead>
-                            <tr id="days_of_week" class="active">
+                            <tr id="days_of_week">
                                 {% for day in month|first %}
-                                    <th class="day_of_week" scope="col">{{ day.date.format('l') }}</th>
+                                    <th class="day_of_week" scope="col"><abbr class="text-decoration-none" title="{{ day.date.format('l') }}">{{ day.date.format('D') }}</abbr></th>
                                 {% endfor %}
                             </tr>
                         </thead>
@@ -75,7 +74,7 @@
                                 <tr>
                                     {% for day in week %}
                                         {% set inMonth = month.containsDate(day.date) %}
-                                        <td class="day_cell{{ not inMonth ? ' out_of_range' }}{{ inMonth and day.dateLocalized.isToday ? ' today' }}">
+                                        <td class="day_cell{{ not inMonth ? ' out_of_range' }}{{ inMonth and day.dateLocalized.isToday ? ' today bg-primary-subtle' }}">
                                             <div class="date{{ inMonth and day.occurrenceCount ? ' has_events' }}">
                                                 {% if inMonth %}
                                                     <a class="num" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}"
