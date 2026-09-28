@@ -47,7 +47,7 @@
                 </div>
             {% endif %}
         </div>
-        {% if event.repeating %}
+        {% if event.repeats() %}
             <div class="border-top mt-2 pt-2">
                 <span class="text-body-secondary">Repeats</span>
                 <div>{{ event.readableRepeatRule }}</div>

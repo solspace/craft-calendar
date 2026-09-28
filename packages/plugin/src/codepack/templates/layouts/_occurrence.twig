@@ -17,7 +17,7 @@
 
 <div class="event tips{{ classes }}"{{ style }}>
     {% if event.multiDay %}
-        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeating %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
             data-calendar-popover data-calendar-color="{{ event.calendar.color }}" style="color: {{ event.calendar.contrastColor }} !important;">
             {% autoescape false %}
                 {{ day.containsDate(occurrence.startDate) or day.containsDate(occurrence.endDate) ? event.title : "&nbsp;"|raw }}
@@ -27,7 +27,7 @@
         {% if not event.allDay %}
             <span class="calendar-color" style="background-color: {{ event.calendar.color }};"></span>
         {% endif %}
-        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeating %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
             data-calendar-popover data-calendar-color="{{ event.calendar.color }}" {% if event.allDay %}style="color: {{ event.calendar.contrastColor }};"{% endif %}>
             {{ event.title }}
         </a>

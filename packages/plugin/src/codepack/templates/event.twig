@@ -119,7 +119,7 @@
                                 <tr>
                                     <th scope="row">Repeats?</th>
                                     <td>
-                                        {% if event.repeating %}
+                                        {% if event.repeats() %}
                                             <span class="fas fa-redo"></span>&nbsp;
                                             Repeats {{ event.readableRepeatRule }}
                                         {% else %}
@@ -128,7 +128,7 @@
                                     </td>
                                 </tr>
 
-                                {% if event.repeating %}
+                                {% if event.repeats() %}
                                     <tr>
                                         <th scope="row">Upcoming Recurrences</th>
                                         <td>

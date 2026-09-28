@@ -3,7 +3,7 @@
 <li class="calendar-agenda-event position-relative d-flex flex-wrap align-items-center justify-content-between gap-2 {{ day.dateLocalized.isToday ? 'bg-body' : 'bg-body-tertiary' }} rounded-3 px-3 py-2"
     style="--calendar-accent: {{ event.calendar.color }};">
     <div>
-        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeating %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
             class="fw-semibold link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
             {{ event.title }}
         </a>
