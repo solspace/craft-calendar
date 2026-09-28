@@ -60,7 +60,7 @@
 
                 <div class="border-top">
                     {% for day in week %}
-                        <section class="row g-3 align-items-start py-3 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle border-start border-primary border-3 rounded-3' }}{{ not loop.last ? ' border-bottom' }}"
+                        <section class="row g-3 align-items-start py-3 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle border-start border-primary border-3 rounded-3' }}{{ not loop.first ? ' border-top' }}"
                             aria-labelledby="week-day-{{ day.date.format('Y-m-d') }}">
                             <div class="col-sm-4 col-xl-3">
                                 <h2 id="week-day-{{ day.date.format('Y-m-d') }}" class="h6 mb-0">
