@@ -105,6 +105,15 @@ body {
 
 /* MONTH CALENDAR */
 
+.month-picker-trigger .fa-chevron-down {
+	transition: transform .15s ease;
+}
+
+.month-picker-trigger:hover .fa-chevron-down,
+.month-picker-trigger[aria-expanded="true"] .fa-chevron-down {
+	transform: translateY(.125rem);
+}
+
 .month-layout {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
@@ -231,10 +240,14 @@ body {
 	line-height: 1.25;
 }
 #month_calendar .event:not(.multi_day) {
-	padding: .35rem .5rem .35rem .6rem;
-	border-inline-start: .2rem solid var(--calendar-color);
+	padding: .35rem .5rem .35rem .75rem;
+	position: relative;
 	border-radius: var(--bs-border-radius);
 	background-color: var(--bs-tertiary-bg);
+}
+#month_calendar .event:not(.multi_day)::before {
+	top: .4rem;
+	bottom: .4rem;
 }
 #month_calendar .day_cell.today .event:not(.multi_day) {
 	background-color: var(--bs-body-bg);
@@ -260,17 +273,26 @@ body {
 #month_calendar .event.multi_day {
 	margin-inline: -.5rem;
 	padding: .35rem .5rem;
-	border-block: 1px solid var(--calendar-color);
-	background-color: color-mix(in srgb, var(--calendar-color) 16%, var(--bs-body-bg));
+	background-color: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-tertiary-bg));
 }
 #month_calendar .day_cell .multi_day.first_day {
 	margin-inline-start: 0;
-	border-inline-start: .2rem solid var(--calendar-color);
+	position: relative;
+	padding-inline-start: .75rem;
 	border-radius: var(--bs-border-radius) 0 0 var(--bs-border-radius);
+}
+#month_calendar .day_cell .multi_day.first_day::before {
+	position: absolute;
+	top: .35rem;
+	bottom: .35rem;
+	left: 0;
+	width: .2rem;
+	border-radius: var(--bs-border-radius-pill);
+	background-color: var(--calendar-color);
+	content: "";
 }
 #month_calendar .day_cell .multi_day.last_day {
 	margin-inline-end: 0;
-	border-inline-end: 1px solid var(--calendar-color);
 	border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
 }
 #month_calendar .day_cell .date {
@@ -321,7 +343,7 @@ body {
 #month_calendar #days_of_week th {
 	padding: .65rem .35rem;
 	text-align: center;
-	background-color: var(--bs-tertiary-bg);
+	background-color: var(--bs-secondary-bg);
 	color: var(--bs-secondary-color);
 	font-size: .8125rem;
 	font-weight: 600;

@@ -48,3 +48,29 @@ miniCalendar?.addEventListener("click", async (event) => {
 document.querySelectorAll("[data-select-on-focus]").forEach((input) => {
   input.addEventListener("focus", () => input.select());
 });
+
+// Keep the month picker clickable on touch and keyboard, and open it on pointer hover.
+const monthPicker = document.querySelector("[data-month-picker]");
+if (monthPicker && window.bootstrap?.Dropdown && window.matchMedia?.("(hover: hover) and (pointer: fine)")?.matches) {
+  const trigger = monthPicker.querySelector("[data-bs-toggle='dropdown']");
+  const dropdown = window.bootstrap.Dropdown.getOrCreateInstance(trigger);
+  let openedByHover = false;
+
+  monthPicker.addEventListener("pointerenter", () => {
+    if (trigger.getAttribute("aria-expanded") === "false") {
+      dropdown.show();
+      openedByHover = true;
+    }
+  });
+  trigger.addEventListener("click", (event) => {
+    if (openedByHover && trigger.getAttribute("aria-expanded") === "true") {
+      // The pointer has already opened the list; do not immediately close it.
+      event.stopPropagation();
+      openedByHover = false;
+    }
+  });
+  monthPicker.addEventListener("pointerleave", () => {
+    openedByHover = false;
+    dropdown.hide();
+  });
+}

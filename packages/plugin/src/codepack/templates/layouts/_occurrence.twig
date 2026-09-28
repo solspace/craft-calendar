@@ -7,7 +7,7 @@
     {% set classes = classes ~ (day.containsDate(occurrence.endDate) ? " last_day") %}
 {% endif %}
 
-<div class="event tips{{ classes }}"
+<div class="event tips{{ event.multiDay ? '' : ' calendar-agenda-event' }}{{ classes }}"
     style="--calendar-color: {{ event.calendar.color }}; --calendar-surface: {{ event.calendar.lighterColor }}; --calendar-contrast: {{ event.calendar.contrastColor }};">
     {% if event.multiDay %}
         <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
