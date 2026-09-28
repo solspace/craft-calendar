@@ -16,8 +16,8 @@
         {% set targetDate = segment3~"-"~segment4~"-01" %}
     {% endif %}
 
-    <div class="row g-4">
-        <div class="col-lg-9">
+    <div class="month-layout">
+        <div class="month-layout-main">
 
             {% include "demo/layouts/_calendar_banner" %}
 
@@ -99,9 +99,16 @@
 
         </div>
 
-        <div class="col-lg-3">
-            {% include "demo/layouts/_sidebar" %}
-        </div>
+        <details class="month-sidebar">
+            <summary class="month-sidebar-toggle rounded-4 shadow-sm bg-body fw-semibold">
+                <span class="fas fa-calendar-alt" aria-hidden="true"></span>
+                <span>Calendars</span>
+                <span class="fas fa-chevron-right month-sidebar-chevron" aria-hidden="true"></span>
+            </summary>
+            <div class="month-sidebar-content mt-2">
+                {% include "demo/layouts/_sidebar" %}
+            </div>
+        </details>
     </div>
 
 {% endblock %}

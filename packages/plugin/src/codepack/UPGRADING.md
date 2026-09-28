@@ -8,6 +8,8 @@ The Week and Day views now share `templates/layouts/_agenda_event.twig`. Copy th
 
 The demo now includes `assets/js/theme.js` and a Light, Dark, and Auto menu in the shared layout. Copy the script and merge the updated stylesheets and layout when updating an existing installation. Auto follows the system appearance; an explicit choice is saved in the browser.
 
+The Month view uses a compact expandable sidebar so the calendar has more room. Merge `templates/month.twig` and `assets/css/main.css` together to retain the sidebar controls.
+
 ## Version 2.0
 
 Version 2.0 updates event creation for the Calendar 6 API.

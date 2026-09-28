@@ -83,6 +83,109 @@ body {
 
 /* MONTH CALENDAR */
 
+.month-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 1.5rem;
+	align-items: start;
+}
+
+.month-layout-main {
+	min-width: 0;
+}
+
+.month-sidebar {
+	width: 3.25rem;
+}
+
+.month-sidebar[open] {
+	width: clamp(17rem, 25vw, 20rem);
+}
+
+.month-sidebar-toggle {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: .75rem;
+	padding: .9rem .65rem;
+	list-style: none;
+	color: var(--bs-secondary-color);
+	cursor: pointer;
+}
+
+.month-sidebar-toggle::marker {
+	content: "";
+}
+
+.month-sidebar-toggle::-webkit-details-marker {
+	display: none;
+}
+
+.month-sidebar-toggle > span:nth-child(2) {
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+}
+
+.month-sidebar-chevron {
+	font-size: .75rem;
+}
+
+.month-sidebar-toggle:hover,
+.month-sidebar-toggle:focus-visible {
+	color: var(--bs-body-color);
+}
+
+.month-sidebar-toggle:focus-visible {
+	outline: 2px solid var(--bs-primary);
+	outline-offset: 2px;
+}
+
+.month-sidebar[open] .month-sidebar-toggle {
+	flex-direction: row;
+	justify-content: space-between;
+	padding: .75rem 1rem;
+}
+
+.month-sidebar[open] .month-sidebar-toggle > span:nth-child(2) {
+	margin-right: auto;
+	writing-mode: horizontal-tb;
+	transform: none;
+}
+
+.month-sidebar[open] .month-sidebar-chevron {
+	transform: rotate(90deg);
+}
+
+@media (max-width: 991.98px) {
+	.month-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.month-sidebar,
+	.month-sidebar[open] {
+		width: 100%;
+	}
+
+	.month-sidebar-toggle {
+		flex-direction: row;
+		justify-content: center;
+		padding: .75rem 1rem;
+	}
+
+	.month-sidebar-toggle > span:nth-child(2) {
+		writing-mode: horizontal-tb;
+		transform: none;
+	}
+
+	.month-sidebar[open] .month-sidebar-toggle {
+		justify-content: center;
+	}
+
+	.month-sidebar[open] .month-sidebar-toggle > span:nth-child(2) {
+		margin-right: 0;
+	}
+}
+
 #month_calendar {
 	margin: 0 auto;
 	width: 100%;
