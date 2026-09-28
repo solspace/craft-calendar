@@ -204,28 +204,6 @@ body {
 }
 
 
-/* WEEK CALENDAR */
-
-#week_calendar .header div {
-	float: left;
-	width: 20%;
-}
-#week_calendar .header div.left {
-	padding-left: 10px;
-}
-#week_calendar .header div.center {
-	width: 55%;
-	text-align: center;
-}
-#week_calendar .header div.right {
-	text-align: right;
-	padding-right: 10px;
-}
-#week_calendar ul.list-group {
-	margin-bottom: 0px;
-}
-
-
 /* DAY CALENDAR */
 
 #day_calendar .header div {
