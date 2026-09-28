@@ -2,6 +2,8 @@
 
 Version 2.1 updates the demo to Bootstrap 5.3.8. The included templates use Bootstrap 5 classes and data attributes, with no jQuery dependency for popovers or mini calendar navigation. The pages also use Bootstrap cards, responsive spacing, and a more compact calendar layout. If your site extends the demo layout, check any Bootstrap 4 overrides and update custom dropdown, badge, and form styles when merging.
 
+The event editor and FullCalendar page scripts now live in `assets/js/event-editor.js` and `assets/js/full-calendar.js`. If you customized either inline script in a previously installed template, merge those changes into the corresponding new asset. Keep the JSON configuration in the Twig template for Craft values and translated labels.
+
 ## Version 2.0
 
 Version 2.0 updates event creation for the Calendar 6 API.
