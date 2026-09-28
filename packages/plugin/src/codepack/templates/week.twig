@@ -60,28 +60,31 @@
 
                 <div class="border-top">
                     {% for day in week %}
-                        <section class="row g-3 align-items-start py-3 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle border-start border-primary border-3 rounded-3' }}{{ not loop.first ? ' border-top' }}"
+                        <section class="row g-2 align-items-center py-2 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle border-start border-primary border-3 rounded-3' }}{{ not loop.first ? ' border-top' }}"
                             aria-labelledby="week-day-{{ day.date.format('Y-m-d') }}">
-                            <div class="col-sm-4 col-xl-3">
+                            <div class="col-sm-3 col-xl-2">
                                 <h2 id="week-day-{{ day.date.format('Y-m-d') }}" class="h6 mb-0">
-                                    <a class="link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+                                    <a class="d-inline-flex align-items-center gap-2 link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
                                         href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? segment3~'/'~segment4~'/' }}{{ day.date.format('Y/m/d') }}"
                                         aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}">
-                                        <span class="d-block small text-body-secondary fw-normal">{{ day.date.format('l') }}</span>
-                                        {{ day.date.format('F j') }}
+                                        <span class="fs-3 lh-1">{{ day.date.format('j') }}</span>
+                                        <span class="d-inline-flex flex-column small lh-sm fw-normal">
+                                            <span>{{ day.date.format('D') }}</span>
+                                            <span class="text-body-secondary">{{ day.date.format('M') }}</span>
+                                        </span>
                                     </a>
                                     {% if day.dateLocalized.isToday %}
-                                        <span class="badge rounded-pill text-bg-primary fw-normal ms-1">Today</span>
+                                        <span class="badge rounded-pill text-bg-primary fw-normal align-middle ms-1">Today</span>
                                     {% endif %}
                                 </h2>
                             </div>
-                            <div class="col-sm-8 col-xl-9">
+                            <div class="col-sm-9 col-xl-10">
                                 {% if day.occurrences.count %}
                                     <ul class="list-unstyled d-grid gap-2 mb-0">
                                         {% for occurrence in day.occurrences %}
                                             {% set event = occurrence.event %}
-                                            <li class="d-flex flex-wrap align-items-center justify-content-between gap-2 bg-body rounded-3 border shadow-sm p-3"
-                                                style="border-left: 4px solid {{ event.calendar.color }} !important;">
+                                            <li class="d-flex flex-wrap align-items-center justify-content-between gap-2 {{ day.dateLocalized.isToday ? 'bg-body' : 'bg-body-tertiary' }} rounded-3 px-3 py-2"
+                                                style="border-left: 3px solid {{ event.calendar.color }};">
                                                 <div>
                                                     <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format('Y/m/d') }}"
                                                         class="fw-semibold link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
@@ -109,8 +112,8 @@
                                                     </div>
                                                 </div>
                                                 <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
-                                                    class="badge rounded-pill text-decoration-none"
-                                                    style="background-color: {{ event.calendar.color }}; color: {{ event.calendar.contrastColor }};">
+                                                    class="badge rounded-pill text-bg-light border text-decoration-none fw-normal">
+                                                    <span class="fas fa-calendar-alt me-1" style="color: {{ event.calendar.color }};" aria-hidden="true"></span>
                                                     {{ event.calendar.name }}
                                                 </a>
                                             </li>
