@@ -72,18 +72,18 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
                             <strong>
-                            {{ occurrence.startDate.format('l, F j, Y') }}
-                            {% if event.allDay %}
-                                (all day)
-                            {% else %}
-                                at {{ occurrence.startDate.format("g:ia") }} -
-                                {% if event.multiDay %}
-                                    <br />{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
+                                {{ occurrence.startDate.format('l, F j, Y') }}
+                                {% if event.allDay %}
+                                    (all day)
                                 {% else %}
-                                    {{ occurrence.endDate.format("g:ia") }}
+                                    at {{ occurrence.startDate.format("g:ia") }} -
+                                    {% if event.multiDay %}
+                                        <br>{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
+                                    {% else %}
+                                        {{ occurrence.endDate.format("g:ia") }}
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
-                        </strong>
+                            </strong>
                         </li>
                         <li class="list-group-item">
                             Calendar:&nbsp;
@@ -124,7 +124,7 @@
                         {% set month = craft.calendar.month({date: targetStartDate, calendarId: 0}) %}
                         {% for date in month.dateRange(6, 6) %}
                             <a href="{{ siteUrl }}demo/events/{{ date.format('Y/m') }}/{{ date.daysInMonth }}"
-                               class="list-group-item list-group-item-action {{ date == month.date ? 'list-group-item-warning' }}"{% if date == month.date %} aria-current="page"{% endif %}>
+                                class="list-group-item list-group-item-action {{ date == month.date ? 'list-group-item-warning' }}"{% if date == month.date %} aria-current="page"{% endif %}>
                                 {{ date.format('M Y') }}
                             </a>
                         {% endfor %}
@@ -134,5 +134,4 @@
         </div>
 
     </div>
-
 {% endblock %}

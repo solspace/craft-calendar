@@ -31,30 +31,30 @@
 
                 <div class="row align-items-center g-2 mb-3">
                     <div class="col-6 col-md-3 order-1 order-md-0">
-                    {% if dateBoundsHelper > -365 %}
-                        <a class="btn btn-outline-secondary btn-sm"
-                           href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.previousDate.format('Y/m/d') }}">
-                            <span class="fas fa-arrow-left" aria-hidden="true"></span> Last Week
-                        </a>
-                    {% endif %}
+                        {% if dateBoundsHelper > -365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.previousDate.format('Y/m/d') }}">
+                                <span class="fas fa-arrow-left" aria-hidden="true"></span> Last Week
+                            </a>
+                        {% endif %}
                     </div>
 
                     <div class="col-12 col-md-6 order-0 text-center">
                         <h1 class="h4 mb-0">
                             Week of {{ week.date.format("F j, Y") }} &nbsp;
                             <span class="badge {{ week.occurrenceCount ? "text-bg-warning" : "text-bg-secondary" }}">
-                            {{ week.occurrenceCount }} event{{ week.occurrenceCount > 1 or week.occurrenceCount == 0 ? "s" }}
-                        </span>
+                                {{ week.occurrenceCount }} event{{ week.occurrenceCount > 1 or week.occurrenceCount == 0 ? "s" }}
+                            </span>
                         </h1>
                     </div>
 
                     <div class="col-6 col-md-3 order-2 text-end">
-                    {% if dateBoundsHelper < 365 %}
-                        <a class="btn btn-outline-secondary btn-sm"
-                           href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.nextDate.format('Y/m/d') }}">
-                            Next Week <span class="fas fa-arrow-right" aria-hidden="true"></span>
-                        </a>
-                    {% endif %}
+                        {% if dateBoundsHelper < 365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.nextDate.format('Y/m/d') }}">
+                                Next Week <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -62,7 +62,7 @@
                     <ul class="list-group mb-4">
                         <li class="list-group-item list-group-item-{{ day.dateLocalized.isToday ? "primary" : "secondary" }}">
                             <a class="text-body-emphasis fw-bold" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}"
-                               href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? segment3~"/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
+                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? segment3~"/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
                                 {% if day.dateLocalized.isToday %}
                                     TODAY
                                 {% else %}
@@ -101,7 +101,7 @@
                                                 {% endif %}
                                                 <b>
                                                     <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format("Y/m/d") }}"
-                                                       class="calendar_event_title">
+                                                        class="calendar_event_title">
                                                         {{ event.title }}</a>
                                                 </b>
                                                 {% if event['location'] is defined %}
@@ -110,8 +110,8 @@
                                             </div>
 
                                             <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
-                                               class="badge"
-                                               style="background-color: {{ event.calendar.color }}; color: {{ event.calendar.contrastColor }};">
+                                                class="badge"
+                                                style="background-color: {{ event.calendar.color }}; color: {{ event.calendar.contrastColor }};">
                                                 {{ event.calendar.name }}
                                             </a>
                                         </li>

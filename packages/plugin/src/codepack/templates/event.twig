@@ -13,9 +13,9 @@
         </div>
     {% endif %}
 
-	<div class="row g-4">
-		<div class="col-lg-9">
-			<section id="events_calendar" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4">
+    <div class="row g-4">
+        <div class="col-lg-9">
+            <section id="events_calendar" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4">
 
                 {% set occurrenceDate = null %}
                 {% if segment4 and segment5 and segment6 %}
@@ -48,8 +48,7 @@
                     <div class="btn-group float-end mb-3" role="group" aria-label="Event actions">
                         {% if craft.calendar.exportEnabled %}
                             <a href="{{ siteUrl }}demo/export/event/{{ segment3 }}"
-                               class="btn btn-primary btn-sm"
-                               role="button">
+                                class="btn btn-primary btn-sm">
                                 <span class="fas fa-file-export" aria-hidden="true"></span>
                                 &nbsp;Export Event
                             </a>
@@ -57,8 +56,7 @@
 
                         {% if craft.calendar.canEditEvent(event) %}
                             <a href="{{ siteUrl }}demo/edit/event/{{ segment3 }}"
-                               class="btn btn-warning btn-sm"
-                               role="button">
+                                class="btn btn-warning btn-sm">
                                 <span class="fas fa-edit"></span>
                                 &nbsp;Edit
                             </a>
@@ -68,120 +66,120 @@
                     <h1 class="h4 mb-3">{{ event.title }}</h1>
 
                     <div class="table-responsive">
-                    <table class="table table-striped mt-3">
-                        <caption class="visually-hidden">Event details</caption>
-                        <tbody>
-                        <tr>
-                            <th scope="row" style="width: 20%;">Calendar</th>
-                            <td>
-                                <span class="fas fa-calendar-alt" style="color: {{ event.calendar.color }};"></span>&nbsp;
-                                <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}" style="color: {{ event.calendar.color }};">
-                                    {{ event.calendar.name }}
-                                </a>
-                            </td>
-                        </tr>
-                        {% if event['location'] is defined and event.location is not empty %}
-                            <tr>
-                                <th scope="row">Location</th>
-                                <td>
-                                    {{ event.location }}
-                                </td>
-                            </tr>
-                        {% endif %}
-                        <tr>
-                            <th scope="row">Date</th>
-                            <td>
-                                {{ displayStartDate.format('l, F j, Y') }}
-
-                                {% if displayAllDay %}
-                                    (all day)
-                                {% else %}
-                                    at {{ displayStartDate.format("g:ia") }} -
-                                    {% if displayMultiDay %}
-                                        <br />{{ displayEndDate.format("l, F j, Y \\a\\t g:ia") }}
-                                    {% else %}
-                                        {{ displayEndDate.format("g:ia") }}
-                                    {% endif %}
+                        <table class="table table-striped mt-3">
+                            <caption class="visually-hidden">Event details</caption>
+                            <tbody>
+                                <tr>
+                                    <th scope="row" style="width: 20%;">Calendar</th>
+                                    <td>
+                                        <span class="fas fa-calendar-alt" style="color: {{ event.calendar.color }};"></span>&nbsp;
+                                        <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}" style="color: {{ event.calendar.color }};">
+                                            {{ event.calendar.name }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% if event['location'] is defined and event.location is not empty %}
+                                    <tr>
+                                        <th scope="row">Location</th>
+                                        <td>
+                                            {{ event.location }}
+                                        </td>
+                                    </tr>
                                 {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Duration</th>
-                            <td>
-                                <span class="far fa-clock"></span>&nbsp;
-                                {{ event.duration.humanReadable }}
-                            </td>
-                        </tr>
-                        {% if event['description'] is defined and event.description is not empty %}
-                            <tr>
-                                <th scope="row">Details</th>
-                                <td>{{ event.description }}</td>
-                            </tr>
-                        {% endif %}
-                        <tr>
-                            <th scope="row">Repeats?</th>
-                            <td>
+                                <tr>
+                                    <th scope="row">Date</th>
+                                    <td>
+                                        {{ displayStartDate.format('l, F j, Y') }}
+
+                                        {% if displayAllDay %}
+                                            (all day)
+                                        {% else %}
+                                            at {{ displayStartDate.format("g:ia") }} -
+                                            {% if displayMultiDay %}
+                                                <br>{{ displayEndDate.format("l, F j, Y \\a\\t g:ia") }}
+                                            {% else %}
+                                                {{ displayEndDate.format("g:ia") }}
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Duration</th>
+                                    <td>
+                                        <span class="far fa-clock"></span>&nbsp;
+                                        {{ event.duration.humanReadable }}
+                                    </td>
+                                </tr>
+                                {% if event['description'] is defined and event.description is not empty %}
+                                    <tr>
+                                        <th scope="row">Details</th>
+                                        <td>{{ event.description }}</td>
+                                    </tr>
+                                {% endif %}
+                                <tr>
+                                    <th scope="row">Repeats?</th>
+                                    <td>
+                                        {% if event.repeating %}
+                                            <span class="fas fa-redo"></span>&nbsp;
+                                            Repeats {{ event.readableRepeatRule }}
+                                        {% else %}
+                                            No
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
                                 {% if event.repeating %}
-                                    <span class="fas fa-redo"></span>&nbsp;
-                                    Repeats {{ event.readableRepeatRule }}
-                                {% else %}
-                                    No
+                                    <tr>
+                                        <th scope="row">Upcoming Recurrences</th>
+                                        <td>
+                                            {% set occurrences = craft.calendar.occurrences({
+                                                event: event.id,
+                                                rangeStart: 'today',
+                                                rangeEnd: '+6 months',
+                                                limit: 10,
+                                                status: null,
+                                            }).all() %}
+
+                                            {% if occurrences %}
+                                                <ul class="list-group">
+                                                    {% for occurrence in occurrences %}
+                                                        {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
+                                                        <li class="list-group-item d-flex align-items-center" style="border-left: 5px solid {{ occurrence.calendar.color }};">
+                                                            <small class="me-auto">
+                                                                <span class="far fa-clock"></span>&nbsp;
+                                                                {{ occurrence.startDate.format("l, F j, Y") }}
+
+                                                                {% if occurrence.allDay %}
+                                                                    (all day)
+                                                                {% else %}
+                                                                    at {{ occurrence.startDate.format("g:ia") }}
+                                                                    {% if occurrenceMultiDay %}
+                                                                        <br>{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
+                                                                    {% else %}
+                                                                        {{ occurrence.endDate.format("g:ia") }}
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </small>
+
+                                                            <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format("Y/m/d") }}" class="badge text-decoration-none me-2"
+                                                                style="background-color: {{ occurrence.calendar.color }}; color: {{ occurrence.calendar.contrastColor }} !important;">
+                                                                View Recurrence
+                                                            </a>
+                                                            <a class="badge text-bg-primary text-decoration-none"
+                                                                href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format("Y/m/d") }}">
+                                                                View Day in Calendar
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p>No occurrences found for this timeframe (next 6 months from today).</p>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
                                 {% endif %}
-                            </td>
-                        </tr>
-
-                        {% if event.repeating %}
-                        <tr>
-                            <th scope="row">Upcoming Recurrences</th>
-                            <td>
-                                {% set occurrences = craft.calendar.occurrences({
-                                    event: event.id,
-                                    rangeStart: 'today',
-                                    rangeEnd: '+6 months',
-                                    limit: 10,
-                                    status: null,
-                                }).all() %}
-
-                                {% if occurrences %}
-                                    <ul class="list-group">
-                                        {% for occurrence in occurrences %}
-                                            {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
-                                            <li class="list-group-item d-flex align-items-center" style="border-left: 5px solid {{ occurrence.calendar.color }};">
-                                                <small class="me-auto">
-                                                    <span class="far fa-clock"></span>&nbsp;
-                                                    {{ occurrence.startDate.format("l, F j, Y") }}
-
-                                                    {% if occurrence.allDay %}
-                                                        (all day)
-                                                    {% else %}
-                                                        at {{ occurrence.startDate.format("g:ia") }}
-                                                        {% if occurrenceMultiDay %}
-                                                            <br />{{ occurrence.endDate.format("l, F j, Y \\a\\t g:ia") }}
-                                                        {% else %}
-                                                            {{ occurrence.endDate.format("g:ia") }}
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </small>
-
-                                                <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format("Y/m/d") }}" class="badge text-decoration-none me-2"
-                                                   style="background-color: {{ occurrence.calendar.color }}; color: {{ occurrence.calendar.contrastColor }} !important;">
-                                                    View Recurrence
-                                                </a>
-                                                <a class="badge text-bg-primary text-decoration-none"
-                                                   href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format("Y/m/d") }}">
-                                                    View Day in Calendar
-                                                </a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    <p>No occurrences found for this timeframe (next 6 months from today).</p>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endif %}
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
                     </div>
 
                 {% else %}
@@ -192,13 +190,13 @@
                         </p>
                     </div>
                 {% endif %}
-			</section>
+            </section>
 
-		</div>
+        </div>
 
-		<div class="col-lg-3">
+        <div class="col-lg-3">
             {% include "demo/layouts/_sidebar" %}
-		</div>
+        </div>
 
     </div>
 

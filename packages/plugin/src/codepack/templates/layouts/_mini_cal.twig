@@ -20,56 +20,50 @@
     <table class="table table-bordered table-sm mb-0">
         <caption class="visually-hidden" tabindex="-1">Mini calendar for {{ month.date.format('F Y') }}</caption>
         <thead>
-        <tr>
-            <th colspan="1">
-            {% if dateBoundsHelper > -365 %}
-                {% if segment2 != "calendars" %}
-                    <a id="mini_calendar_prev_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Previous month, {{ month.previousDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.previousDate.format('Y/m') }}/">&larr;</a>
-                {% endif %}
-            {% endif %}
-            </th>
-            <th colspan="5" id="mini_calendar_month" tabindex="-1">
-                {{ month.date.format('F Y') }}
-            </th>
-            <th colspan="1">
-            {% if dateBoundsHelper < 365 %}
-                {% if segment2 != "calendars" %}
-                    <a id="mini_calendar_next_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Next month, {{ month.nextDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.nextDate.format('Y/m') }}/"> &rarr;</a>
-                {% endif %}
-            {% endif %}
-            </th>
-        </tr>
-        <tr class="mini_calendar_days">
-            {% for day in month|first %}
-                <th scope="col" aria-label="{{ day.date.format('l') }}">{{ day.date.format('D')|first }}</th>
-            {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-        {% for week in month %}
             <tr>
-                {% for day in week %}
-                    {% set count = day.occurrenceCount %}
-                    <td class="{{ month.containsDate(day.date) ? 'mini_calendar_pad' }}{{ count ? ' has_events' }}{{ day.dateLocalized.isToday ? ' today' }}">
-                        <div class="mini_calendar_date">
-                            {% if month.containsDate(day.date) %}
-                                {% if count %}
-                                    <a href="{{ siteUrl }}demo/day/{{ day.date.format('Y/m/d') }}" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}: {{ count }} event{{ count == 1 ? '' : 's' }}">
-                                {% endif %}
-
-                                <span class="mini_calendar_day_number">{% if day.dateLocalized.isToday and not count %}<span class="visually-hidden">Today, </span>{% endif %}{{ day.date.format('j') }}</span>
-
-                                {% if count %}
-                                    </a>
-                                {% endif %}
-                            {% else %}
-                                <span class="middot" aria-hidden="true">&middot;</span>
-                            {% endif %}
-                        </div>
-                    </td>
+                <th colspan="1">
+                    {% if dateBoundsHelper > -365 and segment2 != "calendars" %}
+                        <a id="mini_calendar_prev_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Previous month, {{ month.previousDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.previousDate.format('Y/m') }}/">&larr;</a>
+                    {% endif %}
+                </th>
+                <th colspan="5" id="mini_calendar_month" tabindex="-1">
+                    {{ month.date.format('F Y') }}
+                </th>
+                <th colspan="1">
+                    {% if dateBoundsHelper < 365 and segment2 != "calendars" %}
+                        <a id="mini_calendar_next_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Next month, {{ month.nextDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.nextDate.format('Y/m') }}/">&rarr;</a>
+                    {% endif %}
+                </th>
+            </tr>
+            <tr class="mini_calendar_days">
+                {% for day in month|first %}
+                    <th scope="col" aria-label="{{ day.date.format('l') }}">{{ day.date.format('D')|first }}</th>
                 {% endfor %}
             </tr>
-        {% endfor %}
+        </thead>
+        <tbody>
+            {% for week in month %}
+                <tr>
+                    {% for day in week %}
+                        {% set count = day.occurrenceCount %}
+                        <td class="{{ month.containsDate(day.date) ? 'mini_calendar_pad' }}{{ count ? ' has_events' }}{{ day.dateLocalized.isToday ? ' today' }}">
+                            <div class="mini_calendar_date">
+                                {% if month.containsDate(day.date) %}
+                                    {% if count %}
+                                        <a href="{{ siteUrl }}demo/day/{{ day.date.format('Y/m/d') }}" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}: {{ count }} event{{ count == 1 ? '' : 's' }}">
+                                            <span class="mini_calendar_day_number">{{ day.date.format('j') }}</span>
+                                        </a>
+                                    {% else %}
+                                        <span class="mini_calendar_day_number">{% if day.dateLocalized.isToday %}<span class="visually-hidden">Today, </span>{% endif %}{{ day.date.format('j') }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="middot" aria-hidden="true">&middot;</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>

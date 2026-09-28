@@ -32,12 +32,12 @@
 
                 <div class="row align-items-center g-2 mb-3">
                     <div class="col-6 col-md-3 order-1 order-md-0">
-                    {% if dateBoundsHelper > -365 %}
-                        <a class="btn btn-outline-secondary btn-sm"
-                           href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.previousDate.format('Y/m') }}">
-                            <span class="fas fa-arrow-left" aria-hidden="true"></span> {{ month.previousDate.format('F') }}
-                        </a>
-                    {% endif %}
+                        {% if dateBoundsHelper > -365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.previousDate.format('Y/m') }}">
+                                <span class="fas fa-arrow-left" aria-hidden="true"></span> {{ month.previousDate.format('F') }}
+                            </a>
+                        {% endif %}
                     </div>
 
                     <div class="col-12 col-md-6 order-0 text-center">
@@ -50,57 +50,50 @@
                     </div>
 
                     <div class="col-6 col-md-3 order-2 text-end">
-                    {% if dateBoundsHelper < 365 %}
-                        <a class="btn btn-outline-secondary btn-sm"
-                           href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.nextDate.format('Y/m') }}">
-                            {{ month.nextDate.format('F') }} <span class="fas fa-arrow-right" aria-hidden="true"></span>
-                        </a>
-                    {% endif %}
+                        {% if dateBoundsHelper < 365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.nextDate.format('Y/m') }}">
+                                {{ month.nextDate.format('F') }} <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                <table id="month_calendar_inner" class="table table-bordered mb-0">
-                    <caption class="visually-hidden">Events for {{ month.date.format('F Y') }}</caption>
-                    <thead>
-                    <tr id="days_of_week" class="active">
-                        {% for day in month|first %}
-                            <th class="day_of_week" scope="col">
-                                {{ day.date.format('l') }}
-                            </th>
-                        {% endfor %}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for week in month %}
-                        <tr>
-                            {% for day in week %}
-                                {% if month.containsDate(day.date) %}
-                                <td class="day_cell{{ day.dateLocalized.isToday ? " today" }}">
-                                    <div class="date{{ day.occurrenceCount ? " has_events" }}">
-                                        <a aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}" class="num"
-                                           href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? "calendar/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
-                                            {{ day.date.format('j') }}
-                                        </a>
-                                    </div>
-                                {% else %}
-                                    <td class="day_cell out_of_range">
-                                    <div class="date">
-                                        <span class="num">
-                                            {{ day.date.format('j') }}
-                                        </span>
-                                    </div>
-                                {% endif %}
-
-                                {% for occurrence in day.occurrences %}
-                                    {% include "demo/layouts/_occurrence" %}
+                    <table id="month_calendar_inner" class="table table-bordered mb-0">
+                        <caption class="visually-hidden">Events for {{ month.date.format('F Y') }}</caption>
+                        <thead>
+                            <tr id="days_of_week" class="active">
+                                {% for day in month|first %}
+                                    <th class="day_of_week" scope="col">{{ day.date.format('l') }}</th>
                                 {% endfor %}
-                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for week in month %}
+                                <tr>
+                                    {% for day in week %}
+                                        {% set inMonth = month.containsDate(day.date) %}
+                                        <td class="day_cell{{ not inMonth ? ' out_of_range' }}{{ inMonth and day.dateLocalized.isToday ? ' today' }}">
+                                            <div class="date{{ inMonth and day.occurrenceCount ? ' has_events' }}">
+                                                {% if inMonth %}
+                                                    <a class="num" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}"
+                                                        href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? "calendar/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
+                                                        {{ day.date.format('j') }}
+                                                    </a>
+                                                {% else %}
+                                                    <span class="num">{{ day.date.format('j') }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% for occurrence in day.occurrences %}
+                                                {% include "demo/layouts/_occurrence" %}
+                                            {% endfor %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
                             {% endfor %}
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
