@@ -44,3 +44,7 @@ miniCalendar?.addEventListener("click", async (event) => {
     link.removeAttribute("aria-disabled");
   }
 });
+
+document.querySelectorAll("[data-select-on-focus]").forEach((input) => {
+  input.addEventListener("focus", () => input.select());
+});

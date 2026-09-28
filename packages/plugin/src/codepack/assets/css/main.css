@@ -30,11 +30,6 @@ body {
 	color: var(--calendar-contrast);
 }
 
-.calendar-tinted-header {
-	background-color: var(--calendar-surface);
-	color: var(--calendar-contrast);
-}
-
 .calendar-filter-banner {
 	--bs-alert-color: var(--calendar-contrast);
 	--bs-alert-bg: var(--calendar-surface);
@@ -55,7 +50,6 @@ body {
 	color: var(--calendar-contrast);
 }
 
-[data-bs-theme="dark"] .calendar-tinted-header,
 [data-bs-theme="dark"] .calendar-filter-link[aria-current="page"] {
 	background-color: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-body-bg));
 	color: var(--bs-body-color);
@@ -73,6 +67,34 @@ body {
 
 .calendar-details-label {
 	width: 20%;
+}
+
+/* CALENDAR DIRECTORY */
+
+.calendar-directory-card::before {
+	display: block;
+	height: .25rem;
+	background-color: var(--calendar-color);
+	content: "";
+}
+
+.calendar-directory-icon {
+	display: inline-grid;
+	flex: 0 0 2.75rem;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	background-color: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-body-bg));
+	color: var(--calendar-color);
+}
+
+.calendar-upcoming-date {
+	width: 3.5rem;
+}
+
+.calendar-upcoming-info {
+	min-width: 0;
+	overflow-wrap: anywhere;
 }
 
 @media (max-width: 767.98px) {
