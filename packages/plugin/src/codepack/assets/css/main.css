@@ -204,7 +204,7 @@ body {
 }
 
 
-/* WEEK AND DAY AGENDAS */
+/* EVENT AGENDAS */
 
 .calendar-agenda-event::before {
 	position: absolute;
@@ -218,18 +218,21 @@ body {
 }
 
 #week_calendar .week-date,
-#day_calendar .day-time {
+#day_calendar .day-time,
+#events_calendar .events-date {
 	flex: 0 0 8rem;
 }
 
 #week_calendar .week-events,
-#day_calendar .day-events {
+#day_calendar .day-events,
+#events_calendar .calendar-agenda-event {
 	min-width: 0;
 }
 
 @media (max-width: 575.98px) {
 	#week_calendar .week-date,
-	#day_calendar .day-time {
+	#day_calendar .day-time,
+	#events_calendar .events-date {
 		flex-basis: auto;
 	}
 }
