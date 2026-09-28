@@ -1,17 +1,13 @@
 /* Calendar Demo Styles */
 
 body {
-	padding-top: 6rem;
+	padding-top: 4.5rem;
 }
 
 .visually-hidden-focusable {
 	z-index: 1040;
 	top: .5rem;
 	left: .5rem;
-}
-
-.navbar-brand img {
-	margin-inline-end: .5rem;
 }
 
 @media (max-width: 767.98px) {
@@ -154,8 +150,10 @@ body {
 	text-decoration: none;
 }
 #month_calendar #days_of_week th {
-	padding: 5px 0;
+	padding: .65rem .35rem;
 	text-align: center;
+	background-color: var(--bs-tertiary-bg);
+	border-color: var(--bs-border-color);
 }
 #month_calendar #month_year th {
 	padding: 5px;
@@ -266,14 +264,23 @@ body {
 	text-align: center;
 }
 #mini_calendar th {
-	border: none;
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding: .75rem 0;
+	border-color: var(--bs-border-color);
+}
+#mini_calendar thead tr:first-child th {
+	border-inline: 0;
+	border-block: 1px solid var(--bs-border-color);
+	background-color: var(--bs-body-bg);
+}
+#mini_calendar thead tr:first-child th:first-child {
+	border-inline-start: 1px solid var(--bs-border-color);
+}
+#mini_calendar thead tr:first-child th:last-child {
+	border-inline-end: 1px solid var(--bs-border-color);
 }
 #mini_calendar .mini_calendar_days th {
-	background: var(--bs-tertiary-bg);
+	background-color: var(--bs-tertiary-bg);
 	border: 1px solid var(--bs-border-color);
-	border-width: 1px 0;
 }
 #mini_calendar th a {
 	color: var(--bs-body-color);
