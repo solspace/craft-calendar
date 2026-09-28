@@ -296,7 +296,7 @@
         const canManage = Boolean(event.extendedProps.canManage);
         const repeats = Boolean(event.extendedProps.repeats || event.extendedProps.rrule);
         const eventId = getElementEventId(event);
-        const occurrencePath = event.start ? formatUtcDate(event.start).replaceAll("-", "/") : "";
+        const occurrencePath = repeats && event.start ? formatUtcDate(event.start).replaceAll("-", "/") : "";
 
         detailsTitle.textContent = event.title;
         detailsCalendarColor.style.backgroundColor = event.backgroundColor || calendarData?.color || "transparent";

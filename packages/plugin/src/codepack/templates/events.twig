@@ -93,7 +93,7 @@
                                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                                     <div>
                                         <h2 class="h6 mb-1">
-                                            <a href="{{ siteUrl }}demo/event/{{ event.id }}/{{ event.repeating ? occurrence.startDate.format('Y/m/d') }}"
+                                            <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeating %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
                                                 class="link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
                                                 {{ event.title }}
                                             </a>
