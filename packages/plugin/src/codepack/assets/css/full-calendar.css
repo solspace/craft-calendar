@@ -212,6 +212,7 @@
   width: 35rem;
   max-width: calc(100vw - 2rem);
   max-height: calc(100vh - 2rem);
+  margin: auto;
   padding: 0;
   overflow: auto;
   color: var(--bs-body-color);
@@ -409,7 +410,6 @@
   .calendar-dialog {
     width: calc(100vw - 1.5rem);
     max-width: calc(100vw - 1.5rem);
-    margin: auto 0.75rem;
   }
 
   .calendar-dialog__header,
