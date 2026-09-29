@@ -355,7 +355,8 @@
   font-weight: 600;
 }
 
-.calendar-dialog .form-control {
+.calendar-dialog .form-control,
+.calendar-dialog .demo-input {
   width: 100%;
 }
 
@@ -433,7 +434,8 @@
     grid-template-columns: 1fr;
   }
 
-  .calendar-dialog__actions .btn {
+  .calendar-dialog__actions .btn,
+  .calendar-dialog__actions .demo-btn {
     width: 100%;
   }
 }

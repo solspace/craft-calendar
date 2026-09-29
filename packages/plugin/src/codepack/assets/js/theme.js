@@ -38,6 +38,7 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
       button.querySelector('.fa-check').classList.toggle('d-none', !active);
+      button.querySelector('.fa-check').classList.toggle('hidden', !active);
     });
   }
 

@@ -46,7 +46,7 @@ function initBootstrapUi() {
 }
 
 function initTailwindUi() {
-  const dropdowns = [...document.querySelectorAll("[data-bs-toggle='dropdown']")];
+  const dropdowns = [...document.querySelectorAll("[data-demo-dropdown]")];
   const closeDropdowns = (except) => dropdowns.forEach((trigger) => {
     if (trigger === except) return;
     trigger.setAttribute("aria-expanded", "false");
@@ -63,8 +63,8 @@ function initTailwindUi() {
     });
   });
   document.addEventListener("click", (event) => {
-    if (!event.target.closest(".dropdown, .dropup")) closeDropdowns();
-    if (event.target.closest(".dropdown-item")) closeDropdowns();
+    if (!event.target.closest("[data-demo-dropdown], .demo-menu")) closeDropdowns();
+    if (event.target.closest(".demo-menu-item")) closeDropdowns();
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
@@ -73,19 +73,19 @@ function initTailwindUi() {
     open?.focus();
   });
 
-  const navbarToggle = document.querySelector(".navbar-toggler");
+  const navbarToggle = document.querySelector("[data-nav-toggle]");
   navbarToggle?.addEventListener("click", () => {
     const nav = document.getElementById(navbarToggle.getAttribute("aria-controls"));
     const isOpen = nav?.classList.toggle("show") ?? false;
     navbarToggle.setAttribute("aria-expanded", String(isOpen));
   });
-  document.querySelectorAll("[data-bs-dismiss='alert']").forEach((button) => {
-    button.addEventListener("click", () => button.closest(".alert")?.remove());
+  document.querySelectorAll("[data-demo-dismiss='alert']").forEach((button) => {
+    button.addEventListener("click", () => button.closest(".demo-alert")?.remove());
   });
 
   const monthPicker = document.querySelector("[data-month-picker]");
   if (monthPicker && window.matchMedia?.("(hover: hover) and (pointer: fine)")?.matches) {
-    const trigger = monthPicker.querySelector("[data-bs-toggle='dropdown']");
+    const trigger = monthPicker.querySelector("[data-demo-dropdown]");
     const menu = trigger.nextElementSibling;
     let openedByHover = false;
     monthPicker.addEventListener("pointerenter", () => {
@@ -148,10 +148,17 @@ function initTailwindUi() {
   document.addEventListener("keydown", (event) => { if (event.key === "Escape") hidePopover(); });
 }
 
-if (window.calendarDemoFramework === "bootstrap") {
-  window.calendarDemoBootstrapReady?.then(() => window.bootstrap ? initBootstrapUi() : initTailwindUi());
+function initDemoUi() {
+  if (window.calendarDemoFramework === "bootstrap") {
+    initBootstrapUi();
+  } else {
+    initTailwindUi();
+  }
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initDemoUi, { once: true });
 } else {
-  initTailwindUi();
+  initDemoUi();
 }
 
 const miniCalendar = document.getElementById("mini-cal-wrapper");

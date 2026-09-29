@@ -1,0 +1,57 @@
+{% set displayStartDate = occurrence is defined ? occurrence.startDate : event.startDate %}
+{% set displayEndDate = occurrence is defined ? occurrence.endDate : event.endDate %}
+{% set displayAllDay = occurrence is defined ? occurrence.allDay : event.allDay %}
+{% set displayMultiDay = displayStartDate.format('Y-m-d') != displayEndDate.format('Y-m-d') %}
+
+<div class="qtip hidden">
+    <div class="title">
+        {{ event.title }}
+        <span class="event_time">
+            <span class="far fa-clock" aria-hidden="true"></span>
+            {% if displayAllDay %}
+                All day{% if displayMultiDay %} ({{ event.duration.days }} days){% endif %}
+            {% elseif displayMultiDay %}
+                {% if day.containsDate(displayStartDate) %}
+                    Starts {{ displayStartDate.format('g:ia') }}
+                {% elseif day.containsDate(displayEndDate) %}
+                    Ends {{ displayEndDate.format('g:ia') }}
+                {% else %}
+                    All day
+                {% endif %}
+                ({{ event.duration.days }} days)
+            {% else %}
+                {{ displayStartDate.format('g:ia') }} – {{ displayEndDate.format('g:ia') }}
+                ({{ event.duration.humanReadable }})
+            {% endif %}
+        </span>
+    </div>
+    <div class="content">
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+            <span class="demo-badge bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700">
+                <span class="fas fa-calendar-alt calendar-popover-icon" aria-hidden="true"></span> {{ event.calendar.name }}
+            </span>
+        </div>
+        <div class="border-t border-slate-200 dark:border-slate-700 pt-2">
+            <div class="flex justify-between gap-4 mb-1">
+                <span class="text-slate-500 dark:text-slate-400">Starts</span>
+                <span class="text-right font-medium">
+                    {{ displayStartDate.format(displayAllDay ? 'M j, Y' : 'M j, Y g:ia') }}
+                </span>
+            </div>
+            {% if not displayAllDay or displayMultiDay %}
+                <div class="flex justify-between gap-4">
+                    <span class="text-slate-500 dark:text-slate-400">Ends</span>
+                    <span class="text-right font-medium">
+                        {{ displayEndDate.format(displayAllDay ? 'M j, Y' : 'M j, Y g:ia') }}
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+        {% if event.repeats() %}
+            <div class="border-t border-slate-200 dark:border-slate-700 mt-2 pt-2">
+                <span class="text-slate-500 dark:text-slate-400">Repeats</span>
+                <div>{{ event.readableRepeatRule }}</div>
+            </div>
+        {% endif %}
+    </div>
+</div>

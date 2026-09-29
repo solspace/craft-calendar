@@ -1,56 +1,70 @@
 (function () {
   'use strict';
 
-  const assetBase = document.currentScript.dataset.assetsBase;
   const storageKey = 'calendar-demo-framework';
   const requested = new URLSearchParams(window.location.search).get('framework');
+  const framework = requested === 'bootstrap' ? 'bootstrap' : 'tailwind';
   let saved;
   try { saved = window.localStorage.getItem(storageKey); } catch { /* Storage is optional. */ }
-  const framework = ['tailwind', 'bootstrap'].includes(requested)
-    ? requested
-    : (saved === 'bootstrap' ? 'bootstrap' : 'tailwind');
 
+  // The server chooses the markup and stylesheet from the query parameter.
+  // Restore a prior Bootstrap choice before the Tailwind page is displayed.
+  if (!requested && saved === 'bootstrap') {
+    const url = new URL(window.location.href);
+    url.searchParams.set('framework', 'bootstrap');
+    window.location.replace(url);
+    return;
+  }
   try { window.localStorage.setItem(storageKey, framework); } catch { /* Storage is optional. */ }
-  document.documentElement.dataset.framework = framework;
   window.calendarDemoFramework = framework;
+  document.documentElement.dataset.framework = framework;
 
-  function stylesheet(href, integrity) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    if (integrity) {
-      link.integrity = integrity;
-      link.crossOrigin = 'anonymous';
+  const scriptPath = new URL(document.currentScript.src).pathname;
+  const assetMarker = '/assets/';
+  const start = scriptPath.indexOf(assetMarker);
+  const prefix = start === -1 ? 'demo' : scriptPath.slice(start + assetMarker.length).replace(/\/js\/framework\.js$/, '');
+  const demoRoot = scriptPath.slice(0, start < 0 ? 0 : start) + '/' + prefix + '/';
+
+  window.calendarDemoUrl = function (value) {
+    const url = new URL(value, window.location.href);
+    if (framework === 'bootstrap' && url.origin === window.location.origin && url.pathname.startsWith(demoRoot)) {
+      url.searchParams.set('framework', 'bootstrap');
     }
-    document.head.append(link);
-  }
+    return url.toString();
+  };
 
-  if (framework === 'bootstrap') {
-    stylesheet('https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css', 'sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB');
-    stylesheet(assetBase + 'css/bootstrap.css');
-    window.calendarDemoBootstrapReady = new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js';
-      script.integrity = 'sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI';
-      script.crossOrigin = 'anonymous';
-      script.onload = resolve;
-      script.onerror = resolve;
-      document.head.append(script);
-    });
-  } else {
-    stylesheet(assetBase + 'css/tailwind.css');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', function () {
     const select = document.querySelector('[data-framework-select]');
-    if (!select) return;
-    select.value = framework;
-    select.addEventListener('change', () => {
-      try { window.localStorage.setItem(storageKey, select.value); } catch { /* Storage is optional. */ }
-      // Reload so each framework loads only its own stylesheet and behavior.
-      const url = new URL(window.location.href);
-      url.searchParams.set('framework', select.value);
-      window.location.assign(url);
+    if (select) {
+      select.value = framework;
+      select.addEventListener('change', function () {
+        const url = new URL(window.location.href);
+        url.searchParams.set('framework', select.value);
+        window.location.assign(url);
+      });
+    }
+
+    // Make regular links, keyboard activation, and open-in-new-tab retain the
+    // chosen framework. Also handles content added later by the mini calendar.
+    function decorate(root) {
+      root.querySelectorAll('a[href]').forEach(function (link) {
+        const url = new URL(link.href, window.location.href);
+        if (url.origin === window.location.origin && url.pathname.startsWith(demoRoot) && framework === 'bootstrap') {
+          link.href = window.calendarDemoUrl(url);
+        }
+      });
+    }
+    decorate(document);
+    const observer = new MutationObserver(function (records) {
+      records.forEach(function (record) {
+        record.addedNodes.forEach(function (node) {
+          if (node.nodeType === 1) {
+            if (node.matches?.('a[href]')) node.href = window.calendarDemoUrl(node.href);
+            decorate(node);
+          }
+        });
+      });
     });
+    observer.observe(document.body, { childList: true, subtree: true });
   });
 }());

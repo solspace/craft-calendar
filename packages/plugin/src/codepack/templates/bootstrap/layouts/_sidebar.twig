@@ -2,7 +2,7 @@
     <div class="card-body">
         <div id="mini-cal-wrapper" class="mb-4" aria-live="polite">
             {# Use include because we're using AJAX #}
-            {% include "demo/layouts/_mini_cal" %}
+            {% include "demo/bootstrap/layouts/_mini_cal" %}
         </div>
 
         {% set isCalendarView = segment2 in ["month", "week", "day"] %}

@@ -1,0 +1,114 @@
+{% extends "demo/tailwind/layouts/_layout" %}
+
+{% set pageTitle = "Day" %}
+{% set page = "day" %}
+
+{% block content %}
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment3 == "calendar" %}
+        {% set calendarHandle = segment4 %}
+        {% if segment5 %}
+            {% set targetDate = segment5~"-"~segment6~"-"~segment7 %}
+        {% endif %}
+    {% elseif segment3 is not empty %}
+        {% set targetDate = segment3~"-"~segment4~"-"~segment5 %}
+    {% endif %}
+
+    <div class="flex flex-wrap -mx-3 gap-y-6">
+        <div class="w-full px-3 lg:w-3/4">
+
+            {% set day = craft.calendar.day({
+                date: targetDate,
+                calendar: calendarHandle,
+                orderBy: {startDate: constant('SORT_ASC')},
+            }) %}
+
+            {% set dateBoundsHelper = now.diff(day.nextDate)|date('%r%a') %}
+
+            <section id="day_calendar" class="demo-card border-0 rounded-2xl shadow-sm p-4 lg:p-6">
+
+                <div class="flex flex-wrap -mx-3 items-center gap-y-2 mb-4">
+                    <div class="w-1/2 px-3 md:w-1/4 order-1 md:order-0">
+                        {% if dateBoundsHelper > -365 %}
+                            <a class="demo-btn demo-btn-outline demo-btn-sm"
+                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ day.previousDate.format('Y/m/d') }}">
+                                <span class="fas fa-arrow-left" aria-hidden="true"></span> Previous
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="w-full px-3 md:w-1/2 order-0 text-center">
+                        <h1 class="text-2xl font-semibold mb-0 flex flex-wrap items-center justify-center gap-2">
+                            <span>{{ day.date.format('l, F j, Y') }}</span>
+                            {% if day.dateLocalized.isToday %}
+                                <span class="demo-badge rounded-full bg-blue-600 text-white font-normal text-base">Today</span>
+                            {% endif %}
+                            <span class="demo-badge rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-normal text-base">
+                                {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
+                            </span>
+                            {% include "demo/tailwind/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'day', date: day.date} %}
+                        </h1>
+                    </div>
+
+                    <div class="w-1/2 px-3 md:w-1/4 order-2 text-right">
+                        {% if dateBoundsHelper < 365 %}
+                            <a class="demo-btn demo-btn-outline demo-btn-sm"
+                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ day.nextDate.format('Y/m/d') }}">
+                                Next <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 dark:border-slate-700{{ day.dateLocalized.isToday ? ' bg-blue-50 dark:bg-blue-950 rounded-lg' }}">
+                    {% if day.allDayOccurrenceCount %}
+                        <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4"
+                            aria-labelledby="all-day-heading">
+                            <div class="day-time sm:pt-2">
+                                <h2 id="all-day-heading" class="text-base font-semibold mb-0">All day</h2>
+                            </div>
+                            <div class="day-events grow self-stretch">
+                                <ul class="list-none p-0 grid gap-2 mb-0">
+                                    {% for occurrence in day.allDayOccurrences %}
+                                        {% include "demo/tailwind/layouts/_agenda_event" %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </section>
+                    {% endif %}
+
+                    {% for occurrence in day.timedOccurrences %}
+                        {% set event = occurrence.event %}
+                        {% set timeLabel = occurrence.startDate.format('g:ia') %}
+                        {% if event.multiDay and not day.containsDate(occurrence.startDate) %}
+                            {% set timeLabel = day.containsDate(occurrence.endDate) ? 'Ends ' ~ occurrence.endDate.format('g:ia') : 'Ongoing' %}
+                        {% endif %}
+                        <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4{{ not loop.first or day.allDayOccurrenceCount ? ' border-t border-slate-200 dark:border-slate-700' }}"
+                            aria-labelledby="day-time-{{ loop.index }}">
+                            <div class="day-time sm:pt-2">
+                                <h2 id="day-time-{{ loop.index }}" class="text-base font-semibold mb-0">{{ timeLabel }}</h2>
+                            </div>
+                            <div class="day-events grow self-stretch">
+                                <ul class="list-none p-0 mb-0">
+                                    {% include "demo/tailwind/layouts/_agenda_event" %}
+                                </ul>
+                            </div>
+                        </section>
+                    {% endfor %}
+
+                    {% if not day.occurrenceCount %}
+                        <p class="text-center text-slate-500 dark:text-slate-400 py-6 mb-0">No events scheduled for this day.</p>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <div class="w-full px-3 lg:w-1/4">
+            {% include "demo/tailwind/layouts/_sidebar" %}
+        </div>
+
+    </div>
+
+{% endblock %}

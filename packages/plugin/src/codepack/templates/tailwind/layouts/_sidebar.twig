@@ -1,0 +1,51 @@
+<aside class="demo-card border-0 rounded-2xl shadow-sm">
+    <div class="demo-card-body">
+        <div id="mini-cal-wrapper" class="mb-6" aria-live="polite">
+            {# Use include because we're using AJAX #}
+            {% include "demo/tailwind/layouts/_mini_cal" %}
+        </div>
+
+        {% set isCalendarView = segment2 in ["month", "week", "day"] %}
+        {% set selectedHandle = isCalendarView and segment3 == "calendar" ? segment4 : (segment2 == "calendars" ? segment3 : null) %}
+        {% set calendars = craft.calendar.calendars({
+            order: "name",
+            sort: "asc"
+        }) %}
+        {% set selectedCalendar = selectedHandle ? calendars|filter(calendar => calendar.handle == selectedHandle)|first : null %}
+        {% set datePath = isCalendarView ? targetDate|date(segment2 == "month" ? 'Y/m' : 'Y/m/d') : null %}
+        {% set allSelected = not selectedHandle and (isCalendarView or segment2 == "calendars") %}
+
+        <h2 class="text-base font-semibold text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-4 mb-2">{{ isCalendarView ? 'Filter by calendar' : 'Calendars' }}</h2>
+        <div class="relative">
+            <button id="sidebar-calendar-menu" type="button"
+                class="demo-btn demo-btn-outline flex items-center justify-between gap-2 w-full"
+                data-demo-dropdown aria-expanded="false"{% if selectedCalendar %} style="--calendar-color: {{ selectedCalendar.color }};"{% endif %}>
+                <span class="flex items-center gap-2 truncate">
+                    <span class="fas fa-calendar-alt{{ selectedCalendar ? ' calendar-color-icon' : '' }}" aria-hidden="true"></span>
+                    <span class="truncate">{{ selectedCalendar ? selectedCalendar.name : 'All calendars' }}</span>
+                </span>
+                <span class="fas fa-chevron-down text-sm shrink-0" aria-hidden="true"></span>
+            </button>
+            <ul class="demo-menu right-0 left-auto w-full sidebar-dropdown-menu" aria-labelledby="sidebar-calendar-menu">
+                <li>
+                    <a href="{{ siteUrl }}demo/{{ isCalendarView ? segment2 ~ '/' ~ datePath : 'calendars' }}"
+                        class="demo-menu-item{{ allSelected ? ' active' : '' }}"{% if allSelected %} aria-current="page"{% endif %}>
+                        All calendars
+                    </a>
+                </li>
+                {% if calendars|length %}
+                    <li><hr class="demo-menu-divider"></li>
+                {% endif %}
+                {% for calendar in calendars %}
+                    <li>
+                        <a href="{{ siteUrl }}demo/{{ isCalendarView ? segment2 ~ '/calendar' : 'calendars' }}/{{ calendar.handle }}{{ isCalendarView ? '/' ~ datePath : '' }}"
+                            class="demo-menu-item{{ selectedHandle == calendar.handle ? ' active' : '' }}"
+                            style="--calendar-color: {{ calendar.color }};"{% if selectedHandle == calendar.handle %} aria-current="page"{% endif %}>
+                            <span class="fas fa-calendar-alt calendar-color-icon me-2" aria-hidden="true"></span>{{ calendar.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</aside>

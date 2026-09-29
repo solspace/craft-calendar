@@ -1,0 +1,103 @@
+{% extends "demo/bootstrap/layouts/_layout" %}
+
+{% set pageTitle = "Week" %}
+{% set page = "week" %}
+
+{% block content %}
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment3 == "calendar" %}
+        {% set calendarHandle = segment4 %}
+        {% if segment5 %}
+            {% set targetDate = segment5~"-"~segment6~"-"~segment7 %}
+        {% endif %}
+    {% elseif segment3 is not empty %}
+        {% set targetDate = segment3~"-"~segment4~"-"~segment5 %}
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-9">
+
+            <section id="week_calendar" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4">
+                {% set week = calendar.week({
+                    date: targetDate,
+                    calendar: calendarHandle,
+                }) %}
+
+                {% set dateBoundsHelper = now.diff(week.nextDate)|date('%r%a') %}
+
+                <div class="row align-items-center g-2 mb-3">
+                    <div class="col-6 col-md-3 order-1 order-md-0">
+                        {% if dateBoundsHelper > -365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.previousDate.format('Y/m/d') }}">
+                                <span class="fas fa-arrow-left" aria-hidden="true"></span> Last Week
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 col-md-6 order-0 text-center">
+                        <h1 class="h4 mb-0 d-flex flex-wrap align-items-center justify-content-center gap-2">
+                            <span>Week of {{ week.date.format("F j, Y") }}</span>
+                            <span class="badge rounded-pill bg-body-tertiary border text-body-secondary fw-normal fs-6">
+                                {{ week.occurrenceCount }} event{{ week.occurrenceCount > 1 or week.occurrenceCount == 0 ? "s" }}
+                            </span>
+                            {% include "demo/bootstrap/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'week', date: week.date} %}
+                        </h1>
+                    </div>
+
+                    <div class="col-6 col-md-3 order-2 text-end">
+                        {% if dateBoundsHelper < 365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/week/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ week.nextDate.format('Y/m/d') }}">
+                                Next Week <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="border-top">
+                    {% for day in week %}
+                        <section class="d-flex flex-column flex-sm-row align-items-start gap-2 gap-sm-3 py-2 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle' }}{{ not loop.first and not day.dateLocalized.isToday ? ' border-top' }}"
+                            aria-labelledby="week-day-{{ day.date.format('Y-m-d') }}">
+                            <div class="week-date pt-sm-2">
+                                <h2 id="week-day-{{ day.date.format('Y-m-d') }}" class="h6 mb-0">
+                                    <a class="d-inline-flex align-items-center gap-2 link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+                                        href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? segment3~'/'~segment4~'/' }}{{ day.date.format('Y/m/d') }}"
+                                        aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}">
+                                        <span class="fs-3 lh-1">{{ day.date.format('j') }}</span>
+                                        <span class="d-inline-flex flex-column small lh-sm fw-normal">
+                                            <span>{{ day.date.format('D') }}</span>
+                                            <span class="text-body-secondary">{{ day.date.format('M') }}</span>
+                                        </span>
+                                    </a>
+                                    {% if day.dateLocalized.isToday %}
+                                        <span class="badge rounded-pill text-bg-primary fw-normal fs-6 align-middle ms-1">Today</span>
+                                    {% endif %}
+                                </h2>
+                            </div>
+                            <div class="week-events flex-grow-1 align-self-stretch">
+                                {% if day.occurrences.count %}
+                                    <ul class="list-unstyled d-grid gap-2 mb-0">
+                                        {% for occurrence in day.occurrences %}
+                                            {% include "demo/bootstrap/layouts/_agenda_event" %}
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="d-inline-block pt-sm-2 small text-body-secondary">No events</span>
+                                {% endif %}
+                            </div>
+                        </section>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-3">
+            {% include "demo/bootstrap/layouts/_sidebar" %}
+        </div>
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "demo/bootstrap/layouts/_layout" %}
+
+{% set pageTitle = "Day" %}
+{% set page = "day" %}
+
+{% block content %}
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment3 == "calendar" %}
+        {% set calendarHandle = segment4 %}
+        {% if segment5 %}
+            {% set targetDate = segment5~"-"~segment6~"-"~segment7 %}
+        {% endif %}
+    {% elseif segment3 is not empty %}
+        {% set targetDate = segment3~"-"~segment4~"-"~segment5 %}
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-9">
+
+            {% set day = craft.calendar.day({
+                date: targetDate,
+                calendar: calendarHandle,
+                orderBy: {startDate: constant('SORT_ASC')},
+            }) %}
+
+            {% set dateBoundsHelper = now.diff(day.nextDate)|date('%r%a') %}
+
+            <section id="day_calendar" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4">
+
+                <div class="row align-items-center g-2 mb-3">
+                    <div class="col-6 col-md-3 order-1 order-md-0">
+                        {% if dateBoundsHelper > -365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ day.previousDate.format('Y/m/d') }}">
+                                <span class="fas fa-arrow-left" aria-hidden="true"></span> Previous
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 col-md-6 order-0 text-center">
+                        <h1 class="h4 mb-0 d-flex flex-wrap align-items-center justify-content-center gap-2">
+                            <span>{{ day.date.format('l, F j, Y') }}</span>
+                            {% if day.dateLocalized.isToday %}
+                                <span class="badge rounded-pill text-bg-primary fw-normal fs-6">Today</span>
+                            {% endif %}
+                            <span class="badge rounded-pill bg-body-tertiary border text-body-secondary fw-normal fs-6">
+                                {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
+                            </span>
+                            {% include "demo/bootstrap/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'day', date: day.date} %}
+                        </h1>
+                    </div>
+
+                    <div class="col-6 col-md-3 order-2 text-end">
+                        {% if dateBoundsHelper < 365 %}
+                            <a class="btn btn-outline-secondary btn-sm"
+                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ day.nextDate.format('Y/m/d') }}">
+                                Next <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="border-top{{ day.dateLocalized.isToday ? ' bg-primary-subtle rounded-3' }}">
+                    {% if day.allDayOccurrenceCount %}
+                        <section class="d-flex flex-column flex-sm-row align-items-start gap-2 gap-sm-3 py-2 px-2 px-md-3"
+                            aria-labelledby="all-day-heading">
+                            <div class="day-time pt-sm-2">
+                                <h2 id="all-day-heading" class="h6 mb-0">All day</h2>
+                            </div>
+                            <div class="day-events flex-grow-1 align-self-stretch">
+                                <ul class="list-unstyled d-grid gap-2 mb-0">
+                                    {% for occurrence in day.allDayOccurrences %}
+                                        {% include "demo/bootstrap/layouts/_agenda_event" %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </section>
+                    {% endif %}
+
+                    {% for occurrence in day.timedOccurrences %}
+                        {% set event = occurrence.event %}
+                        {% set timeLabel = occurrence.startDate.format('g:ia') %}
+                        {% if event.multiDay and not day.containsDate(occurrence.startDate) %}
+                            {% set timeLabel = day.containsDate(occurrence.endDate) ? 'Ends ' ~ occurrence.endDate.format('g:ia') : 'Ongoing' %}
+                        {% endif %}
+                        <section class="d-flex flex-column flex-sm-row align-items-start gap-2 gap-sm-3 py-2 px-2 px-md-3{{ not loop.first or day.allDayOccurrenceCount ? ' border-top' }}"
+                            aria-labelledby="day-time-{{ loop.index }}">
+                            <div class="day-time pt-sm-2">
+                                <h2 id="day-time-{{ loop.index }}" class="h6 mb-0">{{ timeLabel }}</h2>
+                            </div>
+                            <div class="day-events flex-grow-1 align-self-stretch">
+                                <ul class="list-unstyled mb-0">
+                                    {% include "demo/bootstrap/layouts/_agenda_event" %}
+                                </ul>
+                            </div>
+                        </section>
+                    {% endfor %}
+
+                    {% if not day.occurrenceCount %}
+                        <p class="text-center text-body-secondary py-4 mb-0">No events scheduled for this day.</p>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-3">
+            {% include "demo/bootstrap/layouts/_sidebar" %}
+        </div>
+
+    </div>
+
+{% endblock %}

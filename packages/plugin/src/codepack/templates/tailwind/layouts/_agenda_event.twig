@@ -1,0 +1,36 @@
+{% set event = occurrence.event %}
+
+<li class="calendar-agenda-event relative flex flex-wrap items-center justify-between gap-2 {{ day.dateLocalized.isToday ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800' }} rounded-lg px-4 py-2"
+    style="--calendar-color: {{ event.calendar.color }};">
+    <div>
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+            class="font-semibold text-slate-900 dark:text-slate-100 no-underline hover:underline focus-visible:underline">
+            {{ event.title }}
+        </a>
+        <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <span class="far fa-clock" aria-hidden="true"></span>
+            {% if event.allDay %}
+                All day
+            {% elseif event.multiDay %}
+                {% if day.containsDate(occurrence.startDate) %}
+                    Starts {{ occurrence.startDate.format('g:ia') }}
+                {% elseif day.containsDate(occurrence.endDate) %}
+                    Ends {{ occurrence.endDate.format('g:ia') }}
+                {% else %}
+                    All day
+                {% endif %}
+            {% else %}
+                {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('g:ia') }}
+            {% endif %}
+            {% if event['location'] is defined and event.location is not empty %}
+                <span class="mx-1" aria-hidden="true">·</span>
+                <span class="fas fa-map-marker-alt" aria-hidden="true"></span> {{ event.location|striptags }}
+            {% endif %}
+        </div>
+    </div>
+    <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
+        class="demo-badge rounded-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 no-underline font-normal">
+        <span class="fas fa-calendar-alt calendar-color-icon me-1" aria-hidden="true"></span>
+        {{ event.calendar.name }}
+    </a>
+</li>

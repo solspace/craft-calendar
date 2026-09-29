@@ -311,8 +311,8 @@
         detailsRepeat.textContent = event.extendedProps.readableRepeatRule || config.labels.recurring;
         detailsRepeatRow.hidden = !repeats;
 
-        viewEventLink.href = `${config.urls.event.replace(/\/$/, "")}/${encodeURIComponent(eventId)}${occurrencePath ? `/${occurrencePath}` : ""}`;
-        editEventLink.href = `${config.urls.editEvent.replace(/\/$/, "")}/${encodeURIComponent(eventId)}`;
+        viewEventLink.href = window.calendarDemoUrl(`${config.urls.event.replace(/\/$/, "")}/${encodeURIComponent(eventId)}${occurrencePath ? `/${occurrencePath}` : ""}`);
+        editEventLink.href = window.calendarDemoUrl(`${config.urls.editEvent.replace(/\/$/, "")}/${encodeURIComponent(eventId)}`);
         editEventLink.hidden = !canManage;
         manageActions.hidden = !canManage;
         deleteSeriesButton.hidden = !canManage;
@@ -329,7 +329,7 @@
     function getCalendarUrl(viewType, date) {
         const view = viewSlugs[viewType] || "month";
 
-        return `${config.urls.fullCalendar.replace(/\/$/, "")}/${view}/${formatUtcDate(date).replaceAll("-", "/")}`;
+        return window.calendarDemoUrl(`${config.urls.fullCalendar.replace(/\/$/, "")}/${view}/${formatUtcDate(date).replaceAll("-", "/")}`);
     }
 
     function getCalendarStateFromUrl() {
