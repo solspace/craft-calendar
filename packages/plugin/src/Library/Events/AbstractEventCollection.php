@@ -213,7 +213,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
      *
      * @since 5.0.0
      */
-    public function key(): null|int|string
+    public function key(): int|string|null
     {
         return key($this->iterableObject);
     }

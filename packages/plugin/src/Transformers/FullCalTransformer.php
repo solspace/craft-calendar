@@ -92,7 +92,7 @@ class FullCalTransformer
 
     private function getReadableRepeatRule(Event $event): ?string
     {
-        if (!array_key_exists($event->id, $this->readableRepeatRules)) {
+        if (!\array_key_exists($event->id, $this->readableRepeatRules)) {
             $this->readableRepeatRules[$event->id] = $event->getReadableRepeatRule();
         }
 

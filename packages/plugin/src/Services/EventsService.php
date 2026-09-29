@@ -38,7 +38,7 @@ class EventsService extends Component
     /**
      * Returns an event by its ID.
      */
-    public function getEventById(int $eventId, ?int $siteId = null, bool $includeDisabled = false): null|ElementInterface|Event
+    public function getEventById(int $eventId, ?int $siteId = null, bool $includeDisabled = false): ElementInterface|Event|null
     {
         return Event::find()
             ->setAllowedCalendarsOnly(false)
@@ -52,7 +52,7 @@ class EventsService extends Component
     /**
      * Returns an event by its slug.
      */
-    public function getEventBySlug(string $slug, ?int $siteId = null, bool $includeDisabled = false): null|ElementInterface|Event
+    public function getEventBySlug(string $slug, ?int $siteId = null, bool $includeDisabled = false): ElementInterface|Event|null
     {
         return Event::find()
             ->slug($slug)

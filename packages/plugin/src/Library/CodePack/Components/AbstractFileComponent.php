@@ -12,7 +12,7 @@ abstract class AbstractFileComponent implements ComponentInterface
 
     protected ?string $targetFilesDirectory = null;
 
-    protected null|FileObject|Folder $contents = null;
+    protected FileObject|Folder|null $contents = null;
 
     private ?string $location = null;
 
@@ -48,7 +48,7 @@ abstract class AbstractFileComponent implements ComponentInterface
      */
     public function postFileCopyAction(string $newFilePath, ?string $prefix = null): void {}
 
-    public function getContents(): null|FileObject|Folder
+    public function getContents(): FileObject|Folder|null
     {
         return $this->contents;
     }
