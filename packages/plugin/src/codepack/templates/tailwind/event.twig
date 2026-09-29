@@ -130,14 +130,14 @@
                                 <ul class="list-none overflow-hidden rounded-xl border border-neutral-200 divide-y divide-neutral-200 p-0 dark:border-neutral-700 dark:divide-neutral-700">
                                     {% for occurrence in occurrences %}
                                         {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
-                                        <li class="flex flex-wrap items-center justify-between gap-2 bg-neutral-50 px-4 py-3 dark:bg-neutral-800/40">
+                                        <li class="flex flex-wrap items-center justify-between gap-2 bg-neutral-50 px-4 py-2 dark:bg-neutral-800/40">
                                             <div class="event-detail-occurrence-date flex items-start gap-3">
                                                 <span class="far fa-calendar mt-1 text-neutral-500 dark:text-neutral-400" aria-hidden="true"></span>
                                                 <div>
                                                     <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format('Y/m/d') }}" class="font-semibold text-neutral-900 no-underline hover:text-blue-700 dark:text-neutral-100 dark:hover:text-blue-300">
                                                         <time datetime="{{ occurrence.startDate.format('c') }}">{{ occurrence.startDate.format('l, F j, Y') }}</time>
                                                     </a>
-                                                    <div class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                                                    <div class="text-sm text-neutral-600 dark:text-neutral-400">
                                                         {% if occurrence.allDay %}
                                                             All day{% if occurrenceMultiDay %} · through {{ occurrence.endDate.format('l, F j, Y') }}{% endif %}
                                                         {% else %}

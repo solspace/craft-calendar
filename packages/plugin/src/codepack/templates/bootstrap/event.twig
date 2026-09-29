@@ -130,14 +130,14 @@
                                 <ul class="list-group list-group-flush rounded-3 border overflow-hidden">
                                     {% for occurrence in occurrences %}
                                         {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
-                                        <li class="list-group-item bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-3">
+                                        <li class="list-group-item bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2">
                                             <div class="event-detail-occurrence-date d-flex align-items-start gap-3">
                                                 <span class="far fa-calendar text-body-secondary mt-1" aria-hidden="true"></span>
                                                 <div>
                                                     <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format('Y/m/d') }}" class="fw-semibold text-body text-decoration-none">
                                                         <time datetime="{{ occurrence.startDate.format('c') }}">{{ occurrence.startDate.format('l, F j, Y') }}</time>
                                                     </a>
-                                                    <div class="small text-body-secondary mt-1">
+                                                    <div class="small text-body-secondary">
                                                         {% if occurrence.allDay %}
                                                             All day{% if occurrenceMultiDay %} · through {{ occurrence.endDate.format('l, F j, Y') }}{% endif %}
                                                         {% else %}
