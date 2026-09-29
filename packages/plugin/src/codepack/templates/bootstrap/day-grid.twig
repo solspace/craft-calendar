@@ -1,0 +1,51 @@
+{% extends "demo/bootstrap/layouts/_layout" %}
+
+{% set pageTitle = "Hourly Day Preview" %}
+{% set page = "day" %}
+
+{% block headerCss %}
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/week-grid.css?v=2">
+{% endblock %}
+
+{% block content %}
+    {% set targetDate = craft.app.request.getQueryParam('date') ?: 'today' %}
+    {% set calendarHandle = craft.app.request.getQueryParam('calendar') ?: null %}
+
+    {% set day = craft.calendar.day({date: targetDate, calendar: calendarHandle}) %}
+    {% set dateBoundsHelper = now.diff(day.nextDate)|date('%r%a') %}
+    {% set dayPath = calendarHandle ? 'calendar/' ~ calendarHandle ~ '/' : '' %}
+
+    <section class="card border-0 rounded-4 shadow-sm p-3 p-lg-4" aria-labelledby="day-grid-title">
+        <div class="row align-items-center g-2 mb-3">
+            <div class="col-6 col-md-3 order-1 order-md-0">
+                {% if dateBoundsHelper > -365 %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/day-grid?framework=bootstrap&amp;date={{ day.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                        <span class="fas fa-arrow-left" aria-hidden="true"></span> Previous Day
+                    </a>
+                {% endif %}
+            </div>
+            <div class="col-12 col-md-6 order-0 text-center">
+                <h1 id="day-grid-title" class="h4 mb-0">{{ day.date.format('l, F j, Y') }}</h1>
+                <span class="small text-body-secondary">Hourly view · {{ day.occurrenceCount }} event{{ day.occurrenceCount == 1 ? '' : 's' }}</span>
+            </div>
+            <div class="col-6 col-md-3 order-2 text-end">
+                {% if dateBoundsHelper < 365 %}
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/day-grid?framework=bootstrap&amp;date={{ day.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                        Next Day <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 small">
+            <a href="{{ siteUrl }}demo/day/{{ dayPath }}{{ day.date.format('Y/m/d') }}" class="link-secondary">View agenda day</a>
+            <span class="text-body-secondary">Overlapping events appear side by side.</span>
+        </div>
+
+        {% include "demo/bootstrap/layouts/_hour_grid" with {gridDays: [day], gridMode: 'day', calendarHandle: calendarHandle} %}
+    </section>
+{% endblock %}
+
+{% block footerJs %}
+    <script src="{{ siteUrl }}assets/demo/js/week-grid.js?v=1"></script>
+{% endblock %}

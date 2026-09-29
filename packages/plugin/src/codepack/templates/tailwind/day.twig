@@ -62,6 +62,12 @@
                     </div>
                 </div>
 
+                <div class="flex justify-end mb-3">
+                    <a class="demo-btn demo-btn-outline demo-btn-sm" href="{{ siteUrl }}demo/day-grid?framework=tailwind&amp;date={{ day.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                        <span class="far fa-clock me-1" aria-hidden="true"></span> Preview hourly view
+                    </a>
+                </div>
+
                 <div class="border-t border-neutral-200 dark:border-neutral-700{{ day.dateLocalized.isToday ? ' bg-blue-100 dark:bg-blue-950/70 rounded-lg' }}">
                     {% if day.allDayOccurrenceCount %}
                         <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4"

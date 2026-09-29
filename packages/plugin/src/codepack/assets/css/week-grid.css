@@ -1,6 +1,4 @@
-/* Layout measurements only; Bootstrap supplies the page, type, borders and controls. */
-/* This experimental page has a Bootstrap version only. */
-[data-framework-select] { display: none; }
+/* Both demo frameworks share the timed-event layout and color tokens. */
 
 .week-grid-scroll {
     max-height: min(76vh, 850px);
@@ -13,6 +11,11 @@
     grid-template-columns: 4rem repeat(7, minmax(8.75rem, 1fr));
     min-width: 65.25rem;
     position: relative;
+}
+
+.week-grid--day {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    min-width: 0;
 }
 
 .week-grid-corner,
@@ -63,7 +66,7 @@
         to bottom,
         var(--bs-border-color) 0 1px,
         transparent 1px 24px,
-        var(--bs-border-color-translucent) 24px 25px,
+        var(--bs-border-color-translucent, var(--bs-border-color)) 24px 25px,
         transparent 25px 48px
     );
 }
@@ -71,6 +74,8 @@
 .week-grid-day { position: relative; }
 .week-grid-day { background-color: var(--bs-body-bg); }
 .week-grid-today { background-color: var(--bs-primary-bg-subtle); }
+.week-grid--tailwind .week-grid-today { background-color: #dbeafe; }
+[data-bs-theme="dark"] .week-grid--tailwind .week-grid-today { background-color: #172554; }
 
 .week-grid-hour {
     position: absolute;

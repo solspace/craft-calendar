@@ -1,10 +1,10 @@
 {% extends "demo/bootstrap/layouts/_layout" %}
 
 {% set pageTitle = "Hourly Week Preview" %}
-{% set page = "week-grid" %}
+{% set page = "week" %}
 
 {% block headerCss %}
-    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/week-grid.css?v=1">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/week-grid.css?v=2">
 {% endblock %}
 
 {% block content %}
@@ -42,67 +42,10 @@
             <span class="text-body-secondary">Scroll across on smaller screens to see all seven days.</span>
         </div>
 
-        <div class="week-grid-scroll border rounded-3" data-week-grid-scroll role="region" aria-label="Hourly calendar, scroll for more hours and days" tabindex="0">
-            <div class="week-grid">
-                <div class="week-grid-corner bg-body-tertiary border-end border-bottom" aria-hidden="true"></div>
-                {% for day in week %}
-                    <div class="week-grid-heading text-center border-end border-bottom px-1 py-2{{ day.dateLocalized.isToday ? ' bg-primary-subtle' : ' bg-body-tertiary' }}">
-                        <a href="{{ siteUrl }}demo/day/{{ weekPath }}{{ day.date.format('Y/m/d') }}"
-                            class="fw-semibold link-body-emphasis text-decoration-none"
-                            aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}">
-                            <span class="d-block small text-body-secondary">{{ day.date.format('D') }}</span>
-                            <span class="fs-5">{{ day.date.format('j') }}</span>
-                            {% if day.dateLocalized.isToday %}<span class="visually-hidden"> Today</span>{% endif %}
-                        </a>
-                    </div>
-                {% endfor %}
-
-                <div class="week-grid-all-day-label small text-body-secondary border-end border-bottom p-2">All day</div>
-                {% for day in week %}
-                    <div class="week-grid-all-day border-end border-bottom p-1{{ day.dateLocalized.isToday ? ' bg-primary-subtle' : ' bg-body' }}">
-                        {% for occurrence in day.allDayOccurrences %}
-                            {% set event = occurrence.event %}
-                            <a class="week-grid-all-day-event d-block rounded-2 px-2 py-1 mb-1 small fw-semibold text-decoration-none text-truncate"
-                                href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
-                                style="--event-color: {{ event.calendar.color }};"
-                                title="{{ event.title }}">{{ event.title }}</a>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-
-                <div class="week-grid-hours border-end" aria-hidden="true">
-                    {% for hour in 0..23 %}
-                        <span class="week-grid-hour text-body-secondary small" style="--hour: {{ hour }};">{{ hour == 0 ? '12 AM' : (hour < 12 ? hour ~ ' AM' : (hour == 12 ? '12 PM' : (hour - 12) ~ ' PM')) }}</span>
-                    {% endfor %}
-                </div>
-                {% for day in week %}
-                    <div class="week-grid-day border-end{{ day.dateLocalized.isToday ? ' week-grid-today' }}"
-                        role="group" aria-label="{{ day.date.format('l, F j, Y') }}" data-week-grid-day>
-                        {% for occurrence in day.timedOccurrences %}
-                            {% set event = occurrence.event %}
-                            {% set startsToday = occurrence.startDate.format('Y-m-d') == day.date.format('Y-m-d') %}
-                            {% set endsToday = occurrence.endDate.format('Y-m-d') == day.date.format('Y-m-d') %}
-                            {% set startMinute = startsToday ? occurrence.startDate.format('G') * 60 + occurrence.startDate.format('i') : 0 %}
-                            {% set endMinute = endsToday ? occurrence.endDate.format('G') * 60 + occurrence.endDate.format('i') : 1440 %}
-                            {% if endMinute > startMinute %}
-                                <a class="week-grid-event rounded-2 text-decoration-none"
-                                    href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
-                                    style="--event-color: {{ event.calendar.color }}; top: {{ startMinute * 0.8 }}px; height: {{ (endMinute - startMinute) * 0.8 - 2 }}px;"
-                                    data-start="{{ startMinute }}" data-end="{{ endMinute }}"
-                                    aria-label="{{ event.title }}. {{ occurrence.startDate.format('l, F j, g:ia') }} to {{ occurrence.endDate.format('l, F j, g:ia') }}">
-                                    <span class="week-grid-event-title d-block fw-semibold text-truncate">{{ event.title }}</span>
-                                    <span class="week-grid-event-time d-block text-truncate">{{ startsToday ? occurrence.startDate.format('g:ia') : 'Continues' }}{% if endsToday %} – {{ occurrence.endDate.format('g:ia') }}{% endif %}</span>
-                                </a>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% include "demo/bootstrap/layouts/_hour_grid" with {gridDays: week, gridMode: 'week', calendarHandle: calendarHandle} %}
     </section>
 {% endblock %}
 
 {% block footerJs %}
-    <script>window.calendarDemoFramework = 'bootstrap';</script>
     <script src="{{ siteUrl }}assets/demo/js/week-grid.js?v=1"></script>
 {% endblock %}
