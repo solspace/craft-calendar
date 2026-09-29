@@ -59,7 +59,7 @@
 
                 <div class="border-t border-neutral-200 dark:border-neutral-700">
                     {% for day in week %}
-                        <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4{{ day.dateLocalized.isToday ? ' bg-neutral-100 dark:bg-neutral-800' }}{{ not loop.first and not day.dateLocalized.isToday ? ' border-t border-neutral-200 dark:border-neutral-700' }}"
+                        <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4{{ day.dateLocalized.isToday ? ' bg-blue-100 dark:bg-blue-950/70' }}{{ not loop.first and not day.dateLocalized.isToday ? ' border-t border-neutral-200 dark:border-neutral-700' }}"
                             aria-labelledby="week-day-{{ day.date.format('Y-m-d') }}">
                             <div class="week-date sm:pt-2">
                                 <h2 id="week-day-{{ day.date.format('Y-m-d') }}" class="text-base font-semibold mb-0">
