@@ -127,30 +127,31 @@
                             }).all() %}
 
                             {% if occurrences %}
-                                <ul class="list-group list-group-flush border-top border-bottom">
+                                <ul class="list-group list-group-flush rounded-3 border overflow-hidden">
                                     {% for occurrence in occurrences %}
                                         {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
-                                        <li class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2 px-0 py-3">
-                                            <span class="event-detail-occurrence-date">
-                                                <span class="far fa-calendar text-body-secondary me-1" aria-hidden="true"></span>
-                                                {{ occurrence.startDate.format('l, F j, Y') }}
-                                                {% if occurrence.allDay %}
-                                                    <span class="text-body-secondary">(all day)</span>
-                                                {% else %}
-                                                    <span class="text-body-secondary">
-                                                        at {{ occurrence.startDate.format('g:ia') }} –
-                                                        {% if occurrenceMultiDay %}
-                                                            {{ occurrence.endDate.format('l, F j, Y') }} at {{ occurrence.endDate.format('g:ia') }}
+                                        <li class="list-group-item bg-body-tertiary d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-3">
+                                            <div class="event-detail-occurrence-date d-flex align-items-start gap-3">
+                                                <span class="far fa-calendar text-body-secondary mt-1" aria-hidden="true"></span>
+                                                <div>
+                                                    <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format('Y/m/d') }}" class="fw-semibold text-body text-decoration-none">
+                                                        <time datetime="{{ occurrence.startDate.format('c') }}">{{ occurrence.startDate.format('l, F j, Y') }}</time>
+                                                    </a>
+                                                    <div class="small text-body-secondary mt-1">
+                                                        {% if occurrence.allDay %}
+                                                            All day{% if occurrenceMultiDay %} · through {{ occurrence.endDate.format('l, F j, Y') }}{% endif %}
                                                         {% else %}
-                                                            {{ occurrence.endDate.format('g:ia') }}
+                                                            {{ occurrence.startDate.format('g:ia') }} –
+                                                            {% if occurrenceMultiDay %}
+                                                                {{ occurrence.endDate.format('l, F j, Y') }} at {{ occurrence.endDate.format('g:ia') }}
+                                                            {% else %}
+                                                                {{ occurrence.endDate.format('g:ia') }}
+                                                            {% endif %}
                                                         {% endif %}
-                                                    </span>
-                                                {% endif %}
-                                            </span>
-                                            <span class="d-flex flex-wrap gap-2">
-                                                <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format('Y/m/d') }}" class="btn btn-outline-secondary btn-sm">View occurrence</a>
-                                                <a href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format('Y/m/d') }}" class="btn btn-link btn-sm text-decoration-none">View day</a>
-                                            </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format('Y/m/d') }}" class="btn btn-outline-secondary btn-sm">View day <span class="fas fa-arrow-right ms-1" aria-hidden="true"></span></a>
                                         </li>
                                     {% endfor %}
                                 </ul>
