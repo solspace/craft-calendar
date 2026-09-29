@@ -26,35 +26,24 @@
   applyTheme();
 
   function updateControls() {
-    var toggle = document.querySelector('[data-theme-toggle]');
-    if (!toggle) return;
-
-    var label = selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1);
-    toggle.setAttribute('aria-label', 'Theme: ' + label);
-    toggle.querySelector('[data-theme-label]').textContent = label;
-
-    document.querySelectorAll('[data-theme-value]').forEach(function (button) {
-      var active = button.getAttribute('data-theme-value') === selectedTheme;
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-pressed', String(active));
-      button.querySelector('.fa-check').classList.toggle('d-none', !active);
-      button.querySelector('.fa-check').classList.toggle('hidden', !active);
-    });
+    var select = document.querySelector('[data-theme-select]');
+    if (select) select.value = selectedTheme;
   }
 
   document.addEventListener('DOMContentLoaded', function () {
     updateControls();
-    document.querySelectorAll('[data-theme-value]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        selectedTheme = button.getAttribute('data-theme-value');
-        try {
-          window.localStorage.setItem(storageKey, selectedTheme);
-        } catch (error) {
-          // Theme switching still works without storage.
-        }
-        applyTheme();
-        updateControls();
-      });
+    var select = document.querySelector('[data-theme-select]');
+    if (!select) return;
+
+    select.addEventListener('change', function () {
+      if (modes.indexOf(select.value) === -1) return;
+      selectedTheme = select.value;
+      try {
+        window.localStorage.setItem(storageKey, selectedTheme);
+      } catch (error) {
+        // Theme switching still works without storage.
+      }
+      applyTheme();
     });
   });
 

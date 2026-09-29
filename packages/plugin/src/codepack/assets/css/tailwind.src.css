@@ -137,8 +137,8 @@ button, select, summary { cursor: pointer; }
 .demo-nav-link { @apply block rounded-md px-2 py-1.5 text-neutral-300 no-underline hover:bg-white/10 hover:text-white; }
 .demo-nav-link.active { @apply bg-white/10 text-white; }
 .demo-navbar .demo-menu-item { color: var(--bs-body-color); }
-.framework-select { @apply w-full min-w-32 border-neutral-500 bg-neutral-800 text-white xl:w-auto; }
-.framework-select option { @apply bg-white text-neutral-900; }
+.demo-nav-select { @apply w-full min-w-32 border-neutral-500 bg-neutral-800 text-white xl:w-auto; }
+.demo-nav-select option { @apply bg-white text-neutral-900; }
 html:not([data-framework]) .demo-nav-panel { @apply block; }
 html:not([data-framework]) .demo-nav-toggle { @apply hidden; }
 html:not([data-framework]) .relative:focus-within > .demo-menu { @apply block; }
