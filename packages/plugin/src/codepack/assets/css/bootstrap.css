@@ -1,4 +1,4 @@
-@import url("./calendar.css");
+@import url("./calendar.css?v=2");
 
 /* Bootstrap loads its components and utilities from the CDN. Only demo-specific
    additions belong here; the calendar's own styles live in calendar.css. */

@@ -131,6 +131,10 @@ body {
 }
 
 @media (max-width: 767.98px) {
+	.month-table-scroll {
+		overflow-x: auto;
+	}
+
 	#month_calendar_inner {
 		min-width: 42rem;
 	}
