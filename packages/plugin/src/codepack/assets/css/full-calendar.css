@@ -62,7 +62,7 @@
 
 #calendar-wrapper.fc .fc-col-header-cell-cushion {
   padding: 0.65rem 0.35rem;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.045em;
   color: var(--bs-secondary-color);
@@ -85,7 +85,7 @@
   width: 2rem;
   height: 2rem;
   margin: 0.2rem;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   color: var(--bs-secondary-color);
   text-decoration: none;
@@ -402,7 +402,7 @@
   }
 
   #calendar-wrapper.fc .fc-daygrid-event {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
 
   .calendar-dialog {

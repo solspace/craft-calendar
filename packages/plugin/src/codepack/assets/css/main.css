@@ -466,7 +466,7 @@ body {
 }
 #mini_calendar th a {
 	color: var(--bs-body-color);
-	font-size: 15px;
+	font-size: .9375rem;
 	text-decoration: none;
 	border-radius: var(--bs-border-radius);
 }
@@ -579,7 +579,7 @@ body {
 .custom-rule-label {
 	display: block;
 	margin-bottom: 0.55rem;
-	font-size: 0.78rem;
+	font-size: .8125rem;
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	color: var(--bs-secondary-color);
@@ -633,7 +633,7 @@ body {
 .rule-matrix__button {
 	min-height: 2.4rem;
 	padding: 0.35rem;
-	font-size: 0.8rem;
+	font-size: .8125rem;
 	font-weight: 600;
 	color: var(--bs-body-color);
 	cursor: pointer;
@@ -670,7 +670,7 @@ body {
 }
 
 .custom-rule-advanced summary {
-	font-size: 0.8rem;
+	font-size: .875rem;
 	font-weight: 600;
 	color: var(--bs-secondary-color);
 	cursor: pointer;
@@ -684,7 +684,7 @@ body {
 }
 
 .custom-rule-advanced__fields label {
-	font-size: 0.78rem;
+	font-size: .8125rem;
 	font-weight: 600;
 }
 
@@ -695,7 +695,7 @@ body {
 }
 
 .fixed-date-manager h3 {
-	font-size: 0.85rem;
+	font-size: .875rem;
 	font-weight: 600;
 	text-transform: uppercase;
 }
