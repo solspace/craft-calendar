@@ -35,7 +35,7 @@
     {% set page = "month" %}
 {% endif %}
 
-<nav class="demo-navbar bg-neutral-900 fixed inset-x-0 top-0 z-50 shadow-sm" aria-label="Main navigation">
+<nav class="demo-navbar demo-nav-shell bg-neutral-900 fixed inset-x-0 top-0 z-50 shadow-sm" aria-label="Main navigation">
     <div class="mx-auto w-full max-w-7xl px-4 lg:px-6">
         <a class="demo-brand inline-flex items-center gap-2" href="{{ siteUrl }}demo/">
             <img src="{{ siteUrl }}assets/demo/images/icon.svg" alt="" width="30" height="30">
@@ -81,15 +81,15 @@
             </div>
             <div class="xl:ms-2 mt-2 xl:mt-0">
                 <label class="sr-only" for="framework-select">CSS framework</label>
-                <select id="framework-select" class="demo-select demo-input-sm framework-select" data-framework-select aria-label="CSS framework">
+                <select id="framework-select" class="demo-select demo-input-sm framework-select demo-nav-control demo-nav-select" data-framework-select aria-label="CSS framework">
                     <option value="tailwind">Tailwind 4</option>
                     <option value="bootstrap">Bootstrap 5</option>
                 </select>
             </div>
             <div class="relative xl:ms-2 mt-2 xl:mt-0">
-                <button class="demo-btn demo-btn-light demo-btn-sm demo-dropdown-trigger" type="button" id="themeMenu"
+                <button class="demo-btn demo-btn-light demo-btn-sm demo-dropdown-trigger demo-nav-control demo-nav-theme" type="button" id="themeMenu"
                     data-demo-dropdown aria-expanded="false" aria-label="Theme: Auto" data-theme-toggle>
-                    <span class="fas fa-adjust me-1" aria-hidden="true"></span>
+                    <span class="fas fa-adjust" aria-hidden="true"></span>
                     <span data-theme-label>Auto</span>
                 </button>
                 <ul class="demo-menu right-0 left-auto" aria-labelledby="themeMenu">
