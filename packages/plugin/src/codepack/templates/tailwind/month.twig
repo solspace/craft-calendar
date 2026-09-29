@@ -85,7 +85,7 @@
                                 <tr>
                                     {% for day in week %}
                                         {% set inMonth = month.containsDate(day.date) %}
-                                        <td class="day_cell{{ not inMonth ? ' out_of_range' }}{{ inMonth and day.dateLocalized.isToday ? ' today bg-neutral-100 dark:bg-neutral-800' }}">
+                                        <td class="day_cell{{ not inMonth ? ' out_of_range' }}{{ inMonth and day.dateLocalized.isToday ? ' today' }}">
                                             <div class="date{{ inMonth and day.occurrenceCount ? ' has_events' }}">
                                                 {% if inMonth %}
                                                     <a class="num" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}"

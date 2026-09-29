@@ -117,6 +117,8 @@ button, select, summary { cursor: pointer; }
 .demo-page-item.active .demo-page-link { @apply border-blue-600 bg-blue-600 text-white; }
 .demo-bordered-table th, .demo-bordered-table td { border: 1px solid var(--bs-table-border-color, var(--bs-border-color)); }
 .demo-bordered-table td { background: var(--bs-table-bg); }
+#month_calendar .day_cell.today { --bs-table-bg: var(--color-blue-100); }
+[data-bs-theme="dark"] #month_calendar .day_cell.today { --bs-table-bg: color-mix(in srgb, var(--color-blue-950) 70%, transparent); }
 .demo-compact-table th, .demo-compact-table td { @apply p-1; }
 
 .demo-navbar { @apply fixed inset-x-0 top-0 z-50 bg-neutral-900 text-white; }
