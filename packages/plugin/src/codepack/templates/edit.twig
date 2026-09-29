@@ -1,9 +1,9 @@
 {% extends "demo/layouts/_layout" %}
 
-{% set pageTitle = "Event" %}
 {% set page = "edit" %}
 {% set currentSite = craft.app.sites.currentSite %}
 {% set routeEventId = id is defined ? id : 'new' %}
+{% set pageTitle = routeEventId == 'new' ? 'Create Event'|t : 'Edit Event'|t %}
 {% set allowedCalendars = [] %}
 
 {% for calendar in craft.calendar.allowedCalendars %}
@@ -36,16 +36,15 @@
 {% endif %}
 
 {% block content %}
-    <h1 class="h4 mb-4">{{ routeEventId == 'new' ? 'Create Event'|t : 'Edit Event'|t }}</h1>
-
-    <div class="row">
-        <div class="col-12">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-9">
+            <h1 class="h4 mb-3">{{ pageTitle }}</h1>
             {% if event %}
                 {% requireEventEditPermissions event %}
                 {% set recurrenceEnabled = craft.calendar.isPro and event.calendar.allowRepeatingEvents %}
                 {% set scheduleLocked = not recurrenceEnabled and event.rrule %}
 
-                <form method="post" data-event-form>
+                <form method="post" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4" data-event-form>
                     {{ csrfInput() }}
                     <input type="hidden" name="action" value="calendar/events-api/save">
                     <input type="hidden" name="redirect" value="{{ url('%prefix%/event/{id}')|hash }}">
@@ -76,81 +75,81 @@
                         </div>
                     {% endif %}
 
-                    <div class="row mb-3">
-                        <label class="col-sm-2 col-form-label" for="event-title">{{ 'Title'|t }}</label>
-                        <div class="col-sm-10">
-                            <input id="event-title" type="text" name="title" value="{{ event.title }}" class="form-control" required>
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold" for="event-title">{{ 'Title'|t }}</label>
+                            <input id="event-title" type="text" name="title" value="{{ event.title }}" class="form-control form-control-lg" required>
                         </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <label class="col-sm-2 col-form-label" for="event-calendar">{{ 'Calendar'|t }}</label>
-                        <div class="col-sm-10 col-md-5">
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold" for="event-calendar" style="--calendar-color: {{ event.calendar.color }};">
+                                <span class="fas fa-calendar-alt calendar-color-icon me-1" aria-hidden="true"></span>{{ 'Calendar'|t }}
+                            </label>
                             {% if event.id %}
                                 <input type="hidden" name="calendarId" value="{{ event.calendarId }}">
-                                <input id="event-calendar" type="text" class="form-control" value="{{ event.calendar.name }}" readonly>
+                                <input id="event-calendar" type="text" class="form-control form-control-lg" value="{{ event.calendar.name }}" readonly>
                             {% else %}
-                                <select id="event-calendar" name="calendarId" class="form-select" data-calendar-selector>
+                                <select id="event-calendar" name="calendarId" class="form-select form-select-lg" data-calendar-selector aria-describedby="event-calendar-help">
                                     {% for calendar in allowedCalendars %}
                                         <option value="{{ calendar.id }}" {{ calendar.id == event.calendarId ? 'selected' }}>{{ calendar.name }}</option>
                                     {% endfor %}
                                 </select>
-                                <small class="form-text text-body-secondary">
+                                <div id="event-calendar-help" class="form-text">
                                     {{ 'Changing the calendar reloads this new event with the selected calendar’s settings.'|t }}
-                                </small>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
 
-                    <fieldset class="event-editor-card">
+                    <fieldset class="event-editor-card border-top mt-4 pt-4">
                         <legend>{{ 'Schedule'|t }}</legend>
 
-                        <div class="row mb-3">
-                            <div class="col-sm-2 col-form-label">{{ 'All Day'|t }}</div>
-                            <div class="col-sm-10">
+                        <div class="row g-3">
+                            <div class="col-12">
                                 <input type="hidden" name="allDay" value="{{ event.allDay ? 1 : 0 }}" data-all-day-value>
-                                <div class="form-check pt-2">
+                                <div class="form-check">
                                     <input id="event-all-day" class="form-check-input" type="checkbox" data-all-day {{ event.allDay ? 'checked' }} {{ scheduleLocked ? 'disabled' }}>
                                     <label class="form-check-label" for="event-all-day">{{ 'This is an all-day event'|t }}</label>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label class="col-sm-2 col-form-label" for="event-start-date">{{ 'Starts'|t }}</label>
-                            <div class="col-sm-5 col-md-4">
-                                <input id="event-start-date" class="form-control" type="date" value="{{ event.getStartDate().format('Y-m-d') }}" data-start-date required {{ scheduleLocked ? 'disabled' }}>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="event-start-date">{{ 'Starts'|t }}</label>
+                                <div class="row g-2">
+                                    <div class="col-sm-7">
+                                        <input id="event-start-date" class="form-control" type="date" value="{{ event.getStartDate().format('Y-m-d') }}" data-start-date required {{ scheduleLocked ? 'disabled' }}>
+                                    </div>
+                                    <div class="col-sm-5" data-time-field>
+                                        <input class="form-control" type="time" aria-label="{{ 'Start time'|t }}" value="{{ event.getStartDate().format('H:i') }}" data-start-time required {{ scheduleLocked ? 'disabled' }}>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-sm-3 col-md-2" data-time-field>
-                                <input class="form-control" type="time" aria-label="{{ 'Start time'|t }}" value="{{ event.getStartDate().format('H:i') }}" data-start-time required {{ scheduleLocked ? 'disabled' }}>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label class="col-sm-2 col-form-label" for="event-end-date">{{ 'Ends'|t }}</label>
-                            <div class="col-sm-5 col-md-4">
-                                <input id="event-end-date" class="form-control" type="date" value="{{ event.getEndDate().format('Y-m-d') }}" data-end-date required {{ scheduleLocked ? 'disabled' }}>
-                                <small class="form-text text-body-secondary" data-all-day-help hidden>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="event-end-date">{{ 'Ends'|t }}</label>
+                                <div class="row g-2">
+                                    <div class="col-sm-7">
+                                        <input id="event-end-date" class="form-control" type="date" value="{{ event.getEndDate().format('Y-m-d') }}" data-end-date aria-describedby="event-end-help" required {{ scheduleLocked ? 'disabled' }}>
+                                    </div>
+                                    <div class="col-sm-5" data-time-field>
+                                        <input class="form-control" type="time" aria-label="{{ 'End time'|t }}" value="{{ event.getEndDate().format('H:i') }}" data-end-time required {{ scheduleLocked ? 'disabled' }}>
+                                    </div>
+                                </div>
+                                <div id="event-end-help" class="form-text" data-all-day-help hidden>
                                     {{ 'For all-day events, this is the exclusive end date.'|t }}
-                                </small>
-                            </div>
-                            <div class="col-sm-3 col-md-2" data-time-field>
-                                <input class="form-control" type="time" aria-label="{{ 'End time'|t }}" value="{{ event.getEndDate().format('H:i') }}" data-end-time required {{ scheduleLocked ? 'disabled' }}>
+                                </div>
                             </div>
                         </div>
                     </fieldset>
 
                     {% if recurrenceEnabled %}
-                        <fieldset class="event-editor-card">
+                        <fieldset class="event-editor-card border-top mt-4 pt-4">
                             <legend>{{ 'Recurrence'|t }}</legend>
 
                             <div class="alert alert-info" data-complex-rule-warning hidden>
                                 {{ 'This event contains multiple RRULE lines. The schedule is preserved but this simplified demo does not edit multi-rule sets.'|t }}
                             </div>
 
-                            <div class="row mb-3">
-                                <label class="col-sm-2 col-form-label" for="event-repeat-type">{{ 'Repeats'|t }}</label>
-                                <div class="col-sm-5 col-md-4">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" for="event-repeat-type">{{ 'Repeats'|t }}</label>
                                     <select id="event-repeat-type" class="form-select" data-repeat-type>
                                         <option value="NEVER">{{ 'Never'|t }}</option>
                                         <option value="DAILY">{{ 'Every Day'|t }}</option>
@@ -316,19 +315,19 @@
                             </div>
 
                             <div data-repeat-end-row hidden>
-                                <div class="row mb-3">
-                                    <label class="col-sm-2 col-form-label" for="event-repeat-end">{{ 'Ends'|t }}</label>
-                                    <div class="col-sm-5 col-md-4">
+                                <div class="row g-2 mb-3 align-items-end">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold" for="event-repeat-end">{{ 'Ends'|t }}</label>
                                         <select id="event-repeat-end" class="form-select" data-repeat-end>
                                             <option value="NEVER">{{ 'Never'|t }}</option>
                                             <option value="AFTER">{{ 'After a number of occurrences'|t }}</option>
                                             <option value="ON_DATE">{{ 'On a date'|t }}</option>
                                         </select>
                                     </div>
-                                    <div class="col-sm-3 col-md-2" data-count-field hidden>
+                                    <div class="col-md-4" data-count-field hidden>
                                         <input class="form-control" type="number" min="1" step="1" value="1" data-count aria-label="{{ 'Occurrences'|t }}">
                                     </div>
-                                    <div class="col-sm-4 col-md-3" data-until-field hidden>
+                                    <div class="col-md-4" data-until-field hidden>
                                         <input class="form-control" type="date" data-until-date aria-label="{{ 'Until date'|t }}">
                                     </div>
                                 </div>
@@ -358,28 +357,29 @@
                         </div>
                     {% endif %}
 
-                    {% if event['location'] is defined %}
-                        <div class="row mb-3">
-                            <label class="col-sm-2 col-form-label" for="event-location">{{ 'Location'|t }}</label>
-                            <div class="col-sm-10">
-                                <input id="event-location" type="text" name="fields[location]" value="{{ event.location }}" class="form-control">
+                    {% if event['location'] is defined or event['description'] is defined %}
+                        <section class="border-top mt-4 pt-4" aria-labelledby="event-details-heading">
+                            <h2 id="event-details-heading" class="h6 mb-3">{{ 'Details'|t }}</h2>
+                            <div class="row g-3">
+                                {% if event['location'] is defined %}
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold" for="event-location">{{ 'Location'|t }}</label>
+                                        <input id="event-location" type="text" name="fields[location]" value="{{ event.location }}" class="form-control">
+                                    </div>
+                                {% endif %}
+                                {% if event['description'] is defined %}
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold" for="event-description">{{ 'Description'|t }}</label>
+                                        <textarea id="event-description" name="fields[description]" class="form-control" rows="4">{{ event.description }}</textarea>
+                                    </div>
+                                {% endif %}
                             </div>
-                        </div>
+                        </section>
                     {% endif %}
 
-                    {% if event['description'] is defined %}
-                        <div class="row mb-3">
-                            <label class="col-sm-2 col-form-label" for="event-description">{{ 'Description'|t }}</label>
-                            <div class="col-sm-10">
-                                <textarea id="event-description" name="fields[description]" class="form-control">{{ event.description }}</textarea>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <div class="row mb-3">
-                        <div class="col-12 col-sm-10 offset-sm-2">
-                            <button type="submit" class="btn btn-success">{{ 'Save Event'|t }}</button>
-                        </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 border-top mt-4 pt-4">
+                        <button type="submit" class="btn btn-primary px-4">{{ 'Save Event'|t }}</button>
+                        <a href="{{ siteUrl }}demo/{{ event.id ? 'event/' ~ event.id : 'month' }}" class="btn btn-outline-secondary">{{ 'Cancel'|t }}</a>
                     </div>
 
                     <script type="application/json" data-event-config>{{ {
