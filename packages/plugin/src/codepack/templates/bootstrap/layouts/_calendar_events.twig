@@ -2,7 +2,7 @@
     {% set event = occurrence.event %}
 
     <li class="d-flex align-items-start gap-3 py-3{{ not loop.first ? ' border-top' }}">
-        <time class="calendar-upcoming-date flex-shrink-0 rounded-3 bg-body-tertiary text-center py-1"
+        <time class="calendar-upcoming-date flex-shrink-0 rounded-3 bg-body-secondary text-center py-1"
             datetime="{{ occurrence.startDate.format('Y-m-d') }}">
             <span class="d-block small text-body-secondary">{{ occurrence.startDate.format('M') }}</span>
             <span class="d-block fs-5 fw-semibold lh-1">{{ occurrence.startDate.format('j') }}</span>
