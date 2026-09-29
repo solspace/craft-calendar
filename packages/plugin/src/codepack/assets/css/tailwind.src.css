@@ -57,6 +57,7 @@ html { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
 body { @apply min-h-screen leading-normal; background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
 a { color: var(--bs-primary-text-emphasis); text-underline-offset: .16em; }
 a:hover { color: var(--bs-link-hover-color); }
+.calendar-upcoming-info a { color: var(--bs-emphasis-color); }
 button, select, summary { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
 [hidden], .d-none { display: none !important; }

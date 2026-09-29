@@ -59,7 +59,7 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2 sm:gap-4 py-4 border-b border-neutral-200 dark:border-neutral-700">
-                            <span class="text-sm text-neutral-500 dark:text-neutral-400">Browse in</span>
+                            <span class="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Browse events</span>
                             <div class="demo-btn-group demo-btn-group-sm" role="group" aria-label="Browse {{ calendar.name }} events">
                                 <a href="{{ siteUrl }}demo/month/calendar/{{ calendar.handle }}" class="demo-btn demo-btn-outline">Month</a>
                                 <a href="{{ siteUrl }}demo/week/calendar/{{ calendar.handle }}" class="demo-btn demo-btn-outline">Week</a>
@@ -80,15 +80,17 @@
                         {% endif %}
 
                         <div class="pt-4">
-                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                                 <h3 class="text-base font-semibold mb-0">Upcoming events</h3>
                                 <span class="text-sm text-neutral-500 dark:text-neutral-400">Next six months</span>
                             </div>
-                            <ul class="list-none p-0 border-t border-neutral-200 dark:border-neutral-700 mb-0">
-                                {% include "demo/tailwind/layouts/_calendar_events" with {occurrences: visibleOccurrences} only %}
-                            </ul>
+                            <div class="rounded-xl border border-neutral-200 bg-neutral-50 px-4 dark:border-neutral-800 dark:bg-neutral-950/50">
+                                <ul class="list-none p-0 mb-0">
+                                    {% include "demo/tailwind/layouts/_calendar_events" with {occurrences: visibleOccurrences} only %}
+                                </ul>
+                            </div>
                             {% if not segment3 and occurrences|length > 5 %}
-                                <a href="{{ siteUrl }}demo/calendars/{{ calendar.handle }}" class="inline-block text-sm mt-4">More upcoming events <span class="fas fa-arrow-right" aria-hidden="true"></span></a>
+                                <a href="{{ siteUrl }}demo/calendars/{{ calendar.handle }}" class="demo-btn demo-btn-outline demo-btn-sm mt-4">More upcoming events <span class="fas fa-arrow-right" aria-hidden="true"></span></a>
                             {% endif %}
                         </div>
                     </div>
