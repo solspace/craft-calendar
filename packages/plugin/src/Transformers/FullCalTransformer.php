@@ -38,6 +38,7 @@ class FullCalTransformer
 
             'editable' => Calendar::getInstance()->settings->isDragAndDropEnabled(),
             'rrule' => $element->getRRuleRFCString(),
+            'readableRepeatRule' => $element->getReadableRepeatRule(),
         ];
     }
 
@@ -78,6 +79,7 @@ class FullCalTransformer
 
             'editable' => Calendar::getInstance()->settings->isDragAndDropEnabled(),
             'rrule' => $model->event->getRRuleRFCString(),
+            'readableRepeatRule' => $model->event->getReadableRepeatRule(),
         ];
     }
 

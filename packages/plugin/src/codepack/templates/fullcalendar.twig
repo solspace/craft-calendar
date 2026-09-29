@@ -64,6 +64,7 @@
         'ends': 'Ends:'|t,
         'endsBefore': 'Ends before:'|t,
         'month': 'Month'|t,
+        'recurring': 'Recurring event'|t,
         'today': 'Today'|t,
         'week': 'Week'|t,
     },
@@ -99,18 +100,20 @@
 {% endblock %}
 
 {% block footerJs %}
-    <dialog id="event-details-dialog" class="calendar-dialog" aria-labelledby="event-details-title">
+    <dialog id="event-details-dialog" class="calendar-dialog calendar-dialog--details" aria-labelledby="event-details-title">
         <div class="calendar-dialog__surface">
             <div class="calendar-dialog__header">
-                <h2 id="event-details-title" class="calendar-dialog__title"></h2>
+                <div class="calendar-dialog__heading">
+                    <h2 id="event-details-title" class="calendar-dialog__title" tabindex="-1"></h2>
+                    <div class="calendar-data">
+                        <span class="color-indicator" data-event-calendar-color aria-hidden="true"></span>
+                        <span data-event-calendar-name></span>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" aria-label="{{ 'Close'|t }}" data-close-dialog></button>
             </div>
 
             <div class="calendar-dialog__body">
-                <div class="calendar-data">
-                    <span class="color-indicator" data-event-calendar-color></span>
-                    <span data-event-calendar-name></span>
-                </div>
                 <dl class="event-date-range">
                     <div>
                         <dt>{{ 'Starts:'|t }}</dt>
@@ -122,22 +125,29 @@
                     </div>
                 </dl>
                 <div class="event-repeat-rule" data-event-repeat-row hidden>
-                    <strong>{{ 'Repeats:'|t }}</strong>
-                    <span data-event-repeat></span>
+                    <span class="fas fa-redo text-body-secondary" aria-hidden="true"></span>
+                    <div>
+                        <span class="event-repeat-rule__label">{{ 'Repeats'|t }}</span>
+                        <span data-event-repeat></span>
+                    </div>
                 </div>
                 <div class="alert alert-danger calendar-dialog__error" role="alert" aria-live="assertive" data-event-error hidden></div>
             </div>
 
             <div class="calendar-dialog__actions">
-                <a class="btn btn-primary btn-sm" href="#" data-view-event>{{ 'View'|t }}</a>
-                <a class="btn btn-outline-warning btn-sm" href="#" data-edit-event>{{ 'Edit'|t }}</a>
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-delete-occurrence>
-                    {{ 'Delete Occurrence'|t }}
-                </button>
-                <button type="button" class="btn btn-outline-danger btn-sm" data-delete-series>
-                    {{ 'Delete Series'|t }}
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-close-dialog>{{ 'Close'|t }}</button>
+                <div class="dropup" data-event-manage-actions hidden>
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ 'More actions'|t }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><button type="button" class="dropdown-item text-danger" data-delete-occurrence>{{ 'Delete Occurrence'|t }}</button></li>
+                        <li><button type="button" class="dropdown-item text-danger" data-delete-series>{{ 'Delete Series'|t }}</button></li>
+                    </ul>
+                </div>
+                <div class="calendar-dialog__primary-actions">
+                    <a class="btn btn-outline-secondary" href="#" data-edit-event>{{ 'Edit'|t }}</a>
+                    <a class="btn btn-primary" href="#" data-view-event>{{ 'View event'|t }}</a>
+                </div>
             </div>
         </div>
     </dialog>

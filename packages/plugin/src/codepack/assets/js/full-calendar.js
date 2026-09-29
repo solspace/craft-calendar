@@ -157,6 +157,7 @@
         delete eventInput.multiDay;
         delete eventInput.repeats;
         delete eventInput.rrule;
+        delete eventInput.readableRepeatRule;
         delete eventInput.slug;
         delete eventInput.url;
 
@@ -170,6 +171,7 @@
                 multiDay: Boolean(rawEvent.multiDay),
                 repeats: Boolean(rawEvent.repeats),
                 rrule: rawEvent.rrule || "",
+                readableRepeatRule: rawEvent.readableRepeatRule || "",
                 slug: rawEvent.slug || "",
             },
             textColor: "var(--bs-body-color)",
@@ -232,6 +234,7 @@
     const detailsRepeatRow = detailsDialog.querySelector("[data-event-repeat-row]");
     const detailsRepeat = detailsDialog.querySelector("[data-event-repeat]");
     const detailsError = detailsDialog.querySelector("[data-event-error]");
+    const manageActions = detailsDialog.querySelector("[data-event-manage-actions]");
     const viewEventLink = detailsDialog.querySelector("[data-view-event]");
     const editEventLink = detailsDialog.querySelector("[data-edit-event]");
     const deleteOccurrenceButton = detailsDialog.querySelector("[data-delete-occurrence]");
@@ -244,18 +247,18 @@
     try {
         allDayFormatter = new Intl.DateTimeFormat(locale, {
             day: "numeric",
-            month: "long",
+            month: "short",
             timeZone: "UTC",
-            weekday: "long",
+            weekday: "short",
             year: "numeric",
         });
         timedFormatter = new Intl.DateTimeFormat(locale, {
             day: "numeric",
             hour: "numeric",
             minute: "2-digit",
-            month: "long",
+            month: "short",
             timeZone: "UTC",
-            weekday: "long",
+            weekday: "short",
             year: "numeric",
         });
     } catch {
@@ -305,12 +308,13 @@
         detailsStart.textContent = formatEventDate(event.start, event.allDay);
         detailsEnd.textContent = formatEventDate(event.end, event.allDay);
         detailsEndLabel.textContent = event.allDay ? config.labels.endsBefore : config.labels.ends;
-        detailsRepeat.textContent = event.extendedProps.rrule || "";
-        detailsRepeatRow.hidden = !event.extendedProps.rrule;
+        detailsRepeat.textContent = event.extendedProps.readableRepeatRule || config.labels.recurring;
+        detailsRepeatRow.hidden = !repeats;
 
         viewEventLink.href = `${config.urls.event.replace(/\/$/, "")}/${encodeURIComponent(eventId)}${occurrencePath ? `/${occurrencePath}` : ""}`;
         editEventLink.href = `${config.urls.editEvent.replace(/\/$/, "")}/${encodeURIComponent(eventId)}`;
         editEventLink.hidden = !canManage;
+        manageActions.hidden = !canManage;
         deleteSeriesButton.hidden = !canManage;
         deleteOccurrenceButton.hidden = !canManage || !repeats;
 
@@ -319,6 +323,7 @@
         }
 
         detailsDialog.showModal();
+        window.requestAnimationFrame(() => detailsTitle.focus());
     }
 
     function getCalendarUrl(viewType, date) {
