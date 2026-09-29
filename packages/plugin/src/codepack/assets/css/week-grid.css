@@ -48,8 +48,8 @@
 .week-grid-all-day { min-height: 2.5rem; }
 
 .week-grid-all-day-event {
+    position: relative;
     background-color: color-mix(in srgb, var(--event-color) 16%, var(--bs-body-bg));
-    border-left: 3px solid var(--event-color);
     color: var(--bs-body-color);
 }
 
@@ -91,13 +91,25 @@
     width: calc(100% - 6px);
     min-height: 18px;
     overflow: hidden;
-    padding: 2px 5px;
-    border-left: 3px solid var(--event-color);
+    padding: 2px 5px 2px 10px;
     background-color: color-mix(in srgb, var(--event-color) 20%, var(--bs-body-bg));
     color: var(--bs-body-color);
     font-size: .73rem;
     line-height: 1.15;
     z-index: 1;
+}
+
+.week-grid-all-day-event::before,
+.week-grid-event::before {
+    position: absolute;
+    top: min(.5rem, 25%);
+    bottom: min(.5rem, 25%);
+    inset-inline-start: 0;
+    width: .2rem;
+    border-radius: var(--bs-border-radius-pill, 999px);
+    background-color: var(--event-color);
+    content: "";
+    pointer-events: none;
 }
 
 .week-grid-event:hover,

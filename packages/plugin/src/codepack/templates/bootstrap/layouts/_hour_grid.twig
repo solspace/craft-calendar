@@ -18,7 +18,7 @@
             <div class="week-grid-all-day border-end border-bottom p-1{{ day.dateLocalized.isToday ? ' bg-primary-subtle' : ' bg-body' }}">
                 {% for occurrence in day.allDayOccurrences %}
                     {% set event = occurrence.event %}
-                    <a class="week-grid-all-day-event d-block rounded-2 px-2 py-1 mb-1 small fw-semibold text-decoration-none text-truncate"
+                    <a class="week-grid-all-day-event d-block rounded-2 ps-3 pe-2 py-1 mb-1 small fw-semibold text-decoration-none text-truncate"
                         href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
                         style="--event-color: {{ event.calendar.color }};"
                         title="{{ event.title }}">{{ event.title }}</a>
