@@ -137,8 +137,12 @@ button, select, summary { cursor: pointer; }
 .demo-nav-link { @apply block rounded-md px-2 py-1.5 text-neutral-300 no-underline hover:bg-white/10 hover:text-white; }
 .demo-nav-link.active { @apply bg-white/10 text-white; }
 .demo-navbar .demo-menu-item { color: var(--bs-body-color); }
-.demo-nav-select { @apply w-full min-w-32 border-neutral-500 bg-neutral-800 text-white xl:w-auto; }
-.demo-nav-select[data-theme-select] { @apply min-w-24; }
+.demo-nav-select {
+    @apply w-full min-w-32 appearance-none border-neutral-500 bg-neutral-800 pr-9 text-white xl:w-auto;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-position: right .75rem center;
+    background-repeat: no-repeat;
+}
 .demo-nav-select option { @apply bg-white text-neutral-900; }
 html:not([data-framework]) .demo-nav-panel { @apply block; }
 html:not([data-framework]) .demo-nav-toggle { @apply hidden; }
