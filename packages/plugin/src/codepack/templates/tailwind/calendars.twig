@@ -12,14 +12,14 @@
 
     <div class="flex flex-wrap -mx-3 gap-y-6">
         <div class="w-full px-3 lg:w-3/4">
-            <header class="demo-card border-0 rounded-2xl shadow-sm px-4 lg:px-6 py-4 mb-4 flex flex-wrap items-center justify-between gap-2">
+            <header class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 px-4 lg:px-6 py-4 mb-4 flex flex-wrap items-center justify-between gap-2">
                 <h1 class="text-2xl font-semibold mb-0">Calendars</h1>
                 {% if segment3 %}
                     <a href="{{ siteUrl }}demo/calendars" class="demo-btn demo-btn-outline demo-btn-sm">
                         <span class="fas fa-arrow-left" aria-hidden="true"></span> All calendars
                     </a>
                 {% else %}
-                    <span class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
+                    <span class="inline-block whitespace-nowrap px-2 py-1 leading-none align-middle rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
                         {{ calendars|length }} calendar{{ calendars|length == 1 ? '' : 's' }}
                     </span>
                 {% endif %}
@@ -36,9 +36,9 @@
                 }).all() %}
                 {% set visibleOccurrences = segment3 ? occurrences : occurrences|slice(0, 5) %}
 
-                <section class="demo-card calendar-directory-card border-0 rounded-2xl shadow-sm overflow-hidden mb-6"
+                <section class="calendar-directory-card mb-6 overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50"
                     style="--calendar-color: {{ calendar.color }};" aria-labelledby="calendar-heading-{{ calendar.id }}">
-                    <div class="demo-card-body p-4 lg:p-6">
+                    <div class="p-4 lg:p-6">
                         <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                             <div class="flex items-start gap-4">
                                 <span class="calendar-directory-icon rounded-lg" aria-hidden="true">
@@ -96,7 +96,7 @@
                     </div>
                 </section>
             {% else %}
-                <div class="demo-card border-0 rounded-2xl shadow-sm p-6 text-neutral-500 dark:text-neutral-400">
+                <div class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-6 text-neutral-500 dark:text-neutral-400">
                     No calendars were found.
                 </div>
             {% endfor %}

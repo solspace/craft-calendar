@@ -14,7 +14,7 @@
 
     <div class="flex flex-wrap -mx-3 gap-y-6">
         <div class="w-full px-3 lg:w-3/4">
-            <article id="events_calendar" class="demo-card border-0 rounded-2xl shadow-sm p-4 lg:p-6">
+            <article id="events_calendar" class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-4 lg:p-6">
                 {% set occurrenceDate = null %}
                 {% if segment4 and segment5 and segment6 %}
                     {% set occurrenceDate = segment4 ~ "-" ~ segment5 ~ "-" ~ segment6 %}
@@ -127,10 +127,10 @@
                             }).all() %}
 
                             {% if occurrences %}
-                                <ul class="demo-list-group border-t border-neutral-200 dark:border-neutral-700 border-b border-neutral-200 dark:border-neutral-700">
+                                <ul class="list-none border-t border-neutral-200 p-0 dark:border-neutral-700">
                                     {% for occurrence in occurrences %}
                                         {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
-                                        <li class="demo-list-item flex flex-wrap items-center justify-between gap-2 px-0 py-4">
+                                        <li class="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 py-4 dark:border-neutral-700">
                                             <span class="event-detail-occurrence-date">
                                                 <span class="far fa-calendar text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>
                                                 {{ occurrence.startDate.format('l, F j, Y') }}

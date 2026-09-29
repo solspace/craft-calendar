@@ -63,10 +63,10 @@
 
             {% paginate calendar.occurrences(eventOptions) as pageInfo, occurrences %}
 
-            <section id="events_calendar" class="demo-card border-0 rounded-2xl shadow-sm p-4 lg:p-6" aria-labelledby="events-heading">
+            <section id="events_calendar" class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-4 lg:p-6" aria-labelledby="events-heading">
                 <h1 id="events-heading" class="text-2xl font-semibold mb-4 flex flex-wrap items-center gap-2">
                     <span>{{ isMonthView ? targetStartDate|date('F Y') : 'Upcoming Events' }}</span>
-                    <span class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
+                    <span class="inline-block whitespace-nowrap px-2 py-1 leading-none align-middle rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
                         {{ pageInfo.total }} event{{ pageInfo.total == 1 ? '' : 's' }}
                     </span>
                 </h1>
@@ -114,7 +114,7 @@
                                         </div>
                                     </div>
                                     <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
-                                        class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 no-underline font-normal">
+                                        class="inline-block whitespace-nowrap px-2 py-1 leading-none align-middle text-xs rounded-full bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 no-underline font-normal">
                                         <span class="fas fa-calendar-alt calendar-color-icon me-1" aria-hidden="true"></span>
                                         {{ event.calendar.name }}
                                     </a>
@@ -141,8 +141,8 @@
 
         <div class="w-full px-3 lg:w-1/4">
             {% include "demo/tailwind/layouts/_sidebar" %}
-            <section class="demo-card border-0 rounded-2xl shadow-sm mt-6">
-                <div class="demo-card-body">
+            <section class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 mt-6">
+                <div class="p-4">
                     {% set month = craft.calendar.month({date: targetStartDate, calendarId: 0}) %}
                     <h2 class="text-base font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Browse by month</h2>
                     <div class="relative">

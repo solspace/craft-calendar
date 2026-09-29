@@ -18,10 +18,10 @@
 
 <div id="mini_calendar">
     <table class="table table-sm mb-0">
-        <caption class="visually-hidden" tabindex="-1">Mini calendar for {{ month.date.format('F Y') }}</caption>
+        <caption class="visually-hidden">Mini calendar for {{ month.date.format('F Y') }}</caption>
         <thead>
             <tr>
-                <th colspan="1">
+                <th>
                     {% if dateBoundsHelper > -365 and segment2 != "calendars" %}
                         <a id="mini_calendar_prev_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Previous month, {{ month.previousDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.previousDate.format('Y/m') }}/">&larr;</a>
                     {% endif %}
@@ -29,7 +29,7 @@
                 <th colspan="5" id="mini_calendar_month" tabindex="-1">
                     {{ month.date.format('F Y') }}
                 </th>
-                <th colspan="1">
+                <th>
                     {% if dateBoundsHelper < 365 and segment2 != "calendars" %}
                         <a id="mini_calendar_next_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Next month, {{ month.nextDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.nextDate.format('Y/m') }}/">&rarr;</a>
                     {% endif %}

@@ -19,7 +19,7 @@
     <div class="month-layout">
         <div class="month-layout-main">
 
-            <section id="month_calendar" class="demo-card border-0 rounded-2xl shadow-sm p-4 lg:p-6">
+            <section id="month_calendar" class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-4 lg:p-6">
                 {% set month = calendar.month({
                     date: targetDate,
                     calendar: calendarHandle,
@@ -42,7 +42,7 @@
                     <div class="w-full px-3 md:w-1/2 order-0 text-center">
                         <div class="flex flex-wrap items-center justify-center gap-2">
                             {% include "demo/tailwind/layouts/_month_heading" with {month: month, calendarHandle: calendarHandle} only %}
-                            <span class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
+                            <span class="inline-block whitespace-nowrap px-2 py-1 leading-none align-middle rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
                                 {{ occurrenceCount }} event{{ occurrenceCount > 1 or occurrenceCount == 0 ? "s" }}
                             </span>
                             {% include "demo/tailwind/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'month', date: month.date} %}

@@ -27,7 +27,7 @@
 
             {% set dateBoundsHelper = now.diff(day.nextDate)|date('%r%a') %}
 
-            <section id="day_calendar" class="demo-card border-0 rounded-2xl shadow-sm p-4 lg:p-6">
+            <section id="day_calendar" class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-4 lg:p-6">
 
                 <div class="flex flex-wrap -mx-3 items-center gap-y-2 mb-4">
                     <div class="w-1/2 px-3 md:w-1/4 order-1 md:order-0">
@@ -43,9 +43,9 @@
                         <h1 class="text-2xl font-semibold mb-0 flex flex-wrap items-center justify-center gap-2">
                             <span>{{ day.date.format('l, F j, Y') }}</span>
                             {% if day.dateLocalized.isToday %}
-                                <span class="demo-badge rounded-full bg-blue-600 text-white font-normal text-base">Today</span>
+                                <span class="inline-block whitespace-nowrap px-2 py-1 leading-none align-middle rounded-full bg-blue-600 text-white font-normal text-base">Today</span>
                             {% endif %}
-                            <span class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
+                            <span class="inline-block whitespace-nowrap px-2 py-1 leading-none align-middle rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
                                 {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
                             </span>
                             {% include "demo/tailwind/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'day', date: day.date} %}
