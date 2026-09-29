@@ -28,7 +28,7 @@
 {% set segment6 = craft.app.request.segment(6) %}
 {% set segment7 = craft.app.request.segment(7) %}
 
-<body id="top" class="bg-neutral-50 dark:bg-neutral-800">
+<body id="top" class="flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-800">
 <a class="demo-skip-link absolute bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 p-2" href="#main-content">Skip to main content</a>
 
 {% if page is not defined %}
@@ -87,7 +87,7 @@
     </div>
 </nav>
 
-<main id="main-content" class="mx-auto w-full max-w-7xl px-4 py-4 pb-12" tabindex="-1">
+<main id="main-content" class="mx-auto w-full max-w-7xl flex-1 px-4 py-4 pb-12" tabindex="-1">
     {% block content %}{% endblock %}
 </main>
 

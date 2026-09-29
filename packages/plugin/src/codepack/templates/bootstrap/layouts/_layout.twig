@@ -29,7 +29,7 @@
 {% set segment6 = craft.app.request.segment(6) %}
 {% set segment7 = craft.app.request.segment(7) %}
 
-<body id="top" class="bg-body-tertiary">
+<body id="top" class="bg-body-tertiary d-flex flex-column min-vh-100">
 <a class="visually-hidden-focusable position-absolute bg-body text-body p-2" href="#main-content">Skip to main content</a>
 
 {% if page is not defined %}
@@ -88,7 +88,7 @@
     </div>
 </nav>
 
-<main id="main-content" class="container py-3 pb-5" tabindex="-1">
+<main id="main-content" class="container py-3 pb-5 flex-grow-1" tabindex="-1">
     {% block content %}{% endblock %}
 </main>
 
