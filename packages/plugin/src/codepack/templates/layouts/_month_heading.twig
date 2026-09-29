@@ -1,15 +1,13 @@
 <div class="dropdown" data-month-picker>
-    <h1 class="h4 mb-0">
-        <button id="calendar-month-menu" type="button"
-            class="btn btn-link link-body-emphasis fs-4 fw-semibold p-0 text-decoration-none month-picker-trigger"
-            data-bs-toggle="dropdown" aria-expanded="false"
-            aria-label="Select month, currently {{ month.date.format('F Y') }}">
-            {{ month.date.format('F Y') }}
-            <span class="fas fa-chevron-down fs-6 text-body-secondary ms-1" aria-hidden="true"></span>
-        </button>
-    </h1>
-    <ul class="dropdown-menu" aria-labelledby="calendar-month-menu">
-        {% for date in month.dateRange(-6, 6) %}
+    <button id="calendar-month-menu" type="button"
+        class="btn btn-link link-body-emphasis fs-4 fw-semibold p-0 text-decoration-none month-picker-trigger"
+        data-bs-toggle="dropdown" aria-expanded="false"
+        aria-label="Select month, currently {{ month.date.format('F Y') }}">
+        {{ month.date.format('F Y') }}
+        <span class="fas fa-chevron-down fs-6 text-body-secondary ms-1" aria-hidden="true"></span>
+    </button>
+    <ul class="dropdown-menu month-picker-menu" aria-labelledby="calendar-month-menu">
+        {% for date in month.dateRange(6, 6) %}
             <li>
                 <a class="dropdown-item{{ date == month.date ? ' active' }}"
                     href="{{ siteUrl }}demo/month/{{ calendarHandle ? 'calendar/' ~ calendarHandle ~ '/' }}{{ date.format('Y/m') }}/"{% if date == month.date %} aria-current="page"{% endif %}>

@@ -70,6 +70,11 @@ body {
 
 /* MONTH CALENDAR */
 
+.month-picker-menu {
+	max-height: min(22rem, calc(100vh - 9rem));
+	overflow-y: auto;
+}
+
 .month-picker-trigger .fa-chevron-down {
 	transition: transform .15s ease;
 }

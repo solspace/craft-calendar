@@ -27,6 +27,7 @@
 
                 {% set occurrenceCount = month.occurrenceCount %}
                 {% set dateBoundsHelper = now.diff(month.nextDate)|date('%r%a') %}
+                <h1 class="visually-hidden">Month of {{ month.date.format('F Y') }}</h1>
 
                 <div class="row align-items-center g-2 mb-3">
                     <div class="col-6 col-md-3 order-1 order-md-0">
