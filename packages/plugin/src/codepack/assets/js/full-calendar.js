@@ -463,7 +463,13 @@
             openEventDetails(info.event);
         },
         eventDidMount(info) {
-            const calendarName = info.event.extendedProps.calendarName || calendarsById.get(Number(info.event.extendedProps.calendar))?.name;
+            const calendarData = calendarsById.get(Number(info.event.extendedProps.calendar));
+            const calendarName = info.event.extendedProps.calendarName || calendarData?.name;
+            const eventColor = calendarData?.color || info.event.backgroundColor;
+            if (eventColor) {
+                info.el.style.setProperty("--calendar-event-color", eventColor);
+            }
+
             info.el.setAttribute("aria-label", calendarName ? `${info.event.title}, ${calendarName}` : info.event.title);
         },
         eventDrop(info) {
