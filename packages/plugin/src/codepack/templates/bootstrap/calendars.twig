@@ -12,7 +12,7 @@
 
     <div class="row g-4">
         <div class="col-lg-9">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <header class="card border-0 rounded-4 shadow-sm px-3 px-lg-4 py-3 mb-3 d-flex flex-row flex-wrap align-items-center justify-content-between gap-2">
                 <h1 class="h4 mb-0">Calendars</h1>
                 {% if segment3 %}
                     <a href="{{ siteUrl }}demo/calendars" class="btn btn-outline-secondary btn-sm">
@@ -23,7 +23,7 @@
                         {{ calendars|length }} calendar{{ calendars|length == 1 ? '' : 's' }}
                     </span>
                 {% endif %}
-            </div>
+            </header>
 
             {% for calendar in calendars %}
                 {% set description = calendar.description|striptags|trim %}
