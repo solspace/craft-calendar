@@ -70,18 +70,12 @@
 } %}
 
 {% block headerCss %}
-    <link rel="stylesheet" href="{{ url('assets/%prefix%/css/full-calendar.css') }}">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/full-calendar.css">
 {% endblock %}
 
 {% block content %}
     <h1 class="visually-hidden">Full Calendar</h1>
     <script type="application/json" data-calendar-config>{{ calendarConfig|json_encode(15)|raw }}</script>
-
-    {% if canCreateEvents %}
-        <p class="text-body-secondary calendar-create-hint">
-            {{ 'Select a date or time range to quickly create an event.'|t }}
-        </p>
-    {% endif %}
 
     <div id="calendar-errors" class="alert alert-danger calendar-page-error" role="alert" aria-live="assertive" hidden>
         <button type="button" class="btn-close float-end" aria-label="{{ 'Close'|t }}" data-dismiss-calendar-error></button>
@@ -91,6 +85,12 @@
     <div class="row">
         <div class="col-12">
             <div id="calendar-wrapper" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4"></div>
+            {% if canCreateEvents %}
+                <p class="small text-body-secondary mt-2 mb-0 px-2">
+                    <span class="far fa-calendar-plus me-1" aria-hidden="true"></span>
+                    {{ 'Select a date or time range to quickly create an event.'|t }}
+                </p>
+            {% endif %}
             <noscript>
                 <div class="alert alert-warning">{{ 'JavaScript is required to display this calendar.'|t }}</div>
             </noscript>
@@ -103,9 +103,7 @@
         <div class="calendar-dialog__surface">
             <div class="calendar-dialog__header">
                 <h2 id="event-details-title" class="calendar-dialog__title"></h2>
-                <button type="button" class="calendar-dialog__close" aria-label="{{ 'Close'|t }}" data-close-dialog>
-                    &times;
-                </button>
+                <button type="button" class="btn-close" aria-label="{{ 'Close'|t }}" data-close-dialog></button>
             </div>
 
             <div class="calendar-dialog__body">
@@ -150,9 +148,7 @@
                 <div class="calendar-dialog__surface">
                     <div class="calendar-dialog__header">
                         <h2 id="event-creator-title" class="calendar-dialog__title">{{ 'New Event'|t }}</h2>
-                        <button type="button" class="calendar-dialog__close" aria-label="{{ 'Close'|t }}" data-close-dialog>
-                            &times;
-                        </button>
+                        <button type="button" class="btn-close" aria-label="{{ 'Close'|t }}" data-close-dialog></button>
                     </div>
 
                     <div class="calendar-dialog__body">
@@ -205,7 +201,7 @@
 
                     <div class="calendar-dialog__actions">
                         <button type="button" class="btn btn-outline-secondary" data-close-dialog>{{ 'Cancel'|t }}</button>
-                        <button type="submit" class="btn btn-success" data-create-submit>{{ 'Save'|t }}</button>
+                        <button type="submit" class="btn btn-primary" data-create-submit>{{ 'Save'|t }}</button>
                     </div>
                 </div>
             </form>

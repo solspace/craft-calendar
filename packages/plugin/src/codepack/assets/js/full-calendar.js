@@ -463,7 +463,8 @@
             openEventDetails(info.event);
         },
         eventDidMount(info) {
-            info.el.setAttribute("aria-label", info.event.title);
+            const calendarName = info.event.extendedProps.calendarName || calendarsById.get(Number(info.event.extendedProps.calendar))?.name;
+            info.el.setAttribute("aria-label", calendarName ? `${info.event.title}, ${calendarName}` : info.event.title);
         },
         eventDrop(info) {
             void mutateEvent("move", info);
@@ -473,7 +474,7 @@
         },
         events: loadEvents,
         firstDay: Number(config.firstDay),
-        fixedWeekCount: true,
+        fixedWeekCount: false,
         headerToolbar: {
             center: "title",
             end: "dayGridMonth,timeGridWeek,timeGridDay",
