@@ -112,6 +112,15 @@ body {
 	color: var(--calendar-color);
 }
 
+.calendar-directory-events {
+	background-color: var(--bs-tertiary-bg);
+	border-color: var(--bs-border-color-translucent) !important;
+}
+
+[data-bs-theme="dark"] .calendar-directory-events {
+	background-color: color-mix(in srgb, var(--bs-body-bg) 85%, black);
+}
+
 .calendar-upcoming-date {
 	width: 3.5rem;
 }
