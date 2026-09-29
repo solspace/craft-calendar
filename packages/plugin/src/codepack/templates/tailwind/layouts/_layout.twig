@@ -10,7 +10,7 @@
     <script src="{{ siteUrl }}assets/demo/js/theme.js?v=2"></script>
     <script src="{{ siteUrl }}assets/demo/js/framework.js"></script>
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css?v=5">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css?v=6">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/demo/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/demo/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/demo/favicon/favicon-16x16.png">
@@ -68,17 +68,6 @@
                     <a class="demo-nav-link px-2 rounded-md{{ page == 'edit' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' %} aria-current="page"{% endif %}>Create</a>
                 </li>
             </ul>
-            <div class="demo-nav-items relative">
-                <a class="demo-nav-link demo-dropdown-trigger" href="#" id="navbarDropdown" role="button"
-                    data-demo-dropdown aria-expanded="false">
-                    Resources
-                </a>
-                <div class="demo-menu right-0 left-auto" aria-labelledby="navbarDropdown">
-                    <a class="demo-menu-item" href="https://plugins.craftcms.com/calendar">Plugin Store</a>
-                    <a class="demo-menu-item" href="https://docs.solspace.com/craft/calendar/v6/">Documentation</a>
-                    <a class="demo-menu-item" href="https://docs.solspace.com/support/">Support</a>
-                </div>
-            </div>
             <div class="xl:ms-2 mt-2 xl:mt-0">
                 <label class="sr-only" for="framework-select">CSS framework</label>
                 <select id="framework-select" class="demo-select demo-input-sm demo-nav-select" data-framework-select aria-label="CSS framework">
@@ -102,12 +91,14 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer class="bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 py-6 mt-12">
-    <div class="mx-auto w-full max-w-7xl px-4">
-        <p class="float-right mb-0">
-            <a href="#top">Back to top</a>
-        </p>
-        <p class="mb-0"><a href="https://docs.solspace.com/craft/calendar/v6/">Calendar</a> for Craft CMS. &copy; 2010-{{ "now"|date("Y") }} <a href="https://solspace.com">Solspace, Inc.</a></p>
+<footer class="demo-footer border-t border-neutral-200 bg-neutral-50 py-6 text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 mt-12">
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
+        <p class="m-0">Calendar for Craft CMS. &copy; 2010-{{ "now"|date("Y") }} <a href="https://solspace.com">Solspace, Inc.</a></p>
+        <nav class="flex flex-wrap gap-x-4 gap-y-2" aria-label="Resources">
+            <a href="https://plugins.craftcms.com/calendar">Plugin Store</a>
+            <a href="https://docs.solspace.com/craft/calendar/v6/">Documentation</a>
+            <a href="https://docs.solspace.com/support/">Support</a>
+        </nav>
     </div>
 </footer>
 

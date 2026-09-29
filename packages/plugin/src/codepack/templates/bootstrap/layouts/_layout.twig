@@ -69,17 +69,6 @@
                     <a class="nav-link px-2 rounded-2{{ page == 'edit' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' %} aria-current="page"{% endif %}>Create</a>
                 </li>
             </ul>
-            <div class="navbar-nav dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    Resources
-                </a>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="https://plugins.craftcms.com/calendar">Plugin Store</a>
-                    <a class="dropdown-item" href="https://docs.solspace.com/craft/calendar/v6/">Documentation</a>
-                    <a class="dropdown-item" href="https://docs.solspace.com/support/">Support</a>
-                </div>
-            </div>
             <div class="ms-xl-2 mt-2 mt-xl-0">
                 <label class="visually-hidden" for="framework-select">CSS framework</label>
                 <select id="framework-select" class="form-select form-select-sm demo-nav-select" data-framework-select aria-label="CSS framework">
@@ -103,12 +92,14 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer class="bg-body-tertiary text-body-secondary py-4 mt-5">
-    <div class="container">
-        <p class="float-end mb-0">
-            <a href="#top">Back to top</a>
-        </p>
-        <p class="mb-0"><a href="https://docs.solspace.com/craft/calendar/v6/">Calendar</a> for Craft CMS. &copy; 2010-{{ "now"|date("Y") }} <a href="https://solspace.com">Solspace, Inc.</a></p>
+<footer class="border-top bg-body-tertiary text-body-secondary py-4 mt-5">
+    <div class="container d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 small">
+        <p class="mb-0">Calendar for Craft CMS. &copy; 2010-{{ "now"|date("Y") }} <a class="text-body-secondary link-underline-opacity-0 link-underline-opacity-100-hover" href="https://solspace.com">Solspace, Inc.</a></p>
+        <nav class="d-flex flex-wrap gap-3" aria-label="Resources">
+            <a class="text-body-secondary link-underline-opacity-0 link-underline-opacity-100-hover" href="https://plugins.craftcms.com/calendar">Plugin Store</a>
+            <a class="text-body-secondary link-underline-opacity-0 link-underline-opacity-100-hover" href="https://docs.solspace.com/craft/calendar/v6/">Documentation</a>
+            <a class="text-body-secondary link-underline-opacity-0 link-underline-opacity-100-hover" href="https://docs.solspace.com/support/">Support</a>
+        </nav>
     </div>
 </footer>
 
