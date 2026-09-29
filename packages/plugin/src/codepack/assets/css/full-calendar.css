@@ -143,6 +143,11 @@
   border-inline-start: 3px solid var(--calendar-event-color, var(--bs-primary));
 }
 
+#calendar-wrapper.fc .fc-daygrid-block-event .fc-event-main,
+#calendar-wrapper.fc .fc-timegrid-event .fc-event-main {
+  color: var(--bs-body-color);
+}
+
 #calendar-wrapper.fc .fc-daygrid-block-event:hover,
 #calendar-wrapper.fc .fc-timegrid-event:hover {
   background: color-mix(in srgb, var(--calendar-event-color, var(--bs-primary)) 23%, var(--bs-body-bg)) !important;
