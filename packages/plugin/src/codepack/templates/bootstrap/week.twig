@@ -57,6 +57,12 @@
                     </div>
                 </div>
 
+                <div class="d-flex justify-content-end mb-2">
+                    <a class="btn btn-outline-primary btn-sm" href="{{ siteUrl }}demo/week-grid?framework=bootstrap&amp;date={{ week.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                        <span class="far fa-clock me-1" aria-hidden="true"></span> Preview hourly view
+                    </a>
+                </div>
+
                 <div class="border-top">
                     {% for day in week %}
                         <section class="d-flex flex-column flex-sm-row align-items-start gap-2 gap-sm-3 py-2 px-2 px-md-3{{ day.dateLocalized.isToday ? ' bg-primary-subtle' }}{{ not loop.first and not day.dateLocalized.isToday ? ' border-top' }}"
