@@ -304,6 +304,10 @@ body {
 	padding: .35rem .5rem;
 	background-color: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-tertiary-bg));
 }
+#month_calendar .event.multi_day.month-event-placeholder {
+	visibility: hidden;
+	pointer-events: none;
+}
 #month_calendar .day_cell .multi_day.first_day {
 	margin-inline-start: 0;
 	position: relative;
