@@ -1,2 +1,2 @@
 {% set demoFramework = craft.app.request.getQueryParam('framework') == 'bootstrap' ? 'bootstrap' : 'tailwind' %}
-{% include '%prefix%/' ~ demoFramework ~ '/week' %}
+{% include '%prefix%/' ~ demoFramework ~ (craft.app.request.getQueryParam('view') == 'agenda' ? '/week' : '/week-grid') %}

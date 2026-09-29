@@ -3,7 +3,7 @@
         <div class="week-grid-corner bg-neutral-50 dark:bg-neutral-800 border-r border-b border-neutral-200 dark:border-neutral-700" aria-hidden="true"></div>
         {% for day in gridDays %}
             <div class="week-grid-heading text-center border-r border-b border-neutral-200 dark:border-neutral-700 px-1 py-2{{ day.dateLocalized.isToday ? ' bg-blue-100 dark:bg-blue-950/70' : ' bg-neutral-50 dark:bg-neutral-800' }}">
-                <a href="{{ siteUrl }}demo/day-grid?framework=tailwind&amp;date={{ day.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"
+                <a href="{{ siteUrl }}demo/day?framework=tailwind&amp;date={{ day.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"
                     class="font-semibold text-neutral-900 dark:text-neutral-100 no-underline hover:underline"
                     aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}">
                     <span class="block text-xs text-neutral-500 dark:text-neutral-400">{{ day.date.format('D') }}</span>

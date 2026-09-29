@@ -1,6 +1,6 @@
 {% extends "demo/bootstrap/layouts/_layout" %}
 
-{% set pageTitle = "Hourly Week Preview" %}
+{% set pageTitle = "Week" %}
 {% set page = "week" %}
 
 {% block headerCss %}
@@ -8,18 +8,19 @@
 {% endblock %}
 
 {% block content %}
-    {% set targetDate = craft.app.request.getQueryParam('date') ?: 'today' %}
-    {% set calendarHandle = craft.app.request.getQueryParam('calendar') ?: null %}
+    {% set targetDate = segment3 == 'calendar' and segment5 ? segment5 ~ '-' ~ segment6 ~ '-' ~ segment7 : (segment3 and segment3 != 'calendar' ? segment3 ~ '-' ~ segment4 ~ '-' ~ segment5 : 'today') %}
+    {% set calendarHandle = segment3 == 'calendar' ? segment4 : null %}
+    {% set targetDate = craft.app.request.getQueryParam('date') ?: targetDate %}
+    {% set calendarHandle = craft.app.request.getQueryParam('calendar') ?: calendarHandle %}
 
     {% set week = calendar.week({date: targetDate, calendar: calendarHandle}) %}
     {% set dateBoundsHelper = now.diff(week.nextDate)|date('%r%a') %}
-    {% set weekPath = calendarHandle ? 'calendar/' ~ calendarHandle ~ '/' : '' %}
 
     <section class="card border-0 rounded-4 shadow-sm p-3 p-lg-4" aria-labelledby="week-grid-title">
         <div class="row align-items-center g-2 mb-3">
             <div class="col-6 col-md-3 order-1 order-md-0">
                 {% if dateBoundsHelper > -365 %}
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/week-grid?framework=bootstrap&amp;date={{ week.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/week?framework=bootstrap&amp;date={{ week.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
                         <span class="fas fa-arrow-left" aria-hidden="true"></span> Last Week
                     </a>
                 {% endif %}
@@ -30,16 +31,16 @@
             </div>
             <div class="col-6 col-md-3 order-2 text-end">
                 {% if dateBoundsHelper < 365 %}
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/week-grid?framework=bootstrap&amp;date={{ week.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/week?framework=bootstrap&amp;date={{ week.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
                         Next Week <span class="fas fa-arrow-right" aria-hidden="true"></span>
                     </a>
                 {% endif %}
             </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 small">
-            <a href="{{ siteUrl }}demo/week/{{ weekPath }}{{ week.date.format('Y/m/d') }}" class="link-secondary">View agenda week</a>
-            <span class="text-body-secondary">Scroll across on smaller screens to see all seven days.</span>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            {% include "demo/bootstrap/layouts/_view_switch" with {viewType: 'week', activeView: 'grid', date: week.date, calendarHandle: calendarHandle} %}
+            <span class="small text-body-secondary">Scroll across on smaller screens to see all seven days.</span>
         </div>
 
         {% include "demo/bootstrap/layouts/_hour_grid" with {gridDays: week, gridMode: 'week', calendarHandle: calendarHandle} %}

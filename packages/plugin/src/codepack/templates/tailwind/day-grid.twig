@@ -1,6 +1,6 @@
 {% extends "demo/tailwind/layouts/_layout" %}
 
-{% set pageTitle = "Hourly Day Preview" %}
+{% set pageTitle = "Day" %}
 {% set page = "day" %}
 
 {% block headerCss %}
@@ -8,18 +8,19 @@
 {% endblock %}
 
 {% block content %}
-    {% set targetDate = craft.app.request.getQueryParam('date') ?: 'today' %}
-    {% set calendarHandle = craft.app.request.getQueryParam('calendar') ?: null %}
+    {% set targetDate = segment3 == 'calendar' and segment5 ? segment5 ~ '-' ~ segment6 ~ '-' ~ segment7 : (segment3 and segment3 != 'calendar' ? segment3 ~ '-' ~ segment4 ~ '-' ~ segment5 : 'today') %}
+    {% set calendarHandle = segment3 == 'calendar' ? segment4 : null %}
+    {% set targetDate = craft.app.request.getQueryParam('date') ?: targetDate %}
+    {% set calendarHandle = craft.app.request.getQueryParam('calendar') ?: calendarHandle %}
 
     {% set day = craft.calendar.day({date: targetDate, calendar: calendarHandle}) %}
     {% set dateBoundsHelper = now.diff(day.nextDate)|date('%r%a') %}
-    {% set dayPath = calendarHandle ? 'calendar/' ~ calendarHandle ~ '/' : '' %}
 
     <section class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-4 lg:p-6" aria-labelledby="day-grid-title">
         <div class="flex flex-wrap -mx-3 items-center gap-y-2 mb-4">
             <div class="w-1/2 px-3 md:w-1/4 order-1 md:order-0">
                 {% if dateBoundsHelper > -365 %}
-                    <a class="demo-btn demo-btn-outline demo-btn-sm" href="{{ siteUrl }}demo/day-grid?framework=tailwind&amp;date={{ day.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                    <a class="demo-btn demo-btn-outline demo-btn-sm" href="{{ siteUrl }}demo/day?framework=tailwind&amp;date={{ day.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
                         <span class="fas fa-arrow-left" aria-hidden="true"></span> Previous Day
                     </a>
                 {% endif %}
@@ -30,16 +31,16 @@
             </div>
             <div class="w-1/2 px-3 md:w-1/4 order-2 text-right">
                 {% if dateBoundsHelper < 365 %}
-                    <a class="demo-btn demo-btn-outline demo-btn-sm" href="{{ siteUrl }}demo/day-grid?framework=tailwind&amp;date={{ day.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                    <a class="demo-btn demo-btn-outline demo-btn-sm" href="{{ siteUrl }}demo/day?framework=tailwind&amp;date={{ day.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
                         Next Day <span class="fas fa-arrow-right" aria-hidden="true"></span>
                     </a>
                 {% endif %}
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 text-sm">
-            <a href="{{ siteUrl }}demo/day/{{ dayPath }}{{ day.date.format('Y/m/d') }}" class="text-neutral-600 dark:text-neutral-300">View agenda day</a>
-            <span class="text-neutral-500 dark:text-neutral-400">Overlapping events appear side by side.</span>
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            {% include "demo/tailwind/layouts/_view_switch" with {viewType: 'day', activeView: 'grid', date: day.date, calendarHandle: calendarHandle} %}
+            <span class="text-sm text-neutral-500 dark:text-neutral-400">Overlapping events appear side by side.</span>
         </div>
 
         {% include "demo/tailwind/layouts/_hour_grid" with {gridDays: [day], gridMode: 'day', calendarHandle: calendarHandle} %}

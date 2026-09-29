@@ -15,6 +15,8 @@
     {% elseif segment3 is not empty %}
         {% set targetDate = segment3~"-"~segment4~"-"~segment5 %}
     {% endif %}
+    {% set targetDate = craft.app.request.getQueryParam('date') ?: targetDate %}
+    {% set calendarHandle = craft.app.request.getQueryParam('calendar') ?: calendarHandle %}
 
     <div class="row g-4">
         <div class="col-lg-9">
@@ -33,7 +35,7 @@
                     <div class="col-6 col-md-3 order-1 order-md-0">
                         {% if dateBoundsHelper > -365 %}
                             <a class="btn btn-outline-secondary btn-sm"
-                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ day.previousDate.format('Y/m/d') }}">
+                                href="{{ siteUrl }}demo/day?framework=bootstrap&amp;view=agenda&amp;date={{ day.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
                                 <span class="fas fa-arrow-left" aria-hidden="true"></span> Previous
                             </a>
                         {% endif %}
@@ -55,17 +57,15 @@
                     <div class="col-6 col-md-3 order-2 text-end">
                         {% if dateBoundsHelper < 365 %}
                             <a class="btn btn-outline-secondary btn-sm"
-                                href="{{ siteUrl }}demo/day/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ day.nextDate.format('Y/m/d') }}">
+                                href="{{ siteUrl }}demo/day?framework=bootstrap&amp;view=agenda&amp;date={{ day.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
                                 Next <span class="fas fa-arrow-right" aria-hidden="true"></span>
                             </a>
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end mb-2">
-                    <a class="btn btn-outline-primary btn-sm" href="{{ siteUrl }}demo/day-grid?framework=bootstrap&amp;date={{ day.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
-                        <span class="far fa-clock me-1" aria-hidden="true"></span> Preview hourly view
-                    </a>
+                <div class="d-flex justify-content-end mb-3">
+                    {% include "demo/bootstrap/layouts/_view_switch" with {viewType: 'day', activeView: 'agenda', date: day.date, calendarHandle: calendarHandle} %}
                 </div>
 
                 <div class="border-top{{ day.dateLocalized.isToday ? ' bg-primary-subtle rounded-3' }}">

@@ -3,7 +3,7 @@
         <div class="week-grid-corner bg-body-tertiary border-end border-bottom" aria-hidden="true"></div>
         {% for day in gridDays %}
             <div class="week-grid-heading text-center border-end border-bottom px-1 py-2{{ day.dateLocalized.isToday ? ' bg-primary-subtle' : ' bg-body-tertiary' }}">
-                <a href="{{ siteUrl }}demo/day-grid?framework=bootstrap&amp;date={{ day.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"
+                <a href="{{ siteUrl }}demo/day?framework=bootstrap&amp;date={{ day.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"
                     class="fw-semibold link-body-emphasis text-decoration-none"
                     aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}">
                     <span class="d-block small text-body-secondary">{{ day.date.format('D') }}</span>
