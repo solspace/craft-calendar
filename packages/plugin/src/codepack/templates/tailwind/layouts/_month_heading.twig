@@ -1,10 +1,10 @@
 <div class="relative" data-month-picker>
     <button id="calendar-month-menu" type="button"
-        class="demo-btn demo-btn-link text-slate-900 dark:text-slate-100 text-2xl font-semibold p-0 no-underline month-picker-trigger"
+        class="demo-btn demo-btn-link text-neutral-900 dark:text-neutral-100 text-2xl font-semibold p-0 no-underline month-picker-trigger"
         data-demo-dropdown aria-expanded="false"
         aria-label="Select month, currently {{ month.date.format('F Y') }}">
         {{ month.date.format('F Y') }}
-        <span class="fas fa-chevron-down text-base text-slate-500 dark:text-slate-400 ms-1" aria-hidden="true"></span>
+        <span class="fas fa-chevron-down text-base text-neutral-500 dark:text-neutral-400 ms-1" aria-hidden="true"></span>
     </button>
     <ul class="demo-menu month-picker-menu" aria-labelledby="calendar-month-menu">
         {% for date in month.dateRange(6, 6) %}

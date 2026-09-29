@@ -28,14 +28,14 @@
 {% set segment6 = craft.app.request.segment(6) %}
 {% set segment7 = craft.app.request.segment(7) %}
 
-<body id="top" class="bg-slate-50 dark:bg-slate-800">
-<a class="demo-skip-link absolute bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-2" href="#main-content">Skip to main content</a>
+<body id="top" class="bg-neutral-50 dark:bg-neutral-800">
+<a class="demo-skip-link absolute bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 p-2" href="#main-content">Skip to main content</a>
 
 {% if page is not defined %}
     {% set page = "month" %}
 {% endif %}
 
-<nav class="demo-navbar bg-slate-900 fixed inset-x-0 top-0 z-50 shadow-sm" aria-label="Main navigation">
+<nav class="demo-navbar bg-neutral-900 fixed inset-x-0 top-0 z-50 shadow-sm" aria-label="Main navigation">
     <div class="mx-auto w-full max-w-7xl px-4 lg:px-6">
         <a class="demo-brand inline-flex items-center gap-2" href="{{ siteUrl }}demo/">
             <img src="{{ siteUrl }}assets/demo/images/icon.svg" alt="" width="30" height="30">
@@ -106,7 +106,7 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 py-6 mt-12">
+<footer class="bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 py-6 mt-12">
     <div class="mx-auto w-full max-w-7xl px-4">
         <p class="float-right mb-0">
             <a href="#top">Back to top</a>

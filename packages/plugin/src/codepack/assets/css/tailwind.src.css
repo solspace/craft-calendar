@@ -8,18 +8,18 @@
 :root {
     color-scheme: light;
     --bs-body-bg: #fff;
-    --bs-body-color: #172334;
-    --bs-body-color-rgb: 23, 35, 52;
-    --bs-emphasis-color: #101827;
-    --bs-secondary-color: #536174;
-    --bs-tertiary-color: #6c798c;
-    --bs-secondary-bg: #e9eef5;
-    --bs-tertiary-bg: #f3f6fa;
-    --bs-border-color: #dce4ee;
+    --bs-body-color: #262626;
+    --bs-body-color-rgb: 38, 38, 38;
+    --bs-emphasis-color: #171717;
+    --bs-secondary-color: #525252;
+    --bs-tertiary-color: #737373;
+    --bs-secondary-bg: #f5f5f5;
+    --bs-tertiary-bg: #fafafa;
+    --bs-border-color: #e5e5e5;
     --bs-primary: #2563eb;
     --bs-primary-rgb: 37, 99, 235;
-    --bs-primary-bg-subtle: #e8f0ff;
-    --bs-primary-border-subtle: #bcd2ff;
+    --bs-primary-bg-subtle: #f5f5f5;
+    --bs-primary-border-subtle: #d4d4d4;
     --bs-primary-text-emphasis: #1e40af;
     --bs-link-hover-color: #1d4ed8;
     --bs-white: #fff;
@@ -34,22 +34,22 @@
 }
 [data-bs-theme="dark"] {
     color-scheme: dark;
-    --bs-body-bg: #182232;
-    --bs-body-color: #e7edf6;
-    --bs-body-color-rgb: 231, 237, 246;
-    --bs-emphasis-color: #f7f9fd;
-    --bs-secondary-color: #abb8c9;
-    --bs-tertiary-color: #8494aa;
-    --bs-secondary-bg: #263448;
-    --bs-tertiary-bg: #202d3e;
-    --bs-border-color: #3b4b60;
+    --bs-body-bg: #171717;
+    --bs-body-color: #e5e5e5;
+    --bs-body-color-rgb: 229, 229, 229;
+    --bs-emphasis-color: #fafafa;
+    --bs-secondary-color: #b3b3b3;
+    --bs-tertiary-color: #929292;
+    --bs-secondary-bg: #303030;
+    --bs-tertiary-bg: #262626;
+    --bs-border-color: #424242;
     --bs-primary: #80adff;
     --bs-primary-rgb: 128, 173, 255;
-    --bs-primary-bg-subtle: #213a62;
-    --bs-primary-border-subtle: #3b6096;
+    --bs-primary-bg-subtle: #343434;
+    --bs-primary-border-subtle: #525252;
     --bs-primary-text-emphasis: #bad2ff;
     --bs-link-hover-color: #bad2ff;
-    --bs-white: #10243f;
+    --bs-white: #171717;
     --bs-box-shadow: 0 12px 30px rgb(0 0 0 / .28);
     --bs-box-shadow-sm: 0 3px 12px rgb(0 0 0 / .2);
 }
@@ -63,7 +63,7 @@ button, select, summary { cursor: pointer; }
 .demo-skip-link:not(:focus):not(:focus-within) { @apply sr-only; }
 .demo-skip-link:focus { @apply z-[1040] top-2 left-2; }
 
-.demo-card { @apply rounded-2xl bg-white shadow-sm dark:bg-slate-900; }
+.demo-card { @apply rounded-2xl bg-white shadow-sm dark:bg-neutral-900; }
 .demo-card-body { @apply p-4; }
 .demo-card-body.lg\:p-6 { @apply lg:p-6; }
 .demo-badge { @apply inline-block whitespace-nowrap px-2 py-1 text-xs font-semibold leading-none align-middle; }
@@ -72,35 +72,35 @@ button, select, summary { cursor: pointer; }
 .demo-btn:hover { text-decoration: none; }
 .demo-btn-sm, .demo-btn-group-sm .demo-btn { @apply min-h-8 px-2 py-1 text-sm; }
 .demo-btn-primary { @apply border-blue-600 bg-blue-600 text-white hover:border-blue-700 hover:bg-blue-700 hover:text-white; }
-.demo-btn-outline { @apply border-slate-300 bg-white text-slate-800 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800; }
-.demo-btn-light { @apply border-slate-500 text-white hover:bg-slate-700; }
+.demo-btn-outline { @apply border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800; }
+.demo-btn-light { @apply border-neutral-500 text-white hover:bg-neutral-700; }
 .demo-btn-danger { @apply border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950; }
 .demo-btn-success { @apply border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-950; }
 .demo-btn-link { @apply border-0 bg-transparent text-blue-700 dark:text-blue-300; }
-.demo-btn-link.text-slate-900 { color: var(--bs-emphasis-color); }
+.demo-btn-link.text-neutral-900 { color: var(--bs-emphasis-color); }
 .demo-btn.p-0 { min-height: 0; padding: 0; }
 .demo-btn-group { @apply inline-flex; }
 .demo-btn-group > .demo-btn { @apply rounded-none; margin-left: -1px; }
 .demo-btn-group > .demo-btn:first-child { @apply rounded-l-lg; margin-left: 0; }
 .demo-btn-group > .demo-btn:last-child { @apply rounded-r-lg; }
-.demo-close { @apply inline-grid size-8 place-items-center border-0 bg-transparent text-2xl leading-none text-slate-500 dark:text-slate-400; }
+.demo-close { @apply inline-grid size-8 place-items-center border-0 bg-transparent text-2xl leading-none text-neutral-500 dark:text-neutral-400; }
 .demo-close::before { content: "×"; }
 .demo-close:hover { color: var(--bs-body-color); }
 
-.demo-menu { @apply absolute top-full left-0 z-[1100] mt-1 hidden min-w-40 list-none rounded-xl border border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900; }
+.demo-menu { @apply absolute top-full left-0 z-[1100] mt-1 hidden min-w-40 list-none rounded-xl border border-neutral-200 bg-white p-1 shadow-xl dark:border-neutral-700 dark:bg-neutral-900; }
 .demo-menu.show { @apply block; }
-.demo-menu-item { @apply block w-full rounded-md px-3 py-2 text-left text-slate-800 no-underline hover:bg-slate-100 hover:text-slate-950 focus-visible:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-white dark:focus-visible:bg-slate-800; }
+.demo-menu-item { @apply block w-full rounded-md px-3 py-2 text-left text-neutral-800 no-underline hover:bg-neutral-100 hover:text-neutral-950 focus-visible:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white dark:focus-visible:bg-neutral-800; }
 .demo-menu-item.active { @apply bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200; }
-.demo-menu-divider { @apply my-1 border-0 border-t border-slate-200 dark:border-slate-700; }
+.demo-menu-divider { @apply my-1 border-0 border-t border-neutral-200 dark:border-neutral-700; }
 .demo-dropdown-trigger::after { content: ""; display: inline-block; margin-left: .3rem; vertical-align: .2em; border: .3em solid transparent; border-top-color: currentColor; border-bottom: 0; }
 .month-picker-trigger.demo-dropdown-trigger::after { display: none; }
 
-.demo-input, .demo-select { @apply block min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100; }
+.demo-input, .demo-select { @apply block min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100; }
 .demo-input:focus, .demo-select:focus { outline: 2px solid var(--bs-primary); outline-offset: 0; }
 .demo-input:disabled, .demo-select:disabled { @apply cursor-not-allowed opacity-60; }
 .demo-input-lg { @apply min-h-12 text-lg; }
 .demo-input-sm { @apply min-h-8 px-2 py-1 text-sm; }
-.demo-help { @apply mt-1 text-sm text-slate-500 dark:text-slate-400; }
+.demo-help { @apply mt-1 text-sm text-neutral-500 dark:text-neutral-400; }
 .demo-check { @apply flex min-h-6 items-center gap-2; }
 .demo-checkbox { @apply size-4 accent-blue-600; }
 .demo-input-group { @apply flex w-full items-stretch; }
@@ -115,29 +115,29 @@ button, select, summary { cursor: pointer; }
 .demo-alert-warning { @apply border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200; }
 .demo-alert .demo-close { @apply absolute top-1 right-2; color: inherit; }
 .demo-pagination { @apply flex flex-wrap list-none p-0; }
-.demo-page-link { @apply block border border-slate-300 bg-white px-3 py-2 text-blue-800 no-underline dark:border-slate-600 dark:bg-slate-900 dark:text-blue-200; margin-left: -1px; }
+.demo-page-link { @apply block border border-neutral-300 bg-white px-3 py-2 text-blue-800 no-underline dark:border-neutral-600 dark:bg-neutral-900 dark:text-blue-200; margin-left: -1px; }
 .demo-page-item:first-child .demo-page-link { @apply rounded-l-lg; }
 .demo-page-item:last-child .demo-page-link { @apply rounded-r-lg; }
 .demo-page-item.active .demo-page-link { @apply border-blue-600 bg-blue-600 text-white; }
 .demo-list-group { @apply list-none p-0; }
-.demo-list-item { @apply border-b border-slate-200 py-3 dark:border-slate-700; }
+.demo-list-item { @apply border-b border-neutral-200 py-3 dark:border-neutral-700; }
 .demo-bordered-table th, .demo-bordered-table td { border: 1px solid var(--bs-table-border-color, var(--bs-border-color)); }
 .demo-bordered-table td { background: var(--bs-table-bg); }
 .demo-compact-table th, .demo-compact-table td { @apply p-1; }
 
-.demo-navbar { @apply fixed inset-x-0 top-0 z-50 bg-slate-900 text-white; }
+.demo-navbar { @apply fixed inset-x-0 top-0 z-50 bg-neutral-900 text-white; }
 .demo-navbar > div { @apply flex min-h-18 flex-wrap items-center gap-4; }
 .demo-brand { @apply inline-flex items-center gap-2 whitespace-nowrap text-lg font-semibold text-white no-underline hover:text-white; }
-.demo-nav-toggle { @apply ms-auto grid size-10 place-items-center rounded-lg border border-slate-500 text-white xl:hidden; }
+.demo-nav-toggle { @apply ms-auto grid size-10 place-items-center rounded-lg border border-neutral-500 text-white xl:hidden; }
 .demo-nav-toggle-icon::before { content: "☰"; font-size: 1.25rem; }
 .demo-nav-panel { @apply hidden w-full xl:flex xl:w-auto xl:flex-1 xl:items-center; }
 .demo-nav-panel.show { @apply flex flex-col items-stretch gap-2 py-2 xl:flex-row xl:py-0; }
 .demo-nav-items { @apply flex flex-col gap-1 p-0 xl:flex-row xl:items-center; }
-.demo-nav-link { @apply block rounded-md px-2 py-1.5 text-slate-300 no-underline hover:bg-white/10 hover:text-white; }
+.demo-nav-link { @apply block rounded-md px-2 py-1.5 text-neutral-300 no-underline hover:bg-white/10 hover:text-white; }
 .demo-nav-link.active { @apply bg-white/10 text-white; }
 .demo-navbar .demo-menu-item { color: var(--bs-body-color); }
-.framework-select { @apply w-full min-w-32 border-slate-500 bg-slate-800 text-white xl:w-auto; }
-.framework-select option { @apply bg-white text-slate-900; }
+.framework-select { @apply w-full min-w-32 border-neutral-500 bg-neutral-800 text-white xl:w-auto; }
+.framework-select option { @apply bg-white text-neutral-900; }
 html:not([data-framework]) .demo-nav-panel { @apply block; }
 html:not([data-framework]) .demo-nav-toggle { @apply hidden; }
 html:not([data-framework]) .relative:focus-within > .demo-menu { @apply block; }

@@ -19,7 +19,7 @@
                         <span class="fas fa-arrow-left" aria-hidden="true"></span> All calendars
                     </a>
                 {% else %}
-                    <span class="demo-badge rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-normal text-base">
+                    <span class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
                         {{ calendars|length }} calendar{{ calendars|length == 1 ? '' : 's' }}
                     </span>
                 {% endif %}
@@ -39,7 +39,7 @@
                 <section class="demo-card calendar-directory-card border-0 rounded-2xl shadow-sm overflow-hidden mb-6"
                     style="--calendar-color: {{ calendar.color }};" aria-labelledby="calendar-heading-{{ calendar.id }}">
                     <div class="demo-card-body p-4 lg:p-6">
-                        <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                             <div class="flex items-start gap-4">
                                 <span class="calendar-directory-icon rounded-lg" aria-hidden="true">
                                     <span class="fas fa-calendar-alt"></span>
@@ -47,7 +47,7 @@
                                 <div>
                                     <h2 id="calendar-heading-{{ calendar.id }}" class="text-xl font-semibold mb-1">{{ calendar.name }}</h2>
                                     {% if description %}
-                                        <p class="text-slate-500 dark:text-slate-400 mb-0">{{ description }}</p>
+                                        <p class="text-neutral-500 dark:text-neutral-400 mb-0">{{ description }}</p>
                                     {% endif %}
                                 </div>
                             </div>
@@ -58,8 +58,8 @@
                             {% endif %}
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-2 sm:gap-4 py-4 border-b border-slate-200 dark:border-slate-700">
-                            <span class="text-sm text-slate-500 dark:text-slate-400">Browse in</span>
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-4 py-4 border-b border-neutral-200 dark:border-neutral-700">
+                            <span class="text-sm text-neutral-500 dark:text-neutral-400">Browse in</span>
                             <div class="demo-btn-group demo-btn-group-sm" role="group" aria-label="Browse {{ calendar.name }} events">
                                 <a href="{{ siteUrl }}demo/month/calendar/{{ calendar.handle }}" class="demo-btn demo-btn-outline">Month</a>
                                 <a href="{{ siteUrl }}demo/week/calendar/{{ calendar.handle }}" class="demo-btn demo-btn-outline">Week</a>
@@ -68,7 +68,7 @@
                         </div>
 
                         {% if craft.calendar.exportEnabled and calendar.icsUrl %}
-                            <div class="py-4 border-b border-slate-200 dark:border-slate-700">
+                            <div class="py-4 border-b border-neutral-200 dark:border-neutral-700">
                                 <label class="block mb-2 text-sm font-semibold" for="ics-url-{{ calendar.id }}">Subscribe to this calendar</label>
                                 <div class="demo-input-group demo-input-group-sm">
                                     <input id="ics-url-{{ calendar.id }}" type="text" class="demo-input" value="{{ calendar.icsUrl }}" readonly data-select-on-focus>
@@ -82,9 +82,9 @@
                         <div class="pt-4">
                             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                                 <h3 class="text-base font-semibold mb-0">Upcoming events</h3>
-                                <span class="text-sm text-slate-500 dark:text-slate-400">Next six months</span>
+                                <span class="text-sm text-neutral-500 dark:text-neutral-400">Next six months</span>
                             </div>
-                            <ul class="list-none p-0 border-t border-slate-200 dark:border-slate-700 mb-0">
+                            <ul class="list-none p-0 border-t border-neutral-200 dark:border-neutral-700 mb-0">
                                 {% include "demo/tailwind/layouts/_calendar_events" with {occurrences: visibleOccurrences} only %}
                             </ul>
                             {% if not segment3 and occurrences|length > 5 %}
@@ -94,7 +94,7 @@
                     </div>
                 </section>
             {% else %}
-                <div class="demo-card border-0 rounded-2xl shadow-sm p-6 text-slate-500 dark:text-slate-400">
+                <div class="demo-card border-0 rounded-2xl shadow-sm p-6 text-neutral-500 dark:text-neutral-400">
                     No calendars were found.
                 </div>
             {% endfor %}

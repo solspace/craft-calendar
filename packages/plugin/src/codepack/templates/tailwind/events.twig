@@ -66,39 +66,39 @@
             <section id="events_calendar" class="demo-card border-0 rounded-2xl shadow-sm p-4 lg:p-6" aria-labelledby="events-heading">
                 <h1 id="events-heading" class="text-2xl font-semibold mb-4 flex flex-wrap items-center gap-2">
                     <span>{{ isMonthView ? targetStartDate|date('F Y') : 'Upcoming Events' }}</span>
-                    <span class="demo-badge rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-normal text-base">
+                    <span class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
                         {{ pageInfo.total }} event{{ pageInfo.total == 1 ? '' : 's' }}
                     </span>
                 </h1>
 
-                <ul class="list-none p-0 border-t border-slate-200 dark:border-slate-700 mb-0">
+                <ul class="list-none p-0 border-t border-neutral-200 dark:border-neutral-700 mb-0">
                     {% for occurrence in occurrences %}
                         {% set event = occurrence.event %}
-                        <li class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-4 px-2 md:px-4{{ not loop.first ? ' border-t border-slate-200 dark:border-slate-700' }}">
+                        <li class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-4 px-2 md:px-4{{ not loop.first ? ' border-t border-neutral-200 dark:border-neutral-700' }}">
                             <div class="events-date sm:pt-1">
-                                <a class="inline-flex items-center gap-2 text-slate-900 dark:text-slate-100 no-underline hover:underline focus-visible:underline"
+                                <a class="inline-flex items-center gap-2 text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline"
                                     href="{{ siteUrl }}demo/day/{{ occurrence.startDate.format('Y/m/d') }}"
                                     aria-label="{{ occurrence.startDate.format('l, F j, Y') }}">
                                     <time class="inline-flex items-center gap-2" datetime="{{ occurrence.startDate.format('Y-m-d') }}">
                                         <span class="text-3xl leading-none">{{ occurrence.startDate.format('j') }}</span>
                                         <span class="inline-flex flex-col text-sm leading-tight">
                                             <span>{{ occurrence.startDate.format('D') }}</span>
-                                            <span class="text-slate-500 dark:text-slate-400">{{ occurrence.startDate.format('M') }}</span>
+                                            <span class="text-neutral-500 dark:text-neutral-400">{{ occurrence.startDate.format('M') }}</span>
                                         </span>
                                     </time>
                                 </a>
                             </div>
-                            <article class="calendar-agenda-event relative grow bg-slate-50 dark:bg-slate-800 rounded-lg px-4 py-2"
+                            <article class="calendar-agenda-event relative grow bg-neutral-50 dark:bg-neutral-800 rounded-lg px-4 py-2"
                                 style="--calendar-color: {{ event.calendar.color }};">
                                 <div class="flex flex-wrap items-center justify-between gap-2">
                                     <div>
                                         <h2 class="text-base font-semibold mb-1">
                                             <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
-                                                class="text-slate-900 dark:text-slate-100 no-underline hover:underline focus-visible:underline">
+                                                class="text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline">
                                                 {{ event.title }}
                                             </a>
                                         </h2>
-                                        <div class="text-sm text-slate-500 dark:text-slate-400">
+                                        <div class="text-sm text-neutral-500 dark:text-neutral-400">
                                             <span class="far fa-clock" aria-hidden="true"></span>
                                             {% if event.allDay %}
                                                 All day
@@ -114,25 +114,25 @@
                                         </div>
                                     </div>
                                     <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
-                                        class="demo-badge rounded-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 no-underline font-normal">
+                                        class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 no-underline font-normal">
                                         <span class="fas fa-calendar-alt calendar-color-icon me-1" aria-hidden="true"></span>
                                         {{ event.calendar.name }}
                                     </a>
                                 </div>
                                 {% if event['description'] is defined and event.description is not empty %}
-                                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 mb-0">{{ event.description|striptags }}</p>
+                                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-2 mb-0">{{ event.description|striptags }}</p>
                                 {% endif %}
                             </article>
                         </li>
                     {% else %}
-                        <li class="text-center text-slate-500 dark:text-slate-400 py-6">
+                        <li class="text-center text-neutral-500 dark:text-neutral-400 py-6">
                             {{ isMonthView ? 'No events found for this month.' : 'No events scheduled over the next 30 days.' }}
                         </li>
                     {% endfor %}
                 </ul>
 
                 {% if pageInfo.totalPages > 1 %}
-                    <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                    <div class="border-t border-neutral-200 dark:border-neutral-700 pt-4">
                         {{ pager(pageInfo) }}
                     </div>
                 {% endif %}
@@ -144,7 +144,7 @@
             <section class="demo-card border-0 rounded-2xl shadow-sm mt-6">
                 <div class="demo-card-body">
                     {% set month = craft.calendar.month({date: targetStartDate, calendarId: 0}) %}
-                    <h2 class="text-base font-semibold text-slate-500 dark:text-slate-400 mb-2">Browse by month</h2>
+                    <h2 class="text-base font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Browse by month</h2>
                     <div class="relative">
                         <button id="events-month-menu" type="button"
                             class="demo-btn demo-btn-outline flex items-center justify-between gap-2 w-full"

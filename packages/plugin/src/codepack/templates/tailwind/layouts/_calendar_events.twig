@@ -1,19 +1,19 @@
 {% for occurrence in occurrences %}
     {% set event = occurrence.event %}
 
-    <li class="flex items-start gap-4 py-4{{ not loop.first ? ' border-t border-slate-200 dark:border-slate-700' }}">
-        <time class="calendar-upcoming-date shrink-0 rounded-lg bg-slate-50 dark:bg-slate-800 text-center py-1"
+    <li class="flex items-start gap-4 py-4{{ not loop.first ? ' border-t border-neutral-200 dark:border-neutral-700' }}">
+        <time class="calendar-upcoming-date shrink-0 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-center py-1"
             datetime="{{ occurrence.startDate.format('Y-m-d') }}">
-            <span class="block text-sm text-slate-500 dark:text-slate-400">{{ occurrence.startDate.format('M') }}</span>
+            <span class="block text-sm text-neutral-500 dark:text-neutral-400">{{ occurrence.startDate.format('M') }}</span>
             <span class="block text-xl font-semibold leading-none">{{ occurrence.startDate.format('j') }}</span>
-            <span class="block text-sm text-slate-500 dark:text-slate-400">{{ occurrence.startDate.format('Y') }}</span>
+            <span class="block text-sm text-neutral-500 dark:text-neutral-400">{{ occurrence.startDate.format('Y') }}</span>
         </time>
         <div class="calendar-upcoming-info pt-1">
             <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
-                class="font-semibold text-slate-900 dark:text-slate-100 no-underline hover:underline focus-visible:underline">
+                class="font-semibold text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline">
                 {{ event.title }}
             </a>
-            <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <div class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                 <span class="far fa-clock" aria-hidden="true"></span>
                 {% if event.allDay %}
                     All day
@@ -26,5 +26,5 @@
         </div>
     </li>
 {% else %}
-    <li class="py-4 text-slate-500 dark:text-slate-400">No upcoming events in the next six months.</li>
+    <li class="py-4 text-neutral-500 dark:text-neutral-400">No upcoming events in the next six months.</li>
 {% endfor %}

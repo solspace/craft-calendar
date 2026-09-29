@@ -45,7 +45,7 @@
                             {% if day.dateLocalized.isToday %}
                                 <span class="demo-badge rounded-full bg-blue-600 text-white font-normal text-base">Today</span>
                             {% endif %}
-                            <span class="demo-badge rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-normal text-base">
+                            <span class="demo-badge rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
                                 {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
                             </span>
                             {% include "demo/tailwind/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'day', date: day.date} %}
@@ -62,7 +62,7 @@
                     </div>
                 </div>
 
-                <div class="border-t border-slate-200 dark:border-slate-700{{ day.dateLocalized.isToday ? ' bg-blue-50 dark:bg-blue-950 rounded-lg' }}">
+                <div class="border-t border-neutral-200 dark:border-neutral-700{{ day.dateLocalized.isToday ? ' bg-neutral-100 dark:bg-neutral-800 rounded-lg' }}">
                     {% if day.allDayOccurrenceCount %}
                         <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4"
                             aria-labelledby="all-day-heading">
@@ -85,7 +85,7 @@
                         {% if event.multiDay and not day.containsDate(occurrence.startDate) %}
                             {% set timeLabel = day.containsDate(occurrence.endDate) ? 'Ends ' ~ occurrence.endDate.format('g:ia') : 'Ongoing' %}
                         {% endif %}
-                        <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4{{ not loop.first or day.allDayOccurrenceCount ? ' border-t border-slate-200 dark:border-slate-700' }}"
+                        <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4{{ not loop.first or day.allDayOccurrenceCount ? ' border-t border-neutral-200 dark:border-neutral-700' }}"
                             aria-labelledby="day-time-{{ loop.index }}">
                             <div class="day-time sm:pt-2">
                                 <h2 id="day-time-{{ loop.index }}" class="text-base font-semibold mb-0">{{ timeLabel }}</h2>
@@ -99,7 +99,7 @@
                     {% endfor %}
 
                     {% if not day.occurrenceCount %}
-                        <p class="text-center text-slate-500 dark:text-slate-400 py-6 mb-0">No events scheduled for this day.</p>
+                        <p class="text-center text-neutral-500 dark:text-neutral-400 py-6 mb-0">No events scheduled for this day.</p>
                     {% endif %}
                 </div>
             </section>

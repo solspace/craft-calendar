@@ -70,12 +70,12 @@
                     </header>
 
                     <div class="event-detail-summary rounded-lg p-4 md:p-6 mb-6" style="--calendar-color: {{ event.calendar.color }};">
-                        <p class="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase mb-1">When</p>
+                        <p class="text-neutral-500 dark:text-neutral-400 text-sm font-semibold uppercase mb-1">When</p>
                         <p class="text-xl font-semibold mb-1">{{ displayStartDate.format('l, F j, Y') }}</p>
                         {% if displayAllDay %}
-                            <p class="text-slate-500 dark:text-slate-400 mb-0">All day</p>
+                            <p class="text-neutral-500 dark:text-neutral-400 mb-0">All day</p>
                         {% else %}
-                            <p class="text-slate-500 dark:text-slate-400 mb-0">
+                            <p class="text-neutral-500 dark:text-neutral-400 mb-0">
                                 {{ displayStartDate.format('g:ia') }} –
                                 {% if displayMultiDay %}
                                     {{ displayEndDate.format('l, F j, Y') }} at {{ displayEndDate.format('g:ia') }}
@@ -95,7 +95,7 @@
                         {% endif %}
                         <div class="event-detail-field">
                             <dt>Duration</dt>
-                            <dd><span class="far fa-clock text-slate-500 dark:text-slate-400 me-1" aria-hidden="true"></span>{{ event.duration.humanReadable }}</dd>
+                            <dd><span class="far fa-clock text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>{{ event.duration.humanReadable }}</dd>
                         </div>
                         {% if event['description'] is defined and event.description is not empty %}
                             <div class="event-detail-field">
@@ -107,7 +107,7 @@
                             <dt>Repeats</dt>
                             <dd>
                                 {% if event.repeats() %}
-                                    <span class="fas fa-redo text-slate-500 dark:text-slate-400 me-1" aria-hidden="true"></span>{{ event.readableRepeatRule }}
+                                    <span class="fas fa-redo text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>{{ event.readableRepeatRule }}
                                 {% else %}
                                     No
                                 {% endif %}
@@ -116,7 +116,7 @@
                     </dl>
 
                     {% if event.repeats() %}
-                        <section class="border-t border-slate-200 dark:border-slate-700 mt-6 pt-6" aria-labelledby="event-upcoming-title">
+                        <section class="border-t border-neutral-200 dark:border-neutral-700 mt-6 pt-6" aria-labelledby="event-upcoming-title">
                             <h2 id="event-upcoming-title" class="text-xl font-semibold mb-4">Upcoming recurrences</h2>
                             {% set occurrences = craft.calendar.occurrences({
                                 event: event.id,
@@ -127,17 +127,17 @@
                             }).all() %}
 
                             {% if occurrences %}
-                                <ul class="demo-list-group border-t border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700">
+                                <ul class="demo-list-group border-t border-neutral-200 dark:border-neutral-700 border-b border-neutral-200 dark:border-neutral-700">
                                     {% for occurrence in occurrences %}
                                         {% set occurrenceMultiDay = occurrence.startDate.format('Y-m-d') != occurrence.endDate.format('Y-m-d') %}
                                         <li class="demo-list-item flex flex-wrap items-center justify-between gap-2 px-0 py-4">
                                             <span class="event-detail-occurrence-date">
-                                                <span class="far fa-calendar text-slate-500 dark:text-slate-400 me-1" aria-hidden="true"></span>
+                                                <span class="far fa-calendar text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>
                                                 {{ occurrence.startDate.format('l, F j, Y') }}
                                                 {% if occurrence.allDay %}
-                                                    <span class="text-slate-500 dark:text-slate-400">(all day)</span>
+                                                    <span class="text-neutral-500 dark:text-neutral-400">(all day)</span>
                                                 {% else %}
-                                                    <span class="text-slate-500 dark:text-slate-400">
+                                                    <span class="text-neutral-500 dark:text-neutral-400">
                                                         at {{ occurrence.startDate.format('g:ia') }} –
                                                         {% if occurrenceMultiDay %}
                                                             {{ occurrence.endDate.format('l, F j, Y') }} at {{ occurrence.endDate.format('g:ia') }}
@@ -155,7 +155,7 @@
                                     {% endfor %}
                                 </ul>
                             {% else %}
-                                <p class="text-slate-500 dark:text-slate-400 mb-0">No occurrences found for the next six months.</p>
+                                <p class="text-neutral-500 dark:text-neutral-400 mb-0">No occurrences found for the next six months.</p>
                             {% endif %}
                         </section>
                     {% endif %}

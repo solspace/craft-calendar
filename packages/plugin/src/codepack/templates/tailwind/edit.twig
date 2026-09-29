@@ -100,7 +100,7 @@
                         </div>
                     </div>
 
-                    <fieldset class="event-editor-card border-t border-slate-200 dark:border-slate-700 mt-6 pt-6">
+                    <fieldset class="event-editor-card border-t border-neutral-200 dark:border-neutral-700 mt-6 pt-6">
                         <legend>{{ 'Schedule'|t }}</legend>
 
                         <div class="flex flex-wrap -mx-3 gap-y-4">
@@ -140,7 +140,7 @@
                     </fieldset>
 
                     {% if recurrenceEnabled %}
-                        <fieldset class="event-editor-card border-t border-slate-200 dark:border-slate-700 mt-6 pt-6">
+                        <fieldset class="event-editor-card border-t border-neutral-200 dark:border-neutral-700 mt-6 pt-6">
                             <legend>{{ 'Recurrence'|t }}</legend>
 
                             <div class="demo-alert demo-alert-info" data-complex-rule-warning hidden>
@@ -358,7 +358,7 @@
                     {% endif %}
 
                     {% if event['location'] is defined or event['description'] is defined %}
-                        <section class="border-t border-slate-200 dark:border-slate-700 mt-6 pt-6" aria-labelledby="event-details-heading">
+                        <section class="border-t border-neutral-200 dark:border-neutral-700 mt-6 pt-6" aria-labelledby="event-details-heading">
                             <h2 id="event-details-heading" class="text-base font-semibold mb-4">{{ 'Details'|t }}</h2>
                             <div class="flex flex-wrap -mx-3 gap-y-4">
                                 {% if event['location'] is defined %}
@@ -377,7 +377,7 @@
                         </section>
                     {% endif %}
 
-                    <div class="flex flex-wrap items-center gap-2 border-t border-slate-200 dark:border-slate-700 mt-6 pt-6">
+                    <div class="flex flex-wrap items-center gap-2 border-t border-neutral-200 dark:border-neutral-700 mt-6 pt-6">
                         <button type="submit" class="demo-btn demo-btn-primary px-6">{{ 'Save Event'|t }}</button>
                         <a href="{{ siteUrl }}demo/{{ event.id ? 'event/' ~ event.id : 'month' }}" class="demo-btn demo-btn-outline">{{ 'Cancel'|t }}</a>
                     </div>

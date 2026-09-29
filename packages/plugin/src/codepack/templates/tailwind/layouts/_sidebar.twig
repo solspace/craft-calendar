@@ -15,7 +15,7 @@
         {% set datePath = isCalendarView ? targetDate|date(segment2 == "month" ? 'Y/m' : 'Y/m/d') : null %}
         {% set allSelected = not selectedHandle and (isCalendarView or segment2 == "calendars") %}
 
-        <h2 class="text-base font-semibold text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-4 mb-2">{{ isCalendarView ? 'Filter by calendar' : 'Calendars' }}</h2>
+        <h2 class="text-base font-semibold text-neutral-500 dark:text-neutral-400 border-t border-neutral-200 dark:border-neutral-700 pt-4 mb-2">{{ isCalendarView ? 'Filter by calendar' : 'Calendars' }}</h2>
         <div class="relative">
             <button id="sidebar-calendar-menu" type="button"
                 class="demo-btn demo-btn-outline flex items-center justify-between gap-2 w-full"
