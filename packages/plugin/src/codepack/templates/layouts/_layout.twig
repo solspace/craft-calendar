@@ -8,9 +8,9 @@
     <title>Calendar Demo | {{ pageTitle ? pageTitle : "Home" }}</title>
     <meta name="theme-color" content="#ffffff">
     <script src="{{ siteUrl }}assets/demo/js/theme.js"></script>
+    <script src="{{ siteUrl }}assets/demo/js/framework.js" data-assets-base="{{ siteUrl }}assets/demo/"></script>
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/main.css">
+    <noscript><link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css"></noscript>
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/demo/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/demo/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/demo/favicon/favicon-16x16.png">
@@ -79,6 +79,13 @@
                     <a class="dropdown-item" href="https://docs.solspace.com/support/">Support</a>
                 </div>
             </div>
+            <div class="ms-xl-2 mt-2 mt-xl-0">
+                <label class="visually-hidden" for="framework-select">CSS framework</label>
+                <select id="framework-select" class="form-select form-select-sm framework-select" data-framework-select aria-label="CSS framework">
+                    <option value="tailwind">Tailwind 4</option>
+                    <option value="bootstrap">Bootstrap 5</option>
+                </select>
+            </div>
             <div class="dropdown ms-xl-2 mt-2 mt-xl-0">
                 <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="themeMenu"
                     data-bs-toggle="dropdown" aria-expanded="false" aria-label="Theme: Auto" data-theme-toggle>
@@ -108,7 +115,6 @@
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="{{ siteUrl }}assets/demo/js/main.js"></script>
 
 {% block footerJs %}{% endblock %}
