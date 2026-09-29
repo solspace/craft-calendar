@@ -172,6 +172,7 @@
                 rrule: rawEvent.rrule || "",
                 slug: rawEvent.slug || "",
             },
+            textColor: "var(--bs-body-color)",
             url: "",
         };
     }

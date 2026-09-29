@@ -145,7 +145,7 @@
 
 #calendar-wrapper.fc .fc-daygrid-block-event .fc-event-main,
 #calendar-wrapper.fc .fc-timegrid-event .fc-event-main {
-  color: var(--bs-body-color);
+  color: var(--bs-body-color) !important;
 }
 
 #calendar-wrapper.fc .fc-daygrid-block-event:hover,
