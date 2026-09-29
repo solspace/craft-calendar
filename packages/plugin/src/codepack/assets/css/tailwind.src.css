@@ -138,6 +138,7 @@ button, select, summary { cursor: pointer; }
 .demo-nav-link.active { @apply bg-white/10 text-white; }
 .demo-navbar .demo-menu-item { color: var(--bs-body-color); }
 .demo-nav-select { @apply w-full min-w-32 border-neutral-500 bg-neutral-800 text-white xl:w-auto; }
+.demo-nav-select[data-theme-select] { @apply min-w-24; }
 .demo-nav-select option { @apply bg-white text-neutral-900; }
 html:not([data-framework]) .demo-nav-panel { @apply block; }
 html:not([data-framework]) .demo-nav-toggle { @apply hidden; }
