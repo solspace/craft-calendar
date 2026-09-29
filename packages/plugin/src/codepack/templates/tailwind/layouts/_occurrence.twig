@@ -12,7 +12,7 @@
     {% if event.multiDay %}
         <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
             data-calendar-popover data-calendar-color="{{ event.calendar.color }}" aria-label="{{ event.title }}">
-            {% if day.containsDate(occurrence.startDate) or day.containsDate(occurrence.endDate) %}
+            {% if day.containsDate(occurrence.startDate) %}
                 {{ event.title }}
             {% else %}
                 &nbsp;
