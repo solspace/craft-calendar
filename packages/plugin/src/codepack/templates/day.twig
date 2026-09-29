@@ -19,8 +19,6 @@
     <div class="row g-4">
         <div class="col-lg-9">
 
-            {% include "demo/layouts/_calendar_banner" %}
-
             {% set day = craft.calendar.day({
                 date: targetDate,
                 calendar: calendarHandle,
@@ -50,6 +48,7 @@
                             <span class="badge rounded-pill bg-body-tertiary border text-body-secondary fw-normal fs-6">
                                 {{ day.occurrenceCount }} event{{ day.occurrenceCount > 1 or day.occurrenceCount == 0 ? "s" }}
                             </span>
+                            {% include "demo/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'day', date: day.date} %}
                         </h1>
                     </div>
 

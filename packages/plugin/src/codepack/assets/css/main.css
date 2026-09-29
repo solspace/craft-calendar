@@ -30,17 +30,6 @@ body {
 	color: var(--calendar-contrast);
 }
 
-.calendar-filter-banner {
-	--bs-alert-color: var(--calendar-contrast);
-	--bs-alert-bg: var(--calendar-surface);
-	--bs-alert-border-color: var(--calendar-color);
-}
-
-[data-bs-theme="dark"] .calendar-filter-banner {
-	--bs-alert-color: var(--bs-body-color);
-	--bs-alert-bg: color-mix(in srgb, var(--calendar-color) 14%, var(--bs-body-bg));
-}
-
 .calendar-details-label {
 	width: 20%;
 }

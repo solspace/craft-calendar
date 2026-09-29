@@ -19,8 +19,6 @@
     <div class="row g-4">
         <div class="col-lg-9">
 
-            {% include "demo/layouts/_calendar_banner" %}
-
             <section id="week_calendar" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4">
                 {% set week = calendar.week({
                     date: targetDate,
@@ -45,6 +43,7 @@
                             <span class="badge rounded-pill bg-body-tertiary border text-body-secondary fw-normal fs-6">
                                 {{ week.occurrenceCount }} event{{ week.occurrenceCount > 1 or week.occurrenceCount == 0 ? "s" }}
                             </span>
+                            {% include "demo/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'week', date: week.date} %}
                         </h1>
                     </div>
 
