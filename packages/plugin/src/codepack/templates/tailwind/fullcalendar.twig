@@ -147,10 +147,10 @@
 
             <div class="calendar-dialog__actions">
                 <div class="relative" data-event-manage-actions hidden>
-                    <button class="demo-btn demo-btn-outline demo-dropdown-trigger" type="button" data-demo-dropdown aria-expanded="false">
+                    <button id="event-manage-button" class="demo-btn demo-btn-outline demo-dropdown-trigger" type="button" data-demo-dropdown aria-expanded="false" aria-controls="event-manage-options">
                         {{ 'More actions'|t }}
                     </button>
-                    <ul class="demo-menu">
+                    <ul id="event-manage-options" class="demo-menu" aria-labelledby="event-manage-button">
                         <li><button type="button" class="demo-menu-item text-red-600 dark:text-red-400" data-delete-occurrence>{{ 'Delete Occurrence'|t }}</button></li>
                         <li><button type="button" class="demo-menu-item text-red-600 dark:text-red-400" data-delete-series>{{ 'Delete Series'|t }}</button></li>
                     </ul>

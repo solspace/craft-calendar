@@ -1,4 +1,6 @@
-{% set targetDate = "today" %}
+{% set targetDate = targetDate|default('today') %}
+{% set miniCalendarHandle = selectedHandle|default(null) ?: (calendarHandle|default(null) ?: craft.app.request.getQueryParam('calendar')) %}
+{% set miniCalendarAgenda = craft.app.request.getQueryParam('view') == 'agenda' %}
 
 {% if segment2 in ["month", "week", "day", "mini_cal"] %}
     {% if segment3 == "calendar" %}
@@ -9,9 +11,11 @@
         {% set targetDate = segment3~"-"~segment4~"-01" %}
     {% endif %}
 {% endif %}
+{% set targetDate = craft.app.request.getQueryParam('date') ?: targetDate %}
 
 {% set month = craft.calendar.month({
     date: targetDate,
+    calendar: miniCalendarHandle,
 }) %}
 
 {% set dateBoundsHelper = now.diff(month.nextDate)|date('%r%a') %}
@@ -23,7 +27,7 @@
             <tr>
                 <th>
                     {% if dateBoundsHelper > -365 and segment2 != "calendars" %}
-                        <a id="mini_calendar_prev_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Previous month, {{ month.previousDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.previousDate.format('Y/m') }}/">&larr;</a>
+                        <a id="mini_calendar_prev_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Previous month, {{ month.previousDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{% if miniCalendarHandle %}calendar/{{ miniCalendarHandle|url_encode }}/{% endif %}{{ month.previousDate.format('Y/m') }}/{% if miniCalendarAgenda %}?view=agenda{% endif %}">&larr;</a>
                     {% endif %}
                 </th>
                 <th colspan="5" id="mini_calendar_month" tabindex="-1">
@@ -31,7 +35,7 @@
                 </th>
                 <th>
                     {% if dateBoundsHelper < 365 and segment2 != "calendars" %}
-                        <a id="mini_calendar_next_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Next month, {{ month.nextDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{{ month.nextDate.format('Y/m') }}/">&rarr;</a>
+                        <a id="mini_calendar_next_month" data-mini-calendar-nav class="text-decoration-none d-inline-block px-2 py-1" aria-label="Next month, {{ month.nextDate.format('F Y') }}" href="{{ siteUrl }}demo/month/{% if miniCalendarHandle %}calendar/{{ miniCalendarHandle|url_encode }}/{% endif %}{{ month.nextDate.format('Y/m') }}/{% if miniCalendarAgenda %}?view=agenda{% endif %}">&rarr;</a>
                     {% endif %}
                 </th>
             </tr>
@@ -50,7 +54,7 @@
                             <div class="mini_calendar_date">
                                 {% if month.containsDate(day.date) %}
                                     {% if count %}
-                                        <a href="{{ siteUrl }}demo/day/{{ day.date.format('Y/m/d') }}" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}: {{ count }} event{{ count == 1 ? '' : 's' }}">
+                                        <a href="{{ siteUrl }}demo/day/{% if miniCalendarHandle %}calendar/{{ miniCalendarHandle|url_encode }}/{% endif %}{{ day.date.format('Y/m/d') }}{% if miniCalendarAgenda %}?view=agenda{% endif %}" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}: {{ count }} event{{ count == 1 ? '' : 's' }}">
                                             <span class="mini_calendar_day_number">{{ day.date.format('j') }}</span>
                                         </a>
                                     {% else %}

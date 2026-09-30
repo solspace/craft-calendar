@@ -16,14 +16,14 @@
         <div class="relative">
             <button id="sidebar-calendar-menu" type="button"
                 class="demo-btn demo-btn-outline flex items-center justify-between gap-2 w-full"
-                data-demo-dropdown aria-expanded="false"{% if selectedCalendar %} style="--calendar-color: {{ selectedCalendar.color }};"{% endif %}>
+                data-demo-dropdown aria-expanded="false" aria-controls="sidebar-calendar-options"{% if selectedCalendar %} style="--calendar-color: {{ selectedCalendar.color }};"{% endif %}>
                 <span class="flex items-center gap-2 truncate">
                     <span class="fas fa-calendar-alt{{ selectedCalendar ? ' calendar-color-icon' : '' }}" aria-hidden="true"></span>
                     <span class="truncate">{{ selectedCalendar ? selectedCalendar.name : 'All calendars' }}</span>
                 </span>
                 <span class="fas fa-chevron-down text-sm shrink-0" aria-hidden="true"></span>
             </button>
-            <ul class="demo-menu right-0 left-auto w-full sidebar-dropdown-menu" aria-labelledby="sidebar-calendar-menu">
+            <ul id="sidebar-calendar-options" class="demo-menu right-0 left-auto w-full sidebar-dropdown-menu" aria-labelledby="sidebar-calendar-menu">
                 <li>
                     <a href="{{ siteUrl }}demo/{{ isCalendarView ? viewType ~ '/' ~ datePath : 'calendars' }}{{ viewQuery }}"
                         class="demo-menu-item{{ allSelected ? ' active' : '' }}"{% if allSelected %} aria-current="page"{% endif %}>

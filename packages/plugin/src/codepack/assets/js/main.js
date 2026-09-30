@@ -170,7 +170,9 @@ miniCalendar?.addEventListener("click", async (event) => {
   if (url.origin !== window.location.origin || !url.pathname.includes("/month/")) return;
 
   event.preventDefault();
-  url.pathname = url.pathname.replace("/month/", "/mini_cal/");
+  const filteredMonth = url.pathname.match(/\/month\/calendar\/([^/]+)\//);
+  if (filteredMonth) url.searchParams.set("calendar", decodeURIComponent(filteredMonth[1]));
+  url.pathname = url.pathname.replace(/\/month\/(?:calendar\/[^/]+\/)?/, "/mini_cal/");
   link.setAttribute("aria-disabled", "true");
 
   try {
