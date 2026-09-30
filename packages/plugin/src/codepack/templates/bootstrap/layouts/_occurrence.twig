@@ -1,0 +1,32 @@
+{% set event = occurrence.event %}
+{% set classes = "" %}
+{% set classes = classes ~ (event.allDay ? " all_day") %}
+{% if event.multiDay %}
+    {% set classes = classes ~ " multi_day" %}
+    {% set classes = classes ~ (day.containsDate(occurrence.startDate) ? " first_day") %}
+    {% set classes = classes ~ (day.containsDate(occurrence.endDate) ? " last_day") %}
+{% endif %}
+
+<div class="event tips{{ event.multiDay ? '' : ' calendar-agenda-event' }}{{ classes }}"
+    style="--calendar-color: {{ event.calendar.color }}; --calendar-surface: {{ event.calendar.lighterColor }}; --calendar-contrast: {{ event.calendar.contrastColor }};">
+    {% if event.multiDay %}
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+            data-calendar-popover data-calendar-color="{{ event.calendar.color }}" aria-label="{{ event.title }}">
+            {% if day.containsDate(occurrence.startDate) %}
+                {{ event.title }}
+            {% else %}
+                &nbsp;
+            {% endif %}
+        </a>
+    {% else %}
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+            data-calendar-popover data-calendar-color="{{ event.calendar.color }}">
+            {{ event.title }}
+        </a>
+        {% if not event.allDay %}
+            <span class="event-time">{{ occurrence.startDate.format('g:ia') }}</span>
+        {% endif %}
+    {% endif %}
+
+    {% include "demo/bootstrap/layouts/_event_popover" %}
+</div>

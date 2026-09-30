@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Demo Templates for Calendar">
+    <meta name="author" content="Solspace">
+    <title>Calendar Demo | {{ pageTitle ? pageTitle : "Home" }}</title>
+    <meta name="theme-color" content="#ffffff">
+    <script src="{{ siteUrl }}assets/demo/js/theme.js?v=2"></script>
+    <script src="{{ siteUrl }}assets/demo/js/framework.js"></script>
+    <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css?v=18">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ siteUrl }}assets/demo/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="{{ siteUrl }}assets/demo/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ siteUrl }}assets/demo/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ siteUrl }}assets/demo/favicon/favicon-16x16.png">
+    <link rel="manifest" href="{{ siteUrl }}assets/demo/favicon/site.webmanifest">
+    {% block headerCss %}{% endblock %}
+</head>
+
+{# Acquire URL segments #}
+{% set segment1 = craft.app.request.segment(1) %}
+{% set segment2 = craft.app.request.segment(2) %}
+{% set segment3 = craft.app.request.segment(3) %}
+{% set segment4 = craft.app.request.segment(4) %}
+{% set segment5 = craft.app.request.segment(5) %}
+{% set segment6 = craft.app.request.segment(6) %}
+{% set segment7 = craft.app.request.segment(7) %}
+
+<body id="top" class="flex min-h-screen flex-col bg-neutral-50 dark:bg-neutral-800">
+<a class="demo-skip-link absolute bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 p-2" href="#main-content">Skip to main content</a>
+
+{% if page is not defined %}
+    {% set page = "month" %}
+{% endif %}
+
+<nav class="demo-navbar bg-neutral-900 fixed inset-x-0 top-0 z-50 shadow-sm" aria-label="Main navigation">
+    <div class="w-full px-4 lg:px-6">
+        <a class="demo-brand inline-flex items-center gap-2" href="{{ siteUrl }}demo/">
+            <img src="{{ siteUrl }}assets/demo/images/icon.svg" alt="" width="30" height="30">
+            <span>Calendar Demo</span>
+        </a>
+        <button class="demo-nav-toggle" type="button" data-nav-toggle aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="demo-nav-toggle-icon"></span>
+        </button>
+        <div class="demo-nav-panel" id="navbarSupportedContent">
+            <ul class="demo-nav-items me-auto xl:gap-1">
+                <li>
+                    <a class="demo-nav-link px-2 rounded-md{{ page == 'month' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/month"{% if page == 'month' %} aria-current="page"{% endif %}>Month</a>
+                </li>
+                <li>
+                    <a class="demo-nav-link px-2 rounded-md{{ page == 'week' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/week"{% if page == 'week' %} aria-current="page"{% endif %}>Week</a>
+                </li>
+                <li>
+                    <a class="demo-nav-link px-2 rounded-md{{ page == 'day' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/day"{% if page == 'day' %} aria-current="page"{% endif %}>Day</a>
+                </li>
+                <li class="hidden xl:flex items-center px-2" aria-hidden="true"><span class="h-5 border-l border-neutral-600"></span></li>
+                <li>
+                    <a class="demo-nav-link px-2 rounded-md{{ page == 'events' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/events"{% if page == 'events' %} aria-current="page"{% endif %}>Upcoming</a>
+                </li>
+                <li>
+                    <a class="demo-nav-link px-2 rounded-md{{ page == 'calendars' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/calendars"{% if page == 'calendars' %} aria-current="page"{% endif %}>Calendars</a>
+                </li>
+                <li class="hidden xl:flex items-center px-2" aria-hidden="true"><span class="h-5 border-l border-neutral-600"></span></li>
+                <li>
+                    <a class="demo-nav-link px-2 rounded-md{{ page == 'fullcalendar' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/fullcalendar"{% if page == 'fullcalendar' %} aria-current="page"{% endif %}>FullCalendar</a>
+                </li>
+                <li class="mt-2 xl:mt-0 xl:ms-1">
+                    <a class="demo-btn demo-btn-primary demo-btn-sm" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' and segment4 == 'new' %} aria-current="page"{% endif %}>
+                        <span class="fas fa-plus" aria-hidden="true"></span> Create Event
+                    </a>
+                </li>
+            </ul>
+            <div class="xl:ms-2 mt-2 xl:mt-0">
+                <label class="sr-only" for="framework-select">CSS framework</label>
+                <select id="framework-select" class="demo-select demo-input-sm demo-nav-select" data-framework-select aria-label="CSS framework">
+                    <option value="tailwind">Tailwind 4</option>
+                    <option value="bootstrap">Bootstrap 5</option>
+                </select>
+            </div>
+            <div class="xl:ms-2 mt-2 xl:mt-0">
+                <label class="sr-only" for="theme-select">Color mode</label>
+                <select id="theme-select" class="demo-select demo-input-sm demo-nav-select" data-theme-select>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="auto" selected>Auto</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main id="main-content" class="mx-auto w-full max-w-7xl flex-1 px-4 py-4 pb-12" tabindex="-1">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="demo-footer border-t border-neutral-200 bg-neutral-50 py-6 text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 mt-12">
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
+        <p class="m-0">Calendar for Craft CMS. &copy; 2010-{{ "now"|date("Y") }} <a href="https://solspace.com">Solspace, Inc.</a></p>
+        <nav class="flex flex-wrap gap-x-4 gap-y-2" aria-label="Resources">
+            <a href="https://plugins.craftcms.com/calendar">Plugin Store</a>
+            <a href="https://docs.solspace.com/craft/calendar/v6/">Documentation</a>
+            <a href="https://docs.solspace.com/support/">Support</a>
+        </nav>
+    </div>
+</footer>
+
+<script src="{{ siteUrl }}assets/demo/js/main.js"></script>
+
+{% block footerJs %}{% endblock %}
+</body>
+</html>

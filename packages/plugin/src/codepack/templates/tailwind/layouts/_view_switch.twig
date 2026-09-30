@@ -1,0 +1,4 @@
+<nav class="demo-btn-group demo-btn-group-sm" aria-label="{{ viewType|capitalize }} view">
+    <a class="demo-btn {{ activeView == 'agenda' ? 'demo-btn-primary' : 'demo-btn-outline' }}" href="{{ siteUrl }}demo/{{ viewType }}?framework=tailwind&amp;view=agenda&amp;date={{ date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"{% if activeView == 'agenda' %} aria-current="page"{% endif %}>Agenda view</a>
+    <a class="demo-btn {{ activeView == 'grid' ? 'demo-btn-primary' : 'demo-btn-outline' }}" href="{{ siteUrl }}demo/{{ viewType }}?framework=tailwind&amp;date={{ date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"{% if activeView == 'grid' %} aria-current="page"{% endif %}>Grid view</a>
+</nav>

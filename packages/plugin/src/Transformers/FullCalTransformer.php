@@ -10,6 +10,8 @@ use Solspace\Calendar\Models\OccurrenceModel;
 
 class FullCalTransformer
 {
+    private array $readableRepeatRules = [];
+
     public function fromElement(Event $element): array
     {
         $id = $element->id.'-'.$element->startDate->format('YmdHis');
@@ -38,6 +40,7 @@ class FullCalTransformer
 
             'editable' => Calendar::getInstance()->settings->isDragAndDropEnabled(),
             'rrule' => $element->getRRuleRFCString(),
+            'readableRepeatRule' => $this->getReadableRepeatRule($element),
         ];
     }
 
@@ -78,12 +81,22 @@ class FullCalTransformer
 
             'editable' => Calendar::getInstance()->settings->isDragAndDropEnabled(),
             'rrule' => $model->event->getRRuleRFCString(),
+            'readableRepeatRule' => $this->getReadableRepeatRule($model->event),
         ];
     }
 
     public function fromArray(array $data): array
     {
         return $data;
+    }
+
+    private function getReadableRepeatRule(Event $event): ?string
+    {
+        if (!\array_key_exists($event->id, $this->readableRepeatRules)) {
+            $this->readableRepeatRules[$event->id] = $event->getReadableRepeatRule();
+        }
+
+        return $this->readableRepeatRules[$event->id];
     }
 
     private function formatFloatingDate(Carbon $date, bool $allDay): string

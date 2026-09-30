@@ -1,0 +1,31 @@
+@import url("./calendar.css?v=4");
+
+/* Bootstrap loads its components and utilities from the CDN. Only demo-specific
+   additions belong here; the calendar's own styles live in calendar.css. */
+.navbar.fixed-top {
+    min-height: 4rem;
+}
+
+.demo-nav-select {
+    width: auto;
+    min-width: 7rem;
+    padding-block: .25rem;
+}
+
+.navbar .vr {
+    align-self: center;
+    height: 1.25rem;
+}
+
+.navbar .nav-link.active {
+    position: relative;
+}
+
+.navbar .nav-link.active::after {
+    content: "";
+    position: absolute;
+    inset-inline: .5rem;
+    bottom: 0;
+    height: 2px;
+    background: #93c5fd;
+}

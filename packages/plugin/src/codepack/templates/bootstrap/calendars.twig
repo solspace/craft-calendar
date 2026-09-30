@@ -1,0 +1,109 @@
+{% extends "demo/bootstrap/layouts/_layout" %}
+
+{% set pageTitle = "Calendars" %}
+{% set page = "calendars" %}
+
+{% block content %}
+    {% set calendars = craft.calendar.calendars({
+        handle: segment3 ? segment3 : null,
+        orderBy: "name",
+        sort: "asc"
+    }) %}
+
+    <div class="row g-4">
+        <div class="col-lg-9">
+            <header class="card border-0 rounded-4 shadow-sm px-3 px-lg-4 py-3 mb-3 d-flex flex-row flex-wrap align-items-center justify-content-between gap-2">
+                <h1 class="h4 mb-0">Calendars</h1>
+                {% if segment3 %}
+                    <a href="{{ siteUrl }}demo/calendars" class="btn btn-outline-secondary btn-sm">
+                        <span class="fas fa-arrow-left" aria-hidden="true"></span> All calendars
+                    </a>
+                {% else %}
+                    <span class="badge rounded-pill bg-body-tertiary border text-body-secondary fw-normal fs-6">
+                        {{ calendars|length }} calendar{{ calendars|length == 1 ? '' : 's' }}
+                    </span>
+                {% endif %}
+            </header>
+
+            {% for calendar in calendars %}
+                {% set description = calendar.description|striptags|trim %}
+                {% set occurrences = craft.calendar.occurrences({
+                    rangeStart: 'today',
+                    rangeEnd: '+6 months',
+                    calendarId: calendar.id,
+                    orderBy: {startDate: constant('SORT_ASC')},
+                    limit: segment3 ? 20 : 6
+                }).all() %}
+                {% set visibleOccurrences = segment3 ? occurrences : occurrences|slice(0, 5) %}
+
+                <section class="card calendar-directory-card border-0 rounded-4 shadow-sm overflow-hidden mb-4"
+                    style="--calendar-color: {{ calendar.color }};" aria-labelledby="calendar-heading-{{ calendar.id }}">
+                    <div class="p-3 p-lg-4">
+                        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="calendar-directory-icon rounded-3" aria-hidden="true">
+                                    <span class="fas fa-calendar-alt"></span>
+                                </span>
+                                <div>
+                                    <h2 id="calendar-heading-{{ calendar.id }}" class="h5 mb-1">{{ calendar.name }}</h2>
+                                    {% if description %}
+                                        <p class="text-body-secondary mb-0">{{ description }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if craft.calendar.exportEnabled %}
+                                <a href="{{ siteUrl }}demo/export/calendar/{{ calendar.id }}" class="btn btn-outline-secondary btn-sm">
+                                    <span class="fas fa-file-export" aria-hidden="true"></span> Export events
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 mt-3 pt-3 border-top">
+                            <span class="small fw-semibold text-body-secondary">Browse events</span>
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Browse {{ calendar.name }} events">
+                                <a href="{{ siteUrl }}demo/month/calendar/{{ calendar.handle }}" class="btn btn-outline-secondary">Month</a>
+                                <a href="{{ siteUrl }}demo/week/calendar/{{ calendar.handle }}" class="btn btn-outline-secondary">Week</a>
+                                <a href="{{ siteUrl }}demo/day/calendar/{{ calendar.handle }}" class="btn btn-outline-secondary">Day</a>
+                            </div>
+                        </div>
+
+                        {% if craft.calendar.exportEnabled and calendar.icsUrl %}
+                            <div class="mt-3 pt-3 border-top">
+                                <label class="form-label small fw-semibold" for="ics-url-{{ calendar.id }}">Subscribe to this calendar</label>
+                                <div class="input-group input-group-sm">
+                                    <input id="ics-url-{{ calendar.id }}" type="text" class="form-control" value="{{ calendar.icsUrl }}" readonly data-select-on-focus>
+                                    <a href="{{ calendar.icsUrl }}" class="btn btn-outline-secondary" aria-label="Open {{ calendar.name }} subscription URL">
+                                        <span class="fas fa-external-link-alt" aria-hidden="true"></span> Open
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body p-3 p-lg-4 border-top">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                            <h3 class="h6 mb-0">Upcoming events</h3>
+                            <span class="small text-body-secondary">Next six months</span>
+                        </div>
+                        <div class="calendar-directory-events border rounded-3 px-3">
+                            <ul class="list-unstyled mb-0">
+                                {% include "demo/bootstrap/layouts/_calendar_events" with {occurrences: visibleOccurrences} only %}
+                            </ul>
+                        </div>
+                        {% if not segment3 and occurrences|length > 5 %}
+                            <a href="{{ siteUrl }}demo/calendars/{{ calendar.handle }}" class="btn btn-outline-secondary btn-sm mt-3">More upcoming events <span class="fas fa-arrow-right" aria-hidden="true"></span></a>
+                        {% endif %}
+                    </div>
+                </section>
+            {% else %}
+                <div class="card border-0 rounded-4 shadow-sm p-4 text-body-secondary">
+                    No calendars were found.
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-3">
+            {% include "demo/bootstrap/layouts/_sidebar" %}
+        </div>
+    </div>
+{% endblock %}

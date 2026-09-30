@@ -14,12 +14,15 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",
+    "@tailwindcss/cli": "4.3.3",
     "concurrently": "^10.0.3",
+    "tailwindcss": "4.3.3",
     "typescript": "^5.9.3"
   },
   "scripts": {
     "dev": "concurrently -n app,styles \"pnpm --filter @cal/app dev\" \"pnpm --filter @cal/styles dev\"",
     "build": "pnpm -r --if-present build",
+    "build:demo-tailwind": "tailwindcss -i packages/plugin/src/codepack/assets/css/tailwind.src.css -o packages/plugin/src/codepack/assets/css/tailwind.css --minify",
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "test": "pnpm -r --if-present test"

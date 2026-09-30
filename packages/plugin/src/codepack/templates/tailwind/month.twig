@@ -1,0 +1,147 @@
+{% extends "demo/tailwind/layouts/_layout" %}
+
+{% set pageTitle = "Month" %}
+{% set page = "month" %}
+
+{% block content %}
+
+    {% set targetDate = "today" %}
+    {% set calendarHandle = null %}
+    {% if segment3 == "calendar" %}
+        {% set calendarHandle = segment4 %}
+        {% if segment5 %}
+            {% set targetDate = segment5~"-"~segment6~"-01" %}
+        {% endif %}
+    {% elseif segment3 is not empty %}
+        {% set targetDate = segment3~"-"~segment4~"-01" %}
+    {% endif %}
+
+    <div class="month-layout">
+        <div class="month-layout-main">
+
+            <section id="month_calendar" class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-4 lg:p-6">
+                {% set month = calendar.month({
+                    date: targetDate,
+                    calendar: calendarHandle,
+                }) %}
+
+                {% set occurrenceCount = month.occurrenceCount %}
+                {% set dateBoundsHelper = now.diff(month.nextDate)|date('%r%a') %}
+                <h1 class="sr-only">Month of {{ month.date.format('F Y') }}</h1>
+
+                <div class="flex flex-wrap -mx-3 items-center gap-y-2 mb-4">
+                    <div class="w-1/2 px-3 md:w-1/4 order-1 md:order-0">
+                        {% if dateBoundsHelper > -365 %}
+                            <a class="demo-btn demo-btn-outline demo-btn-sm"
+                                href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.previousDate.format('Y/m') }}">
+                                <span class="fas fa-arrow-left" aria-hidden="true"></span> {{ month.previousDate.format('F') }}
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="w-full px-3 md:w-1/2 order-0 text-center">
+                        <div class="flex flex-wrap items-center justify-center gap-2">
+                            {% include "demo/tailwind/layouts/_month_heading" with {month: month, calendarHandle: calendarHandle} only %}
+                            <span class="inline-block whitespace-nowrap px-2 py-1 leading-none align-middle rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 font-normal text-base">
+                                {{ occurrenceCount }} event{{ occurrenceCount > 1 or occurrenceCount == 0 ? "s" }}
+                            </span>
+                            {% include "demo/tailwind/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'month', date: month.date} %}
+                        </div>
+                    </div>
+
+                    <div class="w-1/2 px-3 md:w-1/4 order-2 text-right">
+                        {% if dateBoundsHelper < 365 %}
+                            <a class="demo-btn demo-btn-outline demo-btn-sm"
+                                href="{{ siteUrl }}demo/month/{{ segment3 == "calendar" ? "calendar/"~segment4~"/" }}{{ month.nextDate.format('Y/m') }}">
+                                {{ month.nextDate.format('F') }} <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="month-table-scroll">
+                    <table id="month_calendar_inner" class="w-full border-collapse demo-bordered-table mb-0">
+                        <caption class="sr-only">Events for {{ month.date.format('F Y') }}</caption>
+                        <thead>
+                            <tr id="days_of_week">
+                                {% for day in month|first %}
+                                    <th class="day_of_week" scope="col"><abbr class="no-underline" title="{{ day.date.format('l') }}">{{ day.date.format('D') }}</abbr></th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for week in month %}
+                                {% set weekMultiDayKeys = [] %}
+                                {% for day in week %}
+                                    {% for occurrence in day.occurrences %}
+                                        {% if occurrence.event.multiDay %}
+                                            {% set occurrenceKey = occurrence.event.id ~ '-' ~ occurrence.startDate.format('YmdHis') %}
+                                            {% if occurrenceKey not in weekMultiDayKeys %}
+                                                {% set weekMultiDayKeys = weekMultiDayKeys|merge([occurrenceKey]) %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                <tr>
+                                    {% for day in week %}
+                                        {% set inMonth = month.containsDate(day.date) %}
+                                        <td class="day_cell{{ not inMonth ? ' out_of_range' }}{{ inMonth and day.dateLocalized.isToday ? ' today' }}">
+                                            <div class="date{{ inMonth and day.occurrenceCount ? ' has_events' }}">
+                                                {% if inMonth %}
+                                                    <a class="num" aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('F j, Y') }}"
+                                                        href="{{ siteUrl }}demo/day/{{ segment3 == 'calendar' ? "calendar/"~segment4~"/" }}{{ day.date.format('Y/m/d') }}">
+                                                        {{ day.date.format('j') }}
+                                                    </a>
+                                                {% else %}
+                                                    <span class="num">{{ day.date.format('j') }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% set dayMultiDayKeys = [] %}
+                                            {% for occurrence in day.occurrences %}
+                                                {% if occurrence.event.multiDay %}
+                                                    {% set dayMultiDayKeys = dayMultiDayKeys|merge([occurrence.event.id ~ '-' ~ occurrence.startDate.format('YmdHis')]) %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% set lastActiveLane = -1 %}
+                                            {% for occurrenceKey in weekMultiDayKeys %}
+                                                {% if occurrenceKey in dayMultiDayKeys %}
+                                                    {% set lastActiveLane = loop.index0 %}
+                                                {% endif %}
+                                            {% endfor %}
+
+                                            {% for occurrenceKey in weekMultiDayKeys %}
+                                                {% if loop.index0 <= lastActiveLane %}
+                                                    {% set matchingOccurrence = null %}
+                                                    {% for candidate in day.occurrences %}
+                                                        {% if (candidate.event.id ~ '-' ~ candidate.startDate.format('YmdHis')) == occurrenceKey %}
+                                                            {% set matchingOccurrence = candidate %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    {% if matchingOccurrence %}
+                                                        {% set occurrence = matchingOccurrence %}
+                                                        {% include "demo/tailwind/layouts/_occurrence" %}
+                                                    {% else %}
+                                                        <div class="event multi_day month-event-placeholder" aria-hidden="true">&nbsp;</div>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% for occurrence in day.occurrences %}
+                                                {% if not occurrence.event.multiDay %}
+                                                    {% include "demo/tailwind/layouts/_occurrence" %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+        {% include "demo/tailwind/layouts/_collapsible_sidebar" %}
+    </div>
+
+{% endblock %}
