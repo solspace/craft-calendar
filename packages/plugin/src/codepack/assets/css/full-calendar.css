@@ -140,7 +140,25 @@
 #calendar-wrapper.fc .fc-timegrid-event {
   color: var(--bs-body-color) !important;
   background: color-mix(in srgb, var(--calendar-event-color, var(--bs-primary)) 15%, var(--bs-body-bg)) !important;
-  border-inline-start: 3px solid var(--calendar-event-color, var(--bs-primary));
+  padding-inline-start: 0.8rem;
+}
+
+#calendar-wrapper.fc .fc-daygrid-block-event {
+  position: relative;
+}
+
+#calendar-wrapper.fc .fc-daygrid-block-event::before,
+#calendar-wrapper.fc .fc-timegrid-event::before {
+  position: absolute;
+  top: min(0.5rem, 25%);
+  bottom: min(0.5rem, 25%);
+  inset-inline-start: 0;
+  z-index: 1;
+  width: 0.2rem;
+  border-radius: 999px;
+  background: var(--calendar-event-color, var(--bs-primary));
+  content: "";
+  pointer-events: none;
 }
 
 #calendar-wrapper.fc .fc-daygrid-block-event .fc-event-main,
