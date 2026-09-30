@@ -1,5 +1,65 @@
 # Solspace Calendar Changelog
 
+## 6.0.0 - Unreleased
+
+### Added
+- Added **Tailwind CSS 4** demo templates alongside the upgraded **Bootstrap 5.3** templates, with a framework selector and Light, Dark, and Auto color modes.
+- Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.
+
+### Changed
+- Refreshed the Month, Week, Day, Upcoming Events, Calendars, and event detail demos with more consistent navigation, responsive layouts, calendar color accents, and expandable sidebars.
+- Improved the Create Event demo with clearer date, time, and recurrence controls.
+- Updated the custom **FullCalendar** integration demo with refined event styling and dialogs, plus links to FullCalendar and its v6 documentation.
+
+### Fixed
+- Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.
+
+## 5.0.31 - 2026-08-31
+
+### Fixed
+- Fixed an issue when adding additional events in the CP Month, Week, and Day views.
+
+## 5.0.30 - 2026-08-27
+
+### Changed
+- Added deprecation messages for upcoming GraphQL query changes.
+
+### Fixed
+- Fixed an issue where GraphQL event queries could truncate results before applying non-date `orderBy` criteria.
+- Fixed handling of multiple `orderBy` criteria when using Carbon date values.
+
+## 5.0.29 - 2026-07-03
+
+### Added
+- Added the ability to disable drag-and-drop event editing in the control panel Month/Week/Day views.
+
+### Fixed
+- Fixed an issue where the field mapping source for the Freeform element integration was stored as a numeric ID instead of the field handle.
+- Fixed a tooltip positioning issue in the control panel Month/Week/Day views.
+
+## 5.0.28 - 2026-05-08
+
+### Changed
+- Migrated event popups in the CP Month/Week/Day views from **qTip JS** to **Tippy JS** to address some display issues.
+
+### Fixed
+- Fixed an issue where event content could fail to migrate correctly when multiple calendars used different field layouts while running the `calendar/events/fix-titles` and `calendar/events/fix-contents` console commands.
+- Fixed a `TypeError` in `EventQuery::setAllDay()` by allowing `null` values.
+- Fixed an issue where recurring events could be missing from the search index due to a six-month end date limit.
+- Fixed formatting of **Start Date** and **End Date** columns in the CP Events list view for timed vs. all-day events.
+- Fixed an issue where control panel-specific CSS was being registered on non-CP requests.
+
+## 5.0.27 - 2026-03-19
+
+### Changed
+- Replaced the **Title** column in the **Events** control panel page with a new **Event** column that displays the event title and properly respects **Manage Events** permissions.
+
+### Fixed
+- Fixed an issue where sorting by date columns such as _Date Created_ and _Date Updated_ in the **Events** control panel page was not always accurate.
+- Fixed an issue where **Manage Events** permissions did not display event titles correctly in the **Events** control panel page.
+- Fixed an issue where **Start Date** and **End Date** values were not localized correctly in the **Events** control panel page.
+- Fixed styling issues in the Calendar event date picker.
+
 ## 5.0.26 - 2026-01-14
 
 ### Added
