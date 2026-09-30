@@ -9,5 +9,14 @@
 }
 
 .navbar .nav-link.active {
-    box-shadow: inset 0 -2px 0 #93c5fd;
+    position: relative;
+}
+
+.navbar .nav-link.active::after {
+    content: "";
+    position: absolute;
+    inset-inline: .5rem;
+    bottom: 0;
+    height: 2px;
+    background: #93c5fd;
 }

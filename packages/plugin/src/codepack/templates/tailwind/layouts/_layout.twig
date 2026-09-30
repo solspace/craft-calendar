@@ -10,7 +10,7 @@
     <script src="{{ siteUrl }}assets/demo/js/theme.js?v=2"></script>
     <script src="{{ siteUrl }}assets/demo/js/framework.js"></script>
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css?v=15">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css?v=16">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ siteUrl }}assets/demo/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/x-icon" href="{{ siteUrl }}assets/demo/favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ siteUrl }}assets/demo/favicon/favicon-32x32.png">
@@ -66,10 +66,12 @@
                 <li>
                     <a class="demo-nav-link px-2 rounded-md{{ page == 'fullcalendar' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/fullcalendar"{% if page == 'fullcalendar' %} aria-current="page"{% endif %}>FullCalendar</a>
                 </li>
+                <li class="mt-2 xl:mt-0 xl:ms-1">
+                    <a class="demo-btn demo-btn-primary demo-btn-sm{{ page == 'edit' and segment4 == 'new' ? ' ring-2 ring-white' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' and segment4 == 'new' %} aria-current="page"{% endif %}>
+                        <span class="fas fa-plus" aria-hidden="true"></span> Create Event
+                    </a>
+                </li>
             </ul>
-            <a class="demo-btn demo-btn-primary demo-btn-sm xl:ms-2 mt-2 xl:mt-0{{ page == 'edit' and segment4 == 'new' ? ' ring-2 ring-white' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' and segment4 == 'new' %} aria-current="page"{% endif %}>
-                <span class="fas fa-plus" aria-hidden="true"></span> Create Event
-            </a>
             <div class="xl:ms-2 mt-2 xl:mt-0">
                 <label class="sr-only" for="framework-select">CSS framework</label>
                 <select id="framework-select" class="demo-select demo-input-sm demo-nav-select" data-framework-select aria-label="CSS framework">
