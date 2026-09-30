@@ -141,16 +141,7 @@
 
         </div>
 
-        <details class="month-sidebar">
-            <summary class="month-sidebar-toggle rounded-2xl shadow-sm bg-white dark:bg-neutral-900 font-semibold">
-                <span class="fas fa-calendar-alt" aria-hidden="true"></span>
-                <span>Calendars</span>
-                <span class="fas fa-chevron-right month-sidebar-chevron" aria-hidden="true"></span>
-            </summary>
-            <div class="month-sidebar-content mt-2">
-                {% include "demo/tailwind/layouts/_sidebar" %}
-            </div>
-        </details>
+        {% include "demo/tailwind/layouts/_collapsible_sidebar" %}
     </div>
 
 {% endblock %}

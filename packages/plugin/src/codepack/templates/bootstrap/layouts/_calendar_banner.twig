@@ -1,7 +1,7 @@
 {% if calendarHandle %}
     {% set calendar = craft.calendar.calendar({handle: calendarHandle}) %}
     {% if calendar %}
-        <a href="{{ siteUrl }}demo/{{ view }}/{{ date.format(view == 'month' ? 'Y/m' : 'Y/m/d') }}{{ view == 'month' ? '' : '?view=agenda' }}"
+        <a href="{{ siteUrl }}demo/{{ view }}/{{ date.format(view == 'month' ? 'Y/m' : 'Y/m/d') }}{{ view != 'month' and activeView|default('agenda') == 'agenda' ? '?view=agenda' : '' }}"
             class="badge rounded-pill bg-body-tertiary border text-body-secondary text-decoration-none fw-normal fs-6 d-inline-flex align-items-center gap-1"
             style="--calendar-color: {{ calendar.color }};"
             aria-label="Show all calendars instead of {{ calendar.name }}">

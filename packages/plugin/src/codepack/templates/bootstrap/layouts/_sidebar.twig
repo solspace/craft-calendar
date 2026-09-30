@@ -5,15 +5,17 @@
             {% include "demo/bootstrap/layouts/_mini_cal" %}
         </div>
 
-        {% set isCalendarView = segment2 in ["month", "week", "day"] %}
-        {% set selectedHandle = isCalendarView and segment3 == "calendar" ? segment4 : (segment2 == "calendars" ? segment3 : null) %}
+        {% set viewType = segment2|replace({'-grid': ''}) %}
+        {% set isCalendarView = viewType in ["month", "week", "day"] %}
+        {% set selectedHandle = isCalendarView ? (calendarHandle|default(null) ?: (segment3 == "calendar" ? segment4 : null)) : (segment2 == "calendars" ? segment3 : null) %}
         {% set calendars = craft.calendar.calendars({
             order: "name",
             sort: "asc"
         }) %}
         {% set selectedCalendar = selectedHandle ? calendars|filter(calendar => calendar.handle == selectedHandle)|first : null %}
-        {% set datePath = isCalendarView ? targetDate|date(segment2 == "month" ? 'Y/m' : 'Y/m/d') : null %}
+        {% set datePath = isCalendarView ? targetDate|date(viewType == "month" ? 'Y/m' : 'Y/m/d') : null %}
         {% set allSelected = not selectedHandle and (isCalendarView or segment2 == "calendars") %}
+        {% set viewQuery = viewType in ["week", "day"] and craft.app.request.getQueryParam('view') == 'agenda' ? '?view=agenda' : '' %}
 
         <h2 class="h6 text-body-secondary border-top pt-3 mb-2">{{ isCalendarView ? 'Filter by calendar' : 'Calendars' }}</h2>
         <div class="dropdown">
@@ -28,7 +30,7 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end w-100 sidebar-dropdown-menu" aria-labelledby="sidebar-calendar-menu">
                 <li>
-                    <a href="{{ siteUrl }}demo/{{ isCalendarView ? segment2 ~ '/' ~ datePath : 'calendars' }}"
+                    <a href="{{ siteUrl }}demo/{{ isCalendarView ? viewType ~ '/' ~ datePath : 'calendars' }}{{ viewQuery }}"
                         class="dropdown-item{{ allSelected ? ' active' : '' }}"{% if allSelected %} aria-current="page"{% endif %}>
                         All calendars
                     </a>
@@ -38,7 +40,7 @@
                 {% endif %}
                 {% for calendar in calendars %}
                     <li>
-                        <a href="{{ siteUrl }}demo/{{ isCalendarView ? segment2 ~ '/calendar' : 'calendars' }}/{{ calendar.handle }}{{ isCalendarView ? '/' ~ datePath : '' }}"
+                        <a href="{{ siteUrl }}demo/{{ isCalendarView ? viewType ~ '/calendar' : 'calendars' }}/{{ calendar.handle }}{{ isCalendarView ? '/' ~ datePath : '' }}{{ viewQuery }}"
                             class="dropdown-item{{ selectedHandle == calendar.handle ? ' active' : '' }}"
                             style="--calendar-color: {{ calendar.color }};"{% if selectedHandle == calendar.handle %} aria-current="page"{% endif %}>
                             <span class="fas fa-calendar-alt calendar-color-icon me-2" aria-hidden="true"></span>{{ calendar.name }}

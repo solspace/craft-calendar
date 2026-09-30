@@ -16,35 +16,44 @@
     {% set day = craft.calendar.day({date: targetDate, calendar: calendarHandle}) %}
     {% set dateBoundsHelper = now.diff(day.nextDate)|date('%r%a') %}
 
-    <section class="card border-0 rounded-4 shadow-sm p-3 p-lg-4" aria-labelledby="day-grid-title">
-        <div class="row align-items-center g-2 mb-3">
-            <div class="col-6 col-md-3 order-1 order-md-0">
-                {% if dateBoundsHelper > -365 %}
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/day?framework=bootstrap&amp;date={{ day.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
-                        <span class="fas fa-arrow-left" aria-hidden="true"></span> Previous Day
-                    </a>
-                {% endif %}
-            </div>
-            <div class="col-12 col-md-6 order-0 text-center">
-                <h1 id="day-grid-title" class="h4 mb-0">{{ day.date.format('l, F j, Y') }}</h1>
-                <span class="small text-body-secondary">Hourly view · {{ day.occurrenceCount }} event{{ day.occurrenceCount == 1 ? '' : 's' }}</span>
-            </div>
-            <div class="col-6 col-md-3 order-2 text-end">
-                {% if dateBoundsHelper < 365 %}
-                    <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/day?framework=bootstrap&amp;date={{ day.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
-                        Next Day <span class="fas fa-arrow-right" aria-hidden="true"></span>
-                    </a>
-                {% endif %}
-            </div>
+    <div class="month-layout">
+        <div class="month-layout-main">
+            <section class="card border-0 rounded-4 shadow-sm p-3 p-lg-4" aria-labelledby="day-grid-title">
+                <div class="row align-items-center g-2 mb-3">
+                    <div class="col-6 col-md-3 order-1 order-md-0">
+                        {% if dateBoundsHelper > -365 %}
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/day?framework=bootstrap&amp;date={{ day.previousDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                                <span class="fas fa-arrow-left" aria-hidden="true"></span> Previous Day
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 col-md-6 order-0 text-center">
+                        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2">
+                            <h1 id="day-grid-title" class="h4 mb-0">{{ day.date.format('l, F j, Y') }}</h1>
+                            {% include "demo/bootstrap/layouts/_calendar_banner" with {calendarHandle: calendarHandle, view: 'day', date: day.date, activeView: 'grid'} %}
+                        </div>
+                        <span class="small text-body-secondary">Hourly view · {{ day.occurrenceCount }} event{{ day.occurrenceCount == 1 ? '' : 's' }}</span>
+                    </div>
+                    <div class="col-6 col-md-3 order-2 text-end">
+                        {% if dateBoundsHelper < 365 %}
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ siteUrl }}demo/day?framework=bootstrap&amp;date={{ day.nextDate.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}">
+                                Next Day <span class="fas fa-arrow-right" aria-hidden="true"></span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-end flex-wrap gap-2 mb-3">
+                    <span class="small text-body-secondary me-auto">Overlapping events appear side by side.</span>
+                    {% include "demo/bootstrap/layouts/_view_switch" with {viewType: 'day', activeView: 'grid', date: day.date, calendarHandle: calendarHandle} %}
+                </div>
+
+                {% include "demo/bootstrap/layouts/_hour_grid" with {gridDays: [day], gridMode: 'day', calendarHandle: calendarHandle} %}
+            </section>
         </div>
 
-        <div class="d-flex align-items-center justify-content-end flex-wrap gap-2 mb-3">
-            <span class="small text-body-secondary me-auto">Overlapping events appear side by side.</span>
-            {% include "demo/bootstrap/layouts/_view_switch" with {viewType: 'day', activeView: 'grid', date: day.date, calendarHandle: calendarHandle} %}
-        </div>
-
-        {% include "demo/bootstrap/layouts/_hour_grid" with {gridDays: [day], gridMode: 'day', calendarHandle: calendarHandle} %}
-    </section>
+        {% include "demo/bootstrap/layouts/_collapsible_sidebar" %}
+    </div>
 {% endblock %}
 
 {% block footerJs %}
