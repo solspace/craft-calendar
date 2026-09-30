@@ -2,6 +2,10 @@
 
 /* Bootstrap loads its components and utilities from the CDN. Only demo-specific
    additions belong here; the calendar's own styles live in calendar.css. */
+.navbar.fixed-top {
+    min-height: 4rem;
+}
+
 .demo-nav-select {
     width: auto;
     min-width: 7rem;

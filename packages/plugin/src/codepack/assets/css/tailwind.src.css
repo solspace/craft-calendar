@@ -122,7 +122,7 @@ button, select, summary { cursor: pointer; }
 .demo-compact-table th, .demo-compact-table td { @apply p-1; }
 
 .demo-navbar { @apply fixed inset-x-0 top-0 z-50 bg-neutral-900 text-white; }
-.demo-navbar > div { @apply flex min-h-18 flex-wrap items-center gap-4; }
+.demo-navbar > div { @apply flex min-h-16 flex-wrap items-center gap-4; }
 .demo-brand { @apply inline-flex items-center gap-2 whitespace-nowrap text-lg font-semibold text-white no-underline hover:text-white; }
 .demo-nav-toggle { @apply ms-auto grid size-10 place-items-center rounded-lg border border-neutral-500 text-white xl:hidden; }
 .demo-nav-toggle-icon::before { content: "☰"; font-size: 1.25rem; }
