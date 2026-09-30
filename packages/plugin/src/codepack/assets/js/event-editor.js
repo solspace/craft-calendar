@@ -236,8 +236,9 @@
             const remove = document.createElement("button");
             label.textContent = date;
             remove.type = "button";
-            remove.className = "btn btn-sm btn-link text-danger";
-            remove.textContent = "Remove";
+            remove.className = "fixed-date-remove";
+            remove.textContent = "×";
+            remove.setAttribute("aria-label", `${config.labels.removeDate}: ${date}`);
             remove.addEventListener("click", () => removeDate(date));
             item.append(label, remove);
             target.append(item);

@@ -146,7 +146,7 @@
                             {{ 'This event contains multiple RRULE lines. The schedule is preserved but this simplified demo does not edit multi-rule sets.'|t }}
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-4 mb-5 md:grid-cols-2">
                             <div class="min-w-0">
                                 <label class="block mb-2 font-semibold" for="event-repeat-type">{{ 'Repeats'|t }}</label>
                                 <select id="event-repeat-type" class="demo-select" data-repeat-type>
@@ -157,6 +157,24 @@
                                     <option value="YEARLY">{{ 'Every Year'|t }}</option>
                                     <option value="CUSTOM">{{ 'Custom Rule'|t }}</option>
                                 </select>
+                            </div>
+                            <div class="min-w-0" data-repeat-end-row hidden>
+                                <label class="block mb-2 font-semibold" for="event-repeat-end">{{ 'Ends'|t }}</label>
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                    <div class="min-w-0 sm:col-span-2">
+                                        <select id="event-repeat-end" class="demo-select" data-repeat-end>
+                                            <option value="NEVER">{{ 'Never'|t }}</option>
+                                            <option value="AFTER">{{ 'After a number of occurrences'|t }}</option>
+                                            <option value="ON_DATE">{{ 'On a date'|t }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="min-w-0" data-count-field hidden>
+                                        <input class="demo-input" type="number" min="1" step="1" value="1" data-count aria-label="{{ 'Occurrences'|t }}">
+                                    </div>
+                                    <div class="min-w-0 sm:col-span-2" data-until-field hidden>
+                                        <input class="demo-input" type="date" data-until-date aria-label="{{ 'Until date'|t }}">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -313,41 +331,26 @@
                             </details>
                         </div>
 
-                        <div data-repeat-end-row hidden>
-                            <div class="grid grid-cols-1 gap-3 mb-4 items-end md:grid-cols-6">
-                                <div class="min-w-0 md:col-span-3">
-                                    <label class="block mb-2 font-semibold" for="event-repeat-end">{{ 'Ends'|t }}</label>
-                                    <select id="event-repeat-end" class="demo-select" data-repeat-end>
-                                        <option value="NEVER">{{ 'Never'|t }}</option>
-                                        <option value="AFTER">{{ 'After a number of occurrences'|t }}</option>
-                                        <option value="ON_DATE">{{ 'On a date'|t }}</option>
-                                    </select>
+                        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                            <div class="min-w-0 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/40">
+                                <h2 class="text-base font-semibold mb-1">{{ 'Additional Dates'|t }}</h2>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{{ 'Add one-off dates for this event.'|t }}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <input class="demo-input w-auto" type="date" data-rdate-picker aria-label="{{ 'Additional date'|t }}">
+                                    <button class="demo-btn demo-btn-success" type="button" data-add-rdate>{{ 'Add date'|t }}</button>
                                 </div>
-                                <div class="min-w-0 md:col-span-2" data-count-field hidden>
-                                    <input class="demo-input" type="number" min="1" step="1" value="1" data-count aria-label="{{ 'Occurrences'|t }}">
-                                </div>
-                                <div class="min-w-0 md:col-span-2" data-until-field hidden>
-                                    <input class="demo-input" type="date" data-until-date aria-label="{{ 'Until date'|t }}">
-                                </div>
+                                <ul class="fixed-date-list" data-rdate-list></ul>
                             </div>
-                        </div>
 
-                        <div class="fixed-date-manager">
-                            <h2 class="text-xl font-semibold">{{ 'Additional Dates'|t }}</h2>
-                            <div class="flex flex-wrap gap-2">
-                                <input class="demo-input w-auto" type="date" data-rdate-picker aria-label="{{ 'Additional date'|t }}">
-                                <button class="demo-btn demo-btn-success" type="button" data-add-rdate>{{ 'Add Dates'|t }}</button>
+                            <div class="min-w-0 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/40" data-exceptions hidden>
+                                <h2 class="text-base font-semibold mb-1">{{ 'Excluded Dates'|t }}</h2>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{{ 'Skip dates in the repeat schedule.'|t }}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <input class="demo-input w-auto" type="date" data-exdate-picker aria-label="{{ 'Excluded date'|t }}">
+                                    <button class="demo-btn demo-btn-danger" type="button" data-add-exdate>{{ 'Exclude date'|t }}</button>
+                                </div>
+                                <ul class="fixed-date-list" data-exdate-list></ul>
                             </div>
-                            <ul class="fixed-date-list" data-rdate-list></ul>
-                        </div>
-
-                        <div class="fixed-date-manager" data-exceptions hidden>
-                            <h2 class="text-xl font-semibold">{{ 'Excluded Dates'|t }}</h2>
-                            <div class="flex flex-wrap gap-2">
-                                <input class="demo-input w-auto" type="date" data-exdate-picker aria-label="{{ 'Excluded date'|t }}">
-                                <button class="demo-btn demo-btn-danger" type="button" data-add-exdate>{{ 'Exclude Occurrence'|t }}</button>
-                            </div>
-                            <ul class="fixed-date-list" data-exdate-list></ul>
                         </div>
                     </fieldset>
                 {% elseif event.rrule %}
@@ -390,6 +393,7 @@
                     repeatEndType: event.repeatEndType ?? 'NEVER',
                     labels: {
                         endMustBeAfterStart: 'End must be after start.'|t,
+                        removeDate: 'Remove date'|t,
                     },
                 }|json_encode(15)|raw }}</script>
             </form>
@@ -403,5 +407,5 @@
 
 {% block footerJs %}
     {{ parent() }}
-    <script src="{{ siteUrl }}assets/demo/js/event-editor.js"></script>
+    <script src="{{ siteUrl }}assets/demo/js/event-editor.js?v=2"></script>
 {% endblock %}
