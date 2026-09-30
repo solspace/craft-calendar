@@ -8,6 +8,10 @@
     padding-block: .25rem;
 }
 
+.navbar .vr {
+    height: 1.25rem;
+}
+
 .navbar .nav-link.active {
     position: relative;
 }
