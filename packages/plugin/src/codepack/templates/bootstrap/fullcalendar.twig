@@ -1,6 +1,6 @@
 {% extends "demo/bootstrap/layouts/_layout" %}
 
-{% set pageTitle = "Full Calendar" %}
+{% set pageTitle = "FullCalendar Demo" %}
 {% set page = "fullcalendar" %}
 
 {% set allowedCalendars = craft.calendar.allowedCalendars %}
@@ -75,7 +75,18 @@
 {% endblock %}
 
 {% block content %}
-    <h1 class="visually-hidden">Full Calendar</h1>
+    <header class="card border-0 rounded-4 shadow-sm px-3 px-lg-4 py-3 mb-3">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+            <div>
+                <h1 class="h5 mb-1">FullCalendar integration demo</h1>
+                <p class="small text-body-secondary mb-0">This custom integration connects Calendar events to the third-party FullCalendar JavaScript library. Use the included template and script as a starting point for your own layout and interactions.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                <a class="btn btn-outline-secondary btn-sm" href="https://fullcalendar.io/">FullCalendar website</a>
+                <a class="btn btn-outline-secondary btn-sm" href="https://legacy.fullcalendar.io/v6">FullCalendar v6 docs</a>
+            </div>
+        </div>
+    </header>
     <script type="application/json" data-calendar-config>{{ calendarConfig|json_encode(15)|raw }}</script>
 
     <div id="calendar-errors" class="alert alert-danger calendar-page-error" role="alert" aria-live="assertive" hidden>
