@@ -1,10 +1,5 @@
 <aside class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50">
     <div class="p-4">
-        <div id="mini-cal-wrapper" class="mb-6" aria-live="polite">
-            {# Use include because we're using AJAX #}
-            {% include "demo/tailwind/layouts/_mini_cal" %}
-        </div>
-
         {% set viewType = segment2|replace({'-grid': ''}) %}
         {% set isCalendarView = viewType in ["month", "week", "day"] %}
         {% set selectedHandle = isCalendarView ? (calendarHandle|default(null) ?: (segment3 == "calendar" ? segment4 : null)) : (segment2 == "calendars" ? segment3 : null) %}
@@ -17,7 +12,7 @@
         {% set allSelected = not selectedHandle and (isCalendarView or segment2 == "calendars") %}
         {% set viewQuery = viewType in ["week", "day"] and craft.app.request.getQueryParam('view') == 'agenda' ? '?view=agenda' : '' %}
 
-        <h2 class="text-base font-semibold text-neutral-500 dark:text-neutral-400 border-t border-neutral-200 dark:border-neutral-700 pt-4 mb-2">{{ isCalendarView ? 'Filter by calendar' : 'Calendars' }}</h2>
+        <h2 class="text-base font-semibold text-neutral-500 dark:text-neutral-400 mb-2">{{ isCalendarView ? 'Filter by calendar' : 'Calendars' }}</h2>
         <div class="relative">
             <button id="sidebar-calendar-menu" type="button"
                 class="demo-btn demo-btn-outline flex items-center justify-between gap-2 w-full"
@@ -48,6 +43,11 @@
                     </li>
                 {% endfor %}
             </ul>
+        </div>
+
+        <div id="mini-cal-wrapper" class="border-t border-neutral-200 dark:border-neutral-700 pt-4 mt-6" aria-live="polite">
+            {# Use include because we're using AJAX #}
+            {% include "demo/tailwind/layouts/_mini_cal" %}
         </div>
     </div>
 </aside>
