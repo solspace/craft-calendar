@@ -38,9 +38,9 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center justify-content-end flex-wrap gap-2 mb-3">
+            <span class="small text-body-secondary me-auto">Overlapping events appear side by side.</span>
             {% include "demo/bootstrap/layouts/_view_switch" with {viewType: 'day', activeView: 'grid', date: day.date, calendarHandle: calendarHandle} %}
-            <span class="small text-body-secondary">Overlapping events appear side by side.</span>
         </div>
 
         {% include "demo/bootstrap/layouts/_hour_grid" with {gridDays: [day], gridMode: 'day', calendarHandle: calendarHandle} %}

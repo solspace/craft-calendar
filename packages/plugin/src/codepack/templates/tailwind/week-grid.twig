@@ -38,9 +38,9 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div class="flex flex-wrap items-center justify-end gap-2 mb-4">
+            <span class="text-sm text-neutral-500 dark:text-neutral-400 me-auto">Scroll across on smaller screens to see all seven days.</span>
             {% include "demo/tailwind/layouts/_view_switch" with {viewType: 'week', activeView: 'grid', date: week.date, calendarHandle: calendarHandle} %}
-            <span class="text-sm text-neutral-500 dark:text-neutral-400">Scroll across on smaller screens to see all seven days.</span>
         </div>
 
         {% include "demo/tailwind/layouts/_hour_grid" with {gridDays: week, gridMode: 'week', calendarHandle: calendarHandle} %}
