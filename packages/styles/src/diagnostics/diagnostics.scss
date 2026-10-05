@@ -12,6 +12,10 @@
     &.is-warning {
       border-color: var(--warning-color);
     }
+
+    &.is-error {
+      border-color: var(--error-color);
+    }
   }
 
   .calendar-diag-grid {
@@ -66,26 +70,28 @@
       color: var(--warning-color);
       font-size: 12px;
     }
+
+    &.is-error .calendar-diag-warning {
+      color: var(--error-color);
+    }
   }
 
   .calendar-diag-dot {
     display: inline-block;
-    width: 7px;
-    height: 7px;
     margin-inline-end: 7px;
-    border-radius: 50%;
-    background: var(--gray-400);
+    vertical-align: baseline;
   }
 
-  .is-pass .calendar-diag-dot {
-    background: var(--enabled-color);
+  .calendar-diag-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 12px;
+    color: var(--gray-600);
+    font-size: 12px;
   }
 
-  .is-warning .calendar-diag-dot {
-    background: var(--warning-color);
-  }
-
-  .calendar-diag-calendars {
+  .calendar-diag-disclosure {
     margin-top: 20px;
 
     summary {
@@ -102,9 +108,9 @@
     }
   }
 
-  .calendar-diag-warning-count {
+  .calendar-diag-issue-count {
     margin-inline-start: 8px;
-    color: var(--warning-color);
+    color: var(--error-color);
     font-size: 12px;
   }
 
@@ -142,13 +148,6 @@
   }
 
   .calendar-diag-report {
-    margin-top: 20px;
-
-    summary {
-      margin-bottom: 12px;
-      cursor: pointer;
-    }
-
     textarea {
       font-family: monospace;
       resize: vertical;

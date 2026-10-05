@@ -24,40 +24,55 @@ class DiagnosticsService extends Component
         $model = $settings->getSettingsModel();
         $general = $app->getConfig()->getGeneral();
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
-        $row = static fn (string $label, mixed $value, string $status = 'info', ?string $note = null) => [
+        $row = static fn (string $label, mixed $value, string $status = 'none', ?string $note = null, bool $isBoolean = false) => [
             'label' => $label,
             'value' => (string) $value,
             'status' => $status,
             'note' => $note,
+            'isBoolean' => $isBoolean,
+            'statusLabel' => $isBoolean && \in_array($status, ['pass', 'disabled'], true) ? (string) $value : match ($status) {
+                'pass' => Calendar::t('Valid'),
+                'disabled' => Calendar::t('Disabled'),
+                'error' => Calendar::t('Potential issue'),
+                'warning' => Calendar::t('Concern'),
+                'info' => Calendar::t('Information'),
+                default => '',
+            },
         ];
-        $boolean = static fn (bool $value) => Calendar::t($value ? 'Yes' : 'No');
+        $boolean = static fn (bool $value) => Calendar::t($value ? 'Enabled' : 'Disabled');
+        $booleanRow = static fn (string $label, bool $value, string $offStatus = 'disabled', ?string $note = null) =>
+            $row($label, $boolean($value), $value ? 'pass' : $offStatus, $note, true);
         $unavailable = Calendar::t('Unavailable');
         $default = Calendar::t('Not configured');
 
         $server = [
-            $row(Calendar::t('Calendar version'), $plugin->getVersion()),
+            $row(Calendar::t('Calendar version'), $plugin->getVersion(), 'info'),
             $row(Calendar::t('Calendar edition'), $plugin->isPro() ? 'Pro' : 'Lite'),
-            $row(Calendar::t('Craft version'), $app->getVersion()),
-            $row(Calendar::t('PHP version'), PHP_VERSION),
+            $row(Calendar::t('Craft version'), $app->getVersion(),
+                version_compare($app->getVersion(), '5.0', '>=') && version_compare($app->getVersion(), '6.0', '<') ? 'pass' : 'error',
+                Calendar::t('Calendar requires Craft 5.x.')),
+            $row(Calendar::t('PHP version'), PHP_VERSION,
+                version_compare(PHP_VERSION, '8.2', '>=') && version_compare(PHP_VERSION, '9.0', '<') ? 'pass' : 'error',
+                Calendar::t('Calendar requires PHP 8.2 or newer within PHP 8.x.')),
             $row(Calendar::t('Operating system'), PHP_OS_FAMILY),
             $row(Calendar::t('PHP memory limit'), ini_get('memory_limit')),
             $row(Calendar::t('PHP execution time limit'), ini_get('max_execution_time')),
             $row(Calendar::t('Environment'), \defined('CRAFT_ENVIRONMENT') ? CRAFT_ENVIRONMENT : $default),
-            $row(Calendar::t('Developer mode'), $boolean($general->devMode)),
-            $row(Calendar::t('Admin changes allowed'), $boolean($general->allowAdminChanges)),
+            $booleanRow(Calendar::t('Developer mode'), $general->devMode),
+            $booleanRow(Calendar::t('Admin changes allowed'), $general->allowAdminChanges),
         ];
         foreach (['intl', 'mbstring', 'pdo'] as $extension) {
             $loaded = \extension_loaded($extension);
-            $server[] = $row(Calendar::t('PHP extension: {extension}', ['extension' => $extension]),
-                $boolean($loaded), $loaded ? 'pass' : 'warning');
+            $server[] = $booleanRow(Calendar::t('PHP extension: {extension}', ['extension' => $extension]),
+                $loaded, 'error', $loaded ? null : Calendar::t('This required PHP extension is missing.'));
         }
 
         $timezones = [];
         foreach ([Calendar::t('Craft timezone') => $app->getTimeZone(), Calendar::t('PHP runtime timezone') => date_default_timezone_get()] as $label => $name) {
             $zone = DiagnosticsHelper::timezone($name, $now);
-            $timezones[] = $row($label, $name, $zone ? 'pass' : 'warning',
+            $timezones[] = $row($label, $name, $zone ? 'pass' : 'error',
                 $zone ? Calendar::t('Current local time: {time}. Daylight saving time: {dst}.', [
-                    'time' => $zone['clock'], 'dst' => $boolean($zone['dst']),
+                    'time' => $zone['clock'], 'dst' => Calendar::t($zone['dst'] ? 'Active' : 'Inactive'),
                 ]) : Calendar::t('This timezone identifier is invalid.'));
         }
         $timezones[] = $row(Calendar::t('PHP configured timezone'), ini_get('date.timezone') ?: $default,
@@ -89,11 +104,11 @@ class DiagnosticsService extends Component
             $row(Calendar::t('Time interval (minutes)'), $settings->getTimeInterval()),
             $row(Calendar::t('Default duration (minutes)'), $settings->getEventDuration()),
             $row(Calendar::t('Overlap threshold (hours)'), $settings->getOverlapThreshold()),
-            $row(Calendar::t('All-day events by default'), $boolean($settings->isAllDayDefault())),
-            $row(Calendar::t('Show disabled events'), $boolean($settings->showDisabledEvents())),
-            $row(Calendar::t('Quick create enabled'), $boolean($settings->isQuickCreateEnabled())),
-            $row(Calendar::t('Drag and drop enabled'), $boolean($settings->isDragAndDropEnabled())),
-            $row(Calendar::t('Only edit own events'), $boolean($settings->isAuthoredEventEditOnly())),
+            $booleanRow(Calendar::t('All-day events by default'), $settings->isAllDayDefault()),
+            $booleanRow(Calendar::t('Show disabled events'), $settings->showDisabledEvents()),
+            $booleanRow(Calendar::t('Quick create enabled'), $settings->isQuickCreateEnabled()),
+            $booleanRow(Calendar::t('Drag and drop enabled'), $settings->isDragAndDropEnabled()),
+            $booleanRow(Calendar::t('Only edit own events'), $settings->isAuthoredEventEditOnly()),
         ];
 
         $database = [];
@@ -135,13 +150,14 @@ class DiagnosticsService extends Component
                     'timezone' => $floating ? Calendar::t('Floating wall time') : $name,
                     'timezoneValid' => $valid,
                     'repeating' => $boolean((bool) $calendar->allowRepeatingEvents),
+                    'repeatingEnabled' => (bool) $calendar->allowRepeatingEvents,
                     'siteCount' => \count($siteNames),
                     'siteNames' => implode(', ', $siteNames),
                     'rows' => [
                         $row(Calendar::t('Handle'), $calendar->handle),
                         $row(Calendar::t('ICS export timezone'), $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
-                            $valid ? 'info' : 'warning', $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')),
-                        $row(Calendar::t('Repeating events allowed'), $boolean((bool) $calendar->allowRepeatingEvents)),
+                            $valid ? 'pass' : 'error', $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')),
+                        $booleanRow(Calendar::t('Repeating events allowed'), (bool) $calendar->allowRepeatingEvents),
                         $row(Calendar::t('Supported sites'), implode(', ', $siteNames)),
                     ],
                 ];
@@ -157,12 +173,12 @@ class DiagnosticsService extends Component
             foreach ([Calendar::t('Additional Dates') => SelectDateRecord::TABLE, Calendar::t('Excluded Dates') => ExceptionRecord::TABLE] as $label => $table) {
                 $statistics[] = $row($label, (clone $events)->innerJoin(['dates' => $table], '[[dates.eventId]] = [[events.id]]')->count());
             }
-            $statistics[] = $row(Calendar::t('Cached occurrences'), (new Query())->from('{{%calendar_events_occurrences}}')->count(), 'info',
+            $statistics[] = $row(Calendar::t('Cached occurrences'), (new Query())->from('{{%calendar_events_occurrences}}')->count(), 'none',
                 Calendar::t('Occurrences are cached for requested date ranges; this is not the total number of future occurrences.'));
             foreach ((clone $events)->select(['timezone' => 'events.timezone', 'total' => 'COUNT(*)'])->groupBy('events.timezone')->all() as $zone) {
                 $name = $zone['timezone'];
                 $valid = !$name || null !== DiagnosticsHelper::timezone($name, $now);
-                $eventZones[] = $row($name ?: Calendar::t('Not configured'), $zone['total'], $valid ? 'info' : 'warning',
+                $eventZones[] = $row($name ?: Calendar::t('Not configured'), $zone['total'], $valid ? ($name ? 'pass' : 'info') : 'error',
                     $valid ? null : Calendar::t('This timezone identifier is invalid.'));
             }
         } catch (\Throwable $exception) {
@@ -181,6 +197,7 @@ class DiagnosticsService extends Component
             [$this->section(Calendar::t('Statistics'), $statistics), $this->section(Calendar::t('Event Timezones'), $eventZones), $this->section(Calendar::t('Sites & Languages'), $sites)],
         ];
         $warnings = [];
+        $errorCount = 0;
         $report = [Calendar::t('Calendar Diagnostics'), $now->format(\DateTimeInterface::ATOM)];
         // Keep the full per-calendar details in the support report, independently of the compact UI.
         foreach ([...$sections, $calendars] as $column) {
@@ -188,8 +205,9 @@ class DiagnosticsService extends Component
                 $report[] = "\n".$section['title'];
                 foreach ($section['rows'] as $item) {
                     $report[] = $item['label'].': '.$item['value'].($item['note'] ? ' — '.$item['note'] : '');
-                    if ('warning' === $item['status']) {
+                    if (\in_array($item['status'], ['warning', 'error'], true)) {
                         $warnings[] = $section['title'].' / '.$item['label'];
+                        $errorCount += 'error' === $item['status'] ? 1 : 0;
                     }
                 }
             }
@@ -200,6 +218,8 @@ class DiagnosticsService extends Component
             'calendars' => $calendars,
             'calendarWarningCount' => \count(array_filter($calendars, static fn ($calendar) => !$calendar['timezoneValid'])),
             'warnings' => $warnings,
+            'errorCount' => $errorCount,
+            'concernCount' => \count($warnings) - $errorCount,
             'report' => implode("\n", $report),
             'sampledAt' => $now->format(\DateTimeInterface::ATOM),
         ];
