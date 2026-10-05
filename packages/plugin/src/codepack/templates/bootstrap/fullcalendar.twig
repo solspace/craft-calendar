@@ -1,0 +1,235 @@
+{% extends "demo/bootstrap/layouts/_layout" %}
+
+{% set pageTitle = "FullCalendar Demo" %}
+{% set page = "fullcalendar" %}
+
+{% set allowedCalendars = craft.calendar.allowedCalendars %}
+{% set editableCalendars = [] %}
+{% set editableCalendarIds = [] %}
+{% set canEditAllCalendars = currentUser and (currentUser.admin or currentUser.can('calendar-manageEventsFor:all')) %}
+
+{% if currentUser %}
+    {% for calendar in allowedCalendars %}
+        {% if canEditAllCalendars or currentUser.can('calendar-manageEventsFor:' ~ calendar.uid) %}
+            {% set editableCalendars = editableCalendars|merge([calendar]) %}
+            {% set editableCalendarIds = editableCalendarIds|merge([calendar.id]) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% set canCreateEvents = currentUser and editableCalendars|length > 0 %}
+{% set calendarOptions = [] %}
+{% for calendar in allowedCalendars %}
+    {% set calendarOptions = calendarOptions|merge([{
+        'id': calendar.id,
+        'name': calendar.name,
+        'color': calendar.color,
+    }]) %}
+{% endfor %}
+
+{% set initialView = slug is defined and slug in ['month', 'week', 'day'] ? slug : 'month' %}
+{% set initialDate = now|date('Y-m-d') %}
+{% if year is defined and month is defined and day is defined %}
+    {% set initialDate = [year, '%02d'|format(month), '%02d'|format(day)]|join('-') %}
+{% endif %}
+
+{% set calendarConfig = {
+    'calendars': calendarOptions,
+    'editableCalendarIds': editableCalendarIds,
+    'canCreate': canCreateEvents,
+    'csrf': {
+        'name': craft.app.config.general.csrfTokenName,
+        'value': craft.app.request.csrfToken,
+    },
+    'firstDay': craft.calendar.settings.firstDayOfWeek,
+    'initialDate': initialDate,
+    'initialView': initialView,
+    'locale': craft.app.language,
+    'siteId': craft.app.sites.currentSite.id,
+    'urls': {
+        'editEvent': url('%prefix%/edit/event'),
+        'event': url('%prefix%/event'),
+        'events': url('%prefix%/resources/event.json'),
+        'fullCalendar': url('%prefix%/fullcalendar'),
+    },
+    'labels': {
+        'couldNotCreate': 'Could not save event.'|t,
+        'couldNotDelete': 'Could not delete event.'|t,
+        'couldNotLoad': 'Could not load events.'|t,
+        'couldNotMove': 'Could not move event.'|t,
+        'couldNotResize': 'Could not resize event.'|t,
+        'day': 'Day'|t,
+        'deleteOccurrenceConfirm': 'Are you sure you want to delete only this occurrence?'|t,
+        'deleteSeriesConfirm': 'Are you sure you want to delete this event series?'|t,
+        'ends': 'Ends:'|t,
+        'endsBefore': 'Ends before:'|t,
+        'month': 'Month'|t,
+        'recurring': 'Recurring event'|t,
+        'today': 'Today'|t,
+        'week': 'Week'|t,
+    },
+} %}
+
+{% block headerCss %}
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/full-calendar.css?v=2">
+{% endblock %}
+
+{% block content %}
+    <header class="card border-0 rounded-4 shadow-sm px-3 px-lg-4 py-3 mb-3">
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+            <div>
+                <h1 class="h5 mb-1">FullCalendar integration demo</h1>
+                <p class="small text-body-secondary mb-0">This custom integration connects Calendar events to the third-party FullCalendar JavaScript library. Use the included template and script as a starting point for your own layout and interactions.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                <a class="btn btn-outline-secondary btn-sm" href="https://fullcalendar.io/">FullCalendar website</a>
+                <a class="btn btn-outline-secondary btn-sm" href="https://legacy.fullcalendar.io/v6">FullCalendar v6 docs</a>
+            </div>
+        </div>
+    </header>
+    <script type="application/json" data-calendar-config>{{ calendarConfig|json_encode(15)|raw }}</script>
+
+    <div id="calendar-errors" class="alert alert-danger calendar-page-error" role="alert" aria-live="assertive" hidden>
+        <button type="button" class="btn-close float-end" aria-label="{{ 'Close'|t }}" data-dismiss-calendar-error></button>
+        <span data-calendar-error-message></span>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div id="calendar-wrapper" class="card border-0 rounded-4 shadow-sm p-3 p-lg-4"></div>
+            {% if canCreateEvents %}
+                <p class="small text-body-secondary mt-2 mb-0 px-2">
+                    <span class="far fa-calendar-plus me-1" aria-hidden="true"></span>
+                    {{ 'Select a date or time range to quickly create an event.'|t }}
+                </p>
+            {% endif %}
+            <noscript>
+                <div class="alert alert-warning">{{ 'JavaScript is required to display this calendar.'|t }}</div>
+            </noscript>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footerJs %}
+    <dialog id="event-details-dialog" class="calendar-dialog calendar-dialog--details" aria-labelledby="event-details-title">
+        <div class="calendar-dialog__surface">
+            <div class="calendar-dialog__header">
+                <div class="calendar-dialog__heading">
+                    <h2 id="event-details-title" class="calendar-dialog__title" tabindex="-1"></h2>
+                    <div class="calendar-data">
+                        <span class="color-indicator" data-event-calendar-color aria-hidden="true"></span>
+                        <span data-event-calendar-name></span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" aria-label="{{ 'Close'|t }}" data-close-dialog></button>
+            </div>
+
+            <div class="calendar-dialog__body">
+                <dl class="event-date-range">
+                    <div>
+                        <dt>{{ 'Starts:'|t }}</dt>
+                        <dd data-event-start></dd>
+                    </div>
+                    <div>
+                        <dt data-event-end-label>{{ 'Ends:'|t }}</dt>
+                        <dd data-event-end></dd>
+                    </div>
+                </dl>
+                <div class="event-repeat-rule" data-event-repeat-row hidden>
+                    <span class="fas fa-redo text-body-secondary" aria-hidden="true"></span>
+                    <div>
+                        <span class="event-repeat-rule__label">{{ 'Repeats'|t }}</span>
+                        <span data-event-repeat></span>
+                    </div>
+                </div>
+                <div class="alert alert-danger calendar-dialog__error" role="alert" aria-live="assertive" data-event-error hidden></div>
+            </div>
+
+            <div class="calendar-dialog__actions">
+                <div class="dropup" data-event-manage-actions hidden>
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ 'More actions'|t }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><button type="button" class="dropdown-item text-danger" data-delete-occurrence>{{ 'Delete Occurrence'|t }}</button></li>
+                        <li><button type="button" class="dropdown-item text-danger" data-delete-series>{{ 'Delete Series'|t }}</button></li>
+                    </ul>
+                </div>
+                <div class="calendar-dialog__primary-actions">
+                    <a class="btn btn-outline-secondary" href="#" data-edit-event>{{ 'Edit'|t }}</a>
+                    <a class="btn btn-primary" href="#" data-view-event>{{ 'View event'|t }}</a>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    {% if canCreateEvents %}
+        <dialog id="event-creator-dialog" class="calendar-dialog calendar-dialog--creator" aria-labelledby="event-creator-title">
+            <form id="event-creator-form">
+                <div class="calendar-dialog__surface">
+                    <div class="calendar-dialog__header">
+                        <h2 id="event-creator-title" class="calendar-dialog__title">{{ 'New Event'|t }}</h2>
+                        <button type="button" class="btn-close" aria-label="{{ 'Close'|t }}" data-close-dialog></button>
+                    </div>
+
+                    <div class="calendar-dialog__body">
+                        <div class="mb-3">
+                            <label class="form-label" for="event-title">{{ 'Title'|t }}</label>
+                            <input id="event-title" class="form-control" type="text" name="title" autocomplete="off" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="event-calendar">{{ 'Calendar'|t }}</label>
+                            <select id="event-calendar" class="form-select" name="calendarId" required>
+                                {% for calendar in editableCalendars %}
+                                    <option value="{{ calendar.id }}">{{ calendar.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input id="event-all-day" class="form-check-input" type="checkbox" name="allDay" value="1">
+                            <label class="form-check-label" for="event-all-day">{{ 'All Day'|t }}</label>
+                        </div>
+
+                        <div data-all-day-fields hidden>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-start-date">{{ 'Start Date'|t }}</label>
+                                <input id="event-start-date" class="form-control" type="date" name="startDate">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-end-date">{{ 'End Date (exclusive)'|t }}</label>
+                                <input id="event-end-date" class="form-control" type="date" name="endDate">
+                                <small class="form-text text-body-secondary">
+                                    {{ 'All-day events end at midnight before this date.'|t }}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div data-timed-fields>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-start-datetime">{{ 'Starts'|t }}</label>
+                                <input id="event-start-datetime" class="form-control" type="datetime-local" name="startDateTime" step="60">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="event-end-datetime">{{ 'Ends'|t }}</label>
+                                <input id="event-end-datetime" class="form-control" type="datetime-local" name="endDateTime" step="60">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-danger calendar-dialog__error" role="alert" aria-live="assertive" data-create-error hidden></div>
+                    </div>
+
+                    <div class="calendar-dialog__actions">
+                        <button type="button" class="btn btn-outline-secondary" data-close-dialog>{{ 'Cancel'|t }}</button>
+                        <button type="submit" class="btn btn-primary" data-create-submit>{{ 'Save'|t }}</button>
+                    </div>
+                </div>
+            </form>
+        </dialog>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.19/locales-all.global.min.js"></script>
+    <script src="{{ siteUrl }}assets/demo/js/full-calendar.js"></script>
+{% endblock %}

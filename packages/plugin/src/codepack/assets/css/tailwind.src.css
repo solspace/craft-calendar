@@ -1,0 +1,150 @@
+@import "tailwindcss" source(none);
+@source "../../templates/tailwind";
+@import "./calendar.css";
+@custom-variant dark (&:where([data-bs-theme="dark"], [data-bs-theme="dark"] *));
+
+/* The Tailwind pages use native utilities. These small components cover only
+   repeated controls and the calendar's shared color variables. */
+:root {
+    color-scheme: light;
+    --bs-body-bg: #fff;
+    --bs-body-color: #262626;
+    --bs-body-color-rgb: 38, 38, 38;
+    --bs-emphasis-color: #171717;
+    --bs-secondary-color: #525252;
+    --bs-tertiary-color: #737373;
+    --bs-secondary-bg: #f5f5f5;
+    --bs-tertiary-bg: #fafafa;
+    --bs-border-color: #e5e5e5;
+    --bs-primary: #2563eb;
+    --bs-primary-rgb: 37, 99, 235;
+    --bs-primary-bg-subtle: #f5f5f5;
+    --bs-primary-border-subtle: #d4d4d4;
+    --bs-primary-text-emphasis: #1e40af;
+    --bs-link-hover-color: #1d4ed8;
+    --bs-white: #fff;
+    --bs-border-radius-sm: .375rem;
+    --bs-border-radius: .5rem;
+    --bs-border-radius-lg: .75rem;
+    --bs-border-radius-xl: 1rem;
+    --bs-border-radius-pill: 50rem;
+    --bs-box-shadow: 0 12px 30px rgb(17 24 39 / .12);
+    --bs-box-shadow-sm: 0 3px 12px rgb(17 24 39 / .07);
+    --bs-table-bg: var(--bs-body-bg);
+}
+[data-bs-theme="dark"] {
+    color-scheme: dark;
+    --bs-body-bg: #212121;
+    --bs-body-color: #e5e5e5;
+    --bs-body-color-rgb: 229, 229, 229;
+    --bs-emphasis-color: #f5f5f5;
+    --bs-secondary-color: #b3b3b3;
+    --bs-tertiary-color: #a3a3a3;
+    --bs-secondary-bg: #353535;
+    --bs-tertiary-bg: #2d2d2d;
+    --bs-border-color: #454545;
+    --bs-primary: #80adff;
+    --bs-primary-rgb: 128, 173, 255;
+    --bs-primary-bg-subtle: #343434;
+    --bs-primary-border-subtle: #525252;
+    --bs-primary-text-emphasis: #bad2ff;
+    --bs-link-hover-color: #bad2ff;
+    --bs-white: #212121;
+    --bs-box-shadow: 0 12px 30px rgb(0 0 0 / .28);
+    --bs-box-shadow-sm: 0 3px 12px rgb(0 0 0 / .2);
+}
+html { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+body { @apply leading-normal; background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+a { color: var(--bs-primary-text-emphasis); text-underline-offset: .16em; }
+a:hover { color: var(--bs-link-hover-color); }
+.calendar-upcoming-info a { color: var(--bs-emphasis-color); }
+button, select, summary { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+[hidden], .d-none { display: none !important; }
+.demo-skip-link:not(:focus):not(:focus-within) { @apply sr-only; }
+.demo-skip-link:focus { @apply z-[1040] top-2 left-2; }
+
+.demo-btn { @apply inline-flex min-h-10 items-center justify-center gap-1 rounded-lg border border-transparent px-3 py-2 text-center font-medium leading-tight whitespace-nowrap no-underline transition-colors; }
+.demo-btn:hover { text-decoration: none; }
+.demo-btn-sm, .demo-btn-group-sm .demo-btn { @apply min-h-8 px-2 py-1 text-sm; }
+.demo-btn-primary { @apply border-blue-600 bg-blue-600 text-white hover:border-blue-700 hover:bg-blue-700 hover:text-white; }
+.demo-btn-outline { @apply border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-800/40 dark:text-neutral-100 dark:hover:bg-neutral-700/50; }
+.demo-btn-light { @apply border-neutral-500 text-white hover:bg-neutral-700; }
+.demo-btn-danger { @apply border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950; }
+.demo-btn-success { @apply border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-950; }
+.demo-btn-link { @apply border-0 bg-transparent text-blue-700 dark:text-blue-300; }
+.demo-btn-link.text-neutral-900 { color: var(--bs-emphasis-color); }
+.demo-btn.p-0 { min-height: 0; padding: 0; }
+.demo-btn-group { @apply inline-flex; }
+.demo-btn-group > .demo-btn { @apply rounded-none; margin-left: -1px; }
+.demo-btn-group > .demo-btn:first-child { @apply rounded-l-lg; margin-left: 0; }
+.demo-btn-group > .demo-btn:last-child { @apply rounded-r-lg; }
+.demo-close { @apply inline-grid size-8 place-items-center border-0 bg-transparent text-2xl leading-none text-neutral-500 dark:text-neutral-400; }
+.demo-close::before { content: "×"; }
+.demo-close:hover { color: var(--bs-body-color); }
+
+.demo-menu { @apply absolute top-full left-0 z-[1100] mt-1 hidden min-w-40 list-none rounded-xl border border-neutral-200 bg-white p-1 shadow-xl dark:border-neutral-700 dark:bg-neutral-800; }
+.demo-menu.show { @apply block; }
+.demo-menu-item { @apply block w-full rounded-md px-3 py-2 text-left text-neutral-800 no-underline hover:bg-neutral-100 hover:text-neutral-950 focus-visible:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white dark:focus-visible:bg-neutral-800; }
+.demo-menu-item.active { @apply bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200; }
+.demo-menu-divider { @apply my-1 border-0 border-t border-neutral-200 dark:border-neutral-700; }
+.demo-dropdown-trigger::after { content: ""; display: inline-block; margin-left: .3rem; vertical-align: .2em; border: .3em solid transparent; border-top-color: currentColor; border-bottom: 0; }
+.month-picker-trigger.demo-dropdown-trigger::after { display: none; }
+
+.demo-input, .demo-select { @apply block min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800/70 dark:text-neutral-100; }
+.demo-input:focus, .demo-select:focus { outline: 2px solid var(--bs-primary); outline-offset: 0; }
+.demo-input:disabled, .demo-select:disabled { @apply cursor-not-allowed opacity-60; }
+.demo-input-lg { @apply min-h-12 text-lg; }
+.demo-input-sm { @apply min-h-8 px-2 py-1 text-sm; }
+.demo-help { @apply mt-1 text-sm text-neutral-500 dark:text-neutral-400; }
+.demo-check { @apply flex min-h-6 items-center gap-2; }
+.demo-checkbox { @apply size-4 accent-blue-600; }
+.demo-input-group { @apply flex w-full items-stretch; }
+.demo-input-group > .demo-input { @apply min-w-0 flex-1 rounded-r-none; }
+.demo-input-group > .demo-btn { @apply rounded-l-none; }
+.demo-input-group-sm > * { @apply min-h-8 text-sm; }
+
+.demo-alert { @apply relative mb-4 rounded-lg border px-4 py-3; }
+.demo-alert-danger { @apply border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-200; }
+.demo-alert-info { @apply border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200; }
+.demo-alert-success { @apply border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200; }
+.demo-alert-warning { @apply border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200; }
+.demo-alert .demo-close { @apply absolute top-1 right-2; color: inherit; }
+.demo-pagination { @apply flex flex-wrap list-none p-0; }
+.demo-page-link { @apply block border border-neutral-300 bg-white px-3 py-2 text-blue-800 no-underline dark:border-neutral-600 dark:bg-neutral-900 dark:text-blue-200; margin-left: -1px; }
+.demo-page-item:first-child .demo-page-link { @apply rounded-l-lg; }
+.demo-page-item:last-child .demo-page-link { @apply rounded-r-lg; }
+.demo-page-item.active .demo-page-link { @apply border-blue-600 bg-blue-600 text-white; }
+.demo-bordered-table th, .demo-bordered-table td { border: 1px solid var(--bs-table-border-color, var(--bs-border-color)); }
+.demo-bordered-table td { background: var(--bs-table-bg); }
+#month_calendar .day_cell.today { --bs-table-bg: var(--color-blue-100); }
+[data-bs-theme="dark"] #month_calendar .day_cell.today { --bs-table-bg: color-mix(in srgb, var(--color-blue-950) 70%, transparent); }
+.demo-compact-table th, .demo-compact-table td { @apply p-1; }
+
+.demo-navbar { @apply fixed inset-x-0 top-0 z-50 bg-neutral-900 text-white; }
+.demo-navbar > div { @apply flex min-h-16 flex-wrap items-center gap-4; }
+.demo-brand { @apply inline-flex items-center gap-2 whitespace-nowrap text-lg font-semibold text-white no-underline hover:text-white; }
+.demo-nav-toggle { @apply ms-auto grid size-10 place-items-center rounded-lg border border-neutral-500 text-white xl:hidden; }
+.demo-nav-toggle-icon::before { content: "☰"; font-size: 1.25rem; }
+.demo-nav-panel { @apply hidden w-full xl:flex xl:w-auto xl:flex-1 xl:items-center; }
+.demo-nav-panel.show { @apply flex flex-col items-stretch gap-2 py-2 xl:flex-row xl:py-0; }
+.demo-nav-items { @apply flex flex-col gap-1 p-0 xl:flex-row xl:items-center; }
+.demo-nav-link { @apply block rounded-md px-2 py-1.5 text-neutral-300 no-underline hover:bg-white/10 hover:text-white; }
+.demo-nav-link.active { @apply relative bg-white/10 text-white; }
+.demo-nav-link.active::after { content: ""; @apply absolute inset-x-2 bottom-0 h-0.5 bg-blue-300; }
+.demo-navbar .demo-menu-item { color: var(--bs-body-color); }
+.demo-nav-select {
+    @apply w-full min-w-32 appearance-none border-neutral-500 bg-neutral-800 pr-9 text-white xl:w-auto;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-position: right .75rem center;
+    background-repeat: no-repeat;
+}
+.demo-nav-select option { @apply bg-white text-neutral-900; }
+.demo-footer a { color: inherit; text-decoration: none; }
+.demo-footer a:hover { color: var(--bs-emphasis-color); text-decoration: underline; }
+html:not([data-framework]) .demo-nav-panel { @apply block; }
+html:not([data-framework]) .demo-nav-toggle { @apply hidden; }
+html:not([data-framework]) .relative:focus-within > .demo-menu { @apply block; }
+.calendar-event-popover { position: absolute; z-index: 1080; width: min(21rem, calc(100vw - 1.5rem)); overflow: hidden; pointer-events: none; color: var(--bs-body-color); background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: .75rem; box-shadow: var(--bs-box-shadow); }
+.calendar-event-popover .popover-header { padding: .75rem 1rem; background: var(--bs-tertiary-bg); border-bottom: 1px solid var(--bs-border-color); }
+.calendar-event-popover .popover-body { padding: 1rem; }

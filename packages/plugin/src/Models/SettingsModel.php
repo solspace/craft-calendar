@@ -32,26 +32,26 @@ class SettingsModel extends Model
 
     public ?bool $demoBannerDisabled = null;
 
-    public null|array|bool $showDisabledEvents = null;
+    public array|bool|null $showDisabledEvents = null;
 
-    public null|array|bool $quickCreateEnabled = null;
-    public null|array|bool $isDragAndDropEnabled = null;
+    public array|bool|null $quickCreateEnabled = null;
+    public array|bool|null $isDragAndDropEnabled = null;
 
     public ?string $defaultView = null;
 
-    public null|array|bool $guestAccess = null;
+    public array|bool|null $guestAccess = null;
 
     public ?string $descriptionFieldHandle = null;
 
     public ?string $locationFieldHandle = null;
 
-    public null|array|bool $authoredEventEditOnly = null;
+    public array|bool|null $authoredEventEditOnly = null;
 
     public ?string $pluginName = null;
 
     public ?int $firstDayOfWeek = null;
 
-    public null|int|string $timeFormat = null;
+    public int|string|null $timeFormat = null;
 
     private static array $overlapThresholds = [
         0 => 0,
