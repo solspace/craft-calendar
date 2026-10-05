@@ -41,6 +41,7 @@ const MAX_OCCURRENCES = 8;
 export const CalendarPreview: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const weekStartDay = useSelector(appSelectors.weekStartDay);
+  const dateFormat = useSelector(appSelectors.formats)?.date.short.icu ?? "P";
   const state = useSelector(eventSelectors.state);
   const { start, rrule } = state;
   const [viewRange, setViewRange] = useState<{
@@ -194,7 +195,9 @@ export const CalendarPreview: FC = () => {
               <DateList $count={upcomingOccurrences.length}>
                 {upcomingOccurrences.map((timestamp) => {
                   const occurrenceDate = new Date(timestamp * 1000);
-                  const date = utcDateKey(occurrenceDate);
+                  const date = format(utcToLocalDisplayDate(occurrenceDate), dateFormat, {
+                    locale: getDateLocale(),
+                  });
                   const removalType = getOccurrenceRemovalType(previewRecurrence, occurrenceDate);
                   const removalLabel = translate(
                     removalType === "rdate"
@@ -204,7 +207,7 @@ export const CalendarPreview: FC = () => {
                   );
 
                   return (
-                    <DateItem key={date}>
+                    <DateItem key={utcDateKey(occurrenceDate)}>
                       <span>{date}</span>
                       {removalType && (
                         <RemoveOccurrenceButton

@@ -3,6 +3,7 @@ import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdow
 import { NumberInput } from "@cal/components/controls/number-input/number-input";
 import { Flex } from "@cal/styles/components";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { getDateLocale } from "@cal/utils/localization";
 import { appSelectors } from "@event-builder/store/app.slice";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
@@ -45,6 +46,7 @@ export const RepeatRules: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const state = useSelector(eventSelectors.state);
   const weekStartDay = useSelector(appSelectors.weekStartDay);
+  const dateFormat = useSelector(appSelectors.formats)?.date.short.icu ?? "P";
   const { repeatType, repeatEndType, count, until, freq, start, interval } = state;
   const showExclusions = repeatType !== "NEVER";
 
@@ -59,7 +61,8 @@ export const RepeatRules: FC = () => {
 
   const pickerStartDate = useMemo(() => utcTimestampToLocalDisplayDate(start), [start]);
 
-  const formatDate = (value: number) => format(utcTimestampToLocalDisplayDate(value), "yyyy-MM-dd");
+  const formatDate = (value: number) =>
+    format(utcTimestampToLocalDisplayDate(value), dateFormat, { locale: getDateLocale() });
 
   return (
     <RepeatRulesWrapper>
