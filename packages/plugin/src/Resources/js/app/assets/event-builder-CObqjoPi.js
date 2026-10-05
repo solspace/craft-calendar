@@ -6,7 +6,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
 `).map(e=>h(e,t)).filter(Boolean).join(`
 `),er=(e,t)=>{if(t)return $n(t.toString(),e.allDay).split(`
 `);let n=nr(e),r=new f;return r.dtstart(n),r.rdate(n),$n(r.toString(),e.allDay).split(`
-`)},tr=(e,t)=>{if(!e)return[];let n=e.split(/\r?\n/).map(e=>e.trim()).filter(Boolean);if(n.some(e=>e.startsWith(`RRULE`)))return n.filter(e=>e.startsWith(`RDATE`)||e.startsWith(`EXDATE`)).map(e=>h(e,t));let r=n.find(e=>e.startsWith(`DTSTART`))?.split(`:`,2)[1]?.trim();return n.flatMap(e=>{if(!e.startsWith(`RDATE`)&&!e.startsWith(`EXDATE`))return[];if(!r||!e.startsWith(`RDATE`))return[h(e,t)];let[n,i=``]=e.split(`:`,2),a=i.split(`,`).map(e=>e.trim()).filter(Boolean).filter(e=>e!==r);return a.length===0?[]:[h(`${n}:${a.join(`,`)}`,t)]})},nr=e=>{let t=u(e.start);return e.allDay?s(t):d(t)},rr=[y.MO,y.TU,y.WE,y.TH,y.FR,y.SA,y.SU],ir=(e,t)=>!e?.length||!t?e:e.map(e=>rr[e]?.nth(t)).filter(Boolean),ar=(e,t)=>{let n=u(t);if(e.allDay)n.setHours(0,0,0,0);else{let t=u(e.start);n.setHours(t.getHours(),t.getMinutes(),t.getSeconds(),0)}return l(n)},or=new Set([`DAILY`,`WEEKLY`,`MONTHLY`,`YEARLY`,`CUSTOM`,`NEVER`]),sr=new Set([`NEVER`,`AFTER`,`ON_DATE`]),cr=e=>{if(!e)return{};let t=Array.isArray(e)?e:[e],n=[],r=new Set;return t.forEach(e=>{if(typeof e==`number`){n.push(e);return}n.push(e.weekday),typeof e.n==`number`&&r.add(e.n)}),{byweekday:n.length?n:void 0,bysetpos:r.size?Array.from(r):void 0}},lr=e=>or.has(e)?e:`NEVER`,ur=e=>sr.has(e)?e:`NEVER`,dr=e=>typeof e==`number`&&Number.isFinite(e)&&e>=1?e:1,fr=Nn({name:`event`,initialState:{start:Math.floor(Date.now()/1e3),end:Math.floor(Date.now()/1e3)+3600,until:void 0,allDay:!1,repeatType:`NEVER`,repeatEndType:`NEVER`,rrule:void 0,freq:p.DAILY,interval:1,count:void 0,byweekday:void 0,bymonth:void 0,bymonthday:void 0,byyearday:void 0,bysetpos:void 0},reducers:{setStart:(e,t)=>{let n=e.end-e.start,r=e.until?e.until-e.start:void 0;e.start=t.payload,e.end=e.start+n,e.until&&e.repeatEndType===`ON_DATE`&&(e.until=ar(e,e.until)),r!==void 0&&(e.until=e.start+r),W(e)},setEnd:(e,t)=>{e.end=t.payload},setUntil:(e,t)=>{let n=t.payload;n==null?e.until=void 0:e.until=ar(e,n),W(e)},setAllDay:(e,t)=>{let{enabled:n,eventDuration:r}=t.payload;e.allDay=n;let i=n?0:new Date().getUTCHours(),a=u(e.start);a.setHours(i,0,0,0),e.start=l(a);let o=u(e.end);n?o=re(T(o),1):(o=de(o,1),o=ae(o,a.getHours()),o=pe(o,r)),e.end=l(o),e.until&&e.repeatEndType===`ON_DATE`&&(e.until=ar(e,e.until)),W(e)},setRepeatType:(e,t)=>{e.repeatType===`NEVER`&&t.payload!==`NEVER`&&(e.rrule=Jn(e.rrule)),e.repeatType=t.payload,W(e)},setRepeatEndType:(e,t)=>{let n=t.payload;e.repeatEndType=n,n===`AFTER`?e.count=dr(e.count):e.count=null,W(e)},setFreq:(e,t)=>{e.freq=t.payload,qn(e,t.payload),W(e)},setCount:(e,t)=>{e.count=dr(t.payload),W(e)},setInterval:(e,t)=>{e.interval=Math.max(1,t.payload),W(e)},setDays:(e,t)=>{let{type:n,values:r}=t.payload;e[n]=U(r),W(e)},setByRules:(e,t)=>{let n=t.payload;`byweekday`in n&&(e.byweekday=U(n.byweekday)),`bymonth`in n&&(e.bymonth=U(n.bymonth)),`bymonthday`in n&&(e.bymonthday=U(n.bymonthday)),`byyearday`in n&&(e.byyearday=U(n.byyearday)),`bysetpos`in n&&(e.bysetpos=U(n.bysetpos)),W(e)},setRRule:(e,t)=>{e.rrule=t.payload||void 0}}}),{actions:G}=fr,pr=fr.reducer,K={state:e=>e.event},mr=Nn({name:`app`,initialState:{pro:!1},reducers:{}}),{actions:hr}=mr,gr=mr.reducer,q={config:e=>e.app,isPro:e=>e.app.pro,formats:e=>e.app.formats,weekStartDay:e=>e.app.weekStartDay??0,timeInterval:e=>e.app.timeInterval??30,eventDuration:e=>e.app.eventDuration??60,allDayDefault:e=>e.app.allDayDefault??!1,overlapThreshold:e=>e.app.overlapThreshold??0},_r=e=>{let t=new Map(e.map(e=>[e.getTime(),e])).values();return Array.from(t).sort((e,t)=>e.getTime()-t.getTime())},vr=e=>l(T(u(e))),J=e=>l(T(t(e))),yr=e=>new Date(Date.UTC(e.getUTCFullYear(),e.getUTCMonth(),e.getUTCDate(),0,0,0,0)),br=e=>new Date(Date.UTC(e.getUTCFullYear(),e.getUTCMonth(),e.getUTCDate(),23,59,59,999)),xr=e=>Math.floor(yr(e).getTime()/1e3),Sr=(e,t)=>{let n=vr(t),r=ee(e)??null,i=_(e);return{startTimestamp:n,baseRule:r,recurrenceSet:i,addedDateSet:new Set((i?.rdates()??[]).map(J).filter(e=>r?!0:e!==n))}},Cr=(e,t)=>{let n=xr(t),r=yr(t),i=br(t),a=e.baseRule?e.baseRule.between(r,i,!0).length>0:!1,o=e.recurrenceSet?e.recurrenceSet.between(r,i,!0).length>0:n===e.startTimestamp;return{timestamp:n,full:o,base:a,excluded:a&&!o,rdate:e.addedDateSet.has(n)}},wr=(e,t)=>{if(!t)return[];let n=yr(t.start),r=br(t.end),i=xr(t.start),a=xr(t.end),s=[];return e.recurrenceSet?s=e.recurrenceSet.between(n,r,!0).map(J):e.startTimestamp>=i&&e.startTimestamp<=a&&(s=[e.startTimestamp]),Array.from(new Set(s)).map(e=>({id:o(new Date(e*1e3)),start:S(u(e),`yyyy-MM-dd`),allDay:!0}))},Tr=(e,t,n)=>{if(!t)return[];if(!e.recurrenceSet){let n=xr(t);return e.startTimestamp>=n?[e.startTimestamp]:[]}let r=e.recurrenceSet.between(yr(t),te(br(t),100),!0,(e,t)=>t<n).map(J);return Array.from(new Set(r)).slice(0,n)},Er=(e,t,n,r,i)=>{let a=Zn(e,r),o=a.getTime(),s=Dr(t,({baseRule:e,rdates:t,exdates:r})=>{let s=Or(t,a,o,n===`rdate`,i);return{baseRule:e,rdates:n===`exdate`&&i?Yn(s,o):s,exdates:Or(r,a,o,n===`exdate`,i)}});return Qn(e,s.baseRule,_r(s.rdates),_r(s.exdates))},Dr=(e,t)=>t({baseRule:e.baseRule,rdates:kr(e),exdates:e.recurrenceSet?.exdates()??[]}),Or=(e,t,n,r,i)=>r?i?[...e,t]:Yn(e,n):e,kr=e=>{let t=e.recurrenceSet?.rdates()??[];return e.baseRule?t:t.filter(t=>J(t)!==e.startTimestamp)},Ar=[`Monday`,`Tuesday`,`Wednesday`,`Thursday`,`Friday`,`Saturday`,`Sunday`],jr=[`January`,`February`,`March`,`April`,`May`,`June`,`July`,`August`,`September`,`October`,`November`,`December`],Mr={1:`first`,2:`second`,3:`third`,4:`fourth`,[-1]:`last`},Nr=e=>e==null?[]:Array.isArray(e)?e:[e],Pr=e=>{if(e.length<=1)return e[0]??``;let t=e[e.length-1];return b(`{list} and {last}`,{list:e.slice(0,-1).join(`, `),last:t})},Fr=e=>{let t=Array.from(new Set(e)).sort((e,t)=>e-t);return t.join()===`0,1,2,3,4`?b(`weekday`):t.join()===`5,6`?b(`weekend day`):Pr(t.map(e=>b(Ar[e])))},Ir=(e,t)=>{let n={[p.DAILY]:[`Every day`,`Every {count} days`,`day`],[p.WEEKLY]:[`Every week`,`Every {count} weeks`,`week`],[p.MONTHLY]:[`Every month`,`Every {count} months`,`month`],[p.YEARLY]:[`Every year`,`Every {count} years`,`year`]},[r,i]=n[e]??n[p.DAILY];return t>1?b(i,{count:t}):b(r)},Lr=e=>{let{baseRule:n}=e;if(!n)return null;let r=n.origOptions,i=r.freq??p.DAILY,a=[Ir(i,r.interval??1)],o=Nr(r.byweekday).map(e=>typeof e==`number`?e:typeof e==`string`?y[e].weekday:e.weekday),s=Nr(r.bymonthday),c=Nr(r.bymonth),l=Nr(r.bysetpos);c.length>0&&i===p.YEARLY&&a.push(b(`in {months}`,{months:Pr(c.map(e=>b(jr[e-1])))})),l.length>0&&o.length>0?a.push(b(`on the {position} {weekday}`,{position:b(Mr[l[0]]??`first`),weekday:Fr(o)})):o.length>0?a.push(b(`on {weekdays}`,{weekdays:Fr(o)})):s.length>0&&a.push(b(`on day {days}`,{days:Pr(s.map(String))}));let u=a.join(` `);return r.count?b(`{description}, ending after {count} {noun}.`,{description:u,count:r.count,noun:b(r.count===1?`occurrence`:`occurrences`)}):r.until?b(`{description}, ending on {date}.`,{description:u,date:S(t(r.until),`PP`)}):`${u}.`},Rr=(e,t)=>{let{baseRule:n,recurrenceSet:r}=e;if(!n||!r)return null;let i=!!(n.origOptions.count||n.origOptions.until),a=i?r.all().length:null,o=0,s=r.exdates();if(s.length>0&&i){let e=new Set(n.all().map(e=>J(e)));o=s.filter(t=>e.has(J(t))).length}else o=s.length;return{showing:t,total:a,excluded:o}},zr=e=>{let t=e.total===null?b(`Showing {showing} occurrences`,{showing:e.showing}):b(`Showing {showing} of {total} occurrences`,{showing:e.showing,total:e.total});return e.excluded===0?t:b(`{summary} - {excluded} excluded`,{summary:t,excluded:e.excluded})},Br=n.div`
+`)},tr=(e,t)=>{if(!e)return[];let n=e.split(/\r?\n/).map(e=>e.trim()).filter(Boolean);if(n.some(e=>e.startsWith(`RRULE`)))return n.filter(e=>e.startsWith(`RDATE`)||e.startsWith(`EXDATE`)).map(e=>h(e,t));let r=n.find(e=>e.startsWith(`DTSTART`))?.split(`:`,2)[1]?.trim();return n.flatMap(e=>{if(!e.startsWith(`RDATE`)&&!e.startsWith(`EXDATE`))return[];if(!r||!e.startsWith(`RDATE`))return[h(e,t)];let[n,i=``]=e.split(`:`,2),a=i.split(`,`).map(e=>e.trim()).filter(Boolean).filter(e=>e!==r);return a.length===0?[]:[h(`${n}:${a.join(`,`)}`,t)]})},nr=e=>{let t=u(e.start);return e.allDay?s(t):d(t)},rr=[y.MO,y.TU,y.WE,y.TH,y.FR,y.SA,y.SU],ir=(e,t)=>!e?.length||!t?e:e.map(e=>rr[e]?.nth(t)).filter(Boolean),ar=(e,t)=>{let n=u(t);if(e.allDay)n.setHours(0,0,0,0);else{let t=u(e.start);n.setHours(t.getHours(),t.getMinutes(),t.getSeconds(),0)}return l(n)},or=new Set([`DAILY`,`WEEKLY`,`MONTHLY`,`YEARLY`,`CUSTOM`,`NEVER`]),sr=new Set([`NEVER`,`AFTER`,`ON_DATE`]),cr=e=>{if(!e)return{};let t=Array.isArray(e)?e:[e],n=[],r=new Set;return t.forEach(e=>{if(typeof e==`number`){n.push(e);return}n.push(e.weekday),typeof e.n==`number`&&r.add(e.n)}),{byweekday:n.length?n:void 0,bysetpos:r.size?Array.from(r):void 0}},lr=e=>or.has(e)?e:`NEVER`,ur=e=>sr.has(e)?e:`NEVER`,dr=e=>typeof e==`number`&&Number.isFinite(e)&&e>=1?e:1,fr=Nn({name:`event`,initialState:{start:Math.floor(Date.now()/1e3),end:Math.floor(Date.now()/1e3)+3600,until:void 0,allDay:!1,repeatType:`NEVER`,repeatEndType:`NEVER`,rrule:void 0,freq:p.DAILY,interval:1,count:void 0,byweekday:void 0,bymonth:void 0,bymonthday:void 0,byyearday:void 0,bysetpos:void 0},reducers:{setStart:(e,t)=>{let n=e.end-e.start,r=e.until?e.until-e.start:void 0;e.start=t.payload,e.end=e.start+n,e.until&&e.repeatEndType===`ON_DATE`&&(e.until=ar(e,e.until)),r!==void 0&&(e.until=e.start+r),W(e)},setEnd:(e,t)=>{e.end=t.payload},setUntil:(e,t)=>{let n=t.payload;n==null?e.until=void 0:e.until=ar(e,n),W(e)},setAllDay:(e,t)=>{let{enabled:n,eventDuration:r}=t.payload;e.allDay=n;let i=n?0:new Date().getUTCHours(),a=u(e.start);a.setHours(i,0,0,0),e.start=l(a);let o=u(e.end);n?o=re(T(o),1):(o=de(o,1),o=ae(o,a.getHours()),o=pe(o,r)),e.end=l(o),e.until&&e.repeatEndType===`ON_DATE`&&(e.until=ar(e,e.until)),W(e)},setRepeatType:(e,t)=>{e.repeatType===`NEVER`&&t.payload!==`NEVER`&&(e.rrule=Jn(e.rrule)),e.repeatType=t.payload,W(e)},setRepeatEndType:(e,t)=>{let n=t.payload;e.repeatEndType=n,n===`AFTER`?e.count=dr(e.count):e.count=null,W(e)},setFreq:(e,t)=>{e.freq=t.payload,qn(e,t.payload),W(e)},setCount:(e,t)=>{e.count=dr(t.payload),W(e)},setInterval:(e,t)=>{e.interval=Math.max(1,t.payload),W(e)},setDays:(e,t)=>{let{type:n,values:r}=t.payload;e[n]=U(r),W(e)},setByRules:(e,t)=>{let n=t.payload;`byweekday`in n&&(e.byweekday=U(n.byweekday)),`bymonth`in n&&(e.bymonth=U(n.bymonth)),`bymonthday`in n&&(e.bymonthday=U(n.bymonthday)),`byyearday`in n&&(e.byyearday=U(n.byyearday)),`bysetpos`in n&&(e.bysetpos=U(n.bysetpos)),W(e)},setRRule:(e,t)=>{e.rrule=t.payload||void 0}}}),{actions:G}=fr,pr=fr.reducer,K={state:e=>e.event},mr=Nn({name:`app`,initialState:{pro:!1},reducers:{}}),{actions:hr}=mr,gr=mr.reducer,_r={config:e=>e.app,isPro:e=>e.app.pro,formats:e=>e.app.formats,weekStartDay:e=>e.app.weekStartDay??0,timeInterval:e=>e.app.timeInterval??30,eventDuration:e=>e.app.eventDuration??60,allDayDefault:e=>e.app.allDayDefault??!1,overlapThreshold:e=>e.app.overlapThreshold??0},vr=e=>{let t=new Map(e.map(e=>[e.getTime(),e])).values();return Array.from(t).sort((e,t)=>e.getTime()-t.getTime())},yr=e=>l(T(u(e))),q=e=>l(T(t(e))),br=e=>new Date(Date.UTC(e.getUTCFullYear(),e.getUTCMonth(),e.getUTCDate(),0,0,0,0)),xr=e=>new Date(Date.UTC(e.getUTCFullYear(),e.getUTCMonth(),e.getUTCDate(),23,59,59,999)),J=e=>Math.floor(br(e).getTime()/1e3),Sr=(e,t)=>{let n=yr(t),r=ee(e)??null,i=_(e),a=r?.after(new Date(n*1e3),!0),o=new Set((i?.rdates()??[]).map(q).filter(e=>r?!0:e!==n));return{startTimestamp:n,firstOccurrenceTimestamp:a?q(a):n,baseRule:r,recurrenceSet:i,addedDateSet:o}},Cr=(e,t)=>{let n=J(t),r=br(t),i=xr(t),a=e.baseRule?e.baseRule.between(r,i,!0).length>0:!1,o=e.recurrenceSet?e.recurrenceSet.between(r,i,!0).length>0:n===e.startTimestamp;return{timestamp:n,full:o,base:a,excluded:a&&!o,rdate:e.addedDateSet.has(n)}},wr=(e,t)=>t===e.startTimestamp||t===e.firstOccurrenceTimestamp,Tr=(e,t)=>{let n=Cr(e,t);return!n.full||wr(e,n.timestamp)?null:n.rdate?`rdate`:n.base?`exdate`:null},Er=(e,t)=>{if(!t)return[];let n=br(t.start),r=xr(t.end),i=J(t.start),a=J(t.end),s=[];return e.recurrenceSet?s=e.recurrenceSet.between(n,r,!0).map(q):e.startTimestamp>=i&&e.startTimestamp<=a&&(s=[e.startTimestamp]),Array.from(new Set(s)).map(e=>({id:o(new Date(e*1e3)),start:S(u(e),`yyyy-MM-dd`),allDay:!0}))},Dr=(e,t,n)=>{if(!t)return[];if(!e.recurrenceSet){let n=J(t);return e.startTimestamp>=n?[e.startTimestamp]:[]}let r=e.recurrenceSet.between(br(t),te(xr(t),100),!0,(e,t)=>t<n).map(q);return Array.from(new Set(r)).slice(0,n)},Or=(e,t,n,r,i)=>{if((n===`exdate`&&i||n===`rdate`&&!i)&&wr(t,J(new Date(r*1e3))))return e.rrule;let a=Zn(e,r),o=a.getTime(),s=kr(t,({baseRule:e,rdates:t,exdates:r})=>{let s=Ar(t,a,o,n===`rdate`,i);return{baseRule:e,rdates:n===`exdate`&&i?Yn(s,o):s,exdates:Ar(r,a,o,n===`exdate`,i)}});return Qn(e,s.baseRule,vr(s.rdates),vr(s.exdates))},kr=(e,t)=>t({baseRule:e.baseRule,rdates:jr(e),exdates:e.recurrenceSet?.exdates()??[]}),Ar=(e,t,n,r,i)=>r?i?[...e,t]:Yn(e,n):e,jr=e=>{let t=e.recurrenceSet?.rdates()??[];return e.baseRule?t:t.filter(t=>q(t)!==e.startTimestamp)},Mr=[`Monday`,`Tuesday`,`Wednesday`,`Thursday`,`Friday`,`Saturday`,`Sunday`],Nr=[`January`,`February`,`March`,`April`,`May`,`June`,`July`,`August`,`September`,`October`,`November`,`December`],Pr={1:`first`,2:`second`,3:`third`,4:`fourth`,[-1]:`last`},Fr=e=>e==null?[]:Array.isArray(e)?e:[e],Ir=e=>{if(e.length<=1)return e[0]??``;let t=e[e.length-1];return b(`{list} and {last}`,{list:e.slice(0,-1).join(`, `),last:t})},Lr=e=>{let t=Array.from(new Set(e)).sort((e,t)=>e-t);return t.join()===`0,1,2,3,4`?b(`weekday`):t.join()===`5,6`?b(`weekend day`):Ir(t.map(e=>b(Mr[e])))},Rr=(e,t)=>{let n={[p.DAILY]:[`Every day`,`Every {count} days`,`day`],[p.WEEKLY]:[`Every week`,`Every {count} weeks`,`week`],[p.MONTHLY]:[`Every month`,`Every {count} months`,`month`],[p.YEARLY]:[`Every year`,`Every {count} years`,`year`]},[r,i]=n[e]??n[p.DAILY];return t>1?b(i,{count:t}):b(r)},zr=e=>{let{baseRule:n}=e;if(!n)return null;let r=n.origOptions,i=r.freq??p.DAILY,a=[Rr(i,r.interval??1)],o=Fr(r.byweekday).map(e=>typeof e==`number`?e:typeof e==`string`?y[e].weekday:e.weekday),s=Fr(r.bymonthday),c=Fr(r.bymonth),l=Fr(r.bysetpos);c.length>0&&i===p.YEARLY&&a.push(b(`in {months}`,{months:Ir(c.map(e=>b(Nr[e-1])))})),l.length>0&&o.length>0?a.push(b(`on the {position} {weekday}`,{position:b(Pr[l[0]]??`first`),weekday:Lr(o)})):o.length>0?a.push(b(`on {weekdays}`,{weekdays:Lr(o)})):s.length>0&&a.push(b(`on day {days}`,{days:Ir(s.map(String))}));let u=a.join(` `);return r.count?b(`{description}, ending after {count} {noun}.`,{description:u,count:r.count,noun:b(r.count===1?`occurrence`:`occurrences`)}):r.until?b(`{description}, ending on {date}.`,{description:u,date:S(t(r.until),`PP`)}):`${u}.`},Br=(e,t)=>{let{baseRule:n,recurrenceSet:r}=e;if(!n||!r)return null;let i=!!(n.origOptions.count||n.origOptions.until),a=i?r.all().length:null,o=0,s=r.exdates();if(s.length>0&&i){let e=new Set(n.all().map(e=>q(e)));o=s.filter(t=>e.has(q(t))).length}else o=s.length;return{showing:t,total:a,excluded:o}},Vr=e=>{let t=e.total===null?b(`Showing {showing} occurrences`,{showing:e.showing}):b(`Showing {showing} of {total} occurrences`,{showing:e.showing,total:e.total});return e.excluded===0?t:b(`{summary} - {excluded} excluded`,{summary:t,excluded:e.excluded})},Hr=n.div`
   container-type: inline-size;
 
   display: flex;
@@ -212,7 +212,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
       }
     }
   }
-`,Vr=n.div`
+`,Ur=n.div`
   display: flex;
   flex-direction: row;
   gap: 20px;
@@ -221,23 +221,23 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   width: 400px;
   flex: 0 0 400px;
   box-sizing: border-box;
-`,Hr=n.h4`
+`,Wr=n.h4`
   margin: 0;
   padding: 0;
   font-size: 14px;
   font-weight: 700;
   color: var(--gray-700);
-`,Ur=n.p`
+`,Gr=n.p`
   margin: 0;
   padding: 0;
   font-size: 13px;
   color: var(--gray-600);
-`,Wr=n.p`
+`,Kr=n.p`
   margin: 0;
   padding: 0;
   font-size: 13px;
   color: var(--gray-600);
-`,Gr=n.div`
+`,qr=n.div`
   min-width: 120px;
   max-width: 120px;
   height: 100%;
@@ -246,7 +246,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
     padding-top: 57px;
     word-wrap: break-word;
   }
-`,Kr=n.ul`
+`,Jr=n.ul`
   display: flex;
   flex-direction: column;
   justify-content: ${e=>e.$count>7?`space-between`:`start`};
@@ -255,17 +255,49 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   height: 100%;
   max-height: 215px;
   margin-top: 0;
-`,qr=n.li`
-  padding: 4px 8px;
+`,Yr=n.li`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 4px 5px 4px 8px;
 
   font-size: 13px;
   line-height: 13px;
   font-family: monospace;
+  white-space: nowrap;
 
   background-color: var(--gray-100);
   border: 1px solid var(--gray-200);
   border-left: 5px solid var(--gray-200);
-`,Y=c(),Jr=8,Yr=()=>{let e=O(),t=k(K.state),{repeatType:n,start:r,rrule:i}=t,[a,s]=(0,E.useState)(null),c=(0,E.useMemo)(()=>Sr(i,r),[i,r]),l=(0,E.useMemo)(()=>wr(c,a),[c,a]),u=(0,E.useMemo)(()=>Tr(c,a?.start??null,Jr),[c,a]),d=(0,E.useMemo)(()=>Lr(c),[c]),f=(0,E.useMemo)(()=>{let e=Rr(c,u.length);return e?zr(e):null},[c,u]),p=(0,E.useCallback)((n,r,i)=>{e(G.setRRule(Er(t,c,n,r,i)))},[e,c,t]),m=(0,E.useCallback)(e=>{let t=Cr(c,e);if(t.base&&t.excluded){p(`exdate`,t.timestamp,!1);return}if(t.base&&t.full&&n!==`NEVER`){p(`exdate`,t.timestamp,!0);return}if(!t.base&&t.full&&t.rdate){p(`rdate`,t.timestamp,!1);return}t.full||p(`rdate`,t.timestamp,!0)},[p,c,n]),h=(0,E.useCallback)(e=>Cr(c,e),[c]);return(0,Y.jsx)(Br,{children:(0,Y.jsxs)(fe,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(Hr,{children:b(`Schedule Preview`)}),d&&(0,Y.jsx)(Ur,{children:d})]}),(0,Y.jsxs)(Vr,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(ge,{aspectRatio:2,height:250,expandRows:!1,themeSystem:`bootstrap5`,plugins:[he,_e],initialView:`dayGridMonth`,dayHeaderFormat:{weekday:`narrow`},dayHeaderDidMount:e=>e.el.setAttribute(`aria-label`,b(S(e.date,`EEEE`))),timeZone:`UTC`,eventDisplay:`none`,events:l,headerToolbar:{start:`title`,end:`prev,today,next`},datesSet:e=>s({start:e.start,end:e.end,currentStart:e.view.currentStart}),dayCellClassNames:e=>{let t=h(e.date);return[t.full?`fc-has-event`:``,t.rdate?`fc-extra-date`:``,t.excluded?`fc-excluded-date`:``].filter(Boolean)},dateClick:e=>m(e.date)}),f&&(0,Y.jsx)(Wr,{children:f})]}),(0,Y.jsx)(Gr,{children:u.length===0?(0,Y.jsxs)(`p`,{children:[b(`No occurrences starting from`),(0,Y.jsx)(`br`,{}),S(a?.currentStart??new Date,`PP`)]}):(0,Y.jsx)(Kr,{$count:u.length,children:u.map(e=>{let t=o(new Date(e*1e3));return(0,Y.jsx)(qr,{children:t},t)})})})]})]})})},Xr=n.div`
+`,Xr=n.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 13px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--gray-500);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--gray-150);
+    color: var(--gray-700);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--gray-400);
+    outline-offset: 1px;
+  }
+`,Y=c(),Zr=8,Qr=()=>{let e=O(),t=k(K.state),{start:n,rrule:r}=t,[i,a]=(0,E.useState)(null),s=(0,E.useMemo)(()=>Sr(r,n),[r,n]),c=(0,E.useMemo)(()=>Er(s,i),[s,i]),l=(0,E.useMemo)(()=>Dr(s,i?.start??null,Zr),[s,i]),u=(0,E.useMemo)(()=>zr(s),[s]),d=(0,E.useMemo)(()=>{let e=Br(s,l.length);return e?Vr(e):null},[s,l]),f=(0,E.useCallback)((n,r,i)=>{e(G.setRRule(Or(t,s,n,r,i)))},[e,s,t]),p=(0,E.useCallback)(e=>{let t=Tr(s,e);if(t){let{timestamp:n}=Cr(s,e);f(t,n,t===`exdate`)}},[f,s]),m=(0,E.useCallback)(e=>{let t=Cr(s,e);if(t.base&&t.excluded){f(`exdate`,t.timestamp,!1);return}if(t.full){p(e);return}t.full||f(`rdate`,t.timestamp,!0)},[f,s,p]),h=(0,E.useCallback)(e=>Cr(s,e),[s]);return(0,Y.jsx)(Hr,{children:(0,Y.jsxs)(fe,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(Wr,{children:b(`Schedule Preview`)}),u&&(0,Y.jsx)(Gr,{children:u})]}),(0,Y.jsxs)(Ur,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(ge,{aspectRatio:2,height:250,expandRows:!1,themeSystem:`bootstrap5`,plugins:[he,_e],initialView:`dayGridMonth`,dayHeaderFormat:{weekday:`narrow`},dayHeaderDidMount:e=>e.el.setAttribute(`aria-label`,b(S(e.date,`EEEE`))),timeZone:`UTC`,eventDisplay:`none`,events:c,headerToolbar:{start:`title`,end:`prev,today,next`},datesSet:e=>a({start:e.start,end:e.end,currentStart:e.view.currentStart}),dayCellClassNames:e=>{let t=h(e.date);return[t.full?`fc-has-event`:``,t.rdate?`fc-extra-date`:``,t.excluded?`fc-excluded-date`:``].filter(Boolean)},dateClick:e=>m(e.date)}),d&&(0,Y.jsx)(Kr,{children:d})]}),(0,Y.jsx)(qr,{children:l.length===0?(0,Y.jsxs)(`p`,{children:[b(`No occurrences starting from`),(0,Y.jsx)(`br`,{}),S(i?.currentStart??new Date,`PP`)]}):(0,Y.jsx)(Jr,{$count:l.length,children:l.map(e=>{let t=new Date(e*1e3),n=o(t),r=Tr(s,t),i=b(r===`rdate`?`Remove additional date {date}`:`Exclude occurrence on {date}`,{date:n});return(0,Y.jsxs)(Yr,{children:[(0,Y.jsx)(`span`,{children:n}),r&&(0,Y.jsx)(Xr,{type:`button`,"aria-label":i,title:i,onClick:()=>p(t),children:`×`})]},n)})})})]})]})})},$r=n.div`
   container-type: inline-size;
 
   display: flex;
@@ -292,7 +324,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
     border-radius: var(--radius-lg);
     box-shadow: inset 0 0 0 1px var(--custom-border-color,var(--gray-200));
   }
-`,Zr=n.div`
+`,ei=n.div`
   container-type: inline-size;
 
   display: flex;
@@ -304,14 +336,14 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   min-width: 0;
 
   background-color: var(--custom-bg-color,var(--gray-050));
-`,Qr=n.div`
+`,ti=n.div`
   display: flex;
   flex-direction: row;
   gap: 20px;
 
   padding: 20px;
   width: 100%;
-`,$r=e=>l(de(u(e),1)),ei=(e,t,n)=>{let r=ni(t,n);return e.getTime()>=r.getTime()},ti=({value:e,start:t,allDay:n,timeInterval:r})=>{if(n)return l(re(T(u(e)),1));let i=u(e),a=ni(t,r);return i.getTime()>=a.getTime()?e:l(a)},ni=(e,t)=>pe(u(e),t),ri=e=>{if(!e.trim())return null;let t=Number(e);return Number.isFinite(t)?Math.trunc(t):null},ii=({inputValue:e,value:t,min:n})=>{let r=ri(e)??n??t??0;return n===void 0?r:Math.max(r,n)},ai=({value:e,min:t,debounceMs:n,onChange:r})=>{let[i,a]=(0,E.useState)(e?.toString()??``),o=(0,E.useRef)(void 0),s=(0,E.useCallback)(()=>{o.current!==void 0&&(window.clearTimeout(o.current),o.current=void 0)},[]),c=(0,E.useCallback)((e,t=`debounced`)=>{if(s(),r){if(!n||t===`immediate`){r(e);return}o.current=window.setTimeout(()=>{o.current=void 0,r(e)},n)}},[s,n,r]);return(0,E.useEffect)(()=>{a(e?.toString()??``)},[e]),(0,E.useEffect)(()=>s,[s]),{inputValue:i,handleChange:(0,E.useCallback)(e=>{e.stopPropagation();let n=e.currentTarget.value;a(n);let r=ri(n);if(r===null||t!==void 0&&r<t){s();return}c(r)},[s,c,t]),handleBlur:(0,E.useCallback)(n=>{n.stopPropagation();let r=ii({inputValue:i,value:e,min:t});a(r.toString()),c(r,`immediate`)},[c,i,t,e])}},oi=({value:e,min:t,debounceMs:n,onChange:r,...i})=>{let{inputValue:a,handleChange:o,handleBlur:s}=ai({value:e,min:t,debounceMs:n,onChange:r});return(0,Y.jsx)(fe,{...i,children:(0,Y.jsx)(`input`,{type:`number`,className:`text number`,min:t,step:1,value:a,onChange:o,onBlur:s})})},si=()=>null,X=[{value:`MO`,label:`Monday`,days:[y.MO.weekday]},{value:`TU`,label:`Tuesday`,days:[y.TU.weekday]},{value:`WE`,label:`Wednesday`,days:[y.WE.weekday]},{value:`TH`,label:`Thursday`,days:[y.TH.weekday]},{value:`FR`,label:`Friday`,days:[y.FR.weekday]},{value:`SA`,label:`Saturday`,days:[y.SA.weekday]},{value:`SU`,label:`Sunday`,days:[y.SU.weekday]},{value:`WD`,label:`Weekday (Mon-Fri)`,days:[y.MO.weekday,y.TU.weekday,y.WE.weekday,y.TH.weekday,y.FR.weekday]},{value:`WEK`,label:`Weekend (Sat/Sun)`,days:[y.SA.weekday,y.SU.weekday]}],ci=e=>{if(!(!e||e.length===0))return Array.from(new Set(e)).sort((e,t)=>e-t)},li=(e,t)=>{let n=ci(e),r=ci(t);return!n||!r||n.length!==r.length?!1:n.every((e,t)=>e===r[t])},ui=(e,t)=>{if(e){let t=X.find(t=>li(t.days,e));if(t)return t.value}if(t!==void 0){let e=X.find(e=>e.days.length===1&&e.days[0]===t);if(e)return e.value}return X[0].value},di=e=>X.find(t=>t.value===e)?.days??[y.MO.weekday],Z=`5px`,Q=n.button`
+`,ni=e=>l(de(u(e),1)),ri=(e,t,n)=>{let r=ai(t,n);return e.getTime()>=r.getTime()},ii=({value:e,start:t,allDay:n,timeInterval:r})=>{if(n)return l(re(T(u(e)),1));let i=u(e),a=ai(t,r);return i.getTime()>=a.getTime()?e:l(a)},ai=(e,t)=>pe(u(e),t),oi=e=>{if(!e.trim())return null;let t=Number(e);return Number.isFinite(t)?Math.trunc(t):null},si=({inputValue:e,value:t,min:n})=>{let r=oi(e)??n??t??0;return n===void 0?r:Math.max(r,n)},ci=({value:e,min:t,debounceMs:n,onChange:r})=>{let[i,a]=(0,E.useState)(e?.toString()??``),o=(0,E.useRef)(void 0),s=(0,E.useCallback)(()=>{o.current!==void 0&&(window.clearTimeout(o.current),o.current=void 0)},[]),c=(0,E.useCallback)((e,t=`debounced`)=>{if(s(),r){if(!n||t===`immediate`){r(e);return}o.current=window.setTimeout(()=>{o.current=void 0,r(e)},n)}},[s,n,r]);return(0,E.useEffect)(()=>{a(e?.toString()??``)},[e]),(0,E.useEffect)(()=>s,[s]),{inputValue:i,handleChange:(0,E.useCallback)(e=>{e.stopPropagation();let n=e.currentTarget.value;a(n);let r=oi(n);if(r===null||t!==void 0&&r<t){s();return}c(r)},[s,c,t]),handleBlur:(0,E.useCallback)(n=>{n.stopPropagation();let r=si({inputValue:i,value:e,min:t});a(r.toString()),c(r,`immediate`)},[c,i,t,e])}},li=({value:e,min:t,debounceMs:n,onChange:r,...i})=>{let{inputValue:a,handleChange:o,handleBlur:s}=ci({value:e,min:t,debounceMs:n,onChange:r});return(0,Y.jsx)(fe,{...i,children:(0,Y.jsx)(`input`,{type:`number`,className:`text number`,min:t,step:1,value:a,onChange:o,onBlur:s})})},ui=()=>null,X=[{value:`MO`,label:`Monday`,days:[y.MO.weekday]},{value:`TU`,label:`Tuesday`,days:[y.TU.weekday]},{value:`WE`,label:`Wednesday`,days:[y.WE.weekday]},{value:`TH`,label:`Thursday`,days:[y.TH.weekday]},{value:`FR`,label:`Friday`,days:[y.FR.weekday]},{value:`SA`,label:`Saturday`,days:[y.SA.weekday]},{value:`SU`,label:`Sunday`,days:[y.SU.weekday]},{value:`WD`,label:`Weekday (Mon-Fri)`,days:[y.MO.weekday,y.TU.weekday,y.WE.weekday,y.TH.weekday,y.FR.weekday]},{value:`WEK`,label:`Weekend (Sat/Sun)`,days:[y.SA.weekday,y.SU.weekday]}],di=e=>{if(!(!e||e.length===0))return Array.from(new Set(e)).sort((e,t)=>e-t)},fi=(e,t)=>{let n=di(e),r=di(t);return!n||!r||n.length!==r.length?!1:n.every((e,t)=>e===r[t])},pi=(e,t)=>{if(e){let t=X.find(t=>fi(t.days,e));if(t)return t.value}if(t!==void 0){let e=X.find(e=>e.days.length===1&&e.days[0]===t);if(e)return e.value}return X[0].value},mi=e=>X.find(t=>t.value===e)?.days??[y.MO.weekday],Z=`5px`,Q=n.button`
   width: 100%;
   padding: 0.5rem;
 
@@ -320,7 +352,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   border-bottom: 1px solid var(--gray-050);
   border-left: none;
   border-top: none;
-`,fi=n(Q)`
+`,hi=n(Q)`
   cursor: pointer;
   width: 100%;
 
@@ -332,12 +364,12 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
     color: white;
     background: var(--gray-600);
   }
-`,pi=n(Q)`
+`,gi=n(Q)`
   background: var(--gray-150);
 
   user-select: none;
   pointer-events: none;
-`,mi=n.div`
+`,_i=n.div`
   display: grid;
   gap: 0;
   padding: 0;
@@ -349,7 +381,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   &, &:after, &:before {
     box-sizing: initial !important;
   }
-`,hi=n(mi)`
+`,vi=n(_i)`
   grid-template-columns: repeat(7, 1fr);
 
   ${Q} {
@@ -377,7 +409,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
       border-bottom: none;
     }
   }
-`,gi=n(mi)`
+`,yi=n(_i)`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 
@@ -395,7 +427,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
       border-bottom-right-radius: ${Z};
     }
   }
-`,_i=n(mi)`
+`,bi=n(_i)`
   grid-template-columns: repeat(4, 1fr);
 
   ${Q} {
@@ -423,19 +455,19 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
       border-bottom: none;
     }
   }
-`,vi=({label:e,values:t,onChange:n})=>(0,Y.jsx)(fe,{label:e,children:(0,Y.jsxs)(hi,{children:[Array.from({length:31},(e,t)=>t+1).map(e=>(0,Y.jsx)(fi,{type:`button`,className:ce(t.includes(e)&&`active`),onClick:()=>{let r=t.filter(t=>t!==e);t.includes(e)||(r=[...r,e]),r.length!==0&&(r.sort((e,t)=>e-t),n(r))},children:e},e)),Array.from({length:4},(e,t)=>t+1).map(e=>(0,Y.jsx)(pi,{},e))]})}),yi=[{value:`MONTHDAY`,label:`On day of month`},{value:`WEEKDAY`,label:`On the nth weekday`}],bi=[{value:1,label:`First`},{value:2,label:`Second`},{value:3,label:`Third`},{value:4,label:`Fourth`},{value:-1,label:`Last`}],xi=()=>{let e=O(),{start:t,bymonthday:n,byweekday:r,bysetpos:i}=k(K.state),a=u(t),o=a.getDate(),s=(a.getDay()+6)%7,c=i?.length&&r?.length?`WEEKDAY`:`MONTHDAY`,l=n?.length?n:[o],d=i?.[0]??1,f=ui(r,s),p=t=>{e(G.setByRules({bymonthday:t.length?t:void 0,byweekday:void 0,bysetpos:void 0}))},m=(t,n)=>{e(G.setByRules({bymonthday:void 0,byweekday:di(t),bysetpos:[n]}))};return(0,Y.jsxs)(w,{$direction:`column`,style:{margin:`20px 0 0`,width:`100%`},children:[(0,Y.jsx)(C,{label:`Repeat on`,value:c,options:yi,onChange:e=>{e===`WEEKDAY`?m(f,d):p(l)}}),c===`MONTHDAY`&&(0,Y.jsx)(vi,{label:`Days of Month`,values:l,onChange:e=>p(e)}),c===`WEEKDAY`&&(0,Y.jsxs)(w,{children:[(0,Y.jsx)(C,{label:`Position`,value:d,options:bi,onChange:e=>m(f,Number.parseInt(e,10))}),(0,Y.jsx)(C,{label:`Day`,value:f,options:X.map(e=>({value:e.value,label:e.label})),onChange:e=>m(e,d)})]})]})},Si=[{weekday:y.SU,label:`Sun`},{weekday:y.MO,label:`Mon`},{weekday:y.TU,label:`Tue`},{weekday:y.WE,label:`Wed`},{weekday:y.TH,label:`Thu`},{weekday:y.FR,label:`Fri`},{weekday:y.SA,label:`Sat`}],Ci=()=>{let e=O(),{byweekday:t}=k(K.state);return(0,Y.jsx)(w,{$direction:`column`,style:{margin:`20px 0 0`,width:`100%`},children:(0,Y.jsx)(fe,{label:`On`,children:(0,Y.jsx)(gi,{children:Si.map(({weekday:n,label:r})=>(0,Y.jsx)(fi,{type:`button`,className:ce(t?.includes(n.weekday)&&`active`),onClick:()=>{let r=t?[...t]:[];r.includes(n.weekday)?r=r.filter(e=>e!==n.weekday):r.push(n.weekday),r.length!==0&&e(G.setDays({type:`byweekday`,values:r}))},children:r},n.weekday))})})})},wi=[{value:`MONTHDAY`,label:`On specific date`},{value:`WEEKDAY`,label:`On the nth weekday`}],Ti=[{value:1,label:`First`},{value:2,label:`Second`},{value:3,label:`Third`},{value:4,label:`Fourth`},{value:-1,label:`Last`}],Ei=[{value:1,label:`Jan`},{value:2,label:`Feb`},{value:3,label:`Mar`},{value:4,label:`Apr`},{value:5,label:`May`},{value:6,label:`Jun`},{value:7,label:`Jul`},{value:8,label:`Aug`},{value:9,label:`Sep`},{value:10,label:`Oct`},{value:11,label:`Nov`},{value:12,label:`Dec`}],Di=()=>{let e=O(),{start:t,bymonth:n,bymonthday:r,byweekday:i,bysetpos:a}=k(K.state),o=u(t),s=o.getDate(),c=o.getMonth()+1,l=(o.getDay()+6)%7,d=a?.length&&i?.length?`WEEKDAY`:`MONTHDAY`,f=r?.length?r:[s],p=n?.length?n:[c],m=a?.[0]??1,h=ui(i,l),g=(t,n)=>{e(G.setByRules({bymonth:t.length?t:void 0,bymonthday:n.length?n:void 0,byweekday:void 0,bysetpos:void 0}))},_=(t,n,r)=>{e(G.setByRules({bymonth:t.length?t:void 0,bymonthday:void 0,byweekday:di(n),bysetpos:[r]}))};return(0,Y.jsxs)(w,{$direction:`column`,style:{margin:`20px 0 0`,width:`100%`},children:[(0,Y.jsx)(fe,{label:`Month`,children:(0,Y.jsx)(_i,{children:Ei.map(e=>{let t=p.includes(e.value);return(0,Y.jsx)(fi,{type:`button`,className:ce(t&&`active`),onClick:()=>{let n=p.filter(t=>t!==e.value);t||(n=[...n,e.value]),n.length!==0&&(n.sort((e,t)=>e-t),d===`WEEKDAY`?_(n,h,m):g(n,f))},children:e.label},e.value)})})}),(0,Y.jsx)(C,{label:`Repeat on`,value:d,options:wi,onChange:e=>{e===`WEEKDAY`?_(p,h,m):g(p,f)}}),d===`MONTHDAY`&&(0,Y.jsx)(vi,{label:`Days of Month`,values:f,onChange:e=>g(p,e)}),d===`WEEKDAY`&&(0,Y.jsxs)(w,{children:[(0,Y.jsx)(C,{label:`Position`,value:m,options:Ti,onChange:e=>_(p,h,Number.parseInt(e,10))}),(0,Y.jsx)(C,{label:`Day`,value:h,options:X.map(e=>({value:e.value,label:e.label})),onChange:e=>_(p,e,m)})]})]})},Oi=()=>{let{freq:e}=k(K.state);return e===p.DAILY?(0,Y.jsx)(si,{}):e===p.WEEKLY?(0,Y.jsx)(Ci,{}):e===p.MONTHLY?(0,Y.jsx)(xi,{}):e===p.YEARLY?(0,Y.jsx)(Di,{}):null},ki=e=>(0,Y.jsx)(`svg`,{xmlns:`http://www.w3.org/2000/svg`,viewBox:`0 0 640 640`,fill:`currentColor`,"aria-hidden":`true`,focusable:`false`,...e,children:(0,Y.jsx)(`path`,{d:`M297.4 470.6C309.9 483.1 330.2 483.1 342.7 470.6L534.7 278.6C547.2 266.1 547.2 245.8 534.7 233.3C522.2 220.8 501.9 220.8 489.4 233.3L320 402.7L150.6 233.4C138.1 220.9 117.8 220.9 105.3 233.4C92.8 245.9 92.8 266.2 105.3 278.7L297.3 470.7z`})}),Ai=e=>(0,Y.jsx)(`svg`,{xmlns:`http://www.w3.org/2000/svg`,viewBox:`0 0 640 640`,fill:`currentColor`,"aria-hidden":`true`,focusable:`false`,...e,children:(0,Y.jsx)(`path`,{d:`M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z`})}),ji=()=>{let e=O(),{interval:t}=k(K.state);return(0,Y.jsxs)(Mi,{children:[(0,Y.jsx)(`span`,{children:`Every`}),(0,Y.jsx)(Ni,{type:`text`,className:`text`,value:t,onChange:t=>{let n=parseInt(t.target.value,10)||1;e(G.setInterval(n))}}),(0,Y.jsxs)(Pi,{children:[(0,Y.jsx)(Fi,{type:`button`,onClick:()=>e(G.setInterval(t+1)),children:(0,Y.jsx)(Ai,{})}),(0,Y.jsx)(Fi,{type:`button`,onClick:()=>e(G.setInterval(t-1)),children:(0,Y.jsx)(ki,{})})]})]})},Mi=n.div`
+`,xi=({label:e,values:t,onChange:n})=>(0,Y.jsx)(fe,{label:e,children:(0,Y.jsxs)(vi,{children:[Array.from({length:31},(e,t)=>t+1).map(e=>(0,Y.jsx)(hi,{type:`button`,className:ce(t.includes(e)&&`active`),onClick:()=>{let r=t.filter(t=>t!==e);t.includes(e)||(r=[...r,e]),r.length!==0&&(r.sort((e,t)=>e-t),n(r))},children:e},e)),Array.from({length:4},(e,t)=>t+1).map(e=>(0,Y.jsx)(gi,{},e))]})}),Si=[{value:`MONTHDAY`,label:`On day of month`},{value:`WEEKDAY`,label:`On the nth weekday`}],Ci=[{value:1,label:`First`},{value:2,label:`Second`},{value:3,label:`Third`},{value:4,label:`Fourth`},{value:-1,label:`Last`}],wi=()=>{let e=O(),{start:t,bymonthday:n,byweekday:r,bysetpos:i}=k(K.state),a=u(t),o=a.getDate(),s=(a.getDay()+6)%7,c=i?.length&&r?.length?`WEEKDAY`:`MONTHDAY`,l=n?.length?n:[o],d=i?.[0]??1,f=pi(r,s),p=t=>{e(G.setByRules({bymonthday:t.length?t:void 0,byweekday:void 0,bysetpos:void 0}))},m=(t,n)=>{e(G.setByRules({bymonthday:void 0,byweekday:mi(t),bysetpos:[n]}))};return(0,Y.jsxs)(w,{$direction:`column`,style:{margin:`20px 0 0`,width:`100%`},children:[(0,Y.jsx)(C,{label:`Repeat on`,value:c,options:Si,onChange:e=>{e===`WEEKDAY`?m(f,d):p(l)}}),c===`MONTHDAY`&&(0,Y.jsx)(xi,{label:`Days of Month`,values:l,onChange:e=>p(e)}),c===`WEEKDAY`&&(0,Y.jsxs)(w,{children:[(0,Y.jsx)(C,{label:`Position`,value:d,options:Ci,onChange:e=>m(f,Number.parseInt(e,10))}),(0,Y.jsx)(C,{label:`Day`,value:f,options:X.map(e=>({value:e.value,label:e.label})),onChange:e=>m(e,d)})]})]})},Ti=[{weekday:y.SU,label:`Sun`},{weekday:y.MO,label:`Mon`},{weekday:y.TU,label:`Tue`},{weekday:y.WE,label:`Wed`},{weekday:y.TH,label:`Thu`},{weekday:y.FR,label:`Fri`},{weekday:y.SA,label:`Sat`}],Ei=()=>{let e=O(),{byweekday:t}=k(K.state);return(0,Y.jsx)(w,{$direction:`column`,style:{margin:`20px 0 0`,width:`100%`},children:(0,Y.jsx)(fe,{label:`On`,children:(0,Y.jsx)(yi,{children:Ti.map(({weekday:n,label:r})=>(0,Y.jsx)(hi,{type:`button`,className:ce(t?.includes(n.weekday)&&`active`),onClick:()=>{let r=t?[...t]:[];r.includes(n.weekday)?r=r.filter(e=>e!==n.weekday):r.push(n.weekday),r.length!==0&&e(G.setDays({type:`byweekday`,values:r}))},children:r},n.weekday))})})})},Di=[{value:`MONTHDAY`,label:`On specific date`},{value:`WEEKDAY`,label:`On the nth weekday`}],Oi=[{value:1,label:`First`},{value:2,label:`Second`},{value:3,label:`Third`},{value:4,label:`Fourth`},{value:-1,label:`Last`}],ki=[{value:1,label:`Jan`},{value:2,label:`Feb`},{value:3,label:`Mar`},{value:4,label:`Apr`},{value:5,label:`May`},{value:6,label:`Jun`},{value:7,label:`Jul`},{value:8,label:`Aug`},{value:9,label:`Sep`},{value:10,label:`Oct`},{value:11,label:`Nov`},{value:12,label:`Dec`}],Ai=()=>{let e=O(),{start:t,bymonth:n,bymonthday:r,byweekday:i,bysetpos:a}=k(K.state),o=u(t),s=o.getDate(),c=o.getMonth()+1,l=(o.getDay()+6)%7,d=a?.length&&i?.length?`WEEKDAY`:`MONTHDAY`,f=r?.length?r:[s],p=n?.length?n:[c],m=a?.[0]??1,h=pi(i,l),g=(t,n)=>{e(G.setByRules({bymonth:t.length?t:void 0,bymonthday:n.length?n:void 0,byweekday:void 0,bysetpos:void 0}))},_=(t,n,r)=>{e(G.setByRules({bymonth:t.length?t:void 0,bymonthday:void 0,byweekday:mi(n),bysetpos:[r]}))};return(0,Y.jsxs)(w,{$direction:`column`,style:{margin:`20px 0 0`,width:`100%`},children:[(0,Y.jsx)(fe,{label:`Month`,children:(0,Y.jsx)(bi,{children:ki.map(e=>{let t=p.includes(e.value);return(0,Y.jsx)(hi,{type:`button`,className:ce(t&&`active`),onClick:()=>{let n=p.filter(t=>t!==e.value);t||(n=[...n,e.value]),n.length!==0&&(n.sort((e,t)=>e-t),d===`WEEKDAY`?_(n,h,m):g(n,f))},children:e.label},e.value)})})}),(0,Y.jsx)(C,{label:`Repeat on`,value:d,options:Di,onChange:e=>{e===`WEEKDAY`?_(p,h,m):g(p,f)}}),d===`MONTHDAY`&&(0,Y.jsx)(xi,{label:`Days of Month`,values:f,onChange:e=>g(p,e)}),d===`WEEKDAY`&&(0,Y.jsxs)(w,{children:[(0,Y.jsx)(C,{label:`Position`,value:m,options:Oi,onChange:e=>_(p,h,Number.parseInt(e,10))}),(0,Y.jsx)(C,{label:`Day`,value:h,options:X.map(e=>({value:e.value,label:e.label})),onChange:e=>_(p,e,m)})]})]})},ji=()=>{let{freq:e}=k(K.state);return e===p.DAILY?(0,Y.jsx)(ui,{}):e===p.WEEKLY?(0,Y.jsx)(Ei,{}):e===p.MONTHLY?(0,Y.jsx)(wi,{}):e===p.YEARLY?(0,Y.jsx)(Ai,{}):null},Mi=e=>(0,Y.jsx)(`svg`,{xmlns:`http://www.w3.org/2000/svg`,viewBox:`0 0 640 640`,fill:`currentColor`,"aria-hidden":`true`,focusable:`false`,...e,children:(0,Y.jsx)(`path`,{d:`M297.4 470.6C309.9 483.1 330.2 483.1 342.7 470.6L534.7 278.6C547.2 266.1 547.2 245.8 534.7 233.3C522.2 220.8 501.9 220.8 489.4 233.3L320 402.7L150.6 233.4C138.1 220.9 117.8 220.9 105.3 233.4C92.8 245.9 92.8 266.2 105.3 278.7L297.3 470.7z`})}),Ni=e=>(0,Y.jsx)(`svg`,{xmlns:`http://www.w3.org/2000/svg`,viewBox:`0 0 640 640`,fill:`currentColor`,"aria-hidden":`true`,focusable:`false`,...e,children:(0,Y.jsx)(`path`,{d:`M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z`})}),Pi=()=>{let e=O(),{interval:t}=k(K.state);return(0,Y.jsxs)(Fi,{children:[(0,Y.jsx)(`span`,{children:`Every`}),(0,Y.jsx)(Ii,{type:`text`,className:`text`,value:t,onChange:t=>{let n=parseInt(t.target.value,10)||1;e(G.setInterval(n))}}),(0,Y.jsxs)(Li,{children:[(0,Y.jsx)(Ri,{type:`button`,onClick:()=>e(G.setInterval(t+1)),children:(0,Y.jsx)(Ni,{})}),(0,Y.jsx)(Ri,{type:`button`,onClick:()=>e(G.setInterval(t-1)),children:(0,Y.jsx)(Mi,{})})]})]})},Fi=n.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
-`,Ni=n.input`
+`,Ii=n.input`
   width: 60px;
-`,Pi=n.div`
+`,Li=n.div`
   display: inline-flex;
   flex: 0 0 auto;
   flex-direction: column;
   width: 26px;
-`,Fi=n.button`
+`,Ri=n.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -484,10 +516,10 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   &:active {
     background: var(--button-bg--active);
   }
-`,Ii=g({position:[`bottom`,`top`],alignment:`end`,padding:8}),Li=(e,t,n,r)=>{let[i,a]=(0,E.useState)();return(0,E.useLayoutEffect)(()=>{if(!e)return;let i=t.current,o=n.current,s=r.current;if(!i||!o||!s)return;let c=()=>{let e=m({anchorRect:i.getBoundingClientRect(),popoverRect:o.getBoundingClientRect(),viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,options:Ii}),t=s.getBoundingClientRect(),n={top:e.top-t.top,left:e.left-t.left};a(e=>e?.top===n.top&&e.left===n.left?e:n)};c();let l=new ResizeObserver(c);return l.observe(i),l.observe(o),window.addEventListener(`resize`,c),window.addEventListener(`scroll`,c,!0),()=>{l.disconnect(),window.removeEventListener(`resize`,c),window.removeEventListener(`scroll`,c,!0)}},[e,t,n,r]),i},Ri=(e,t,n)=>{(0,E.useEffect)(()=>{if(!e)return;let r=e=>{let r=e.target;t.some(e=>e.current?.contains(r))||n()},i=e=>{e.key===`Escape`&&n()};return window.addEventListener(`mousedown`,r),window.addEventListener(`keydown`,i),()=>{window.removeEventListener(`mousedown`,r),window.removeEventListener(`keydown`,i)}},[e,n,t])},zi=n.div`
+`,zi=g({position:[`bottom`,`top`],alignment:`end`,padding:8}),Bi=(e,t,n,r)=>{let[i,a]=(0,E.useState)();return(0,E.useLayoutEffect)(()=>{if(!e)return;let i=t.current,o=n.current,s=r.current;if(!i||!o||!s)return;let c=()=>{let e=m({anchorRect:i.getBoundingClientRect(),popoverRect:o.getBoundingClientRect(),viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,options:zi}),t=s.getBoundingClientRect(),n={top:e.top-t.top,left:e.left-t.left};a(e=>e?.top===n.top&&e.left===n.left?e:n)};c();let l=new ResizeObserver(c);return l.observe(i),l.observe(o),window.addEventListener(`resize`,c),window.addEventListener(`scroll`,c,!0),()=>{l.disconnect(),window.removeEventListener(`resize`,c),window.removeEventListener(`scroll`,c,!0)}},[e,t,n,r]),i},Vi=(e,t,n)=>{(0,E.useEffect)(()=>{if(!e)return;let r=e=>{let r=e.target;t.some(e=>e.current?.contains(r))||n()},i=e=>{e.key===`Escape`&&n()};return window.addEventListener(`mousedown`,r),window.addEventListener(`keydown`,i),()=>{window.removeEventListener(`mousedown`,r),window.removeEventListener(`keydown`,i)}},[e,n,t])},Hi=n.div`
   padding-top: 18px;
   width: 100%;
-`,Bi=n.div`
+`,Ui=n.div`
   margin: 0 0 6px 0;
   padding: 0;
   color: var(--gray-700);
@@ -495,17 +527,17 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-`,Vi=n.p`
+`,Wi=n.p`
   margin: 0 0 6px 0;
   padding: 0;
   color: var(--gray-700);
   font-size: 13px;
   font-weight: 400;
-`,Hi=n.div`
+`,Gi=n.div`
   display: flex;
   align-items: center;
   gap: 10px;
-`,Ui=n.div`
+`,Ki=n.div`
   position: relative;
   flex: 1;
 
@@ -522,7 +554,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   .react-datepicker__current-month {
     display: none;
   }
-`,Wi=n.button`
+`,qi=n.button`
   cursor: pointer;
 
   &.icon.minus {
@@ -530,10 +562,10 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
       content: "minus";
     }
   }
-`,Gi=n.div`
+`,Ji=n.div`
   position: relative;
   flex-shrink: 0;
-`,Ki=n.button`
+`,Yi=n.button`
   min-width: 36px;
   height: 36px;
   padding: 0 11px;
@@ -567,7 +599,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
       border-color: var(--gray-700);
     }
   }
-`,qi=n.div`
+`,Xi=n.div`
   position: absolute;
   z-index: 20;
 
@@ -585,17 +617,17 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   ul {
     margin: 0;
   }
-`,Ji=n.div`
+`,Zi=n.div`
   margin-bottom: 10px;
   color: var(--gray-700);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-`,Yi=n.ul`
+`,Qi=n.ul`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 5px;
-`,Xi=n.li`
+`,$i=n.li`
   display: flex;
   align-items: center;
   gap: 3px;
@@ -618,12 +650,12 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
     line-height: 1;
     cursor: pointer;
   }
-`,Zi=({title:e,description:t,actionLabel:n,actionClass:r,popoverTitle:i,dates:a,openToDate:o,weekStartDay:s,formatDate:c,filterDate:u,onAdd:d,onRemove:f})=>{let[p,m]=(0,E.useState)(!1),h=(0,E.useRef)(null),g=(0,E.useRef)(null),_=(0,E.useRef)(null),v=Li(p,g,_,h);return(0,E.useEffect)(()=>{a.length===0&&m(!1)},[a.length]),Ri(p,[g,_],()=>m(!1)),(0,Y.jsxs)(zi,{children:[(0,Y.jsx)(Bi,{children:b(e)}),t&&(0,Y.jsx)(Vi,{children:t}),(0,Y.jsxs)(Hi,{children:[(0,Y.jsxs)(Gi,{ref:h,children:[(0,Y.jsx)(Ki,{ref:g,type:`button`,disabled:a.length===0,className:ce({active:p}),onClick:()=>{a.length!==0&&m(e=>!e)},children:a.length}),p&&(0,Y.jsxs)(qi,{ref:_,style:{top:v?.top??0,left:v?.left??0,visibility:v?`visible`:`hidden`},children:[(0,Y.jsx)(Ji,{children:b(i)}),(0,Y.jsx)(Yi,{children:a.map(e=>(0,Y.jsxs)(Xi,{children:[(0,Y.jsx)(`span`,{children:c(e)}),(0,Y.jsx)(`button`,{type:`button`,onClick:()=>f(e),children:`×`})]},e))})]})]}),(0,Y.jsx)(Ui,{children:(0,Y.jsx)(ie,{selected:null,onChange:e=>{e&&d(l(T(e)))},customInput:(0,Y.jsx)(Qi,{label:n,className:ce(`btn`,r)}),shouldCloseOnSelect:!0,showTimeSelect:!1,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,todayButton:b(`Today`),openToDate:o,calendarStartDay:s,filterDate:u})})]})]})},Qi=(0,E.forwardRef)(({label:e,...t},n)=>(0,Y.jsx)(Wi,{type:`button`,ref:n,...t,children:b(e)}));Qi.displayName=`PickerTrigger`;var $i=n.div`
+`,ea=({title:e,description:t,actionLabel:n,actionClass:r,popoverTitle:i,dates:a,openToDate:o,weekStartDay:s,formatDate:c,filterDate:u,onAdd:d,onRemove:f})=>{let[p,m]=(0,E.useState)(!1),h=(0,E.useRef)(null),g=(0,E.useRef)(null),_=(0,E.useRef)(null),v=Bi(p,g,_,h);return(0,E.useEffect)(()=>{a.length===0&&m(!1)},[a.length]),Vi(p,[g,_],()=>m(!1)),(0,Y.jsxs)(Hi,{children:[(0,Y.jsx)(Ui,{children:b(e)}),t&&(0,Y.jsx)(Wi,{children:t}),(0,Y.jsxs)(Gi,{children:[(0,Y.jsxs)(Ji,{ref:h,children:[(0,Y.jsx)(Yi,{ref:g,type:`button`,disabled:a.length===0,className:ce({active:p}),onClick:()=>{a.length!==0&&m(e=>!e)},children:a.length}),p&&(0,Y.jsxs)(Xi,{ref:_,style:{top:v?.top??0,left:v?.left??0,visibility:v?`visible`:`hidden`},children:[(0,Y.jsx)(Zi,{children:b(i)}),(0,Y.jsx)(Qi,{children:a.map(e=>(0,Y.jsxs)($i,{children:[(0,Y.jsx)(`span`,{children:c(e)}),(0,Y.jsx)(`button`,{type:`button`,onClick:()=>f(e),children:`×`})]},e))})]})]}),(0,Y.jsx)(Ki,{children:(0,Y.jsx)(ie,{selected:null,onChange:e=>{e&&d(l(T(e)))},customInput:(0,Y.jsx)(ta,{label:n,className:ce(`btn`,r)}),shouldCloseOnSelect:!0,showTimeSelect:!1,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,todayButton:b(`Today`),openToDate:o,calendarStartDay:s,filterDate:u})})]})]})},ta=(0,E.forwardRef)(({label:e,...t},n)=>(0,Y.jsx)(qi,{type:`button`,ref:n,...t,children:b(e)}));ta.displayName=`PickerTrigger`;var na=n.div`
   display: flex;
   flex-direction: column;
   padding: 0 20px 20px;
   width: 100%;
-`,ea=()=>{let e=O(),n=k(K.state),{start:r,rrule:i}=n,a=(0,E.useMemo)(()=>l(T(u(r))),[r]),o=(0,E.useMemo)(()=>ee(i)??null,[i]),c=(0,E.useMemo)(()=>_(i),[i]),f=(0,E.useMemo)(()=>c?Array.from(new Set(c.rdates().map(e=>l(T(t(e)))).filter(e=>o?!0:e!==a))).sort((e,t)=>e-t):[],[o,c,a]),p=(0,E.useMemo)(()=>c?Array.from(new Set(c.exdates().map(e=>l(T(t(e)))))).sort((e,t)=>e-t):[],[c]),m=(0,E.useMemo)(()=>new Set(f),[f]),h=(0,E.useMemo)(()=>new Set(p),[p]),g=(0,E.useCallback)(e=>{let t=s(T(e)),n=d(oe(e)),r=o?o.between(t,n,!0).length>0:!1,i=c?c.between(t,n,!0).length>0:l(T(e))===a;return{full:i,base:r,excluded:r&&!i}},[o,c,a]),v=r=>{let i=r({baseRule:o,rdates:c?.rdates().filter(e=>o?!0:l(T(t(e)))!==a)??[],exdates:c?.exdates()??[]});e(G.setRRule(Qn(n,i.baseRule,ta(i.rdates),ta(i.exdates))))};return{addedDates:f,excludedDates:p,addFixedDate:(e,t)=>{let r=Zn(n,t);v(({baseRule:t,rdates:n,exdates:i})=>({baseRule:t,rdates:e===`rdate`?[...n,r]:Yn(n,r.getTime()),exdates:e===`exdate`?[...i,r]:i}))},removeFixedDate:(e,t)=>{let r=Zn(n,t).getTime();v(({baseRule:t,rdates:n,exdates:i})=>({baseRule:t,rdates:e===`rdate`?Yn(n,r):n,exdates:e===`exdate`?Yn(i,r):i}))},canAddOccurrence:(0,E.useCallback)(e=>{let t=l(T(e)),n=g(e);return!n.full&&!n.excluded&&!m.has(t)},[m,g]),canExcludeOccurrence:(0,E.useCallback)(e=>{let t=l(T(e)),n=g(e);return n.base&&!n.excluded&&!h.has(t)},[h,g]),getStatus:g}},ta=e=>{let t=new Map(e.map(e=>[e.getTime(),e])).values();return Array.from(t).sort((e,t)=>e.getTime()-t.getTime())},na=[{value:`NEVER`,label:`Never`},{value:`DAILY`,label:`Every Day`},{value:`WEEKLY`,label:`Every Week`},{value:`MONTHLY`,label:`Every Month`},{value:`YEARLY`,label:`Every Year`},{value:`CUSTOM`,label:`Custom...`}],ra=[{value:`NEVER`,label:`Never`},{value:`AFTER`,label:`After...`},{value:`ON_DATE`,label:`On Date...`}],ia=e=>[{value:p.DAILY,label:e?`Days`:`Day`},{value:p.WEEKLY,label:e?`Weeks`:`Week`},{value:p.MONTHLY,label:e?`Months`:`Month`},{value:p.YEARLY,label:e?`Years`:`Year`}],aa=300,oa=()=>{let e=O(),t=k(K.state),n=k(q.weekStartDay),{repeatType:r,repeatEndType:i,count:a,until:o,freq:s,start:c,interval:l}=t,d=r!==`NEVER`,{addedDates:f,excludedDates:p,addFixedDate:m,removeFixedDate:h,canAddOccurrence:g,canExcludeOccurrence:_}=ea(),v=(0,E.useMemo)(()=>u(c),[c]),y=e=>S(u(e),`yyyy-MM-dd`);return(0,Y.jsxs)($i,{children:[(0,Y.jsxs)(w,{$alignItems:`end`,style:{width:`100%`},children:[(0,Y.jsx)(C,{label:`Repeats`,value:r,options:na,onChange:t=>e(G.setRepeatType(t))}),r===`CUSTOM`&&(0,Y.jsxs)(Y.Fragment,{children:[(0,Y.jsx)(ji,{}),(0,Y.jsx)(C,{label:``,value:s,options:ia(l>1),onChange:t=>e(G.setFreq(Number.parseInt(t,10)))})]})]}),r===`CUSTOM`&&(0,Y.jsx)(Oi,{}),r!==`NEVER`&&(0,Y.jsxs)(w,{style:{margin:`20px 0 0`,width:`100%`},children:[(0,Y.jsx)(C,{label:`Ends`,options:ra,value:i,onChange:t=>e(G.setRepeatEndType(t))}),i===`AFTER`&&(0,Y.jsx)(oi,{label:`Times`,value:a,min:1,debounceMs:aa,onChange:t=>e(G.setCount(t))}),i===`ON_DATE`&&(0,Y.jsx)(se,{label:``,value:o||null,onChange:t=>e(G.setUntil(t)),datePickerProps:{showTimeInput:!1,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,calendarStartDay:n,minDate:v}})]}),(0,Y.jsxs)(w,{style:{margin:`20px 0 0`,borderTop:`1px solid var(--gray-200)`,width:`100%`},children:[(0,Y.jsx)(Zi,{title:`Additional Dates`,description:`Add dates outside the recurring pattern.`,actionLabel:`Add Dates`,actionClass:`icon add dashed`,popoverTitle:`Additional Dates`,dates:f,openToDate:v,formatDate:y,filterDate:g,weekStartDay:n,onAdd:e=>m(`rdate`,e),onRemove:e=>h(`rdate`,e)}),d&&(0,Y.jsx)(Zi,{title:`Excluded Dates`,description:`Remove dates generated by the recurring pattern.`,actionLabel:`Remove Dates`,actionClass:`icon dashed minus`,popoverTitle:`Excluded Dates`,dates:p,openToDate:v,formatDate:y,filterDate:_,weekStartDay:n,onAdd:e=>m(`exdate`,e),onRemove:e=>h(`exdate`,e)})]})]})},sa=()=>{let e=(0,E.useId)(),t=(0,E.useId)(),n=(0,E.useId)(),r=O(),{start:i,end:a,allDay:o}=k(K.state),{date:s,time:c,datetime:l}=k(q.formats),d=k(q.weekStartDay),f=k(q.timeInterval),p=k(q.eventDuration),m=(0,E.useMemo)(()=>o?s.short.icu:l.short.icu,[o,s,l]),h=(0,E.useMemo)(()=>o?$r(a):a,[o,a]);return(0,Y.jsxs)(Xr,{children:[(0,Y.jsxs)(Zr,{children:[(0,Y.jsxs)(Qr,{children:[(0,Y.jsx)(se,{id:t,label:`Starts`,value:i,onChange:e=>r(G.setStart(e)),datePickerProps:{id:t,showIcon:!0,icon:(0,Y.jsx)(ue,{}),toggleCalendarOnIconClick:!0,showTimeSelect:!o,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,dateFormat:m,timeFormat:c.short.icu,todayButton:b(`Today`),calendarStartDay:d,timeIntervals:f}}),(0,Y.jsx)(se,{id:n,label:`Ends`,value:h,onChange:e=>{e!=null&&r(G.setEnd(ti({value:e,start:i,allDay:o,timeInterval:f})))},datePickerProps:{id:n,showIcon:!0,icon:(0,Y.jsx)(ue,{}),toggleCalendarOnIconClick:!0,minDate:u(i),showTimeSelect:!o,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,dateFormat:m,timeFormat:c.short.icu,todayButton:b(`Today`),calendarStartDay:d,timeIntervals:f,filterTime:e=>ei(new Date(e),i,f)}}),(0,Y.jsx)(le,{id:e,label:`All Day`,enabled:o,style:{margin:0},onClick:e=>r(G.setAllDay({enabled:e,eventDuration:p}))})]}),(0,Y.jsx)(oa,{})]}),(0,Y.jsx)(Yr,{})]})},ca=n.div`
+`,ra=()=>{let e=O(),n=k(K.state),{start:r,rrule:i}=n,a=(0,E.useMemo)(()=>Sr(i,r),[i,r]),{startTimestamp:o,baseRule:c,recurrenceSet:u}=a,f=(0,E.useMemo)(()=>u?Array.from(new Set(u.rdates().map(e=>l(T(t(e)))).filter(e=>c?!0:e!==o))).sort((e,t)=>e-t):[],[c,u,o]),p=(0,E.useMemo)(()=>u?Array.from(new Set(u.exdates().map(e=>l(T(t(e)))))).sort((e,t)=>e-t):[],[u]),m=(0,E.useMemo)(()=>new Set(f),[f]),h=(0,E.useMemo)(()=>new Set(p),[p]),g=(0,E.useCallback)(e=>{let t=s(T(e)),n=d(oe(e)),r=c?c.between(t,n,!0).length>0:!1,i=u?u.between(t,n,!0).length>0:l(T(e))===o;return{full:i,base:r,excluded:r&&!i}},[c,u,o]),_=r=>{let i=r({baseRule:c,rdates:u?.rdates().filter(e=>c?!0:l(T(t(e)))!==o)??[],exdates:u?.exdates()??[]});e(G.setRRule(Qn(n,i.baseRule,ia(i.rdates),ia(i.exdates))))};return{addedDates:f,excludedDates:p,addFixedDate:(e,t)=>{if(e===`exdate`&&wr(a,t))return;let r=Zn(n,t);_(({baseRule:t,rdates:n,exdates:i})=>({baseRule:t,rdates:e===`rdate`?[...n,r]:Yn(n,r.getTime()),exdates:e===`exdate`?[...i,r]:i}))},removeFixedDate:(e,t)=>{if(e===`rdate`&&wr(a,t))return;let r=Zn(n,t).getTime();_(({baseRule:t,rdates:n,exdates:i})=>({baseRule:t,rdates:e===`rdate`?Yn(n,r):n,exdates:e===`exdate`?Yn(i,r):i}))},canAddOccurrence:(0,E.useCallback)(e=>{let t=l(T(e)),n=g(e);return!n.full&&!n.excluded&&!m.has(t)},[m,g]),canExcludeOccurrence:(0,E.useCallback)(e=>{let t=l(T(e)),n=g(e);return n.base&&!n.excluded&&!h.has(t)&&!wr(a,t)},[h,g,a]),getStatus:g}},ia=e=>{let t=new Map(e.map(e=>[e.getTime(),e])).values();return Array.from(t).sort((e,t)=>e.getTime()-t.getTime())},aa=[{value:`NEVER`,label:`Never`},{value:`DAILY`,label:`Every Day`},{value:`WEEKLY`,label:`Every Week`},{value:`MONTHLY`,label:`Every Month`},{value:`YEARLY`,label:`Every Year`},{value:`CUSTOM`,label:`Custom...`}],oa=[{value:`NEVER`,label:`Never`},{value:`AFTER`,label:`After...`},{value:`ON_DATE`,label:`On Date...`}],sa=e=>[{value:p.DAILY,label:e?`Days`:`Day`},{value:p.WEEKLY,label:e?`Weeks`:`Week`},{value:p.MONTHLY,label:e?`Months`:`Month`},{value:p.YEARLY,label:e?`Years`:`Year`}],ca=300,la=()=>{let e=O(),t=k(K.state),n=k(_r.weekStartDay),{repeatType:r,repeatEndType:i,count:a,until:o,freq:s,start:c,interval:l}=t,d=r!==`NEVER`,{addedDates:f,excludedDates:p,addFixedDate:m,removeFixedDate:h,canAddOccurrence:g,canExcludeOccurrence:_}=ra(),v=(0,E.useMemo)(()=>u(c),[c]),y=e=>S(u(e),`yyyy-MM-dd`);return(0,Y.jsxs)(na,{children:[(0,Y.jsxs)(w,{$alignItems:`end`,style:{width:`100%`},children:[(0,Y.jsx)(C,{label:`Repeats`,value:r,options:aa,onChange:t=>e(G.setRepeatType(t))}),r===`CUSTOM`&&(0,Y.jsxs)(Y.Fragment,{children:[(0,Y.jsx)(Pi,{}),(0,Y.jsx)(C,{label:``,value:s,options:sa(l>1),onChange:t=>e(G.setFreq(Number.parseInt(t,10)))})]})]}),r===`CUSTOM`&&(0,Y.jsx)(ji,{}),r!==`NEVER`&&(0,Y.jsxs)(w,{style:{margin:`20px 0 0`,width:`100%`},children:[(0,Y.jsx)(C,{label:`Ends`,options:oa,value:i,onChange:t=>e(G.setRepeatEndType(t))}),i===`AFTER`&&(0,Y.jsx)(li,{label:`Times`,value:a,min:1,debounceMs:ca,onChange:t=>e(G.setCount(t))}),i===`ON_DATE`&&(0,Y.jsx)(se,{label:``,value:o||null,onChange:t=>e(G.setUntil(t)),datePickerProps:{showTimeInput:!1,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,calendarStartDay:n,minDate:v}})]}),(0,Y.jsxs)(w,{style:{margin:`20px 0 0`,borderTop:`1px solid var(--gray-200)`,width:`100%`},children:[(0,Y.jsx)(ea,{title:`Additional Dates`,description:`Add dates outside the recurring pattern.`,actionLabel:`Add Dates`,actionClass:`icon add dashed`,popoverTitle:`Additional Dates`,dates:f,openToDate:v,formatDate:y,filterDate:g,weekStartDay:n,onAdd:e=>m(`rdate`,e),onRemove:e=>h(`rdate`,e)}),d&&(0,Y.jsx)(ea,{title:`Excluded Dates`,description:`Remove dates generated by the recurring pattern.`,actionLabel:`Remove Dates`,actionClass:`icon dashed minus`,popoverTitle:`Excluded Dates`,dates:p,openToDate:v,formatDate:y,filterDate:_,weekStartDay:n,onAdd:e=>m(`exdate`,e),onRemove:e=>h(`exdate`,e)})]})]})},ua=()=>{let e=(0,E.useId)(),t=(0,E.useId)(),n=(0,E.useId)(),r=O(),{start:i,end:a,allDay:o}=k(K.state),{date:s,time:c,datetime:l}=k(_r.formats),d=k(_r.weekStartDay),f=k(_r.timeInterval),p=k(_r.eventDuration),m=(0,E.useMemo)(()=>o?s.short.icu:l.short.icu,[o,s,l]),h=(0,E.useMemo)(()=>o?ni(a):a,[o,a]);return(0,Y.jsxs)($r,{children:[(0,Y.jsxs)(ei,{children:[(0,Y.jsxs)(ti,{children:[(0,Y.jsx)(se,{id:t,label:`Starts`,value:i,onChange:e=>r(G.setStart(e)),datePickerProps:{id:t,showIcon:!0,icon:(0,Y.jsx)(ue,{}),toggleCalendarOnIconClick:!0,showTimeSelect:!o,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,dateFormat:m,timeFormat:c.short.icu,todayButton:b(`Today`),calendarStartDay:d,timeIntervals:f}}),(0,Y.jsx)(se,{id:n,label:`Ends`,value:h,onChange:e=>{e!=null&&r(G.setEnd(ii({value:e,start:i,allDay:o,timeInterval:f})))},datePickerProps:{id:n,showIcon:!0,icon:(0,Y.jsx)(ue,{}),toggleCalendarOnIconClick:!0,minDate:u(i),showTimeSelect:!o,showMonthDropdown:!0,showYearDropdown:!0,dropdownMode:`select`,dateFormat:m,timeFormat:c.short.icu,todayButton:b(`Today`),calendarStartDay:d,timeIntervals:f,filterTime:e=>ri(new Date(e),i,f)}}),(0,Y.jsx)(le,{id:e,label:`All Day`,enabled:o,style:{margin:0},onClick:e=>r(G.setAllDay({enabled:e,eventDuration:p}))})]}),(0,Y.jsx)(la,{})]}),(0,Y.jsx)(Qr,{})]})},da=n.div`
   code {
     display: block;
     padding: 12px;
@@ -634,4 +666,4 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
     line-height: 1.4;
     color: var(--gray-800);
   }
-`,la=()=>{let{rrule:e}=k(K.state),n=(0,E.useMemo)(He,[]),r=e?v(e,{forceset:!0}).all((e,t)=>t<10).map(e=>`${S(t(e),`yyyy-MM-dd HH:mm`)} [${ve(e)}]`):[];return(0,Y.jsxs)(ca,{children:[(0,Y.jsx)(sa,{}),n&&(0,Y.jsxs)(`code`,{children:[(0,Y.jsx)(`pre`,{children:e}),(0,Y.jsx)(`pre`,{children:JSON.stringify(r,null,2)})]})]})},ua=(e,t)=>{let{start:n,end:r,until:i,timezone:a,allDay:o,rrule:s,repeatType:c,repeatEndType:l}=e.getState().event;$(t,`start`,da(n)),$(t,`end`,da(r)),$(t,`until`,i?da(i):``),$(t,`timezone`,a||`UTC`),$(t,`allDay`,o?`1`:`0`),$(t,`repeatType`,c??`NEVER`),$(t,`repeatEndType`,l??`NEVER`),$(t,`rrule`,s??``)},da=e=>S(u(e),`yyyy-MM-dd'T'HH:mm:ss`),$=(e,t,n)=>{let r=e.querySelector(`input[name="${t}"]`);if(!r)return;let i=n.toString();r.value!==i&&(r.value=i,r.dispatchEvent(new Event(`input`,{bubbles:!0})),r.dispatchEvent(new Event(`change`,{bubbles:!0})))},fa=e=>{let t=ee(e.event.rrule),{byweekday:n,bysetpos:r}=cr(t?.options.byweekday),i=lr(e.event.repeatType),a=ur(e.event.repeatEndType),o={app:e.app,event:{start:e.event.start,end:e.event.end,until:e.event.until,timezone:e.event.timezone,allDay:e.event.allDay,repeatType:i,repeatEndType:a,rrule:e.event.rrule,freq:t?.options.freq||p.DAILY,interval:t?.options.interval||1,count:a===`AFTER`?dr(t?.options.count):t?.options.count||null,byweekday:n,bymonth:t?.options.bymonth,bymonthday:t?.options.bymonthday,byyearday:t?.options.byyearday,bysetpos:t?.options.bysetpos??r}};return Tn({reducer:{app:gr,event:pr},preloadedState:o})},pa=new WeakSet,ma=e=>{if(pa.has(e))return;pa.add(e),e.dataset.eventBuilderMounted=`true`;let t=e.querySelector(`script[data-config]`),n=e.querySelector(`div[data-root]`),r=fa(JSON.parse(t.textContent)),i=xe.createRoot(n);r.subscribe(()=>{ua(r,e)}),ua(r,e),i.render((0,Y.jsx)(Pe,{store:r,children:(0,Y.jsx)(la,{})}))},ha=(e=document)=>{e.querySelectorAll(`[data-event-builder]:not([data-event-builder-mounted])`).forEach(ma)},ga=()=>{ha(),new MutationObserver(e=>{e.forEach(e=>{e.addedNodes.forEach(e=>{e instanceof HTMLElement&&(e.matches(`[data-event-builder]`)&&ma(e),ha(e))})})}).observe(document.documentElement,{childList:!0,subtree:!0})};document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,ga):ga();
+`,fa=()=>{let{rrule:e}=k(K.state),n=(0,E.useMemo)(He,[]),r=e?v(e,{forceset:!0}).all((e,t)=>t<10).map(e=>`${S(t(e),`yyyy-MM-dd HH:mm`)} [${ve(e)}]`):[];return(0,Y.jsxs)(da,{children:[(0,Y.jsx)(ua,{}),n&&(0,Y.jsxs)(`code`,{children:[(0,Y.jsx)(`pre`,{children:e}),(0,Y.jsx)(`pre`,{children:JSON.stringify(r,null,2)})]})]})},pa=(e,t)=>{let{start:n,end:r,until:i,timezone:a,allDay:o,rrule:s,repeatType:c,repeatEndType:l}=e.getState().event;$(t,`start`,ma(n)),$(t,`end`,ma(r)),$(t,`until`,i?ma(i):``),$(t,`timezone`,a||`UTC`),$(t,`allDay`,o?`1`:`0`),$(t,`repeatType`,c??`NEVER`),$(t,`repeatEndType`,l??`NEVER`),$(t,`rrule`,s??``)},ma=e=>S(u(e),`yyyy-MM-dd'T'HH:mm:ss`),$=(e,t,n)=>{let r=e.querySelector(`input[name="${t}"]`);if(!r)return;let i=n.toString();r.value!==i&&(r.value=i,r.dispatchEvent(new Event(`input`,{bubbles:!0})),r.dispatchEvent(new Event(`change`,{bubbles:!0})))},ha=e=>{let t=ee(e.event.rrule),{byweekday:n,bysetpos:r}=cr(t?.options.byweekday),i=lr(e.event.repeatType),a=ur(e.event.repeatEndType),o={app:e.app,event:{start:e.event.start,end:e.event.end,until:e.event.until,timezone:e.event.timezone,allDay:e.event.allDay,repeatType:i,repeatEndType:a,rrule:e.event.rrule,freq:t?.options.freq||p.DAILY,interval:t?.options.interval||1,count:a===`AFTER`?dr(t?.options.count):t?.options.count||null,byweekday:n,bymonth:t?.options.bymonth,bymonthday:t?.options.bymonthday,byyearday:t?.options.byyearday,bysetpos:t?.options.bysetpos??r}};return Tn({reducer:{app:gr,event:pr},preloadedState:o})},ga=new WeakSet,_a=e=>{if(ga.has(e))return;ga.add(e),e.dataset.eventBuilderMounted=`true`;let t=e.querySelector(`script[data-config]`),n=e.querySelector(`div[data-root]`),r=ha(JSON.parse(t.textContent)),i=xe.createRoot(n);r.subscribe(()=>{pa(r,e)}),pa(r,e),i.render((0,Y.jsx)(Pe,{store:r,children:(0,Y.jsx)(fa,{})}))},va=(e=document)=>{e.querySelectorAll(`[data-event-builder]:not([data-event-builder-mounted])`).forEach(_a)},ya=()=>{va(),new MutationObserver(e=>{e.forEach(e=>{e.addedNodes.forEach(e=>{e instanceof HTMLElement&&(e.matches(`[data-event-builder]`)&&_a(e),va(e))})})}).observe(document.documentElement,{childList:!0,subtree:!0})};document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,ya):ya();

@@ -43,6 +43,7 @@ type FixedDateMutationInput = {
 
 export type PreviewRecurrence = {
   startTimestamp: number;
+  firstOccurrenceTimestamp: number;
   baseRule: RRule | null;
   recurrenceSet: RRuleSet | null;
   addedDateSet: Set<number>;
@@ -63,6 +64,7 @@ export const buildPreviewRecurrence = (
   const startTimestamp = toStartTimestamp(start);
   const baseRule = getBaseRRule(rrule) ?? null;
   const recurrenceSet = getRRuleSetFromString(rrule);
+  const firstOccurrence = baseRule?.after(new Date(startTimestamp * 1000), true);
 
   const addedDateSet = new Set(
     (recurrenceSet?.rdates() ?? [])
@@ -72,6 +74,9 @@ export const buildPreviewRecurrence = (
 
   return {
     startTimestamp,
+    firstOccurrenceTimestamp: firstOccurrence
+      ? toOccurrenceTimestamp(firstOccurrence)
+      : startTimestamp,
     baseRule,
     recurrenceSet,
     addedDateSet,
@@ -101,6 +106,30 @@ export const getOccurrenceStatus = (
     excluded: base && !full,
     rdate: previewRecurrence.addedDateSet.has(timestamp),
   };
+};
+
+export const isProtectedOccurrence = (
+  previewRecurrence: PreviewRecurrence,
+  timestamp: number,
+): boolean =>
+  timestamp === previewRecurrence.startTimestamp ||
+  timestamp === previewRecurrence.firstOccurrenceTimestamp;
+
+export const getOccurrenceRemovalType = (
+  previewRecurrence: PreviewRecurrence,
+  date: Date,
+): "rdate" | "exdate" | null => {
+  const status = getOccurrenceStatus(previewRecurrence, date);
+
+  if (!status.full || isProtectedOccurrence(previewRecurrence, status.timestamp)) {
+    return null;
+  }
+
+  if (status.rdate) {
+    return "rdate";
+  }
+
+  return status.base ? "exdate" : null;
 };
 
 export const buildPreviewEvents = (
@@ -177,6 +206,13 @@ export const buildNextRRuleForDateMutation = (
   timestamp: number,
   add: boolean,
 ): string | undefined => {
+  if (
+    ((type === "exdate" && add) || (type === "rdate" && !add)) &&
+    isProtectedOccurrence(previewRecurrence, toUtcDayTimestamp(new Date(timestamp * 1000)))
+  ) {
+    return state.rrule;
+  }
+
   const occurrenceDate = buildOccurrenceDateForState(state, timestamp);
   const occurrenceTime = occurrenceDate.getTime();
 

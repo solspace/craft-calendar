@@ -5,8 +5,10 @@ import {
   buildNextRRuleForDateMutation,
   buildOccurrenceSummary,
   buildPreviewRecurrence,
+  buildUpcomingOccurrences,
   describeOccurrenceSummary,
   describeRecurrence,
+  getOccurrenceRemovalType,
   getOccurrenceStatus,
 } from "./calendar-preview.operations";
 
@@ -50,6 +52,130 @@ describe("calendar preview operations", () => {
 
 const START = Date.UTC(2026, 8, 4, 14, 0, 0) / 1000;
 const DTSTART = "DTSTART:20260904T140000Z";
+
+describe("preview occurrence removal", () => {
+  const stateFor = (rrule: string, allDay = false): EventState => ({
+    start: START,
+    end: START + 3600,
+    allDay,
+    repeatType: "CUSTOM",
+    repeatEndType: "NEVER",
+    interval: 1,
+    rrule,
+  });
+
+  it("excludes a generated occurrence without changing the recurring pattern", () => {
+    const rrule = `${DTSTART}\nRRULE:FREQ=DAILY;COUNT=3`;
+    const preview = buildPreviewRecurrence(rrule, START);
+    const date = new Date(Date.UTC(2026, 8, 5));
+
+    expect(getOccurrenceRemovalType(preview, date)).toBe("exdate");
+    const next = buildNextRRuleForDateMutation(
+      stateFor(rrule),
+      preview,
+      "exdate",
+      +date / 1000,
+      true,
+    );
+    const updated = buildPreviewRecurrence(next, START);
+
+    expect(getOccurrenceStatus(updated, date).excluded).toBe(true);
+    expect(updated.baseRule?.options.count).toBe(3);
+    expect(buildOccurrenceSummary(updated, 2)).toEqual({ showing: 2, total: 2, excluded: 1 });
+  });
+
+  it("removes an additional date without adding an exclusion", () => {
+    const rrule = `${DTSTART}\nRRULE:FREQ=DAILY;COUNT=3\nRDATE:20260910T140000Z`;
+    const preview = buildPreviewRecurrence(rrule, START);
+    const date = new Date(Date.UTC(2026, 8, 10));
+
+    expect(getOccurrenceRemovalType(preview, date)).toBe("rdate");
+    const next = buildNextRRuleForDateMutation(
+      stateFor(rrule),
+      preview,
+      "rdate",
+      +date / 1000,
+      false,
+    );
+    const updated = buildPreviewRecurrence(next, START);
+
+    expect(getOccurrenceStatus(updated, date).full).toBe(false);
+    expect(next).not.toContain("EXDATE");
+    expect(updated.addedDateSet.size).toBe(0);
+    expect(buildOccurrenceSummary(updated, 3)).toEqual({ showing: 3, total: 3, excluded: 0 });
+  });
+
+  it("only removes the additional entry when its date also matches the recurring pattern", () => {
+    const rrule = `${DTSTART}\nRRULE:FREQ=DAILY;COUNT=3\nRDATE:20260905T140000Z`;
+    const preview = buildPreviewRecurrence(rrule, START);
+    const date = new Date(Date.UTC(2026, 8, 5));
+
+    expect(getOccurrenceRemovalType(preview, date)).toBe("rdate");
+    const next = buildNextRRuleForDateMutation(
+      stateFor(rrule),
+      preview,
+      "rdate",
+      +date / 1000,
+      false,
+    );
+    const updated = buildPreviewRecurrence(next, START);
+
+    expect(getOccurrenceStatus(updated, date).full).toBe(true);
+    expect(getOccurrenceStatus(updated, date).rdate).toBe(false);
+    expect(next).not.toContain("EXDATE");
+  });
+
+  it("protects the first occurrence in both removal controls and direct mutations", () => {
+    const rrule = `${DTSTART}\nRRULE:FREQ=DAILY;COUNT=3\nRDATE:20260904T140000Z`;
+    const preview = buildPreviewRecurrence(rrule, START);
+    const date = new Date(Date.UTC(2026, 8, 4));
+
+    expect(getOccurrenceRemovalType(preview, date)).toBeNull();
+    expect(buildNextRRuleForDateMutation(stateFor(rrule), preview, "exdate", START, true)).toBe(
+      rrule,
+    );
+    expect(
+      buildNextRRuleForDateMutation(stateFor(rrule), preview, "rdate", +date / 1000, false),
+    ).toBe(rrule);
+  });
+
+  it("protects the first generated occurrence when the pattern does not match the start date", () => {
+    const rrule = `${DTSTART}\nRRULE:FREQ=WEEKLY;BYDAY=MO;COUNT=3`;
+    const preview = buildPreviewRecurrence(rrule, START);
+    const date = new Date(Date.UTC(2026, 8, 7));
+
+    expect(getOccurrenceRemovalType(preview, date)).toBeNull();
+    expect(
+      buildNextRRuleForDateMutation(stateFor(rrule), preview, "exdate", +date / 1000, true),
+    ).toBe(rrule);
+    expect(getOccurrenceRemovalType(preview, new Date(Date.UTC(2026, 8, 14)))).toBe("exdate");
+  });
+
+  it("allows excluding the first visible date after navigating to a later month", () => {
+    const preview = buildPreviewRecurrence(`${DTSTART}\nRRULE:FREQ=WEEKLY;BYDAY=FR`, START);
+    const [timestamp] = buildUpcomingOccurrences(preview, new Date(Date.UTC(2026, 9, 1)), 8);
+
+    expect(timestamp).toBe(Date.UTC(2026, 9, 2) / 1000);
+    expect(getOccurrenceRemovalType(preview, new Date(timestamp * 1000))).toBe("exdate");
+  });
+
+  it("removes additional dates from an all-day non-repeating event while preserving its start", () => {
+    const start = Date.UTC(2026, 8, 4) / 1000;
+    const rrule = "DTSTART:20260904\nRDATE;VALUE=DATE:20260904,20260910";
+    const preview = buildPreviewRecurrence(rrule, start);
+    const date = new Date(Date.UTC(2026, 8, 10));
+    const state = { ...stateFor(rrule, true), start, repeatType: "NEVER" as const };
+
+    expect(getOccurrenceRemovalType(preview, new Date(start * 1000))).toBeNull();
+    expect(getOccurrenceRemovalType(preview, date)).toBe("rdate");
+    const next = buildNextRRuleForDateMutation(state, preview, "rdate", +date / 1000, false);
+    const updated = buildPreviewRecurrence(next, start);
+
+    expect(getOccurrenceStatus(updated, date).full).toBe(false);
+    expect(getOccurrenceStatus(updated, new Date(start * 1000)).full).toBe(true);
+    expect(next).toBeUndefined();
+  });
+});
 
 const describe_ = (rule: string) =>
   describeRecurrence(buildPreviewRecurrence(`${DTSTART}\n${rule}`, START));

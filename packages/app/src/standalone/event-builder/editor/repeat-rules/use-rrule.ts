@@ -2,10 +2,8 @@ import {
   localDisplayDateToUtcTimestamp,
   UTCify,
   UTCifyDateOnly,
-  utcTimestampToLocalDisplayDate,
   utcToLocalDisplayDate,
 } from "@cal/utils/date";
-import { getBaseRRule, getRRuleSetFromString } from "@cal/utils/rrule";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import {
   buildOccurrenceDateForState,
@@ -16,6 +14,10 @@ import type { AppDispatch } from "@event-builder/store/store";
 import { endOfDay, startOfDay } from "date-fns";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  buildPreviewRecurrence,
+  isProtectedOccurrence,
+} from "../calendar-preview/calendar-preview.operations";
 import type { FixedDateMutationInput, OccurrenceStatus } from "./repeat-rules.types";
 
 export const useRRuleUpdates = () => {
@@ -23,13 +25,8 @@ export const useRRuleUpdates = () => {
   const state = useSelector(eventSelectors.state);
   const { start, rrule } = state;
 
-  const startTimestamp = useMemo(
-    () => localDisplayDateToUtcTimestamp(startOfDay(utcTimestampToLocalDisplayDate(start))),
-    [start],
-  );
-
-  const baseRule = useMemo(() => getBaseRRule(rrule) ?? null, [rrule]);
-  const recurrenceSet = useMemo(() => getRRuleSetFromString(rrule), [rrule]);
+  const previewRecurrence = useMemo(() => buildPreviewRecurrence(rrule, start), [rrule, start]);
+  const { startTimestamp, baseRule, recurrenceSet } = previewRecurrence;
 
   const addedDates = useMemo(() => {
     if (!recurrenceSet) {
@@ -107,6 +104,10 @@ export const useRRuleUpdates = () => {
   };
 
   const addFixedDate = (type: "rdate" | "exdate", value: number) => {
+    if (type === "exdate" && isProtectedOccurrence(previewRecurrence, value)) {
+      return;
+    }
+
     const occurrenceDate = buildOccurrenceDateForState(state, value);
 
     updateFixedDates(({ baseRule: nextBaseRule, rdates, exdates }) => ({
@@ -120,6 +121,10 @@ export const useRRuleUpdates = () => {
   };
 
   const removeFixedDate = (type: "rdate" | "exdate", value: number) => {
+    if (type === "rdate" && isProtectedOccurrence(previewRecurrence, value)) {
+      return;
+    }
+
     const occurrenceDate = buildOccurrenceDateForState(state, value);
     const occurrenceTime = occurrenceDate.getTime();
 
@@ -145,9 +150,14 @@ export const useRRuleUpdates = () => {
       const timestamp = localDisplayDateToUtcTimestamp(startOfDay(date));
       const status = getStatus(date);
 
-      return status.base && !status.excluded && !excludedDateSet.has(timestamp);
+      return (
+        status.base &&
+        !status.excluded &&
+        !excludedDateSet.has(timestamp) &&
+        !isProtectedOccurrence(previewRecurrence, timestamp)
+      );
     },
-    [excludedDateSet, getStatus],
+    [excludedDateSet, getStatus, previewRecurrence],
   );
 
   return {

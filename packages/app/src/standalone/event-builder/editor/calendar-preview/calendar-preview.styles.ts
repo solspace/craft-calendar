@@ -268,13 +268,47 @@ export const DateList = styled.ul<DateListProps>`
 `;
 
 export const DateItem = styled.li`
-  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 4px 5px 4px 8px;
 
   font-size: 13px;
   line-height: 13px;
   font-family: monospace;
+  white-space: nowrap;
 
   background-color: var(--gray-100);
   border: 1px solid var(--gray-200);
   border-left: 5px solid var(--gray-200);
+`;
+
+export const RemoveOccurrenceButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 13px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--gray-500);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--gray-150);
+    color: var(--gray-700);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--gray-400);
+    outline-offset: 1px;
+  }
 `;

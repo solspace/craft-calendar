@@ -19,6 +19,7 @@ import {
   buildUpcomingOccurrences,
   describeOccurrenceSummary,
   describeRecurrence,
+  getOccurrenceRemovalType,
   getOccurrenceStatus,
 } from "./calendar-preview.operations";
 import {
@@ -30,6 +31,7 @@ import {
   OccurrencePreviewDescription,
   OccurrencePreviewHeading,
   OccurrencePreviewSummary,
+  RemoveOccurrenceButton,
 } from "./calendar-preview.styles";
 
 const MAX_OCCURRENCES = 8;
@@ -37,7 +39,7 @@ const MAX_OCCURRENCES = 8;
 export const CalendarPreview: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const state = useSelector(eventSelectors.state);
-  const { repeatType, start, rrule } = state;
+  const { start, rrule } = state;
   const [viewRange, setViewRange] = useState<{
     start: Date;
     end: Date;
@@ -78,6 +80,18 @@ export const CalendarPreview: FC = () => {
     [dispatch, previewRecurrence, state],
   );
 
+  const removeOccurrence = useCallback(
+    (date: Date) => {
+      const type = getOccurrenceRemovalType(previewRecurrence, date);
+
+      if (type) {
+        const { timestamp } = getOccurrenceStatus(previewRecurrence, date);
+        applyDateMutation(type, timestamp, type === "exdate");
+      }
+    },
+    [applyDateMutation, previewRecurrence],
+  );
+
   const handleDateClick = useCallback(
     (date: Date) => {
       const status = getOccurrenceStatus(previewRecurrence, date);
@@ -87,13 +101,8 @@ export const CalendarPreview: FC = () => {
         return;
       }
 
-      if (status.base && status.full && repeatType !== "NEVER") {
-        applyDateMutation("exdate", status.timestamp, true);
-        return;
-      }
-
-      if (!status.base && status.full && status.rdate) {
-        applyDateMutation("rdate", status.timestamp, false);
+      if (status.full) {
+        removeOccurrence(date);
         return;
       }
 
@@ -101,7 +110,7 @@ export const CalendarPreview: FC = () => {
         applyDateMutation("rdate", status.timestamp, true);
       }
     },
-    [applyDateMutation, previewRecurrence, repeatType],
+    [applyDateMutation, previewRecurrence, removeOccurrence],
   );
 
   const getStatus = useCallback(
@@ -172,9 +181,31 @@ export const CalendarPreview: FC = () => {
             ) : (
               <DateList $count={upcomingOccurrences.length}>
                 {upcomingOccurrences.map((timestamp) => {
-                  const date = utcDateKey(new Date(timestamp * 1000));
+                  const occurrenceDate = new Date(timestamp * 1000);
+                  const date = utcDateKey(occurrenceDate);
+                  const removalType = getOccurrenceRemovalType(previewRecurrence, occurrenceDate);
+                  const removalLabel = translate(
+                    removalType === "rdate"
+                      ? "Remove additional date {date}"
+                      : "Exclude occurrence on {date}",
+                    { date },
+                  );
 
-                  return <DateItem key={date}>{date}</DateItem>;
+                  return (
+                    <DateItem key={date}>
+                      <span>{date}</span>
+                      {removalType && (
+                        <RemoveOccurrenceButton
+                          type="button"
+                          aria-label={removalLabel}
+                          title={removalLabel}
+                          onClick={() => removeOccurrence(occurrenceDate)}
+                        >
+                          ×
+                        </RemoveOccurrenceButton>
+                      )}
+                    </DateItem>
+                  );
                 })}
               </DateList>
             )}
