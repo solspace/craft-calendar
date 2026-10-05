@@ -1,0 +1,67 @@
+{% extends 'calendar/layouts/_settings' %}
+
+{% set fullPageForm = false %}
+
+{% block actionButton %}
+    <button type="button" class="btn" id="calendar-copy-diagnostics">{{ 'Copy diagnostic report'|t('calendar') }}</button>
+{% endblock %}
+
+{% block content %}
+    <div id="calendar-diagnostics" data-sampled-at="{{ sampledAt|e('html_attr') }}">
+        <div class="calendar-diag-banner {{ warnings ? 'is-warning' : 'is-success' }}">
+            <span class="status {{ warnings ? 'orange' : 'green' }}" aria-hidden="true"></span>
+            <strong>{{ warnings ? 'Diagnostic warnings: {count}'|t('calendar', {count: warnings|length}) : 'No diagnostic warnings'|t('calendar') }}</strong>
+        </div>
+        <p class="light">{{ 'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.'|t('calendar') }}</p>
+        <div class="calendar-diag-grid">
+            {% for column in columns %}
+                <div>
+                    {% for section in column %}
+                        {% if section.rows %}
+                            <section class="calendar-diag-section">
+                                <h2>{{ section.title }}</h2>
+                                <dl>
+                                    {% for item in section.rows %}
+                                        <div class="calendar-diag-row is-{{ item.status }}">
+                                            <dt><span class="calendar-diag-dot" aria-hidden="true"></span>{{ item.label }}</dt>
+                                            <dd>{{ item.value }}</dd>
+                                            {% if item.note %}<dd class="calendar-diag-note">{{ item.note }}</dd>{% endif %}
+                                            {% if item.status == 'warning' %}<dd class="calendar-diag-warning">{{ 'Warning'|t('calendar') }}</dd>{% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </dl>
+                            </section>
+                        {% endif %}
+                    {% endfor %}
+                    {% if loop.index == 2 %}
+                        <section class="calendar-diag-section" id="calendar-browser-diagnostics">
+                            <h2>{{ 'User / Browser'|t('calendar') }}</h2>
+                            <p class="light">{{ 'The user timezone is detected from this browser. Craft uses its application timezone separately.'|t('calendar') }}</p>
+                            <dl>
+                                {% for id, label in {
+                                    'timezone': 'User browser timezone'|t('calendar'),
+                                    'offset': 'Browser UTC offset'|t('calendar'),
+                                    'clock': 'Browser local time'|t('calendar'),
+                                    'language': 'Browser language'|t('calendar'),
+                                    'dst': 'Browser seasonal offsets'|t('calendar')
+                                } %}
+                                    <div class="calendar-diag-row is-info">
+                                        <dt>{{ label }}</dt>
+                                        <dd data-browser-value="{{ id }}">{{ 'Unavailable'|t('calendar') }}</dd>
+                                    </div>
+                                {% endfor %}
+                            </dl>
+                            <noscript><p>{{ 'Enable JavaScript to collect browser diagnostics.'|t('calendar') }}</p></noscript>
+                        </section>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <details class="calendar-diag-report">
+            <summary>{{ 'View diagnostic report'|t('calendar') }}</summary>
+            <label class="visually-hidden" for="calendar-diagnostic-report">{{ 'Calendar Diagnostics'|t('calendar') }}</label>
+            <textarea id="calendar-diagnostic-report" class="text fullwidth" readonly rows="16">{{ report }}</textarea>
+        </details>
+        <p id="calendar-diagnostic-copy-status" role="status" aria-live="polite"></p>
+    </div>
+{% endblock %}

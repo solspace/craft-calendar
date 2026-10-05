@@ -34,4 +34,11 @@ if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS) && $isAllow
     ];
 }
 
+if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS) && !$isAllowAdminChanges) {
+    $subnav['settings'] = [
+        'label' => Calendar::t('Diagnostics'),
+        'url' => 'calendar/settings/diagnostics',
+    ];
+}
+
 return $subnav;

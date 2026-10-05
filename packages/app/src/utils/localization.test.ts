@@ -157,6 +157,7 @@ describe("control-panel translation catalogs", () => {
         new RegExp(`(?:Calendar|self)::t\\(\\s*(${literal})`, "g"),
         new RegExp(`(${literal})\\s*\\|\\s*t\\(['"]calendar['"]`, "g"),
         new RegExp(`Craft.t\\(['"]calendar['"]\\s*,\\s*(${literal})`, "g"),
+        new RegExp(`translate\\(\\s*(${literal})`, "g"),
       ];
       for (const pattern of patterns)
         for (const match of source.matchAll(pattern)) keys.add(decode(match[1]));

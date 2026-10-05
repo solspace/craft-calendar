@@ -1,0 +1,86 @@
+#calendar-diagnostics .calendar-diag-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--large-border-radius, 5px);
+  background: var(--gray-050);
+}
+#calendar-diagnostics .calendar-diag-banner.is-warning {
+  border-color: var(--warning-color);
+}
+#calendar-diagnostics .calendar-diag-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 40px;
+  margin-top: 24px;
+}
+@media (max-width: 1400px) {
+  #calendar-diagnostics .calendar-diag-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  #calendar-diagnostics .calendar-diag-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+#calendar-diagnostics .calendar-diag-section {
+  margin-bottom: 32px;
+}
+#calendar-diagnostics .calendar-diag-section h2 {
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gray-200);
+}
+#calendar-diagnostics .calendar-diag-row {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+#calendar-diagnostics .calendar-diag-row dt {
+  font-weight: 600;
+}
+#calendar-diagnostics .calendar-diag-row dd {
+  margin: 0;
+}
+#calendar-diagnostics .calendar-diag-row .calendar-diag-note {
+  flex-basis: 100%;
+  margin-top: 4px;
+  color: var(--gray-600);
+  font-size: 12px;
+}
+#calendar-diagnostics .calendar-diag-row .calendar-diag-warning {
+  color: var(--warning-color);
+  font-size: 12px;
+}
+#calendar-diagnostics .calendar-diag-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-inline-end: 7px;
+  border-radius: 50%;
+  background: var(--gray-400);
+}
+#calendar-diagnostics .is-pass .calendar-diag-dot {
+  background: var(--enabled-color);
+}
+#calendar-diagnostics .is-warning .calendar-diag-dot {
+  background: var(--warning-color);
+}
+#calendar-diagnostics .calendar-diag-report {
+  margin-top: 20px;
+}
+#calendar-diagnostics .calendar-diag-report summary {
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+#calendar-diagnostics .calendar-diag-report textarea {
+  font-family: monospace;
+  resize: vertical;
+}

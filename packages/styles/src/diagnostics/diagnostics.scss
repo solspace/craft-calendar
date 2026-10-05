@@ -1,0 +1,101 @@
+#calendar-diagnostics {
+  .calendar-diag-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--large-border-radius, 5px);
+    background: var(--gray-050);
+
+    &.is-warning {
+      border-color: var(--warning-color);
+    }
+  }
+
+  .calendar-diag-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 40px;
+    margin-top: 24px;
+
+    @media (max-width: 1400px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 800px) {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+  }
+
+  .calendar-diag-section {
+    margin-bottom: 32px;
+
+    h2 {
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+  }
+
+  .calendar-diag-row {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 8px;
+    margin-bottom: 12px;
+    overflow-wrap: anywhere;
+
+    dt {
+      font-weight: 600;
+    }
+
+    dd {
+      margin: 0;
+    }
+
+    .calendar-diag-note {
+      flex-basis: 100%;
+      margin-top: 4px;
+      color: var(--gray-600);
+      font-size: 12px;
+    }
+
+    .calendar-diag-warning {
+      color: var(--warning-color);
+      font-size: 12px;
+    }
+  }
+
+  .calendar-diag-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-inline-end: 7px;
+    border-radius: 50%;
+    background: var(--gray-400);
+  }
+
+  .is-pass .calendar-diag-dot {
+    background: var(--enabled-color);
+  }
+
+  .is-warning .calendar-diag-dot {
+    background: var(--warning-color);
+  }
+
+  .calendar-diag-report {
+    margin-top: 20px;
+
+    summary {
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    textarea {
+      font-family: monospace;
+      resize: vertical;
+    }
+  }
+}
