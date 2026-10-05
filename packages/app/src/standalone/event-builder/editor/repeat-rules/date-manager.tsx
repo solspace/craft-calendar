@@ -18,6 +18,7 @@ import {
   FixedDatesToolbar,
   PickerButtonWrapper,
   SectionHeading,
+  SectionInstructions,
 } from "./date-manager.styles";
 import type { PickerTriggerProps } from "./repeat-rules.types";
 
@@ -75,11 +76,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
     <FixedDatesSection>
       <SectionHeading>{translate(title)}</SectionHeading>
 
-      {description && (
-        <div className="instructions">
-          <p>{description}</p>
-        </div>
-      )}
+      {description && <SectionInstructions>{description}</SectionInstructions>}
 
       <FixedDatesToolbar>
         <BadgeWrapper ref={badgeWrapperRef}>

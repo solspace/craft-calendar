@@ -1,18 +1,32 @@
 import styled from "styled-components";
 
 export const CalendarPreviewWrapper = styled.div`
-  flex: 2;
+  container-type: inline-size;
 
   display: flex;
-  justify-content: end;
-  gap: 18px;
+  flex-direction: row;
+  gap: 20px;
 
-  @container (max-width: 1084px) {
-    justify-content: start;
+  padding: 20px;
+  width: 100%;
+  flex: 0 0 440px;
+  box-sizing: border-box;
+    
+  @container (min-width: 1024px) {
+    width: 440px;
   }
 
   > .field {
     margin: 0;
+    width: 100%;
+
+    .input {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      width: 100%;
+    }
   }
 
   table:not(.data) {
@@ -30,17 +44,63 @@ export const CalendarPreviewWrapper = styled.div`
   }
 
   .fc {
-    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
 
     .fc-header-toolbar {
-        margin-bottom: 1em;
+      margin-bottom: 10px;
 
       .fc-toolbar-title {
-        font-size: 16px;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: inherit;
+      }
+        
+      .fc-button-group {
+        display: flex;
+        flex-direction: row;
+        gap: 3px;
       }
 
       .fc-button {
-        font-size: 8px;
+        font-size: 10px;
+      }
+
+      .fc-today-button {
+        display: none;
+      }
+
+      .fc-prev-button,
+      .fc-next-button {
+        padding: 0.3em 0;
+        outline: none !important;
+        box-shadow: none !important;
+        border: 0 !important;
+        color: var(--dark-text-color);
+        border-radius: var(--radius-lg);
+        background-color: var(--custom-bg-color,var(--gray-200));
+
+        &:active,
+        &:focus,
+        &:focus-visible {
+          outline: none !important;
+          box-shadow: none !important;
+          border: 0 !important;
+        }
+
+        &:active {
+          background-color: var(--custom-bg-color,var(--gray-300));
+        }
+      }
+
+      .fc-prev-button {
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+      }
+
+      .fc-next-button {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
       }
     }
 
@@ -48,7 +108,7 @@ export const CalendarPreviewWrapper = styled.div`
       user-select: none;
 
       > thead {
-        font-size: 10px;
+        font-size: 13px;
       }
 
       >tbody {
@@ -57,17 +117,43 @@ export const CalendarPreviewWrapper = styled.div`
           padding-inline-start: 0;
           padding-inline-end: 0;
           cursor: pointer;
+          background-color: var(--custom-bg-color,var(--gray-050));
+
+          box-sizing: border-box;
+          height: 32px;
+          padding: 0;
+          line-height: 1;
+          vertical-align: middle;
+
+          .fc-daygrid-day-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            line-height: 1;
+            border: 1px solid transparent;
+            border-radius: 50%;
+          }
+
+          &.fc-day-today {
+            .fc-daygrid-day-number {
+              border-color: var(--gray-400);
+            }
+          }
 
           &.fc-has-event {
-            background: var(--gray-100);
+            background: var(--custom-bg-color,var(--gray-200));
 
             &.fc-day-today {
-              background: var(--custom-bg-color, var(--gray-200));
+              background: var(--custom-bg-color, var(--gray-300));
             }
           }
 
           &.fc-extra-date {
-            background: color-mix(in srgb, var(--green-100) 72%, white);
+            background-color: var(--custom-bg-color,var(--gray-200));
           }
 
           &.fc-excluded-date {
@@ -76,10 +162,20 @@ export const CalendarPreviewWrapper = styled.div`
           }
 
           div.fc-daygrid-day-frame {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            height: 31px;
+            min-height: 31px;
+
             .fc-daygrid-day-top {
-              font-size: 10px;
-              flex-direction: row;
+              display: flex;
+              align-items: center;
               justify-content: center;
+              flex-direction: row;
+              font-size: 13px;
+              width: 100%;
             }
 
             .fc-daygrid-day-events {
@@ -92,7 +188,40 @@ export const CalendarPreviewWrapper = styled.div`
   }
 `;
 
-export const OccurrencePreview = styled.div`
+export const FullCalendarOccurrencePreviewWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+
+  margin-top: 10px;
+  width: 400px;
+  flex: 0 0 400px;
+  box-sizing: border-box;
+`;
+
+export const OccurrencePreviewHeading = styled.h4`
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-600);
+`;
+
+export const OccurrencePreviewDescription = styled.p`
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--gray-600);
+`;
+
+export const OccurrencePreviewSummary = styled.p`
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--gray-600);
+`;
+
+export const OccurrencePreviewDateList = styled.div`
   min-width: 120px;
   max-width: 120px;
   height: 100%;
@@ -113,8 +242,9 @@ export const DateList = styled.ul<DateListProps>`
   justify-content: ${(props) => (props.$count > 7 ? "space-between" : "start")};
   gap: 4px;
 
-  height: 215px;
-  margin-top: 57px;
+  height: 100%;
+  max-height: 215px;
+  margin-top: 0;
 `;
 
 export const DateItem = styled.li`

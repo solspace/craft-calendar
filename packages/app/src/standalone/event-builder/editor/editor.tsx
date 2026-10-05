@@ -8,7 +8,11 @@ import { type FC, useId, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { appSelectors } from "../store/app.slice";
 import { CalendarPreview } from "./calendar-preview/calendar-preview";
-import { EventEditorWrapper } from "./editor.styles";
+import {
+  DatePickersLightSwitchRepeatRulesWrapper,
+  DatePickersLightSwitchWrapper,
+  EventEditorWrapper,
+} from "./editor.styles";
 import {
   getAllDayEndDisplayTimestamp,
   isEndTimeAllowed,
@@ -49,60 +53,62 @@ export const Editor: FC = () => {
 
   return (
     <EventEditorWrapper>
-      <div style={{ flex: 1 }}>
-        <LightSwitch
-          id={allDayId}
-          label="All Day"
-          enabled={allDay}
-          onClick={(enabled) => dispatch(eventActions.setAllDay({ enabled, eventDuration }))}
-        />
-        <DatePicker
-          id={startId}
-          label="Starts"
-          value={start}
-          onChange={(value) => dispatch(eventActions.setStart(value!))}
-          datePickerProps={{
-            id: startId,
-            showIcon: true,
-            icon: <Icon />,
-            toggleCalendarOnIconClick: true,
-            showTimeSelect: !allDay,
-            showMonthDropdown: true,
-            showYearDropdown: true,
-            dropdownMode: "select",
-            dateFormat: format,
-            timeFormat: time.short.icu,
-            todayButton: translate("Today"),
-            calendarStartDay: weekStartDay,
-            timeIntervals: timeInterval,
-          }}
-        />
-        <DatePicker
-          id={endId}
-          label="Ends"
-          value={endForDisplay}
-          onChange={handleEndChange}
-          datePickerProps={{
-            id: endId,
-            showIcon: true,
-            icon: <Icon />,
-            toggleCalendarOnIconClick: true,
-            minDate: utcTimestampToLocalDisplayDate(start),
-            showTimeSelect: !allDay,
-            showMonthDropdown: true,
-            showYearDropdown: true,
-            dropdownMode: "select",
-            dateFormat: format,
-            timeFormat: time.short.icu,
-            todayButton: translate("Today"),
-            calendarStartDay: weekStartDay,
-            timeIntervals: timeInterval,
-            filterTime: (time) => isEndTimeAllowed(new Date(time), start, timeInterval),
-          }}
-        />
-      </div>
-
-      <RepeatRules />
+      <DatePickersLightSwitchRepeatRulesWrapper>
+        <DatePickersLightSwitchWrapper>
+          <DatePicker
+            id={startId}
+            label="Starts"
+            value={start}
+            onChange={(value) => dispatch(eventActions.setStart(value!))}
+            datePickerProps={{
+              id: startId,
+              showIcon: true,
+              icon: <Icon />,
+              toggleCalendarOnIconClick: true,
+              showTimeSelect: !allDay,
+              showMonthDropdown: true,
+              showYearDropdown: true,
+              dropdownMode: "select",
+              dateFormat: format,
+              timeFormat: time.short.icu,
+              todayButton: translate("Today"),
+              calendarStartDay: weekStartDay,
+              timeIntervals: timeInterval,
+            }}
+          />
+          <DatePicker
+            id={endId}
+            label="Ends"
+            value={endForDisplay}
+            onChange={handleEndChange}
+            datePickerProps={{
+              id: endId,
+              showIcon: true,
+              icon: <Icon />,
+              toggleCalendarOnIconClick: true,
+              minDate: utcTimestampToLocalDisplayDate(start),
+              showTimeSelect: !allDay,
+              showMonthDropdown: true,
+              showYearDropdown: true,
+              dropdownMode: "select",
+              dateFormat: format,
+              timeFormat: time.short.icu,
+              todayButton: translate("Today"),
+              calendarStartDay: weekStartDay,
+              timeIntervals: timeInterval,
+              filterTime: (time) => isEndTimeAllowed(new Date(time), start, timeInterval),
+            }}
+          />
+          <LightSwitch
+            id={allDayId}
+            label="All Day"
+            enabled={allDay}
+            style={{ margin: 0 }}
+            onClick={(enabled) => dispatch(eventActions.setAllDay({ enabled, eventDuration }))}
+          />
+        </DatePickersLightSwitchWrapper>
+        <RepeatRules />
+      </DatePickersLightSwitchRepeatRulesWrapper>
       <CalendarPreview />
     </EventEditorWrapper>
   );

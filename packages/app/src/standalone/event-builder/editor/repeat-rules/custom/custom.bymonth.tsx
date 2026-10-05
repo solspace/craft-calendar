@@ -6,7 +6,6 @@ import type { AppDispatch } from "@event-builder/store/store";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
-import { Interval } from "./interval";
 import { DayMatrix } from "./matrix.days";
 
 const modeOptions: Option<string>[] = [
@@ -56,22 +55,19 @@ export const ByMonth: FC = () => {
   };
 
   return (
-    <div>
-      <Interval noun="month" />
-      <div className="field">
-        <Dropdown
-          label="Repeat on"
-          value={mode}
-          options={modeOptions}
-          onChange={(value) => {
-            if (value === "WEEKDAY") {
-              setWeekdayMode(selectedWeekday, selectedPosition);
-            } else {
-              setMonthDayMode(selectedMonthDays);
-            }
-          }}
-        />
-      </div>
+    <Flex $direction={"column"} style={{ margin: "20px 0 0", width: "100%" }}>
+      <Dropdown
+        label="Repeat on"
+        value={mode}
+        options={modeOptions}
+        onChange={(value) => {
+          if (value === "WEEKDAY") {
+            setWeekdayMode(selectedWeekday, selectedPosition);
+          } else {
+            setMonthDayMode(selectedMonthDays);
+          }
+        }}
+      />
 
       {mode === "MONTHDAY" && (
         <DayMatrix
@@ -82,7 +78,7 @@ export const ByMonth: FC = () => {
       )}
 
       {mode === "WEEKDAY" && (
-        <Flex className="field">
+        <Flex>
           <Dropdown
             label="Position"
             value={selectedPosition}
@@ -100,6 +96,6 @@ export const ByMonth: FC = () => {
           />
         </Flex>
       )}
-    </div>
+    </Flex>
   );
 };

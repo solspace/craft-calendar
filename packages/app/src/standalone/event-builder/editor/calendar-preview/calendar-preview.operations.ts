@@ -5,6 +5,7 @@ import {
   utcToLocalDisplayDate,
 } from "@cal/utils/date";
 import { getBaseRRule, getRRuleSetFromString } from "@cal/utils/rrule";
+import translate from "@cal/utils/translations";
 import {
   buildOccurrenceDateForState,
   buildRRuleString,
@@ -12,7 +13,7 @@ import {
   removeMatchingDate,
 } from "@event-builder/store/event.slice.operations";
 import { addYears, format, startOfDay } from "date-fns";
-import type { RRule, RRuleSet } from "rrule";
+import { Frequency, RRule, type RRuleSet } from "rrule";
 
 const dedupeDates = (dates: Date[]): Date[] => {
   const map = new Map(dates.map((date) => [date.getTime(), date])).values();
@@ -246,4 +247,185 @@ const getMutableRDates = (previewRecurrence: PreviewRecurrence): Date[] => {
   }
 
   return rdates.filter((date) => toOccurrenceTimestamp(date) !== previewRecurrence.startTimestamp);
+};
+
+const weekdayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const positionNames: Record<number, string> = {
+  1: "first",
+  2: "second",
+  3: "third",
+  4: "fourth",
+  [-1]: "last",
+};
+
+const toArray = <T>(value: T | T[] | null | undefined): T[] => {
+  if (value === null || value === undefined) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
+};
+
+const joinList = (items: string[]): string => {
+  if (items.length <= 1) {
+    return items[0] ?? "";
+  }
+
+  const last = items[items.length - 1];
+  const rest = items.slice(0, -1).join(", ");
+
+  return translate("{list} and {last}", { list: rest, last });
+};
+
+const describeWeekdays = (weekdays: number[]): string => {
+  const unique = Array.from(new Set(weekdays)).sort((left, right) => left - right);
+
+  if (unique.join() === "0,1,2,3,4") {
+    return translate("weekday");
+  }
+
+  if (unique.join() === "5,6") {
+    return translate("weekend day");
+  }
+
+  return joinList(unique.map((day) => translate(weekdayNames[day])));
+};
+
+const describeInterval = (frequency: Frequency, interval: number): string => {
+  const units: Record<number, [string, string, string]> = {
+    [Frequency.DAILY]: ["Every day", "Every {count} days", "day"],
+    [Frequency.WEEKLY]: ["Every week", "Every {count} weeks", "week"],
+    [Frequency.MONTHLY]: ["Every month", "Every {count} months", "month"],
+    [Frequency.YEARLY]: ["Every year", "Every {count} years", "year"],
+  };
+
+  const [single, plural] = units[frequency] ?? units[Frequency.DAILY];
+
+  return interval > 1 ? translate(plural, { count: interval }) : translate(single);
+};
+
+export const describeRecurrence = (previewRecurrence: PreviewRecurrence): string | null => {
+  const { baseRule } = previewRecurrence;
+
+  if (!baseRule) {
+    return null;
+  }
+
+  const options = baseRule.origOptions;
+  const frequency = options.freq ?? Frequency.DAILY;
+  const parts: string[] = [describeInterval(frequency, options.interval ?? 1)];
+
+  const weekdays = toArray(options.byweekday).map((day) =>
+    typeof day === "number" ? day : typeof day === "string" ? RRule[day].weekday : day.weekday,
+  );
+  const monthDays = toArray(options.bymonthday);
+  const months = toArray(options.bymonth);
+  const positions = toArray(options.bysetpos);
+
+  if (months.length > 0 && frequency === Frequency.YEARLY) {
+    parts.push(
+      translate("in {months}", {
+        months: joinList(months.map((month) => translate(monthNames[month - 1]))),
+      }),
+    );
+  }
+
+  if (positions.length > 0 && weekdays.length > 0) {
+    parts.push(
+      translate("on the {position} {weekday}", {
+        position: translate(positionNames[positions[0]] ?? "first"),
+        weekday: describeWeekdays(weekdays),
+      }),
+    );
+  } else if (weekdays.length > 0) {
+    parts.push(translate("on {weekdays}", { weekdays: describeWeekdays(weekdays) }));
+  } else if (monthDays.length > 0) {
+    parts.push(translate("on day {days}", { days: joinList(monthDays.map(String)) }));
+  }
+
+  const description = parts.join(" ");
+
+  if (options.count) {
+    return translate("{description}, ending after {count} {noun}.", {
+      description,
+      count: options.count,
+      noun: translate(options.count === 1 ? "occurrence" : "occurrences"),
+    });
+  }
+
+  if (options.until) {
+    return translate("{description}, ending on {date}.", {
+      description,
+      date: format(utcToLocalDisplayDate(options.until), "PP"),
+    });
+  }
+
+  return `${description}.`;
+};
+
+export type OccurrenceSummary = {
+  showing: number;
+  total: number | null;
+  excluded: number;
+};
+
+export const buildOccurrenceSummary = (
+  previewRecurrence: PreviewRecurrence,
+  showing: number,
+): OccurrenceSummary | null => {
+  const { baseRule, recurrenceSet } = previewRecurrence;
+
+  if (!baseRule || !recurrenceSet) {
+    return null;
+  }
+
+  const isBounded = Boolean(baseRule.origOptions.count || baseRule.origOptions.until);
+  const total = isBounded ? recurrenceSet.all().length : null;
+
+  let excluded = 0;
+  const exdates = recurrenceSet.exdates();
+
+  if (exdates.length > 0 && isBounded) {
+    const baseTimes = new Set(baseRule.all().map((date) => toOccurrenceTimestamp(date)));
+    excluded = exdates.filter((date) => baseTimes.has(toOccurrenceTimestamp(date))).length;
+  } else {
+    excluded = exdates.length;
+  }
+
+  return { showing, total, excluded };
+};
+
+export const describeOccurrenceSummary = (summary: OccurrenceSummary): string => {
+  const base =
+    summary.total === null
+      ? translate("Showing {showing} occurrences", { showing: summary.showing })
+      : translate("Showing {showing} of {total} occurrences", {
+          showing: summary.showing,
+          total: summary.total,
+        });
+
+  if (summary.excluded === 0) {
+    return base;
+  }
+
+  return translate("{summary} - {excluded} excluded", {
+    summary: base,
+    excluded: summary.excluded,
+  });
 };

@@ -116,7 +116,7 @@ import{_ as e,d as t,g as n,h as r,m as i,p as a,r as o,s,u as c}from"./date-DHm
   .react-datepicker__navigation:hover *::before {
     border-color: var(--gray-700);
   }
-`,Jp=({value:e,onChange:t,label:n,id:r,datePickerProps:i})=>{let[a,c]=(0,l.useState)(e===null?null:s(e));return(0,l.useEffect)(()=>{c(e===null?null:s(e))},[e]),(0,d.jsx)(Gp,{label:n,id:r,children:(0,d.jsx)(Yp,{children:(0,d.jsx)(Hp,{...i,wrapperClassName:`fullwidth`,className:`text fullwidth`,selected:a,onChange:e=>{let n=e?o(e):null;t&&t(n)}})})})},Yp=t.div`
+`,Jp=({value:e,onChange:t,label:n,id:r,datePickerProps:i})=>{let[a,c]=(0,l.useState)(e===null?null:s(e));return(0,l.useEffect)(()=>{c(e===null?null:s(e))},[e]),(0,d.jsx)(Gp,{label:n,id:r,style:{margin:0},children:(0,d.jsx)(Yp,{children:(0,d.jsx)(Hp,{...i,wrapperClassName:`fullwidth`,className:`text fullwidth`,selected:a,onChange:e=>{let n=e?o(e):null;t&&t(n)}})})})},Yp=t.div`
   ${qp}
 
   .react-datepicker {

@@ -26,7 +26,7 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
   }, [value]);
 
   return (
-    <Control label={label} id={id}>
+    <Control label={label} id={id} style={{ margin: 0 }}>
       <DatePickerWrapper>
         {/* @ts-ignore cannot get the types to work well when passing props */}
         <DatePickerControl

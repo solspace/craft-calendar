@@ -9,7 +9,6 @@ import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MatrixButton, MonthMatrixWrapper } from "./custom.styles";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
-import { Interval } from "./interval";
 import { DayMatrix } from "./matrix.days";
 
 const modeOptions: Option<string>[] = [
@@ -78,9 +77,7 @@ export const ByYear: FC = () => {
   };
 
   return (
-    <div>
-      <Interval noun="year" />
-
+    <Flex $direction={"column"} style={{ margin: "20px 0 0", width: "100%" }}>
       <Control label="Month">
         <MonthMatrixWrapper>
           {monthOptions.map((month) => {
@@ -116,20 +113,18 @@ export const ByYear: FC = () => {
         </MonthMatrixWrapper>
       </Control>
 
-      <div className="field">
-        <Dropdown
-          label="Repeat on"
-          value={mode}
-          options={modeOptions}
-          onChange={(value) => {
-            if (value === "WEEKDAY") {
-              setWeekdayMode(selectedMonths, selectedWeekday, selectedPosition);
-            } else {
-              setMonthDayMode(selectedMonths, selectedMonthDays);
-            }
-          }}
-        />
-      </div>
+      <Dropdown
+        label="Repeat on"
+        value={mode}
+        options={modeOptions}
+        onChange={(value) => {
+          if (value === "WEEKDAY") {
+            setWeekdayMode(selectedMonths, selectedWeekday, selectedPosition);
+          } else {
+            setMonthDayMode(selectedMonths, selectedMonthDays);
+          }
+        }}
+      />
 
       {mode === "MONTHDAY" && (
         <DayMatrix
@@ -140,7 +135,7 @@ export const ByYear: FC = () => {
       )}
 
       {mode === "WEEKDAY" && (
-        <Flex className="field">
+        <Flex>
           <Dropdown
             label="Position"
             value={selectedPosition}
@@ -160,6 +155,6 @@ export const ByYear: FC = () => {
           />
         </Flex>
       )}
-    </div>
+    </Flex>
   );
 };

@@ -1,5 +1,8 @@
 import styled from "styled-components";
 
 export const RepeatRulesWrapper = styled.div`
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 20px;
+  width: 100%;
 `;

@@ -6,11 +6,7 @@ import styled from "styled-components";
 import { DownIcon } from "./icon.down";
 import { UpIcon } from "./icon.up";
 
-type Props = {
-  noun?: string;
-};
-
-export const Interval: FC<Props> = ({ noun = "day" }) => {
+export const Interval: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { interval } = useSelector(eventSelectors.state);
 
@@ -34,10 +30,6 @@ export const Interval: FC<Props> = ({ noun = "day" }) => {
           <DownIcon />
         </Btn>
       </BtnGroup>
-      <span>
-        {noun}
-        {interval > 1 ? "s" : ""}
-      </span>
     </Wrapper>
   );
 };

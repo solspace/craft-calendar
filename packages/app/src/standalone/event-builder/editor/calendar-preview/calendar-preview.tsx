@@ -1,4 +1,5 @@
 import { Control } from "@cal/components/controls/control";
+import { Flex } from "@cal/styles/components";
 import { utcDateKey } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
@@ -12,16 +13,23 @@ import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   buildNextRRuleForDateMutation,
+  buildOccurrenceSummary,
   buildPreviewEvents,
   buildPreviewRecurrence,
   buildUpcomingOccurrences,
+  describeOccurrenceSummary,
+  describeRecurrence,
   getOccurrenceStatus,
 } from "./calendar-preview.operations";
 import {
   CalendarPreviewWrapper,
   DateItem,
   DateList,
-  OccurrencePreview,
+  FullCalendarOccurrencePreviewWrapper,
+  OccurrencePreviewDateList,
+  OccurrencePreviewDescription,
+  OccurrencePreviewHeading,
+  OccurrencePreviewSummary,
 } from "./calendar-preview.styles";
 
 const MAX_OCCURRENCES = 8;
@@ -47,6 +55,17 @@ export const CalendarPreview: FC = () => {
     () => buildUpcomingOccurrences(previewRecurrence, viewRange?.start ?? null, MAX_OCCURRENCES),
     [previewRecurrence, viewRange],
   );
+
+  const occurrencePreviewDescription = useMemo(
+    () => describeRecurrence(previewRecurrence),
+    [previewRecurrence],
+  );
+
+  const occurrencePreviewSummary = useMemo(() => {
+    const result = buildOccurrenceSummary(previewRecurrence, upcomingOccurrences.length);
+
+    return result ? describeOccurrenceSummary(result) : null;
+  }, [previewRecurrence, upcomingOccurrences]);
 
   const applyDateMutation = useCallback(
     (type: "rdate" | "exdate", timestamp: number, add: boolean) => {
@@ -92,58 +111,72 @@ export const CalendarPreview: FC = () => {
 
   return (
     <CalendarPreviewWrapper>
-      <Control label="Schedule Preview">
-        <FullCalendar
-          aspectRatio={2}
-          height={250}
-          expandRows={false}
-          themeSystem="bootstrap5"
-          plugins={[dayGrid, interactionPlugin]}
-          initialView="dayGridMonth"
-          timeZone="UTC"
-          eventDisplay="none"
-          events={events}
-          headerToolbar={{
-            start: "title",
-            end: "prev,today,next",
-          }}
-          datesSet={(info) =>
-            setViewRange({
-              start: info.start,
-              end: info.end,
-              currentStart: info.view.currentStart,
-            })
-          }
-          dayCellClassNames={(info) => {
-            const status = getStatus(info.date);
+      <Control>
+        <Flex $direction={"column"} $gap={10}>
+          <OccurrencePreviewHeading>{translate("Schedule Preview")}</OccurrencePreviewHeading>
+          {occurrencePreviewDescription && (
+            <OccurrencePreviewDescription>
+              {occurrencePreviewDescription}
+            </OccurrencePreviewDescription>
+          )}
+        </Flex>
+        <FullCalendarOccurrencePreviewWrapper>
+          <Flex $direction={"column"} $gap={10}>
+            <FullCalendar
+              aspectRatio={2}
+              height={250}
+              expandRows={false}
+              themeSystem="bootstrap5"
+              plugins={[dayGrid, interactionPlugin]}
+              initialView="dayGridMonth"
+              timeZone="UTC"
+              eventDisplay="none"
+              events={events}
+              headerToolbar={{
+                start: "title",
+                end: "prev,today,next",
+              }}
+              datesSet={(info) =>
+                setViewRange({
+                  start: info.start,
+                  end: info.end,
+                  currentStart: info.view.currentStart,
+                })
+              }
+              dayCellClassNames={(info) => {
+                const status = getStatus(info.date);
 
-            return [
-              status.full ? "fc-has-event" : "",
-              status.rdate ? "fc-extra-date" : "",
-              status.excluded ? "fc-excluded-date" : "",
-            ].filter(Boolean);
-          }}
-          dateClick={(info) => handleDateClick(info.date)}
-        />
+                return [
+                  status.full ? "fc-has-event" : "",
+                  status.rdate ? "fc-extra-date" : "",
+                  status.excluded ? "fc-excluded-date" : "",
+                ].filter(Boolean);
+              }}
+              dateClick={(info) => handleDateClick(info.date)}
+            />
+            {occurrencePreviewSummary && (
+              <OccurrencePreviewSummary>{occurrencePreviewSummary}</OccurrencePreviewSummary>
+            )}
+          </Flex>
+          <OccurrencePreviewDateList>
+            {upcomingOccurrences.length === 0 ? (
+              <p>
+                {translate("No occurrences starting from")}
+                <br />
+                {format(viewRange?.currentStart ?? new Date(), "PP")}
+              </p>
+            ) : (
+              <DateList $count={upcomingOccurrences.length}>
+                {upcomingOccurrences.map((timestamp) => {
+                  const date = utcDateKey(new Date(timestamp * 1000));
+
+                  return <DateItem key={date}>{date}</DateItem>;
+                })}
+              </DateList>
+            )}
+          </OccurrencePreviewDateList>
+        </FullCalendarOccurrencePreviewWrapper>
       </Control>
-
-      <OccurrencePreview>
-        {upcomingOccurrences.length === 0 ? (
-          <p>
-            {translate("No occurrences starting from")}
-            <br />
-            {format(viewRange?.currentStart ?? new Date(), "PP")}
-          </p>
-        ) : (
-          <DateList $count={upcomingOccurrences.length}>
-            {upcomingOccurrences.map((timestamp) => {
-              const date = utcDateKey(new Date(timestamp * 1000));
-
-              return <DateItem key={date}>{date}</DateItem>;
-            })}
-          </DateList>
-        )}
-      </OccurrencePreview>
     </CalendarPreviewWrapper>
   );
 };

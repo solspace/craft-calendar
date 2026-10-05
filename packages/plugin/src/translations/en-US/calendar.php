@@ -270,4 +270,41 @@ $graphql = [
     'The ID of the draft creator.' => 'The ID of the draft creator.',
 ];
 
-return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions, $graphql);
+$schedulePreview = [
+    'Schedule Preview' => 'Schedule Preview',
+    'No occurrences starting from' => 'No occurrences starting from',
+    'Every day' => 'Every day',
+    'Every {count} days' => 'Every {count} days',
+    'Every week' => 'Every week',
+    'Every {count} weeks' => 'Every {count} weeks',
+    'Every month' => 'Every month',
+    'Every {count} months' => 'Every {count} months',
+    'Every year' => 'Every year',
+    'Every {count} years' => 'Every {count} years',
+    '{list} and {last}' => '{list} and {last}',
+    'weekday' => 'weekday',
+    'weekend day' => 'weekend day',
+    'first' => 'first',
+    'second' => 'second',
+    'third' => 'third',
+    'fourth' => 'fourth',
+    'last' => 'last',
+    'in {months}' => 'in {months}',
+    'on the {position} {weekday}' => 'on the {position} {weekday}',
+    'on {weekdays}' => 'on {weekdays}',
+    'on day {days}' => 'on day {days}',
+    '{description}, ending after {count} {noun}.' => '{description}, ending after {count} {noun}.',
+    '{description}, ending on {date}.' => '{description}, ending on {date}.',
+    'occurrence' => 'occurrence',
+    'occurrences' => 'occurrences',
+    'Showing {showing} occurrences' => 'Showing {showing} occurrences',
+    'Showing {showing} of {total} occurrences' => 'Showing {showing} of {total} occurrences',
+    '{summary} - {excluded} excluded' => '{summary} - {excluded} excluded',
+    'Days' => 'Days',
+    'Weeks' => 'Weeks',
+    'Months' => 'Months',
+    'Year' => 'Year',
+    'Years' => 'Years',
+];
+
+return array_merge($plugin, $titles, $widgets, $common, $events, $calendars, $demoTemplates, $settings, $permissions, $graphql, $schedulePreview);

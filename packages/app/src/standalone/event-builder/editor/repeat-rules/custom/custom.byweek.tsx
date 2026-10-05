@@ -1,3 +1,5 @@
+import { Control } from "@cal/components/controls/control";
+import { Flex } from "@cal/styles/components";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import clsx from "clsx";
@@ -5,7 +7,6 @@ import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RRule } from "rrule";
 import { MatrixButton, WeekMatrixWrapper } from "./custom.styles";
-import { Interval } from "./interval";
 
 const days = [
   { weekday: RRule.SU, label: "Sun" },
@@ -22,34 +23,35 @@ export const ByWeek: FC = () => {
   const { byweekday } = useSelector(eventSelectors.state);
 
   return (
-    <div>
-      <Interval noun="week" />
-      <WeekMatrixWrapper className="field">
-        {days.map(({ weekday, label }) => (
-          <MatrixButton
-            key={weekday.weekday}
-            type="button"
-            className={clsx(byweekday?.includes(weekday.weekday) && "active")}
-            onClick={() => {
-              let values: number[] = byweekday ? [...byweekday] : [];
+    <Flex $direction={"column"} style={{ margin: "20px 0 0", width: "100%" }}>
+      <Control label="On">
+        <WeekMatrixWrapper>
+          {days.map(({ weekday, label }) => (
+            <MatrixButton
+              key={weekday.weekday}
+              type="button"
+              className={clsx(byweekday?.includes(weekday.weekday) && "active")}
+              onClick={() => {
+                let values: number[] = byweekday ? [...byweekday] : [];
 
-              if (values.includes(weekday.weekday)) {
-                values = values.filter((day) => day !== weekday.weekday);
-              } else {
-                values.push(weekday.weekday);
-              }
+                if (values.includes(weekday.weekday)) {
+                  values = values.filter((day) => day !== weekday.weekday);
+                } else {
+                  values.push(weekday.weekday);
+                }
 
-              if (values.length === 0) {
-                return;
-              }
+                if (values.length === 0) {
+                  return;
+                }
 
-              dispatch(eventActions.setDays({ type: "byweekday", values }));
-            }}
-          >
-            {label}
-          </MatrixButton>
-        ))}
-      </WeekMatrixWrapper>
-    </div>
+                dispatch(eventActions.setDays({ type: "byweekday", values }));
+              }}
+            >
+              {label}
+            </MatrixButton>
+          ))}
+        </WeekMatrixWrapper>
+      </Control>
+    </Flex>
   );
 };
