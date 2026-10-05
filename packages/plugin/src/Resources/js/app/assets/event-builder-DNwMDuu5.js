@@ -50,15 +50,35 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   }
 
   .fc {
+    --fc-border-color: var(--gray-200);
+
     min-width: 260px;
     max-width: 260px;
+    color: var(--gray-600);
+
+    .fc-scrollgrid,
+    th,
+    td {
+      border-color: var(--fc-border-color);
+    }
+
+    .fc-col-header-cell {
+      background-color: var(--gray-100);
+      color: var(--gray-600);
+      text-align: center;
+    }
+
+    .fc-col-header-cell-cushion {
+      padding: 5px 0;
+      font-weight: 700;
+    }
 
     .fc-header-toolbar {
       margin-bottom: 10px;
 
       .fc-toolbar-title {
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
         font-family: inherit;
       }
         
@@ -82,9 +102,13 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
         outline: none !important;
         box-shadow: none !important;
         border: 0 !important;
-        color: var(--dark-text-color);
+        color: var(--gray-700);
         border-radius: var(--radius-lg);
-        background-color: var(--custom-bg-color,var(--gray-200));
+        background-color: var(--gray-200);
+
+        &:hover {
+          background-color: var(--gray-150);
+        }
 
         &:active,
         &:focus,
@@ -95,7 +119,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
         }
 
         &:active {
-          background-color: var(--custom-bg-color,var(--gray-300));
+          background-color: var(--gray-150);
         }
       }
 
@@ -123,7 +147,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
           padding-inline-start: 0;
           padding-inline-end: 0;
           cursor: pointer;
-          background-color: var(--custom-bg-color,var(--gray-050));
+          background-color: var(--gray-050);
 
           box-sizing: border-box;
           height: 32px;
@@ -140,26 +164,22 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
             height: 26px;
             padding: 0;
             line-height: 1;
-            border: 1px solid transparent;
+            border: 2px solid transparent;
             border-radius: 50%;
           }
 
           &.fc-day-today {
             .fc-daygrid-day-number {
-              border-color: var(--gray-400);
+              border-color: var(--gray-200);
             }
           }
 
           &.fc-has-event {
-            background: var(--custom-bg-color,var(--gray-200));
-
-            &.fc-day-today {
-              background: var(--custom-bg-color, var(--gray-300));
-            }
+            background-color: var(--gray-150);
           }
 
           &.fc-extra-date {
-            background-color: var(--custom-bg-color,var(--gray-200));
+            background-color: var(--gray-150);
           }
 
           &.fc-excluded-date {
@@ -206,7 +226,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   padding: 0;
   font-size: 14px;
   font-weight: 700;
-  color: var(--gray-600);
+  color: var(--gray-700);
 `,Ur=n.p`
   margin: 0;
   padding: 0;
@@ -245,7 +265,7 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   background-color: var(--gray-100);
   border: 1px solid var(--gray-200);
   border-left: 5px solid var(--gray-200);
-`,Y=c(),Jr=8,Yr=()=>{let e=O(),t=k(K.state),{repeatType:n,start:r,rrule:i}=t,[a,s]=(0,E.useState)(null),c=(0,E.useMemo)(()=>Sr(i,r),[i,r]),l=(0,E.useMemo)(()=>wr(c,a),[c,a]),u=(0,E.useMemo)(()=>Tr(c,a?.start??null,Jr),[c,a]),d=(0,E.useMemo)(()=>Lr(c),[c]),f=(0,E.useMemo)(()=>{let e=Rr(c,u.length);return e?zr(e):null},[c,u]),p=(0,E.useCallback)((n,r,i)=>{e(G.setRRule(Er(t,c,n,r,i)))},[e,c,t]),m=(0,E.useCallback)(e=>{let t=Cr(c,e);if(t.base&&t.excluded){p(`exdate`,t.timestamp,!1);return}if(t.base&&t.full&&n!==`NEVER`){p(`exdate`,t.timestamp,!0);return}if(!t.base&&t.full&&t.rdate){p(`rdate`,t.timestamp,!1);return}t.full||p(`rdate`,t.timestamp,!0)},[p,c,n]),h=(0,E.useCallback)(e=>Cr(c,e),[c]);return(0,Y.jsx)(Br,{children:(0,Y.jsxs)(fe,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(Hr,{children:b(`Schedule Preview`)}),d&&(0,Y.jsx)(Ur,{children:d})]}),(0,Y.jsxs)(Vr,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(ge,{aspectRatio:2,height:250,expandRows:!1,themeSystem:`bootstrap5`,plugins:[he,_e],initialView:`dayGridMonth`,timeZone:`UTC`,eventDisplay:`none`,events:l,headerToolbar:{start:`title`,end:`prev,today,next`},datesSet:e=>s({start:e.start,end:e.end,currentStart:e.view.currentStart}),dayCellClassNames:e=>{let t=h(e.date);return[t.full?`fc-has-event`:``,t.rdate?`fc-extra-date`:``,t.excluded?`fc-excluded-date`:``].filter(Boolean)},dateClick:e=>m(e.date)}),f&&(0,Y.jsx)(Wr,{children:f})]}),(0,Y.jsx)(Gr,{children:u.length===0?(0,Y.jsxs)(`p`,{children:[b(`No occurrences starting from`),(0,Y.jsx)(`br`,{}),S(a?.currentStart??new Date,`PP`)]}):(0,Y.jsx)(Kr,{$count:u.length,children:u.map(e=>{let t=o(new Date(e*1e3));return(0,Y.jsx)(qr,{children:t},t)})})})]})]})})},Xr=n.div`
+`,Y=c(),Jr=8,Yr=()=>{let e=O(),t=k(K.state),{repeatType:n,start:r,rrule:i}=t,[a,s]=(0,E.useState)(null),c=(0,E.useMemo)(()=>Sr(i,r),[i,r]),l=(0,E.useMemo)(()=>wr(c,a),[c,a]),u=(0,E.useMemo)(()=>Tr(c,a?.start??null,Jr),[c,a]),d=(0,E.useMemo)(()=>Lr(c),[c]),f=(0,E.useMemo)(()=>{let e=Rr(c,u.length);return e?zr(e):null},[c,u]),p=(0,E.useCallback)((n,r,i)=>{e(G.setRRule(Er(t,c,n,r,i)))},[e,c,t]),m=(0,E.useCallback)(e=>{let t=Cr(c,e);if(t.base&&t.excluded){p(`exdate`,t.timestamp,!1);return}if(t.base&&t.full&&n!==`NEVER`){p(`exdate`,t.timestamp,!0);return}if(!t.base&&t.full&&t.rdate){p(`rdate`,t.timestamp,!1);return}t.full||p(`rdate`,t.timestamp,!0)},[p,c,n]),h=(0,E.useCallback)(e=>Cr(c,e),[c]);return(0,Y.jsx)(Br,{children:(0,Y.jsxs)(fe,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(Hr,{children:b(`Schedule Preview`)}),d&&(0,Y.jsx)(Ur,{children:d})]}),(0,Y.jsxs)(Vr,{children:[(0,Y.jsxs)(w,{$direction:`column`,$gap:10,children:[(0,Y.jsx)(ge,{aspectRatio:2,height:250,expandRows:!1,themeSystem:`bootstrap5`,plugins:[he,_e],initialView:`dayGridMonth`,dayHeaderFormat:{weekday:`narrow`},dayHeaderDidMount:e=>e.el.setAttribute(`aria-label`,b(S(e.date,`EEEE`))),timeZone:`UTC`,eventDisplay:`none`,events:l,headerToolbar:{start:`title`,end:`prev,today,next`},datesSet:e=>s({start:e.start,end:e.end,currentStart:e.view.currentStart}),dayCellClassNames:e=>{let t=h(e.date);return[t.full?`fc-has-event`:``,t.rdate?`fc-extra-date`:``,t.excluded?`fc-excluded-date`:``].filter(Boolean)},dateClick:e=>m(e.date)}),f&&(0,Y.jsx)(Wr,{children:f})]}),(0,Y.jsx)(Gr,{children:u.length===0?(0,Y.jsxs)(`p`,{children:[b(`No occurrences starting from`),(0,Y.jsx)(`br`,{}),S(a?.currentStart??new Date,`PP`)]}):(0,Y.jsx)(Kr,{$count:u.length,children:u.map(e=>{let t=o(new Date(e*1e3));return(0,Y.jsx)(qr,{children:t},t)})})})]})]})})},Xr=n.div`
   container-type: inline-size;
 
   display: flex;

@@ -129,6 +129,10 @@ export const CalendarPreview: FC = () => {
               themeSystem="bootstrap5"
               plugins={[dayGrid, interactionPlugin]}
               initialView="dayGridMonth"
+              dayHeaderFormat={{ weekday: "narrow" }}
+              dayHeaderDidMount={(info) =>
+                info.el.setAttribute("aria-label", translate(format(info.date, "EEEE")))
+              }
               timeZone="UTC"
               eventDisplay="none"
               events={events}

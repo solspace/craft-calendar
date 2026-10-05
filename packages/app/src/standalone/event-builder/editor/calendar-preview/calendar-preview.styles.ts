@@ -44,15 +44,35 @@ export const CalendarPreviewWrapper = styled.div`
   }
 
   .fc {
+    --fc-border-color: var(--gray-200);
+
     min-width: 260px;
     max-width: 260px;
+    color: var(--gray-600);
+
+    .fc-scrollgrid,
+    th,
+    td {
+      border-color: var(--fc-border-color);
+    }
+
+    .fc-col-header-cell {
+      background-color: var(--gray-100);
+      color: var(--gray-600);
+      text-align: center;
+    }
+
+    .fc-col-header-cell-cushion {
+      padding: 5px 0;
+      font-weight: 700;
+    }
 
     .fc-header-toolbar {
       margin-bottom: 10px;
 
       .fc-toolbar-title {
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
         font-family: inherit;
       }
         
@@ -76,9 +96,13 @@ export const CalendarPreviewWrapper = styled.div`
         outline: none !important;
         box-shadow: none !important;
         border: 0 !important;
-        color: var(--dark-text-color);
+        color: var(--gray-700);
         border-radius: var(--radius-lg);
-        background-color: var(--custom-bg-color,var(--gray-200));
+        background-color: var(--gray-200);
+
+        &:hover {
+          background-color: var(--gray-150);
+        }
 
         &:active,
         &:focus,
@@ -89,7 +113,7 @@ export const CalendarPreviewWrapper = styled.div`
         }
 
         &:active {
-          background-color: var(--custom-bg-color,var(--gray-300));
+          background-color: var(--gray-150);
         }
       }
 
@@ -117,7 +141,7 @@ export const CalendarPreviewWrapper = styled.div`
           padding-inline-start: 0;
           padding-inline-end: 0;
           cursor: pointer;
-          background-color: var(--custom-bg-color,var(--gray-050));
+          background-color: var(--gray-050);
 
           box-sizing: border-box;
           height: 32px;
@@ -134,26 +158,22 @@ export const CalendarPreviewWrapper = styled.div`
             height: 26px;
             padding: 0;
             line-height: 1;
-            border: 1px solid transparent;
+            border: 2px solid transparent;
             border-radius: 50%;
           }
 
           &.fc-day-today {
             .fc-daygrid-day-number {
-              border-color: var(--gray-400);
+              border-color: var(--gray-200);
             }
           }
 
           &.fc-has-event {
-            background: var(--custom-bg-color,var(--gray-200));
-
-            &.fc-day-today {
-              background: var(--custom-bg-color, var(--gray-300));
-            }
+            background-color: var(--gray-150);
           }
 
           &.fc-extra-date {
-            background-color: var(--custom-bg-color,var(--gray-200));
+            background-color: var(--gray-150);
           }
 
           &.fc-excluded-date {
@@ -204,7 +224,7 @@ export const OccurrencePreviewHeading = styled.h4`
   padding: 0;
   font-size: 14px;
   font-weight: 700;
-  color: var(--gray-600);
+  color: var(--gray-700);
 `;
 
 export const OccurrencePreviewDescription = styled.p`
