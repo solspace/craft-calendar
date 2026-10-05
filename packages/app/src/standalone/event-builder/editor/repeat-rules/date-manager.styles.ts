@@ -89,12 +89,13 @@ export const CountBadge = styled.button`
   }
 
   &.active {
-    color: white;
-    background: var(--teal-600);
-    border-color: var(--teal-600);
+    color: var(--white);
+    background: var(--gray-600);
+    border-color: var(--gray-600);
 
     &:hover:not(:disabled) {
-      background: var(--teal-700);
+      background: var(--gray-700);
+      border-color: var(--gray-700);
     }
   }
 `;

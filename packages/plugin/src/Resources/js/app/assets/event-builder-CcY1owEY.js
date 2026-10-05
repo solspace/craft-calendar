@@ -558,12 +558,13 @@ import{_ as e,c as t,d as n,f as r,g as i,h as a,i as o,n as s,p as c,r as l,s a
   }
 
   &.active {
-    color: white;
-    background: var(--teal-600);
-    border-color: var(--teal-600);
+    color: var(--white);
+    background: var(--gray-600);
+    border-color: var(--gray-600);
 
     &:hover:not(:disabled) {
-      background: var(--teal-700);
+      background: var(--gray-700);
+      border-color: var(--gray-700);
     }
   }
 `,qi=n.div`
