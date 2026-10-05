@@ -1,6 +1,5 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import { deleteEvent, getOccurrenceDateFromId } from "@cal/pages/calendar/calendar.events";
-import { Flex } from "@cal/styles/components";
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
@@ -14,7 +13,7 @@ import { format, subDays } from "date-fns";
 import { type FC, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { PopoverModifyEvent } from "../modify-event/modify";
-import { PopoverWrapper } from "./view-event.styles";
+import { PopoverActions, PopoverWrapper } from "./view-event.styles";
 
 type Props = {
   fcEvent: EventClickArg;
@@ -144,7 +143,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
 
       <hr />
 
-      <Flex>
+      <PopoverActions>
         <a href={event.url} className={clsx("btn submit", isDeleting && "disabled")}>
           {translate("Edit")}
         </a>
@@ -178,7 +177,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         >
           {translate("Close")}
         </button>
-      </Flex>
+      </PopoverActions>
     </PopoverWrapper>
   );
 };

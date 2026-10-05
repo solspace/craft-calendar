@@ -58,7 +58,7 @@ class OverviewController extends BaseController
 
         $currentSiteId = $site?->id;
 
-        $language = str_replace('_', '-', strtolower($site->language));
+        $language = str_replace('_', '-', strtolower(\Craft::$app->language));
 
         $user = \Craft::$app->getUser()->getIdentity();
 
