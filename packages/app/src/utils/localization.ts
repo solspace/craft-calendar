@@ -6,6 +6,9 @@ import type { Locale } from "date-fns";
 import { de, enGB, enUS, fr, it, nl } from "date-fns/locale";
 import translate from "./translations";
 
+// FullCalendar compares this array by reference when rebuilding its date environment.
+const calendarLocales = [deCalendar, frCalendar, itCalendar, nlCalendar];
+
 export const getControlPanelLanguage = (): string =>
   typeof document === "undefined" ? "en-US" : document.documentElement.lang || "en-US";
 
@@ -38,7 +41,7 @@ export const getDatePickerTranslations = () => ({
 
 export const getCalendarTranslations = () => ({
   locale: getControlPanelLanguage(),
-  locales: [deCalendar, frCalendar, itCalendar, nlCalendar],
+  locales: calendarLocales,
   buttonText: {
     today: translate("Today"),
     month: translate("Month"),

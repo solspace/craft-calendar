@@ -1,138 +1,138 @@
 {
-  "_calendar-preview.operations-BZXw5oRk.js": {
-    "file": "assets/calendar-preview.operations-BZXw5oRk.js",
+  "_calendar-preview.operations-BIHfc-I8.js": {
+    "file": "assets/calendar-preview.operations-BIHfc-I8.js",
     "name": "calendar-preview.operations",
     "imports": [
-      "_localization-BqOqn3Wu.js",
-      "_components-CZe9Wyfx.js"
+      "_localization-Dt_HqhpZ.js",
+      "_components-B8LQaiF0.js"
     ]
   },
-  "_calendar.styles-DbpJFBbG.js": {
-    "file": "assets/calendar.styles-DbpJFBbG.js",
+  "_calendar.styles-D2X8p6bU.js": {
+    "file": "assets/calendar.styles-D2X8p6bU.js",
     "name": "calendar.styles",
     "imports": [
-      "_localization-BqOqn3Wu.js"
+      "_localization-Dt_HqhpZ.js"
+    ]
+  },
+  "_components-B8LQaiF0.js": {
+    "file": "assets/components-B8LQaiF0.js",
+    "name": "components",
+    "imports": [
+      "_localization-Dt_HqhpZ.js"
+    ],
+    "css": [
+      "assets/components-BMkzam91.css"
     ]
   },
   "_components-BMkzam91.css": {
     "file": "assets/components-BMkzam91.css",
     "src": "_components-BMkzam91.css"
   },
-  "_components-CZe9Wyfx.js": {
-    "file": "assets/components-CZe9Wyfx.js",
-    "name": "components",
-    "imports": [
-      "_localization-BqOqn3Wu.js"
-    ],
-    "css": [
-      "assets/components-BMkzam91.css"
-    ]
-  },
-  "_dist-CLWsDsfQ.js": {
-    "file": "assets/dist-CLWsDsfQ.js",
+  "_dist-atW_9FYd.js": {
+    "file": "assets/dist-atW_9FYd.js",
     "name": "dist",
     "imports": [
-      "_localization-BqOqn3Wu.js"
+      "_localization-Dt_HqhpZ.js"
     ]
   },
-  "_interaction-CO8yQQl0.js": {
-    "file": "assets/interaction-CO8yQQl0.js",
+  "_interaction-eU4e2uZa.js": {
+    "file": "assets/interaction-eU4e2uZa.js",
     "name": "interaction",
     "imports": [
-      "_dist-CLWsDsfQ.js"
+      "_dist-atW_9FYd.js"
     ]
   },
-  "_loader-jHLUa5Lp.js": {
-    "file": "assets/loader-jHLUa5Lp.js",
+  "_loader-Cmv0MXol.js": {
+    "file": "assets/loader-Cmv0MXol.js",
     "name": "loader",
     "imports": [
-      "_localization-BqOqn3Wu.js"
+      "_localization-Dt_HqhpZ.js"
     ]
   },
-  "_localization-BqOqn3Wu.js": {
-    "file": "assets/localization-BqOqn3Wu.js",
+  "_localization-Dt_HqhpZ.js": {
+    "file": "assets/localization-Dt_HqhpZ.js",
     "name": "localization"
   },
-  "_timegrid-CTIyhpqd.js": {
-    "file": "assets/timegrid-CTIyhpqd.js",
+  "_timegrid-DmD-fLvJ.js": {
+    "file": "assets/timegrid-DmD-fLvJ.js",
     "name": "timegrid",
     "imports": [
-      "_dist-CLWsDsfQ.js"
+      "_dist-atW_9FYd.js"
     ]
   },
-  "_variables-C_3fUeBD.js": {
-    "file": "assets/variables-C_3fUeBD.js",
+  "_variables-DsM_Lxp_.js": {
+    "file": "assets/variables-DsM_Lxp_.js",
     "name": "variables",
     "imports": [
-      "_localization-BqOqn3Wu.js",
-      "_components-CZe9Wyfx.js"
+      "_localization-Dt_HqhpZ.js",
+      "_components-B8LQaiF0.js"
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-R0KHvqIY.js",
+    "file": "assets/overview-Bhk6ZYZU.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
-      "_localization-BqOqn3Wu.js",
-      "_calendar-preview.operations-BZXw5oRk.js",
-      "_dist-CLWsDsfQ.js",
-      "_interaction-CO8yQQl0.js",
-      "_timegrid-CTIyhpqd.js",
-      "_components-CZe9Wyfx.js",
-      "_calendar.styles-DbpJFBbG.js",
-      "_variables-C_3fUeBD.js"
+      "_localization-Dt_HqhpZ.js",
+      "_calendar-preview.operations-BIHfc-I8.js",
+      "_dist-atW_9FYd.js",
+      "_interaction-eU4e2uZa.js",
+      "_timegrid-DmD-fLvJ.js",
+      "_components-B8LQaiF0.js",
+      "_calendar.styles-D2X8p6bU.js",
+      "_variables-DsM_Lxp_.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-BcvL_u27.js",
+    "file": "assets/event-builder-DQ2vA2Lc.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
-      "_localization-BqOqn3Wu.js",
-      "_calendar-preview.operations-BZXw5oRk.js",
-      "_dist-CLWsDsfQ.js",
-      "_interaction-CO8yQQl0.js",
-      "_components-CZe9Wyfx.js"
+      "_localization-Dt_HqhpZ.js",
+      "_calendar-preview.operations-BIHfc-I8.js",
+      "_dist-atW_9FYd.js",
+      "_interaction-eU4e2uZa.js",
+      "_components-B8LQaiF0.js"
     ]
   },
   "src/standalone/widgets/agenda/index.tsx": {
-    "file": "assets/widget-agenda-Ca4oVGVk.js",
+    "file": "assets/widget-agenda-Bli85Pvu.js",
     "name": "widget-agenda",
     "src": "src/standalone/widgets/agenda/index.tsx",
     "isEntry": true,
     "imports": [
-      "_localization-BqOqn3Wu.js",
-      "_dist-CLWsDsfQ.js",
-      "_timegrid-CTIyhpqd.js",
-      "_calendar.styles-DbpJFBbG.js",
-      "_loader-jHLUa5Lp.js"
+      "_localization-Dt_HqhpZ.js",
+      "_dist-atW_9FYd.js",
+      "_timegrid-DmD-fLvJ.js",
+      "_calendar.styles-D2X8p6bU.js",
+      "_loader-Cmv0MXol.js"
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-Cti6RVAn.js",
+    "file": "assets/widget-event-nw83pBDe.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
-      "_localization-BqOqn3Wu.js",
-      "_components-CZe9Wyfx.js",
-      "_variables-C_3fUeBD.js",
-      "_loader-jHLUa5Lp.js"
+      "_localization-Dt_HqhpZ.js",
+      "_components-B8LQaiF0.js",
+      "_variables-DsM_Lxp_.js",
+      "_loader-Cmv0MXol.js"
     ]
   },
   "src/standalone/widgets/mini/index.tsx": {
-    "file": "assets/widget-mini-CY6WQCCN.js",
+    "file": "assets/widget-mini-BSDw1zUd.js",
     "name": "widget-mini",
     "src": "src/standalone/widgets/mini/index.tsx",
     "isEntry": true,
     "imports": [
-      "_localization-BqOqn3Wu.js",
-      "_dist-CLWsDsfQ.js",
-      "_interaction-CO8yQQl0.js",
-      "_calendar.styles-DbpJFBbG.js",
-      "_loader-jHLUa5Lp.js"
+      "_localization-Dt_HqhpZ.js",
+      "_dist-atW_9FYd.js",
+      "_interaction-eU4e2uZa.js",
+      "_calendar.styles-D2X8p6bU.js",
+      "_loader-Cmv0MXol.js"
     ]
   }
 }
