@@ -354,6 +354,7 @@ return [
     'PHP version' => 'PHP-Version',
     'Page does not exist' => 'Die Seite existiert nicht',
     'Pick a Date' => 'Datum auswählen',
+    'Per-calendar diagnostics ({count})' => 'Diagnose pro Kalender ({count})',
     'Position' => 'Position',
     'Post Date' => 'Veröffentlichungsdatum',
     'Previous' => 'Zurück',

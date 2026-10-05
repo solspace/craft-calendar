@@ -354,6 +354,7 @@ return [
     'PHP version' => 'Versione di PHP',
     'Page does not exist' => 'La pagina non esiste',
     'Pick a Date' => 'Scegli una data',
+    'Per-calendar diagnostics ({count})' => 'Diagnostica per calendario ({count})',
     'Position' => 'Posizione',
     'Post Date' => 'Data di pubblicazione',
     'Previous' => 'Precedente',

@@ -120,18 +120,29 @@ class DiagnosticsService extends Component
         try {
             $allCalendars = $plugin->calendars->getAllCalendars();
             $statistics[] = $row(Calendar::t('Calendars'), \count($allCalendars));
+            $calendarSites = [];
+            foreach ($plugin->calendarSites->getAllSiteSettings() as $site) {
+                $calendarSites[$site->calendarId][] = $site->getSite()?->name ?? (string) $site->siteId;
+            }
             foreach ($allCalendars as $calendar) {
                 $name = $calendar->getIcsTimezone();
                 $floating = DateHelper::FLOATING_TIMEZONE === $name;
                 $valid = $floating || null !== DiagnosticsHelper::timezone($name, $now);
+                $siteNames = $calendarSites[$calendar->id] ?? [];
                 $calendars[] = [
                     'title' => $calendar->name,
+                    'handle' => $calendar->handle,
+                    'timezone' => $floating ? Calendar::t('Floating wall time') : $name,
+                    'timezoneValid' => $valid,
+                    'repeating' => $boolean((bool) $calendar->allowRepeatingEvents),
+                    'siteCount' => \count($siteNames),
+                    'siteNames' => implode(', ', $siteNames),
                     'rows' => [
                         $row(Calendar::t('Handle'), $calendar->handle),
                         $row(Calendar::t('ICS export timezone'), $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
                             $valid ? 'info' : 'warning', $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')),
                         $row(Calendar::t('Repeating events allowed'), $boolean((bool) $calendar->allowRepeatingEvents)),
-                        $row(Calendar::t('Supported sites'), implode(', ', array_map(static fn ($site) => $site->getSite()?->name ?? (string) $site->siteId, $calendar->getSiteSettings()))),
+                        $row(Calendar::t('Supported sites'), implode(', ', $siteNames)),
                     ],
                 ];
             }
@@ -167,11 +178,12 @@ class DiagnosticsService extends Component
         $sections = [
             [$this->section(Calendar::t('Server Checks'), $server), $this->section(Calendar::t('Database'), $database)],
             [$this->section(Calendar::t('Timezones & Clocks'), $timezones), $this->section(Calendar::t('Locale & Date Formatting'), $locale), $this->section(Calendar::t('Calendar Configuration'), $configuration)],
-            [$this->section(Calendar::t('Statistics'), $statistics), $this->section(Calendar::t('Event Timezones'), $eventZones), $this->section(Calendar::t('Sites & Languages'), $sites), ...$calendars],
+            [$this->section(Calendar::t('Statistics'), $statistics), $this->section(Calendar::t('Event Timezones'), $eventZones), $this->section(Calendar::t('Sites & Languages'), $sites)],
         ];
         $warnings = [];
         $report = [Calendar::t('Calendar Diagnostics'), $now->format(\DateTimeInterface::ATOM)];
-        foreach ($sections as $column) {
+        // Keep the full per-calendar details in the support report, independently of the compact UI.
+        foreach ([...$sections, $calendars] as $column) {
             foreach ($column as $section) {
                 $report[] = "\n".$section['title'];
                 foreach ($section['rows'] as $item) {
@@ -185,6 +197,8 @@ class DiagnosticsService extends Component
 
         return [
             'columns' => $sections,
+            'calendars' => $calendars,
+            'calendarWarningCount' => \count(array_filter($calendars, static fn ($calendar) => !$calendar['timezoneValid'])),
             'warnings' => $warnings,
             'report' => implode("\n", $report),
             'sampledAt' => $now->format(\DateTimeInterface::ATOM),

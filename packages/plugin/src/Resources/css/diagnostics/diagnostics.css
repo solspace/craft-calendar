@@ -73,6 +73,52 @@
 #calendar-diagnostics .is-warning .calendar-diag-dot {
   background: var(--warning-color);
 }
+#calendar-diagnostics .calendar-diag-calendars {
+  margin-top: 20px;
+}
+#calendar-diagnostics .calendar-diag-calendars summary {
+  padding: 12px 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--large-border-radius, 5px);
+  background: var(--gray-050);
+  font-weight: 600;
+  cursor: pointer;
+}
+#calendar-diagnostics .calendar-diag-calendars > p {
+  margin: 12px 0;
+}
+#calendar-diagnostics .calendar-diag-warning-count {
+  margin-inline-start: 8px;
+  color: var(--warning-color);
+  font-size: 12px;
+}
+#calendar-diagnostics .calendar-diag-calendar-table {
+  max-height: 360px;
+  overflow: auto;
+}
+#calendar-diagnostics .calendar-diag-calendar-table table {
+  margin: 0;
+}
+#calendar-diagnostics .calendar-diag-calendar-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--gray-050);
+}
+#calendar-diagnostics .calendar-diag-calendar-table td, #calendar-diagnostics .calendar-diag-calendar-table tbody th {
+  padding: 8px 12px;
+  vertical-align: top;
+}
+#calendar-diagnostics .calendar-diag-calendar-table tbody th {
+  min-width: 140px;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+  font-weight: normal;
+}
+#calendar-diagnostics .calendar-diag-calendar-table .calendar-diag-handle {
+  display: block;
+  font-size: 12px;
+}
 #calendar-diagnostics .calendar-diag-report {
   margin-top: 20px;
 }

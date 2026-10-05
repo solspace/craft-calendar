@@ -57,6 +57,40 @@
                 </div>
             {% endfor %}
         </div>
+        {% if calendars %}
+            <details class="calendar-diag-calendars">
+                <summary>
+                    {{ 'Per-calendar diagnostics ({count})'|t('calendar', {count: calendars|length}) }}
+                    {% if calendarWarningCount %}
+                        <span class="calendar-diag-warning-count">{{ 'Diagnostic warnings: {count}'|t('calendar', {count: calendarWarningCount}) }}</span>
+                    {% endif %}
+                </summary>
+                <p class="light">{{ 'This setting applies to ICS exports; it does not change stored event dates.'|t('calendar') }}</p>
+                <div class="calendar-diag-calendar-table">
+                    <table class="data fullwidth">
+                        <caption class="visually-hidden">{{ 'Per-calendar diagnostics ({count})'|t('calendar', {count: calendars|length}) }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{{ 'Calendar'|t('calendar') }}</th>
+                                <th scope="col">{{ 'ICS export timezone'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Repeating events allowed'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Supported sites'|t('calendar') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for calendar in calendars %}
+                                <tr class="{{ calendar.timezoneValid ? 'is-info' : 'is-warning' }}">
+                                    <th scope="row"><strong>{{ calendar.title }}</strong><span class="light calendar-diag-handle">{{ calendar.handle }}</span></th>
+                                    <td><span class="calendar-diag-dot" aria-hidden="true"></span>{{ calendar.timezone }}{% if not calendar.timezoneValid %} <span class="calendar-diag-warning-count" title="{{ 'This timezone identifier is invalid.'|t('calendar')|e('html_attr') }}">{{ 'Warning'|t('calendar') }}</span>{% endif %}</td>
+                                    <td>{{ calendar.repeating }}</td>
+                                    <td title="{{ calendar.siteNames|e('html_attr') }}">{{ calendar.siteCount }}{% if calendar.siteNames %}<span class="visually-hidden"> — {{ calendar.siteNames }}</span>{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        {% endif %}
         <details class="calendar-diag-report">
             <summary>{{ 'View diagnostic report'|t('calendar') }}</summary>
             <label class="visually-hidden" for="calendar-diagnostic-report">{{ 'Calendar Diagnostics'|t('calendar') }}</label>
