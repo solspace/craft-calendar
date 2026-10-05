@@ -136,8 +136,7 @@ export const CalendarPreview: FC = () => {
           <Flex $direction={"column"} $gap={10}>
             <FullCalendar
               {...getCalendarTranslations()}
-              aspectRatio={2}
-              height={250}
+              height="auto"
               expandRows={false}
               themeSystem="bootstrap5"
               plugins={[dayGrid, interactionPlugin]}

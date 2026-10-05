@@ -279,7 +279,7 @@ export const DateItem = styled.li`
   font-family: monospace;
   white-space: nowrap;
 
-  background-color: var(--gray-100);
+  background-color: var(--gray-050);
   border: 1px solid var(--gray-200);
   border-left: 5px solid var(--gray-200);
 `;
