@@ -1,3 +1,4 @@
+import translate from "@cal/utils/translations";
 import type { DateSelectArg, EventApi, EventInput } from "@fullcalendar/core/index.js";
 
 const DAY_IN_SECONDS = 24 * 60 * 60;
@@ -50,7 +51,7 @@ export const buildCreateDraftFromSelection = (
   settings: CalendarCreateDraftSettings,
 ): CalendarCreateDraft => ({
   id: DEFAULT_CREATE_DRAFT_ID,
-  title: DEFAULT_CREATE_DRAFT_TITLE,
+  title: translate(DEFAULT_CREATE_DRAFT_TITLE),
   allDay: selection.allDay || settings.allDayDefault,
   start:
     selection.allDay || settings.allDayDefault

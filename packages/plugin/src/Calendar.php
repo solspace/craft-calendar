@@ -139,7 +139,7 @@ class Calendar extends Plugin
         }
 
         if (\Craft::$app->request->getIsCpRequest()) {
-            $translations = include __DIR__.'/translations/en-US/calendar.php';
+            $translations = include __DIR__.'/translations/en/calendar.php';
             $translations = array_keys($translations);
 
             \Craft::$app->view->registerTranslations(self::TRANSLATION_CATEGORY, $translations);

@@ -8,7 +8,7 @@ import { useEventListener } from "usehooks-ts";
 import { PopoverWrapper } from "../view-event/view-event.styles";
 
 type Props = {
-  actionLabel: string;
+  action: "move" | "delete";
   onOnlyThisOccurrence: () => Promise<void> | void;
   onAllOccurrences: () => Promise<void> | void;
   onCancel?: () => void;
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export const PopoverModifyEvent: FC<Props> = ({
-  actionLabel,
+  action,
   onOnlyThisOccurrence,
   onAllOccurrences,
   onCancel,
@@ -70,11 +70,15 @@ export const PopoverModifyEvent: FC<Props> = ({
 
   return (
     <PopoverWrapper>
-      <h3>{translate("You're {actionLabel} an event.", { actionLabel })}</h3>
+      <h3>
+        {translate(action === "delete" ? "You are deleting an event." : "You are moving an event.")}
+      </h3>
       <p>
-        {translate("Do you want to be {actionLabel} only this occurrence, or all occurrences?", {
-          actionLabel,
-        })}
+        {translate(
+          action === "delete"
+            ? "Do you want to delete only this occurrence, or all occurrences?"
+            : "Do you want to move only this occurrence, or all occurrences?",
+        )}
       </p>
 
       <hr />

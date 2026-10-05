@@ -826,6 +826,15 @@ class Event extends Element implements \JsonSerializable
         return array_merge($object, $fieldValues);
     }
 
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'startDate' => Calendar::t('Start Date'),
+            'endDate' => Calendar::t('End Date'),
+            'rrule' => Calendar::t('Repeats'),
+        ]);
+    }
+
     public function rules(): array
     {
         $rules = parent::rules();

@@ -65,6 +65,7 @@ export const RepeatRules: FC = () => {
     <RepeatRulesWrapper>
       <Flex $alignItems="end" style={{ width: "100%" }}>
         <Dropdown
+          translateOptions
           label="Repeats"
           value={repeatType}
           options={options}
@@ -75,6 +76,7 @@ export const RepeatRules: FC = () => {
           <>
             <Interval />
             <Dropdown
+              translateOptions
               label=""
               value={freq}
               options={freqOptions(interval > 1)}
@@ -91,6 +93,7 @@ export const RepeatRules: FC = () => {
       {repeatType !== "NEVER" && (
         <Flex style={{ margin: "20px 0 0", width: "100%" }}>
           <Dropdown
+            translateOptions
             label="Ends"
             options={endOptions}
             value={repeatEndType}

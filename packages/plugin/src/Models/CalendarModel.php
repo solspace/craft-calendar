@@ -247,6 +247,16 @@ class CalendarModel extends Model implements \JsonSerializable
         return $this->getConfig();
     }
 
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'name' => Calendar::t('Name'),
+            'handle' => Calendar::t('Handle'),
+            'titleFormat' => \Craft::t('app', 'Title Format'),
+            'titleLabel' => \Craft::t('app', 'Title Field Label'),
+        ]);
+    }
+
     public function rules(): array
     {
         return $this->defineRules();

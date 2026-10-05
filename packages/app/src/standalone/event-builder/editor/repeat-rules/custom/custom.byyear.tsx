@@ -2,6 +2,7 @@ import { Control } from "@cal/components/controls/control";
 import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdown";
 import { Flex } from "@cal/styles/components";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import clsx from "clsx";
@@ -106,7 +107,7 @@ export const ByYear: FC = () => {
                   }
                 }}
               >
-                {month.label}
+                {translate(month.label)}
               </MatrixButton>
             );
           })}
@@ -114,6 +115,7 @@ export const ByYear: FC = () => {
       </Control>
 
       <Dropdown
+        translateOptions
         label="Repeat on"
         value={mode}
         options={modeOptions}
@@ -137,6 +139,7 @@ export const ByYear: FC = () => {
       {mode === "WEEKDAY" && (
         <Flex>
           <Dropdown
+            translateOptions
             label="Position"
             value={selectedPosition}
             options={positionOptions}
@@ -145,6 +148,7 @@ export const ByYear: FC = () => {
             }
           />
           <Dropdown
+            translateOptions
             label="Day"
             value={selectedWeekday}
             options={weekdayChoices.map((choice) => ({

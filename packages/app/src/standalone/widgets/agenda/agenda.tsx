@@ -1,4 +1,5 @@
 import { createCalendarEventsSource } from "@cal/pages/calendar/calendar.events";
+import { getCalendarTranslations } from "@cal/utils/localization";
 import dayGrid from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
 import timeGrid from "@fullcalendar/timegrid";
@@ -41,6 +42,7 @@ export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => 
   return (
     <AgendaWidgetWrapper>
       <FullCalendar
+        {...getCalendarTranslations()}
         ref={calendar}
         themeSystem="bootstrap5"
         plugins={[dayGrid, timeGrid]}

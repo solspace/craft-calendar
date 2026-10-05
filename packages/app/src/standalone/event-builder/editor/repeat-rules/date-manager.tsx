@@ -1,5 +1,6 @@
 import type { WeekStartDay } from "@cal/types/config";
 import { localDisplayDateToUtcTimestamp } from "@cal/utils/date";
+import { getDatePickerTranslations } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
 import clsx, { type ClassValue } from "clsx";
 import { startOfDay } from "date-fns";
@@ -76,7 +77,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
     <FixedDatesSection>
       <SectionHeading>{translate(title)}</SectionHeading>
 
-      {description && <SectionInstructions>{description}</SectionInstructions>}
+      {description && <SectionInstructions>{translate(description)}</SectionInstructions>}
 
       <FixedDatesToolbar>
         <BadgeWrapper ref={badgeWrapperRef}>
@@ -110,7 +111,11 @@ export const DateManager: FC<FixedDateManagerProps> = ({
                 {dates.map((value) => (
                   <DateItem key={value}>
                     <span>{formatDate(value)}</span>
-                    <button type="button" onClick={() => onRemove(value)}>
+                    <button
+                      type="button"
+                      aria-label={translate("Remove date {date}", { date: formatDate(value) })}
+                      onClick={() => onRemove(value)}
+                    >
                       ×
                     </button>
                   </DateItem>
@@ -122,6 +127,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
 
         <PickerButtonWrapper>
           <DatePicker
+            {...getDatePickerTranslations()}
             selected={null}
             onChange={(date: Date | null) => {
               if (!date) {

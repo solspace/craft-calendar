@@ -4,6 +4,7 @@ import {
   utcTimestampToLocalDisplayDate,
   utcToLocalDisplayDate,
 } from "@cal/utils/date";
+import { getDateLocale } from "@cal/utils/localization";
 import { getBaseRRule, getRRuleSetFromString } from "@cal/utils/rrule";
 import translate from "@cal/utils/translations";
 import {
@@ -408,7 +409,7 @@ export const describeRecurrence = (previewRecurrence: PreviewRecurrence): string
   if (options.until) {
     return translate("{description}, ending on {date}.", {
       description,
-      date: format(utcToLocalDisplayDate(options.until), "PP"),
+      date: format(utcToLocalDisplayDate(options.until), "PP", { locale: getDateLocale() }),
     });
   }
 

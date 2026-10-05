@@ -66,7 +66,7 @@ class PermissionHelper
             }
         }
 
-        throw new ForbiddenHttpException('User is not permitted to perform this action');
+        throw new ForbiddenHttpException(Calendar::t('User is not permitted to perform this action'));
     }
 
     public static function getNestedPermissionIds(string $permissionName): array|bool

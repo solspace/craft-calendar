@@ -48,6 +48,7 @@ export const RepeatEnd: FC = () => {
   return (
     <Flex className="field">
       <Dropdown
+        translateOptions
         label="Position"
         value={selectedPosition}
         options={positionOptions}
@@ -56,6 +57,7 @@ export const RepeatEnd: FC = () => {
         }
       />
       <Dropdown
+        translateOptions
         label="Day"
         value={selectedWeekday}
         options={weekdayChoices.map((choice) => ({

@@ -1,5 +1,6 @@
 import type { WeekStartDay } from "@cal/types/config";
 import { UTCifyDateOnly, utcDatePath, utcToLocalDisplayDate } from "@cal/utils/date";
+import { getDatePickerTranslations } from "@cal/utils/localization";
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { type FC, type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import DatePickerControl from "react-datepicker";
@@ -144,6 +145,7 @@ const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
       }}
     >
       <DatePickerControl
+        {...getDatePickerTranslations()}
         inline
         selected={selectedDate}
         onChange={onDateSelect}

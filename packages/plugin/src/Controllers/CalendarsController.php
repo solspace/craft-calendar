@@ -46,7 +46,7 @@ class CalendarsController extends BaseController
             version_compare(\Craft::$app->getVersion(), '3.1', '>=')
             && !\Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
-            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+            throw new ForbiddenHttpException(Calendar::t('Administrative changes are disallowed in this environment.'));
         }
 
         $this->isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');

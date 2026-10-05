@@ -1,5 +1,6 @@
 import { createCalendarEventsSource } from "@cal/pages/calendar/calendar.events";
 import { utcDatePath } from "@cal/utils/date";
+import { getCalendarTranslations } from "@cal/utils/localization";
 import type { DayHeaderContentArg, EventInput } from "@fullcalendar/core/index.js";
 import dayGrid from "@fullcalendar/daygrid";
 import interaction, { type DateClickArg } from "@fullcalendar/interaction";
@@ -27,13 +28,17 @@ export const Mini: FC<{ config: MiniWidgetConfig }> = ({ config }) => {
     }, 600);
   }, []);
 
-  const renderDayHeaderContent = useCallback((arg: DayHeaderContentArg) => {
-    const weekday = new Intl.DateTimeFormat(undefined, {
-      weekday: "narrow",
-    }).format(arg.date);
+  const renderDayHeaderContent = useCallback(
+    (arg: DayHeaderContentArg) => {
+      const weekday = new Intl.DateTimeFormat(config.language, {
+        weekday: "narrow",
+        timeZone: "UTC",
+      }).format(arg.date);
 
-    return <span className="fc-day-header-label">{weekday}</span>;
-  }, []);
+      return <span className="fc-day-header-label">{weekday}</span>;
+    },
+    [config.language],
+  );
 
   const handleDateClick = useCallback((arg: DateClickArg) => {
     window.location.href = Craft.getCpUrl(`calendar/${utcDatePath(arg.date)}/day`);
@@ -42,6 +47,7 @@ export const Mini: FC<{ config: MiniWidgetConfig }> = ({ config }) => {
   return (
     <MiniWidgetWrapper ref={wrapper}>
       <FullCalendar
+        {...getCalendarTranslations()}
         ref={calendar}
         themeSystem="bootstrap5"
         height={280}

@@ -1,8 +1,13 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import { deleteEvent, getOccurrenceDateFromId } from "@cal/pages/calendar/calendar.events";
 import { Flex } from "@cal/styles/components";
-import { getRRuleText } from "@cal/utils/rrule";
+import { utcToLocalDisplayDate } from "@cal/utils/date";
+import { getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
+import {
+  buildPreviewRecurrence,
+  describeRecurrence,
+} from "@event-builder/editor/calendar-preview/calendar-preview.operations";
 import type { EventClickArg } from "@fullcalendar/core/index.js";
 import clsx from "clsx";
 import { format, subDays } from "date-fns";
@@ -42,7 +47,11 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   }, [allDay, end]);
 
   const isRecurring = Boolean(event.extendedProps.rrule);
-  const rruleText = isRecurring ? getRRuleText(event.extendedProps.rrule) : null;
+  const rruleText = isRecurring
+    ? describeRecurrence(
+        buildPreviewRecurrence(event.extendedProps.rrule, event.start!.getTime() / 1000),
+      )
+    : null;
   const occurrenceDate = getOccurrenceDateFromId(String(event.id), event.allDay);
   const dateFormat = event.allDay ? "PP" : "PPp";
 
@@ -72,7 +81,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const showRecurringDeletePopover = () => {
     showPopover(
       <PopoverModifyEvent
-        actionLabel={translate("deleting")}
+        action="delete"
         onOnlyThisOccurrence={async () => {
           const wasDeleted = await deleteEvent({
             event,
@@ -120,9 +129,11 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       <hr />
 
       <div>
-        <b>{translate("Starts")}:</b> {format(event.start!, dateFormat)}
+        <b>{translate("Starts")}:</b>{" "}
+        {format(utcToLocalDisplayDate(event.start!), dateFormat, { locale: getDateLocale() })}
         <br />
-        <b>{translate("Ends")}:</b> {format(endForDisplay!, dateFormat)}
+        <b>{translate("Ends")}:</b>{" "}
+        {format(utcToLocalDisplayDate(endForDisplay!), dateFormat, { locale: getDateLocale() })}
       </div>
 
       {rruleText && (

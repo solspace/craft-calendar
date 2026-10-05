@@ -35,11 +35,11 @@
                 <td width="95%">
                     {{ forms.textField({
                         label: "Install Path"|t('calendar'),
-                        instructions: "The folder name you'd like the demo templates installed to, relative to the Craft templates directory.",
+                        instructions: "The folder name you'd like the demo templates installed to, relative to the Craft templates directory."|t("calendar"),
                         id: 'prefix',
                         name: 'prefix',
                         value: prefix,
-                        placeholder: "e.g. calendar-demo",
+                        placeholder: "e.g. calendar-demo"|t("calendar"),
                         autofocus: true
                     }) }}
                 </td>
@@ -63,7 +63,7 @@
 
     <hr />
     <div class="field">
-        <p>The following templates, assets and routes will be installed and configured:</p>
+        <p>{{ "The following templates, assets and routes will be installed and configured:"|t("calendar") }}</p>
     </div>
 
     <div id="components-wrapper">

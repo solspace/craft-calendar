@@ -1,5 +1,6 @@
 import { Control } from "@cal/components/controls/control";
 import { Flex } from "@cal/styles/components";
+import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import clsx from "clsx";
@@ -47,7 +48,7 @@ export const ByWeek: FC = () => {
                 dispatch(eventActions.setDays({ type: "byweekday", values }));
               }}
             >
-              {label}
+              {translate(label)}
             </MatrixButton>
           ))}
         </WeekMatrixWrapper>

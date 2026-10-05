@@ -1,7 +1,9 @@
 import { Control } from "@cal/components/controls/control";
 import { Flex } from "@cal/styles/components";
-import { utcDateKey } from "@cal/utils/date";
+import { utcDateKey, utcToLocalDisplayDate } from "@cal/utils/date";
+import { getCalendarTranslations, getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
+import { appSelectors } from "@event-builder/store/app.slice";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import dayGrid from "@fullcalendar/daygrid";
@@ -38,6 +40,7 @@ const MAX_OCCURRENCES = 8;
 
 export const CalendarPreview: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const weekStartDay = useSelector(appSelectors.weekStartDay);
   const state = useSelector(eventSelectors.state);
   const { start, rrule } = state;
   const [viewRange, setViewRange] = useState<{
@@ -132,6 +135,7 @@ export const CalendarPreview: FC = () => {
         <FullCalendarOccurrencePreviewWrapper>
           <Flex $direction={"column"} $gap={10}>
             <FullCalendar
+              {...getCalendarTranslations()}
               aspectRatio={2}
               height={250}
               expandRows={false}
@@ -140,8 +144,15 @@ export const CalendarPreview: FC = () => {
               initialView="dayGridMonth"
               dayHeaderFormat={{ weekday: "narrow" }}
               dayHeaderDidMount={(info) =>
-                info.el.setAttribute("aria-label", translate(format(info.date, "EEEE")))
+                info.el.setAttribute(
+                  "aria-label",
+                  new Intl.DateTimeFormat(getDateLocale().code, {
+                    weekday: "long",
+                    timeZone: "UTC",
+                  }).format(info.date),
+                )
               }
+              firstDay={weekStartDay}
               timeZone="UTC"
               eventDisplay="none"
               events={events}
@@ -176,7 +187,9 @@ export const CalendarPreview: FC = () => {
               <p>
                 {translate("No occurrences starting from")}
                 <br />
-                {format(viewRange?.currentStart ?? new Date(), "PP")}
+                {format(utcToLocalDisplayDate(viewRange?.currentStart ?? new Date()), "PP", {
+                  locale: getDateLocale(),
+                })}
               </p>
             ) : (
               <DateList $count={upcomingOccurrences.length}>

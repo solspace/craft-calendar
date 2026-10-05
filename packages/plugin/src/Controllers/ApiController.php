@@ -133,7 +133,7 @@ class ApiController extends BaseController
             $this->response->setStatusCode(400);
 
             return $this->asJson([
-                'message' => 'Could not save event',
+                'message' => Calendar::t('Could not save event'),
                 'errors' => $event->getErrorSummary(true),
             ]);
         }
@@ -153,7 +153,7 @@ class ApiController extends BaseController
 
         $calendar = Calendar::getInstance()->calendars->getCalendarByIcsHash($icsHash);
         if (!$calendar) {
-            throw new NotFoundHttpException('Page does not exist');
+            throw new NotFoundHttpException(Calendar::t('Page does not exist'));
         }
 
         $eventQuery = Event::find()

@@ -148,7 +148,7 @@ class SettingsController extends BaseController
             version_compare(\Craft::$app->getVersion(), '3.1', '>=')
             && !\Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
-            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+            throw new ForbiddenHttpException(Calendar::t('Administrative changes are disallowed in this environment.'));
         }
 
         $label = !empty($variables['label']) ? $variables['label'] : ucwords($template);

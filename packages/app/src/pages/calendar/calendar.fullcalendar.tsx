@@ -1,7 +1,7 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import type { ShowPopoverOptions } from "@cal/contexts/popover/popover.types";
 import { UTCifyDateOnly, utcDateKey } from "@cal/utils/date";
-import translate from "@cal/utils/translations";
+import { getCalendarTranslations, getDateLocale } from "@cal/utils/localization";
 import type {
   CalendarApi,
   DateSelectArg,
@@ -57,11 +57,11 @@ type CalendarFullcalendarProps = {
   onMiniDateSelectionHandled: () => void;
 };
 
-const weekHeaderWeekdayFormatter = new Intl.DateTimeFormat(undefined, {
+const weekHeaderWeekdayFormatter = new Intl.DateTimeFormat(getDateLocale().code, {
   weekday: "short",
   timeZone: "UTC",
 });
-const weekHeaderDayFormatter = new Intl.DateTimeFormat(undefined, {
+const weekHeaderDayFormatter = new Intl.DateTimeFormat(getDateLocale().code, {
   day: "numeric",
   timeZone: "UTC",
 });
@@ -345,7 +345,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
 
       showPopover(
         <PopoverModifyEvent
-          actionLabel={translate("moving")}
+          action="move"
           onOnlyThisOccurrence={async () => {
             const wasMoved = await moveEvent({
               event: arg.event,
@@ -421,6 +421,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   return (
     <CalendarWrapper className={isFetchingEvents ? "is-fetching-events" : undefined}>
       <FullCalendar
+        {...getCalendarTranslations()}
         ref={calendar}
         themeSystem="bootstrap5"
         plugins={[dayGrid, timeGrid, list, interaction]}

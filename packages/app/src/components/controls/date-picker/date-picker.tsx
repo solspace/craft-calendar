@@ -1,4 +1,5 @@
 import { localDisplayDateToUtcTimestamp, utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { getDatePickerTranslations } from "@cal/utils/localization";
 import { type FC, useEffect, useState } from "react";
 import DatePickerControl, { type DatePickerProps } from "react-datepicker";
 import styled from "styled-components";
@@ -30,6 +31,7 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
       <DatePickerWrapper>
         {/* @ts-ignore cannot get the types to work well when passing props */}
         <DatePickerControl
+          {...getDatePickerTranslations()}
           {...datePickerProps}
           wrapperClassName="fullwidth"
           className="text fullwidth"

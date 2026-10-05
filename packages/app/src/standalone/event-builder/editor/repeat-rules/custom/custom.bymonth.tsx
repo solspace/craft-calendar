@@ -57,6 +57,7 @@ export const ByMonth: FC = () => {
   return (
     <Flex $direction={"column"} style={{ margin: "20px 0 0", width: "100%" }}>
       <Dropdown
+        translateOptions
         label="Repeat on"
         value={mode}
         options={modeOptions}
@@ -80,12 +81,14 @@ export const ByMonth: FC = () => {
       {mode === "WEEKDAY" && (
         <Flex>
           <Dropdown
+            translateOptions
             label="Position"
             value={selectedPosition}
             options={positionOptions}
             onChange={(value) => setWeekdayMode(selectedWeekday, Number.parseInt(value, 10))}
           />
           <Dropdown
+            translateOptions
             label="Day"
             value={selectedWeekday}
             options={weekdayChoices.map((choice) => ({

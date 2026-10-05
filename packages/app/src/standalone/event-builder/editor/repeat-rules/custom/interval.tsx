@@ -1,3 +1,4 @@
+import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import type { FC } from "react";
@@ -12,8 +13,9 @@ export const Interval: FC = () => {
 
   return (
     <Wrapper>
-      <span>Every</span>
+      <span>{translate("Every")}</span>
       <Input
+        aria-label={translate("Repeat interval")}
         type="text"
         className="text"
         value={interval}
@@ -23,10 +25,18 @@ export const Interval: FC = () => {
         }}
       />
       <BtnGroup>
-        <Btn type="button" onClick={() => dispatch(eventActions.setInterval(interval + 1))}>
+        <Btn
+          type="button"
+          aria-label={translate("Increase interval")}
+          onClick={() => dispatch(eventActions.setInterval(interval + 1))}
+        >
           <UpIcon />
         </Btn>
-        <Btn type="button" onClick={() => dispatch(eventActions.setInterval(interval - 1))}>
+        <Btn
+          type="button"
+          aria-label={translate("Decrease interval")}
+          onClick={() => dispatch(eventActions.setInterval(interval - 1))}
+        >
           <DownIcon />
         </Btn>
       </BtnGroup>
