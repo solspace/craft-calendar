@@ -181,6 +181,7 @@ return [
     'February' => 'Februari',
     'Field Layout' => 'Veldopmaak',
     'First' => 'Eerste',
+    'Floating Timezone (recommended)' => 'Zwevende tijdzone (aanbevolen)',
     'Forced ICS Event Timezone' => 'Vaste tijdzone voor ICS-evenementen',
     'Fourth' => 'Vierde',
     'Fr' => 'Vr',

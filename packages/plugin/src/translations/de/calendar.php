@@ -181,6 +181,7 @@ return [
     'February' => 'Februar',
     'Field Layout' => 'Feld Layout',
     'First' => 'Erster',
+    'Floating Timezone (recommended)' => 'Zeitzonenunabhängig (empfohlen)',
     'Forced ICS Event Timezone' => 'Erzwungene Zeitzone für ICS-Ereignisse',
     'Fourth' => 'Vierter',
     'Fr' => 'Fr',

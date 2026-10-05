@@ -181,6 +181,7 @@ return [
     'February' => 'Febbraio',
     'Field Layout' => 'Layout dei campi',
     'First' => 'Primo',
+    'Floating Timezone (recommended)' => 'Fuso orario flottante (consigliato)',
     'Forced ICS Event Timezone' => 'Fuso orario forzato per gli eventi ICS',
     'Fourth' => 'Quarto',
     'Fr' => 'Ve',
