@@ -28,8 +28,8 @@
 
   .calendar-diag-banner {
     --calendar-diag-banner-color: var(--enabled-color);
-    margin-block: 0 16px;
-    padding: 12px 16px;
+    margin-block: 0 14px;
+    padding: 10px 16px;
     color: var(--calendar-diag-banner-text-color, var(--calendar-diag-banner-color));
     border-color: color-mix(in srgb, var(--calendar-diag-banner-color) 30%, var(--border-hairline));
     background: color-mix(in srgb, var(--calendar-diag-banner-color) 6%, var(--secondary-pane-bg));
@@ -74,7 +74,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
     gap: 40px;
-    margin-top: 24px;
+    row-gap: 28px;
+    margin-top: 20px;
 
     @media (max-width: 1400px) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -87,11 +88,11 @@
   }
 
   .calendar-diag-section {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 
     h2 {
-      margin-bottom: 14px;
-      padding-bottom: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
       border-bottom: 1px solid var(--gray-200);
     }
   }
@@ -101,7 +102,7 @@
     align-items: baseline;
     flex-wrap: wrap;
     column-gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     overflow-wrap: anywhere;
 
     dt {
@@ -120,9 +121,10 @@
 
     .calendar-diag-note {
       flex-basis: 100%;
-      margin-top: 4px;
+      margin-top: 3px;
       color: var(--gray-600);
       font-size: 12px;
+      line-height: 1.5;
     }
 
     &.is-warning .calendar-diag-note {
@@ -148,8 +150,8 @@
   .calendar-diag-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 20px;
-    margin-top: 12px;
+    gap: 6px 20px;
+    margin-top: 10px;
     color: var(--gray-600);
     font-size: 12px;
 
@@ -160,10 +162,10 @@
   }
 
   .calendar-diag-disclosure {
-    margin-top: 20px;
+    margin-top: 16px;
 
     summary {
-      padding: 12px 16px;
+      padding: 10px 16px;
       border: 1px solid var(--gray-200);
       border-radius: var(--large-border-radius, 5px);
       background: var(--gray-050);
@@ -172,7 +174,7 @@
     }
 
     > p {
-      margin: 12px 0;
+      margin: 10px 0;
     }
   }
 
@@ -199,7 +201,7 @@
     }
 
     td, tbody th {
-      padding: 8px 12px;
+      padding: 6px 12px;
       vertical-align: top;
     }
 
