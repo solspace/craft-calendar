@@ -28,7 +28,7 @@
   const browserReport = [translate("User / Browser")];
   for (const element of root.querySelectorAll("[data-browser-value]")) {
     element.textContent = values[element.dataset.browserValue];
-    browserReport.push(`${element.previousElementSibling.textContent}: ${element.textContent}`);
+    browserReport.push(`${element.closest("dd").previousElementSibling.textContent}: ${element.textContent}`);
   }
   report.value = `${serverReport}\n\n${browserReport.join("\n")}`;
 

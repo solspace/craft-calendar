@@ -13,7 +13,10 @@ const setup = (clipboard?: { writeText: (text: string) => Promise<void> }) => {
     <button id="calendar-copy-diagnostics"></button>
     <div id="calendar-diagnostics">
       <dl>${["timezone", "offset", "clock", "language", "dst"]
-        .map((key) => `<dt>${key}</dt><dd data-browser-value="${key}"></dd>`)
+        .map(
+          (key) =>
+            `<dt>${key}</dt><dd>${key === "language" ? `<code data-browser-value="${key}"></code>` : `<span data-browser-value="${key}"></span>`}</dd>`,
+        )
         .join("")}</dl>
       <details class="calendar-diag-report"><textarea id="calendar-diagnostic-report">Server report</textarea></details>
       <p id="calendar-diagnostic-copy-status"></p>

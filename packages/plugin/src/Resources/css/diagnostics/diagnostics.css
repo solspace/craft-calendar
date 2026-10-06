@@ -8,11 +8,11 @@
   border-radius: var(--small-border-radius);
 }
 #calendar-diagnostics .status {
-  width: 0.525rem;
-  height: 0.525rem;
-  min-width: 0.525rem;
-  min-height: 0.525rem;
-  flex: 0 0 0.525rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  min-width: 0.6rem;
+  min-height: 0.6rem;
+  flex: 0 0 0.6rem;
   box-sizing: border-box;
 }
 #calendar-diagnostics .status.green {

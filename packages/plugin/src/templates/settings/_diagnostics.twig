@@ -49,7 +49,7 @@
                                     {% for item in section.rows %}
                                         <div class="calendar-diag-row is-{{ item.status }}">
                                             <dt>{{ _self.status(item.status, item.statusLabel) }}<span>{% if item.labelCode is defined %}{{ item.labelParts[0] }}<code>{{ item.labelCode }}</code>{{ item.labelParts[1] ?? '' }}{% else %}{{ item.label }}{% endif %}</span></dt>
-                                            <dd{% if item.isBoolean %} class="visually-hidden"{% endif %}>{{ item.value }}</dd>
+                                            <dd{% if item.isBoolean %} class="visually-hidden"{% endif %}>{% if item.isCode %}<code>{{ item.value }}</code>{% else %}{{ item.value }}{% endif %}</dd>
                                             {% if item.note %}<dd class="calendar-diag-note">{{ item.note }}</dd>{% endif %}
                                             {% if item.status in ['warning', 'error'] %}<dd class="calendar-diag-warning">{{ item.statusLabel }}</dd>{% endif %}
                                         </div>
@@ -72,7 +72,7 @@
                                 } %}
                                     <div class="calendar-diag-row">
                                         <dt>{{ label }}</dt>
-                                        <dd data-browser-value="{{ id }}">{{ 'Unavailable'|t('calendar') }}</dd>
+                                        <dd>{% if id == 'language' %}<code data-browser-value="{{ id }}">{{ 'Unavailable'|t('calendar') }}</code>{% else %}<span data-browser-value="{{ id }}">{{ 'Unavailable'|t('calendar') }}</span>{% endif %}</dd>
                                     </div>
                                 {% endfor %}
                             </dl>

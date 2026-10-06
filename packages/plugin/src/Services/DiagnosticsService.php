@@ -24,12 +24,13 @@ class DiagnosticsService extends Component
         $model = $settings->getSettingsModel();
         $general = $app->getConfig()->getGeneral();
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
-        $row = static fn (string $label, mixed $value, string $status = 'none', ?string $note = null, bool $isBoolean = false) => [
+        $row = static fn (string $label, mixed $value, string $status = 'none', ?string $note = null, bool $isBoolean = false, bool $isCode = false) => [
             'label' => $label,
             'value' => (string) $value,
             'status' => $status,
             'note' => $note,
             'isBoolean' => $isBoolean,
+            'isCode' => $isCode,
             'statusLabel' => $isBoolean && \in_array($status, ['pass', 'disabled'], true) ? (string) $value : match ($status) {
                 'pass' => Calendar::t('Valid'),
                 'disabled' => Calendar::t('Disabled'),
@@ -94,12 +95,14 @@ class DiagnosticsService extends Component
             default => Calendar::t('Locale default'),
         };
         $locale = [
-            $row(Calendar::t('Control Panel Language'), $app->language),
-            $row(Calendar::t('Formatting Locale'), $app->getLocale()->id),
-            $row(Calendar::t('User Preferred Language'), $user?->getPreferredLanguage() ?: Calendar::t('Inherited from Craft')),
-            $row(Calendar::t('User Preferred Formatting Locale'), $user?->getPreferredLocale() ?: Calendar::t('Inherited from Craft')),
-            $row(Calendar::t('Short Date Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_DATE, Locale::FORMAT_ICU, 'short')),
-            $row(Calendar::t('Short Time Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_TIME, Locale::FORMAT_ICU, 'short')),
+            $row(Calendar::t('Control Panel Language'), $app->language, isCode: true),
+            $row(Calendar::t('Formatting Locale'), $app->getLocale()->id, isCode: true),
+            $row(Calendar::t('User Preferred Language'), $user?->getPreferredLanguage() ?: Calendar::t('Inherited from Craft'),
+                isCode: (bool) $user?->getPreferredLanguage()),
+            $row(Calendar::t('User Preferred Formatting Locale'), $user?->getPreferredLocale() ?: Calendar::t('Inherited from Craft'),
+                isCode: (bool) $user?->getPreferredLocale()),
+            $row(Calendar::t('Short Date Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_DATE, Locale::FORMAT_ICU, 'short'), isCode: true),
+            $row(Calendar::t('Short Time Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_TIME, Locale::FORMAT_ICU, 'short'), isCode: true),
             $row(Calendar::t('Time Format'), $timeFormat),
             $row(Calendar::t('Effective First Day Of Week'), Calendar::t($weekdays[$settings->getFirstDayOfWeek()]), 'info',
                 $model->getFirstDayOfWeek() < 0 ? Calendar::t('Inherited from the user preference or Craft default.') : Calendar::t('Set in Calendar settings.')),
@@ -214,7 +217,7 @@ class DiagnosticsService extends Component
 
         $sites = [];
         foreach ($app->getSites()->getAllSites() as $site) {
-            $sites[] = $row($site->name.' ('.$site->handle.')', $site->language);
+            $sites[] = $row($site->name.' ('.$site->handle.')', $site->language, isCode: true);
         }
 
         $sections = [
