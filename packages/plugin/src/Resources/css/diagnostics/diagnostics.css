@@ -1,3 +1,12 @@
+#calendar-diagnostics code {
+  padding: 1px 5px;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.8em;
+  font-weight: normal;
+  background-color: var(--gray-100);
+  border: 1px solid var(--hairline-color);
+  border-radius: var(--small-border-radius);
+}
 #calendar-diagnostics .status {
   width: 0.525rem;
   height: 0.525rem;
