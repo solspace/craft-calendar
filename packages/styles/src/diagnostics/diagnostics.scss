@@ -27,21 +27,46 @@
   }
 
   .calendar-diag-banner {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    padding: 16px;
-    border: 1px solid var(--gray-200);
-    border-radius: var(--large-border-radius, 5px);
-    background: var(--gray-050);
+    --calendar-diag-banner-color: var(--enabled-color);
+    margin-block: 0 16px;
+    padding: 12px 16px;
+    color: var(--calendar-diag-banner-text-color, var(--calendar-diag-banner-color));
+    border-color: color-mix(in srgb, var(--calendar-diag-banner-color) 30%, var(--border-hairline));
+    background: color-mix(in srgb, var(--calendar-diag-banner-color) 6%, var(--secondary-pane-bg));
 
     &.is-warning {
-      border-color: var(--warning-color);
+      --calendar-diag-banner-color: var(--yellow-500);
+      --calendar-diag-banner-text-color: var(--yellow-700);
+      border-color: var(--yellow-500);
+      background: var(--yellow-050);
     }
 
     &.is-error {
-      border-color: var(--error-color);
+      --calendar-diag-banner-color: var(--error-color);
+    }
+
+    p {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .checkmark-icon,
+    .alert-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 1;
+      cursor: default;
+      background-color: transparent;
+
+      &::before {
+        font-size: 2em;
+        color: var(--calendar-diag-banner-text-color, var(--calendar-diag-banner-color));
+      }
     }
   }
 
@@ -89,6 +114,10 @@
       margin: 0;
     }
 
+    &.is-product dt {
+      font-weight: normal;
+    }
+
     .calendar-diag-note {
       flex-basis: 100%;
       margin-top: 4px;
@@ -96,13 +125,17 @@
       font-size: 12px;
     }
 
-    .calendar-diag-warning {
-      color: var(--warning-color);
-      font-size: 12px;
+    &.is-warning .calendar-diag-note {
+      color: var(--yellow-700);
     }
 
-    &.is-error .calendar-diag-warning {
+    &.is-error .calendar-diag-note {
       color: var(--error-color);
+    }
+
+    &.is-warning .calendar-diag-note a,
+    &.is-error .calendar-diag-note a {
+      color: inherit;
     }
   }
 
@@ -150,6 +183,7 @@
   }
 
   .calendar-diag-calendar-table {
+    margin-top: 16px;
     max-height: 360px;
     overflow: auto;
 
@@ -180,15 +214,6 @@
       font-family: monospace;
       overflow-wrap: anywhere;
     }
-  }
-
-  .calendar-diag-check {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 0.875rem;
-    margin-inline-end: 7px;
-    color: inherit;
   }
 
   .calendar-diag-report {

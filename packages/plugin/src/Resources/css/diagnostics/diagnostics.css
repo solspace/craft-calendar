@@ -116,8 +116,7 @@
 #calendar-diagnostics .calendar-diag-row.is-error .calendar-diag-note {
   color: var(--error-color);
 }
-#calendar-diagnostics .calendar-diag-row.is-warning .calendar-diag-note a,
-#calendar-diagnostics .calendar-diag-row.is-error .calendar-diag-note a {
+#calendar-diagnostics .calendar-diag-row.is-warning .calendar-diag-note a, #calendar-diagnostics .calendar-diag-row.is-error .calendar-diag-note a {
   color: inherit;
 }
 #calendar-diagnostics .calendar-diag-dot {
