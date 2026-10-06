@@ -102,12 +102,15 @@
   color: var(--gray-600);
   font-size: 12px;
 }
-#calendar-diagnostics .calendar-diag-row .calendar-diag-warning {
+#calendar-diagnostics .calendar-diag-row.is-warning .calendar-diag-note {
   color: var(--warning-color);
-  font-size: 12px;
 }
-#calendar-diagnostics .calendar-diag-row.is-error .calendar-diag-warning {
+#calendar-diagnostics .calendar-diag-row.is-error .calendar-diag-note {
   color: var(--error-color);
+}
+#calendar-diagnostics .calendar-diag-row.is-warning .calendar-diag-note a,
+#calendar-diagnostics .calendar-diag-row.is-error .calendar-diag-note a {
+  color: inherit;
 }
 #calendar-diagnostics .calendar-diag-dot {
   display: inline-block;
