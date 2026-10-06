@@ -85,7 +85,7 @@ return [
     'Calendar edition' => 'Calendar edition',
     'Calendar is quite extendable. If you want more out of Calendar, we\'ve done our best to make it as easily extendable as possible for you! Check out the Developer documentation to learn more!' => 'Calendar is quite extendable. If you want more out of Calendar, we\'ve done our best to make it as easily extendable as possible for you! Check out the Developer documentation to learn more!',
     'Calendar not specified' => 'Calendar not specified',
-    'Calendar 6.x requires Craft 5.x.' => 'Calendar 6.x 6.x requires Craft 5.x.',
+    'Calendar 6.x requires Craft 5.x.' => 'Calendar 6.x requires Craft 5.x.',
     'Calendar requires PHP 8.2 or newer within PHP 8.x.' => 'Calendar requires PHP 8.2 or newer within PHP 8.x.',
     'Calendar saved.' => 'Calendar saved.',
     'Calendar version' => 'Calendar version',
