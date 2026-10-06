@@ -4,6 +4,17 @@ namespace Solspace\Calendar\Library\Helpers;
 
 class DiagnosticsHelper
 {
+    public static function memoryLimitStatus(string $limit): string
+    {
+        $bytes = \ini_parse_quantity($limit);
+
+        if (-1 === $bytes || $bytes >= 512 * 1024 * 1024) {
+            return 'pass';
+        }
+
+        return $bytes >= 256 * 1024 * 1024 ? 'warning' : 'error';
+    }
+
     /**
      * Inspect a timezone without changing the process timezone or event wall times.
      */

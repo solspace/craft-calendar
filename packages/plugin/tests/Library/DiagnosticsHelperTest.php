@@ -12,6 +12,24 @@ use Solspace\Calendar\Library\Helpers\DiagnosticsHelper;
  */
 class DiagnosticsHelperTest extends TestCase
 {
+    public function testMemoryLimitThresholdsSupportPhpUnitsAndUnlimitedMemory(): void
+    {
+        foreach ([
+            '128M' => 'error',
+            '255M' => 'error',
+            '268435455' => 'error',
+            '256M' => 'warning',
+            '511M' => 'warning',
+            '536870911' => 'warning',
+            '512M' => 'pass',
+            '524288K' => 'pass',
+            '1G' => 'pass',
+            '-1' => 'pass',
+        ] as $limit => $status) {
+            self::assertSame($status, DiagnosticsHelper::memoryLimitStatus((string) $limit), (string) $limit);
+        }
+    }
+
     public function testTimezoneOffsetsIncludeDaylightSavingAndFractionalHours(): void
     {
         $winter = new \DateTimeImmutable('2026-01-15T12:00:00+00:00');

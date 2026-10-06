@@ -1,10 +1,13 @@
 #calendar-diagnostics .status {
-  width: 0.75rem;
-  height: 0.75rem;
-  min-width: 0.75rem;
-  min-height: 0.75rem;
-  flex: 0 0 0.75rem;
+  width: 0.525rem;
+  height: 0.525rem;
+  min-width: 0.525rem;
+  min-height: 0.525rem;
+  flex: 0 0 0.525rem;
   box-sizing: border-box;
+}
+#calendar-diagnostics .status.disabled {
+  box-shadow: inset 0 0 0 1.4px var(--gray-500);
 }
 #calendar-diagnostics .calendar-diag-banner {
   display: flex;
@@ -49,12 +52,15 @@
 }
 #calendar-diagnostics .calendar-diag-row {
   display: flex;
+  align-items: baseline;
   flex-wrap: wrap;
   column-gap: 8px;
   margin-bottom: 12px;
   overflow-wrap: anywhere;
 }
 #calendar-diagnostics .calendar-diag-row dt {
+  display: inline-flex;
+  align-items: center;
   font-weight: 600;
 }
 #calendar-diagnostics .calendar-diag-row dd {
@@ -76,7 +82,7 @@
 #calendar-diagnostics .calendar-diag-dot {
   display: inline-block;
   margin-inline-end: 7px;
-  vertical-align: baseline;
+  vertical-align: middle;
 }
 #calendar-diagnostics .calendar-diag-legend {
   display: flex;
@@ -85,6 +91,10 @@
   margin-top: 12px;
   color: var(--gray-600);
   font-size: 12px;
+}
+#calendar-diagnostics .calendar-diag-legend > span {
+  display: inline-flex;
+  align-items: center;
 }
 #calendar-diagnostics .calendar-diag-disclosure {
   margin-top: 20px;

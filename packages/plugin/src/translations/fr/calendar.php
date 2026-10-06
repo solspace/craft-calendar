@@ -620,4 +620,5 @@ return [
     '{description}, ending on {date}.' => '{description}, avec une fin le {date}.',
     '{list} and {last}' => '{list} et {last}',
     '{summary} - {excluded} excluded' => '{summary} - {excluded} exclues',
+    'Craft requires at least 256 MB of PHP memory; 512 MB or more is recommended. A value of -1 means unlimited memory.' => 'Craft nécessite au moins 256 Mo de mémoire PHP ; 512 Mo ou plus sont recommandés. Une valeur de -1 signifie une mémoire illimitée.',
 ];
