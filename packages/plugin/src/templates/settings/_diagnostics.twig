@@ -50,7 +50,7 @@
                                         <div class="calendar-diag-row is-{{ item.status }}{{ item.isProduct ? ' is-product' }}">
                                             <dt>{{ _self.status(item.status, item.statusLabel) }}<span>{% if item.labelCode is defined %}{{ item.labelParts[0] }}<code>{{ item.labelCode }}</code>{{ item.labelParts[1] ?? '' }}{% else %}{{ item.label }}{% endif %}</span></dt>
                                             <dd{% if item.isBoolean %} class="visually-hidden"{% endif %}>{% if item.isProduct %}<strong>{{ item.value }}</strong>{% elseif item.isCode %}<code>{{ item.value }}</code>{% else %}{{ item.value }}{% endif %}</dd>
-                                            {% if item.note %}<dd class="calendar-diag-note">{{ item.note }}</dd>{% endif %}
+                                            {% if item.note %}<dd class="calendar-diag-note">{{ item.note }}{% if item.noteUrl is defined %} <a href="{{ item.noteUrl }}">{{ item.noteLinkLabel }}</a>{% endif %}</dd>{% endif %}
                                             {% if item.status in ['warning', 'error'] %}<dd class="calendar-diag-warning">{{ item.statusLabel }}</dd>{% endif %}
                                         </div>
                                     {% endfor %}

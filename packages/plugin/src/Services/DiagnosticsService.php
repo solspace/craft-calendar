@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Services;
 use craft\base\Component;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
@@ -45,11 +46,35 @@ class DiagnosticsService extends Component
         $unavailable = Calendar::t('Unavailable');
         $default = Calendar::t('Not configured');
 
+        $calendarVersion = $plugin->getVersion();
+        $calendarVersionStatus = 'info';
+        $calendarVersionNote = Calendar::t('Could not check Calendar updates.');
+        try {
+            $updates = $app->getUpdates()->getUpdates();
+            $latestVersion = $calendarVersion;
+            foreach ($updates->plugins['calendar']->releases ?? [] as $release) {
+                if (version_compare($release->version, $latestVersion, '>')) {
+                    $latestVersion = $release->version;
+                }
+            }
+            $hasUpdate = version_compare($latestVersion, $calendarVersion, '>');
+            $calendarVersionStatus = $hasUpdate ? 'warning' : 'pass';
+            $calendarVersionNote = $hasUpdate ? Calendar::t('An update is available for Calendar. Please update to {version}.', ['version' => $latestVersion]) : null;
+        } catch (\Throwable $exception) {
+            \Craft::error($exception->getMessage(), __METHOD__);
+        }
+        $calendarVersionRow = $row(Calendar::t('Calendar'), ($plugin->isPro() ? 'Pro' : 'Lite').' '.$calendarVersion,
+            $calendarVersionStatus, $calendarVersionNote, isProduct: true);
+        if (null !== $calendarVersionNote) {
+            $calendarVersionRow['noteUrl'] = UrlHelper::cpUrl('utilities/updates');
+            $calendarVersionRow['noteLinkLabel'] = Calendar::t('View Updates');
+        }
+
         $server = [
-            $row(Calendar::t('Calendar'), ($plugin->isPro() ? 'Pro' : 'Lite').' '.$plugin->getVersion(), 'info', isProduct: true),
+            $calendarVersionRow,
             $row('Craft', $app->edition->name.' '.$app->getVersion(),
                 version_compare($app->getVersion(), '5.0', '>=') && version_compare($app->getVersion(), '6.0', '<') ? 'pass' : 'error',
-                Calendar::t('Calendar requires Craft 5.x.'), isProduct: true),
+                Calendar::t('Calendar 6.x requires Craft 5.x.'), isProduct: true),
             $row(Calendar::t('PHP Version'), PHP_VERSION,
                 version_compare(PHP_VERSION, '8.2', '>=') && version_compare(PHP_VERSION, '9.0', '<') ? 'pass' : 'error',
                 Calendar::t('Calendar requires PHP 8.2 or newer within PHP 8.x.')),
