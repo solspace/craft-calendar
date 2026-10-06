@@ -36,6 +36,7 @@ return [
     'calendar/events/api/custom-fields' => 'calendar/events-api/custom-fields',
 
     // Settings
+    'calendar/settings/diagnostics' => 'calendar/diagnostics/index',
     'calendar/settings/license' => 'calendar/settings/license',
     'calendar/settings/general' => 'calendar/settings/general',
     'calendar/settings/events' => 'calendar/settings/events',

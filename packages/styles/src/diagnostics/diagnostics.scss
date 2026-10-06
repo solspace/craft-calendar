@@ -1,0 +1,227 @@
+#calendar-diagnostics {
+  code {
+    padding: 1px 5px;
+    font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.8em;
+    font-weight: normal;
+    background-color: var(--gray-100);
+    border: 1px solid var(--hairline-color);
+    border-radius: var(--small-border-radius);
+  }
+
+  .status {
+    width: 0.6rem;
+    height: 0.6rem;
+    min-width: 0.6rem;
+    min-height: 0.6rem;
+    flex: 0 0 0.6rem;
+    box-sizing: border-box;
+
+    &.green {
+      background: var(--enabled-color);
+    }
+
+    &.disabled {
+      box-shadow: inset 0 0 0 1.4px var(--gray-500);
+    }
+  }
+
+  .calendar-diag-banner {
+    --calendar-diag-banner-color: var(--enabled-color);
+    margin-block: 0 14px;
+    padding: 10px 16px;
+    color: var(--calendar-diag-banner-text-color, var(--calendar-diag-banner-color));
+    border-color: color-mix(in srgb, var(--calendar-diag-banner-color) 30%, var(--border-hairline));
+    background: color-mix(in srgb, var(--calendar-diag-banner-color) 6%, var(--secondary-pane-bg));
+
+    &.is-warning {
+      --calendar-diag-banner-color: var(--yellow-500);
+      --calendar-diag-banner-text-color: var(--yellow-700);
+      border-color: var(--yellow-500);
+      background: var(--yellow-050);
+    }
+
+    &.is-error {
+      --calendar-diag-banner-color: var(--error-color);
+    }
+
+    p {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .checkmark-icon,
+    .alert-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 1;
+      cursor: default;
+      background-color: transparent;
+
+      &::before {
+        font-size: 2em;
+        color: var(--calendar-diag-banner-text-color, var(--calendar-diag-banner-color));
+      }
+    }
+  }
+
+  .calendar-diag-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 40px;
+    row-gap: 28px;
+    margin-top: 20px;
+
+    @media (max-width: 1400px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 800px) {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+  }
+
+  .calendar-diag-section {
+    margin-bottom: 24px;
+
+    h2 {
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+  }
+
+  .calendar-diag-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: 8px;
+    margin-bottom: 10px;
+    overflow-wrap: anywhere;
+
+    dt {
+      display: inline-flex;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    dd {
+      margin: 0;
+    }
+
+    &.is-product dt {
+      font-weight: normal;
+    }
+
+    .calendar-diag-note {
+      flex-basis: 100%;
+      margin-top: 3px;
+      color: var(--gray-600);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    &.is-warning .calendar-diag-note {
+      color: var(--yellow-700);
+    }
+
+    &.is-error .calendar-diag-note {
+      color: var(--error-color);
+    }
+
+    &.is-warning .calendar-diag-note a,
+    &.is-error .calendar-diag-note a {
+      color: inherit;
+    }
+  }
+
+  .calendar-diag-dot {
+    display: inline-block;
+    margin-inline-end: 7px;
+    vertical-align: middle;
+  }
+
+  .calendar-diag-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin-top: 10px;
+    color: var(--gray-600);
+    font-size: 12px;
+
+    > span {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+
+  .calendar-diag-disclosure {
+    margin-top: 16px;
+
+    summary {
+      padding: 10px 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--large-border-radius, 5px);
+      background: var(--gray-050);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    > p {
+      margin: 10px 0;
+    }
+  }
+
+  .calendar-diag-issue-count {
+    margin-inline-start: 8px;
+    color: var(--error-color);
+    font-size: 12px;
+  }
+
+  .calendar-diag-calendar-table {
+    margin-top: 16px;
+    max-height: 360px;
+    overflow: auto;
+
+    table {
+      margin: 0;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--gray-050);
+    }
+
+    td, tbody th {
+      padding: 6px 12px;
+      vertical-align: top;
+    }
+
+    tbody th {
+      min-width: 140px;
+      max-width: 320px;
+      overflow-wrap: anywhere;
+      font-weight: normal;
+    }
+
+    .calendar-diag-handle {
+      font-family: monospace;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .calendar-diag-report {
+    textarea {
+      font-family: monospace;
+      resize: vertical;
+    }
+  }
+}
