@@ -196,7 +196,7 @@ class DiagnosticsService extends Component
             $statistics[] = $row(Calendar::t('Events'), (clone $events)->count());
             $statistics[] = $row(Calendar::t('All-Day Events'), (clone $events)->andWhere(['events.allDay' => true])->count());
             $statistics[] = $row(Calendar::t('Recurring Events'), (clone $events)->andWhere(['not', ['events.rrule' => null]])->andWhere(['<>', 'events.rrule', ''])->count());
-            $disabledSites = (new Query())->select('1')->from(['eventSites' => Table::ELEMENTS_SITES])
+            $disabledSites = (new Query())->select('eventSites.elementId')->from(['eventSites' => Table::ELEMENTS_SITES])
                 ->where('[[eventSites.elementId]] = [[events.id]]')->andWhere(['eventSites.enabled' => false]);
             $statistics[] = $row(Calendar::t('Disabled Events'), (clone $events)->andWhere([
                 'or', ['elements.enabled' => false], ['exists', $disabledSites],
