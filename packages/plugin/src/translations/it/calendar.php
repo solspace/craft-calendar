@@ -260,6 +260,7 @@ return [
     'February' => 'Febbraio',
     'Field Layout' => 'Layout dei campi',
     'First' => 'Primo',
+    'Floating' => 'Fluttuante',
     'Floating Timezone (recommended)' => 'Fuso orario flottante (consigliato)',
     'Floating timezone' => 'Senza fuso orario fisso',
     'Floating wall time' => 'Ora locale senza fuso orario',

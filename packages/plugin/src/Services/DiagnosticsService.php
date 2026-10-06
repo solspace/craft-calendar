@@ -158,7 +158,7 @@ class DiagnosticsService extends Component
                     'id' => $calendar->id,
                     'title' => $calendar->name,
                     'handle' => $calendar->handle,
-                    'timezone' => $floating ? Calendar::t('Floating timezone') : $name,
+                    'timezone' => $floating ? Calendar::t('Floating') : $name,
                     'timezoneValid' => $valid,
                     'repeating' => $boolean((bool) $calendar->allowRepeatingEvents),
                     'repeatingEnabled' => (bool) $calendar->allowRepeatingEvents,

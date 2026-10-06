@@ -260,6 +260,7 @@ return [
     'February' => 'Februar',
     'Field Layout' => 'Feld Layout',
     'First' => 'Erster',
+    'Floating' => 'Zeitzonenunabhängig',
     'Floating Timezone (recommended)' => 'Zeitzonenunabhängig (empfohlen)',
     'Floating timezone' => 'Zeitzonenunabhängig',
     'Floating wall time' => 'Zeitzonenunabhängige lokale Uhrzeit',

@@ -260,6 +260,7 @@ return [
     'February' => 'February',
     'Field Layout' => 'Field Layout',
     'First' => 'First',
+    'Floating' => 'Floating',
     'Floating Timezone (recommended)' => 'Floating Timezone (recommended)',
     'Floating timezone' => 'Floating timezone',
     'Floating wall time' => 'Floating wall time',

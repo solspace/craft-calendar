@@ -260,6 +260,7 @@ return [
     'February' => 'Februari',
     'Field Layout' => 'Veldopmaak',
     'First' => 'Eerste',
+    'Floating' => 'Zwevend',
     'Floating Timezone (recommended)' => 'Zwevende tijdzone (aanbevolen)',
     'Floating timezone' => 'Zonder vaste tijdzone',
     'Floating wall time' => 'Lokale kloktijd zonder tijdzone',
