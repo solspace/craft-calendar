@@ -165,10 +165,12 @@ class DiagnosticsService extends Component
             $row(Calendar::t('Short Time Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_TIME, Locale::FORMAT_ICU, 'short'), isCode: true),
             $row(Calendar::t('Time Format'), $timeFormat),
             $row(
-                Calendar::t('Effective First Day Of Week'),
+                Calendar::t('First Day Of Week'),
                 Calendar::t($weekdays[$settings->getFirstDayOfWeek()]),
-                'info',
-                $model->getFirstDayOfWeek() < 0 ? Calendar::t('Inherited from the user preference or Craft default.') : Calendar::t('Set in Calendar settings.')
+                'none',
+                $model->getFirstDayOfWeek() < 0
+                    ? ($user ? Calendar::t('Uses the signed-in user\'s Craft week-start preference.') : Calendar::t('Uses Craft\'s default week-start day when no user is signed in.'))
+                    : Calendar::t('Set in Calendar settings.')
             ),
         ];
         $configuration = [
@@ -297,7 +299,7 @@ class DiagnosticsService extends Component
                 $eventZones[] = $row(
                     $name ?: Calendar::t('Not configured'),
                     $zone['total'],
-                    $valid ? ($name ? 'pass' : 'info') : 'error',
+                    $valid ? 'none' : 'error',
                     $valid ? null : Calendar::t('This timezone identifier is invalid.')
                 );
             }
@@ -317,8 +319,8 @@ class DiagnosticsService extends Component
 
         $sections = [
             [$this->section(Calendar::t('Server Checks'), $server), $this->section(Calendar::t('Database'), $database)],
-            [$this->section(Calendar::t('Timezones & Clocks'), $timezones), $this->section(Calendar::t('Locale & Date Formatting'), $locale), $this->section(Calendar::t('Calendar Configuration'), $configuration)],
-            [$this->section(Calendar::t('Statistics'), $statistics), $this->section(Calendar::t('Event Timezones'), $eventZones), $this->section(Calendar::t('Sites & Languages'), $sites)],
+            [$this->section(Calendar::t('Timezones & Clocks'), $timezones), $this->section(Calendar::t('Locale & Date Formatting'), $locale)],
+            [$this->section(Calendar::t('Calendar Configuration'), $configuration), $this->section(Calendar::t('Statistics'), $statistics), $this->section(Calendar::t('Event Timezones'), $eventZones), $this->section(Calendar::t('Sites & Languages'), $sites)],
         ];
         $warnings = [];
         $errorCount = 0;
