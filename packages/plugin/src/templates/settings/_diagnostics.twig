@@ -24,7 +24,13 @@
         <div class="pane calendar-diag-banner {{ errorCount ? 'is-error' : (concernCount ? 'is-warning' : 'is-success') }}" role="status">
             <p>
                 <span class="{{ errorCount or concernCount ? 'alert-icon' : 'checkmark-icon' }}" aria-hidden="true"></span>
-                <span>{{ errorCount ? 'Potential issues: {count}'|t('calendar', {count: errorCount}) : (concernCount ? 'Concerns: {count}'|t('calendar', {count: concernCount}) : 'No diagnostic warnings'|t('calendar')) }}</span>
+                {% if errorCount %}
+                    <span>{{ 'Potential issues: {count}'|t('calendar', {count: errorCount}) }}</span>
+                {% elseif concernCount %}
+                    <span>{{ 'Concerns: {count}'|t('calendar', {count: concernCount}) }}</span>
+                {% else %}
+                    <strong>{{ 'No diagnostic warnings'|t('calendar') }}</strong>
+                {% endif %}
                 {% if errorCount and concernCount %}<span>{{ 'Concerns: {count}'|t('calendar', {count: concernCount}) }}</span>{% endif %}
             </p>
         </div>
