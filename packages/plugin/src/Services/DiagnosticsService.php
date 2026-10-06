@@ -122,8 +122,12 @@ class DiagnosticsService extends Component
         $database = [];
         try {
             $db = $app->getDb();
-            $database[] = $row(Calendar::t('Database Driver'), $db->driverName);
-            $database[] = $row(Calendar::t('Database Version'), $db->getServerVersion());
+            $driver = match ($db->driverName) {
+                'mysql' => 'MySQL',
+                'pgsql' => 'PostgreSQL',
+                default => $db->driverName,
+            };
+            $database[] = $row(Calendar::t('Database'), $driver.' '.$db->getServerVersion());
             if ($db->getIsMysql()) {
                 $zones = $db->createCommand('SELECT @@session.time_zone AS sessionZone, @@global.time_zone AS globalZone, @@system_time_zone AS systemZone')->queryOne();
                 $database[] = $row(Calendar::t('Database Session Timezone'), $zones['sessionZone']);
