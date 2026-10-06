@@ -44,12 +44,17 @@
 }
 #calendar-diagnostics .calendar-diag-banner .checkmark-icon,
 #calendar-diagnostics .calendar-diag-banner .alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  line-height: 1;
   cursor: default;
   background-color: transparent;
 }
 #calendar-diagnostics .calendar-diag-banner .checkmark-icon::before,
 #calendar-diagnostics .calendar-diag-banner .alert-icon::before {
+  font-size: 2em;
   color: var(--calendar-diag-banner-color);
 }
 #calendar-diagnostics .calendar-diag-grid {
@@ -175,14 +180,6 @@
 #calendar-diagnostics .calendar-diag-calendar-table .calendar-diag-handle {
   font-family: monospace;
   overflow-wrap: anywhere;
-}
-#calendar-diagnostics .calendar-diag-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 0.875rem;
-  margin-inline-end: 7px;
-  color: inherit;
 }
 #calendar-diagnostics .calendar-diag-report textarea {
   font-family: monospace;
