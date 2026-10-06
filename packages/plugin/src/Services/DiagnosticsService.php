@@ -11,8 +11,6 @@ use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\DiagnosticsHelper;
 use Solspace\Calendar\Models\SettingsModel;
-use Solspace\Calendar\Records\ExceptionRecord;
-use Solspace\Calendar\Records\SelectDateRecord;
 
 class DiagnosticsService extends Component
 {
@@ -198,10 +196,21 @@ class DiagnosticsService extends Component
             $statistics[] = $row(Calendar::t('Events'), (clone $events)->count());
             $statistics[] = $row(Calendar::t('All-Day Events'), (clone $events)->andWhere(['events.allDay' => true])->count());
             $statistics[] = $row(Calendar::t('Recurring Events'), (clone $events)->andWhere(['not', ['events.rrule' => null]])->andWhere(['<>', 'events.rrule', ''])->count());
-            $statistics[] = $row(Calendar::t('Disabled Events'), (clone $events)->andWhere(['elements.enabled' => false])->count());
-            foreach ([Calendar::t('Additional Dates') => SelectDateRecord::TABLE, Calendar::t('Excluded Dates') => ExceptionRecord::TABLE] as $label => $table) {
-                $statistics[] = $row($label, (clone $events)->innerJoin(['dates' => $table], '[[dates.eventId]] = [[events.id]]')->count());
+            $disabledSites = (new Query())->select('1')->from(['eventSites' => Table::ELEMENTS_SITES])
+                ->where('[[eventSites.elementId]] = [[events.id]]')->andWhere(['eventSites.enabled' => false]);
+            $statistics[] = $row(Calendar::t('Disabled Events'), (clone $events)->andWhere([
+                'or', ['elements.enabled' => false], ['exists', $disabledSites],
+            ])->count(), 'none', Calendar::t('Includes events disabled globally or on at least one site.'));
+            $additionalDates = 0;
+            $excludedDates = 0;
+            foreach ((clone $events)->select(['events.startDate', 'events.rrule'])
+                ->andWhere(['not', ['events.rrule' => null]])->andWhere(['<>', 'events.rrule', ''])->each() as $event) {
+                $counts = DiagnosticsHelper::recurrenceDateCounts($event['rrule'], $event['startDate']);
+                $additionalDates += $counts['additional'];
+                $excludedDates += $counts['excluded'];
             }
+            $statistics[] = $row(Calendar::t('Additional Dates'), $additionalDates);
+            $statistics[] = $row(Calendar::t('Excluded Dates'), $excludedDates);
             $statistics[] = $row(Calendar::t('Cached Occurrences'), (new Query())->from('{{%calendar_events_occurrences}}')->count(), 'none',
                 Calendar::t('Occurrences are cached for requested date ranges; this is not the total number of future occurrences.'));
             foreach ((clone $events)->select(['timezone' => 'events.timezone', 'total' => 'COUNT(*)'])->groupBy('events.timezone')->all() as $zone) {

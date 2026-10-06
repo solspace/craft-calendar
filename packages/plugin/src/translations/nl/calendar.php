@@ -307,6 +307,7 @@ return [
     'Include Disabled Events in Month/Week/Day views?' => 'Uitgeschakelde evenementen in maand-/week-/dagweergaven tonen?',
     'Increase interval' => 'Interval vergroten',
     'Information' => 'Informatie',
+    'Includes events disabled globally or on at least one site.' => 'Inclusief gebeurtenissen die globaal of op ten minste één site zijn uitgeschakeld.',
     'Inherited from Craft' => 'Overgenomen van Craft',
     'Inherited from the user preference or Craft default.' => 'Overgenomen van de gebruikersvoorkeur of de Craft-standaard.',
     'Install' => 'Installeren',

@@ -307,6 +307,7 @@ return [
     'Include Disabled Events in Month/Week/Day views?' => 'Inclure les événements désactivés dans les vues Mois/Semaine/Jour ?',
     'Increase interval' => 'Augmenter l’intervalle',
     'Information' => 'Informations',
+    'Includes events disabled globally or on at least one site.' => 'Inclut les événements désactivés globalement ou sur au moins un site.',
     'Inherited from Craft' => 'Hérité de Craft',
     'Inherited from the user preference or Craft default.' => 'Hérité des préférences de l’utilisateur ou de la valeur par défaut de Craft.',
     'Install' => 'Installer',

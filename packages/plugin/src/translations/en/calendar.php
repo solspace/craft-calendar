@@ -307,6 +307,7 @@ return [
     'Include Disabled Events in Month/Week/Day views?' => 'Include Disabled Events in Month/Week/Day views?',
     'Increase interval' => 'Increase interval',
     'Information' => 'Information',
+    'Includes events disabled globally or on at least one site.' => 'Includes events disabled globally or on at least one site.',
     'Inherited from Craft' => 'Inherited from Craft',
     'Inherited from the user preference or Craft default.' => 'Inherited from the user preference or Craft default.',
     'Install' => 'Install',
