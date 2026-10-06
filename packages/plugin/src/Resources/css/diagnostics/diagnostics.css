@@ -6,6 +6,9 @@
   flex: 0 0 0.525rem;
   box-sizing: border-box;
 }
+#calendar-diagnostics .status.green {
+  background: var(--enabled-color);
+}
 #calendar-diagnostics .status.disabled {
   box-shadow: inset 0 0 0 1.4px var(--gray-500);
 }
@@ -151,7 +154,7 @@
   color: var(--gray-500);
 }
 #calendar-diagnostics .calendar-diag-check.is-pass {
-  color: var(--green-600);
+  color: var(--enabled-color);
 }
 #calendar-diagnostics .calendar-diag-report textarea {
   font-family: monospace;
