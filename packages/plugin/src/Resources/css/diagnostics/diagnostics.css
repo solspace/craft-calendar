@@ -31,7 +31,9 @@
 }
 #calendar-diagnostics .calendar-diag-banner.is-warning {
   --calendar-diag-banner-color: var(--yellow-500);
-  --calendar-diag-banner-text-color: color-mix(in srgb, var(--yellow-500) 56%, black);
+  --calendar-diag-banner-text-color: var(--yellow-700);
+  border-color: var(--yellow-500);
+  background: var(--yellow-050);
 }
 #calendar-diagnostics .calendar-diag-banner.is-error {
   --calendar-diag-banner-color: var(--error-color);
@@ -109,7 +111,7 @@
   font-size: 12px;
 }
 #calendar-diagnostics .calendar-diag-row.is-warning .calendar-diag-note {
-  color: var(--warning-color);
+  color: var(--yellow-700);
 }
 #calendar-diagnostics .calendar-diag-row.is-error .calendar-diag-note {
   color: var(--error-color);
