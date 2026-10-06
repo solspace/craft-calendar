@@ -99,15 +99,15 @@ class DiagnosticsService extends Component
         $timezones = [];
         foreach ([Calendar::t('Craft Timezone') => $app->getTimeZone(), Calendar::t('PHP Runtime Timezone') => date_default_timezone_get()] as $label => $name) {
             $zone = DiagnosticsHelper::timezone($name, $now);
-            $timezones[] = $row($label, $name, $zone ? 'pass' : 'error',
+            $timezones[] = $row($label, $name, $zone ? 'none' : 'error',
                 $zone ? Calendar::t('Current local time: {time}. Daylight saving time: {dst}.', [
                     'time' => $zone['clock'], 'dst' => Calendar::t($zone['dst'] ? 'Active' : 'Inactive'),
                 ]) : Calendar::t('This timezone identifier is invalid.'));
         }
         $timezones[] = $row(Calendar::t('PHP Configured Timezone'), ini_get('date.timezone') ?: $default,
-            'info', Calendar::t('The PHP runtime timezone may be overridden by Craft during startup.'));
+            'none', Calendar::t('The PHP runtime timezone may be overridden by Craft during startup.'));
         $timezones[] = $row(Calendar::t('Server Time (UTC)'), $now->format('Y-m-d H:i:s P'));
-        $timezones[] = $row(Calendar::t('Event Date Storage'), Calendar::t('Local event time (stored as UTC)'), 'info',
+        $timezones[] = $row(Calendar::t('Event Date Storage'), Calendar::t('Local event time (stored as UTC)'), 'none',
             Calendar::t('Dates keep the local time entered for the event. UTC is used internally without converting that time to another timezone. Different browser and server timezones do not automatically indicate a problem.'));
 
         $user = $app->getUser()->getIdentity();
