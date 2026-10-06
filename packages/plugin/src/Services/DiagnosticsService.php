@@ -46,40 +46,40 @@ class DiagnosticsService extends Component
         $default = Calendar::t('Not configured');
 
         $server = [
-            $row(Calendar::t('Calendar version'), $plugin->getVersion(), 'info'),
-            $row(Calendar::t('Calendar edition'), $plugin->isPro() ? 'Pro' : 'Lite'),
-            $row(Calendar::t('Craft version'), $app->getVersion(),
+            $row(Calendar::t('Calendar Version'), $plugin->getVersion(), 'info'),
+            $row(Calendar::t('Calendar Edition'), $plugin->isPro() ? 'Pro' : 'Lite'),
+            $row(Calendar::t('Craft Version'), $app->getVersion(),
                 version_compare($app->getVersion(), '5.0', '>=') && version_compare($app->getVersion(), '6.0', '<') ? 'pass' : 'error',
                 Calendar::t('Calendar requires Craft 5.x.')),
-            $row(Calendar::t('PHP version'), PHP_VERSION,
+            $row(Calendar::t('PHP Version'), PHP_VERSION,
                 version_compare(PHP_VERSION, '8.2', '>=') && version_compare(PHP_VERSION, '9.0', '<') ? 'pass' : 'error',
                 Calendar::t('Calendar requires PHP 8.2 or newer within PHP 8.x.')),
-            $row(Calendar::t('Operating system'), PHP_OS_FAMILY),
-            $row(Calendar::t('PHP memory limit'), ini_get('memory_limit')),
-            $row(Calendar::t('PHP execution time limit'), ini_get('max_execution_time')),
+            $row(Calendar::t('Operating System'), PHP_OS_FAMILY),
+            $row(Calendar::t('PHP Memory Limit'), ini_get('memory_limit')),
+            $row(Calendar::t('PHP Execution Time Limit'), ini_get('max_execution_time')),
             $row(Calendar::t('Environment'), \defined('CRAFT_ENVIRONMENT') ? CRAFT_ENVIRONMENT : $default),
-            $booleanRow(Calendar::t('Developer mode'), $general->devMode),
-            $booleanRow(Calendar::t('Admin changes allowed'), $general->allowAdminChanges),
+            $booleanRow(Calendar::t('Developer Mode'), $general->devMode),
+            $booleanRow(Calendar::t('Admin Changes Allowed'), $general->allowAdminChanges),
         ];
         foreach (['intl', 'mbstring', 'pdo'] as $extension) {
             $loaded = \extension_loaded($extension);
-            $server[] = $booleanRow(Calendar::t('PHP extension: {extension}', ['extension' => $extension]),
+            $server[] = $booleanRow(Calendar::t('PHP Extension: {extension}', ['extension' => $extension]),
                 $loaded, 'error', $loaded ? null : Calendar::t('This required PHP extension is missing.'));
         }
 
         $timezones = [];
-        foreach ([Calendar::t('Craft timezone') => $app->getTimeZone(), Calendar::t('PHP runtime timezone') => date_default_timezone_get()] as $label => $name) {
+        foreach ([Calendar::t('Craft Timezone') => $app->getTimeZone(), Calendar::t('PHP Runtime Timezone') => date_default_timezone_get()] as $label => $name) {
             $zone = DiagnosticsHelper::timezone($name, $now);
             $timezones[] = $row($label, $name, $zone ? 'pass' : 'error',
                 $zone ? Calendar::t('Current local time: {time}. Daylight saving time: {dst}.', [
                     'time' => $zone['clock'], 'dst' => Calendar::t($zone['dst'] ? 'Active' : 'Inactive'),
                 ]) : Calendar::t('This timezone identifier is invalid.'));
         }
-        $timezones[] = $row(Calendar::t('PHP configured timezone'), ini_get('date.timezone') ?: $default,
+        $timezones[] = $row(Calendar::t('PHP Configured Timezone'), ini_get('date.timezone') ?: $default,
             'info', Calendar::t('The PHP runtime timezone may be overridden by Craft during startup.'));
-        $timezones[] = $row(Calendar::t('Server time (UTC)'), $now->format('Y-m-d H:i:s P'));
-        $timezones[] = $row(Calendar::t('Event date storage'), Calendar::t('Floating wall time'), 'info',
-            Calendar::t('Event dates preserve their wall time using UTC internally. Different browser and server timezones do not automatically indicate a problem.'));
+        $timezones[] = $row(Calendar::t('Server Time (UTC)'), $now->format('Y-m-d H:i:s P'));
+        $timezones[] = $row(Calendar::t('Event Date Storage'), Calendar::t('Local event time (stored as UTC)'), 'info',
+            Calendar::t('Dates keep the local time entered for the event. UTC is used internally without converting that time to another timezone. Different browser and server timezones do not automatically indicate a problem.'));
 
         $user = $app->getUser()->getIdentity();
         $weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -89,44 +89,44 @@ class DiagnosticsService extends Component
             default => Calendar::t('Locale default'),
         };
         $locale = [
-            $row(Calendar::t('Control panel language'), $app->language),
-            $row(Calendar::t('Formatting locale'), $app->getLocale()->id),
-            $row(Calendar::t('User preferred language'), $user?->getPreferredLanguage() ?: Calendar::t('Inherited from Craft')),
-            $row(Calendar::t('User preferred formatting locale'), $user?->getPreferredLocale() ?: Calendar::t('Inherited from Craft')),
-            $row(Calendar::t('Short date format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_DATE, Locale::FORMAT_ICU, 'short')),
-            $row(Calendar::t('Short time format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_TIME, Locale::FORMAT_ICU, 'short')),
+            $row(Calendar::t('Control Panel Language'), $app->language),
+            $row(Calendar::t('Formatting Locale'), $app->getLocale()->id),
+            $row(Calendar::t('User Preferred Language'), $user?->getPreferredLanguage() ?: Calendar::t('Inherited from Craft')),
+            $row(Calendar::t('User Preferred Formatting Locale'), $user?->getPreferredLocale() ?: Calendar::t('Inherited from Craft')),
+            $row(Calendar::t('Short Date Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_DATE, Locale::FORMAT_ICU, 'short')),
+            $row(Calendar::t('Short Time Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_TIME, Locale::FORMAT_ICU, 'short')),
             $row(Calendar::t('Time Format'), $timeFormat),
-            $row(Calendar::t('Effective first day of week'), Calendar::t($weekdays[$settings->getFirstDayOfWeek()]), 'info',
+            $row(Calendar::t('Effective First Day Of Week'), Calendar::t($weekdays[$settings->getFirstDayOfWeek()]), 'info',
                 $model->getFirstDayOfWeek() < 0 ? Calendar::t('Inherited from the user preference or Craft default.') : Calendar::t('Set in Calendar settings.')),
         ];
         $configuration = [
             $row(Calendar::t('Default View'), Calendar::t(ucfirst($model->defaultView ?: SettingsModel::DEFAULT_VIEW))),
-            $row(Calendar::t('Time interval (minutes)'), $settings->getTimeInterval()),
-            $row(Calendar::t('Default duration (minutes)'), $settings->getEventDuration()),
-            $row(Calendar::t('Overlap threshold (hours)'), $settings->getOverlapThreshold()),
-            $booleanRow(Calendar::t('All-day events by default'), $settings->isAllDayDefault()),
-            $booleanRow(Calendar::t('Show disabled events'), $settings->showDisabledEvents()),
-            $booleanRow(Calendar::t('Quick create enabled'), $settings->isQuickCreateEnabled()),
-            $booleanRow(Calendar::t('Drag and drop enabled'), $settings->isDragAndDropEnabled()),
-            $booleanRow(Calendar::t('Only edit own events'), $settings->isAuthoredEventEditOnly()),
+            $row(Calendar::t('Time Interval (Minutes)'), $settings->getTimeInterval()),
+            $row(Calendar::t('Default Duration (Minutes)'), $settings->getEventDuration()),
+            $row(Calendar::t('Overlap Threshold (Hours)'), $settings->getOverlapThreshold()),
+            $booleanRow(Calendar::t('All-Day Events By Default'), $settings->isAllDayDefault()),
+            $booleanRow(Calendar::t('Show Disabled Events'), $settings->showDisabledEvents()),
+            $booleanRow(Calendar::t('Quick Create Enabled'), $settings->isQuickCreateEnabled()),
+            $booleanRow(Calendar::t('Drag And Drop Enabled'), $settings->isDragAndDropEnabled()),
+            $booleanRow(Calendar::t('Only Edit Own Events'), $settings->isAuthoredEventEditOnly()),
         ];
 
         $database = [];
         try {
             $db = $app->getDb();
-            $database[] = $row(Calendar::t('Database driver'), $db->driverName);
-            $database[] = $row(Calendar::t('Database version'), $db->getServerVersion());
+            $database[] = $row(Calendar::t('Database Driver'), $db->driverName);
+            $database[] = $row(Calendar::t('Database Version'), $db->getServerVersion());
             if ($db->getIsMysql()) {
                 $zones = $db->createCommand('SELECT @@session.time_zone AS sessionZone, @@global.time_zone AS globalZone, @@system_time_zone AS systemZone')->queryOne();
-                $database[] = $row(Calendar::t('Database session timezone'), $zones['sessionZone']);
-                $database[] = $row(Calendar::t('Database global timezone'), $zones['globalZone']);
-                $database[] = $row(Calendar::t('Database system timezone'), $zones['systemZone']);
+                $database[] = $row(Calendar::t('Database Session Timezone'), $zones['sessionZone']);
+                $database[] = $row(Calendar::t('Database Global Timezone'), $zones['globalZone']);
+                $database[] = $row(Calendar::t('Database System Timezone'), $zones['systemZone']);
             } elseif ($db->getIsPgsql()) {
-                $database[] = $row(Calendar::t('Database session timezone'), $db->createCommand('SHOW TIMEZONE')->queryScalar());
+                $database[] = $row(Calendar::t('Database Session Timezone'), $db->createCommand('SHOW TIMEZONE')->queryScalar());
             }
         } catch (\Throwable $exception) {
             \Craft::error($exception->getMessage(), __METHOD__);
-            $database[] = $row(Calendar::t('Database checks'), $unavailable, 'warning', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'));
+            $database[] = $row(Calendar::t('Database Checks'), $unavailable, 'warning', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'));
         }
 
         $statistics = [];
@@ -144,21 +144,31 @@ class DiagnosticsService extends Component
                 $floating = DateHelper::FLOATING_TIMEZONE === $name;
                 $valid = $floating || null !== DiagnosticsHelper::timezone($name, $now);
                 $siteNames = $calendarSites[$calendar->id] ?? [];
+                $guestAccess = $plugin->calendars->isCalendarPublic($calendar);
+                $icsSharing = (bool) $calendar->icsHash;
                 $calendars[] = [
+                    'id' => $calendar->id,
                     'title' => $calendar->name,
                     'handle' => $calendar->handle,
-                    'timezone' => $floating ? Calendar::t('Floating wall time') : $name,
+                    'timezone' => $floating ? Calendar::t('Floating timezone') : $name,
                     'timezoneValid' => $valid,
                     'repeating' => $boolean((bool) $calendar->allowRepeatingEvents),
                     'repeatingEnabled' => (bool) $calendar->allowRepeatingEvents,
+                    'guestAccessEnabled' => $guestAccess,
+                    'guestAccessLabel' => $boolean($guestAccess),
+                    'icsSharingEnabled' => $icsSharing,
+                    'icsSharingLabel' => $boolean($icsSharing),
+                    'eventCount' => null,
                     'siteCount' => \count($siteNames),
                     'siteNames' => implode(', ', $siteNames),
                     'rows' => [
                         $row(Calendar::t('Handle'), $calendar->handle),
-                        $row(Calendar::t('ICS export timezone'), $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
+                        $row(Calendar::t('ICS Export Timezone'), $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
                             $valid ? 'pass' : 'error', $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')),
-                        $booleanRow(Calendar::t('Repeating events allowed'), (bool) $calendar->allowRepeatingEvents),
-                        $row(Calendar::t('Supported sites'), implode(', ', $siteNames)),
+                        $booleanRow(Calendar::t('Repeating Events Allowed'), (bool) $calendar->allowRepeatingEvents),
+                        $booleanRow(Calendar::t('Guest Access'), $guestAccess),
+                        $booleanRow(Calendar::t('ICS Sharing'), $icsSharing),
+                        $row(Calendar::t('Supported Sites'), implode(', ', $siteNames)),
                     ],
                 ];
             }
@@ -166,14 +176,21 @@ class DiagnosticsService extends Component
             $events = (new Query())->from(['events' => '{{%calendar_events}}'])
                 ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[events.id]]')
                 ->where(['elements.dateDeleted' => null, 'elements.draftId' => null, 'elements.revisionId' => null]);
+            $eventCounts = [];
+            foreach ((clone $events)->select(['calendarId' => 'events.calendarId', 'total' => 'COUNT(*)'])->groupBy('events.calendarId')->all() as $count) {
+                $eventCounts[(int) $count['calendarId']] = (int) $count['total'];
+            }
+            foreach ($calendars as $index => $calendar) {
+                $calendars[$index]['eventCount'] = $eventCounts[$calendar['id']] ?? 0;
+            }
             $statistics[] = $row(Calendar::t('Events'), (clone $events)->count());
-            $statistics[] = $row(Calendar::t('All-day events'), (clone $events)->andWhere(['events.allDay' => true])->count());
-            $statistics[] = $row(Calendar::t('Recurring events'), (clone $events)->andWhere(['not', ['events.rrule' => null]])->andWhere(['<>', 'events.rrule', ''])->count());
-            $statistics[] = $row(Calendar::t('Disabled events'), (clone $events)->andWhere(['elements.enabled' => false])->count());
+            $statistics[] = $row(Calendar::t('All-Day Events'), (clone $events)->andWhere(['events.allDay' => true])->count());
+            $statistics[] = $row(Calendar::t('Recurring Events'), (clone $events)->andWhere(['not', ['events.rrule' => null]])->andWhere(['<>', 'events.rrule', ''])->count());
+            $statistics[] = $row(Calendar::t('Disabled Events'), (clone $events)->andWhere(['elements.enabled' => false])->count());
             foreach ([Calendar::t('Additional Dates') => SelectDateRecord::TABLE, Calendar::t('Excluded Dates') => ExceptionRecord::TABLE] as $label => $table) {
                 $statistics[] = $row($label, (clone $events)->innerJoin(['dates' => $table], '[[dates.eventId]] = [[events.id]]')->count());
             }
-            $statistics[] = $row(Calendar::t('Cached occurrences'), (new Query())->from('{{%calendar_events_occurrences}}')->count(), 'none',
+            $statistics[] = $row(Calendar::t('Cached Occurrences'), (new Query())->from('{{%calendar_events_occurrences}}')->count(), 'none',
                 Calendar::t('Occurrences are cached for requested date ranges; this is not the total number of future occurrences.'));
             foreach ((clone $events)->select(['timezone' => 'events.timezone', 'total' => 'COUNT(*)'])->groupBy('events.timezone')->all() as $zone) {
                 $name = $zone['timezone'];
@@ -183,7 +200,11 @@ class DiagnosticsService extends Component
             }
         } catch (\Throwable $exception) {
             \Craft::error($exception->getMessage(), __METHOD__);
-            $statistics[] = $row(Calendar::t('Calendar data checks'), $unavailable, 'warning', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'));
+            $statistics[] = $row(Calendar::t('Calendar Data Checks'), $unavailable, 'warning', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'));
+        }
+
+        foreach ($calendars as $index => $calendar) {
+            $calendars[$index]['rows'][] = $row(Calendar::t('Events'), $calendar['eventCount'] ?? $unavailable);
         }
 
         $sites = [];

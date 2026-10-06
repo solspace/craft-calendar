@@ -9,8 +9,14 @@
     {% endif %}
 {% endmacro %}
 
+{% macro check(enabled, label) %}
+    <span class="calendar-diag-check {{ enabled ? 'is-pass' : 'is-disabled' }}" role="img" aria-label="{{ label|e('html_attr') }}" title="{{ label|e('html_attr') }}">
+        {% if enabled %}<span data-icon="check" aria-hidden="true"></span>{% else %}<span aria-hidden="true">—</span>{% endif %}
+    </span>
+{% endmacro %}
+
 {% block actionButton %}
-    <button type="button" class="btn" id="calendar-copy-diagnostics">{{ 'Copy support report'|t('calendar') }}</button>
+    <button type="button" class="btn" id="calendar-copy-diagnostics">{{ 'Copy Support Report'|t('calendar') }}</button>
 {% endblock %}
 
 {% block content %}
@@ -58,11 +64,11 @@
                             <p class="light">{{ 'The user timezone is detected from this browser. Craft uses its application timezone separately.'|t('calendar') }}</p>
                             <dl>
                                 {% for id, label in {
-                                    'timezone': 'User browser timezone'|t('calendar'),
-                                    'offset': 'Browser UTC offset'|t('calendar'),
-                                    'clock': 'Browser local time'|t('calendar'),
-                                    'language': 'Browser language'|t('calendar'),
-                                    'dst': 'Browser seasonal offsets'|t('calendar')
+                                    'timezone': 'User Browser Timezone'|t('calendar'),
+                                    'offset': 'Browser UTC Offset'|t('calendar'),
+                                    'clock': 'Browser Local Time'|t('calendar'),
+                                    'language': 'Browser Language'|t('calendar'),
+                                    'dst': 'Browser Seasonal Offsets'|t('calendar')
                                 } %}
                                     <div class="calendar-diag-row">
                                         <dt>{{ label }}</dt>
@@ -79,7 +85,7 @@
         {% if calendars %}
             <details class="calendar-diag-calendars calendar-diag-disclosure">
                 <summary>
-                    {{ 'Calendar details ({count})'|t('calendar', {count: calendars|length}) }}
+                    {{ 'Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}
                     {% if calendarWarningCount %}
                         <span class="calendar-diag-issue-count">{{ 'Potential issues: {count}'|t('calendar', {count: calendarWarningCount}) }}</span>
                     {% endif %}
@@ -87,21 +93,29 @@
                 <p class="light">{{ 'This setting applies to ICS exports; it does not change stored event dates.'|t('calendar') }}</p>
                 <div class="calendar-diag-calendar-table">
                     <table class="data fullwidth">
-                        <caption class="visually-hidden">{{ 'Calendar details ({count})'|t('calendar', {count: calendars|length}) }}</caption>
+                        <caption class="visually-hidden">{{ 'Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}</caption>
                         <thead>
                             <tr>
                                 <th scope="col">{{ 'Calendar'|t('calendar') }}</th>
-                                <th scope="col">{{ 'ICS export timezone'|t('calendar') }}</th>
-                                <th scope="col">{{ 'Repeating events allowed'|t('calendar') }}</th>
-                                <th scope="col">{{ 'Supported sites'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Handle'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Events'|t('calendar') }}</th>
+                                <th scope="col">{{ 'ICS Export Timezone'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Repeating Events Allowed'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Guest Access'|t('calendar') }}</th>
+                                <th scope="col">{{ 'ICS Sharing'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Supported Sites'|t('calendar') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for calendar in calendars %}
                                 <tr class="{{ calendar.timezoneValid ? 'is-pass' : 'is-error' }}">
-                                    <th scope="row"><strong>{{ calendar.title }}</strong><span class="light calendar-diag-handle">{{ calendar.handle }}</span></th>
-                                    <td>{{ _self.status(calendar.timezoneValid ? 'pass' : 'error', calendar.timezoneValid ? 'Valid'|t('calendar') : 'This timezone identifier is invalid.'|t('calendar')) }}{{ calendar.timezone }}{% if not calendar.timezoneValid %} <span class="calendar-diag-issue-count">{{ 'Potential issue'|t('calendar') }}</span>{% endif %}</td>
-                                    <td>{{ _self.status(calendar.repeatingEnabled ? 'pass' : 'disabled', calendar.repeating) }}<span class="visually-hidden">{{ calendar.repeating }}</span></td>
+                                    <th scope="row"><strong>{{ calendar.title }}</strong></th>
+                                    <td class="calendar-diag-handle">{{ calendar.handle }}</td>
+                                    <td>{{ calendar.eventCount ?? 'Unavailable'|t('calendar') }}</td>
+                                    <td>{{ calendar.timezone }}{% if not calendar.timezoneValid %} <span class="calendar-diag-issue-count" title="{{ 'This timezone identifier is invalid.'|t('calendar')|e('html_attr') }}">{{ 'Potential issue'|t('calendar') }}</span>{% endif %}</td>
+                                    <td>{{ _self.check(calendar.repeatingEnabled, calendar.repeating) }}</td>
+                                    <td>{{ _self.check(calendar.guestAccessEnabled, calendar.guestAccessLabel) }}</td>
+                                    <td>{{ _self.check(calendar.icsSharingEnabled, calendar.icsSharingLabel) }}</td>
                                     <td title="{{ calendar.siteNames|e('html_attr') }}">{{ calendar.siteCount }}{% if calendar.siteNames %}<span class="visually-hidden"> — {{ calendar.siteNames }}</span>{% endif %}</td>
                                 </tr>
                             {% endfor %}
@@ -111,7 +125,7 @@
             </details>
         {% endif %}
         <details class="calendar-diag-report calendar-diag-disclosure">
-            <summary>{{ 'Support report'|t('calendar') }}</summary>
+            <summary>{{ 'Support Report'|t('calendar') }}</summary>
             <p class="light">{{ 'Copy this report when contacting Solspace support.'|t('calendar') }}</p>
             <label class="visually-hidden" for="calendar-diagnostic-report">{{ 'Calendar Diagnostics'|t('calendar') }}</label>
             <textarea id="calendar-diagnostic-report" class="text fullwidth" readonly rows="16">{{ report }}</textarea>

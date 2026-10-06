@@ -1,3 +1,11 @@
+#calendar-diagnostics .status {
+  width: 0.75rem;
+  height: 0.75rem;
+  min-width: 0.75rem;
+  min-height: 0.75rem;
+  flex: 0 0 0.75rem;
+  box-sizing: border-box;
+}
 #calendar-diagnostics .calendar-diag-banner {
   display: flex;
   align-items: center;
@@ -121,8 +129,19 @@
   font-weight: normal;
 }
 #calendar-diagnostics .calendar-diag-calendar-table .calendar-diag-handle {
-  display: block;
-  font-size: 12px;
+  font-family: monospace;
+  overflow-wrap: anywhere;
+}
+#calendar-diagnostics .calendar-diag-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.875rem;
+  margin-inline-end: 7px;
+  color: var(--gray-500);
+}
+#calendar-diagnostics .calendar-diag-check.is-pass {
+  color: var(--green-600);
 }
 #calendar-diagnostics .calendar-diag-report textarea {
   font-family: monospace;
