@@ -107,6 +107,7 @@ return [
     'Concerns: {count}' => 'Bedenken: {count}',
     'Control Panel Language' => 'Sprache des Kontrollpanels',
     'Control panel language' => 'Sprache des Kontrollpanels',
+    'Copied!' => 'Kopiert!',
     'Copy Support Report' => 'Supportbericht kopieren',
     'Copy diagnostic report' => 'Diagnosebericht kopieren',
     'Copy link' => 'Link kopieren',

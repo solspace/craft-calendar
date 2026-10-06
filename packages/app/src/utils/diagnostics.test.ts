@@ -10,7 +10,7 @@ const source = readFileSync(
 const setup = (clipboard?: { writeText: (text: string) => Promise<void> }) => {
   document.documentElement.lang = "de-DE";
   document.body.innerHTML = `
-    <button id="calendar-copy-diagnostics"></button>
+    <button id="calendar-copy-diagnostics">Copy Support Report</button>
     <div id="calendar-diagnostics">
       <dl>${["timezone", "offset", "clock", "language", "dst"]
         .map(
@@ -34,6 +34,7 @@ const setup = (clipboard?: { writeText: (text: string) => Promise<void> }) => {
 };
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   document.body.innerHTML = "";
@@ -53,15 +54,18 @@ describe("Calendar diagnostic report", () => {
   });
 
   it("copies the complete report", async () => {
+    vi.useFakeTimers();
     const writeText = vi.fn().mockResolvedValue(undefined);
     setup({ writeText });
     document.querySelector<HTMLButtonElement>("button")?.click();
-    await vi.waitFor(() =>
-      expect(document.getElementById("calendar-diagnostic-copy-status")?.textContent).toBe(
-        "Diagnostic report copied.",
-      ),
+    await Promise.resolve();
+    expect(document.getElementById("calendar-diagnostic-copy-status")?.textContent).toBe(
+      "Diagnostic report copied.",
     );
     expect(writeText).toHaveBeenCalledWith(document.querySelector("textarea")?.value);
+    expect(document.querySelector("button")?.textContent).toBe("Copied!");
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(document.querySelector("button")?.textContent).toBe("Copy Support Report");
   });
 
   it.each([

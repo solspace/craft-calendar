@@ -107,6 +107,7 @@ return [
     'Concerns: {count}' => 'Aandachtspunten: {count}',
     'Control Panel Language' => 'Taal van het configuratiescherm',
     'Control panel language' => 'Taal van het configuratiescherm',
+    'Copied!' => 'Gekopieerd!',
     'Copy Support Report' => 'Ondersteuningsrapport kopiëren',
     'Copy diagnostic report' => 'Diagnoserapport kopiëren',
     'Copy link' => 'Link kopiëren',

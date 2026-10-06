@@ -32,12 +32,22 @@
   }
   report.value = `${serverReport}\n\n${browserReport.join("\n")}`;
 
-  document.getElementById("calendar-copy-diagnostics").addEventListener("click", async () => {
+  const copyButton = document.getElementById("calendar-copy-diagnostics");
+  const copyLabel = copyButton.textContent;
+  let resetCopyLabel;
+  copyButton.addEventListener("click", async () => {
     const status = document.getElementById("calendar-diagnostic-copy-status");
     try {
       await navigator.clipboard.writeText(report.value);
       status.textContent = translate("Diagnostic report copied.");
+      clearTimeout(resetCopyLabel);
+      copyButton.textContent = translate("Copied!");
+      resetCopyLabel = setTimeout(() => {
+        copyButton.textContent = copyLabel;
+      }, 3000);
     } catch {
+      clearTimeout(resetCopyLabel);
+      copyButton.textContent = copyLabel;
       root.querySelector(".calendar-diag-report").open = true;
       report.focus();
       report.select();

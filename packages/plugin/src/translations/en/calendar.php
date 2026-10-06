@@ -107,6 +107,7 @@ return [
     'Concerns: {count}' => 'Concerns: {count}',
     'Control Panel Language' => 'Control Panel Language',
     'Control panel language' => 'Control panel language',
+    'Copied!' => 'Copied!',
     'Copy Support Report' => 'Copy Support Report',
     'Copy diagnostic report' => 'Copy diagnostic report',
     'Copy link' => 'Copy link',
