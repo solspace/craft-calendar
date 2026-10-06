@@ -48,7 +48,7 @@
                                 <dl>
                                     {% for item in section.rows %}
                                         <div class="calendar-diag-row is-{{ item.status }}">
-                                            <dt>{{ _self.status(item.status, item.statusLabel) }}{{ item.label }}</dt>
+                                            <dt>{{ _self.status(item.status, item.statusLabel) }}<span>{% if item.labelCode is defined %}{{ item.labelParts[0] }}<code>{{ item.labelCode }}</code>{{ item.labelParts[1] ?? '' }}{% else %}{{ item.label }}{% endif %}</span></dt>
                                             <dd{% if item.isBoolean %} class="visually-hidden"{% endif %}>{{ item.value }}</dd>
                                             {% if item.note %}<dd class="calendar-diag-note">{{ item.note }}</dd>{% endif %}
                                             {% if item.status in ['warning', 'error'] %}<dd class="calendar-diag-warning">{{ item.statusLabel }}</dd>{% endif %}

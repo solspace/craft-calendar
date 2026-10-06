@@ -65,8 +65,11 @@ class DiagnosticsService extends Component
         ];
         foreach (['intl', 'mbstring', 'pdo'] as $extension) {
             $loaded = \extension_loaded($extension);
-            $server[] = $booleanRow(Calendar::t('PHP Extension: {extension}', ['extension' => $extension]),
+            $extensionRow = $booleanRow(Calendar::t('PHP Extension: {extension}', ['extension' => $extension]),
                 $loaded, 'error', $loaded ? null : Calendar::t('This required PHP extension is missing.'));
+            $extensionRow['labelParts'] = explode('{extension}', Calendar::t('PHP Extension: {extension}'), 2);
+            $extensionRow['labelCode'] = $extension;
+            $server[] = $extensionRow;
         }
 
         $timezones = [];
