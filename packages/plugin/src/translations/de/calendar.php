@@ -543,6 +543,7 @@ return [
     'This required PHP extension is missing.' => 'Diese erforderliche PHP-Erweiterung fehlt.',
     'This setting applies to ICS exports; it does not change stored event dates.' => 'Diese Einstellung gilt für ICS-Exporte und ändert keine gespeicherten Termindaten.',
     'This timezone identifier is invalid.' => 'Diese Zeitzonenkennung ist ungültig.',
+    'This version of Calendar may not be fully compatible with your version of Craft CMS. Please check for Calendar updates.' => 'Diese Version von Calendar ist möglicherweise nicht vollständig mit Ihrer Version von Craft CMS kompatibel. Bitte prüfen Sie, ob Updates für Calendar verfügbar sind.',
     'Thu' => 'Do',
     'Thursday' => 'Donnerstag',
     'Time' => 'Uhrzeit',

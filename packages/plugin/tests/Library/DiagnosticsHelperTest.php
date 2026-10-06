@@ -12,6 +12,23 @@ use Solspace\Calendar\Library\Helpers\DiagnosticsHelper;
  */
 class DiagnosticsHelperTest extends TestCase
 {
+    public function testCraftVersionChecksDistinguishUnsupportedAndUntestedVersions(): void
+    {
+        foreach ([
+            '4.18.7' => 'error',
+            '5.0.0' => 'pass',
+            '5.11.3' => 'pass',
+            '5.11.99' => 'pass',
+            '5.12.0-beta.1' => 'warning',
+            '5.12.0' => 'warning',
+            '5.13.0' => 'warning',
+            '6.0.0-alpha.1' => 'error',
+            '6.0.0' => 'error',
+        ] as $version => $status) {
+            self::assertSame($status, DiagnosticsHelper::craftVersionStatus($version), $version);
+        }
+    }
+
     public function testRecurrenceDateCountsMatchTheBuildersFixedDateLists(): void
     {
         $rule = "DTSTART:20261005T100000\r\nRRULE:FREQ=DAILY\r\n"

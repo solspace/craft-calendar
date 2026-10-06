@@ -4,6 +4,16 @@ namespace Solspace\Calendar\Library\Helpers;
 
 class DiagnosticsHelper
 {
+    public static function craftVersionStatus(string $version): string
+    {
+        if (version_compare($version, '5.0', '<') || version_compare($version, '6.0', '>=')) {
+            return 'error';
+        }
+
+        // Craft 5.12 starts the next unverified minor series, including its prereleases.
+        return version_compare($version, '5.12', '>=') ? 'warning' : 'pass';
+    }
+
     /**
      * Count the fixed dates shown by the builder, without expanding recurring occurrences.
      *

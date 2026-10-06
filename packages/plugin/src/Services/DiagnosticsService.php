@@ -74,13 +74,20 @@ class DiagnosticsService extends Component
             $calendarVersionRow['noteLinkLabel'] = Calendar::t('View Updates');
         }
 
+        $craftVersion = $app->getVersion();
+        $craftVersionStatus = DiagnosticsHelper::craftVersionStatus($craftVersion);
+        $craftVersionNote = Calendar::t('Calendar 6.x requires Craft 5.x.');
+        if ('warning' === $craftVersionStatus) {
+            $craftVersionNote .= ' '.Calendar::t('This version of Calendar may not be fully compatible with your version of Craft CMS. Please check for Calendar updates.');
+        }
+
         $server = [
             $calendarVersionRow,
             $row(
                 'Craft',
-                $app->edition->name.' '.$app->getVersion(),
-                version_compare($app->getVersion(), '5.0', '>=') && version_compare($app->getVersion(), '6.0', '<') ? 'pass' : 'error',
-                Calendar::t('Calendar 6.x requires Craft 5.x.'),
+                $app->edition->name.' '.$craftVersion,
+                $craftVersionStatus,
+                $craftVersionNote,
                 isProduct: true
             ),
             $row(
