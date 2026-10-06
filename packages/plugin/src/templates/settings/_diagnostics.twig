@@ -4,7 +4,7 @@
 
 {% macro status(status, label) %}
     {% if status != 'none' %}
-        {% set colors = {pass: 'green', disabled: 'disabled', error: 'red', warning: 'yellow', info: 'blue'} %}
+        {% set colors = {pass: 'green', disabled: 'disabled', error: 'red', warning: 'yellow'} %}
         <span class="status {{ colors[status] }} calendar-diag-dot" role="img" aria-label="{{ label|e('html_attr') }}" title="{{ label|e('html_attr') }}"></span>
     {% endif %}
 {% endmacro %}
@@ -21,19 +21,20 @@
 
 {% block content %}
     <div id="calendar-diagnostics" data-sampled-at="{{ sampledAt|e('html_attr') }}">
-        <div class="calendar-diag-banner {{ errorCount ? 'is-error' : (concernCount ? 'is-warning' : 'is-success') }}">
-            <span class="status {{ errorCount ? 'red' : (concernCount ? 'yellow' : 'green') }}" aria-hidden="true"></span>
-            <strong>{{ errorCount ? 'Potential issues: {count}'|t('calendar', {count: errorCount}) : (concernCount ? 'Concerns: {count}'|t('calendar', {count: concernCount}) : 'No diagnostic warnings'|t('calendar')) }}</strong>
-            {% if errorCount and concernCount %}<span>{{ 'Concerns: {count}'|t('calendar', {count: concernCount}) }}</span>{% endif %}
+        <div class="pane calendar-diag-banner {{ errorCount ? 'is-error' : (concernCount ? 'is-warning' : 'is-success') }}" role="status">
+            <p>
+                <span class="{{ errorCount or concernCount ? 'alert-icon' : 'checkmark-icon' }}" aria-hidden="true"></span>
+                <span>{{ errorCount ? 'Potential issues: {count}'|t('calendar', {count: errorCount}) : (concernCount ? 'Concerns: {count}'|t('calendar', {count: concernCount}) : 'No diagnostic warnings'|t('calendar')) }}</span>
+                {% if errorCount and concernCount %}<span>{{ 'Concerns: {count}'|t('calendar', {count: concernCount}) }}</span>{% endif %}
+            </p>
         </div>
         <p class="light">{{ 'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.'|t('calendar') }}</p>
         <div class="calendar-diag-legend">
             {% for status, label in {
                 pass: 'Enabled / Valid'|t('calendar'),
                 disabled: 'Disabled'|t('calendar'),
-                error: 'Potential issue'|t('calendar'),
                 warning: 'Concern'|t('calendar'),
-                info: 'Information'|t('calendar')
+                error: 'Potential issue'|t('calendar')
             } %}
                 <span>{{ _self.status(status, label) }}{{ label }}</span>
             {% endfor %}

@@ -36,7 +36,6 @@ class DiagnosticsService extends Component
                 'disabled' => Calendar::t('Disabled'),
                 'error' => Calendar::t('Potential issue'),
                 'warning' => Calendar::t('Concern'),
-                'info' => Calendar::t('Information'),
                 default => '',
             },
         ];
@@ -46,7 +45,7 @@ class DiagnosticsService extends Component
         $default = Calendar::t('Not configured');
 
         $calendarVersion = $plugin->getVersion();
-        $calendarVersionStatus = 'info';
+        $calendarVersionStatus = 'none';
         $calendarVersionNote = Calendar::t('Could not check Calendar updates.');
 
         try {
