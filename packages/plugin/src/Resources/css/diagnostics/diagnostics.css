@@ -78,6 +78,9 @@
 #calendar-diagnostics .calendar-diag-row dd {
   margin: 0;
 }
+#calendar-diagnostics .calendar-diag-row.is-product dt {
+  font-weight: normal;
+}
 #calendar-diagnostics .calendar-diag-row .calendar-diag-note {
   flex-basis: 100%;
   margin-top: 4px;

@@ -22,13 +22,14 @@ class DiagnosticsService extends Component
         $model = $settings->getSettingsModel();
         $general = $app->getConfig()->getGeneral();
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
-        $row = static fn (string $label, mixed $value, string $status = 'none', ?string $note = null, bool $isBoolean = false, bool $isCode = false) => [
+        $row = static fn (string $label, mixed $value, string $status = 'none', ?string $note = null, bool $isBoolean = false, bool $isCode = false, bool $isProduct = false) => [
             'label' => $label,
             'value' => (string) $value,
             'status' => $status,
             'note' => $note,
             'isBoolean' => $isBoolean,
             'isCode' => $isCode,
+            'isProduct' => $isProduct,
             'statusLabel' => $isBoolean && \in_array($status, ['pass', 'disabled'], true) ? (string) $value : match ($status) {
                 'pass' => Calendar::t('Valid'),
                 'disabled' => Calendar::t('Disabled'),
@@ -45,20 +46,19 @@ class DiagnosticsService extends Component
         $default = Calendar::t('Not configured');
 
         $server = [
-            $row(Calendar::t('Calendar Version'), $plugin->getVersion(), 'info'),
-            $row(Calendar::t('Calendar Edition'), $plugin->isPro() ? 'Pro' : 'Lite'),
-            $row(Calendar::t('Craft Version'), $app->getVersion(),
+            $row(Calendar::t('Calendar'), ($plugin->isPro() ? 'Pro' : 'Lite').' '.$plugin->getVersion(), 'info', isProduct: true),
+            $row('Craft', $app->edition->name.' '.$app->getVersion(),
                 version_compare($app->getVersion(), '5.0', '>=') && version_compare($app->getVersion(), '6.0', '<') ? 'pass' : 'error',
-                Calendar::t('Calendar requires Craft 5.x.')),
+                Calendar::t('Calendar requires Craft 5.x.'), isProduct: true),
             $row(Calendar::t('PHP Version'), PHP_VERSION,
                 version_compare(PHP_VERSION, '8.2', '>=') && version_compare(PHP_VERSION, '9.0', '<') ? 'pass' : 'error',
                 Calendar::t('Calendar requires PHP 8.2 or newer within PHP 8.x.')),
-            $row(Calendar::t('Operating System'), PHP_OS_FAMILY),
+            $row(Calendar::t('Operating System'), \sprintf('%s %s', PHP_OS, php_uname('r'))),
             $row(Calendar::t('PHP Memory Limit'), ini_get('memory_limit'),
                 DiagnosticsHelper::memoryLimitStatus((string) ini_get('memory_limit')),
                 Calendar::t('Craft requires at least 256 MB of PHP memory; 512 MB or more is recommended. A value of -1 means unlimited memory.')),
             $row(Calendar::t('PHP Execution Time Limit'), ini_get('max_execution_time')),
-            $row(Calendar::t('Environment'), \defined('CRAFT_ENVIRONMENT') ? CRAFT_ENVIRONMENT : $default),
+            $row(Calendar::t('Environment'), $app->getConfig()->env ?: $default, isCode: true),
             $booleanRow(Calendar::t('Developer Mode'), $general->devMode),
             $booleanRow(Calendar::t('Admin Changes Allowed'), $general->allowAdminChanges),
         ];
