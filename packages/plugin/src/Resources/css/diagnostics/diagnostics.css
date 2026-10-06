@@ -25,6 +25,7 @@
   --calendar-diag-banner-color: var(--enabled-color);
   margin-block: 0 16px;
   padding: 12px 16px;
+  color: var(--calendar-diag-banner-color);
   border-color: color-mix(in srgb, var(--calendar-diag-banner-color) 30%, var(--border-hairline));
   background: color-mix(in srgb, var(--calendar-diag-banner-color) 6%, var(--secondary-pane-bg));
 }
@@ -45,12 +46,11 @@
 #calendar-diagnostics .calendar-diag-banner .alert-icon {
   flex-shrink: 0;
   cursor: default;
+  background-color: transparent;
 }
-#calendar-diagnostics .calendar-diag-banner .checkmark-icon::before {
-  color: var(--enabled-color);
-}
-#calendar-diagnostics .calendar-diag-banner.is-warning .alert-icon::before {
-  color: var(--warning-color);
+#calendar-diagnostics .calendar-diag-banner .checkmark-icon::before,
+#calendar-diagnostics .calendar-diag-banner .alert-icon::before {
+  color: var(--calendar-diag-banner-color);
 }
 #calendar-diagnostics .calendar-diag-grid {
   display: grid;
