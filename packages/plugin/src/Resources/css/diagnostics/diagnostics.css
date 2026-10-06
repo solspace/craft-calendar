@@ -160,10 +160,7 @@
   justify-content: center;
   width: 0.875rem;
   margin-inline-end: 7px;
-  color: var(--gray-500);
-}
-#calendar-diagnostics .calendar-diag-check.is-pass {
-  color: var(--enabled-color);
+  color: inherit;
 }
 #calendar-diagnostics .calendar-diag-report textarea {
   font-family: monospace;

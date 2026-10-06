@@ -188,11 +188,7 @@
     justify-content: center;
     width: 0.875rem;
     margin-inline-end: 7px;
-    color: var(--gray-500);
-
-    &.is-pass {
-      color: var(--enabled-color);
-    }
+    color: inherit;
   }
 
   .calendar-diag-report {
