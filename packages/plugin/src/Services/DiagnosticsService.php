@@ -35,7 +35,7 @@ class DiagnosticsService extends Component
                 'pass' => Calendar::t('Valid'),
                 'disabled' => Calendar::t('Disabled'),
                 'error' => Calendar::t('Potential issue'),
-                'warning' => Calendar::t('Concern'),
+                'warning' => Calendar::t('Advisory'),
                 default => '',
             },
         ];
@@ -351,7 +351,7 @@ class DiagnosticsService extends Component
             'calendarWarningCount' => \count(array_filter($calendars, static fn ($calendar) => !$calendar['timezoneValid'])),
             'warnings' => $warnings,
             'errorCount' => $errorCount,
-            'concernCount' => \count($warnings) - $errorCount,
+            'advisoryCount' => \count($warnings) - $errorCount,
             'report' => implode("\n", $report),
             'sampledAt' => $now->format(\DateTimeInterface::ATOM),
         ];
