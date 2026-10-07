@@ -31,7 +31,7 @@ const mountEventBuilder = (container: HTMLElement): void => {
 
   root.render(
     <Provider store={store}>
-      <EventBuilder />
+      <EventBuilder context={config.context} />
     </Provider>,
   );
 };

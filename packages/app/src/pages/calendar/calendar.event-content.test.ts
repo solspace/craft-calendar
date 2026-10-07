@@ -1,5 +1,11 @@
+import type { EventApi } from "@fullcalendar/core/index.js";
 import { describe, expect, it } from "vitest";
-import { getCalendarEventClickAction } from "./calendar.event-content";
+import { getCalendarEventClassNames, getCalendarEventClickAction } from "./calendar.event-content";
+
+const classNamesFor = (extendedProps: Record<string, unknown>) =>
+  getCalendarEventClassNames({
+    event: { allDay: false, end: null, textColor: "", extendedProps } as unknown as EventApi,
+  });
 
 describe("calendar event content", () => {
   it("treats title-link clicks as navigation clicks", () => {
@@ -23,6 +29,16 @@ describe("calendar event content", () => {
     );
 
     expect(action).toBe("open");
+  });
+
+  it("marks cancelled occurrences, edited or not", () => {
+    expect(classNamesFor({ cancelled: true, isEdited: true })).toContain("fc-event-cancelled");
+    expect(classNamesFor({ cancelled: true, isEdited: true })).not.toContain("fc-event-edited");
+  });
+
+  it("marks edited occurrences", () => {
+    expect(classNamesFor({ isEdited: true })).toContain("fc-event-edited");
+    expect(classNamesFor({})).not.toContain("fc-event-edited");
   });
 
   it("ignores draft event clicks entirely", () => {

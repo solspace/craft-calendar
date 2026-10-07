@@ -7,8 +7,22 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { PopoverWrapper } from "../view-event/view-event.styles";
 
+type ModifyAction = "move" | "resize" | "delete";
+
+const headings: Record<ModifyAction, string> = {
+  move: "You are moving an event.",
+  resize: "You are changing an event’s length.",
+  delete: "You are deleting an event.",
+};
+
+const questions: Record<ModifyAction, string> = {
+  move: "Do you want to move only this occurrence, or all occurrences?",
+  resize: "Do you want to change only this occurrence, or all occurrences?",
+  delete: "Do you want to delete only this occurrence, or all occurrences?",
+};
+
 type Props = {
-  action: "move" | "delete";
+  action: ModifyAction;
   onOnlyThisOccurrence: () => Promise<void> | void;
   onAllOccurrences: () => Promise<void> | void;
   onCancel?: () => void;
@@ -70,16 +84,8 @@ export const PopoverModifyEvent: FC<Props> = ({
 
   return (
     <PopoverWrapper>
-      <h3>
-        {translate(action === "delete" ? "You are deleting an event." : "You are moving an event.")}
-      </h3>
-      <p>
-        {translate(
-          action === "delete"
-            ? "Do you want to delete only this occurrence, or all occurrences?"
-            : "Do you want to move only this occurrence, or all occurrences?",
-        )}
-      </p>
+      <h3>{translate(headings[action])}</h3>
+      <p>{translate(questions[action])}</p>
 
       <hr />
 

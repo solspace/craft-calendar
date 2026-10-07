@@ -72,6 +72,13 @@ class Event extends Element implements \JsonSerializable
         'until',
     ];
 
+    private const SCHEDULE_REQUEST_ACTIONS = [
+        'elements/save',
+        'elements/save-draft',
+        'elements/apply-draft',
+        'calendar/events-api/save',
+    ];
+
     public ?int $calendarId = null;
     public ?int $authorId = null;
     public ?string $username = null;
@@ -659,7 +666,7 @@ class Event extends Element implements \JsonSerializable
 
         $this->updateTitle();
 
-        if (!$this->syncFromRequestOnSave || \Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (!$this->syncFromRequestOnSave || !self::isScheduleRequest()) {
             if (!$this->timezone || '' === trim((string) $this->timezone)) {
                 $this->timezone = \Craft::$app->getTimeZone();
             }
@@ -833,6 +840,11 @@ class Event extends Element implements \JsonSerializable
                 'repeatType' => $this->repeatType,
                 'repeatEndType' => $this->repeatEndType,
                 'rrule' => $this->rrule,
+            ],
+            // Lists the event's edited occurrences; the editor may move on to a draft's ID later
+            'context' => [
+                'eventId' => $this->id,
+                'siteId' => $this->siteId,
             ],
         ];
     }
@@ -1376,6 +1388,20 @@ class Event extends Element implements \JsonSerializable
 
         return $destructiveItems;
         */
+    }
+
+    /**
+     * Only the event editor's own saves post the event's schedule. Other requests that save an
+     * event, like moving one in the CP calendar, post `start` and `end` values that mean something else.
+     */
+    private static function isScheduleRequest(): bool
+    {
+        $request = \Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return false;
+        }
+
+        return \in_array(implode('/', $request->getActionSegments() ?? []), self::SCHEDULE_REQUEST_ACTIONS, true);
     }
 
     private function bodyParamToCarbon(

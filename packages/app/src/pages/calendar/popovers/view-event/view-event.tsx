@@ -1,5 +1,12 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
-import { deleteEvent, getRecurrenceIdFromId } from "@cal/pages/calendar/calendar.events";
+import {
+  deleteEvent,
+  getEventId,
+  getRecurrenceIdFromId,
+  openOccurrenceEditor,
+  setOccurrenceCancelled,
+} from "@cal/pages/calendar/calendar.events";
+import { useConfig } from "@cal/pages/calendar/context/config.context";
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
@@ -21,7 +28,10 @@ type Props = {
 
 export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { hidePopover, showPopover } = usePopover();
+  const { currentSiteId } = useConfig();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const isBusy = isDeleting || isCancelling;
 
   useEventListener("keydown", (keyboardEvent) => {
     if (keyboardEvent.key === "Escape") {
@@ -51,8 +61,49 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         buildPreviewRecurrence(event.extendedProps.rrule, event.start!.getTime() / 1000),
       )
     : null;
-  const recurrenceId = getRecurrenceIdFromId(String(event.id), event.allDay);
+  const recurrenceId = getRecurrenceIdFromId(String(event.id));
   const dateFormat = event.allDay ? "PP" : "PPp";
+  const isCancelled = Boolean(event.extendedProps.cancelled);
+  const isEdited = Boolean(event.extendedProps.isEdited);
+  const hasOverride = Boolean(event.extendedProps.hasOverride);
+  const refetchEvents = () => fcEvent.view.calendar.refetchEvents();
+
+  const editOccurrence = () => {
+    if (!recurrenceId) {
+      return;
+    }
+
+    hidePopover();
+    openOccurrenceEditor({
+      eventId: getEventId(String(event.id)),
+      recurrenceId,
+      siteId: currentSiteId,
+      onSave: refetchEvents,
+    });
+  };
+
+  const toggleCancelled = async () => {
+    if (!recurrenceId || isBusy) {
+      return;
+    }
+
+    setIsCancelling(true);
+
+    try {
+      const wasChanged = await setOccurrenceCancelled({
+        event,
+        recurrenceId,
+        cancelled: !isCancelled,
+        refetchEvents,
+      });
+
+      if (wasChanged) {
+        hidePopover();
+      }
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (isDeleting) {
@@ -82,6 +133,17 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       <PopoverModifyEvent
         action="delete"
         onOnlyThisOccurrence={async () => {
+          if (
+            hasOverride &&
+            !window.confirm(
+              translate(
+                "This occurrence has its own changes, which are deleted with it. Delete it?",
+              ),
+            )
+          ) {
+            return;
+          }
+
           const wasDeleted = await deleteEvent({
             event,
             scope: "occurrence",
@@ -112,7 +174,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
 
   return (
     <PopoverWrapper>
-      <h1>{event.title}</h1>
+      <h1 className={clsx(isCancelled && "is-cancelled")}>{event.title}</h1>
 
       {calendarName && (
         <div className="calendar-label">
@@ -122,6 +184,14 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
             aria-hidden="true"
           />
           <span>{calendarName}</span>
+        </div>
+      )}
+
+      {(isCancelled || isEdited) && (
+        <div className="occurrence-status">
+          {isCancelled
+            ? translate("This occurrence is cancelled.")
+            : translate("This occurrence has its own changes.")}
         </div>
       )}
 
@@ -144,14 +214,36 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       <hr />
 
       <PopoverActions>
-        <a href={event.url} className={clsx("btn submit", isDeleting && "disabled")}>
-          {translate("Edit")}
+        <a href={event.url} className={clsx("btn submit", isBusy && "disabled")}>
+          {translate(isRecurring ? "Edit event" : "Edit")}
         </a>
+
+        {isRecurring && recurrenceId && (
+          <button
+            type="button"
+            className={clsx("btn", isBusy && "disabled")}
+            disabled={isBusy}
+            onClick={editOccurrence}
+          >
+            {translate("Edit occurrence")}
+          </button>
+        )}
+
+        {isRecurring && recurrenceId && (
+          <button
+            type="button"
+            className={clsx("btn", isBusy && "disabled")}
+            disabled={isBusy}
+            onClick={() => void toggleCancelled()}
+          >
+            {translate(isCancelled ? "Restore occurrence" : "Cancel occurrence")}
+          </button>
+        )}
 
         <button
           type="button"
-          className={clsx("btn", isDeleting && "disabled")}
-          disabled={isDeleting}
+          className={clsx("btn", isBusy && "disabled")}
+          disabled={isBusy}
           onClick={() => {
             if (isRecurring) {
               showRecurringDeletePopover();
@@ -171,8 +263,8 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
 
         <button
           type="button"
-          className={clsx("btn", isDeleting && "disabled")}
-          disabled={isDeleting}
+          className={clsx("btn", isBusy && "disabled")}
+          disabled={isBusy}
           onClick={() => hidePopover()}
         >
           {translate("Close")}

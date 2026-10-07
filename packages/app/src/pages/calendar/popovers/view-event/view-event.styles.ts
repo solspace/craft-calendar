@@ -34,6 +34,16 @@ export const PopoverWrapper = styled.div`
     line-height: 1.2;
   }
 
+  h1.is-cancelled {
+    text-decoration: line-through;
+  }
+
+  .occurrence-status {
+    margin: -6px 0 10px;
+    color: var(--gray-600);
+    font-size: 13px;
+  }
+
   .calendar-label-dot {
     display: inline-block;
     width: 10px;

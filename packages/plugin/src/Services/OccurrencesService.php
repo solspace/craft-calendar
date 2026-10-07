@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Services;
 use Carbon\Carbon;
 use craft\base\Component;
 use craft\base\Element;
+use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\helpers\Db;
@@ -15,6 +16,8 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
+use Solspace\Calendar\Records\OccurrenceCodeRecord;
+use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -32,6 +35,62 @@ class OccurrencesService extends Component
         parent::init();
 
         $this->materializer = new OccurrenceMaterializer();
+    }
+
+    /**
+     * Every override of an event, orphaned ones included, in the order of their recurrence IDs.
+     *
+     * @return OccurrenceOverride[]
+     */
+    public function getOverrides(Event $event, ?int $siteId = null): array
+    {
+        return OccurrenceOverride::find()
+            ->ownerId($event->id)
+            ->siteId($siteId ?? $event->siteId)
+            ->status(null)
+            ->orderBy([OccurrenceOverrideRecord::TABLE_STD.'.recurrenceId' => \SORT_ASC])
+            ->all()
+        ;
+    }
+
+    /**
+     * Whether the event's schedule produces an occurrence with this recurrence ID.
+     */
+    public function hasOccurrence(Event $event, mixed $recurrenceId): bool
+    {
+        return $this->materializer->producesRecurrenceId($event, RecurrenceId::toCarbon($this->normalizeRecurrenceId($recurrenceId)));
+    }
+
+    /**
+     * The occurrence's code, if it has been given one. Drafts share their event's codes.
+     */
+    public function getCode(Event $event, mixed $recurrenceId): ?string
+    {
+        $code = (new Query())
+            ->select(['code'])
+            ->from(OccurrenceCodeRecord::TABLE)
+            ->where([
+                'eventId' => $event->getCanonicalId(),
+                'recurrenceId' => $this->normalizeRecurrenceId($recurrenceId),
+            ])
+            ->scalar()
+        ;
+
+        return false === $code ? null : (string) $code;
+    }
+
+    /**
+     * When an occurrence takes place and whether it's cancelled, with its override applied.
+     *
+     * @return array{startDate: Carbon, endDate: Carbon, allDay: bool, cancelled: bool}
+     */
+    public function describeOccurrence(Event $event, mixed $recurrenceId, ?OccurrenceOverride $override = null): array
+    {
+        return $this->materializer->describeOccurrence(
+            $event,
+            RecurrenceId::toCarbon($this->normalizeRecurrenceId($recurrenceId)),
+            $override,
+        );
     }
 
     public function getOverride(Event $event, mixed $recurrenceId, ?int $siteId = null): ?OccurrenceOverride
@@ -107,7 +166,10 @@ class OccurrencesService extends Component
         return $this->setCancelled($event, $recurrenceId, true);
     }
 
-    public function uncancel(Event $event, mixed $recurrenceId): OccurrenceOverride
+    /**
+     * Returns null when the occurrence had no other changes, so its override was removed.
+     */
+    public function uncancel(Event $event, mixed $recurrenceId): ?OccurrenceOverride
     {
         return $this->setCancelled($event, $recurrenceId, false);
     }
@@ -193,10 +255,20 @@ class OccurrencesService extends Component
         return $copy;
     }
 
-    private function setCancelled(Event $event, mixed $recurrenceId, bool $cancelled): OccurrenceOverride
+    private function setCancelled(Event $event, mixed $recurrenceId, bool $cancelled): ?OccurrenceOverride
     {
         $override = $this->getOrCreateOverride($event, $recurrenceId);
         $override->cancelled = $cancelled;
+
+        // An override that no longer changes anything isn't kept
+        if (!$override->hasChanges()) {
+            if ($override->id && !$this->resetOverride($event, $recurrenceId)) {
+                throw new InvalidElementException($override, 'Couldn’t remove the occurrence override.');
+            }
+
+            return null;
+        }
+
         $this->saveOrFail($override);
 
         return $override;

@@ -310,11 +310,15 @@ class OccurrenceOverride extends Element implements NestedElementInterface
         return null !== $this->startDate;
     }
 
+    /**
+     * Gives the occurrence its own times. For an all-day occurrence, `$endDate` is the last day it
+     * covers; like all-day events, it then runs from the start of the first day to the end of the last.
+     */
     public function reschedule(Carbon $startDate, Carbon $endDate, bool $allDay): static
     {
         if ($allDay) {
             $startDate = $startDate->copy()->startOfDay();
-            $endDate = $endDate->copy()->startOfDay();
+            $endDate = $endDate->copy()->setTime(23, 59, 59);
         }
 
         $this->startDate = $startDate;
@@ -336,6 +340,17 @@ class OccurrenceOverride extends Element implements NestedElementInterface
     public function hasCustomSlug(): bool
     {
         return null !== $this->slug && '' !== $this->slug;
+    }
+
+    /**
+     * Whether the occurrence differs from its event in any way, a custom slug included.
+     */
+    public function hasChanges(): bool
+    {
+        return $this->hasOwnTimes()
+            || $this->cancelled
+            || $this->hasCustomSlug()
+            || [] !== $this->getOverriddenFieldHandles();
     }
 
     /**

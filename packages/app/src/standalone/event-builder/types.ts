@@ -25,7 +25,13 @@ export type AppConfig = {
   overlapThreshold?: number;
 };
 
+export type BuilderContext = {
+  eventId: number | null;
+  siteId: number;
+};
+
 export type BuilderConfig = {
   app: AppConfig;
   event: Event;
+  context?: BuilderContext;
 };

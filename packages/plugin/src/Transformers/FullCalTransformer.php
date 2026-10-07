@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\OccurrenceModel;
 
 class FullCalTransformer
@@ -26,7 +27,7 @@ class FullCalTransformer
             'url' => $element->getCpEditUrl(),
 
             'start' => $this->formatFloatingDate($element->startDate, (bool) $element->allDay),
-            'end' => $this->formatFloatingDate($element->endDate, (bool) $element->allDay),
+            'end' => $this->formatFloatingEnd($element->endDate, (bool) $element->allDay),
             'allDay' => $element->allDay,
             'multiDay' => $element->isMultiDay(),
             'repeats' => $element->isRepeating(),
@@ -67,10 +68,13 @@ class FullCalTransformer
             'url' => $model->event->getCpEditUrl(),
 
             'start' => $this->formatFloatingDate($model->startDate, $model->allDay),
-            'end' => $this->formatFloatingDate($model->endDate, $model->allDay),
+            'end' => $this->formatFloatingEnd($model->endDate, $model->allDay),
             'allDay' => $model->allDay,
             'multiDay' => $model->isMultiDay(),
             'repeats' => $model->event->isRepeating(),
+            'cancelled' => $model->cancelled,
+            'isEdited' => $model->getIsEdited(),
+            'hasOverride' => null !== $model->override,
 
             'calendar' => $model->calendar->id,
             'calendarName' => $model->calendar->name,
@@ -102,5 +106,13 @@ class FullCalTransformer
     private function formatFloatingDate(Carbon $date, bool $allDay): string
     {
         return $date->format($allDay ? 'Y-m-d' : 'Y-m-d\TH:i:s');
+    }
+
+    /**
+     * All-day events are stored ending on their last day, but FullCalendar's all-day end is the day after.
+     */
+    private function formatFloatingEnd(Carbon $date, bool $allDay): string
+    {
+        return $allDay ? DateHelper::allDayExclusiveEnd($date)->format('Y-m-d') : $this->formatFloatingDate($date, false);
     }
 }

@@ -1,0 +1,71 @@
+.calendar-occurrence-editor fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.calendar-occurrence-editor > .notice,
+.calendar-occurrence-editor > .warning {
+  margin-bottom: 24px;
+}
+
+/* Times, cancellation and slug, above the fields */
+.calendar-occurrence-meta {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  border-radius: var(--large-border-radius, 5px);
+  background-color: var(--gray-050, #f3f7fc);
+}
+
+.calendar-occurrence-meta .field {
+  margin: 0;
+}
+
+.calendar-occurrence-meta > * + *,
+.calendar-occurrence-meta-row + .calendar-occurrence-meta-row {
+  margin-top: 16px;
+}
+
+.calendar-occurrence-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+}
+
+.calendar-occurrence-reset {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.calendar-occurrence-field {
+  width: 100%;
+}
+
+/* The toggle sits at the end of the field's heading */
+.calendar-occurrence-field-toggle {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+  padding-inline-start: 12px;
+}
+
+.calendar-occurrence-field-inherited .read-only-badge {
+  display: none;
+}
+
+/* The event's values are shown read-only, so they shouldn't look like inputs */
+.calendar-occurrence-field-inherited > .field > .input {
+  color: var(--light-text-color, #606d7b);
+}
+
+.calendar-occurrence-field-inherited > .field > .input :is(input.text, textarea) {
+  border-style: dashed;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.calendar-occurrence-field[data-calendar-copied-on-save] > .calendar-occurrence-field-own .notice {
+  margin-bottom: 8px;
+}

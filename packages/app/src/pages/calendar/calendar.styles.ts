@@ -335,6 +335,18 @@ export const CalendarBase = styled.div`
     color: #ffffff;
   }
 
+  .fc-event-cancelled {
+    opacity: 0.6;
+
+    .fc-event-title {
+      text-decoration: line-through;
+    }
+  }
+
+  .fc-event-flag {
+    margin-right: 3px;
+  }
+
   .fc-event-disabled {
     opacity: 0.3 !important;
 

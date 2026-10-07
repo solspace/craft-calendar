@@ -9,6 +9,7 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use RRule\RRuleInterface;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
+use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
@@ -81,6 +82,35 @@ class OccurrenceMaterializer
         );
 
         Db::update(OccurrenceRecord::TABLE, $occurrence, $condition);
+    }
+
+    /**
+     * When an occurrence takes place, with its override applied. Drafts have no occurrence rows,
+     * so this works from the event and the override alone.
+     *
+     * @return array{startDate: Carbon, endDate: Carbon, allDay: bool, cancelled: bool}
+     */
+    public function describeOccurrence(CalendarEvent $element, Carbon $recurrenceId, ?OccurrenceOverride $override): array
+    {
+        $occurrence = $this->resolveOccurrence(
+            $element,
+            $recurrenceId,
+            $element->startDate->diff($element->endDate),
+            $override ? [
+                'id' => $override->id,
+                'startDate' => $override->startDate?->format(RecurrenceId::FORMAT),
+                'endDate' => $override->endDate?->format(RecurrenceId::FORMAT),
+                'allDay' => $override->allDay,
+                'cancelled' => $override->cancelled,
+            ] : null,
+        );
+
+        return [
+            'startDate' => new Carbon($occurrence['startDate'], DateHelper::UTC),
+            'endDate' => new Carbon($occurrence['endDate'], DateHelper::UTC),
+            'allDay' => $occurrence['allDay'],
+            'cancelled' => $occurrence['cancelled'],
+        ];
     }
 
     /**

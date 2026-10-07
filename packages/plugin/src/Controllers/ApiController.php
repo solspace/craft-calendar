@@ -127,6 +127,10 @@ class ApiController extends BaseController
         $event->title = $request->post('title');
         $event->allDay = (bool) $request->post('allDay');
 
+        if ($event->allDay) {
+            $event->endDate = DateHelper::allDayEndFromExclusive($event->startDate, $event->endDate);
+        }
+
         $success = \Craft::$app->getElements()->saveElement($event);
 
         if (!$success) {

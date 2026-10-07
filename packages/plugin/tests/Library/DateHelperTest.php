@@ -65,6 +65,31 @@ class DateHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider allDayEndDataProvider
+     */
+    public function testAllDayEndFromExclusive(string $start, string $exclusiveEnd, string $expected): void
+    {
+        $end = DateHelper::allDayEndFromExclusive(new Carbon($start, 'UTC'), new Carbon($exclusiveEnd, 'UTC'));
+
+        self::assertSame($expected, $end->toDateTimeString());
+    }
+
+    public function allDayEndDataProvider(): array
+    {
+        return [
+            'one day' => ['2026-06-12 00:00:00', '2026-06-13 00:00:00', '2026-06-12 23:59:59'],
+            'two days' => ['2026-06-12 00:00:00', '2026-06-14 00:00:00', '2026-06-13 23:59:59'],
+            'no end after the start' => ['2026-06-12 00:00:00', '2026-06-12 00:00:00', '2026-06-12 23:59:59'],
+        ];
+    }
+
+    public function testAllDayExclusiveEndIsTheDayAfterTheLastDay(): void
+    {
+        self::assertSame('2026-06-14 00:00:00', DateHelper::allDayExclusiveEnd(new Carbon('2026-06-13 23:59:59', 'UTC'))->toDateTimeString());
+        self::assertSame('2026-06-14 00:00:00', DateHelper::allDayExclusiveEnd(new Carbon('2026-06-13 00:00:00', 'UTC'))->toDateTimeString());
+    }
+
+    /**
      * @dataProvider multiDayDataProvider
      */
     public function testIsMultiDay(string $start, string $end, bool $expected): void

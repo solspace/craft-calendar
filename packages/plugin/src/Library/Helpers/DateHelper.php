@@ -204,6 +204,26 @@ class DateHelper
     }
 
     /**
+     * All-day ends arrive the way FullCalendar and the CP date pickers send them: as the day after
+     * the last day. They're stored the way the event builder stores them: at the end of the last day.
+     */
+    public static function allDayEndFromExclusive(Carbon $start, Carbon $exclusiveEnd): Carbon
+    {
+        $lastDay = $exclusiveEnd->copy()->startOfDay()->subDay();
+        $firstDay = $start->copy()->startOfDay();
+
+        return ($lastDay < $firstDay ? $firstDay : $lastDay)->setTime(23, 59, 59);
+    }
+
+    /**
+     * The day after an all-day end's last day, which is how FullCalendar expects all-day ends.
+     */
+    public static function allDayExclusiveEnd(Carbon $end): Carbon
+    {
+        return $end->copy()->startOfDay()->addDay();
+    }
+
+    /**
      * Checks whether $start and $end fall on different days.
      * Ending on the next day before the overlap threshold doesn't count.
      */

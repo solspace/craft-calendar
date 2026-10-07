@@ -4,11 +4,17 @@ import { format, formatISO } from "date-fns";
 import { type FC, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { rrulestr } from "rrule";
+import { EditedOccurrences } from "./edited-occurrences/edited-occurrences";
 import { Editor } from "./editor/editor";
 import { EventBuilderWrapper } from "./event-builder.styles";
 import { eventSelectors } from "./store/event.slice";
+import type { BuilderContext } from "./types";
 
-export const EventBuilder: FC = () => {
+type Props = {
+  context?: BuilderContext;
+};
+
+export const EventBuilder: FC<Props> = ({ context }) => {
   const { rrule } = useSelector(eventSelectors.state);
 
   const isDebug = useMemo(isDebugMode, []);
@@ -25,6 +31,8 @@ export const EventBuilder: FC = () => {
   return (
     <EventBuilderWrapper>
       <Editor />
+
+      {context?.eventId && <EditedOccurrences context={context} />}
 
       {isDebug && (
         <code>

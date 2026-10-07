@@ -341,7 +341,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
 
   const handleRecurringMove = useCallback(
     (arg: EventDropArg) => {
-      const recurrenceId = getRecurrenceIdFromId(String(arg.event.id), arg.event.allDay);
+      const recurrenceId = getRecurrenceIdFromId(String(arg.event.id));
 
       showPopover(
         <PopoverModifyEvent
@@ -369,6 +369,40 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
             });
 
             if (wasMoved) {
+              hidePopover();
+            }
+          }}
+          onCancel={arg.revert}
+        />,
+        arg.jsEvent,
+      );
+    },
+    [hidePopover, refetchEvents, showPopover],
+  );
+
+  const handleRecurringResize = useCallback(
+    (arg: EventResizeDoneArg) => {
+      const recurrenceId = getRecurrenceIdFromId(String(arg.event.id));
+      const resize = (scope: "occurrence" | "series") =>
+        resizeEvent({
+          event: arg.event,
+          oldEvent: arg.oldEvent,
+          recurrenceId,
+          scope,
+          refetchEvents,
+          revert: arg.revert,
+        });
+
+      showPopover(
+        <PopoverModifyEvent
+          action="resize"
+          onOnlyThisOccurrence={async () => {
+            if (await resize("occurrence")) {
+              hidePopover();
+            }
+          }}
+          onAllOccurrences={async () => {
+            if (await resize("series")) {
               hidePopover();
             }
           }}
@@ -514,6 +548,12 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventResize={(arg: EventResizeDoneArg) => {
           if (isCreateDraftEvent(arg.event)) {
             arg.revert();
+
+            return;
+          }
+
+          if (isRecurringEvent(arg.event)) {
+            handleRecurringResize(arg);
 
             return;
           }

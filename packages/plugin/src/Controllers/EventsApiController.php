@@ -4,11 +4,14 @@ namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
 use craft\base\Element;
+use craft\errors\InvalidElementException;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
+use Solspace\Calendar\Services\OccurrencesService;
 use Solspace\Calendar\Transformers\FullCalTransformer;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -96,20 +99,12 @@ class EventsApiController extends BaseController
     {
         $this->requirePostRequest();
 
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
         $request = \Craft::$app->request;
-        $eventId = (int) ($request->getBodyParam('eventId') ?? $request->getBodyParam('id'));
-        if (!$eventId) {
-            return $this->asFailure(Calendar::t('Event ID is required'));
-        }
-
-        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
-        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
-        if (!$event) {
-            return $this->asFailure(Calendar::t('Event could not be found'));
-        }
-
-        $this->getEventsService()->requireEventEditPermissions($event);
-
         $scope = $this->parseScope($request->getBodyParam('scope'));
         $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
         $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
@@ -119,11 +114,19 @@ class EventsApiController extends BaseController
             $recurrenceId = $this->parseRequiredRecurrenceId($event);
 
             if (self::SCOPE_OCCURRENCE === $scope) {
-                $this->getRecurringMutationHelper()->moveOccurrence($event, $recurrenceId, $start, $allDay);
-            } else {
-                $this->getRecurringMutationHelper()->moveSeries($event, $recurrenceId, $start, $allDay);
+                return $this->rescheduleOccurrence($event, $recurrenceId, $start, $end, $allDay);
             }
+
+            // The series moves as far as the occurrence was dragged, which for one with its own times isn't from its recurrence ID
+            $service = $this->getOccurrencesService();
+            $draggedFrom = $service->describeOccurrence($event, $recurrenceId, $service->getOverride($event, $recurrenceId))['startDate'];
+
+            $this->getRecurringMutationHelper()->moveSeries($event, $draggedFrom, $start, $allDay);
         } else {
+            if ($allDay) {
+                $end = DateHelper::allDayEndFromExclusive($start, $end);
+            }
+
             $isEqualStart = $event->getStartDate()->equalTo($start);
             $isEqualEnd = $event->getEndDate()->equalTo($end);
             $isEqualAllDay = $event->isAllDay() === $allDay;
@@ -144,30 +147,22 @@ class EventsApiController extends BaseController
     {
         $this->requirePostRequest();
 
-        $request = \Craft::$app->request;
-        $eventId = (int) ($request->getBodyParam('eventId') ?? $request->getBodyParam('id'));
-        if (!$eventId) {
-            return $this->asFailure(Calendar::t('Event ID is required'));
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
         }
 
-        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
-        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
-        if (!$event) {
-            return $this->asFailure(Calendar::t('Event could not be found'));
-        }
-
-        $this->getEventsService()->requireEventEditPermissions($event);
-
-        $scope = $this->parseScope($request->getBodyParam('scope'));
+        $scope = $this->parseScope(\Craft::$app->request->getBodyParam('scope'));
         if ($this->hasOccurrenceSchedule($event) && self::SCOPE_OCCURRENCE === $scope) {
             $recurrenceId = $this->parseRequiredRecurrenceId($event);
 
-            $this->getRecurringMutationHelper()->deleteOccurrence($event, $recurrenceId);
-
-            return $this->saveEventResponse($event, Calendar::t('Couldn’t delete event.'));
+            return $this->occurrenceResponse(
+                fn () => $this->getOccurrencesService()->deleteOccurrence($event, $recurrenceId),
+                Calendar::t('Couldn’t delete event.'),
+            );
         }
 
-        if ($this->getEventsService()->deleteEventById($eventId)) {
+        if ($this->getEventsService()->deleteEventById($event->id)) {
             return $this->asJson(['success' => true]);
         }
 
@@ -178,23 +173,21 @@ class EventsApiController extends BaseController
     {
         $this->requirePostRequest();
 
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
         $request = \Craft::$app->request;
-        $eventId = (int) ($request->getBodyParam('eventId') ?? $request->getBodyParam('id'));
-        if (!$eventId) {
-            return $this->asFailure(Calendar::t('Event ID is required'));
-        }
-
-        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
-        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
-        if (!$event) {
-            return $this->asFailure(Calendar::t('Event could not be found'));
-        }
-
-        $this->getEventsService()->requireEventEditPermissions($event);
-
+        $scope = $this->parseScope($request->getBodyParam('scope'));
         $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
         $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
         $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
+
+        if ($this->hasOccurrenceSchedule($event) && self::SCOPE_OCCURRENCE === $scope) {
+            return $this->rescheduleOccurrence($event, $this->parseRequiredRecurrenceId($event), $start, $end, $allDay);
+        }
+
         $startDeltaSeconds = $this->parseDeltaSeconds(
             $request->getBodyParam('startDeltaSeconds'),
             $request->getBodyParam('oldStart'),
@@ -217,11 +210,101 @@ class EventsApiController extends BaseController
             );
         } else {
             $event->startDate = $start;
-            $event->endDate = $end;
+            $event->endDate = $allDay ? DateHelper::allDayEndFromExclusive($start, $end) : $end;
             $event->allDay = $allDay;
         }
 
         return $this->saveEventResponse($event, Calendar::t('Could not save event'));
+    }
+
+    /**
+     * Cancels one occurrence, or restores it when `cancelled` is false. Cancelled occurrences stay listed.
+     */
+    public function actionCancel(): Response
+    {
+        $this->requirePostRequest();
+
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
+        $recurrenceId = $this->parseRequiredRecurrenceId($event);
+        $cancelled = $this->parseBooleanBodyParam(\Craft::$app->request->getBodyParam('cancelled', true));
+
+        return $this->occurrenceResponse(
+            fn () => $cancelled
+                ? $this->getOccurrencesService()->cancel($event, $recurrenceId)
+                : $this->getOccurrencesService()->uncancel($event, $recurrenceId),
+            Calendar::t('Could not save event'),
+        );
+    }
+
+    /**
+     * Removes everything one occurrence changed, so it follows its event again.
+     */
+    public function actionResetOccurrence(): Response
+    {
+        $this->requirePostRequest();
+
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
+        $recurrenceId = $this->parseRequiredRecurrenceId($event);
+
+        return $this->occurrenceResponse(
+            fn () => $this->getOccurrencesService()->resetOverride($event, $recurrenceId),
+            Calendar::t('Could not save event'),
+        );
+    }
+
+    /**
+     * The event the request is about, if the user may edit it, or the failure response to send.
+     */
+    private function findEditableEvent(): Event|Response
+    {
+        $request = \Craft::$app->request;
+        $eventId = (int) ($request->getBodyParam('eventId') ?? $request->getBodyParam('id'));
+        if (!$eventId) {
+            return $this->asFailure(Calendar::t('Event ID is required'));
+        }
+
+        $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
+        $event = $this->getEventsService()->getEventById($eventId, $siteId, true);
+        if (!$event) {
+            return $this->asFailure(Calendar::t('Event could not be found'));
+        }
+
+        $this->getEventsService()->requireEventEditPermissions($event);
+
+        return $event;
+    }
+
+    private function rescheduleOccurrence(Event $event, Carbon $recurrenceId, Carbon $start, Carbon $end, bool $allDay): Response
+    {
+        if ($allDay) {
+            $end = DateHelper::allDayEndFromExclusive($start, $end);
+        }
+
+        return $this->occurrenceResponse(
+            fn () => $this->getOccurrencesService()->reschedule($event, $recurrenceId, $start, $end, $allDay),
+            Calendar::t('Could not save event'),
+        );
+    }
+
+    private function occurrenceResponse(callable $change, string $fallbackMessage): Response
+    {
+        try {
+            $result = $change();
+        } catch (InvalidElementException $exception) {
+            return $this->asFailure($exception->getMessage() ?: $fallbackMessage);
+        } catch (InvalidArgumentException) {
+            return $this->asFailure(Calendar::t('Occurrence could not be found'));
+        }
+
+        return false === $result ? $this->asFailure($fallbackMessage) : $this->asJson(['success' => true]);
     }
 
     private function saveEventResponse(Event $event, string $fallbackMessage): Response
@@ -240,6 +323,11 @@ class EventsApiController extends BaseController
     private function getRecurringMutationHelper(): RecurringEventMutationHelper
     {
         return new RecurringEventMutationHelper();
+    }
+
+    private function getOccurrencesService(): OccurrencesService
+    {
+        return Calendar::getInstance()->occurrences;
     }
 
     private function hasOccurrenceSchedule(Event $event): bool

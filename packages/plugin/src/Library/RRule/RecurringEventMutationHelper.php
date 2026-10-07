@@ -20,18 +20,6 @@ class RecurringEventMutationHelper
         );
     }
 
-    public function moveOccurrence(Event $event, Carbon $occurrence, Carbon $newOccurrenceStart, bool $allDay): void
-    {
-        $event->allDay = $allDay;
-        $event->rrule = $this->moveOccurrenceRRule(
-            $event->getRRuleRFCString(),
-            $event->getStartDate(),
-            $allDay,
-            $occurrence,
-            $newOccurrenceStart,
-        );
-    }
-
     public function moveSeries(Event $event, Carbon $occurrence, Carbon $newOccurrenceStart, bool $allDay): void
     {
         $originalStart = $this->normalizeDate($event->getStartDate(), $event->isAllDay());
@@ -88,35 +76,6 @@ class RecurringEventMutationHelper
 
         $rdates = $this->removeDateFromList($rdates, $normalizedOccurrence, $allDay);
         $exdates = $this->appendDate($exdates, $normalizedOccurrence, $allDay);
-
-        return $this->buildRRuleString($baseRule, $eventStart, $allDay, $rdates, $exdates);
-    }
-
-    public function moveOccurrenceRRule(
-        ?string $rruleString,
-        Carbon $eventStart,
-        bool $allDay,
-        Carbon $occurrence,
-        Carbon $newOccurrenceStart,
-    ): ?string {
-        ['baseRule' => $baseRule, 'rdates' => $rdates, 'exdates' => $exdates] = $this->parseState(
-            $rruleString,
-            $allDay,
-        );
-
-        $normalizedOccurrence = $this->normalizeDate($occurrence, $allDay);
-        $normalizedNewOccurrence = $this->normalizeDate($newOccurrenceStart, $allDay);
-
-        if ($this->hasDate($rdates, $normalizedOccurrence, $allDay)) {
-            $rdates = $this->replaceDateInList($rdates, $normalizedOccurrence, $normalizedNewOccurrence, $allDay);
-            $exdates = $this->removeDateFromList($exdates, $normalizedNewOccurrence, $allDay);
-
-            return $this->buildRRuleString($baseRule, $eventStart, $allDay, $rdates, $exdates);
-        }
-
-        $rdates = $this->appendDate($rdates, $normalizedNewOccurrence, $allDay);
-        $exdates = $this->appendDate($exdates, $normalizedOccurrence, $allDay);
-        $exdates = $this->removeDateFromList($exdates, $normalizedNewOccurrence, $allDay);
 
         return $this->buildRRuleString($baseRule, $eventStart, $allDay, $rdates, $exdates);
     }
@@ -346,37 +305,6 @@ class RecurringEventMutationHelper
         );
     }
 
-    private function replaceDateInList(array $dates, Carbon $from, Carbon $to, bool $allDay): array
-    {
-        $updated = [];
-        $fromKey = $this->dateKey($from, $allDay);
-
-        foreach ($dates as $date) {
-            if ($this->dateKey($date, $allDay) === $fromKey) {
-                $updated[] = $this->normalizeDate($to, $allDay);
-
-                continue;
-            }
-
-            $updated[] = $this->normalizeDate($date, $allDay);
-        }
-
-        return $this->uniqueDates($updated, $allDay);
-    }
-
-    private function hasDate(array $dates, Carbon $date, bool $allDay): bool
-    {
-        $dateKey = $this->dateKey($date, $allDay);
-
-        foreach ($dates as $value) {
-            if ($this->dateKey($value, $allDay) === $dateKey) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private function uniqueDates(array $dates, bool $allDay): array
     {
         $unique = [];
@@ -444,12 +372,15 @@ class RecurringEventMutationHelper
         return $normalized;
     }
 
+    /**
+     * All-day ends are kept at the end of the last day, the way the event builder stores them.
+     */
     private function normalizeEndDate(Carbon|\DateTimeInterface $date, bool $allDay): Carbon
     {
         $normalized = $this->toCarbon($date, $allDay);
 
         if ($allDay) {
-            return $normalized->startOfDay();
+            return $normalized->setTime(23, 59, 59);
         }
 
         return $normalized;

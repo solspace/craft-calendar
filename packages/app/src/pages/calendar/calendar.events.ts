@@ -21,12 +21,26 @@ type MoveEventArgs = EventMutationArgs & {
 type ResizeEventArgs = EventMutationArgs & {
   event: EventApi;
   oldEvent: EventApi;
+  recurrenceId?: string | null;
+  scope?: EventMutationScope;
 };
 
 type DeleteEventArgs = EventMutationArgs & {
   event: EventApi;
   recurrenceId?: string | null;
   scope?: EventMutationScope;
+};
+
+type OccurrenceMutationArgs = EventMutationArgs & {
+  event: EventApi;
+  recurrenceId: string;
+};
+
+type OpenOccurrenceEditorArgs = {
+  eventId: number;
+  recurrenceId: string;
+  siteId?: number;
+  onSave: () => void;
 };
 
 const normalizeCalendarsParam = (calendars?: string | string[]): string | undefined => {
@@ -98,7 +112,7 @@ const fetchRange = (
   return request;
 };
 
-const getEventId = (id: string): number => Number.parseInt(id.split("-", 1)[0] || id, 10);
+export const getEventId = (id: string): number => Number.parseInt(id.split("-", 1)[0] || id, 10);
 
 const serializeEventDate = (value: Date | null, allDay: boolean): string | null => {
   if (!value) {
@@ -140,8 +154,9 @@ const requestEventMutation = async (path: string, body: Record<string, unknown>)
   }
 };
 
-// Occurrence IDs end in their recurrence ID (`YmdHis`), which stays the same when an occurrence moves
-export const getRecurrenceIdFromId = (id: string, allDay: boolean): string | null => {
+// Occurrence IDs end in their recurrence ID (`YmdHis`), which stays the same when an occurrence moves.
+// It keeps its time even when the occurrence itself has been made all-day.
+export const getRecurrenceIdFromId = (id: string): string | null => {
   const match = /^\d+-(\d{8})(\d{6})$/.exec(id);
   if (!match) {
     return null;
@@ -155,7 +170,7 @@ export const getRecurrenceIdFromId = (id: string, allDay: boolean): string | nul
   const minutes = Number.parseInt(time.slice(2, 4), 10);
   const seconds = Number.parseInt(time.slice(4, 6), 10);
 
-  return serializeEventDate(new Date(Date.UTC(year, month, day, hours, minutes, seconds)), allDay);
+  return serializeEventDate(new Date(Date.UTC(year, month, day, hours, minutes, seconds)), false);
 };
 
 export const moveEvent = async ({
@@ -190,13 +205,16 @@ export const moveEvent = async ({
 export const resizeEvent = async ({
   event,
   oldEvent,
+  recurrenceId,
+  scope = "series",
   refetchEvents,
   revert,
 }: ResizeEventArgs): Promise<boolean> => {
   try {
     await requestEventMutation("resize", {
       eventId: getEventId(String(event.id)),
-      scope: "series",
+      scope,
+      recurrenceId,
       start: serializeEventDate(event.start, event.allDay),
       end: serializeEventDate(event.end, event.allDay),
       oldStart: serializeEventDate(oldEvent.start, oldEvent.allDay),
@@ -242,6 +260,80 @@ export const deleteEvent = async ({
 
     return false;
   }
+};
+
+/**
+ * Cancelled occurrences stay on the calendar, marked as not taking place.
+ */
+export const setOccurrenceCancelled = async ({
+  event,
+  recurrenceId,
+  cancelled,
+  refetchEvents,
+}: OccurrenceMutationArgs & { cancelled: boolean }): Promise<boolean> => {
+  try {
+    await requestEventMutation("cancel", {
+      eventId: getEventId(String(event.id)),
+      recurrenceId,
+      cancelled,
+    });
+
+    clearCalendarEventsCache();
+    refetchEvents();
+
+    return true;
+  } catch (error) {
+    console.error("Error cancelling occurrence:", error);
+
+    return false;
+  }
+};
+
+/**
+ * Removes everything an occurrence changes, so it follows its event again.
+ */
+export const resetOccurrence = async ({
+  event,
+  recurrenceId,
+  refetchEvents,
+}: OccurrenceMutationArgs): Promise<boolean> => {
+  try {
+    await requestEventMutation("reset-occurrence", {
+      eventId: getEventId(String(event.id)),
+      recurrenceId,
+    });
+
+    clearCalendarEventsCache();
+    refetchEvents();
+
+    return true;
+  } catch (error) {
+    console.error("Error resetting occurrence:", error);
+
+    return false;
+  }
+};
+
+/**
+ * Opens a single occurrence in the occurrence slideout. `eventId` can be a draft's ID,
+ * in which case changes are saved into that draft.
+ */
+export const openOccurrenceEditor = ({
+  eventId,
+  recurrenceId,
+  siteId,
+  onSave,
+}: OpenOccurrenceEditorArgs): void => {
+  const params: Record<string, string | number> = { eventId, recurrenceId };
+  if (siteId !== undefined) {
+    params.siteId = siteId;
+  }
+
+  const slideout = new Craft.CpScreenSlideout("calendar/occurrences/edit", { params });
+  slideout.on("submit", () => {
+    clearCalendarEventsCache();
+    onSave();
+  });
 };
 
 export const clearCalendarEventsCache = () => {

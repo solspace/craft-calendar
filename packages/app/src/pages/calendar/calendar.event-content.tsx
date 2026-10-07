@@ -1,3 +1,4 @@
+import translate from "@cal/utils/translations";
 import type { EventApi, EventContentArg } from "@fullcalendar/core/index.js";
 import clsx from "clsx";
 import { isCreateDraftEvent, isCreateDraftEventClickTarget } from "./calendar.create-session";
@@ -36,6 +37,12 @@ export const getCalendarEventClassNames = ({ event }: { event: EventApi }): stri
     classNames.push("fc-event-disabled");
   }
 
+  if (event.extendedProps?.cancelled) {
+    classNames.push("fc-event-cancelled");
+  } else if (event.extendedProps?.isEdited) {
+    classNames.push("fc-event-edited");
+  }
+
   const contrastColorClass = getCalendarContrastColorClass(event.textColor);
   if (contrastColorClass) {
     classNames.push(contrastColorClass);
@@ -67,6 +74,13 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
   );
 
   const isLink = !isCreateDraftEvent(event) && event.url;
+  const isEdited = !event.extendedProps?.cancelled && Boolean(event.extendedProps?.isEdited);
+
+  const editedFlag = isEdited ? (
+    <span className="fc-event-flag" title={translate("This occurrence has its own changes.")}>
+      ✎
+    </span>
+  ) : null;
 
   const titleContent = isLink ? (
     <button
@@ -75,10 +89,14 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
       className={titleClassName}
       data-calendar-event-title-link
     >
+      {editedFlag}
       {event.title}
     </button>
   ) : (
-    <div className={titleClassName}>{event.title}</div>
+    <div className={titleClassName}>
+      {editedFlag}
+      {event.title}
+    </div>
   );
 
   if (isMonthSingleDayTimedEvent(arg)) {
