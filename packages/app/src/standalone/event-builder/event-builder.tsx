@@ -7,6 +7,7 @@ import { rrulestr } from "rrule";
 import { EditedOccurrences } from "./edited-occurrences/edited-occurrences";
 import { Editor } from "./editor/editor";
 import { EventBuilderWrapper } from "./event-builder.styles";
+import { Series } from "./series/series";
 import { eventSelectors } from "./store/event.slice";
 import type { BuilderContext } from "./types";
 
@@ -30,6 +31,8 @@ export const EventBuilder: FC<Props> = ({ context }) => {
 
   return (
     <EventBuilderWrapper>
+      {context && <Series context={context} />}
+
       <Editor />
 
       {context?.eventId && <EditedOccurrences context={context} />}

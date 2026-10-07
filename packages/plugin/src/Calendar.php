@@ -37,6 +37,7 @@ use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\ExceptionsService;
 use Solspace\Calendar\Services\OccurrencesService;
 use Solspace\Calendar\Services\SelectDatesService;
+use Solspace\Calendar\Services\SeriesService;
 use Solspace\Calendar\Services\SettingsService;
 use Solspace\Calendar\Services\ViewDataService;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
@@ -60,6 +61,7 @@ use yii\web\ForbiddenHttpException;
  * @property ExceptionsService    $exceptions
  * @property OccurrencesService   $occurrences
  * @property SelectDatesService   $selectDates
+ * @property SeriesService        $series
  * @property SettingsService      $settings
  * @property ViewDataService      $viewData
  */
@@ -337,6 +339,7 @@ class Calendar extends Plugin
                 'exceptions' => ExceptionsService::class,
                 'occurrences' => OccurrencesService::class,
                 'selectDates' => SelectDatesService::class,
+                'series' => SeriesService::class,
                 'settings' => SettingsService::class,
                 'viewData' => ViewDataService::class,
             ]

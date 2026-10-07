@@ -25,9 +25,21 @@ export type AppConfig = {
   overlapThreshold?: number;
 };
 
+export type SeriesPart = {
+  url: string;
+  start: number;
+};
+
 export type BuilderContext = {
   eventId: number | null;
   siteId: number;
+  // Set on a draft made with "Edit this and following": the occurrence the draft continues the event from
+  splitAt?: number | null;
+  // The events before and after this one in its series
+  series?: {
+    earlier: SeriesPart | null;
+    later: SeriesPart | null;
+  };
 };
 
 export type BuilderConfig = {

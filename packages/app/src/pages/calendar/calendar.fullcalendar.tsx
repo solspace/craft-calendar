@@ -38,6 +38,7 @@ import {
 } from "./calendar.event-content";
 import {
   createCalendarEventsSource,
+  type EventMutationScope,
   getRecurrenceIdFromId,
   moveEvent,
   resizeEvent,
@@ -342,36 +343,26 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const handleRecurringMove = useCallback(
     (arg: EventDropArg) => {
       const recurrenceId = getRecurrenceIdFromId(String(arg.event.id));
+      const move = async (scope: EventMutationScope) => {
+        const wasMoved = await moveEvent({
+          event: arg.event,
+          recurrenceId,
+          scope,
+          refetchEvents,
+          revert: arg.revert,
+        });
+
+        if (wasMoved) {
+          hidePopover();
+        }
+      };
 
       showPopover(
         <PopoverModifyEvent
           action="move"
-          onOnlyThisOccurrence={async () => {
-            const wasMoved = await moveEvent({
-              event: arg.event,
-              recurrenceId,
-              scope: "occurrence",
-              refetchEvents,
-              revert: arg.revert,
-            });
-
-            if (wasMoved) {
-              hidePopover();
-            }
-          }}
-          onAllOccurrences={async () => {
-            const wasMoved = await moveEvent({
-              event: arg.event,
-              recurrenceId,
-              scope: "series",
-              refetchEvents,
-              revert: arg.revert,
-            });
-
-            if (wasMoved) {
-              hidePopover();
-            }
-          }}
+          onOnlyThisOccurrence={() => move("occurrence")}
+          onThisAndFollowing={() => move("following")}
+          onAllOccurrences={() => move("series")}
           onCancel={arg.revert}
         />,
         arg.jsEvent,
@@ -383,7 +374,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const handleRecurringResize = useCallback(
     (arg: EventResizeDoneArg) => {
       const recurrenceId = getRecurrenceIdFromId(String(arg.event.id));
-      const resize = (scope: "occurrence" | "series") =>
+      const resize = (scope: EventMutationScope) =>
         resizeEvent({
           event: arg.event,
           oldEvent: arg.oldEvent,
@@ -398,6 +389,11 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
           action="resize"
           onOnlyThisOccurrence={async () => {
             if (await resize("occurrence")) {
+              hidePopover();
+            }
+          }}
+          onThisAndFollowing={async () => {
+            if (await resize("following")) {
               hidePopover();
             }
           }}

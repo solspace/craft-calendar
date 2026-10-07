@@ -1,6 +1,8 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import {
   deleteEvent,
+  type EventMutationScope,
+  editFollowing,
   getEventId,
   getRecurrenceIdFromId,
   openOccurrenceEditor,
@@ -9,6 +11,7 @@ import {
 import { useConfig } from "@cal/pages/calendar/context/config.context";
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDateLocale } from "@cal/utils/localization";
+import { notifications } from "@cal/utils/notifications";
 import translate from "@cal/utils/translations";
 import {
   buildPreviewRecurrence,
@@ -31,7 +34,8 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { currentSiteId } = useConfig();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  const isBusy = isDeleting || isCancelling;
+  const [isOpeningDraft, setIsOpeningDraft] = useState(false);
+  const isBusy = isDeleting || isCancelling || isOpeningDraft;
 
   useEventListener("keydown", (keyboardEvent) => {
     if (keyboardEvent.key === "Escape") {
@@ -82,6 +86,25 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     });
   };
 
+  // Changes from this occurrence onward go into a draft, which splits the event when it's applied
+  const editThisAndFollowing = async () => {
+    if (!recurrenceId || isBusy) {
+      return;
+    }
+
+    setIsOpeningDraft(true);
+
+    const url = await editFollowing({ event, recurrenceId, siteId: currentSiteId });
+    if (url) {
+      window.location.href = url;
+
+      return;
+    }
+
+    setIsOpeningDraft(false);
+    notifications.error(translate("Couldn’t open the occurrences for editing."));
+  };
+
   const toggleCancelled = async () => {
     if (!recurrenceId || isBusy) {
       return;
@@ -129,6 +152,19 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   };
 
   const showRecurringDeletePopover = () => {
+    const deleteOccurrences = async (scope: EventMutationScope) => {
+      const wasDeleted = await deleteEvent({
+        event,
+        scope,
+        recurrenceId,
+        refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
+      });
+
+      if (wasDeleted) {
+        hidePopover();
+      }
+    };
+
     showPopover(
       <PopoverModifyEvent
         action="delete"
@@ -144,29 +180,10 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
             return;
           }
 
-          const wasDeleted = await deleteEvent({
-            event,
-            scope: "occurrence",
-            recurrenceId,
-            refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
-          });
-
-          if (wasDeleted) {
-            hidePopover();
-          }
+          await deleteOccurrences("occurrence");
         }}
-        onAllOccurrences={async () => {
-          const wasDeleted = await deleteEvent({
-            event,
-            scope: "series",
-            recurrenceId,
-            refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
-          });
-
-          if (wasDeleted) {
-            hidePopover();
-          }
-        }}
+        onThisAndFollowing={() => deleteOccurrences("following")}
+        onAllOccurrences={() => deleteOccurrences("series")}
       />,
       fcEvent.el,
     );
@@ -226,6 +243,17 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
             onClick={editOccurrence}
           >
             {translate("Edit occurrence")}
+          </button>
+        )}
+
+        {isRecurring && recurrenceId && (
+          <button
+            type="button"
+            className={clsx("btn", isBusy && "disabled")}
+            disabled={isBusy}
+            onClick={() => void editThisAndFollowing()}
+          >
+            {translate(isOpeningDraft ? "Processing..." : "Edit this and following")}
           </button>
         )}
 

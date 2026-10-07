@@ -33,22 +33,10 @@ class EventResolver extends ElementResolver
         return Calendar::getInstance()->events->getEventQuery($arguments);
     }
 
-    private static function applyCalendarPermissions(array $arguments): array|false
-    {
-        $calendarUids = GqlPermissions::allowedEventCalendarUids();
-
-        if ([] === $calendarUids) {
-            return false;
-        }
-
-        if (\is_array($calendarUids)) {
-            $arguments['calendarUid'] = $calendarUids;
-        }
-
-        return $arguments;
-    }
-
-    private static function applyCalendarPermissionsToValue(mixed $value): mixed
+    /**
+     * Leaves out events from calendars the schema can't read.
+     */
+    public static function applyCalendarPermissionsToValue(mixed $value): mixed
     {
         $calendarUids = GqlPermissions::allowedEventCalendarUids();
 
@@ -84,5 +72,20 @@ class EventResolver extends ElementResolver
         }
 
         return $value;
+    }
+
+    private static function applyCalendarPermissions(array $arguments): array|false
+    {
+        $calendarUids = GqlPermissions::allowedEventCalendarUids();
+
+        if ([] === $calendarUids) {
+            return false;
+        }
+
+        if (\is_array($calendarUids)) {
+            $arguments['calendarUid'] = $calendarUids;
+        }
+
+        return $arguments;
     }
 }

@@ -133,13 +133,13 @@ class EventsService extends Component
             $transaction = \Craft::$app->db->beginTransaction();
 
             try {
-                $isSaved = \Craft::$app->elements->saveElement($event, $validateContent);
-                if (!$isSaved) {
-                    return false;
-                }
+                $isSaved = \Craft::$app->elements->saveElement($event, $validateContent)
+                    && $this->_respectNonTranslatableFields($event);
 
-                $isSaved = $this->_respectNonTranslatableFields($event);
                 if (!$isSaved) {
+                    // Left open, the transaction would hold on to everything else the request writes
+                    $transaction?->rollBack();
+
                     return false;
                 }
 

@@ -176,6 +176,17 @@ class Install extends StreamlinedInstallMigration
                     name: 'occurrence_windows_event_id_fk',
                 )
                 ->addIndex(['generatedThrough'], name: 'generated_through_idx'),
+
+            (new Table('calendar_event_splits'))
+                ->addField('eventId', $this->integer()->notNull())
+                ->addField('splitAt', $this->dateTime()->notNull())
+                ->addForeignKey(
+                    'eventId',
+                    'calendar_events',
+                    'id',
+                    ForeignKey::CASCADE,
+                    name: 'event_splits_event_id_fk',
+                ),
         ];
     }
 
@@ -188,5 +199,6 @@ class Install extends StreamlinedInstallMigration
         $this->addPrimaryKey('pk_calendar_occurrence_overrides', '{{%calendar_occurrence_overrides}}', ['id']);
         $this->addPrimaryKey('pk_calendar_occurrence_overrides_sites', '{{%calendar_occurrence_overrides_sites}}', ['id', 'siteId']);
         $this->addPrimaryKey('pk_calendar_events_occurrence_windows', '{{%calendar_events_occurrence_windows}}', ['eventId']);
+        $this->addPrimaryKey('pk_calendar_event_splits', '{{%calendar_event_splits}}', ['eventId']);
     }
 }

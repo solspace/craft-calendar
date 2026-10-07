@@ -31,6 +31,7 @@ return [
     'POST calendar/api/events/resize' => 'calendar/events-api/resize',
     'POST calendar/api/events/cancel' => 'calendar/events-api/cancel',
     'POST calendar/api/events/reset-occurrence' => 'calendar/events-api/reset-occurrence',
+    'POST calendar/api/events/edit-following' => 'calendar/events-api/edit-following',
 
     'calendar/events/api/first-occurrence-date' => 'calendar/events-api/first-occurrence-date',
     'calendar/events/api/create' => 'calendar/events-api/create',

@@ -131,6 +131,98 @@ class RecurringEventMutationHelper
         return $this->buildRRuleString($baseRule, $newEventStart, $allDay, $rdates, $exdates);
     }
 
+    /**
+     * Splits a schedule at one of its occurrences. The earlier part ends with the rule's last
+     * occurrence before the split, and the later part starts at the rule's first occurrence from it,
+     * with a count reduced by what the earlier part took. Additional and excluded dates go with the
+     * part they fall in.
+     *
+     * The later part's DTSTART is always one of the rule's own occurrences, so a split at an additional
+     * date starts the rule at its next occurrence instead; moving DTSTART anywhere else could change
+     * the dates the rule produces.
+     *
+     * @return array{
+     *     before: ?string,
+     *     beforeUntil: ?Carbon,
+     *     after: ?string,
+     *     afterStart: Carbon,
+     * } each part's rule string, the earlier part's last rule occurrence (null when it has no rule),
+     *   and when the later part starts
+     */
+    public function splitRRule(?string $rruleString, Carbon $eventStart, bool $allDay, Carbon $splitAt): array
+    {
+        ['baseRule' => $baseRule, 'rdates' => $rdates, 'exdates' => $exdates] = $this->parseState(
+            $rruleString,
+            $allDay,
+        );
+
+        $split = $this->normalizeDate($splitAt, $allDay);
+        $splitKey = $this->dateKey($split, $allDay);
+        $isBefore = fn (Carbon $date) => $this->dateKey($date, $allDay) < $splitKey;
+
+        $lastBefore = null;
+        $firstAfter = null;
+        $countBefore = 0;
+
+        foreach ($baseRule ?? [] as $occurrence) {
+            $date = $this->normalizeDate($occurrence, $allDay);
+            if (!$isBefore($date)) {
+                $firstAfter = $date;
+
+                break;
+            }
+
+            $lastBefore = $date;
+            ++$countBefore;
+        }
+
+        $beforeRule = null;
+        if ($baseRule && $lastBefore) {
+            $rule = $baseRule->getRule();
+            $rule['DTSTART'] = $this->normalizeDate($rule['DTSTART'], $allDay);
+            $rule['COUNT'] = null;
+            $rule['UNTIL'] = $lastBefore;
+            $beforeRule = new RRule($rule);
+        }
+
+        $afterRule = null;
+        if ($baseRule && $firstAfter) {
+            $rule = $baseRule->getRule();
+            $rule['DTSTART'] = $firstAfter;
+
+            if (null !== $rule['COUNT']) {
+                $rule['COUNT'] -= $countBefore;
+            }
+
+            if ($rule['UNTIL'] instanceof \DateTimeInterface) {
+                $rule['UNTIL'] = $this->normalizeDate($rule['UNTIL'], $allDay);
+            }
+
+            $afterRule = new RRule($rule);
+        }
+
+        $afterStart = $firstAfter ?? $split;
+
+        return [
+            'before' => $this->buildRRuleString(
+                $beforeRule,
+                $eventStart,
+                $allDay,
+                array_filter($rdates, $isBefore),
+                array_filter($exdates, $isBefore),
+            ),
+            'beforeUntil' => $beforeRule ? $lastBefore : null,
+            'after' => $this->buildRRuleString(
+                $afterRule,
+                $afterStart,
+                $allDay,
+                array_filter($rdates, static fn (Carbon $date) => !$isBefore($date)),
+                array_filter($exdates, static fn (Carbon $date) => !$isBefore($date)),
+            ),
+            'afterStart' => $afterStart,
+        ];
+    }
+
     private function parseState(?string $rruleString, bool $allDay): array
     {
         if (!$rruleString) {

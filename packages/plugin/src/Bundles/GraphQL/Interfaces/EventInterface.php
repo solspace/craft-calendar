@@ -78,6 +78,16 @@ class EventInterface extends AbstractInterface
                         'type' => CalendarInterface::getType(),
                         'description' => "The event's Calendar",
                     ],
+                    'seriesId' => [
+                        'name' => 'seriesId',
+                        'type' => Type::int(),
+                        'description' => 'Shared by the events that changing an event from one occurrence onward split it into. Null for an event that was never split.',
+                    ],
+                    'series' => [
+                        'name' => 'series',
+                        'type' => Type::listOf(self::getType()),
+                        'description' => "Every event in the event's series, in order of their start. An event that was never split is a series of one.",
+                    ],
                     'title' => [
                         'name' => 'title',
                         'type' => Type::string(),

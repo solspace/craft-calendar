@@ -5,7 +5,7 @@ import type { EventApi, EventInput, EventSourceFunc } from "@fullcalendar/core";
 const rangeCache = new Map<string, EventInput[]>();
 const inflightRequests = new Map<string, Promise<EventInput[]>>();
 
-export type EventMutationScope = "occurrence" | "series";
+export type EventMutationScope = "occurrence" | "following" | "series";
 
 type EventMutationArgs = {
   refetchEvents: () => void;
@@ -134,7 +134,10 @@ const diffSeconds = (next: Date | null, previous: Date | null): number | null =>
   return Math.round((next.getTime() - previous.getTime()) / 1000);
 };
 
-const requestEventMutation = async (path: string, body: Record<string, unknown>) => {
+const requestEventMutation = async (
+  path: string,
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>> => {
   const response = await craftFetch(Craft.getCpUrl(`calendar/api/events/${path}`), {
     method: "POST",
     headers: {
@@ -152,6 +155,8 @@ const requestEventMutation = async (path: string, body: Record<string, unknown>)
   if (data?.success === false) {
     throw new Error(data?.message || `Failed to ${path} event`);
   }
+
+  return data;
 };
 
 // Occurrence IDs end in their recurrence ID (`YmdHis`), which stays the same when an occurrence moves.
@@ -311,6 +316,34 @@ export const resetOccurrence = async ({
     console.error("Error resetting occurrence:", error);
 
     return false;
+  }
+};
+
+/**
+ * Starts "Edit this and following": a draft of the event from the occurrence onward, which splits the
+ * event there when it's applied. Returns the URL to edit it at.
+ */
+export const editFollowing = async ({
+  event,
+  recurrenceId,
+  siteId,
+}: {
+  event: EventApi;
+  recurrenceId: string;
+  siteId?: number;
+}): Promise<string | null> => {
+  try {
+    const data = await requestEventMutation("edit-following", {
+      eventId: getEventId(String(event.id)),
+      recurrenceId,
+      siteId,
+    });
+
+    return typeof data.url === "string" ? data.url : null;
+  } catch (error) {
+    console.error("Error editing following occurrences:", error);
+
+    return null;
   }
 };
 

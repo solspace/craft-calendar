@@ -10,6 +10,7 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
 use Solspace\Calendar\Services\OccurrencesService;
+use Solspace\Calendar\Services\SeriesService;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
@@ -21,6 +22,7 @@ class EventsApiController extends BaseController
     public const EVENT_FIELD_NAME = 'calendarEvent';
 
     private const SCOPE_OCCURRENCE = 'occurrence';
+    private const SCOPE_FOLLOWING = 'following';
     private const SCOPE_SERIES = 'series';
 
     public array|bool|int $allowAnonymous = true;
@@ -120,8 +122,13 @@ class EventsApiController extends BaseController
             // The series moves as far as the occurrence was dragged, which for one with its own times isn't from its recurrence ID
             $service = $this->getOccurrencesService();
             $draggedFrom = $service->describeOccurrence($event, $recurrenceId, $service->getOverride($event, $recurrenceId))['startDate'];
+            $move = fn (Event $event) => $this->getRecurringMutationHelper()->moveSeries($event, $draggedFrom, $start, $allDay);
 
-            $this->getRecurringMutationHelper()->moveSeries($event, $draggedFrom, $start, $allDay);
+            if (self::SCOPE_FOLLOWING === $scope) {
+                return $this->splitResponse($event, $recurrenceId, $move);
+            }
+
+            $move($event);
         } else {
             if ($allDay) {
                 $end = DateHelper::allDayEndFromExclusive($start, $end);
@@ -158,6 +165,15 @@ class EventsApiController extends BaseController
 
             return $this->occurrenceResponse(
                 fn () => $this->getOccurrencesService()->deleteOccurrence($event, $recurrenceId),
+                Calendar::t('Couldn’t delete event.'),
+            );
+        }
+
+        if ($this->hasOccurrenceSchedule($event) && self::SCOPE_FOLLOWING === $scope) {
+            $recurrenceId = $this->parseRequiredRecurrenceId($event);
+
+            return $this->occurrenceResponse(
+                fn () => $this->getSeriesService()->endAt($event, $recurrenceId),
                 Calendar::t('Couldn’t delete event.'),
             );
         }
@@ -202,12 +218,18 @@ class EventsApiController extends BaseController
         );
 
         if ($this->hasOccurrenceSchedule($event)) {
-            $this->getRecurringMutationHelper()->resizeSeries(
+            $resize = fn (Event $event) => $this->getRecurringMutationHelper()->resizeSeries(
                 $event,
                 $allDay,
                 $startDeltaSeconds ?? 0,
                 $endDeltaSeconds ?? 0,
             );
+
+            if (self::SCOPE_FOLLOWING === $scope) {
+                return $this->splitResponse($event, $this->parseRequiredRecurrenceId($event), $resize);
+            }
+
+            $resize($event);
         } else {
             $event->startDate = $start;
             $event->endDate = $allDay ? DateHelper::allDayEndFromExclusive($start, $end) : $end;
@@ -261,6 +283,34 @@ class EventsApiController extends BaseController
     }
 
     /**
+     * Starts "Edit this and following": a draft of the event from the occurrence onward, which splits
+     * the event there when it's applied. Responds with the URL to edit it at. From the first occurrence,
+     * that's the event itself.
+     */
+    public function actionEditFollowing(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireLogin();
+
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
+        try {
+            $draft = $this->getSeriesService()->createSplitDraft(
+                $event,
+                $this->parseRequiredRecurrenceId($event),
+                (int) \Craft::$app->getUser()->getId(),
+            );
+        } catch (InvalidArgumentException) {
+            return $this->asFailure(Calendar::t('Occurrence could not be found'));
+        }
+
+        return $this->asJson(['success' => true, 'url' => ($draft ?? $event)->getCpEditUrl()]);
+    }
+
+    /**
      * The event the request is about, if the user may edit it, or the failure response to send.
      */
     private function findEditableEvent(): Event|Response
@@ -307,6 +357,17 @@ class EventsApiController extends BaseController
         return false === $result ? $this->asFailure($fallbackMessage) : $this->asJson(['success' => true]);
     }
 
+    /**
+     * Changes the event from the occurrence onward, splitting off the occurrences before it.
+     */
+    private function splitResponse(Event $event, Carbon $recurrenceId, callable $change): Response
+    {
+        return $this->occurrenceResponse(
+            fn () => $this->getSeriesService()->split($event, $recurrenceId, $change),
+            Calendar::t('Could not save event'),
+        );
+    }
+
     private function saveEventResponse(Event $event, string $fallbackMessage): Response
     {
         $event->disableRequestSyncOnSave();
@@ -328,6 +389,11 @@ class EventsApiController extends BaseController
     private function getOccurrencesService(): OccurrencesService
     {
         return Calendar::getInstance()->occurrences;
+    }
+
+    private function getSeriesService(): SeriesService
+    {
+        return Calendar::getInstance()->series;
     }
 
     private function hasOccurrenceSchedule(Event $event): bool
@@ -397,7 +463,7 @@ class EventsApiController extends BaseController
 
     private function parseScope(mixed $value): string
     {
-        return self::SCOPE_OCCURRENCE === $value ? self::SCOPE_OCCURRENCE : self::SCOPE_SERIES;
+        return \in_array($value, [self::SCOPE_OCCURRENCE, self::SCOPE_FOLLOWING], true) ? $value : self::SCOPE_SERIES;
     }
 
     private function parseDeltaSeconds(

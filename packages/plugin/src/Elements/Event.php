@@ -80,6 +80,11 @@ class Event extends Element implements \JsonSerializable
     ];
 
     public ?int $calendarId = null;
+
+    /**
+     * Shared by the events a split created, so each part can find the others. Null for an event that was never split.
+     */
+    public ?int $seriesId = null;
     public ?int $authorId = null;
     public ?string $username = null;
     public ?string $name = null;
@@ -99,6 +104,8 @@ class Event extends Element implements \JsonSerializable
     public ?string $freq = null;
     public ?int $interval = null;
     public ?int $count = null;
+
+    private static int $requestSyncSuspended = 0;
 
     private bool $syncFromRequestOnSave = true;
 
@@ -666,7 +673,12 @@ class Event extends Element implements \JsonSerializable
 
         $this->updateTitle();
 
-        if (!$this->syncFromRequestOnSave || !self::isScheduleRequest()) {
+        // A draft made with "Edit this and following" splits its event as it's applied
+        if ($this->updatingFromDerivative && !$this->propagating && $this->duplicateOf instanceof self) {
+            Calendar::getInstance()->series->splitForDraft($this, $this->duplicateOf);
+        }
+
+        if (!$this->syncFromRequestOnSave || self::$requestSyncSuspended || !self::isScheduleRequest()) {
             if (!$this->timezone || '' === trim((string) $this->timezone)) {
                 $this->timezone = \Craft::$app->getTimeZone();
             }
@@ -727,10 +739,33 @@ class Event extends Element implements \JsonSerializable
         return $this;
     }
 
+    /**
+     * Runs the callback without request sync for any event it saves. For events saved as a side effect
+     * of the editor's own save, like a copy made while a draft is applied, which would otherwise take
+     * the schedule the editor posted.
+     *
+     * @template T
+     *
+     * @param callable(): T $callback
+     *
+     * @return T
+     */
+    public static function withoutRequestSync(callable $callback): mixed
+    {
+        ++self::$requestSyncSuspended;
+
+        try {
+            return $callback();
+        } finally {
+            --self::$requestSyncSuspended;
+        }
+    }
+
     public function afterSave(bool $isNew): void
     {
         $insertData = [
             'calendarId' => $this->calendarId,
+            'seriesId' => $this->seriesId,
             'authorId' => $this->authorId,
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
@@ -742,6 +777,12 @@ class Event extends Element implements \JsonSerializable
             'repeatEndType' => $this->repeatEndType,
             'postDate' => $this->postDate,
         ];
+
+        // The row is shared by every site, and a copy saved for another site can carry an older series ID
+        // than the main save, such as when applying a split draft gives the event its series
+        if ($this->propagating) {
+            unset($insertData['seriesId']);
+        }
 
         $db = \Craft::$app->db;
         if ($isNew) {
@@ -799,6 +840,35 @@ class Event extends Element implements \JsonSerializable
         return $this->occurrenceOverrides ??= $this->createOccurrenceOverrideQuery();
     }
 
+    /**
+     * Sets the overrides that duplicating this event copies. Null loads them from the database again.
+     *
+     * @param null|ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery $value
+     */
+    public function setOccurrenceOverrides(ElementCollection|OccurrenceOverrideQuery|null $value): void
+    {
+        $this->occurrenceOverrides = $value;
+    }
+
+    /**
+     * Every event in this event's series, in order. An event that was never split is a series of one.
+     *
+     * @return self[]
+     */
+    public function getSeries(): array
+    {
+        if (!$this->seriesId) {
+            return [$this];
+        }
+
+        return self::find()
+            ->setSeriesId($this->seriesId)
+            ->siteId($this->siteId)
+            ->orderBy(['startDate' => \SORT_ASC])
+            ->all()
+        ;
+    }
+
     public function afterPropagate(bool $isNew): void
     {
         $this->getOccurrenceOverrideManager()->maintainNestedElements($this, $isNew);
@@ -854,6 +924,14 @@ class Event extends Element implements \JsonSerializable
             'context' => [
                 'eventId' => $this->id,
                 'siteId' => $this->siteId,
+                'splitAt' => $plugin->series->getSplitAt($this)?->timestamp,
+                'series' => array_map(
+                    static fn (?self $part) => $part ? [
+                        'url' => $part->getCpEditUrl(),
+                        'start' => $part->startDate->timestamp,
+                    ] : null,
+                    $plugin->series->getNeighbours($this),
+                ),
             ],
         ];
     }

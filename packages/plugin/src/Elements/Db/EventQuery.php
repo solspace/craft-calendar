@@ -65,6 +65,7 @@ class EventQuery extends ElementQuery
     private ?array $calendarId = null;
     private ?array $calendarUid = null;
     private ?array $calendar = null;
+    private ?array $seriesId = null;
 
     private array|int|string|null $authorId = null;
 
@@ -135,6 +136,20 @@ class EventQuery extends ElementQuery
         }
 
         $this->calendar = $value;
+
+        return $this;
+    }
+
+    /**
+     * Narrows the results to the events of a series: the parts a split event became.
+     */
+    public function setSeriesId(array|int|string|null $value = null): self
+    {
+        if (null !== $value && !\is_array($value)) {
+            $value = [$value];
+        }
+
+        $this->seriesId = $value;
 
         return $this;
     }
@@ -353,6 +368,7 @@ class EventQuery extends ElementQuery
 
         $this->query->select([
             "[[{$eventsAlias}.calendarId]]",
+            "[[{$eventsAlias}.seriesId]]",
             "[[{$eventsAlias}.authorId]]",
             "[[{$eventsAlias}.startDate]]",
             "[[{$eventsAlias}.endDate]]",
@@ -388,6 +404,10 @@ class EventQuery extends ElementQuery
 
         if ($this->calendar) {
             $this->subQuery->andWhere(Db::parseParam($calendar.'.[[handle]]', $this->calendar));
+        }
+
+        if ($this->seriesId) {
+            $this->subQuery->andWhere(Db::parseParam("[[{$eventsAlias}.seriesId]]", $this->seriesId));
         }
 
         if ($this->authorId) {

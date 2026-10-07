@@ -1,4 +1,5 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
+import type { EventMutationScope } from "@cal/pages/calendar/calendar.events";
 import { Flex } from "@cal/styles/components";
 import translate from "@cal/utils/translations";
 import clsx from "clsx";
@@ -16,14 +17,21 @@ const headings: Record<ModifyAction, string> = {
 };
 
 const questions: Record<ModifyAction, string> = {
-  move: "Do you want to move only this occurrence, or all occurrences?",
-  resize: "Do you want to change only this occurrence, or all occurrences?",
-  delete: "Do you want to delete only this occurrence, or all occurrences?",
+  move: "Which occurrences do you want to move?",
+  resize: "Which occurrences do you want to change?",
+  delete: "Which occurrences do you want to delete?",
+};
+
+const labels: Record<EventMutationScope, string> = {
+  occurrence: "Only this occurrence",
+  following: "This and following",
+  series: "All occurrences",
 };
 
 type Props = {
   action: ModifyAction;
   onOnlyThisOccurrence: () => Promise<void> | void;
+  onThisAndFollowing: () => Promise<void> | void;
   onAllOccurrences: () => Promise<void> | void;
   onCancel?: () => void;
   isSubmitting?: boolean;
@@ -32,12 +40,13 @@ type Props = {
 export const PopoverModifyEvent: FC<Props> = ({
   action,
   onOnlyThisOccurrence,
+  onThisAndFollowing,
   onAllOccurrences,
   onCancel,
   isSubmitting = false,
 }) => {
   const { hidePopover } = usePopover();
-  const [pendingAction, setPendingAction] = useState<"occurrence" | "series" | null>(null);
+  const [pendingAction, setPendingAction] = useState<EventMutationScope | null>(null);
   const isMounted = useRef(true);
 
   const busy = isSubmitting || pendingAction !== null;
@@ -63,10 +72,7 @@ export const PopoverModifyEvent: FC<Props> = ({
     }
   });
 
-  const runAction = async (
-    action: "occurrence" | "series",
-    callback: () => Promise<void> | void,
-  ) => {
+  const runAction = async (action: EventMutationScope, callback: () => Promise<void> | void) => {
     if (busy) {
       return;
     }
@@ -82,6 +88,12 @@ export const PopoverModifyEvent: FC<Props> = ({
     }
   };
 
+  const callbacks: Record<EventMutationScope, () => Promise<void> | void> = {
+    occurrence: onOnlyThisOccurrence,
+    following: onThisAndFollowing,
+    series: onAllOccurrences,
+  };
+
   return (
     <PopoverWrapper>
       <h3>{translate(headings[action])}</h3>
@@ -90,23 +102,17 @@ export const PopoverModifyEvent: FC<Props> = ({
       <hr />
 
       <Flex $direction="column" $alignItems="center" $gap={8}>
-        <button
-          type="button"
-          className={clsx("btn small submit", busy && "disabled")}
-          disabled={busy}
-          onClick={() => runAction("occurrence", onOnlyThisOccurrence)}
-        >
-          {translate(pendingAction === "occurrence" ? "Processing..." : "Only this occurrence")}
-        </button>
-
-        <button
-          type="button"
-          className={clsx("btn small", busy && "disabled")}
-          disabled={busy}
-          onClick={() => runAction("series", onAllOccurrences)}
-        >
-          {translate(pendingAction === "series" ? "Processing..." : "All occurrences")}
-        </button>
+        {(["occurrence", "following", "series"] as const).map((scope) => (
+          <button
+            key={scope}
+            type="button"
+            className={clsx("btn small", scope === "occurrence" && "submit", busy && "disabled")}
+            disabled={busy}
+            onClick={() => runAction(scope, callbacks[scope])}
+          >
+            {translate(pendingAction === scope ? "Processing..." : labels[scope])}
+          </button>
+        ))}
 
         <button
           type="button"
