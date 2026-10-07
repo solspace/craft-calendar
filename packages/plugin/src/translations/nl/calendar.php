@@ -651,4 +651,13 @@ return [
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Kies de pagina die wordt geopend wanneer je op Calendar in de navigatie van het controlepaneel klikt.',
     'Hide Demo Installation Banner' => 'Banner voor demo-installatie verbergen',
     'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Verberg de banner die je vraagt de demosjablonen van Calendar te installeren.',
+
+    // Event settings
+    'Default Event Duration (Minutes)' => 'Standaardduur van evenementen (minuten)',
+    'New timed events end this many minutes after their start time by default.' => 'Nieuwe evenementen met een tijdstip eindigen standaard dit aantal minuten na hun begintijd.',
+    'Time Picker Interval (Minutes)' => 'Interval van de tijdkiezer (minuten)',
+    'Set the number of minutes between options in the Start Time and End Time pickers.' => 'Stel het aantal minuten tussen de opties in de kiezers voor begin- en eindtijd in.',
+    'Create new events with All Day enabled by default. You can change this for each event.' => 'Maak nieuwe evenementen standaard aan met Hele dag ingeschakeld. Je kunt dit voor elk evenement wijzigen.',
+    'Late-Night Event Cutoff (Hours)' => 'Grens voor nachtelijke evenementen (uren)',
+    'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.' => 'Toon evenementen die over middernacht heen lopen op de vorige dag als ze binnen dit aantal uren na middernacht eindigen. Bijvoorbeeld: 5 betekent 05:00 uur. De datums van evenementen blijven ongewijzigd.',
 ];

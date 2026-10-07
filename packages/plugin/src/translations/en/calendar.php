@@ -651,4 +651,13 @@ return [
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Choose the page that opens when you click Calendar in the control panel navigation.',
     'Hide Demo Installation Banner' => 'Hide Demo Installation Banner',
     'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Hide the banner that prompts you to install Calendar\'s demo templates.',
+
+    // Event settings
+    'Default Event Duration (Minutes)' => 'Default Event Duration (Minutes)',
+    'New timed events end this many minutes after their start time by default.' => 'New timed events end this many minutes after their start time by default.',
+    'Time Picker Interval (Minutes)' => 'Time Picker Interval (Minutes)',
+    'Set the number of minutes between options in the Start Time and End Time pickers.' => 'Set the number of minutes between options in the Start Time and End Time pickers.',
+    'Create new events with All Day enabled by default. You can change this for each event.' => 'Create new events with All Day enabled by default. You can change this for each event.',
+    'Late-Night Event Cutoff (Hours)' => 'Late-Night Event Cutoff (Hours)',
+    'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.' => 'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.',
 ];

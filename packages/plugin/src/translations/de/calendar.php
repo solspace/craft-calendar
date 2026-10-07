@@ -651,4 +651,13 @@ return [
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Wählt die Seite, die beim Klicken auf Calendar in der Navigation des Kontrollpanels geöffnet wird.',
     'Hide Demo Installation Banner' => 'Banner zur Demo-Installation ausblenden',
     'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Blendet das Banner aus, das zur Installation der Calendar-Demovorlagen auffordert.',
+
+    // Event settings
+    'Default Event Duration (Minutes)' => 'Standarddauer für Ereignisse (Minuten)',
+    'New timed events end this many minutes after their start time by default.' => 'Neue Ereignisse mit Uhrzeit enden standardmäßig diese Anzahl an Minuten nach ihrer Startzeit.',
+    'Time Picker Interval (Minutes)' => 'Intervall der Zeitauswahl (Minuten)',
+    'Set the number of minutes between options in the Start Time and End Time pickers.' => 'Legt die Anzahl der Minuten zwischen den Optionen in den Auswahlfeldern für Startzeit und Endzeit fest.',
+    'Create new events with All Day enabled by default. You can change this for each event.' => 'Aktiviert bei neuen Ereignissen standardmäßig Ganztägig. Dies kann für jedes Ereignis geändert werden.',
+    'Late-Night Event Cutoff (Hours)' => 'Grenze für nächtliche Ereignisse (Stunden)',
+    'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.' => 'Zeigt Ereignisse, die über Mitternacht hinausgehen, am vorherigen Tag an, wenn sie innerhalb dieser Anzahl von Stunden nach Mitternacht enden. Zum Beispiel bedeutet 5: 05:00 Uhr. Die Ereignisdatumswerte bleiben unverändert.',
 ];
