@@ -14,6 +14,7 @@ use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
 use Solspace\Calendar\Bundles\Occurrences\OverrideReconciler;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -21,6 +22,7 @@ use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
 use Solspace\Calendar\Records\EventSplitRecord;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
+use Solspace\Calendar\Records\OccurrenceWindowRecord;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -102,8 +104,7 @@ class SeriesService extends Component
         $transaction = \Craft::$app->getDb()->beginTransaction();
 
         try {
-            $split = $this->splitSchedule($event, $splitAt);
-            \Craft::configure($event, $this->earlierPartAttributes($event, $split));
+            \Craft::configure($event, $this->earlierPartAttributes($event, $this->splitSchedule($event, $splitAt)));
 
             $laterIds = $this->findOverrideIds((int) $event->id, '>=', $splitAt);
             $later = $laterIds
@@ -203,6 +204,22 @@ class SeriesService extends Component
     }
 
     /**
+     * Gives a copy of a draft made with "Edit this and following" the same split.
+     *
+     * @internal
+     */
+    public function copySplitAt(Event $draft, Event $copy): void
+    {
+        $splitAt = $this->getSplitAt($draft);
+        if ($splitAt) {
+            Db::insert(EventSplitRecord::TABLE, [
+                'eventId' => $copy->id,
+                'splitAt' => $splitAt->format(RecurrenceId::FORMAT),
+            ]);
+        }
+    }
+
+    /**
      * Splits the live event as a draft made with "Edit this and following" is applied to it. Runs while the
      * draft is saved over the live event, in the same transaction, while the live event is still unchanged.
      *
@@ -224,35 +241,83 @@ class SeriesService extends Component
     }
 
     /**
+     * The events in the event's series, in order, or null when it was never split. A draft is in
+     * the series of the event it was made from.
+     */
+    public function findParts(Event $event): ?EventQuery
+    {
+        $seriesId = $event->getIsDerivative() ? $event->getCanonical()->seriesId : $event->seriesId;
+        if (!$seriesId) {
+            return null;
+        }
+
+        return Event::find()
+            ->setSeriesId($seriesId)
+            ->siteId($event->siteId)
+            ->orderBy(['startDate' => \SORT_ASC])
+        ;
+    }
+
+    /**
      * The events just before and after this one in its series, in any status.
      *
      * @return array{earlier: ?Event, later: ?Event}
      */
     public function getNeighbours(Event $event): array
     {
-        $neighbours = ['earlier' => null, 'later' => null];
-        if (!$event->seriesId) {
-            return $neighbours;
-        }
-
-        $parts = Event::find()
-            ->setSeriesId($event->seriesId)
-            ->siteId($event->siteId)
-            ->status(null)
-            ->orderBy(['startDate' => \SORT_ASC])
-            ->all()
-        ;
-
+        $parts = $this->findParts($event)?->status(null)->all() ?? [];
         $ids = array_map(static fn (Event $part) => (int) $part->id, $parts);
         $index = array_search((int) $event->getCanonicalId(), $ids, true);
+
         if (false === $index) {
-            return $neighbours;
+            return ['earlier' => null, 'later' => null];
         }
 
         return [
             'earlier' => $parts[$index - 1] ?? null,
             'later' => $parts[$index + 1] ?? null,
         ];
+    }
+
+    /**
+     * Another part of the event's series whose occurrences overlap the event's schedule, if there is one.
+     */
+    public function findOverlappingPart(Event $event): ?Event
+    {
+        $query = $this->findParts($event);
+        if (!$query || !$event->startDate) {
+            return null;
+        }
+
+        $partIds = (clone $query)->status(null)->id(['not', $event->getCanonicalId()])->ids();
+        if (!$partIds) {
+            return null;
+        }
+
+        [$first, $last] = $this->materializer->getScheduleSpan($event);
+        if (null === $first) {
+            return null;
+        }
+
+        $spans = (new Query())
+            ->select(['eventId', 'first' => 'MIN([[recurrenceId]])', 'last' => 'MAX([[recurrenceId]])'])
+            ->from(OccurrenceRecord::TABLE)
+            ->where(['eventId' => $partIds])
+            ->groupBy(['eventId'])
+            ->all()
+        ;
+
+        $endless = OccurrenceWindowRecord::find()->select(['eventId'])->where(['eventId' => $partIds])->column();
+
+        foreach ($spans as $span) {
+            $partLast = \in_array($span['eventId'], $endless) ? null : $span['last'];
+
+            if ((null === $partLast || $first <= $partLast) && (null === $last || $span['first'] <= $last)) {
+                return (clone $query)->status(null)->id($span['eventId'])->one();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -270,10 +335,10 @@ class SeriesService extends Component
         $source->setOccurrenceOverrides(ElementCollection::make());
 
         /** @var Event $fork */
-        $fork = \Craft::$app->getElements()->duplicateElement(
-            $source,
-            ['seriesId' => $source->seriesId ?? (int) $source->id] + $this->earlierPartAttributes($source, $split),
-        );
+        $fork = \Craft::$app->getElements()->duplicateElement($source, $this->earlierPartAttributes($source, $split));
+
+        $fork->seriesId = $source->seriesId ?? (int) $source->id;
+        Db::update(Event::TABLE, ['seriesId' => $fork->seriesId], ['id' => [$source->id, $fork->id]], [], false);
 
         $splitKey = $splitAt->format(RecurrenceId::FORMAT);
 
@@ -305,21 +370,17 @@ class SeriesService extends Component
     private function continueFrom(Event $event, Carbon $splitAt): void
     {
         $split = $this->splitSchedule($event, $splitAt);
-        $length = $event->getStartDate()->diff($event->getEndDate());
 
         \Craft::configure($event, $this->scheduleAttributes(
             $split['after'],
             $event->repeatType,
             $event->repeatEndType,
             $event->until,
-        ));
-
-        $event->startDate = $split['afterStart']->copy();
-        $event->endDate = $split['afterStart']->copy()->add($length);
+        ) + $this->startAttributes($event, $split['afterStart']));
     }
 
     /**
-     * @return array{before: ?string, beforeUntil: ?Carbon, after: ?string, afterStart: Carbon}
+     * @return array{before: ?string, beforeStart: Carbon, beforeUntil: ?Carbon, after: ?string, afterStart: Carbon}
      */
     private function splitSchedule(Event $event, Carbon $splitAt): array
     {
@@ -341,7 +402,7 @@ class SeriesService extends Component
             $event->repeatType,
             Event::REPEAT_END_ON_DATE,
             $split['beforeUntil'],
-        );
+        ) + $this->startAttributes($event, $split['beforeStart']);
     }
 
     /**
@@ -367,14 +428,25 @@ class SeriesService extends Component
         ];
     }
 
+    /**
+     * Starts a part at its first occurrence, keeping the event's length.
+     */
+    private function startAttributes(Event $event, Carbon $start): array
+    {
+        return [
+            'startDate' => $start->copy(),
+            'endDate' => $start->copy()->add($event->getStartDate()->diff($event->getEndDate())),
+        ];
+    }
+
+    /**
+     * From the schedule rather than the occurrence rows, which only go so far ahead for infinite schedules.
+     */
     private function hasOccurrencesBefore(Event $event, Carbon $splitAt): bool
     {
-        return (new Query())
-            ->from(OccurrenceRecord::TABLE)
-            ->where(['eventId' => $event->getCanonicalId()])
-            ->andWhere(['<', 'recurrenceId', Db::prepareDateForDb($splitAt)])
-            ->exists()
-        ;
+        $first = $this->materializer->recurrenceIds($event, 1)[0] ?? null;
+
+        return null !== $first && $first < $splitAt->format(RecurrenceId::FORMAT);
     }
 
     /**

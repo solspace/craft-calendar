@@ -399,6 +399,34 @@ class RecurringEventMutationHelperTest extends TestCase
         self::assertPartitioned($rrule, $split);
     }
 
+    public function testAnEarlierPartWithOnlyAdditionalDatesStartsAtTheFirstOne(): void
+    {
+        $rrule = "DTSTART:20261026T100000\nRRULE:FREQ=WEEKLY;COUNT=3\nRDATE:20261014T100000";
+
+        $split = (new RecurringEventMutationHelper())->splitRRule(
+            $rrule,
+            new Carbon('2026-10-26 10:00:00', 'UTC'),
+            false,
+            new Carbon('2026-10-26 10:00:00', 'UTC'),
+        );
+
+        self::assertSame("DTSTART:20261014T100000\nRDATE:20261014T100000", $split['before']);
+        self::assertSame('2026-10-14 10:00:00', $split['beforeStart']->format('Y-m-d H:i:s'));
+        self::assertPartitioned($rrule, $split);
+    }
+
+    public function testAnEarlierPartWithARuleKeepsTheEventsStart(): void
+    {
+        $split = (new RecurringEventMutationHelper())->splitRRule(
+            "DTSTART:20261012T100000\nRRULE:FREQ=WEEKLY;COUNT=8",
+            new Carbon('2026-10-12 10:00:00', 'UTC'),
+            false,
+            new Carbon('2026-10-26 10:00:00', 'UTC'),
+        );
+
+        self::assertSame('2026-10-12 10:00:00', $split['beforeStart']->format('Y-m-d H:i:s'));
+    }
+
     /**
      * Every occurrence lands in exactly one part, in order, with nothing added at the boundary.
      */

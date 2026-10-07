@@ -643,6 +643,7 @@ return [
     'occurrence overrides' => 'modifiche delle occorrenze',
     'The end date must be after the start date.' => 'La data di fine deve essere successiva alla data di inizio.',
     'Custom slugs can’t look like generated occurrence slugs.' => 'Gli slug personalizzati non possono assomigliare agli slug generati delle occorrenze.',
+    'The schedule overlaps “{title}”, another part of this event’s series.' => 'La programmazione si sovrappone a “{title}”, un’altra parte della serie di questo evento.',
     'Remove everything this occurrence changes?' => 'Rimuovere tutto ciò che questa occorrenza modifica?',
     'Changes are saved into the event’s draft, and go live when the draft is applied.' => 'Le modifiche vengono salvate nella bozza dell’evento e vanno online quando la bozza viene applicata.',
     'The event’s schedule no longer includes this date, so this occurrence isn’t shown anywhere.' => 'La programmazione dell’evento non include più questa data, quindi questa occorrenza non viene mostrata da nessuna parte.',

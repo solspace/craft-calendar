@@ -92,7 +92,8 @@ class Event extends Element implements \JsonSerializable
     public ?int $calendarId = null;
 
     /**
-     * Shared by the events a split created, so each part can find the others. Null for an event that was never split.
+     * Shared by the parts of a split event, so each part can find the others. Null for an event that was never split.
+     * Only splitting sets it: saving an event doesn't write it, so drafts and copies of an event can't change it.
      */
     public ?int $seriesId = null;
     public ?int $authorId = null;
@@ -750,7 +751,6 @@ class Event extends Element implements \JsonSerializable
     {
         $insertData = [
             'calendarId' => $this->calendarId,
-            'seriesId' => $this->seriesId,
             'authorId' => $this->authorId,
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
@@ -762,12 +762,6 @@ class Event extends Element implements \JsonSerializable
             'repeatEndType' => $this->repeatEndType,
             'postDate' => $this->postDate,
         ];
-
-        // The row is shared by every site, and a copy saved for another site can carry an older series ID
-        // than the main save, such as when applying a split draft gives the event its series
-        if ($this->propagating) {
-            unset($insertData['seriesId']);
-        }
 
         $db = \Craft::$app->db;
         if ($isNew) {
@@ -782,6 +776,11 @@ class Event extends Element implements \JsonSerializable
                 ->update(self::TABLE, $insertData, ['id' => $this->id])
                 ->execute()
             ;
+        }
+
+        // A copy of a draft made with "Edit this and following" still splits the event when it's applied
+        if ($isNew && !$this->propagating && $this->duplicateOf instanceof self && $this->getIsDraft()) {
+            Calendar::getInstance()->series->copySplitAt($this->duplicateOf, $this);
         }
 
         parent::afterSave($isNew);
@@ -842,16 +841,7 @@ class Event extends Element implements \JsonSerializable
      */
     public function getSeries(): array
     {
-        if (!$this->seriesId) {
-            return [$this];
-        }
-
-        return self::find()
-            ->setSeriesId($this->seriesId)
-            ->siteId($this->siteId)
-            ->orderBy(['startDate' => \SORT_ASC])
-            ->all()
-        ;
+        return Calendar::getInstance()->series->findParts($this)?->all() ?? [$this];
     }
 
     public function afterPropagate(bool $isNew): void
@@ -987,8 +977,23 @@ class Event extends Element implements \JsonSerializable
         $rules[] = [['startDate'], 'validateDates'];
         $rules[] = [['startDate', 'endDate'], 'required'];
         $rules[] = [['rrule'], 'validateRecurrence', 'skipOnEmpty' => false];
+        $rules[] = [['startDate'], 'validateSeriesOverlap', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
 
         return $rules;
+    }
+
+    /**
+     * Each part of a series covers its own stretch of time. A draft started before the event was split
+     * would otherwise bring back occurrences the earlier part has now.
+     */
+    public function validateSeriesOverlap(): void
+    {
+        $part = Calendar::getInstance()->series->findOverlappingPart($this);
+        if ($part) {
+            $this->addError('startDate', Calendar::t('The schedule overlaps “{title}”, another part of this event’s series.', [
+                'title' => $part->title,
+            ]));
+        }
     }
 
     public function validateRecurrence(): void

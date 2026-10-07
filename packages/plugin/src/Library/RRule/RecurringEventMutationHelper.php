@@ -141,15 +141,15 @@ class RecurringEventMutationHelper
      *
      * The later part's DTSTART is always one of the rule's own occurrences, so a split at an additional
      * date starts the rule at its next occurrence instead; moving DTSTART anywhere else could change
-     * the dates the rule produces.
+     * the dates the rule produces. An earlier part left with only additional dates starts at the first one.
      *
      * @return array{
      *     before: ?string,
+     *     beforeStart: Carbon,
      *     beforeUntil: ?Carbon,
      *     after: ?string,
      *     afterStart: Carbon,
-     * } each part's rule string, the earlier part's last rule occurrence (null when it has no rule),
-     *   and when the later part starts
+     * } each part's rule string and start, and the earlier part's last rule occurrence (null when it has no rule)
      */
     public function splitRRule(?string $rruleString, Carbon $eventStart, bool $allDay, Carbon $splitAt): array
     {
@@ -203,16 +203,19 @@ class RecurringEventMutationHelper
             $afterRule = new RRule($rule);
         }
 
+        $rdatesBefore = $this->uniqueDates(array_filter($rdates, $isBefore), $allDay);
+        $beforeStart = $beforeRule ? $this->normalizeDate($eventStart, $allDay) : ($rdatesBefore[0] ?? $this->normalizeDate($eventStart, $allDay));
         $afterStart = $firstAfter ?? $split;
 
         return [
             'before' => $this->buildRRuleString(
                 $beforeRule,
-                $eventStart,
+                $beforeStart,
                 $allDay,
-                array_filter($rdates, $isBefore),
+                $rdatesBefore,
                 array_filter($exdates, $isBefore),
             ),
+            'beforeStart' => $beforeStart,
             'beforeUntil' => $beforeRule ? $lastBefore : null,
             'after' => $this->buildRRuleString(
                 $afterRule,
