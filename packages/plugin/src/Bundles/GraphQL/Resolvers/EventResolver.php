@@ -10,6 +10,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\OccurrenceContent;
 
 class EventResolver extends ElementResolver
 {
@@ -23,7 +24,7 @@ class EventResolver extends ElementResolver
             }
 
             $arguments['calendarId'] = $source->id;
-        } elseif ($source instanceof ElementInterface && null !== $fieldName) {
+        } elseif (($source instanceof ElementInterface || $source instanceof OccurrenceContent) && null !== $fieldName) {
             return self::applyCalendarPermissionsToValue($source->{$fieldName});
         } elseif (false === $arguments) {
             return new Collection();

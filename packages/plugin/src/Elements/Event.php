@@ -438,18 +438,7 @@ class Event extends Element implements \JsonSerializable
 
     public function isMultiDay(): bool
     {
-        $startDate = $this->getStartDate();
-        $endDate = $this->getEndDate();
-
-        $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
-        if ($diffInDays > 1) {
-            return true;
-        }
-
-        $threshold = $this->getOverlapThreshold();
-        $dateBeforeOverlap = DateHelper::isDateBeforeOverlap($this->getEndDate(), $threshold);
-
-        return $diffInDays === 1 && !$dateBeforeOverlap;
+        return DateHelper::isMultiDay($this->getStartDate(), $this->getEndDate(), $this->getOverlapThreshold());
     }
 
     public function isCurrentlyHappening(): bool

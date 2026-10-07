@@ -37,6 +37,26 @@ class OccurrenceModelTest extends TestCase
         self::assertSame('2026-10-15-fq4yk', $model->getSlug());
     }
 
+    public function testOccurrenceWithoutAnOverrideIsOnlyEditedWhenCancelled(): void
+    {
+        $model = $this->makeModel(recurrenceId: '2026-10-14 10:00:00', startDate: '2026-10-14 10:00:00');
+
+        self::assertNull($model->getOverride());
+        self::assertFalse($model->getIsEdited());
+
+        $model->cancelled = true;
+
+        self::assertTrue($model->getIsEdited());
+    }
+
+    public function testContentIsCreatedOnce(): void
+    {
+        $model = $this->makeModel(recurrenceId: '2026-10-14 10:00:00', startDate: '2026-10-14 10:00:00');
+
+        self::assertSame($model->event, $model->getContent()->getEvent());
+        self::assertSame($model->getContent(), $model->getContent());
+    }
+
     private function makeModel(string $recurrenceId, string $startDate): OccurrenceModel
     {
         $event = $this->getMockBuilder(Event::class)

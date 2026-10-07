@@ -23,7 +23,7 @@ class EventDay extends AbstractEventCollection
             $currentTime->hour = $hour;
 
             $occurrences = $this->occurrences->filter(
-                static fn (OccurrenceModel $occurrence) => $occurrence->event->getStartDate()->hour === $hour,
+                static fn (OccurrenceModel $occurrence) => $occurrence->startDate->hour === $hour,
             );
 
             $hourDuration = new HourDuration($currentTime, $this->getDuration()->getConfig());

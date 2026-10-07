@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Bundles\GraphQL\Arguments;
 
 use craft\gql\base\Arguments;
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 class OccurrenceArguments extends Arguments
@@ -21,6 +22,36 @@ class OccurrenceArguments extends Arguments
                     'name' => 'uid',
                     'type' => Type::listOf(Type::string()),
                     'description' => 'Filter occurrences by occurrence UID',
+                ],
+                'recurrenceId' => [
+                    'name' => 'recurrenceId',
+                    'type' => Type::listOf(Type::string()),
+                    'description' => "Filter occurrences by the start the event's schedule gives them, e.g. `2026-10-14 09:00` or `20261014T090000`. Combine with `event`; recurrence IDs are only unique within an event.",
+                ],
+                'code' => [
+                    'name' => 'code',
+                    'type' => Type::listOf(Type::string()),
+                    'description' => 'Filter occurrences by code',
+                ],
+                'slug' => [
+                    'name' => 'slug',
+                    'type' => Type::listOf(Type::string()),
+                    'description' => 'Filter occurrences by slug. A generated slug only matches while its date is the date the occurrence takes place on.',
+                ],
+                'cancelled' => [
+                    'name' => 'cancelled',
+                    'type' => Type::boolean(),
+                    'description' => '`true` returns only cancelled occurrences, `false` leaves them out. Both are returned by default.',
+                ],
+                'search' => [
+                    'name' => 'search',
+                    'type' => Type::string(),
+                    'description' => 'Filter occurrences whose event, or the occurrence itself, matches a search query',
+                ],
+                'relatedTo' => [
+                    'name' => 'relatedTo',
+                    'type' => Type::listOf(QueryArgument::getType()),
+                    'description' => 'Filter occurrences whose event, or the occurrence itself, relates to the given element IDs',
                 ],
                 'event' => [
                     'name' => 'event',

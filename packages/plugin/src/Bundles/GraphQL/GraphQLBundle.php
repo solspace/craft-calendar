@@ -10,6 +10,7 @@ use craft\services\Gql;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\CalendarInterface;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\DurationInterface;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\EventInterface;
+use Solspace\Calendar\Bundles\GraphQL\Interfaces\OccurrenceContentInterface;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\OccurrenceInterface;
 use Solspace\Calendar\Bundles\GraphQL\Interfaces\SolspaceCalendarInterface;
 use Solspace\Calendar\Bundles\GraphQL\Mutations\CalendarMutation;
@@ -37,6 +38,7 @@ class GraphQLBundle implements BundleInterface
                 $event->types[] = CalendarInterface::class;
                 $event->types[] = EventInterface::class;
                 $event->types[] = OccurrenceInterface::class;
+                $event->types[] = OccurrenceContentInterface::class;
                 $event->types[] = SolspaceCalendarInterface::class;
             }
         );

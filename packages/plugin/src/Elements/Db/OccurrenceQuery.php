@@ -4,11 +4,14 @@ namespace Solspace\Calendar\Elements\Db;
 
 use Carbon\Carbon;
 use craft\db\ActiveQuery;
+use craft\db\Table;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\OccurrenceModel;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -45,6 +48,8 @@ class OccurrenceQuery extends ActiveQuery
     public array|string|null $code = null;
     public array|string|null $slug = null;
     public ?bool $cancelled = null;
+    public mixed $relatedTo = null;
+    public mixed $search = null;
     public array|int|string|null $event = null;
     public array|int|string|null $calendarId = null;
     public array|string|null $calendarUid = null;
@@ -136,6 +141,27 @@ class OccurrenceQuery extends ActiveQuery
     public function cancelled(?bool $cancelled): self
     {
         $this->cancelled = $cancelled;
+
+        return $this;
+    }
+
+    /**
+     * Matches occurrences whose event, or whose own override, is related to the given elements.
+     * Accepts the same values as an element query's `relatedTo` param.
+     */
+    public function relatedTo(mixed $relatedTo): self
+    {
+        $this->relatedTo = $relatedTo;
+
+        return $this;
+    }
+
+    /**
+     * Matches occurrences whose event, or whose own override, matches a search query.
+     */
+    public function search(mixed $search): self
+    {
+        $this->search = $search;
 
         return $this;
     }
@@ -262,6 +288,7 @@ class OccurrenceQuery extends ActiveQuery
         $this->extendInfiniteOccurrenceWindows();
 
         $this->applyOccurrenceIdentityFilters();
+        $this->applyRelationAndSearchFilters();
         $this->applyOccurrenceNativeFilters();
         $this->applyEventExistsFilter();
 
@@ -331,15 +358,29 @@ class OccurrenceQuery extends ActiveQuery
         }
 
         if ($this->asArray) {
-            return parent::populate($rows);
+            // `with` holds Craft eager-loading paths, not Active Record relations
+            $with = $this->with;
+            $this->with = null;
+
+            try {
+                return parent::populate($rows);
+            } finally {
+                $this->with = $with;
+            }
         }
 
         $eventIds = array_unique(array_column($rows, 'eventId'));
         $calendarIds = array_unique(array_column($rows, 'calendarId'));
+        [$contentPaths, $eventPaths] = $this->getEagerLoadingPaths();
 
         /** @var Event[] $events */
         $eventQuery = clone $this->getEventQuery();
+        if ($contentPaths || $eventPaths) {
+            $eventQuery->andWith(array_merge($contentPaths, $eventPaths));
+        }
+
         $events = $eventQuery->id($eventIds)->indexBy('id')->all();
+        $overrides = $this->loadOverrides($rows, $events, $contentPaths);
         $calendars = Calendar::getInstance()->calendars->getCalendars(['id' => $calendarIds]);
 
         $models = [];
@@ -368,6 +409,13 @@ class OccurrenceQuery extends ActiveQuery
             $model->dateCreated = new Carbon($occurrence['dateCreated']);
             $model->dateUpdated = new Carbon($occurrence['dateUpdated']);
             $model->uid = $occurrence['uid'];
+
+            $override = $overrides[(int) ($occurrence['overrideId'] ?? 0)] ?? null;
+            if ($override) {
+                $override->setPrimaryOwner($event);
+                $override->setOwner($event);
+                $model->override = $override;
+            }
 
             $models[] = $model;
         }
@@ -597,9 +645,11 @@ class OccurrenceQuery extends ActiveQuery
         }
 
         if (null !== $this->slug) {
+            $siteId = $this->resolveContentSiteId();
+
             $this->applyAnyOfConditions(
                 $this->slug,
-                fn (mixed $slug) => \is_string($slug) ? $this->buildSlugCondition($slug) : null,
+                fn (mixed $slug) => \is_string($slug) ? $this->buildSlugCondition($slug, $siteId) : null,
             );
         }
 
@@ -659,13 +709,18 @@ class OccurrenceQuery extends ActiveQuery
     }
 
     /**
-     * A slug only matches while its date is the date the occurrence takes place on,
-     * so the slug of a moved occurrence stops matching.
+     * A slug only matches an occurrence's current slug in the site: its custom slug if it has one,
+     * otherwise its generated one. A generated slug also stops matching once the occurrence moves.
      */
-    private function buildSlugCondition(string $slug): ?array
+    private function buildSlugCondition(string $slug, int $siteId): ?array
     {
-        if (!preg_match(OccurrenceModel::GENERATED_SLUG_PATTERN, strtolower(trim($slug)), $matches)) {
+        $slug = trim($slug);
+        if ('' === $slug) {
             return null;
+        }
+
+        if (!preg_match(OccurrenceModel::GENERATED_SLUG_PATTERN, strtolower($slug), $matches)) {
+            return ['overrideId' => $this->customSlugOverrideIds($siteId)->andWhere(['slug' => $slug])];
         }
 
         [, $date, $code] = $matches;
@@ -680,7 +735,139 @@ class OccurrenceQuery extends ActiveQuery
             ['code' => $code],
             ['>=', 'startDate', $dayStart->format('Y-m-d H:i:s')],
             ['<', 'startDate', $dayStart->copy()->addDay()->format('Y-m-d H:i:s')],
+            ['or', ['overrideId' => null], ['not in', 'overrideId', $this->customSlugOverrideIds($siteId)]],
         ];
+    }
+
+    /**
+     * Overrides with a custom slug in the given site.
+     */
+    private function customSlugOverrideIds(int $siteId): Query
+    {
+        return (new Query())
+            ->select(['elementId'])
+            ->from(Table::ELEMENTS_SITES)
+            ->where(['siteId' => $siteId])
+            ->andWhere(['not', ['slug' => null]])
+            ->andWhere(['not', ['slug' => '']])
+        ;
+    }
+
+    /**
+     * Two-tier matching: `relatedTo` and `search` match an occurrence through its event,
+     * or through its own override. Per-field params only ever see the event's values.
+     */
+    private function applyRelationAndSearchFilters(): void
+    {
+        if (null !== $this->relatedTo) {
+            $relatedTo = $this->relatedTo;
+            $this->andWhere($this->matchEventOrOverride(static fn (ElementQueryInterface $query) => $query->relatedTo($relatedTo)));
+        }
+
+        if (null !== $this->search) {
+            $search = $this->search;
+            $this->andWhere($this->matchEventOrOverride(static fn (ElementQueryInterface $query) => $query->search($search)));
+        }
+    }
+
+    /**
+     * @param callable(ElementQueryInterface): ElementQueryInterface $criteria
+     */
+    private function matchEventOrOverride(callable $criteria): array
+    {
+        $siteId = $this->resolveContentSiteId();
+
+        return [
+            'or',
+            ['eventId' => $criteria(Event::find()->siteId($siteId)->status(null))->ids()],
+            ['overrideId' => $criteria(OccurrenceOverride::find()->siteId($siteId)->status(null))->ids()],
+        ];
+    }
+
+    /**
+     * The site whose slugs, relations and search index occurrences are matched against.
+     */
+    private function resolveContentSiteId(): int
+    {
+        $siteId = \is_array($this->siteId) && 1 === \count($this->siteId) ? reset($this->siteId) : $this->siteId;
+        if (is_numeric($siteId)) {
+            return (int) $siteId;
+        }
+
+        $sites = \Craft::$app->getSites();
+        if (\is_string($this->site) && '*' !== $this->site) {
+            $site = $sites->getSiteByHandle($this->site);
+            if ($site) {
+                return $site->id;
+            }
+        }
+
+        return $sites->getCurrentSite()->id;
+    }
+
+    /**
+     * `with` takes Craft eager-loading paths. `content.<field>`, or just `<field>`, loads a field for the
+     * occurrences' content, from both their events and their overrides. `event.<field>` loads it on the events only.
+     *
+     * @return array{0: array, 1: array} content paths, event paths
+     */
+    private function getEagerLoadingPaths(): array
+    {
+        $contentPaths = [];
+        $eventPaths = [];
+
+        foreach ((array) $this->with as $plan) {
+            [$path, $criteria] = \is_array($plan) ? [$plan[0] ?? null, $plan[1] ?? null] : [$plan, null];
+            if (!\is_string($path) || '' === $path) {
+                continue;
+            }
+
+            if (str_starts_with($path, 'event.')) {
+                $eventPaths[] = self::eagerLoadingPlan(substr($path, \strlen('event.')), $criteria);
+            } else {
+                $contentPath = str_starts_with($path, 'content.') ? substr($path, \strlen('content.')) : $path;
+                $contentPaths[] = self::eagerLoadingPlan($contentPath, $criteria);
+            }
+        }
+
+        return [$contentPaths, $eventPaths];
+    }
+
+    private static function eagerLoadingPlan(string $path, mixed $criteria): array|string
+    {
+        return null === $criteria ? $path : [$path, $criteria];
+    }
+
+    /**
+     * Loads the overrides of a page of occurrences in one query per site, in their events' sites.
+     *
+     * @param Event[] $events indexed by ID
+     *
+     * @return array<int, OccurrenceOverride> indexed by ID
+     */
+    private function loadOverrides(array $rows, array $events, array $with): array
+    {
+        $overrideIdsBySite = [];
+        foreach ($rows as $row) {
+            $event = $events[$row['eventId']] ?? null;
+            if ($event && !empty($row['overrideId'])) {
+                $overrideIdsBySite[$event->siteId][] = (int) $row['overrideId'];
+            }
+        }
+
+        $overrides = [];
+        foreach ($overrideIdsBySite as $siteId => $overrideIds) {
+            $query = OccurrenceOverride::find()->id(array_unique($overrideIds))->siteId($siteId)->status(null);
+            if ($with) {
+                $query->with($with);
+            }
+
+            foreach ($query->all() as $override) {
+                $overrides[$override->id] = $override;
+            }
+        }
+
+        return $overrides;
     }
 
     /**
@@ -752,7 +939,8 @@ class OccurrenceQuery extends ActiveQuery
             'endDate' => $model->endDate,
             'dateCreated' => $model->dateCreated,
             'dateUpdated' => $model->dateUpdated,
-            default => $model->event->canGetProperty($key) ? $model->event->{$key} : null,
+            // Titles and custom fields sort by the occurrence's own values where it overrides them
+            default => isset($model->getContent()->{$key}) ? $model->getContent()->{$key} : null,
         };
     }
 }

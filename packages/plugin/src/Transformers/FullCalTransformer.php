@@ -62,14 +62,14 @@ class FullCalTransformer
             'id' => $model->getOccurrenceKey(),
             // 'groupId' => $model->event->id,
 
-            'title' => $model->event->title,
+            'title' => $model->getContent()->getTitle(),
             'slug' => $model->event->slug,
             'url' => $model->event->getCpEditUrl(),
 
             'start' => $this->formatFloatingDate($model->startDate, $model->allDay),
             'end' => $this->formatFloatingDate($model->endDate, $model->allDay),
             'allDay' => $model->allDay,
-            'multiDay' => $model->event->isMultiDay(),
+            'multiDay' => $model->isMultiDay(),
             'repeats' => $model->event->isRepeating(),
 
             'calendar' => $model->calendar->id,

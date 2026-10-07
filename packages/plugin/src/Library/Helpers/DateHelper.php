@@ -204,6 +204,20 @@ class DateHelper
     }
 
     /**
+     * Checks whether $start and $end fall on different days.
+     * Ending on the next day before the overlap threshold doesn't count.
+     */
+    public static function isMultiDay(Carbon $start, Carbon $end, int $overlapThreshold): bool
+    {
+        $diffInDays = self::carbonDiffInDays($start, $end);
+        if ($diffInDays > 1) {
+            return true;
+        }
+
+        return 1 === $diffInDays && !self::isDateBeforeOverlap($end, $overlapThreshold);
+    }
+
+    /**
      * Changes the first day and last day of the week for the given $date Carbon.
      */
     public static function updateWeekStartDate(Carbon $date, int $firstDay = 0): void

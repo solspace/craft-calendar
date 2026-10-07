@@ -9,6 +9,7 @@ use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\OccurrenceModel;
+use yii\db\Query;
 
 /**
  * @internal
@@ -64,8 +65,10 @@ class OccurrenceQueryTest extends TestCase
         ];
     }
 
-    public function testBuildSlugCondition(): void
+    public function testGeneratedSlugMatchesCodeAndDay(): void
     {
+        $condition = $this->callBuildSlugCondition('2026-10-14-fq4yk');
+
         self::assertSame(
             [
                 'and',
@@ -73,23 +76,42 @@ class OccurrenceQueryTest extends TestCase
                 ['>=', 'startDate', '2026-10-14 00:00:00'],
                 ['<', 'startDate', '2026-10-15 00:00:00'],
             ],
-            $this->callBuildSlugCondition('2026-10-14-fq4yk'),
+            \array_slice($condition, 0, 4),
         );
     }
 
-    public function testBuildSlugConditionIsCaseInsensitive(): void
+    public function testGeneratedSlugDoesNotMatchOccurrencesWithACustomSlug(): void
     {
-        self::assertSame(
+        [$operator, $withoutOverride, [$notIn, $column, $customSlugs]] = $this->callBuildSlugCondition('2026-10-14-fq4yk')[4];
+
+        self::assertSame('or', $operator);
+        self::assertSame(['overrideId' => null], $withoutOverride);
+        self::assertSame(['not in', 'overrideId'], [$notIn, $column]);
+        self::assertInstanceOf(Query::class, $customSlugs);
+        self::assertContains(['siteId' => 3], $customSlugs->where);
+    }
+
+    public function testGeneratedSlugIsCaseInsensitive(): void
+    {
+        self::assertEquals(
             $this->callBuildSlugCondition('2026-10-14-fq4yk'),
             $this->callBuildSlugCondition(' 2026-10-14-FQ4YK '),
         );
     }
 
-    public function testBuildSlugConditionRejectsMalformedSlugs(): void
+    public function testCustomSlugMatchesTheOverridesSlugInTheSite(): void
     {
-        self::assertNull($this->callBuildSlugCondition('fq4yk'));
-        self::assertNull($this->callBuildSlugCondition('2026-10-14-fq4y'));
-        self::assertNull($this->callBuildSlugCondition('2026-10-14fq4yk'));
+        $condition = $this->callBuildSlugCondition('guest-night');
+
+        self::assertSame(['overrideId'], array_keys($condition));
+        self::assertInstanceOf(Query::class, $condition['overrideId']);
+        self::assertContains(['slug' => 'guest-night'], $condition['overrideId']->where);
+        self::assertContains(['siteId' => 3], $condition['overrideId']->where);
+    }
+
+    public function testSlugsThatCantMatchAnything(): void
+    {
+        self::assertNull($this->callBuildSlugCondition('   '));
         self::assertNull($this->callBuildSlugCondition('2026-02-30-fq4yk'));
     }
 
@@ -130,7 +152,8 @@ class OccurrenceQueryTest extends TestCase
         $this->callApplyOccurrenceIdentityFilters($recurrenceId);
         self::assertSame('0=1', $recurrenceId->where);
 
-        $slug = $this->makeQuery()->slug('not-a-slug');
+        $slug = $this->makeQuery()->slug('2026-02-30-fq4yk');
+        $slug->setSiteId(3);
         $this->callApplyOccurrenceIdentityFilters($slug);
         self::assertSame('0=1', $slug->where);
     }
@@ -187,7 +210,7 @@ class OccurrenceQueryTest extends TestCase
     {
         $method = new \ReflectionMethod(OccurrenceQuery::class, 'buildSlugCondition');
 
-        return $method->invoke($this->makeQuery(), $slug);
+        return $method->invoke($this->makeQuery(), $slug, 3);
     }
 
     private function callApplyOccurrenceIdentityFilters(OccurrenceQuery $query): void

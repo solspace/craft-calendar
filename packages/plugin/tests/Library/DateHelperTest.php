@@ -65,6 +65,25 @@ class DateHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider multiDayDataProvider
+     */
+    public function testIsMultiDay(string $start, string $end, bool $expected): void
+    {
+        self::assertSame($expected, DateHelper::isMultiDay(new Carbon($start, 'UTC'), new Carbon($end, 'UTC'), 2));
+    }
+
+    public function multiDayDataProvider(): array
+    {
+        return [
+            'same day' => ['2026-11-09 10:00:00', '2026-11-09 23:00:00', false],
+            'ends before the overlap threshold' => ['2026-11-09 22:00:00', '2026-11-10 01:30:00', false],
+            'ends at the overlap threshold' => ['2026-11-09 22:00:00', '2026-11-10 02:00:00', false],
+            'ends after the overlap threshold' => ['2026-11-09 22:00:00', '2026-11-10 02:30:00', true],
+            'spans more than a day' => ['2026-11-09 22:00:00', '2026-11-11 01:00:00', true],
+        ];
+    }
+
+    /**
      * @dataProvider floatingCarbonDataProvider
      */
     public function testParseFloatingCarbonPreservesWallTime(mixed $input, string $expected): void

@@ -74,6 +74,30 @@ class OccurrenceResolver
             $query->uid($arguments['uid']);
         }
 
+        if (isset($arguments['recurrenceId'])) {
+            $query->recurrenceId($arguments['recurrenceId']);
+        }
+
+        if (isset($arguments['code'])) {
+            $query->code($arguments['code']);
+        }
+
+        if (isset($arguments['slug'])) {
+            $query->slug($arguments['slug']);
+        }
+
+        if (isset($arguments['cancelled'])) {
+            $query->cancelled($arguments['cancelled']);
+        }
+
+        if (isset($arguments['search'])) {
+            $query->search($arguments['search']);
+        }
+
+        if (isset($arguments['relatedTo'])) {
+            $query->relatedTo($arguments['relatedTo']);
+        }
+
         if (isset($arguments['event'])) {
             $query->event($arguments['event']);
         }
