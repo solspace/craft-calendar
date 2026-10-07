@@ -145,6 +145,26 @@ class Install extends StreamlinedInstallMigration
                 )
                 ->addIndex(['code'], true),
 
+            (new Table('calendar_occurrence_overrides'))
+                ->addField('id', $this->integer()->notNull())
+                ->addField('primaryOwnerId', $this->integer()->notNull())
+                ->addField('recurrenceId', $this->dateTime()->notNull())
+                ->addField('startDate', $this->dateTime())
+                ->addField('endDate', $this->dateTime())
+                ->addField('allDay', $this->boolean())
+                ->addField('cancelled', $this->boolean()->notNull()->defaultValue(false))
+                ->addField('orphaned', $this->boolean()->notNull()->defaultValue(false))
+                ->addForeignKey('id', 'elements', 'id', ForeignKey::CASCADE, name: 'occurrence_overrides_id_fk')
+                ->addForeignKey('primaryOwnerId', 'elements', 'id', ForeignKey::CASCADE, name: 'occurrence_overrides_owner_fk')
+                ->addIndex(['primaryOwnerId', 'recurrenceId'], name: 'owner_recurrence_idx'),
+
+            (new Table('calendar_occurrence_overrides_sites'))
+                ->addField('id', $this->integer()->notNull())
+                ->addField('siteId', $this->integer()->notNull())
+                ->addField('overriddenFields', $this->json())
+                ->addForeignKey('id', 'elements', 'id', ForeignKey::CASCADE, name: 'occurrence_overrides_sites_id_fk')
+                ->addForeignKey('siteId', 'sites', 'id', ForeignKey::CASCADE, name: 'occurrence_overrides_sites_site_fk'),
+
             (new Table('calendar_events_occurrence_windows'))
                 ->addField('eventId', $this->integer()->notNull())
                 ->addField('generatedThrough', $this->dateTime()->notNull())
@@ -165,6 +185,8 @@ class Install extends StreamlinedInstallMigration
 
         $this->addPrimaryKey('pk_calendar_events_occurrences', '{{%calendar_events_occurrences}}', ['eventId', 'recurrenceId']);
         $this->addPrimaryKey('pk_calendar_occurrence_codes', '{{%calendar_occurrence_codes}}', ['eventId', 'recurrenceId']);
+        $this->addPrimaryKey('pk_calendar_occurrence_overrides', '{{%calendar_occurrence_overrides}}', ['id']);
+        $this->addPrimaryKey('pk_calendar_occurrence_overrides_sites', '{{%calendar_occurrence_overrides_sites}}', ['id', 'siteId']);
         $this->addPrimaryKey('pk_calendar_events_occurrence_windows', '{{%calendar_events_occurrence_windows}}', ['eventId']);
     }
 }

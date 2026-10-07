@@ -20,12 +20,14 @@ use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
+use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\FieldTypes\CalendarFieldType;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SettingsModel;
+use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Resources\Bundles\MainAssetBundle;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\CalendarsService;
@@ -33,6 +35,7 @@ use Solspace\Calendar\Services\ClientAssetsService;
 use Solspace\Calendar\Services\DiagnosticsService;
 use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\ExceptionsService;
+use Solspace\Calendar\Services\OccurrencesService;
 use Solspace\Calendar\Services\SelectDatesService;
 use Solspace\Calendar\Services\SettingsService;
 use Solspace\Calendar\Services\ViewDataService;
@@ -55,6 +58,7 @@ use yii\web\ForbiddenHttpException;
  * @property DiagnosticsService   $diagnostics
  * @property EventsService        $events
  * @property ExceptionsService    $exceptions
+ * @property OccurrencesService   $occurrences
  * @property SelectDatesService   $selectDates
  * @property SettingsService      $settings
  * @property ViewDataService      $viewData
@@ -167,6 +171,11 @@ class Calendar extends Plugin
                 $gc->deleteOrphanedFieldLayouts(
                     CalendarEvent::class,
                     '{{%calendar_calendars}}',
+                );
+                $gc->deletePartialElements(
+                    OccurrenceOverride::class,
+                    OccurrenceOverrideRecord::TABLE,
+                    'id',
                 );
             });
         }
@@ -326,6 +335,7 @@ class Calendar extends Plugin
                 'diagnostics' => DiagnosticsService::class,
                 'events' => EventsService::class,
                 'exceptions' => ExceptionsService::class,
+                'occurrences' => OccurrencesService::class,
                 'selectDates' => SelectDatesService::class,
                 'settings' => SettingsService::class,
                 'viewData' => ViewDataService::class,
@@ -393,6 +403,7 @@ class Calendar extends Plugin
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             static function (RegisterComponentTypesEvent $event) {
                 $event->types[] = CalendarEvent::class;
+                $event->types[] = OccurrenceOverride::class;
             }
         );
     }

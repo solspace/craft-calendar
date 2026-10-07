@@ -4,10 +4,16 @@ namespace Solspace\Calendar\Models;
 
 use Carbon\Carbon;
 use craft\base\Model;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodeGenerator;
 use Solspace\Calendar\Elements\Event;
 
 class OccurrenceModel extends Model
 {
+    /**
+     * Generated slugs are the occurrence's date followed by its code, e.g. `2026-10-14-fq4yk`.
+     */
+    public const GENERATED_SLUG_PATTERN = '/^(\d{4}-\d{2}-\d{2})-([0-9a-z]{'.OccurrenceCodeGenerator::LENGTH.'})$/';
+
     /**
      * The start the event's schedule originally produced for this occurrence.
      * It never changes, even when the occurrence itself is moved.

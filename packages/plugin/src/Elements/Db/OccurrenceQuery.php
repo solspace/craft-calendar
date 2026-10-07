@@ -5,8 +5,8 @@ namespace Solspace\Calendar\Elements\Db;
 use Carbon\Carbon;
 use craft\db\ActiveQuery;
 use craft\helpers\Db;
-use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodeGenerator;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
+use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -36,11 +36,6 @@ class OccurrenceQuery extends ActiveQuery
         'dateCreated',
         'dateUpdated',
     ];
-
-    /**
-     * Generated slugs are the occurrence's date followed by its code, e.g. `2026-10-14-fo4yk`.
-     */
-    private const GENERATED_SLUG_PATTERN = '/^(\d{4}-\d{2}-\d{2})-([0-9a-z]{'.OccurrenceCodeGenerator::LENGTH.'})$/';
 
     public ?string $status = Event::STATUS_ENABLED;
 
@@ -594,8 +589,8 @@ class OccurrenceQuery extends ActiveQuery
         }
 
         if (null !== $this->recurrenceId) {
-            $this->applyAnyOfConditions($this->recurrenceId, function (mixed $value): ?array {
-                $recurrenceId = $this->normalizeRecurrenceId($value);
+            $this->applyAnyOfConditions($this->recurrenceId, static function (mixed $value): ?array {
+                $recurrenceId = RecurrenceId::normalize($value);
 
                 return null === $recurrenceId ? null : ['recurrenceId' => $recurrenceId];
             });
@@ -651,7 +646,7 @@ class OccurrenceQuery extends ActiveQuery
 
         [, $eventId, $recurrenceId] = $matches;
 
-        $recurrenceId = $this->normalizeRecurrenceId($recurrenceId);
+        $recurrenceId = RecurrenceId::normalize($recurrenceId);
         if (null === $recurrenceId) {
             return null;
         }
@@ -669,7 +664,7 @@ class OccurrenceQuery extends ActiveQuery
      */
     private function buildSlugCondition(string $slug): ?array
     {
-        if (!preg_match(self::GENERATED_SLUG_PATTERN, strtolower(trim($slug)), $matches)) {
+        if (!preg_match(OccurrenceModel::GENERATED_SLUG_PATTERN, strtolower(trim($slug)), $matches)) {
             return null;
         }
 
@@ -686,31 +681,6 @@ class OccurrenceQuery extends ActiveQuery
             ['>=', 'startDate', $dayStart->format('Y-m-d H:i:s')],
             ['<', 'startDate', $dayStart->copy()->addDay()->format('Y-m-d H:i:s')],
         ];
-    }
-
-    /**
-     * Recurrence IDs are floating date-times. Accepts dates, date-time strings
-     * and the compact `YmdHis` form used in occurrence IDs.
-     */
-    private function normalizeRecurrenceId(mixed $value): ?string
-    {
-        if (\is_string($value) && preg_match('/^\d{14}$/', $value)) {
-            $date = Carbon::createFromFormat('!YmdHis', $value, DateHelper::UTC);
-
-            return $date instanceof Carbon && $date->format('YmdHis') === $value
-                ? $date->format('Y-m-d H:i:s')
-                : null;
-        }
-
-        if (!$value instanceof \DateTimeInterface && !\is_string($value)) {
-            return null;
-        }
-
-        try {
-            return DateHelper::parseFloatingCarbon($value)->format('Y-m-d H:i:s');
-        } catch (\Throwable) {
-            return null;
-        }
     }
 
     /**

@@ -3,11 +3,14 @@
 namespace Solspace\Calendar\Bundles\Occurrences;
 
 use Carbon\Carbon;
+use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use RRule\RRuleInterface;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Records\OccurrenceWindowRecord;
 
@@ -56,6 +59,50 @@ class OccurrenceMaterializer
         if ($windowEnd) {
             $this->insertOccurrenceWindowRow($element, $windowEnd);
         }
+    }
+
+    /**
+     * Updates one occurrence after its override changed, instead of regenerating the whole event.
+     */
+    public function refreshOccurrence(CalendarEvent $element, Carbon $recurrenceId): void
+    {
+        $key = Db::prepareDateForDb($recurrenceId);
+        $condition = ['eventId' => $element->id, 'recurrenceId' => $key];
+
+        if (!(new Query())->from(OccurrenceRecord::TABLE)->where($condition)->exists()) {
+            return;
+        }
+
+        $occurrence = $this->resolveOccurrence(
+            $element,
+            $recurrenceId,
+            $element->startDate->diff($element->endDate),
+            $this->findOverrides((int) $element->id, [$key])[$key] ?? null,
+        );
+
+        Db::update(OccurrenceRecord::TABLE, $occurrence, $condition);
+    }
+
+    /**
+     * Whether the event's schedule produces an occurrence with this recurrence ID.
+     */
+    public function producesRecurrenceId(CalendarEvent $element, Carbon $recurrenceId): bool
+    {
+        $key = Db::prepareDateForDb($recurrenceId);
+
+        $rrule = $element->getRRuleObject();
+        if (null === $rrule) {
+            return Db::prepareDateForDb($element->startDate) === $key;
+        }
+
+        foreach ($this->getOccurrenceDates($rrule) as $date) {
+            $current = Db::prepareDateForDb($date);
+            if ($current >= $key) {
+                return $current === $key;
+            }
+        }
+
+        return false;
     }
 
     public function defaultInfiniteGeneratedThrough(): Carbon
@@ -132,10 +179,12 @@ class OccurrenceMaterializer
     {
         $keys = array_map(static fn (Carbon $recurrenceId) => Db::prepareDateForDb($recurrenceId), $recurrenceIds);
         $codes = $this->codes->ensure((int) $element->id, $keys);
+        $overrides = $this->findOverrides((int) $element->id, $keys);
 
         $rows = [];
         foreach ($recurrenceIds as $index => $recurrenceId) {
-            $rows[] = $this->createOccurrenceRow($element, $recurrenceId, $codes[$keys[$index]], $timeDelta);
+            $key = $keys[$index];
+            $rows[] = $this->createOccurrenceRow($element, $recurrenceId, $codes[$key], $timeDelta, $overrides[$key] ?? null);
         }
 
         $this->insertOccurrenceRows($rows);
@@ -161,16 +210,14 @@ class OccurrenceMaterializer
         }
     }
 
-    /**
-     * Until single occurrences can be edited, every occurrence starts at its recurrence ID.
-     */
     private function createOccurrenceRow(
         CalendarEvent $element,
         Carbon $recurrenceId,
         string $code,
         \DateInterval $timeDelta,
+        ?array $override,
     ): array {
-        $endDate = $recurrenceId->copy()->add($timeDelta);
+        $occurrence = $this->resolveOccurrence($element, $recurrenceId, $timeDelta, $override);
         $now = Db::prepareDateForDb(new Carbon('now', DateHelper::UTC));
 
         return [
@@ -178,14 +225,78 @@ class OccurrenceMaterializer
             (int) $element->calendarId,
             Db::prepareDateForDb($recurrenceId),
             $code,
-            Db::prepareDateForDb($recurrenceId),
-            Db::prepareDateForDb($endDate),
-            (bool) $element->allDay,
-            false,
+            $occurrence['startDate'],
+            $occurrence['endDate'],
+            $occurrence['allDay'],
+            $occurrence['cancelled'],
+            $occurrence['overrideId'],
             $now,
             $now,
             StringHelper::UUID(),
         ];
+    }
+
+    /**
+     * An occurrence starts at its recurrence ID and lasts as long as the event,
+     * unless its override gives it its own times.
+     *
+     * @return array{startDate: string, endDate: string, allDay: bool, cancelled: bool, overrideId: ?int}
+     */
+    private function resolveOccurrence(
+        CalendarEvent $element,
+        Carbon $recurrenceId,
+        \DateInterval $timeDelta,
+        ?array $override,
+    ): array {
+        $startDate = $recurrenceId;
+        $allDay = (bool) $element->allDay;
+        $endDate = null;
+
+        if (null !== ($override['startDate'] ?? null)) {
+            $startDate = new Carbon($override['startDate'], DateHelper::UTC);
+            $endDate = null !== $override['endDate'] ? new Carbon($override['endDate'], DateHelper::UTC) : null;
+            $allDay = null !== $override['allDay'] ? (bool) $override['allDay'] : $allDay;
+        }
+
+        $endDate ??= $startDate->copy()->add($timeDelta);
+
+        return [
+            'startDate' => Db::prepareDateForDb($startDate),
+            'endDate' => Db::prepareDateForDb($endDate),
+            'allDay' => $allDay,
+            'cancelled' => (bool) ($override['cancelled'] ?? false),
+            'overrideId' => isset($override['id']) ? (int) $override['id'] : null,
+        ];
+    }
+
+    /**
+     * @param string[] $recurrenceIds
+     *
+     * @return array<string, array> the event's live overrides, by recurrence ID
+     */
+    private function findOverrides(int $eventId, array $recurrenceIds): array
+    {
+        return (new Query())
+            ->select([
+                'overrides.id',
+                'overrides.recurrenceId',
+                'overrides.startDate',
+                'overrides.endDate',
+                'overrides.allDay',
+                'overrides.cancelled',
+            ])
+            ->from(['overrides' => OccurrenceOverrideRecord::TABLE])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[overrides.id]]')
+            ->where([
+                'overrides.primaryOwnerId' => $eventId,
+                'overrides.recurrenceId' => $recurrenceIds,
+                'elements.dateDeleted' => null,
+            ])
+            // If there are ever two for one occurrence, the oldest one wins
+            ->orderBy(['overrides.id' => \SORT_DESC])
+            ->indexBy('recurrenceId')
+            ->all()
+        ;
     }
 
     private function insertOccurrenceRows(array $rows): void
@@ -207,6 +318,7 @@ class OccurrenceMaterializer
                     'endDate',
                     'allDay',
                     'cancelled',
+                    'overrideId',
                     'dateCreated',
                     'dateUpdated',
                     'uid',

@@ -9,7 +9,10 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
+use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\PropagationMethod;
 use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\helpers\Cp;
@@ -27,6 +30,7 @@ use Solspace\Calendar\Elements\Actions\DeleteEventAction;
 use Solspace\Calendar\Elements\Actions\SetStatusAction;
 use Solspace\Calendar\Elements\conditions\EventCondition;
 use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Elements\Db\OccurrenceOverrideQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
 use Solspace\Calendar\Library\Duration\EventDuration;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
@@ -91,6 +95,13 @@ class Event extends Element implements \JsonSerializable
 
     private bool $syncFromRequestOnSave = true;
 
+    private ?NestedElementManager $occurrenceOverrideManager = null;
+
+    /**
+     * @var null|ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery
+     */
+    private ElementCollection|OccurrenceOverrideQuery|null $occurrenceOverrides = null;
+
     private ?int $persistedCalendarId = null;
 
     private ?string $persistedRRule = null;
@@ -135,6 +146,14 @@ class Event extends Element implements \JsonSerializable
         if ($this->endDate) {
             $this->endDateLocalized = new Carbon($this->endDate->toDateTimeString());
         }
+    }
+
+    public function __clone()
+    {
+        parent::__clone();
+
+        $this->occurrenceOverrideManager = null;
+        $this->occurrenceOverrides = null;
     }
 
     public function canCreateDrafts(User $user): bool
@@ -651,7 +670,7 @@ class Event extends Element implements \JsonSerializable
 
         $this->updateTitle();
 
-        if (!$this->syncFromRequestOnSave) {
+        if (!$this->syncFromRequestOnSave || \Craft::$app->getRequest()->getIsConsoleRequest()) {
             if (!$this->timezone || '' === trim((string) $this->timezone)) {
                 $this->timezone = \Craft::$app->getTimeZone();
             }
@@ -745,6 +764,60 @@ class Event extends Element implements \JsonSerializable
     public function getFieldLayout(): ?FieldLayout
     {
         return $this->getCalendar()->getFieldLayout();
+    }
+
+    /**
+     * Overrides of single occurrences belong to their event, so Craft carries them through
+     * drafts, duplication, deletion and restoring along with it.
+     */
+    public function getOccurrenceOverrideManager(): NestedElementManager
+    {
+        return $this->occurrenceOverrideManager ??= new NestedElementManager(
+            OccurrenceOverride::class,
+            static fn (self $owner) => $owner->createOccurrenceOverrideQuery(),
+            [
+                'attribute' => 'occurrenceOverrides',
+                'propagationMethod' => PropagationMethod::All,
+                'valueGetter' => static fn (self $owner) => $owner->getOccurrenceOverrides(),
+                'valueSetter' => static function (ElementCollection|OccurrenceOverrideQuery $value, self $owner): void {
+                    $owner->occurrenceOverrides = $value;
+                },
+            ],
+        );
+    }
+
+    /**
+     * @return ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery
+     */
+    public function getOccurrenceOverrides(): ElementCollection|OccurrenceOverrideQuery
+    {
+        return $this->occurrenceOverrides ??= $this->createOccurrenceOverrideQuery();
+    }
+
+    public function afterPropagate(bool $isNew): void
+    {
+        $this->getOccurrenceOverrideManager()->maintainNestedElements($this, $isNew);
+
+        parent::afterPropagate($isNew);
+    }
+
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Before the event is gone, because its ownership rows go with it
+        $this->getOccurrenceOverrideManager()->deleteNestedElements($this, $this->hardDelete);
+
+        return true;
+    }
+
+    public function afterRestore(): void
+    {
+        $this->getOccurrenceOverrideManager()->restoreNestedElements($this);
+
+        parent::afterRestore();
     }
 
     public function builderConfig(): array
@@ -1348,6 +1421,14 @@ class Event extends Element implements \JsonSerializable
         } catch (\Throwable) {
             return $fallback;
         }
+    }
+
+    private function createOccurrenceOverrideQuery(): OccurrenceOverrideQuery
+    {
+        return OccurrenceOverride::find()
+            ->owner($this)
+            ->orderBy(['calendar_occurrence_overrides.recurrenceId' => \SORT_ASC])
+        ;
     }
 
     private function getOverlapThreshold(): int

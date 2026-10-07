@@ -4,6 +4,7 @@ namespace Solspace\Tests\Unit\Calendar\Elements\Db;
 
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
@@ -45,9 +46,7 @@ class OccurrenceQueryTest extends TestCase
      */
     public function testNormalizeRecurrenceId(mixed $value, ?string $expected): void
     {
-        $method = new \ReflectionMethod(OccurrenceQuery::class, 'normalizeRecurrenceId');
-
-        self::assertSame($expected, $method->invoke($this->makeQuery(), $value));
+        self::assertSame($expected, RecurrenceId::normalize($value));
     }
 
     public static function recurrenceIdProvider(): array

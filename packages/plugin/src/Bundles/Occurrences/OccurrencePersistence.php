@@ -3,9 +3,8 @@
 namespace Solspace\Calendar\Bundles\Occurrences;
 
 use craft\base\Element;
-use craft\events\ElementEvent;
+use craft\events\ModelEvent;
 use craft\helpers\ElementHelper;
-use craft\services\Elements;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
 use yii\base\Event;
@@ -18,9 +17,11 @@ class OccurrencePersistence implements BundleInterface
     {
         $this->materializer = $materializer ?? new OccurrenceMaterializer();
 
+        // After propagation rather than after save: duplicating an event (which is also how a draft
+        // is published) only carries its occurrence overrides over once it's fully propagated
         Event::on(
-            Elements::class,
-            Elements::EVENT_AFTER_SAVE_ELEMENT,
+            CalendarEvent::class,
+            Element::EVENT_AFTER_PROPAGATE,
             [$this, 'persistOccurrences']
         );
 
@@ -37,9 +38,9 @@ class OccurrencePersistence implements BundleInterface
         );
     }
 
-    public function persistOccurrences(ElementEvent $event): void
+    public function persistOccurrences(ModelEvent $event): void
     {
-        $element = $event->element;
+        $element = $event->sender;
         if (!$element instanceof CalendarEvent) {
             return;
         }
