@@ -90,7 +90,7 @@ class OccurrenceQueryTest extends TestCase
         self::assertSame(['overrideId' => null], $withoutOverride);
         self::assertSame(['not in', 'overrideId'], [$notIn, $column]);
         self::assertInstanceOf(Query::class, $customSlugs);
-        self::assertContains(['siteId' => 3], $customSlugs->where);
+        self::assertContains(['elements_sites.siteId' => 3], $customSlugs->where);
     }
 
     public function testGeneratedSlugIsCaseInsensitive(): void
@@ -107,8 +107,8 @@ class OccurrenceQueryTest extends TestCase
 
         self::assertSame(['overrideId'], array_keys($condition));
         self::assertInstanceOf(Query::class, $condition['overrideId']);
-        self::assertContains(['slug' => 'guest-night'], $condition['overrideId']->where);
-        self::assertContains(['siteId' => 3], $condition['overrideId']->where);
+        self::assertContains(['elements_sites.slug' => 'guest-night'], $condition['overrideId']->where);
+        self::assertContains(['elements_sites.siteId' => 3], $condition['overrideId']->where);
     }
 
     public function testSlugsThatCantMatchAnything(): void

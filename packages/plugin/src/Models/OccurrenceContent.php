@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Models;
 
+use craft\elements\ContentBlock;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Elements\OccurrenceOverride;
 use yii\base\InvalidArgumentException;
@@ -23,6 +24,10 @@ class OccurrenceContent implements \ArrayAccess
         private ?OccurrenceOverride $override = null,
     ) {}
 
+    /**
+     * Like elements do, this hands out copies of object values, such as a relation field's query. Every occurrence
+     * of an event reads from the same event, so changing a query read here would change it for all of them.
+     */
     public function __get(string $name): mixed
     {
         if (self::TITLE === $name) {
@@ -30,7 +35,9 @@ class OccurrenceContent implements \ArrayAccess
         }
 
         if ($this->hasField($name)) {
-            return $this->getFieldValue($name);
+            $value = $this->getFieldValue($name);
+
+            return \is_object($value) && !$value instanceof \UnitEnum && !$value instanceof ContentBlock ? clone $value : $value;
         }
 
         return $this->event->{$name};

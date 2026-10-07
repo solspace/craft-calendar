@@ -85,6 +85,11 @@ class OccurrenceInterface extends AbstractInterface
                         'type' => Type::boolean(),
                         'description' => 'Whether the occurrence is all day',
                     ],
+                    'multiDay' => [
+                        'name' => 'multiDay',
+                        'type' => Type::boolean(),
+                        'description' => 'Whether the occurrence spans more than one day',
+                    ],
                     'cancelled' => [
                         'name' => 'cancelled',
                         'type' => Type::boolean(),

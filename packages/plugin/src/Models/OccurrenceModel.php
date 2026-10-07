@@ -8,6 +8,7 @@ use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodeGenerator;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Elements\OccurrenceOverride;
+use Solspace\Calendar\Library\Duration\EventDuration;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 
 class OccurrenceModel extends Model
@@ -89,6 +90,14 @@ class OccurrenceModel extends Model
     public function isMultiDay(): bool
     {
         return DateHelper::isMultiDay($this->startDate, $this->endDate, Calendar::getInstance()->settings->getOverlapThreshold());
+    }
+
+    /**
+     * How long the occurrence lasts. Like an event's, an all-day duration counts whole days.
+     */
+    public function getDuration(): EventDuration
+    {
+        return new EventDuration($this->startDate->diff($this->allDay ? $this->endDate->copy()->addSecond() : $this->endDate));
     }
 
     /**

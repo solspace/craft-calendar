@@ -7,6 +7,7 @@ use craft\db\ActiveQuery;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
+use craft\models\Site;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
@@ -15,6 +16,7 @@ use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\OccurrenceModel;
 use Solspace\Calendar\Records\CalendarRecord;
+use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Records\OccurrenceWindowRecord;
 use Solspace\Calendar\Transformers\FullCalTransformer;
@@ -798,7 +800,7 @@ class OccurrenceQuery extends ActiveQuery
         }
 
         if (!preg_match(OccurrenceModel::GENERATED_SLUG_PATTERN, strtolower($slug), $matches)) {
-            return ['overrideId' => $this->customSlugOverrideIds($siteId)->andWhere(['slug' => $slug])];
+            return ['overrideId' => $this->findOverridesWithCustomSlug($siteId)->andWhere(['elements_sites.slug' => $slug])];
         }
 
         [, $date, $code] = $matches;
@@ -813,21 +815,22 @@ class OccurrenceQuery extends ActiveQuery
             ['code' => $code],
             ['>=', 'startDate', $dayStart->format('Y-m-d H:i:s')],
             ['<', 'startDate', $dayStart->copy()->addDay()->format('Y-m-d H:i:s')],
-            ['or', ['overrideId' => null], ['not in', 'overrideId', $this->customSlugOverrideIds($siteId)]],
+            ['or', ['overrideId' => null], ['not in', 'overrideId', $this->findOverridesWithCustomSlug($siteId)]],
         ];
     }
 
     /**
-     * Overrides with a custom slug in the given site.
+     * IDs of the overrides with a custom slug in the given site.
      */
-    private function customSlugOverrideIds(int $siteId): Query
+    private function findOverridesWithCustomSlug(int $siteId): Query
     {
         return (new Query())
-            ->select(['elementId'])
-            ->from(Table::ELEMENTS_SITES)
-            ->where(['siteId' => $siteId])
-            ->andWhere(['not', ['slug' => null]])
-            ->andWhere(['not', ['slug' => '']])
+            ->select(['elements_sites.elementId'])
+            ->from(['elements_sites' => Table::ELEMENTS_SITES])
+            ->innerJoin(['overrides' => OccurrenceOverrideRecord::TABLE], '[[overrides.id]] = [[elements_sites.elementId]]')
+            ->where(['elements_sites.siteId' => $siteId])
+            ->andWhere(['not', ['elements_sites.slug' => null]])
+            ->andWhere(['not', ['elements_sites.slug' => '']])
         ;
     }
 
@@ -865,6 +868,9 @@ class OccurrenceQuery extends ActiveQuery
     /**
      * The site whose slugs, relations and search index occurrences are matched against.
      */
+    /**
+     * The site whose content slugs, search and relations match. GraphQL passes `site` as a list.
+     */
     private function resolveContentSiteId(): int
     {
         $siteId = \is_array($this->siteId) && 1 === \count($this->siteId) ? reset($this->siteId) : $this->siteId;
@@ -872,9 +878,14 @@ class OccurrenceQuery extends ActiveQuery
             return (int) $siteId;
         }
 
+        $site = \is_array($this->site) && 1 === \count($this->site) ? reset($this->site) : $this->site;
+        if ($site instanceof Site) {
+            return $site->id;
+        }
+
         $sites = \Craft::$app->getSites();
-        if (\is_string($this->site) && '*' !== $this->site) {
-            $site = $sites->getSiteByHandle($this->site);
+        if (\is_string($site) && '*' !== $site) {
+            $site = $sites->getSiteByHandle($site);
             if ($site) {
                 return $site->id;
             }

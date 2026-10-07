@@ -2,8 +2,13 @@
 
 namespace Solspace\Calendar\Bundles\GraphQL\Resolvers;
 
+use craft\base\EagerLoadingFieldInterface;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Error\UserError;
+use GraphQL\Language\AST\FieldNode;
+use GraphQL\Language\AST\FragmentSpreadNode;
+use GraphQL\Language\AST\InlineFragmentNode;
+use GraphQL\Language\AST\SelectionSetNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use Solspace\Calendar\Bundles\GraphQL\GqlPermissions;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
@@ -21,7 +26,7 @@ class OccurrenceResolver
             return [];
         }
 
-        $value = $query->all();
+        $value = $query->with(self::getEagerLoadingPaths($resolveInfo))->all();
 
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
@@ -33,7 +38,7 @@ class OccurrenceResolver
             return null;
         }
 
-        $value = $query->one();
+        $value = $query->with(self::getEagerLoadingPaths($resolveInfo))->one();
 
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
@@ -46,6 +51,64 @@ class OccurrenceResolver
         }
 
         return (int) $query->count();
+    }
+
+    /**
+     * Eager-loads the fields read through each occurrence's `content` and `event`, like Craft does for its own
+     * elements. A field that takes arguments, or is read more than once, still loads per occurrence, so that
+     * its arguments apply.
+     *
+     * @return string[] paths like `content.speakers`
+     */
+    private static function getEagerLoadingPaths(ResolveInfo $resolveInfo): array
+    {
+        $fields = \Craft::$app->getFields();
+        $paths = [];
+
+        foreach ($resolveInfo->fieldNodes as $fieldNode) {
+            foreach (self::getFieldNodes($fieldNode->selectionSet, $resolveInfo) as $selection) {
+                if (!\in_array($selection->name->value, ['content', 'event'], true)) {
+                    continue;
+                }
+
+                $reads = [];
+                foreach (self::getFieldNodes($selection->selectionSet, $resolveInfo) as $child) {
+                    if ($child->selectionSet) {
+                        $reads[$child->name->value][] = $child;
+                    }
+                }
+
+                foreach ($reads as $handle => $nodes) {
+                    if (1 === \count($nodes) && 0 === \count($nodes[0]->arguments) && $fields->getFieldByHandle($handle) instanceof EagerLoadingFieldInterface) {
+                        $paths[] = $selection->name->value.'.'.$handle;
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($paths));
+    }
+
+    /**
+     * The fields a selection reads, including those in fragments. Custom fields are always read in a fragment.
+     *
+     * @return FieldNode[]
+     */
+    private static function getFieldNodes(?SelectionSetNode $selectionSet, ResolveInfo $resolveInfo): array
+    {
+        $nodes = [];
+
+        foreach ($selectionSet?->selections ?? [] as $selection) {
+            if ($selection instanceof FieldNode) {
+                $nodes[] = $selection;
+            } elseif ($selection instanceof InlineFragmentNode) {
+                array_push($nodes, ...self::getFieldNodes($selection->selectionSet, $resolveInfo));
+            } elseif ($selection instanceof FragmentSpreadNode && isset($resolveInfo->fragments[$selection->name->value])) {
+                array_push($nodes, ...self::getFieldNodes($resolveInfo->fragments[$selection->name->value]->selectionSet, $resolveInfo));
+            }
+        }
+
+        return $nodes;
     }
 
     private static function prepareQuery(mixed $source, array $arguments): false|OccurrenceQuery

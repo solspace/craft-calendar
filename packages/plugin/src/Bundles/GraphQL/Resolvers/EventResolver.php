@@ -25,7 +25,13 @@ class EventResolver extends ElementResolver
 
             $arguments['calendarId'] = $source->id;
         } elseif (($source instanceof ElementInterface || $source instanceof OccurrenceContent) && null !== $fieldName) {
-            return self::applyCalendarPermissionsToValue($source->{$fieldName});
+            // Reading the field hands out a copy of its query, so the arguments only apply to this read
+            $value = $source->{$fieldName};
+            if ($value instanceof EventQuery && false !== $arguments) {
+                \Craft::configure($value, $arguments);
+            }
+
+            return self::applyCalendarPermissionsToValue($value);
         } elseif (false === $arguments) {
             return new Collection();
         }

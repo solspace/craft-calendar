@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Elements\Db;
 
+use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\db\NestedElementQueryTrait;
@@ -58,6 +59,11 @@ class OccurrenceOverrideQuery extends ElementQuery implements NestedElementQuery
 
     protected function beforePrepare(): bool
     {
+        // Overrides belong to their event rather than to one of its fields
+        if (!empty($this->fieldId)) {
+            throw new QueryAbortedException();
+        }
+
         $table = OccurrenceOverrideRecord::TABLE_STD;
 
         $this->joinElementTable($table);
