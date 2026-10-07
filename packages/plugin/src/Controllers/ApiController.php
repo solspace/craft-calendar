@@ -15,6 +15,11 @@ use yii\web\Response;
 
 class ApiController extends BaseController
 {
+    /**
+     * Filters a feed request can add to its own range, calendars and site.
+     */
+    private const FEED_CRITERIA = ['cancelled', 'search', 'relatedTo'];
+
     protected array|bool|int $allowAnonymous = ['ics'];
 
     public function __construct(
@@ -63,8 +68,9 @@ class ApiController extends BaseController
         $calendars = $request->getParam('calendars');
         $siteId = $request->getParam('siteId');
         $criteria = $request->getParam('criteria', []);
-        if (!\is_array($criteria)) {
-            $criteria = [];
+        $criteria = \is_array($criteria) ? array_intersect_key($criteria, array_flip(self::FEED_CRITERIA)) : [];
+        if (isset($criteria['cancelled'])) {
+            $criteria['cancelled'] = filter_var($criteria['cancelled'], \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE);
         }
 
         $criteria = array_merge([

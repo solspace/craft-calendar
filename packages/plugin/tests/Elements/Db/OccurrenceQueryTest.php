@@ -9,6 +9,8 @@ use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\OccurrenceModel;
+use yii\base\InvalidArgumentException;
+use yii\db\Expression;
 use yii\db\Query;
 
 /**
@@ -197,6 +199,45 @@ class OccurrenceQueryTest extends TestCase
         $this->callSortByOrderCriteria($query, $models, ['startDate' => \SORT_ASC, 'eventId' => \SORT_ASC]);
 
         self::assertSame([$modelB, $modelC, $modelA], $models);
+    }
+
+    public function testOrderByReadsStringsLikeYii(): void
+    {
+        self::assertSame(
+            ['startDate' => \SORT_DESC, 'title' => \SORT_ASC],
+            $this->makeQuery()->orderBy(' startDate DESC,title ')->orderBy,
+        );
+    }
+
+    public function testOrderByNormalizesArrays(): void
+    {
+        self::assertSame(
+            ['startDate' => \SORT_DESC, 'title' => \SORT_ASC, 'location' => \SORT_ASC],
+            $this->makeQuery()->orderBy(['startDate' => 'desc', 'title' => \SORT_ASC, 'location'])->orderBy,
+        );
+    }
+
+    /**
+     * @dataProvider rejectedOrderByProvider
+     */
+    public function testOrderByOnlyTakesColumnsAndFieldHandles(mixed $orderBy): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->makeQuery()->orderBy($orderBy);
+    }
+
+    public static function rejectedOrderByProvider(): array
+    {
+        return [
+            'subquery' => ['(SELECT SLEEP(5))'],
+            'function' => ['RAND()'],
+            'expression' => [new Expression('RAND()')],
+            'expression in a list' => [[new Expression('RAND()')]],
+            'qualified column' => [['elements.id' => \SORT_ASC]],
+            'unknown direction' => [['startDate' => 'sideways']],
+            'extra words' => ['startDate desc nulls first'],
+        ];
     }
 
     private function callBuildOccurrenceIdCondition(OccurrenceQuery $query, string $value): ?array

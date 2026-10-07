@@ -18,6 +18,8 @@ use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Records\OccurrenceWindowRecord;
 use Solspace\Calendar\Transformers\FullCalTransformer;
+use yii\base\InvalidArgumentException;
+use yii\db\ExpressionInterface;
 use yii\db\Query;
 
 class OccurrenceQuery extends ActiveQuery
@@ -68,6 +70,16 @@ class OccurrenceQuery extends ActiveQuery
     public mixed $endsAfterOrAt = null;
     public mixed $rangeStart = null;
     public mixed $rangeEnd = null;
+
+    public function init(): void
+    {
+        parent::init();
+
+        // Criteria set the property directly, without what `orderBy()` does to it
+        if (null !== $this->orderBy) {
+            $this->orderBy = $this->normalizeOrderBy($this->orderBy);
+        }
+    }
 
     public function status(?string $status): self
     {
@@ -324,7 +336,14 @@ class OccurrenceQuery extends ActiveQuery
             $this->andWhere('[[startDate]] <= :rangeEnd', ['rangeEnd' => $this->resolveDate($this->rangeEnd)]);
         }
 
-        return parent::prepare($builder);
+        $query = parent::prepare($builder);
+
+        // Field values aren't columns. `all()` and `one()` sort by them in PHP, and nothing else needs the order.
+        if (\is_array($query->orderBy)) {
+            $query->orderBy = array_intersect_key($query->orderBy, array_flip(self::NATIVE_ORDER_COLUMNS)) ?: null;
+        }
+
+        return $query;
     }
 
     public function toFullcalendar(): array
@@ -432,6 +451,17 @@ class OccurrenceQuery extends ActiveQuery
         return $result;
     }
 
+    public function one($db = null)
+    {
+        if (!$this->orderByCustomField()) {
+            return parent::one($db);
+        }
+
+        $models = (clone $this)->limit(1)->indexBy(null)->all($db);
+
+        return $models[0] ?? null;
+    }
+
     public function all($db = null): array
     {
         if (!$this->orderByCustomField()) {
@@ -473,6 +503,54 @@ class OccurrenceQuery extends ActiveQuery
         }
 
         return $indexed;
+    }
+
+    /**
+     * Occurrences are ordered by column names and field handles only, so nothing else reaches the SQL.
+     * Strings like `startDate desc, title` are read the way Yii reads them.
+     *
+     * @param mixed $columns
+     */
+    protected function normalizeOrderBy($columns): array
+    {
+        if (\is_string($columns)) {
+            $parsed = [];
+            foreach (preg_split('/\s*,\s*/', trim($columns), -1, \PREG_SPLIT_NO_EMPTY) as $column) {
+                $words = preg_split('/\s+/', $column);
+                $parsed[$words[0]] = match (\count($words)) {
+                    1 => \SORT_ASC,
+                    2 => $words[1],
+                    default => null,
+                };
+            }
+
+            $columns = $parsed;
+        }
+
+        if ($columns instanceof ExpressionInterface || !\is_array($columns)) {
+            throw new InvalidArgumentException('Occurrences can only be ordered by columns and field handles.');
+        }
+
+        $orderBy = [];
+        foreach ($columns as $column => $direction) {
+            if (\is_int($column) && \is_string($direction)) {
+                [$column, $direction] = [$direction, \SORT_ASC];
+            }
+
+            $direction = match (\is_string($direction) ? strtolower($direction) : $direction) {
+                \SORT_ASC, 'asc' => \SORT_ASC,
+                \SORT_DESC, 'desc' => \SORT_DESC,
+                default => null,
+            };
+
+            if (null === $direction || !\is_string($column) || !preg_match('/^\w+$/', $column)) {
+                throw new InvalidArgumentException('Occurrences can only be ordered by columns and field handles.');
+            }
+
+            $orderBy[$column] = $direction;
+        }
+
+        return $orderBy;
     }
 
     private function resolveDate(mixed $date): Carbon

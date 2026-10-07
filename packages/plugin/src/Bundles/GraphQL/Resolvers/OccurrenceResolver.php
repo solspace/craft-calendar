@@ -3,12 +3,14 @@
 namespace Solspace\Calendar\Bundles\GraphQL\Resolvers;
 
 use craft\helpers\Gql as GqlHelper;
+use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use Solspace\Calendar\Bundles\GraphQL\GqlPermissions;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
+use yii\base\InvalidArgumentException;
 
 class OccurrenceResolver
 {
@@ -167,7 +169,11 @@ class OccurrenceResolver
         }
 
         if (isset($arguments['orderBy'])) {
-            $query->orderBy($arguments['orderBy']);
+            try {
+                $query->orderBy($arguments['orderBy']);
+            } catch (InvalidArgumentException $exception) {
+                throw new UserError($exception->getMessage());
+            }
         }
 
         if (isset($arguments['offset'])) {

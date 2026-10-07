@@ -19,6 +19,7 @@ use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Resources\Bundles\OccurrenceEditorBundle;
 use Solspace\Calendar\Services\OccurrencesService;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -72,7 +73,7 @@ class OccurrencesController extends BaseController
         }
 
         $override = $service->getOrCreateOverride($event, $recurrenceId);
-        $this->applyContent($override);
+        $this->applyContent($override, $event);
 
         if (!$this->applyTimes($override)) {
             return $this->asFailure(Calendar::t('Couldn’t save the occurrence.'), ['errors' => $override->getErrors()]);
@@ -178,10 +179,20 @@ class OccurrencesController extends BaseController
         return [$event, $recurrenceId];
     }
 
+    /**
+     * The event, or draft of it, the request edits occurrences for. Needs the same permissions as editing the event
+     * in that site; another user's provisional draft holds their unsaved changes, so only they can edit through it.
+     */
     private function requireEvent(): Event
     {
         $request = \Craft::$app->getRequest();
+        $user = static::currentUser();
         $siteId = $this->resolveEventSiteId($request->getParam('siteId'));
+        $site = \Craft::$app->getSites()->getSiteById($siteId);
+
+        if (\Craft::$app->getIsMultiSite() && !$user?->can("editSite:{$site->uid}")) {
+            throw new ForbiddenHttpException('User not authorized to edit content for this site.');
+        }
 
         $event = Event::find()
             ->id((int) $request->getRequiredParam('eventId'))
@@ -198,6 +209,13 @@ class OccurrencesController extends BaseController
         }
 
         $this->getEventsService()->requireEventEditPermissions($event);
+
+        if (
+            ($event->isProvisionalDraft && $event->creatorId !== $user?->id)
+            || !\Craft::$app->getElements()->canSave($event, $user)
+        ) {
+            throw new ForbiddenHttpException('User not authorized to save this event.');
+        }
 
         return $event;
     }
@@ -344,14 +362,21 @@ class OccurrencesController extends BaseController
         return $tabs;
     }
 
-    private function applyContent(OccurrenceOverride $override): void
+    /**
+     * Only fields the slideout shows as editable can be overridden or inherited, like in the event editor.
+     */
+    private function applyContent(OccurrenceOverride $override, Event $event): void
     {
         $request = \Craft::$app->getRequest();
         $toggles = (array) $request->getBodyParam('overrides', []);
         $values = (array) $request->getBodyParam('fields', []);
+        $editable = $this->getEditableKeys($event);
 
         foreach ($toggles as $key => $on) {
             $key = (string) $key;
+            if (!isset($editable[$key])) {
+                continue;
+            }
 
             if (!$on) {
                 if ($this->isOverridden($override, $key)) {
@@ -406,6 +431,27 @@ class OccurrencesController extends BaseController
         $override->reschedule($startDate, $endDate, (bool) $request->getBodyParam('allDay'));
 
         return true;
+    }
+
+    /**
+     * `title` and the handles of the custom fields the event's layout shows the user as editable.
+     *
+     * @return array<string, true>
+     */
+    private function getEditableKeys(Event $event): array
+    {
+        $layout = $event->getFieldLayout();
+        $keys = [];
+
+        if ($layout?->getFirstVisibleElementByType(TitleField::class, $event)) {
+            $keys[OccurrenceOverride::TITLE] = true;
+        }
+
+        foreach ($layout?->getEditableCustomFields($event) ?? [] as $field) {
+            $keys[$field->handle] = true;
+        }
+
+        return $keys;
     }
 
     /**
