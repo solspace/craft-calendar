@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Library\Helpers;
 
 use Carbon\Carbon;
+use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Exceptions\DateHelperException;
 
@@ -39,6 +40,26 @@ class DateHelper
     public static function toLocalized(Carbon $date): Carbon
     {
         return new Carbon($date->toDateTimeString());
+    }
+
+    /**
+     * A floating date-time as the same wall-clock time in the control panel's timezone, for date inputs and formatting.
+     */
+    public static function floatingToLocal(Carbon $date): \DateTime
+    {
+        return new \DateTime($date->format('Y-m-d H:i:s'), new \DateTimeZone(\Craft::$app->getTimeZone()));
+    }
+
+    /**
+     * A floating date-time formatted for the control panel: the date alone for all-day dates.
+     */
+    public static function formatFloating(Carbon $date, bool $allDay): string
+    {
+        $formatter = \Craft::$app->getFormatter();
+
+        return $allDay
+            ? $formatter->asDate(self::floatingToLocal($date), Locale::LENGTH_MEDIUM)
+            : $formatter->asDatetime(self::floatingToLocal($date), Locale::LENGTH_SHORT);
     }
 
     public static function parseFloatingCarbon(mixed $value): Carbon
@@ -204,6 +225,14 @@ class DateHelper
     }
 
     /**
+     * All-day events and occurrences end at the end of their last day, the way the event builder stores them.
+     */
+    public static function allDayEnd(Carbon $lastDay): Carbon
+    {
+        return $lastDay->copy()->setTime(23, 59, 59);
+    }
+
+    /**
      * All-day ends arrive the way FullCalendar and the CP date pickers send them: as the day after
      * the last day. They're stored the way the event builder stores them: at the end of the last day.
      */
@@ -212,7 +241,7 @@ class DateHelper
         $lastDay = $exclusiveEnd->copy()->startOfDay()->subDay();
         $firstDay = $start->copy()->startOfDay();
 
-        return ($lastDay < $firstDay ? $firstDay : $lastDay)->setTime(23, 59, 59);
+        return self::allDayEnd($lastDay < $firstDay ? $firstDay : $lastDay);
     }
 
     /**

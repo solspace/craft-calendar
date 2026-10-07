@@ -19,6 +19,7 @@ use craft\models\FieldLayout;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\OccurrenceOverrideQuery;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\OccurrenceModel;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
@@ -318,7 +319,7 @@ class OccurrenceOverride extends Element implements NestedElementInterface
     {
         if ($allDay) {
             $startDate = $startDate->copy()->startOfDay();
-            $endDate = $endDate->copy()->setTime(23, 59, 59);
+            $endDate = DateHelper::allDayEnd($endDate);
         }
 
         $this->startDate = $startDate;

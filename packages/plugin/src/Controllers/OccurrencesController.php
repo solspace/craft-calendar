@@ -47,7 +47,7 @@ class OccurrencesController extends BaseController
         return $this->asCpScreen()
             ->title(Calendar::t('{event} on {date}', [
                 'event' => $override?->isFieldOverridden(OccurrenceOverride::TITLE) ? $override->title : $event->title,
-                'date' => $this->formatDate($occurrence['startDate'], $occurrence['allDay']),
+                'date' => DateHelper::formatFloating($occurrence['startDate'], $occurrence['allDay']),
             ]))
             ->action('calendar/occurrences/save')
             ->tabs($this->tabMenu($event))
@@ -316,8 +316,8 @@ class OccurrencesController extends BaseController
 
         return [
             'ownTimes' => (bool) $override?->hasOwnTimes(),
-            'startDate' => $this->toFormDate($occurrence['startDate']),
-            'endDate' => $this->toFormDate($occurrence['endDate']),
+            'startDate' => DateHelper::floatingToLocal($occurrence['startDate']),
+            'endDate' => DateHelper::floatingToLocal($occurrence['endDate']),
             'allDay' => $occurrence['allDay'],
             'seriesTimes' => $this->formatRange($series['startDate'], $series['endDate'], $series['allDay']),
             'cancelled' => (bool) $override?->cancelled,
@@ -459,39 +459,25 @@ class OccurrencesController extends BaseController
     }
 
     /**
-     * Occurrence times are floating, so date inputs get the same wall-clock time in the CP's timezone.
+     * Occurrence times are floating, so date inputs show and post the same wall-clock time in the CP's timezone.
      */
-    private function toFormDate(Carbon $date): \DateTime
-    {
-        return new \DateTime($date->format('Y-m-d H:i:s'), new \DateTimeZone(\Craft::$app->getTimeZone()));
-    }
-
     private function fromFormDate(mixed $value): ?Carbon
     {
         // Without a posted timezone, Craft would read the date and time as UTC
         $date = DateTimeHelper::toDateTime($value, true);
 
-        return $date ? new Carbon($date->format('Y-m-d H:i:s'), DateHelper::UTC) : null;
-    }
-
-    private function formatDate(Carbon $date, bool $allDay): string
-    {
-        $formatter = \Craft::$app->getFormatter();
-
-        return $allDay
-            ? $formatter->asDate($this->toFormDate($date), Locale::LENGTH_MEDIUM)
-            : $formatter->asDatetime($this->toFormDate($date), Locale::LENGTH_SHORT);
+        return $date ? DateHelper::parseFloatingCarbon($date) : null;
     }
 
     private function formatRange(Carbon $startDate, Carbon $endDate, bool $allDay): string
     {
         if ($startDate->isSameDay($endDate)) {
             return $allDay
-                ? $this->formatDate($startDate, true)
-                : $this->formatDate($startDate, false).' – '.\Craft::$app->getFormatter()->asTime($this->toFormDate($endDate), Locale::LENGTH_SHORT);
+                ? DateHelper::formatFloating($startDate, true)
+                : DateHelper::formatFloating($startDate, false).' – '.\Craft::$app->getFormatter()->asTime(DateHelper::floatingToLocal($endDate), Locale::LENGTH_SHORT);
         }
 
-        return $this->formatDate($startDate, $allDay).' – '.$this->formatDate($endDate, $allDay);
+        return DateHelper::formatFloating($startDate, $allDay).' – '.DateHelper::formatFloating($endDate, $allDay);
     }
 
     private function getOccurrencesService(): OccurrencesService

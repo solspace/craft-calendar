@@ -475,11 +475,7 @@ class RecurringEventMutationHelper
     {
         $normalized = $this->toCarbon($date, $allDay);
 
-        if ($allDay) {
-            return $normalized->setTime(23, 59, 59);
-        }
-
-        return $normalized;
+        return $allDay ? DateHelper::allDayEnd($normalized) : $normalized;
     }
 
     private function dateKey(Carbon|\DateTimeInterface $date, bool $allDay): string

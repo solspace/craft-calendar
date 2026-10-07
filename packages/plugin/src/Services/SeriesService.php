@@ -9,7 +9,6 @@ use craft\db\Table;
 use craft\elements\ElementCollection;
 use craft\errors\InvalidElementException;
 use craft\helpers\Db;
-use craft\i18n\Locale;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
 use Solspace\Calendar\Bundles\Occurrences\OverrideReconciler;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
@@ -145,10 +144,10 @@ class SeriesService extends Component
 
         try {
             /** @var Event $draft */
-            $draft = Event::withoutRequestSync(fn () => \Craft::$app->getDrafts()->createDraft(
+            $draft = Event::withoutRequestSync(static fn () => \Craft::$app->getDrafts()->createDraft(
                 $event,
                 $creatorId,
-                Calendar::t('From {date}', ['date' => $this->formatDate($splitAt, $event->isAllDay())]),
+                Calendar::t('From {date}', ['date' => DateHelper::formatFloating($splitAt, $event->isAllDay())]),
                 null,
                 [
                     'startDate' => $later->startDate,
@@ -410,15 +409,5 @@ class SeriesService extends Component
         if (!Calendar::getInstance()->events->saveEvent($event)) {
             throw new InvalidElementException($event, implode(' ', $event->getErrorSummary(true)) ?: 'Couldn’t save the event.');
         }
-    }
-
-    private function formatDate(Carbon $date, bool $allDay): string
-    {
-        $formatter = \Craft::$app->getFormatter();
-        $local = new \DateTime($date->format('Y-m-d H:i:s'), new \DateTimeZone(\Craft::$app->getTimeZone()));
-
-        return $allDay
-            ? $formatter->asDate($local, Locale::LENGTH_MEDIUM)
-            : $formatter->asDatetime($local, Locale::LENGTH_SHORT);
     }
 }
