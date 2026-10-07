@@ -3,9 +3,11 @@ import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { craftFetch } from "@cal/utils/http";
 import { getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
+import { eventSelectors } from "@event-builder/store/event.slice";
 import clsx from "clsx";
 import { format } from "date-fns";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import type { BuilderContext } from "../types";
 import {
   EditedOccurrenceItem,
@@ -26,6 +28,32 @@ type EditedOccurrence = {
 
 type Props = {
   context: BuilderContext;
+};
+
+const SCHEDULE_INPUTS = [
+  "start",
+  "end",
+  "until",
+  "timezone",
+  "allDay",
+  "repeatType",
+  "repeatEndType",
+  "rrule",
+];
+
+// The schedule the way saving posts it: from the builder's hidden inputs
+const readSchedule = (node: HTMLElement | null): Record<string, string> => {
+  const container = node?.closest("[data-event-builder]");
+  const schedule: Record<string, string> = {};
+
+  for (const name of SCHEDULE_INPUTS) {
+    const input = container?.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+    if (input) {
+      schedule[name] = input.value;
+    }
+  }
+
+  return schedule;
 };
 
 const findElementEditor = (node: HTMLElement | null): Craft.ElementEditor | undefined => {
@@ -52,6 +80,9 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [occurrences, setOccurrences] = useState<EditedOccurrence[]>([]);
   const [busyRecurrenceId, setBusyRecurrenceId] = useState<string | null>(null);
+  // Recurrence IDs the unsaved schedule doesn't have; null until it has been checked
+  const [notOnSchedule, setNotOnSchedule] = useState<Set<string> | null>(null);
+  const schedule = useSelector(eventSelectors.state);
 
   // The editor moves on to a draft as soon as there are changes, so its ID wins over the one the page loaded with
   const getEventId = useCallback(
@@ -81,6 +112,41 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const checkSchedule = useCallback(async () => {
+    const eventId = getEventId();
+    if (!eventId) {
+      return;
+    }
+
+    const response = await craftFetch(Craft.getActionUrl("calendar/occurrences/check-schedule"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ eventId, siteId: context.siteId, ...readSchedule(ref.current) }),
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const data: { orphaned?: string[] } = await response.json();
+    setNotOnSchedule(new Set(data.orphaned ?? []));
+  }, [context.siteId, getEventId]);
+
+  // Say which edited occurrences a schedule change would leave behind, before it's saved
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Rechecked whenever the schedule changes.
+  useEffect(() => {
+    if (occurrences.length === 0) {
+      return;
+    }
+
+    const timer = setTimeout(() => void checkSchedule(), 400);
+
+    return () => clearTimeout(timer);
+  }, [schedule, occurrences.length, checkSchedule]);
+
+  const isOrphaned = (occurrence: EditedOccurrence): boolean =>
+    notOnSchedule ? notOnSchedule.has(occurrence.recurrenceId) : occurrence.orphaned;
 
   const getDraftEventId = async (): Promise<number | null> => {
     const editor = findElementEditor(ref.current);
@@ -148,12 +214,19 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
               "Occurrences with their own changes. Changes made here go live with the event.",
             )}
           </p>
+          {occurrences.some(isOrphaned) && (
+            <p className="warning">
+              {translate(
+                "Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.",
+              )}
+            </p>
+          )}
 
           <EditedOccurrenceList>
             {occurrences.map((occurrence) => (
               <EditedOccurrenceItem
                 key={occurrence.recurrenceId}
-                className={clsx(occurrence.orphaned && "is-orphaned")}
+                className={clsx(isOrphaned(occurrence) && "is-orphaned")}
               >
                 <div className="details">
                   <div className="date">
@@ -161,7 +234,7 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
                     {occurrence.cancelled && (
                       <span className="state">{translate("Cancelled")}</span>
                     )}
-                    {occurrence.orphaned && (
+                    {isOrphaned(occurrence) && (
                       <span className="state">{translate("No longer on the schedule")}</span>
                     )}
                   </div>
@@ -172,7 +245,7 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
                 </div>
 
                 <div className="actions">
-                  {!occurrence.orphaned && (
+                  {!isOrphaned(occurrence) && (
                     <button
                       type="button"
                       className="btn small"

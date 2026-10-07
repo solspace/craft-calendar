@@ -15,6 +15,10 @@ export const EditedOccurrencesWrapper = styled.div`
     margin: 0 0 10px;
     color: var(--gray-600);
   }
+
+  > p.warning {
+    color: var(--error-color, #cf1124);
+  }
 `;
 
 export const EditedOccurrenceList = styled.ul`

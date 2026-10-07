@@ -124,6 +124,10 @@ class RecurringEventMutationHelper
             );
         }
 
+        // Additional and excluded dates move with the start, the same way they do when the series is moved
+        $rdates = $this->shiftDateList($rdates, $startDeltaSeconds, $allDay);
+        $exdates = $this->shiftDateList($exdates, $startDeltaSeconds, $allDay);
+
         return $this->buildRRuleString($baseRule, $newEventStart, $allDay, $rdates, $exdates);
     }
 

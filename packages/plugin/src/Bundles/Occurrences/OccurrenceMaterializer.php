@@ -114,6 +114,39 @@ class OccurrenceMaterializer
     }
 
     /**
+     * The first recurrence IDs the event's schedule produces, DB-formatted.
+     *
+     * @return string[]
+     */
+    public function recurrenceIds(CalendarEvent $element, int $limit): array
+    {
+        $rrule = $element->getRRuleObject();
+        if (null === $rrule) {
+            return [Db::prepareDateForDb($element->startDate)];
+        }
+
+        $recurrenceIds = [];
+        foreach ($this->getOccurrenceDates($rrule) as $date) {
+            if (\count($recurrenceIds) >= $limit) {
+                break;
+            }
+
+            $key = Db::prepareDateForDb($date);
+            $recurrenceIds[$key] = $key;
+        }
+
+        return array_values($recurrenceIds);
+    }
+
+    /**
+     * Whether the event's occurrence rows hold its whole schedule. Infinite schedules are only generated so far ahead.
+     */
+    public function hasAllOccurrences(int $eventId): bool
+    {
+        return !OccurrenceWindowRecord::find()->where(['eventId' => $eventId])->exists();
+    }
+
+    /**
      * Whether the event's schedule produces an occurrence with this recurrence ID.
      */
     public function producesRecurrenceId(CalendarEvent $element, Carbon $recurrenceId): bool

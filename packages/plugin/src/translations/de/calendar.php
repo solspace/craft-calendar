@@ -671,4 +671,5 @@ return [
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Termine mit eigenen Änderungen. Änderungen hier gehen mit dem Ereignis live.',
     'No longer on the schedule' => 'Nicht mehr im Zeitplan',
     'Discard' => 'Verwerfen',
+    'Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.' => 'Geänderte Termine, die nicht in den Zeitplan fallen, bleiben erhalten, aber verborgen, bis Sie sie verwerfen.',
 ];

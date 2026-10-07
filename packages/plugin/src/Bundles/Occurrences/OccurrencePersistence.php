@@ -12,10 +12,12 @@ use yii\base\Event;
 class OccurrencePersistence implements BundleInterface
 {
     private OccurrenceMaterializer $materializer;
+    private OverrideReconciler $reconciler;
 
     public function __construct(?OccurrenceMaterializer $materializer = null)
     {
         $this->materializer = $materializer ?? new OccurrenceMaterializer();
+        $this->reconciler = new OverrideReconciler($this->materializer);
 
         // After propagation rather than after save: duplicating an event (which is also how a draft
         // is published) only carries its occurrence overrides over once it's fully propagated
@@ -78,6 +80,8 @@ class OccurrencePersistence implements BundleInterface
             return;
         }
 
+        // Before regenerating, while the occurrence rows still describe the previous schedule
+        $this->reconciler->reconcile($element);
         $this->materializer->regenerate($element);
     }
 }

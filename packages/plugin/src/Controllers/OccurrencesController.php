@@ -10,6 +10,7 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
+use Solspace\Calendar\Bundles\Occurrences\OverrideReconciler;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -110,6 +111,26 @@ class OccurrencesController extends BaseController
         }
 
         return $this->asSuccess(Calendar::t('Occurrence reset.'));
+    }
+
+    /**
+     * What saving the posted schedule would do to the event's edited occurrences, so the event editor
+     * can say which ones would no longer be on the schedule before anything is saved.
+     */
+    public function actionCheckSchedule(): Response
+    {
+        $this->requirePostRequest();
+
+        $event = $this->requireEvent();
+        $changed = clone $event;
+        $changed->setScheduleFromRequest();
+
+        $recurrenceIds = array_map(
+            static fn (OccurrenceOverride $override) => $override->recurrenceId->format(RecurrenceId::FORMAT),
+            $this->getOccurrencesService()->getOverrides($event),
+        );
+
+        return $this->asJson((new OverrideReconciler())->preview($changed, $event->getCanonicalId(), $recurrenceIds));
     }
 
     /**

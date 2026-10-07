@@ -671,4 +671,5 @@ return [
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Herhalingen met eigen wijzigingen. Wijzigingen hier gaan live met het evenement.',
     'No longer on the schedule' => 'Niet meer in het schema',
     'Discard' => 'Verwerpen',
+    'Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.' => 'Aangepaste herhalingen die niet in het schema vallen, blijven bewaard maar verborgen tot je ze verwerpt.',
 ];

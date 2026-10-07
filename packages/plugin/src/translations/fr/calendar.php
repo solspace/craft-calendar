@@ -671,4 +671,5 @@ return [
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Occurrences ayant leurs propres modifications. Les modifications faites ici sont publiées avec l’événement.',
     'No longer on the schedule' => 'N’est plus au calendrier',
     'Discard' => 'Abandonner',
+    'Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.' => 'Les occurrences modifiées qui ne tombent plus dans le calendrier sont conservées, mais masquées, jusqu’à ce que vous les abandonniez.',
 ];

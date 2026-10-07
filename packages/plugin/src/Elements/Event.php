@@ -674,6 +674,17 @@ class Event extends Element implements \JsonSerializable
             return true;
         }
 
+        $this->setScheduleFromRequest();
+
+        return true;
+    }
+
+    /**
+     * Reads the schedule the event builder posts: `start`, `end`, `until`, `timezone`, `allDay`,
+     * `repeatType`, `repeatEndType` and `rrule`. Anything not posted keeps its current value.
+     */
+    public function setScheduleFromRequest(): void
+    {
         $request = \Craft::$app->getRequest();
 
         $timezone = $request->getBodyParam('timezone', $this->timezone);
@@ -707,8 +718,6 @@ class Event extends Element implements \JsonSerializable
         $this->repeatType = $repeatType;
         $this->repeatEndType = $repeatEndType;
         $this->rrule = $rrule;
-
-        return true;
     }
 
     public function disableRequestSyncOnSave(): self

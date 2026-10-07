@@ -671,4 +671,5 @@ return [
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Occurrences with their own changes. Changes made here go live with the event.',
     'No longer on the schedule' => 'No longer on the schedule',
     'Discard' => 'Discard',
+    'Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.' => 'Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.',
 ];

@@ -671,4 +671,5 @@ return [
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Occorrenze con modifiche proprie. Le modifiche fatte qui vanno online con l’evento.',
     'No longer on the schedule' => 'Non più in programma',
     'Discard' => 'Scarta',
+    'Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.' => 'Le occorrenze modificate che non rientrano nella programmazione vengono conservate, ma nascoste, finché non le scarti.',
 ];

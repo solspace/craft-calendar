@@ -141,6 +141,41 @@ class RecurringEventMutationHelperTest extends TestCase
         );
     }
 
+    public function testResizeSeriesShiftsAdditionalAndExcludedDatesWithTheStart(): void
+    {
+        $helper = new RecurringEventMutationHelper();
+        $rrule = implode(
+            "\n",
+            [
+                'DTSTART:20260105T090000',
+                'RRULE:FREQ=WEEKLY;UNTIL=20260202T090000',
+                'RDATE:20260107T090000',
+                'EXDATE:20260112T090000',
+            ]
+        );
+
+        $updated = $helper->resizeSeriesRRule(
+            $rrule,
+            new Carbon('2026-01-05 09:00:00', 'UTC'),
+            new Carbon('2026-01-05 08:30:00', 'UTC'),
+            -1800,
+            false,
+        );
+
+        self::assertSame(
+            implode(
+                "\n",
+                [
+                    'DTSTART:20260105T083000',
+                    'RRULE:FREQ=WEEKLY;UNTIL=20260202T083000',
+                    'RDATE:20260107T083000',
+                    'EXDATE:20260112T083000',
+                ]
+            ),
+            $updated,
+        );
+    }
+
     public function testAllDayDeleteOccurrenceUsesDateFormatting(): void
     {
         $helper = new RecurringEventMutationHelper();
