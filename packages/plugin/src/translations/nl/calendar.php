@@ -431,7 +431,6 @@ return [
     'Quick create enabled' => 'Snel aanmaken ingeschakeld',
     'Read All Events' => 'Alle evenementen lezen',
     'Read Events by Calendar' => 'Evenementen per kalender lezen',
-    'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.' => 'Alleen-lezen controles om problemen met Calendar op te lossen. De waarden gelden voor dit configuratieschermverzoek en kunnen verschillen voor wachtrij- of consoleprocessen.',
     'Receive occasional (a few times a year) updates and tips about Calendar and other Solspace software.' => 'Ontvang enkele keren per jaar updates en tips over Calendar en andere software van Solspace.',
     'Recurrence rule is invalid.' => 'De herhalingsregel is ongeldig.',
     'Recurrence rule must include a start date.' => 'De herhalingsregel moet een begindatum bevatten.',

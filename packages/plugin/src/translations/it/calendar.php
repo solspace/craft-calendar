@@ -431,7 +431,6 @@ return [
     'Quick create enabled' => 'Creazione rapida abilitata',
     'Read All Events' => 'Visualizza tutti gli eventi',
     'Read Events by Calendar' => 'Visualizza eventi per calendario',
-    'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.' => 'Controlli in sola lettura per risolvere i problemi di Calendar. I valori riflettono questa richiesta del pannello di controllo e possono differire per i processi della coda o della console.',
     'Receive occasional (a few times a year) updates and tips about Calendar and other Solspace software.' => 'Ricevi alcune volte l’anno aggiornamenti e consigli su Calendar e altri software Solspace.',
     'Recurrence rule is invalid.' => 'La regola di ripetizione non è valida.',
     'Recurrence rule must include a start date.' => 'La regola di ripetizione deve includere una data di inizio.',

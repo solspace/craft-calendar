@@ -28,7 +28,6 @@
                 {% if errorCount and advisoryCount %}<span>{{ 'Advisories: {count}'|t('calendar', {count: advisoryCount}) }}</span>{% endif %}
             </p>
         </div>
-        <p class="light">{{ 'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.'|t('calendar') }}</p>
         <div class="calendar-diag-legend">
             {% for status, label in {
                 pass: 'Enabled / Valid'|t('calendar'),

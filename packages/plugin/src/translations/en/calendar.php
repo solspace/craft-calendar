@@ -431,7 +431,6 @@ return [
     'Quick create enabled' => 'Quick create enabled',
     'Read All Events' => 'Read All Events',
     'Read Events by Calendar' => 'Read Events by Calendar',
-    'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.' => 'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.',
     'Receive occasional (a few times a year) updates and tips about Calendar and other Solspace software.' => 'Receive occasional (a few times a year) updates and tips about Calendar and other Solspace software.',
     'Recurrence rule is invalid.' => 'Recurrence rule is invalid.',
     'Recurrence rule must include a start date.' => 'Recurrence rule must include a start date.',
