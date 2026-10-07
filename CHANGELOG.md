@@ -7,9 +7,9 @@
 - Added **Tailwind CSS 4** demo templates alongside the upgraded **Bootstrap 5.3** templates, with a framework selector and Light, Dark, and Auto color modes.
 - Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.
 - Added editing of single occurrences of repeating events: their own title and custom field values, their own times, a custom slug, or cancelling them. Everything an occurrence doesn't change keeps following its event. Edit occurrences from the control panel calendar or from the event editor's **Edited occurrences** list.
-- Added **This and following** for changing a repeating event from one occurrence onward. The event is split into a series: the part from that occurrence keeps the event's ID, URL and relations, and the earlier occurrences become a new event with their changes.
+- Added **This and following** for changing a repeating event from one occurrence onward. The event is split into a series: the part from that occurrence keeps the event's ID, URL and relations, and the earlier occurrences become a new event with their changes. The parts of a series can't overlap, so a draft started before its event was split can't bring the earlier occurrences back.
 - Added a code and a slug to every occurrence, so single occurrences can be linked to and looked up.
-- Added `occurrence.content`, which returns an occurrence's own title and field values where it changes them and the event's everywhere else, along with `recurrenceId`, `code`, `slug`, `cancelled` and `isEdited` on occurrences.
+- Added `occurrence.content`, which returns an occurrence's own title and field values where it changes them and the event's everywhere else, along with `recurrenceId`, `code`, `slug`, `cancelled`, `isEdited` and `duration` on occurrences.
 - Added the `recurrenceId`, `code`, `slug`, `cancelled`, `search` and `relatedTo` parameters to occurrence queries, and the `seriesId` parameter and `event.series` to events.
 - Added edited occurrences and series to GraphQL.
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
@@ -22,6 +22,8 @@
 - Changing an event's schedule now keeps edited occurrences with their dates. When every occurrence moves the same distance, the changes move with them. Otherwise, changes to a date the schedule no longer has are kept but hidden, and the event editor shows which dates are affected before the change is saved.
 - ICS exports now include edited and cancelled occurrences, write additional dates as `RDATE` lines instead of separate events, and write excluded dates and end dates in the same time format as the event's start.
 - The demo templates now show each occurrence's own title and fields, link to occurrences by slug, and show cancelled occurrences.
+- Repeating events without an end now list their occurrences up to ten years ahead.
+- Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
 - Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.
