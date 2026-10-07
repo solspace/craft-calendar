@@ -87,6 +87,9 @@ const formatDuration = (minutes: number): string => {
   return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}:00`;
 };
 
+const isRecurringEvent = (event: EventApi) =>
+  Boolean(event.extendedProps?.rrule || event.extendedProps?.repeats);
+
 export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   hiddenCalendarIds,
   selectedDate,
@@ -117,6 +120,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const lastCalendarFilterKey = useRef<string | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isDraggingRef = useRef(false);
+  const scopePromptCount = useRef(0);
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
   const [draftAnchorEl, setDraftAnchorEl] = useState<HTMLElement | null>(null);
   const [isFetchingEvents, setIsFetchingEvents] = useState(false);
@@ -147,9 +151,6 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
       }),
     [datePickerButton, api],
   );
-
-  const isRecurringEvent = (event: EventApi) =>
-    Boolean(event.extendedProps?.rrule || event.extendedProps?.repeats);
 
   const refetchEvents = useCallback(() => {
     calendar.current?.getApi().refetchEvents();
@@ -340,74 +341,58 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     }
   }, []);
 
-  const handleRecurringMove = useCallback(
-    (arg: EventDropArg) => {
-      const recurrenceId = getRecurrenceIdFromId(String(arg.event.id));
-      const move = async (scope: EventMutationScope) => {
-        const wasMoved = await moveEvent({
+  // Saves a drag or resize. For a recurring event, the user first picks which occurrences it changes.
+  const handleEventChange = useCallback(
+    (action: "move" | "resize", arg: EventDropArg | EventResizeDoneArg) => {
+      if (isCreateDraftEvent(arg.event)) {
+        arg.revert();
+
+        return;
+      }
+
+      const save = (scope?: EventMutationScope) => {
+        const args = {
           event: arg.event,
-          recurrenceId,
+          recurrenceId: getRecurrenceIdFromId(String(arg.event.id)),
           scope,
+          siteId: currentSiteId,
           refetchEvents,
           revert: arg.revert,
-        });
+        };
 
-        if (wasMoved) {
-          hidePopover();
-        }
+        return action === "move"
+          ? moveEvent(args)
+          : resizeEvent({ ...args, oldEvent: arg.oldEvent });
       };
 
+      if (!isRecurringEvent(arg.event)) {
+        void save();
+
+        return;
+      }
+
+      // A change that couldn't be saved is reverted, so its prompt has nothing left to save
+      const select = async (scope: EventMutationScope) => {
+        const saved = await save(scope);
+        if (!saved) {
+          hidePopover();
+        }
+
+        return saved;
+      };
+
+      // Each change gets its own prompt, which reverts it when replaced without a choice
       showPopover(
         <PopoverModifyEvent
-          action="move"
-          onOnlyThisOccurrence={() => move("occurrence")}
-          onThisAndFollowing={() => move("following")}
-          onAllOccurrences={() => move("series")}
+          key={++scopePromptCount.current}
+          action={action}
+          onSelect={select}
           onCancel={arg.revert}
         />,
         arg.jsEvent,
       );
     },
-    [hidePopover, refetchEvents, showPopover],
-  );
-
-  const handleRecurringResize = useCallback(
-    (arg: EventResizeDoneArg) => {
-      const recurrenceId = getRecurrenceIdFromId(String(arg.event.id));
-      const resize = (scope: EventMutationScope) =>
-        resizeEvent({
-          event: arg.event,
-          oldEvent: arg.oldEvent,
-          recurrenceId,
-          scope,
-          refetchEvents,
-          revert: arg.revert,
-        });
-
-      showPopover(
-        <PopoverModifyEvent
-          action="resize"
-          onOnlyThisOccurrence={async () => {
-            if (await resize("occurrence")) {
-              hidePopover();
-            }
-          }}
-          onThisAndFollowing={async () => {
-            if (await resize("following")) {
-              hidePopover();
-            }
-          }}
-          onAllOccurrences={async () => {
-            if (await resize("series")) {
-              hidePopover();
-            }
-          }}
-          onCancel={arg.revert}
-        />,
-        arg.jsEvent,
-      );
-    },
-    [hidePopover, refetchEvents, showPopover],
+    [currentSiteId, hidePopover, refetchEvents, showPopover],
   );
 
   const handleNavLinkDayClick = useCallback((date: Date) => {
@@ -522,45 +507,8 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
           arg.jsEvent.preventDefault();
           arg.jsEvent.stopPropagation();
         }}
-        eventDrop={(arg) => {
-          if (isCreateDraftEvent(arg.event)) {
-            arg.revert();
-
-            return;
-          }
-
-          if (isRecurringEvent(arg.event)) {
-            handleRecurringMove(arg);
-
-            return;
-          }
-
-          void moveEvent({
-            event: arg.event,
-            refetchEvents,
-            revert: arg.revert,
-          });
-        }}
-        eventResize={(arg: EventResizeDoneArg) => {
-          if (isCreateDraftEvent(arg.event)) {
-            arg.revert();
-
-            return;
-          }
-
-          if (isRecurringEvent(arg.event)) {
-            handleRecurringResize(arg);
-
-            return;
-          }
-
-          void resizeEvent({
-            event: arg.event,
-            oldEvent: arg.oldEvent,
-            refetchEvents,
-            revert: arg.revert,
-          });
-        }}
+        eventDrop={(arg) => handleEventChange("move", arg)}
+        eventResize={(arg) => handleEventChange("resize", arg)}
         headerToolbar={{
           start: "title",
           center: "dayGridMonth,timeGridWeek,timeGridDay",

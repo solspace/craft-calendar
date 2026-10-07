@@ -30,41 +30,38 @@ const labels: Record<EventMutationScope, string> = {
 
 type Props = {
   action: ModifyAction;
-  onOnlyThisOccurrence: () => Promise<void> | void;
-  onThisAndFollowing: () => Promise<void> | void;
-  onAllOccurrences: () => Promise<void> | void;
+  // Resolves to whether the change was made, which closes the prompt
+  onSelect: (scope: EventMutationScope) => Promise<boolean>;
+  // Runs when the prompt goes away without a choice
   onCancel?: () => void;
-  isSubmitting?: boolean;
 };
 
-export const PopoverModifyEvent: FC<Props> = ({
-  action,
-  onOnlyThisOccurrence,
-  onThisAndFollowing,
-  onAllOccurrences,
-  onCancel,
-  isSubmitting = false,
-}) => {
+export const PopoverModifyEvent: FC<Props> = ({ action, onSelect, onCancel }) => {
   const { hidePopover } = usePopover();
   const [pendingAction, setPendingAction] = useState<EventMutationScope | null>(null);
   const isMounted = useRef(true);
+  const hasChosen = useRef(false);
 
-  const busy = isSubmitting || pendingAction !== null;
+  const busy = pendingAction !== null;
 
+  // Clicking or dragging another event replaces the prompt, so it cancels whenever it goes away
+  // without a choice, not only from its Cancel button
+  // biome-ignore lint/correctness/useExhaustiveDependencies: A prompt belongs to one change, so it cancels with the onCancel it was shown with.
   useEffect(() => {
     return () => {
       isMounted.current = false;
+
+      if (!hasChosen.current) {
+        onCancel?.();
+      }
     };
   }, []);
 
   const cancel = useCallback(() => {
-    if (busy) {
-      return;
+    if (!busy) {
+      hidePopover();
     }
-
-    onCancel?.();
-    hidePopover();
-  }, [hidePopover, onCancel, busy]);
+  }, [hidePopover, busy]);
 
   useEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -72,26 +69,23 @@ export const PopoverModifyEvent: FC<Props> = ({
     }
   });
 
-  const runAction = async (action: EventMutationScope, callback: () => Promise<void> | void) => {
+  const select = async (scope: EventMutationScope) => {
     if (busy) {
       return;
     }
 
-    setPendingAction(action);
+    hasChosen.current = true;
+    setPendingAction(scope);
 
     try {
-      await callback();
+      if (await onSelect(scope)) {
+        hidePopover();
+      }
     } finally {
       if (isMounted.current) {
         setPendingAction(null);
       }
     }
-  };
-
-  const callbacks: Record<EventMutationScope, () => Promise<void> | void> = {
-    occurrence: onOnlyThisOccurrence,
-    following: onThisAndFollowing,
-    series: onAllOccurrences,
   };
 
   return (
@@ -108,7 +102,7 @@ export const PopoverModifyEvent: FC<Props> = ({
             type="button"
             className={clsx("btn small", scope === "occurrence" && "submit", busy && "disabled")}
             disabled={busy}
-            onClick={() => runAction(scope, callbacks[scope])}
+            onClick={() => select(scope)}
           >
             {translate(pendingAction === scope ? "Processing..." : labels[scope])}
           </button>

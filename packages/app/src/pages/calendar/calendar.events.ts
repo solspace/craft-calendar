@@ -1,5 +1,7 @@
 import { utcDateKey, utcDateTimeString } from "@cal/utils/date";
 import { craftFetch } from "@cal/utils/http";
+import { notifications } from "@cal/utils/notifications";
+import translate from "@cal/utils/translations";
 import type { EventApi, EventInput, EventSourceFunc } from "@fullcalendar/core";
 
 const rangeCache = new Map<string, EventInput[]>();
@@ -8,32 +10,19 @@ const inflightRequests = new Map<string, Promise<EventInput[]>>();
 export type EventMutationScope = "occurrence" | "following" | "series";
 
 type EventMutationArgs = {
+  event: EventApi;
+  siteId?: number;
   refetchEvents: () => void;
+};
+
+type ScopedEventMutationArgs = EventMutationArgs & {
+  recurrenceId?: string | null;
+  scope?: EventMutationScope;
+};
+
+// A drag or resize already shows on the calendar, so it's reverted when saving it fails
+type EventChangeArgs = ScopedEventMutationArgs & {
   revert?: () => void;
-};
-
-type MoveEventArgs = EventMutationArgs & {
-  event: EventApi;
-  recurrenceId?: string | null;
-  scope?: EventMutationScope;
-};
-
-type ResizeEventArgs = EventMutationArgs & {
-  event: EventApi;
-  oldEvent: EventApi;
-  recurrenceId?: string | null;
-  scope?: EventMutationScope;
-};
-
-type DeleteEventArgs = EventMutationArgs & {
-  event: EventApi;
-  recurrenceId?: string | null;
-  scope?: EventMutationScope;
-};
-
-type OccurrenceMutationArgs = EventMutationArgs & {
-  event: EventApi;
-  recurrenceId: string;
 };
 
 type OpenOccurrenceEditorArgs = {
@@ -134,29 +123,60 @@ const diffSeconds = (next: Date | null, previous: Date | null): number | null =>
   return Math.round((next.getTime() - previous.getTime()) / 1000);
 };
 
+// A failure the server explained. Its message is meant for the user.
+class EventMutationError extends Error {}
+
 const requestEventMutation = async (
   path: string,
   body: Record<string, unknown>,
 ): Promise<Record<string, unknown>> => {
+  // Without asking for JSON, Craft answers a failure with an empty page and a flash message
   const response = await craftFetch(Craft.getCpUrl(`calendar/api/events/${path}`), {
     method: "POST",
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
   });
 
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
+  const data: Record<string, unknown> | null = await response.json().catch((): null => null);
 
-  const data = await response.json();
-
-  if (data?.success === false) {
-    throw new Error(data?.message || `Failed to ${path} event`);
+  if (!response.ok || !data || data.success === false) {
+    throw new EventMutationError(typeof data?.message === "string" ? data.message : "");
   }
 
   return data;
+};
+
+const showMutationError = (error: unknown, fallbackMessage: string): void => {
+  notifications.error(
+    error instanceof EventMutationError && error.message ? error.message : fallbackMessage,
+  );
+};
+
+/**
+ * Saves a change to an event, then reloads the calendar. When that fails, the user is told why.
+ */
+const mutateEvent = async (
+  path: string,
+  { event, siteId, refetchEvents, revert }: EventMutationArgs & { revert?: () => void },
+  fields: Record<string, unknown>,
+  fallbackMessage: string,
+): Promise<boolean> => {
+  try {
+    await requestEventMutation(path, { eventId: getEventId(String(event.id)), siteId, ...fields });
+  } catch (error) {
+    revert?.();
+    showMutationError(error, fallbackMessage);
+
+    return false;
+  }
+
+  clearCalendarEventsCache();
+  refetchEvents();
+
+  return true;
 };
 
 // Occurrence IDs end in their recurrence ID (`YmdHis`), which stays the same when an occurrence moves.
@@ -178,46 +198,30 @@ export const getRecurrenceIdFromId = (id: string): string | null => {
   return serializeEventDate(new Date(Date.UTC(year, month, day, hours, minutes, seconds)), false);
 };
 
-export const moveEvent = async ({
-  event,
-  recurrenceId,
-  scope = "series",
-  refetchEvents,
-  revert,
-}: MoveEventArgs): Promise<boolean> => {
-  try {
-    await requestEventMutation("move", {
-      eventId: getEventId(String(event.id)),
+export const moveEvent = (args: EventChangeArgs): Promise<boolean> => {
+  const { event, recurrenceId, scope = "series" } = args;
+
+  return mutateEvent(
+    "move",
+    args,
+    {
       scope,
       recurrenceId,
       start: serializeEventDate(event.start, event.allDay),
       end: serializeEventDate(event.end, event.allDay),
       allDay: event.allDay,
-    });
-
-    clearCalendarEventsCache();
-    refetchEvents();
-
-    return true;
-  } catch (error) {
-    console.error("Error moving event:", error);
-    revert?.();
-
-    return false;
-  }
+    },
+    translate("Couldn’t save event."),
+  );
 };
 
-export const resizeEvent = async ({
-  event,
-  oldEvent,
-  recurrenceId,
-  scope = "series",
-  refetchEvents,
-  revert,
-}: ResizeEventArgs): Promise<boolean> => {
-  try {
-    await requestEventMutation("resize", {
-      eventId: getEventId(String(event.id)),
+export const resizeEvent = (args: EventChangeArgs & { oldEvent: EventApi }): Promise<boolean> => {
+  const { event, oldEvent, recurrenceId, scope = "series" } = args;
+
+  return mutateEvent(
+    "resize",
+    args,
+    {
       scope,
       recurrenceId,
       start: serializeEventDate(event.start, event.allDay),
@@ -227,101 +231,36 @@ export const resizeEvent = async ({
       startDeltaSeconds: diffSeconds(event.start, oldEvent.start),
       endDeltaSeconds: diffSeconds(event.end, oldEvent.end),
       allDay: event.allDay,
-    });
-
-    clearCalendarEventsCache();
-    refetchEvents();
-
-    return true;
-  } catch (error) {
-    console.error("Error resizing event:", error);
-    revert?.();
-
-    return false;
-  }
+    },
+    translate("Couldn’t save event."),
+  );
 };
 
-export const deleteEvent = async ({
-  event,
-  recurrenceId,
-  scope = "series",
-  refetchEvents,
-  revert,
-}: DeleteEventArgs): Promise<boolean> => {
-  try {
-    await requestEventMutation("delete", {
-      eventId: getEventId(String(event.id)),
-      scope,
-      recurrenceId,
-    });
+export const deleteEvent = (args: ScopedEventMutationArgs): Promise<boolean> => {
+  const { recurrenceId, scope = "series" } = args;
 
-    clearCalendarEventsCache();
-    refetchEvents();
-
-    return true;
-  } catch (error) {
-    console.error("Error deleting event:", error);
-    revert?.();
-
-    return false;
-  }
+  return mutateEvent("delete", args, { scope, recurrenceId }, translate("Couldn’t delete event."));
 };
 
 /**
  * Cancelled occurrences stay on the calendar, marked as not taking place.
  */
-export const setOccurrenceCancelled = async ({
-  event,
-  recurrenceId,
-  cancelled,
-  refetchEvents,
-}: OccurrenceMutationArgs & { cancelled: boolean }): Promise<boolean> => {
-  try {
-    await requestEventMutation("cancel", {
-      eventId: getEventId(String(event.id)),
-      recurrenceId,
-      cancelled,
-    });
+export const setOccurrenceCancelled = (
+  args: EventMutationArgs & { recurrenceId: string; cancelled: boolean },
+): Promise<boolean> => {
+  const { recurrenceId, cancelled } = args;
 
-    clearCalendarEventsCache();
-    refetchEvents();
-
-    return true;
-  } catch (error) {
-    console.error("Error cancelling occurrence:", error);
-
-    return false;
-  }
-};
-
-/**
- * Removes everything an occurrence changes, so it follows its event again.
- */
-export const resetOccurrence = async ({
-  event,
-  recurrenceId,
-  refetchEvents,
-}: OccurrenceMutationArgs): Promise<boolean> => {
-  try {
-    await requestEventMutation("reset-occurrence", {
-      eventId: getEventId(String(event.id)),
-      recurrenceId,
-    });
-
-    clearCalendarEventsCache();
-    refetchEvents();
-
-    return true;
-  } catch (error) {
-    console.error("Error resetting occurrence:", error);
-
-    return false;
-  }
+  return mutateEvent(
+    "cancel",
+    args,
+    { recurrenceId, cancelled },
+    translate("Couldn’t save the occurrence."),
+  );
 };
 
 /**
  * Starts "Edit this and following": a draft of the event from the occurrence onward, which splits the
- * event there when it's applied. Returns the URL to edit it at.
+ * event there when it's applied. Returns the URL to edit it at, or null after telling the user why not.
  */
 export const editFollowing = async ({
   event,
@@ -339,9 +278,13 @@ export const editFollowing = async ({
       siteId,
     });
 
-    return typeof data.url === "string" ? data.url : null;
+    if (typeof data.url !== "string") {
+      throw new EventMutationError("");
+    }
+
+    return data.url;
   } catch (error) {
-    console.error("Error editing following occurrences:", error);
+    showMutationError(error, translate("Couldn’t open the occurrences for editing."));
 
     return null;
   }

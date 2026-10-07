@@ -82,6 +82,8 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
   const [busyRecurrenceId, setBusyRecurrenceId] = useState<string | null>(null);
   // Recurrence IDs the unsaved schedule doesn't have; null until it has been checked
   const [notOnSchedule, setNotOnSchedule] = useState<Set<string> | null>(null);
+  // Checks can answer out of order, so only the latest one counts
+  const latestScheduleCheck = useRef(0);
   const schedule = useSelector(eventSelectors.state);
 
   // The editor moves on to a draft as soon as there are changes, so its ID wins over the one the page loaded with
@@ -119,6 +121,7 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
       return;
     }
 
+    const check = ++latestScheduleCheck.current;
     const response = await craftFetch(Craft.getActionUrl("calendar/occurrences/check-schedule"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -130,7 +133,9 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
     }
 
     const data: { orphaned?: string[] } = await response.json();
-    setNotOnSchedule(new Set(data.orphaned ?? []));
+    if (check === latestScheduleCheck.current) {
+      setNotOnSchedule(new Set(data.orphaned ?? []));
+    }
   }, [context.siteId, getEventId]);
 
   // Say which edited occurrences a schedule change would leave behind, before it's saved
@@ -155,18 +160,27 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
     return editor?.settings.elementId ?? context.eventId;
   };
 
+  // Creating the draft takes a moment, so the buttons stay disabled until the slideout opens
   const edit = async (occurrence: EditedOccurrence) => {
-    const eventId = await getDraftEventId();
-    if (!eventId) {
-      return;
-    }
+    setBusyRecurrenceId(occurrence.recurrenceId);
 
-    openOccurrenceEditor({
-      eventId,
-      recurrenceId: occurrence.recurrenceId,
-      siteId: context.siteId,
-      onSave: () => void load(),
-    });
+    try {
+      const eventId = await getDraftEventId();
+      if (!eventId) {
+        return;
+      }
+
+      openOccurrenceEditor({
+        eventId,
+        recurrenceId: occurrence.recurrenceId,
+        siteId: context.siteId,
+        onSave: () => void load(),
+      });
+    } catch {
+      Craft.cp.displayError(translate("Couldn’t open the occurrence for editing."));
+    } finally {
+      setBusyRecurrenceId(null);
+    }
   };
 
   const discard = async (occurrence: EditedOccurrence) => {
@@ -193,12 +207,15 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
       });
 
       if (!response.ok) {
-        Craft.cp.displayError(translate("Couldn’t reset the occurrence."));
+        const data: { message?: string } | null = await response.json().catch((): null => null);
+        Craft.cp.displayError(data?.message || translate("Couldn’t reset the occurrence."));
 
         return;
       }
 
       await load();
+    } catch {
+      Craft.cp.displayError(translate("Couldn’t reset the occurrence."));
     } finally {
       setBusyRecurrenceId(null);
     }
@@ -248,7 +265,7 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
                   {!isOrphaned(occurrence) && (
                     <button
                       type="button"
-                      className="btn small"
+                      className={clsx("btn small", busyRecurrenceId !== null && "disabled")}
                       disabled={busyRecurrenceId !== null}
                       onClick={() => void edit(occurrence)}
                     >

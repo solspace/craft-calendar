@@ -643,6 +643,7 @@ return [
     'occurrence overrides' => 'Terminänderungen',
     'The end date must be after the start date.' => 'Das Enddatum muss nach dem Startdatum liegen.',
     'Custom slugs can’t look like generated occurrence slugs.' => 'Eigene Slugs dürfen nicht wie generierte Termin-Slugs aussehen.',
+    'Couldn’t open the occurrence for editing.' => 'Der Termin konnte nicht zum Bearbeiten geöffnet werden.',
     'The schedule overlaps “{title}”, another part of this event’s series.' => 'Der Zeitplan überschneidet sich mit „{title}“, einem anderen Teil der Serie dieses Ereignisses.',
     'Remove everything this occurrence changes?' => 'Alle Änderungen an diesem Termin entfernen?',
     'Changes are saved into the event’s draft, and go live when the draft is applied.' => 'Änderungen werden im Entwurf des Ereignisses gespeichert und gehen live, wenn der Entwurf angewendet wird.',

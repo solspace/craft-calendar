@@ -1,11 +1,30 @@
-import type { EventApi } from "@fullcalendar/core/index.js";
+import type { EventApi, EventContentArg } from "@fullcalendar/core/index.js";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getCalendarEventClassNames, getCalendarEventClickAction } from "./calendar.event-content";
+import {
+  getCalendarEventClassNames,
+  getCalendarEventClickAction,
+  renderCalendarEventContent,
+} from "./calendar.event-content";
 
 const classNamesFor = (extendedProps: Record<string, unknown>) =>
   getCalendarEventClassNames({
     event: { allDay: false, end: null, textColor: "", extendedProps } as unknown as EventApi,
   });
+
+const contentFor = (extendedProps: Record<string, unknown>) =>
+  renderToStaticMarkup(
+    renderCalendarEventContent({
+      event: {
+        title: "Weekly standup",
+        url: "/admin/calendar/events/42",
+        allDay: true,
+        extendedProps,
+      },
+      timeText: "",
+      view: { type: "timeGridWeek" },
+    } as unknown as EventContentArg),
+  );
 
 describe("calendar event content", () => {
   it("treats title-link clicks as navigation clicks", () => {
@@ -33,12 +52,21 @@ describe("calendar event content", () => {
 
   it("marks cancelled occurrences, edited or not", () => {
     expect(classNamesFor({ cancelled: true, isEdited: true })).toContain("fc-event-cancelled");
-    expect(classNamesFor({ cancelled: true, isEdited: true })).not.toContain("fc-event-edited");
+    expect(classNamesFor({ isEdited: true })).not.toContain("fc-event-cancelled");
   });
 
-  it("marks edited occurrences", () => {
-    expect(classNamesFor({ isEdited: true })).toContain("fc-event-edited");
-    expect(classNamesFor({})).not.toContain("fc-event-edited");
+  it("tells screen readers an occurrence is cancelled", () => {
+    expect(contentFor({ cancelled: true })).toContain(
+      'Weekly standup<span class="visually-hidden">, Cancelled</span>',
+    );
+    expect(contentFor({})).not.toContain("visually-hidden");
+  });
+
+  it("keeps the edited pencil out of the title screen readers announce", () => {
+    expect(contentFor({ isEdited: true })).toMatch(
+      /<span class="fc-event-flag"[^>]*aria-hidden="true"/,
+    );
+    expect(contentFor({ cancelled: true, isEdited: true })).not.toContain("fc-event-flag");
   });
 
   it("ignores draft event clicks entirely", () => {

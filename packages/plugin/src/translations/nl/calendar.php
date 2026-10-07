@@ -643,6 +643,7 @@ return [
     'occurrence overrides' => 'aanpassingen van herhalingen',
     'The end date must be after the start date.' => 'De einddatum moet na de begindatum liggen.',
     'Custom slugs can’t look like generated occurrence slugs.' => 'Eigen slugs mogen niet op gegenereerde herhalingsslugs lijken.',
+    'Couldn’t open the occurrence for editing.' => 'De herhaling kon niet worden geopend om te bewerken.',
     'The schedule overlaps “{title}”, another part of this event’s series.' => 'Het schema overlapt met “{title}”, een ander deel van de reeks van dit evenement.',
     'Remove everything this occurrence changes?' => 'Alles verwijderen wat deze herhaling aanpast?',
     'Changes are saved into the event’s draft, and go live when the draft is applied.' => 'Wijzigingen worden opgeslagen in het concept van het evenement en gaan live wanneer het concept wordt toegepast.',

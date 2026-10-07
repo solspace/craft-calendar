@@ -643,6 +643,7 @@ return [
     'occurrence overrides' => 'occurrence overrides',
     'The end date must be after the start date.' => 'The end date must be after the start date.',
     'Custom slugs can’t look like generated occurrence slugs.' => 'Custom slugs can’t look like generated occurrence slugs.',
+    'Couldn’t open the occurrence for editing.' => 'Couldn’t open the occurrence for editing.',
     'The schedule overlaps “{title}”, another part of this event’s series.' => 'The schedule overlaps “{title}”, another part of this event’s series.',
     'Remove everything this occurrence changes?' => 'Remove everything this occurrence changes?',
     'Changes are saved into the event’s draft, and go live when the draft is applied.' => 'Changes are saved into the event’s draft, and go live when the draft is applied.',

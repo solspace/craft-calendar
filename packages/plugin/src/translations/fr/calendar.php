@@ -643,6 +643,7 @@ return [
     'occurrence overrides' => 'modifications d’occurrences',
     'The end date must be after the start date.' => 'La date de fin doit être postérieure à la date de début.',
     'Custom slugs can’t look like generated occurrence slugs.' => 'Les slugs personnalisés ne peuvent pas ressembler aux slugs d’occurrence générés.',
+    'Couldn’t open the occurrence for editing.' => 'Impossible d’ouvrir l’occurrence pour la modifier.',
     'The schedule overlaps “{title}”, another part of this event’s series.' => 'Le calendrier chevauche « {title} », une autre partie de la série de cet événement.',
     'Remove everything this occurrence changes?' => 'Supprimer tout ce que cette occurrence modifie ?',
     'Changes are saved into the event’s draft, and go live when the draft is applied.' => 'Les modifications sont enregistrées dans le brouillon de l’événement et sont publiées lorsque le brouillon est appliqué.',

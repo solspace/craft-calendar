@@ -1,4 +1,4 @@
-import{A as e,E as t,M as n,O as r,t as i}from"./localization-Dt_HqhpZ.js";import{f as a,n as o,p as s}from"./calendar.events-cdiM5PzU.js";import{t as c}from"./timegrid-CyP4WSGB.js";import{n as l}from"./calendar.styles-CJM4dtUD.js";import{t as u}from"./loader-Cmv0MXol.js";var d=t(l)`
+import{A as e,E as t,M as n,O as r,t as i}from"./localization-Dt_HqhpZ.js";import{f as a,n as o,p as s}from"./calendar.events-BsoNrhOC.js";import{t as c}from"./timegrid-CUjWu894.js";import{n as l}from"./calendar.styles-CJM4dtUD.js";import{t as u}from"./loader-Cmv0MXol.js";var d=t(l)`
   .fc {
     min-height: 500px;
   }

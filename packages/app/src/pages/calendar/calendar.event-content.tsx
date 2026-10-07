@@ -39,8 +39,6 @@ export const getCalendarEventClassNames = ({ event }: { event: EventApi }): stri
 
   if (event.extendedProps?.cancelled) {
     classNames.push("fc-event-cancelled");
-  } else if (event.extendedProps?.isEdited) {
-    classNames.push("fc-event-edited");
   }
 
   const contrastColorClass = getCalendarContrastColorClass(event.textColor);
@@ -74,12 +72,23 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
   );
 
   const isLink = !isCreateDraftEvent(event) && event.url;
-  const isEdited = !event.extendedProps?.cancelled && Boolean(event.extendedProps?.isEdited);
+  const isCancelled = Boolean(event.extendedProps?.cancelled);
+  const isEdited = !isCancelled && Boolean(event.extendedProps?.isEdited);
 
+  // The pencil isn't part of the title screen readers announce
   const editedFlag = isEdited ? (
-    <span className="fc-event-flag" title={translate("This occurrence has its own changes.")}>
+    <span
+      className="fc-event-flag"
+      title={translate("This occurrence has its own changes.")}
+      aria-hidden="true"
+    >
       ✎
     </span>
+  ) : null;
+
+  // The strikethrough alone isn't announced
+  const cancelledLabel = isCancelled ? (
+    <span className="visually-hidden">, {translate("Cancelled")}</span>
   ) : null;
 
   const titleContent = isLink ? (
@@ -91,11 +100,13 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
     >
       {editedFlag}
       {event.title}
+      {cancelledLabel}
     </button>
   ) : (
     <div className={titleClassName}>
       {editedFlag}
       {event.title}
+      {cancelledLabel}
     </div>
   );
 

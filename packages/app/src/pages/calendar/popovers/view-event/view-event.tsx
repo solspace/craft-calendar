@@ -11,7 +11,6 @@ import {
 import { useConfig } from "@cal/pages/calendar/context/config.context";
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDateLocale } from "@cal/utils/localization";
-import { notifications } from "@cal/utils/notifications";
 import translate from "@cal/utils/translations";
 import {
   buildPreviewRecurrence,
@@ -102,7 +101,6 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     }
 
     setIsOpeningDraft(false);
-    notifications.error(translate("Couldn’t open the occurrences for editing."));
   };
 
   const toggleCancelled = async () => {
@@ -117,6 +115,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         event,
         recurrenceId,
         cancelled: !isCancelled,
+        siteId: currentSiteId,
         refetchEvents,
       });
 
@@ -140,7 +139,8 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         event,
         scope: "series",
         recurrenceId,
-        refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
+        siteId: currentSiteId,
+        refetchEvents,
       });
 
       if (wasDeleted) {
@@ -152,41 +152,21 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   };
 
   const showRecurringDeletePopover = () => {
-    const deleteOccurrences = async (scope: EventMutationScope) => {
-      const wasDeleted = await deleteEvent({
-        event,
-        scope,
-        recurrenceId,
-        refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
-      });
-
-      if (wasDeleted) {
-        hidePopover();
+    const deleteOccurrences = async (scope: EventMutationScope): Promise<boolean> => {
+      if (
+        scope === "occurrence" &&
+        hasOverride &&
+        !window.confirm(
+          translate("This occurrence has its own changes, which are deleted with it. Delete it?"),
+        )
+      ) {
+        return false;
       }
+
+      return deleteEvent({ event, scope, recurrenceId, siteId: currentSiteId, refetchEvents });
     };
 
-    showPopover(
-      <PopoverModifyEvent
-        action="delete"
-        onOnlyThisOccurrence={async () => {
-          if (
-            hasOverride &&
-            !window.confirm(
-              translate(
-                "This occurrence has its own changes, which are deleted with it. Delete it?",
-              ),
-            )
-          ) {
-            return;
-          }
-
-          await deleteOccurrences("occurrence");
-        }}
-        onThisAndFollowing={() => deleteOccurrences("following")}
-        onAllOccurrences={() => deleteOccurrences("series")}
-      />,
-      fcEvent.el,
-    );
+    showPopover(<PopoverModifyEvent action="delete" onSelect={deleteOccurrences} />, fcEvent.el);
   };
 
   return (
