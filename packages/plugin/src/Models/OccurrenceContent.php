@@ -11,8 +11,9 @@ use yii\base\InvalidArgumentException;
  * the occurrence overrides, and the event's value for everything else.
  *
  * Read it like an element: `occurrence.content.title`, `occurrence.content.<fieldHandle>`.
+ * `occurrence.content['<fieldHandle>'] is defined` checks for a field the same way it does on an event.
  */
-class OccurrenceContent
+class OccurrenceContent implements \ArrayAccess
 {
     // Same key as OccurrenceOverride::TITLE, kept here so occurrences without an override never load that class
     private const TITLE = 'title';
@@ -77,6 +78,26 @@ class OccurrenceContent
     public function getSourceElement(string $handle): Event|OccurrenceOverride
     {
         return $this->isOverridden($handle) ? $this->override : $this->event;
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        return \is_string($offset) && $this->__isset($offset);
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->__get((string) $offset);
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        throw new \LogicException('Occurrence content is read-only.');
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new \LogicException('Occurrence content is read-only.');
     }
 
     public function getEvent(): Event

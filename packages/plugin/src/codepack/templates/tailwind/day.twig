@@ -88,7 +88,7 @@
                     {% for occurrence in day.timedOccurrences %}
                         {% set event = occurrence.event %}
                         {% set timeLabel = occurrence.startDate.format('g:ia') %}
-                        {% if event.multiDay and not day.containsDate(occurrence.startDate) %}
+                        {% if occurrence.multiDay and not day.containsDate(occurrence.startDate) %}
                             {% set timeLabel = day.containsDate(occurrence.endDate) ? 'Ends ' ~ occurrence.endDate.format('g:ia') : 'Ongoing' %}
                         {% endif %}
                         <section class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-2 px-2 md:px-4{{ not loop.first or day.allDayOccurrenceCount ? ' border-t border-neutral-200 dark:border-neutral-700' }}"

@@ -1,17 +1,18 @@
 {% set event = occurrence.event %}
+{% set content = occurrence.content %}
 
 <li class="calendar-agenda-event relative flex flex-wrap items-center justify-between gap-2 {{ day.dateLocalized.isToday ? 'bg-white dark:bg-neutral-900' : 'bg-neutral-50 dark:bg-neutral-800' }} rounded-lg px-4 py-2"
     style="--calendar-color: {{ event.calendar.color }};">
     <div>
-        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
             class="font-semibold text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline">
-            {{ event.title }}
+            <span class="{{ occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span>{% if occurrence.cancelled %} <span class="calendar-occurrence-status">Cancelled</span>{% endif %}
         </a>
         <div class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             <span class="far fa-clock" aria-hidden="true"></span>
-            {% if event.allDay %}
+            {% if occurrence.allDay %}
                 All day
-            {% elseif event.multiDay %}
+            {% elseif occurrence.multiDay %}
                 {% if day.containsDate(occurrence.startDate) %}
                     Starts {{ occurrence.startDate.format('g:ia') }}
                 {% elseif day.containsDate(occurrence.endDate) %}
@@ -22,9 +23,9 @@
             {% else %}
                 {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('g:ia') }}
             {% endif %}
-            {% if event['location'] is defined and event.location is not empty %}
+            {% if content['location'] is defined and content.location is not empty %}
                 <span class="mx-1" aria-hidden="true">·</span>
-                <span class="fas fa-map-marker-alt" aria-hidden="true"></span> {{ event.location|striptags }}
+                <span class="fas fa-map-marker-alt" aria-hidden="true"></span> {{ content.location|striptags }}
             {% endif %}
         </div>
     </div>

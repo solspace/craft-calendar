@@ -5,7 +5,7 @@
 
 <div class="qtip hidden">
     <div class="title">
-        {{ event.title }}
+        {{ occurrence is defined ? occurrence.content.title : event.title }}
         <span class="event_time">
             <span class="far fa-clock" aria-hidden="true"></span>
             {% if displayAllDay %}
