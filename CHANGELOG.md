@@ -8,6 +8,7 @@
 - Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.
 
 ### Changed
+- Clarified **General Settings** labels and descriptions, including user preferences, time formats, and event permissions.
 - Refreshed the Month, Week, Day, Upcoming Events, Calendars, and event detail demos with more consistent navigation, responsive layouts, calendar color accents, and expandable sidebars.
 - Improved the Create Event demo with clearer date, time, and recurrence controls.
 - Updated the custom **FullCalendar** integration demo with refined event styling and dialogs, plus links to FullCalendar and its v6 documentation.

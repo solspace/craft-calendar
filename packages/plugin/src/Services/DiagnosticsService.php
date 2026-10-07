@@ -171,7 +171,7 @@ class DiagnosticsService extends Component
             $row(Calendar::t('Short Time Format (ICU)'), DateFormatHelper::get(DateFormatHelper::TYPE_TIME, Locale::FORMAT_ICU, 'short'), isCode: true),
             $row(Calendar::t('Time Format'), $timeFormat),
             $row(
-                Calendar::t('First Day Of Week'),
+                Calendar::t('First Day of Week'),
                 Calendar::t($weekdays[$settings->getFirstDayOfWeek()]),
                 'none',
                 $model->getFirstDayOfWeek() < 0
@@ -180,15 +180,15 @@ class DiagnosticsService extends Component
             ),
         ];
         $configuration = [
-            $row(Calendar::t('Default View'), Calendar::t(ucfirst($model->defaultView ?: SettingsModel::DEFAULT_VIEW))),
+            $row(Calendar::t('Default Page'), Calendar::t(ucfirst($model->defaultView ?: SettingsModel::DEFAULT_VIEW))),
             $row(Calendar::t('Time Interval (Minutes)'), $settings->getTimeInterval()),
             $row(Calendar::t('Default Duration (Minutes)'), $settings->getEventDuration()),
             $row(Calendar::t('Overlap Threshold (Hours)'), $settings->getOverlapThreshold()),
             $booleanRow(Calendar::t('All-Day Events By Default'), $settings->isAllDayDefault()),
             $booleanRow(Calendar::t('Show Disabled Events'), $settings->showDisabledEvents()),
-            $booleanRow(Calendar::t('Quick Create Enabled'), $settings->isQuickCreateEnabled()),
-            $booleanRow(Calendar::t('Drag And Drop Enabled'), $settings->isDragAndDropEnabled()),
-            $booleanRow(Calendar::t('Only Edit Own Events'), $settings->isAuthoredEventEditOnly()),
+            $booleanRow(Calendar::t('Enable Quick Event Creation'), $settings->isQuickCreateEnabled()),
+            $booleanRow(Calendar::t('Enable Drag and Drop'), $settings->isDragAndDropEnabled()),
+            $booleanRow(Calendar::t('Restrict Editing to Own Events'), $settings->isAuthoredEventEditOnly()),
         ];
 
         $database = [];
