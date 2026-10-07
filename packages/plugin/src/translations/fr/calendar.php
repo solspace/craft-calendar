@@ -660,4 +660,10 @@ return [
     'Create new events with All Day enabled by default. You can change this for each event.' => 'Créez les nouveaux événements avec Journée entière activé par défaut. Vous pouvez modifier ce choix pour chaque événement.',
     'Late-Night Event Cutoff (Hours)' => 'Seuil des événements nocturnes (heures)',
     'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.' => 'Conservez les événements qui passent minuit sur le jour précédent s\'ils se terminent dans ce nombre d\'heures après minuit. Par exemple, 5 signifie 05:00. Les dates des événements restent inchangées.',
+
+    // Guest access settings
+    'Allow Guest Event Submissions' => 'Autoriser la soumission d\'événements par les visiteurs',
+    'Allow visitors who are not signed in to submit events from your website to the calendars selected below.' => 'Autorisez les visiteurs non connectés à soumettre des événements depuis votre site dans les calendriers sélectionnés ci-dessous.',
+    'Guest Submission Calendars' => 'Calendriers pour les soumissions des visiteurs',
+    'Select at least one calendar. Guests can submit events only to the selected calendars.' => 'Sélectionnez au moins un calendrier. Les visiteurs peuvent soumettre des événements uniquement dans les calendriers sélectionnés.',
 ];

@@ -660,4 +660,10 @@ return [
     'Create new events with All Day enabled by default. You can change this for each event.' => 'Maak nieuwe evenementen standaard aan met Hele dag ingeschakeld. Je kunt dit voor elk evenement wijzigen.',
     'Late-Night Event Cutoff (Hours)' => 'Grens voor nachtelijke evenementen (uren)',
     'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.' => 'Toon evenementen die over middernacht heen lopen op de vorige dag als ze binnen dit aantal uren na middernacht eindigen. Bijvoorbeeld: 5 betekent 05:00 uur. De datums van evenementen blijven ongewijzigd.',
+
+    // Guest access settings
+    'Allow Guest Event Submissions' => 'Evenementinzendingen van gasten toestaan',
+    'Allow visitors who are not signed in to submit events from your website to the calendars selected below.' => 'Sta bezoekers die niet zijn aangemeld toe om via je website evenementen in te dienen voor de hieronder geselecteerde kalenders.',
+    'Guest Submission Calendars' => 'Kalenders voor gastinzendingen',
+    'Select at least one calendar. Guests can submit events only to the selected calendars.' => 'Selecteer ten minste één kalender. Gasten kunnen alleen evenementen indienen voor de geselecteerde kalenders.',
 ];

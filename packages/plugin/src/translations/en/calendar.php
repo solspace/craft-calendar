@@ -660,4 +660,10 @@ return [
     'Create new events with All Day enabled by default. You can change this for each event.' => 'Create new events with All Day enabled by default. You can change this for each event.',
     'Late-Night Event Cutoff (Hours)' => 'Late-Night Event Cutoff (Hours)',
     'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.' => 'Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged.',
+
+    // Guest access settings
+    'Allow Guest Event Submissions' => 'Allow Guest Event Submissions',
+    'Allow visitors who are not signed in to submit events from your website to the calendars selected below.' => 'Allow visitors who are not signed in to submit events from your website to the calendars selected below.',
+    'Guest Submission Calendars' => 'Guest Submission Calendars',
+    'Select at least one calendar. Guests can submit events only to the selected calendars.' => 'Select at least one calendar. Guests can submit events only to the selected calendars.',
 ];
