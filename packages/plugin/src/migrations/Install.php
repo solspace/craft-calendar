@@ -130,6 +130,7 @@ class Install extends StreamlinedInstallMigration
                 ->addIndex(['endDate'], name: 'occurrences_end_date_idx')
                 ->addIndex(['startDate', 'endDate'], name: 'occurrences_start_end_idx')
                 ->addIndex(['endDate', 'startDate'], name: 'occurrences_end_start_idx')
+                ->addIndex(['overrideId'], name: 'occurrences_override_idx')
                 ->addIndex(['code'], true),
 
             (new Table('calendar_occurrence_codes'))

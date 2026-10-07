@@ -53,6 +53,8 @@ class m261006_000000_AddOccurrenceIdentity extends Migration
         $this->dropTableIfExists(self::CODES);
 
         if ($this->db->columnExists(self::OCCURRENCES, 'recurrenceId')) {
+            // Moved occurrences can share a start; their schedule's starts never do
+            $this->update(self::OCCURRENCES, ['startDate' => new Expression('[[recurrenceId]]')], '', [], false);
             $this->replacePrimaryKey(self::OCCURRENCES, 'pk_calendar_events_occurrences', ['eventId', 'startDate']);
             $this->dropColumn(self::OCCURRENCES, 'recurrenceId');
         }
@@ -122,28 +124,47 @@ class m261006_000000_AddOccurrenceIdentity extends Migration
         );
 
         $this->alterColumn(self::OCCURRENCES, 'code', $this->string(OccurrenceCodeGenerator::LENGTH)->notNull());
-        $this->createIndex('calendar_events_occurrences_code_unq_idx', self::OCCURRENCES, ['code'], true);
+
+        if (!Db::findIndex(self::OCCURRENCES, ['code'], true, $this->db)) {
+            $this->createIndex('calendar_events_occurrences_code_unq_idx', self::OCCURRENCES, ['code'], true);
+        }
     }
 
     /**
-     * Works in batches, so memory use doesn't grow with the number of occurrences.
+     * Works in batches, so memory use doesn't grow with the number of occurrences. Each batch continues
+     * after the last one, and occurrences that already have a code are skipped, so it can be re-run.
      */
     private function createMissingCodes(): void
     {
-        // Rows drop out of this query once their codes are inserted, so it can simply be re-run
-        $missing = (new Query())
-            ->select(['o.eventId', 'o.recurrenceId'])
-            ->from(['o' => self::OCCURRENCES])
-            ->leftJoin(['c' => self::CODES], '[[c.eventId]] = [[o.eventId]] AND [[c.recurrenceId]] = [[o.recurrenceId]]')
-            ->where(['c.code' => null])
-            ->orderBy(['o.eventId' => \SORT_ASC, 'o.recurrenceId' => \SORT_ASC])
-            ->limit(self::BATCH_SIZE)
-        ;
-
         $generator = new OccurrenceCodeGenerator();
         $now = Db::prepareDateForDb(new \DateTime());
+        $last = null;
 
-        while ($occurrences = $missing->all($this->db)) {
+        while (true) {
+            $missing = (new Query())
+                ->select(['o.eventId', 'o.recurrenceId'])
+                ->from(['o' => self::OCCURRENCES])
+                ->leftJoin(['c' => self::CODES], '[[c.eventId]] = [[o.eventId]] AND [[c.recurrenceId]] = [[o.recurrenceId]]')
+                ->where(['c.code' => null])
+                ->orderBy(['o.eventId' => \SORT_ASC, 'o.recurrenceId' => \SORT_ASC])
+                ->limit(self::BATCH_SIZE)
+            ;
+
+            if ($last) {
+                $missing->andWhere([
+                    'or',
+                    ['>', 'o.eventId', $last['eventId']],
+                    ['and', ['o.eventId' => $last['eventId']], ['>', 'o.recurrenceId', $last['recurrenceId']]],
+                ]);
+            }
+
+            $occurrences = $missing->all($this->db);
+            if (!$occurrences) {
+                return;
+            }
+
+            $last = end($occurrences);
+
             $codes = $generator->generateUnique(
                 \count($occurrences),
                 fn (array $candidates) => (new Query())
