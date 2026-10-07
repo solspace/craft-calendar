@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Services;
 use Carbon\Carbon;
 use craft\base\Component;
 use craft\base\Element;
+use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\helpers\Db;
@@ -114,9 +115,17 @@ class OccurrencesService extends Component
             throw new InvalidArgumentException("Event {$event->id} has no occurrence at {$key}.");
         }
 
+        return $this->createOverride($event, $key, $siteId);
+    }
+
+    /**
+     * A new, unsaved override for an occurrence, without checking that the event has it.
+     */
+    public function createOverride(Event $event, mixed $recurrenceId, ?int $siteId = null): OccurrenceOverride
+    {
         $override = new OccurrenceOverride();
         $override->siteId = $siteId ?? $event->siteId;
-        $override->recurrenceId = RecurrenceId::toCarbon($key);
+        $override->recurrenceId = RecurrenceId::toCarbon($this->normalizeRecurrenceId($recurrenceId));
         $override->fieldLayoutId = $event->getFieldLayout()?->id;
         $override->setPrimaryOwner($event);
         $override->setOwner($event);
@@ -209,7 +218,6 @@ class OccurrencesService extends Component
             }
 
             (new RecurringEventMutationHelper())->deleteOccurrence($event, RecurrenceId::toCarbon($key));
-            $event->disableRequestSyncOnSave();
 
             if (!Calendar::getInstance()->events->saveEvent($event)) {
                 $transaction->rollBack();
@@ -251,6 +259,54 @@ class OccurrencesService extends Component
     }
 
     /**
+     * Before a draft is applied, gives it the live event's overrides made since the draft was created. Applying a
+     * draft deletes the live overrides it doesn't have, and it only got the ones that existed when it was created.
+     * An occurrence the draft changed too keeps the draft's changes.
+     *
+     * @internal
+     */
+    public function adoptNewerLiveOverrides(Event $draft): void
+    {
+        $canonicalId = (int) $draft->getCanonicalId();
+        if (!$draft->getIsDraft() || $draft->getIsUnpublishedDraft()) {
+            return;
+        }
+
+        $owned = (new Query())
+            ->select(['overrides.recurrenceId'])
+            ->from(['overrides' => OccurrenceOverrideRecord::TABLE])
+            ->innerJoin(['owners' => Table::ELEMENTS_OWNERS], '[[owners.elementId]] = [[overrides.id]]')
+            ->where(['owners.ownerId' => $draft->id])
+            ->column()
+        ;
+
+        $newer = OccurrenceOverrideRecord::findForEvent($canonicalId)
+            ->select(['overrides.id', 'overrides.recurrenceId', 'owners.sortOrder'])
+            ->innerJoin(['owners' => Table::ELEMENTS_OWNERS], '[[owners.elementId]] = [[overrides.id]] AND [[owners.ownerId]] = :canonicalId', [
+                'canonicalId' => $canonicalId,
+            ])
+            // Element IDs only ever grow, unlike creation dates, which can share a second with the draft's
+            ->andWhere(['>', 'overrides.id', $draft->id])
+            ->andWhere(['not', ['overrides.recurrenceId' => $owned]])
+            ->all()
+        ;
+
+        // The occurrences before a split go to the earlier part
+        $splitAt = Calendar::getInstance()->series->getSplitAt($draft)?->format(RecurrenceId::FORMAT);
+
+        $rows = [];
+        foreach ($newer as $override) {
+            if (null === $splitAt || $override['recurrenceId'] >= $splitAt) {
+                $rows[] = [(int) $override['id'], (int) $draft->id, (int) $override['sortOrder']];
+            }
+        }
+
+        if ($rows) {
+            Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $rows);
+        }
+    }
+
+    /**
      * Copy-on-write: a draft editing an override it shares with the live event gets its own copy.
      */
     public function forOwner(OccurrenceOverride $override, Event $event): OccurrenceOverride
@@ -271,23 +327,34 @@ class OccurrencesService extends Component
         return $copy;
     }
 
+    /**
+     * Saves an override, or removes it once nothing about its occurrence differs from the event anymore.
+     *
+     * @return null|OccurrenceOverride the override, or null when it was removed
+     *
+     * @throws InvalidElementException when it can't be saved or removed
+     */
+    public function saveOrRemoveOverride(OccurrenceOverride $override): ?OccurrenceOverride
+    {
+        if ($override->hasChanges()) {
+            $this->saveOrFail($override);
+
+            return $override;
+        }
+
+        if ($override->id && !$this->resetOverride($this->requireEvent($override), $override->recurrenceId)) {
+            throw new InvalidElementException($override, 'Couldn’t remove the occurrence override.');
+        }
+
+        return null;
+    }
+
     private function setCancelled(Event $event, mixed $recurrenceId, bool $cancelled): ?OccurrenceOverride
     {
         $override = $this->getOrCreateOverride($event, $recurrenceId);
         $override->cancelled = $cancelled;
 
-        // An override that no longer changes anything isn't kept
-        if (!$override->hasChanges()) {
-            if ($override->id && !$this->resetOverride($event, $recurrenceId)) {
-                throw new InvalidElementException($override, 'Couldn’t remove the occurrence override.');
-            }
-
-            return null;
-        }
-
-        $this->saveOrFail($override);
-
-        return $override;
+        return $this->saveOrRemoveOverride($override);
     }
 
     private function saveOrFail(OccurrenceOverride $override): void

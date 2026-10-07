@@ -1,11 +1,10 @@
 {# The occurrence slideout: the event's field layout, where each field has an Override toggle #}
 {% import '_includes/forms' as forms %}
 
-<div id="{{ id }}" class="calendar-occurrence-editor">
+<div id="{{ id }}" class="calendar-occurrence-editor" data-event-id="{{ event.id }}" data-site-id="{{ event.siteId }}" data-recurrence-id="{{ recurrenceId }}">
     {{ hiddenInput('eventId', event.id) }}
     {{ hiddenInput('siteId', event.siteId) }}
     {{ hiddenInput('recurrenceId', recurrenceId) }}
-    {{ hiddenInput('reset', '', {class: 'calendar-occurrence-reset-input'}) }}
 
     {% if isDraft %}
         <p class="notice has-icon">

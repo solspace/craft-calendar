@@ -64,6 +64,7 @@ class EventsApiController extends BaseController
         if (null !== $slug && '' !== $slug) {
             $event->slug = $slug;
         }
+        $event->setScheduleFromRequest($request->getBodyParams());
         $event->setFieldValuesFromRequest('fields');
 
         if (!$this->getEventsService()->saveEvent($event)) {
@@ -370,8 +371,6 @@ class EventsApiController extends BaseController
 
     private function saveEventResponse(Event $event, string $fallbackMessage): Response
     {
-        $event->disableRequestSyncOnSave();
-
         if ($this->getEventsService()->saveEvent($event)) {
             return $this->asJson(['success' => true]);
         }

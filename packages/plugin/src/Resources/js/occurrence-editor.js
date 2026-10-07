@@ -74,14 +74,34 @@
       updateAllDay();
     },
 
+    /**
+     * Resets through its own action, then finishes the way saving does: the slideout reports
+     * the result, tells whoever opened it, and closes.
+     */
     initReset() {
-      this.addListener(this.$container.find(".calendar-occurrence-reset-btn"), "click", () => {
+      this.addListener(this.$container.find(".calendar-occurrence-reset-btn"), "click", async () => {
         if (!window.confirm(Craft.t("calendar", "Remove everything this occurrence changes?"))) {
           return;
         }
 
-        this.$container.find(".calendar-occurrence-reset-input").val("1");
-        this.$form.trigger("submit");
+        const screen = this.$form.data("cpScreen");
+        const data = {
+          eventId: this.$container.data("eventId"),
+          siteId: this.$container.data("siteId"),
+          recurrenceId: this.$container.data("recurrenceId"),
+        };
+
+        screen.showSubmitSpinner();
+
+        try {
+          screen.handleSubmitResponse(
+            await Craft.sendActionRequest("POST", "calendar/occurrences/reset", { data }),
+          );
+        } catch (error) {
+          screen.handleSubmitError(error);
+        } finally {
+          screen.hideSubmitSpinner();
+        }
       });
     },
   });

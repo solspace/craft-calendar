@@ -344,14 +344,15 @@ class OccurrenceOverride extends Element implements NestedElementInterface
     }
 
     /**
-     * Whether the occurrence differs from its event in any way, a custom slug included.
+     * Whether the occurrence differs from its event in any way, in any site, a custom slug included.
      */
     public function hasChanges(): bool
     {
         return $this->hasOwnTimes()
             || $this->cancelled
             || $this->hasCustomSlug()
-            || [] !== $this->getOverriddenFieldHandles();
+            || [] !== $this->getOverriddenFieldHandles()
+            || $this->hasChangesInOtherSites();
     }
 
     /**
@@ -405,7 +406,8 @@ class OccurrenceOverride extends Element implements NestedElementInterface
             return;
         }
 
-        if (preg_match(OccurrenceModel::GENERATED_SLUG_PATTERN, $slug)) {
+        // Slug lookups ignore case, so neither can an uppercase version of one
+        if (preg_match(OccurrenceModel::GENERATED_SLUG_PATTERN, strtolower($slug))) {
             $this->addError($attribute, Calendar::t('Custom slugs can’t look like generated occurrence slugs.'));
 
             return;
@@ -418,6 +420,11 @@ class OccurrenceOverride extends Element implements NestedElementInterface
     {
         if ($this->propagating && $this->propagatingFrom instanceof self) {
             $this->mirrorSharedOverrides($this->propagatingFrom);
+
+            // A new override's custom slug is copied to its other sites, which aren't validated
+            if ($isNew && $this->hasCustomSlug()) {
+                $this->slug = self::pickAvailableSlug($this->slug, $this->findTakenSlugs($this->slug));
+            }
         }
 
         $this->fieldLayoutId = $this->getEvent()?->getFieldLayout()?->id ?? $this->fieldLayoutId;
@@ -581,7 +588,37 @@ class OccurrenceOverride extends Element implements NestedElementInterface
         }
     }
 
+    private function hasChangesInOtherSites(): bool
+    {
+        if (!$this->id) {
+            return false;
+        }
+
+        $sites = (new Query())
+            ->select(['sites.overriddenFields', 'elements_sites.slug'])
+            ->from(['sites' => OccurrenceOverrideSiteRecord::TABLE])
+            ->innerJoin(
+                ['elements_sites' => Table::ELEMENTS_SITES],
+                '[[elements_sites.elementId]] = [[sites.id]] AND [[elements_sites.siteId]] = [[sites.siteId]]',
+            )
+            ->where(['sites.id' => $this->id])
+            ->andWhere(['not', ['sites.siteId' => $this->siteId]])
+            ->all()
+        ;
+
+        foreach ($sites as $site) {
+            if ('' !== (string) $site['slug'] || [] !== (array) Json::decodeIfJson((string) $site['overriddenFields'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
+     * Slugs the other overrides of the event this override is edited for already use. Inside a draft
+     * those are the draft's own overrides and the ones it still shares with the live event.
+     *
      * @return string[]
      */
     private function findTakenSlugs(string $slug): array
@@ -590,14 +627,16 @@ class OccurrenceOverride extends Element implements NestedElementInterface
             ->select(['elements_sites.slug'])
             ->from(['elements_sites' => Table::ELEMENTS_SITES])
             ->innerJoin(['overrides' => OccurrenceOverrideRecord::TABLE], '[[overrides.id]] = [[elements_sites.elementId]]')
+            ->innerJoin(['owners' => Table::ELEMENTS_OWNERS], '[[owners.elementId]] = [[overrides.id]]')
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
-                'overrides.primaryOwnerId' => $this->getPrimaryOwnerId(),
+                'owners.ownerId' => $this->getOwnerId(),
                 'elements_sites.siteId' => $this->siteId,
                 'elements.dateDeleted' => null,
             ])
             ->andWhere(['or', ['elements_sites.slug' => $slug], ['like', 'elements_sites.slug', $slug.'-%', false]])
-            ->andWhere(['not', ['elements_sites.elementId' => $this->id ?? 0]])
+            // A draft's copy of an override takes over its slug
+            ->andWhere(['not', ['elements_sites.elementId' => array_filter([$this->id, $this->getCanonicalId()])]])
             ->column()
         ;
     }

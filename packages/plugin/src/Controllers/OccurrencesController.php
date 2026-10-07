@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Carbon\Carbon;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\errors\InvalidElementException;
 use craft\fieldlayoutelements\BaseUiElement;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\TitleField;
@@ -40,9 +41,15 @@ class OccurrencesController extends BaseController
     public function actionEdit(): Response
     {
         [$event, $recurrenceId] = $this->requireOccurrence();
+        $service = $this->getOccurrencesService();
 
-        $override = $this->getOccurrencesService()->getOverride($event, $recurrenceId);
-        $occurrence = $this->getOccurrencesService()->describeOccurrence($event, $recurrenceId, $override);
+        $override = $service->getOverride($event, $recurrenceId);
+        if ($override && $event->getIsDraft() && $this->hasOverriddenNestedElements($override)) {
+            // Nested entries are saved as soon as they're edited, so a draft needs its own copy first
+            $override = $service->forOwner($override, $event);
+        }
+
+        $occurrence = $service->describeOccurrence($event, $recurrenceId, $override);
 
         return $this->asCpScreen()
             ->title(Calendar::t('{event} on {date}', [
@@ -63,14 +70,6 @@ class OccurrencesController extends BaseController
         $service = $this->getOccurrencesService();
         $request = \Craft::$app->getRequest();
 
-        if ($request->getBodyParam('reset')) {
-            if (!$service->resetOverride($event, $recurrenceId)) {
-                return $this->asFailure(Calendar::t('Couldn’t reset the occurrence.'));
-            }
-
-            return $this->asSuccess(Calendar::t('Occurrence reset.'));
-        }
-
         $override = $service->getOrCreateOverride($event, $recurrenceId);
         $this->applyContent($override, $event);
 
@@ -81,16 +80,9 @@ class OccurrencesController extends BaseController
         $override->cancelled = (bool) $request->getBodyParam('cancelled');
         $override->slug = trim((string) $request->getBodyParam('slug')) ?: null;
 
-        // Nothing left that differs from the event
-        if (!$override->hasChanges()) {
-            if ($override->id && !$service->resetOverride($event, $recurrenceId)) {
-                return $this->asFailure(Calendar::t('Couldn’t save the occurrence.'));
-            }
-
-            return $this->asSuccess(Calendar::t('Occurrence saved.'));
-        }
-
-        if (!$service->saveOverride($override)) {
+        try {
+            $service->saveOrRemoveOverride($override);
+        } catch (InvalidElementException) {
             return $this->asFailure(Calendar::t('Couldn’t save the occurrence.'), ['errors' => $override->getErrors()]);
         }
 
@@ -121,9 +113,8 @@ class OccurrencesController extends BaseController
     {
         $this->requirePostRequest();
 
-        $event = $this->requireEvent();
-        $changed = clone $event;
-        $changed->setScheduleFromRequest();
+        $changed = clone $this->requireEvent();
+        $changed->setScheduleFromRequest(\Craft::$app->getRequest()->getBodyParams());
 
         return $this->asJson($this->getOccurrencesService()->previewSchedule($changed));
     }
@@ -228,10 +219,10 @@ class OccurrencesController extends BaseController
         );
 
         $meta = $this->metaVariables($event, $recurrenceId, $override, $occurrence);
-        $override ??= $this->createOverride($event, $recurrenceId);
+        $override ??= $this->getOccurrencesService()->createOverride($event, $recurrenceId);
 
         // Fields the occurrence doesn't override are edited from a copy of the event's value
-        $prefilled = $this->createOverride($event, $recurrenceId);
+        $prefilled = $this->getOccurrencesService()->createOverride($event, $recurrenceId);
         $prefilled->title = $event->title;
 
         $tabs = [];
@@ -448,6 +439,17 @@ class OccurrencesController extends BaseController
         return $keys;
     }
 
+    private function hasOverriddenNestedElements(OccurrenceOverride $override): bool
+    {
+        foreach ($override->getOverriddenFieldHandles() as $handle) {
+            if ($override->getFieldLayout()?->getFieldByHandle($handle) instanceof ElementContainerFieldInterface) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @return string[] labels of what the occurrence changes
      */
@@ -481,21 +483,6 @@ class OccurrencesController extends BaseController
         }
 
         return $override->isFieldOverridden($key);
-    }
-
-    /**
-     * An unsaved override, only used for rendering. Saving goes through OccurrencesService::getOrCreateOverride().
-     */
-    private function createOverride(Event $event, string $recurrenceId): OccurrenceOverride
-    {
-        $override = new OccurrenceOverride();
-        $override->siteId = $event->siteId;
-        $override->recurrenceId = RecurrenceId::toCarbon($recurrenceId);
-        $override->fieldLayoutId = $event->getFieldLayout()?->id;
-        $override->setPrimaryOwner($event);
-        $override->setOwner($event);
-
-        return $override;
     }
 
     /**

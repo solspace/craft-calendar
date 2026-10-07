@@ -73,11 +73,20 @@ class Event extends Element implements \JsonSerializable
         'until',
     ];
 
-    private const SCHEDULE_REQUEST_ACTIONS = [
-        'elements/save',
-        'elements/save-draft',
-        'elements/apply-draft',
-        'calendar/events-api/save',
+    /**
+     * What the event builder posts for the schedule. `startDate` and `endDate` are older names for `start` and `end`.
+     */
+    private const SCHEDULE_PARAMS = [
+        'start',
+        'startDate',
+        'end',
+        'endDate',
+        'until',
+        'timezone',
+        'allDay',
+        'repeatType',
+        'repeatEndType',
+        'rrule',
     ];
 
     public ?int $calendarId = null;
@@ -105,10 +114,6 @@ class Event extends Element implements \JsonSerializable
     public ?string $freq = null;
     public ?int $interval = null;
     public ?int $count = null;
-
-    private static int $requestSyncSuspended = 0;
-
-    private bool $syncFromRequestOnSave = true;
 
     private ?int $scheduleShift = null;
 
@@ -684,87 +689,47 @@ class Event extends Element implements \JsonSerializable
             Calendar::getInstance()->series->splitForDraft($this, $this->duplicateOf);
         }
 
-        if (!$this->syncFromRequestOnSave || self::$requestSyncSuspended || !self::isScheduleRequest()) {
-            if (!$this->timezone || '' === trim((string) $this->timezone)) {
-                $this->timezone = \Craft::$app->getTimeZone();
-            }
-
-            return true;
+        if (!$this->timezone || '' === trim((string) $this->timezone)) {
+            $this->timezone = \Craft::$app->getTimeZone();
         }
-
-        $this->setScheduleFromRequest();
 
         return true;
     }
 
     /**
-     * Reads the schedule the event builder posts: `start`, `end`, `until`, `timezone`, `allDay`,
-     * `repeatType`, `repeatEndType` and `rrule`. Anything not posted keeps its current value.
+     * Craft passes the editor's posted values here when it saves the event, saves a draft of it or applies one.
+     * Saves made any other way, like moving an occurrence in the calendar, never read the schedule from the request.
      */
-    public function setScheduleFromRequest(): void
+    public function setAttributesFromRequest(array $values): void
     {
-        $request = \Craft::$app->getRequest();
+        $schedule = array_intersect_key($values, array_flip(self::SCHEDULE_PARAMS));
 
-        $timezone = $request->getBodyParam('timezone', $this->timezone);
-        if (!\is_string($timezone) || '' === trim($timezone)) {
-            $timezone = \Craft::$app->getTimeZone();
-        }
-        $timezone = trim((string) $timezone);
-
-        $start = $this->bodyParamToCarbon('start', $this->startDate, 'startDate', $timezone);
-        $end = $this->bodyParamToCarbon('end', $this->endDate, 'endDate', $timezone);
-        $until = $this->bodyParamToCarbon('until', $this->until, null, $timezone);
-        if ('' === $request->getBodyParam('until')) {
-            $until = null;
-        }
-
-        $allDay = (bool) $request->getBodyParam('allDay', $this->allDay);
-
-        $repeatType = $request->getBodyParam('repeatType', $this->repeatType);
-        $repeatEndType = $request->getBodyParam('repeatEndType', $this->repeatEndType);
-        $rrule = $request->getBodyParam('rrule', $this->rrule);
-        if (\is_string($rrule)) {
-            $rrule = self::normalizeRRule($rrule, $allDay);
-        }
-
-        $this->startDate = $start;
-        $this->endDate = $end;
-        $this->until = $until;
-        $this->timezone = $timezone;
-        $this->allDay = $allDay;
-
-        $this->repeatType = $repeatType;
-        $this->repeatEndType = $repeatEndType;
-        $this->rrule = $rrule;
-    }
-
-    public function disableRequestSyncOnSave(): self
-    {
-        $this->syncFromRequestOnSave = false;
-
-        return $this;
+        parent::setAttributesFromRequest(array_diff_key($values, $schedule));
+        $this->setScheduleFromRequest($schedule);
     }
 
     /**
-     * Runs the callback without request sync for any event it saves. For events saved as a side effect
-     * of the editor's own save, like a copy made while a draft is applied, which would otherwise take
-     * the schedule the editor posted.
-     *
-     * @template T
-     *
-     * @param callable(): T $callback
-     *
-     * @return T
+     * Sets the schedule from what the event builder posts: `start`, `end`, `until`, `timezone`, `allDay`,
+     * `repeatType`, `repeatEndType` and `rrule`. Anything not posted keeps its current value.
      */
-    public static function withoutRequestSync(callable $callback): mixed
+    public function setScheduleFromRequest(array $values): void
     {
-        ++self::$requestSyncSuspended;
-
-        try {
-            return $callback();
-        } finally {
-            --self::$requestSyncSuspended;
+        if (!$values) {
+            return;
         }
+
+        $timezone = $values['timezone'] ?? $this->timezone;
+        $this->timezone = \is_string($timezone) && '' !== trim($timezone) ? trim($timezone) : \Craft::$app->getTimeZone();
+
+        $this->startDate = self::parseScheduleDate($values['start'] ?? null) ?? self::parseScheduleDate($values['startDate'] ?? null) ?? $this->startDate;
+        $this->endDate = self::parseScheduleDate($values['end'] ?? null) ?? self::parseScheduleDate($values['endDate'] ?? null) ?? $this->endDate;
+        $this->until = '' === ($values['until'] ?? null) ? null : self::parseScheduleDate($values['until'] ?? null) ?? $this->until;
+        $this->allDay = (bool) ($values['allDay'] ?? $this->allDay);
+        $this->repeatType = $values['repeatType'] ?? $this->repeatType;
+        $this->repeatEndType = $values['repeatEndType'] ?? $this->repeatEndType;
+
+        $rrule = $values['rrule'] ?? $this->rrule;
+        $this->rrule = \is_string($rrule) ? self::normalizeRRule($rrule, $this->allDay) : $rrule;
     }
 
     /**
@@ -1498,50 +1463,22 @@ class Event extends Element implements \JsonSerializable
     }
 
     /**
-     * Only the event editor's own saves post the event's schedule. Other requests that save an
-     * event, like moving one in the CP calendar, post `start` and `end` values that mean something else.
+     * Dates are posted as strings or as Craft's `date`/`time` pairs. Returns null for anything else.
      */
-    private static function isScheduleRequest(): bool
+    private static function parseScheduleDate(mixed $value): ?Carbon
     {
-        $request = \Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return false;
-        }
-
-        return \in_array(implode('/', $request->getActionSegments() ?? []), self::SCHEDULE_REQUEST_ACTIONS, true);
-    }
-
-    private function bodyParamToCarbon(
-        string $name,
-        ?Carbon $fallback = null,
-        ?string $fallbackName = null,
-        ?string $timezone = null,
-    ): ?Carbon {
-        $request = \Craft::$app->getRequest();
-        $value = $request->getBodyParam($name);
-
-        if ((null === $value || '' === $value) && null !== $fallbackName) {
-            $value = $request->getBodyParam($fallbackName);
+        if (\is_array($value)) {
+            $value = trim(($value['date'] ?? '').' '.($value['time'] ?? ''));
         }
 
         if (null === $value || '' === $value) {
-            return $fallback;
-        }
-
-        if (\is_array($value)) {
-            $date = (string) ($value['date'] ?? '');
-            $time = (string) ($value['time'] ?? '');
-            $value = trim($date.' '.$time);
-
-            if ('' === $value) {
-                return $fallback;
-            }
+            return null;
         }
 
         try {
             return DateHelper::parseFloatingCarbon($value);
         } catch (\Throwable) {
-            return $fallback;
+            return null;
         }
     }
 

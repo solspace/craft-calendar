@@ -3,7 +3,10 @@
 namespace Solspace\Calendar\Bundles\Occurrences;
 
 use craft\base\Element;
+use craft\events\DraftEvent;
 use craft\helpers\ElementHelper;
+use craft\services\Drafts;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
 use yii\base\Event;
@@ -37,6 +40,12 @@ class OccurrencePersistence implements BundleInterface
             Element::EVENT_AFTER_RESTORE,
             [$this, 'persistOccurrences']
         );
+
+        Event::on(
+            Drafts::class,
+            Drafts::EVENT_BEFORE_APPLY_DRAFT,
+            [$this, 'keepNewerLiveOverrides']
+        );
     }
 
     public function persistOccurrences(Event $event): void
@@ -59,6 +68,13 @@ class OccurrencePersistence implements BundleInterface
             if ($locked) {
                 $this->materializer->releaseLock($eventId);
             }
+        }
+    }
+
+    public function keepNewerLiveOverrides(DraftEvent $event): void
+    {
+        if ($event->draft instanceof CalendarEvent) {
+            Calendar::getInstance()->occurrences->adoptNewerLiveOverrides($event->draft);
         }
     }
 

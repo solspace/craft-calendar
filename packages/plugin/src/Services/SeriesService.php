@@ -147,7 +147,7 @@ class SeriesService extends Component
 
         try {
             /** @var Event $draft */
-            $draft = Event::withoutRequestSync(static fn () => \Craft::$app->getDrafts()->createDraft(
+            $draft = \Craft::$app->getDrafts()->createDraft(
                 $event,
                 $creatorId,
                 Calendar::t('From {date}', ['date' => DateHelper::formatFloating($splitAt, $event->isAllDay())]),
@@ -159,7 +159,7 @@ class SeriesService extends Component
                     'repeatType' => $later->repeatType,
                     'repeatEndType' => $later->repeatEndType,
                 ],
-            ));
+            );
 
             Db::insert(EventSplitRecord::TABLE, [
                 'eventId' => $draft->id,
@@ -270,10 +270,10 @@ class SeriesService extends Component
         $source->setOccurrenceOverrides(ElementCollection::make());
 
         /** @var Event $fork */
-        $fork = Event::withoutRequestSync(fn () => \Craft::$app->getElements()->duplicateElement(
+        $fork = \Craft::$app->getElements()->duplicateElement(
             $source,
             ['seriesId' => $source->seriesId ?? (int) $source->id] + $this->earlierPartAttributes($source, $split),
-        ));
+        );
 
         $splitKey = $splitAt->format(RecurrenceId::FORMAT);
 
@@ -406,8 +406,6 @@ class SeriesService extends Component
 
     private function saveOrFail(Event $event): void
     {
-        $event->disableRequestSyncOnSave();
-
         if (!Calendar::getInstance()->events->saveEvent($event)) {
             throw new InvalidElementException($event, implode(' ', $event->getErrorSummary(true)) ?: 'Couldn’t save the event.');
         }
