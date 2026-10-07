@@ -14,7 +14,7 @@ type EventMutationArgs = {
 
 type MoveEventArgs = EventMutationArgs & {
   event: EventApi;
-  occurrenceDate?: string | null;
+  recurrenceId?: string | null;
   scope?: EventMutationScope;
 };
 
@@ -25,7 +25,7 @@ type ResizeEventArgs = EventMutationArgs & {
 
 type DeleteEventArgs = EventMutationArgs & {
   event: EventApi;
-  occurrenceDate?: string | null;
+  recurrenceId?: string | null;
   scope?: EventMutationScope;
 };
 
@@ -140,7 +140,8 @@ const requestEventMutation = async (path: string, body: Record<string, unknown>)
   }
 };
 
-export const getOccurrenceDateFromId = (id: string, allDay: boolean): string | null => {
+// Occurrence IDs end in their recurrence ID (`YmdHis`), which stays the same when an occurrence moves
+export const getRecurrenceIdFromId = (id: string, allDay: boolean): string | null => {
   const match = /^\d+-(\d{8})(\d{6})$/.exec(id);
   if (!match) {
     return null;
@@ -159,7 +160,7 @@ export const getOccurrenceDateFromId = (id: string, allDay: boolean): string | n
 
 export const moveEvent = async ({
   event,
-  occurrenceDate,
+  recurrenceId,
   scope = "series",
   refetchEvents,
   revert,
@@ -168,7 +169,7 @@ export const moveEvent = async ({
     await requestEventMutation("move", {
       eventId: getEventId(String(event.id)),
       scope,
-      occurrenceDate,
+      recurrenceId,
       start: serializeEventDate(event.start, event.allDay),
       end: serializeEventDate(event.end, event.allDay),
       allDay: event.allDay,
@@ -219,7 +220,7 @@ export const resizeEvent = async ({
 
 export const deleteEvent = async ({
   event,
-  occurrenceDate,
+  recurrenceId,
   scope = "series",
   refetchEvents,
   revert,
@@ -228,7 +229,7 @@ export const deleteEvent = async ({
     await requestEventMutation("delete", {
       eventId: getEventId(String(event.id)),
       scope,
-      occurrenceDate,
+      recurrenceId,
     });
 
     clearCalendarEventsCache();

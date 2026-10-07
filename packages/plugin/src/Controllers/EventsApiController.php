@@ -116,15 +116,12 @@ class EventsApiController extends BaseController
         $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
 
         if ($this->hasOccurrenceSchedule($event)) {
-            $occurrenceDate = $this->parseRequiredOccurrenceDate(
-                $request->getBodyParam('occurrenceDate'),
-                $event->isAllDay(),
-            );
+            $recurrenceId = $this->parseRequiredRecurrenceId($event);
 
             if (self::SCOPE_OCCURRENCE === $scope) {
-                $this->getRecurringMutationHelper()->moveOccurrence($event, $occurrenceDate, $start, $allDay);
+                $this->getRecurringMutationHelper()->moveOccurrence($event, $recurrenceId, $start, $allDay);
             } else {
-                $this->getRecurringMutationHelper()->moveSeries($event, $occurrenceDate, $start, $allDay);
+                $this->getRecurringMutationHelper()->moveSeries($event, $recurrenceId, $start, $allDay);
             }
         } else {
             $isEqualStart = $event->getStartDate()->equalTo($start);
@@ -163,12 +160,9 @@ class EventsApiController extends BaseController
 
         $scope = $this->parseScope($request->getBodyParam('scope'));
         if ($this->hasOccurrenceSchedule($event) && self::SCOPE_OCCURRENCE === $scope) {
-            $occurrenceDate = $this->parseRequiredOccurrenceDate(
-                $request->getBodyParam('occurrenceDate'),
-                $event->isAllDay(),
-            );
+            $recurrenceId = $this->parseRequiredRecurrenceId($event);
 
-            $this->getRecurringMutationHelper()->deleteOccurrence($event, $occurrenceDate);
+            $this->getRecurringMutationHelper()->deleteOccurrence($event, $recurrenceId);
 
             return $this->saveEventResponse($event, Calendar::t('Couldn’t delete event.'));
         }
@@ -253,9 +247,17 @@ class EventsApiController extends BaseController
         return null !== $event->getRRuleRFCString();
     }
 
-    private function parseRequiredOccurrenceDate(mixed $value, bool $allDay): Carbon
+    /**
+     * `occurrenceDate` is the earlier name. Demo templates installed from 6.0 pre-releases still send it.
+     */
+    private function parseRequiredRecurrenceId(Event $event): Carbon
     {
-        return $this->parseMoveDate($value, $allDay);
+        $request = \Craft::$app->request;
+
+        return $this->parseMoveDate(
+            $request->getBodyParam('recurrenceId') ?? $request->getBodyParam('occurrenceDate'),
+            $event->isAllDay(),
+        );
     }
 
     private function parseMoveDate(mixed $value, bool $allDay): Carbon

@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Elements\Db;
 use Carbon\Carbon;
 use craft\db\ActiveQuery;
 use craft\helpers\Db;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodeGenerator;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -26,17 +27,29 @@ class OccurrenceQuery extends ActiveQuery
         'uid',
         'eventId',
         'calendarId',
+        'recurrenceId',
+        'code',
         'allDay',
+        'cancelled',
         'startDate',
         'endDate',
         'dateCreated',
         'dateUpdated',
     ];
 
+    /**
+     * Generated slugs are the occurrence's date followed by its code, e.g. `2026-10-14-fo4yk`.
+     */
+    private const GENERATED_SLUG_PATTERN = '/^(\d{4}-\d{2}-\d{2})-([0-9a-z]{'.OccurrenceCodeGenerator::LENGTH.'})$/';
+
     public ?string $status = Event::STATUS_ENABLED;
 
     public array|string|null $id = null;
     public array|string|null $uid = null;
+    public mixed $recurrenceId = null;
+    public array|string|null $code = null;
+    public array|string|null $slug = null;
+    public ?bool $cancelled = null;
     public array|int|string|null $event = null;
     public array|int|string|null $calendarId = null;
     public array|string|null $calendarUid = null;
@@ -85,6 +98,49 @@ class OccurrenceQuery extends ActiveQuery
     public function uid(array|string|null $uid): self
     {
         $this->uid = $uid;
+
+        return $this;
+    }
+
+    /**
+     * Matches occurrences by the start their schedule originally produced.
+     * Combine with `event()`, because recurrence IDs are only unique within an event.
+     */
+    public function recurrenceId(mixed $recurrenceId): self
+    {
+        $this->recurrenceId = $recurrenceId;
+
+        return $this;
+    }
+
+    /**
+     * Matches occurrences by their code, regardless of their date.
+     */
+    public function code(array|string|null $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    /**
+     * Matches occurrences by their slug. The date in the slug has to be
+     * the date the occurrence currently takes place on.
+     */
+    public function slug(array|string|null $slug): self
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    /**
+     * `true` returns only cancelled occurrences, `false` leaves them out,
+     * and `null` (the default) returns both.
+     */
+    public function cancelled(?bool $cancelled): self
+    {
+        $this->cancelled = $cancelled;
 
         return $this;
     }
@@ -306,11 +362,14 @@ class OccurrenceQuery extends ActiveQuery
             $model = new OccurrenceModel();
             $model->event = $event;
             $model->calendar = $calendar;
+            $model->recurrenceId = new Carbon($occurrence['recurrenceId'], DateHelper::UTC);
+            $model->code = $occurrence['code'];
             $model->startDate = $startDate;
             $model->startDateLocalized = DateHelper::toLocalized($startDate);
             $model->endDate = $endDate;
             $model->endDateLocalized = DateHelper::toLocalized($endDate);
             $model->allDay = $occurrence['allDay'] ?? false;
+            $model->cancelled = (bool) ($occurrence['cancelled'] ?? false);
             $model->dateCreated = new Carbon($occurrence['dateCreated']);
             $model->dateUpdated = new Carbon($occurrence['dateUpdated']);
             $model->uid = $occurrence['uid'];
@@ -526,15 +585,49 @@ class OccurrenceQuery extends ActiveQuery
             $this->andWhere(Db::parseParam('[[uid]]', $this->uid));
         }
 
-        if (null === $this->id) {
-            return;
+        if (null !== $this->code) {
+            $this->andWhere(['code' => $this->normalizeCodes($this->code)]);
         }
 
-        $ids = \is_array($this->id) ? $this->id : [$this->id];
+        if (null !== $this->cancelled) {
+            $this->andWhere(['cancelled' => $this->cancelled]);
+        }
+
+        if (null !== $this->recurrenceId) {
+            $this->applyAnyOfConditions($this->recurrenceId, function (mixed $value): ?array {
+                $recurrenceId = $this->normalizeRecurrenceId($value);
+
+                return null === $recurrenceId ? null : ['recurrenceId' => $recurrenceId];
+            });
+        }
+
+        if (null !== $this->slug) {
+            $this->applyAnyOfConditions(
+                $this->slug,
+                fn (mixed $slug) => \is_string($slug) ? $this->buildSlugCondition($slug) : null,
+            );
+        }
+
+        if (null !== $this->id) {
+            $this->applyAnyOfConditions(
+                $this->id,
+                fn (mixed $occurrenceId) => $this->buildOccurrenceIdCondition((string) $occurrenceId),
+            );
+        }
+    }
+
+    /**
+     * ORs the conditions built for each value. Values that can't match anything are skipped,
+     * and if none are left, the query matches nothing.
+     *
+     * @param callable(mixed): ?array $buildCondition
+     */
+    private function applyAnyOfConditions(mixed $values, callable $buildCondition): void
+    {
         $conditions = [];
 
-        foreach ($ids as $occurrenceId) {
-            $condition = $this->buildOccurrenceIdCondition((string) $occurrenceId);
+        foreach (\is_array($values) ? $values : [$values] as $value) {
+            $condition = $buildCondition($value);
             if (null !== $condition) {
                 $conditions[] = $condition;
             }
@@ -552,27 +645,86 @@ class OccurrenceQuery extends ActiveQuery
 
     private function buildOccurrenceIdCondition(string $occurrenceId): ?array
     {
-        if (!preg_match('/^(\d+)-(\d{8})(\d{6})$/', $occurrenceId, $matches)) {
+        if (!preg_match('/^(\d+)-(\d{14})$/', $occurrenceId, $matches)) {
             return null;
         }
 
-        [, $eventId, $date, $time] = $matches;
+        [, $eventId, $recurrenceId] = $matches;
 
-        $startDate = Carbon::createFromFormat(
-            'YmdHis',
-            $date.$time,
-            DateHelper::UTC,
-        );
-
-        if (false === $startDate) {
+        $recurrenceId = $this->normalizeRecurrenceId($recurrenceId);
+        if (null === $recurrenceId) {
             return null;
         }
 
         return [
             'and',
             ['eventId' => (int) $eventId],
-            ['startDate' => $startDate->format('Y-m-d H:i:s')],
+            ['recurrenceId' => $recurrenceId],
         ];
+    }
+
+    /**
+     * A slug only matches while its date is the date the occurrence takes place on,
+     * so the slug of a moved occurrence stops matching.
+     */
+    private function buildSlugCondition(string $slug): ?array
+    {
+        if (!preg_match(self::GENERATED_SLUG_PATTERN, strtolower(trim($slug)), $matches)) {
+            return null;
+        }
+
+        [, $date, $code] = $matches;
+
+        $dayStart = Carbon::createFromFormat('!Y-m-d', $date, DateHelper::UTC);
+        if (!$dayStart instanceof Carbon || $dayStart->format('Y-m-d') !== $date) {
+            return null;
+        }
+
+        return [
+            'and',
+            ['code' => $code],
+            ['>=', 'startDate', $dayStart->format('Y-m-d H:i:s')],
+            ['<', 'startDate', $dayStart->copy()->addDay()->format('Y-m-d H:i:s')],
+        ];
+    }
+
+    /**
+     * Recurrence IDs are floating date-times. Accepts dates, date-time strings
+     * and the compact `YmdHis` form used in occurrence IDs.
+     */
+    private function normalizeRecurrenceId(mixed $value): ?string
+    {
+        if (\is_string($value) && preg_match('/^\d{14}$/', $value)) {
+            $date = Carbon::createFromFormat('!YmdHis', $value, DateHelper::UTC);
+
+            return $date instanceof Carbon && $date->format('YmdHis') === $value
+                ? $date->format('Y-m-d H:i:s')
+                : null;
+        }
+
+        if (!$value instanceof \DateTimeInterface && !\is_string($value)) {
+            return null;
+        }
+
+        try {
+            return DateHelper::parseFloatingCarbon($value)->format('Y-m-d H:i:s');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Codes are generated in lowercase, and PostgreSQL compares strings case-sensitively.
+     *
+     * @return string|string[]
+     */
+    private function normalizeCodes(array|string $codes): array|string
+    {
+        if (\is_array($codes)) {
+            return array_values(array_map(static fn (mixed $code) => strtolower(trim((string) $code)), $codes));
+        }
+
+        return strtolower(trim($codes));
     }
 
     private function orderByCustomField(): bool
@@ -622,7 +774,10 @@ class OccurrenceQuery extends ActiveQuery
             'uid' => $model->uid,
             'eventId' => $model->event->id,
             'calendarId' => $model->calendar->id,
+            'recurrenceId' => $model->recurrenceId,
+            'code' => $model->code,
             'allDay' => $model->allDay,
+            'cancelled' => $model->cancelled,
             'startDate' => $model->startDate,
             'endDate' => $model->endDate,
             'dateCreated' => $model->dateCreated,

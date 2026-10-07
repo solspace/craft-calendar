@@ -59,7 +59,7 @@
         return String(event.id).split("-", 1)[0];
     }
 
-    function getOccurrenceDate(event) {
+    function getRecurrenceId(event) {
         const match = /^\d+-(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(String(event.id));
         if (!match) {
             return null;
@@ -367,7 +367,7 @@
             end: serializeEventDate(event.end, event.allDay),
             endDeltaSeconds: differenceInSeconds(event.end, oldEvent.end),
             eventId: getElementEventId(event),
-            occurrenceDate: getOccurrenceDate(oldEvent),
+            recurrenceId: getRecurrenceId(oldEvent),
             oldEnd: serializeEventDate(oldEvent.end, oldEvent.allDay),
             oldStart: serializeEventDate(oldEvent.start, oldEvent.allDay),
             scope: "series",
@@ -399,8 +399,8 @@
             return;
         }
 
-        const occurrenceDate = getOccurrenceDate(activeDetailEvent);
-        if (isOccurrence && !occurrenceDate) {
+        const recurrenceId = getRecurrenceId(activeDetailEvent);
+        if (isOccurrence && !recurrenceId) {
             showInlineError(detailsError, config.labels.couldNotDelete);
 
             return;
@@ -412,7 +412,7 @@
         try {
             await postAction("calendar/events-api/delete", {
                 eventId: getElementEventId(activeDetailEvent),
-                occurrenceDate,
+                recurrenceId,
                 scope,
                 siteId: config.siteId,
             }, config.labels.couldNotDelete);

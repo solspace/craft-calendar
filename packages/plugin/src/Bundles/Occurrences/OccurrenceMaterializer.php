@@ -15,12 +15,19 @@ class OccurrenceMaterializer
 {
     private const BATCH_INSERT_SIZE = 500;
 
+    public function __construct(
+        private OccurrenceCodes $codes = new OccurrenceCodes(),
+    ) {}
+
     public function regenerate(CalendarEvent $element, ?Carbon $generatedThrough = null): void
     {
         $this->delete($element);
         $this->materialize($element, $generatedThrough);
     }
 
+    /**
+     * Occurrence codes are deliberately kept, so an occurrence that comes back gets its old code.
+     */
     public function delete(CalendarEvent $element): void
     {
         OccurrenceWindowRecord::deleteAll(['eventId' => $element->id]);
@@ -31,10 +38,11 @@ class OccurrenceMaterializer
     {
         $rrule = $element->getRRuleObject();
         if (null === $rrule) {
-            $timeDelta = $element->startDate->diff($element->endDate);
-            $this->insertOccurrenceRows([
-                $this->createOccurrenceRow($element, $element->startDate, $timeDelta),
-            ]);
+            $this->insertOccurrences(
+                $element,
+                [$element->startDate],
+                $element->startDate->diff($element->endDate),
+            );
 
             return;
         }
@@ -94,27 +102,43 @@ class OccurrenceMaterializer
         ?Carbon $startsAfter = null,
     ): void {
         $timeDelta = $element->startDate->diff($element->endDate);
-        $rows = [];
+        $recurrenceIds = [];
         $seen = [];
 
-        foreach ($this->getOccurrenceDates($rrule, $generatedThrough, $startsAfter) as $occurrence) {
-            $key = $occurrence->format('Y-m-d H:i:s');
+        foreach ($this->getOccurrenceDates($rrule, $generatedThrough, $startsAfter) as $recurrenceId) {
+            $key = $recurrenceId->format('Y-m-d H:i:s');
             if (isset($seen[$key])) {
                 continue;
             }
 
             $seen[$key] = true;
-            $rows[] = $this->createOccurrenceRow($element, $occurrence, $timeDelta);
+            $recurrenceIds[] = $recurrenceId;
 
-            if (\count($rows) >= self::BATCH_INSERT_SIZE) {
-                $this->insertOccurrenceRows($rows);
-                $rows = [];
+            if (\count($recurrenceIds) >= self::BATCH_INSERT_SIZE) {
+                $this->insertOccurrences($element, $recurrenceIds, $timeDelta);
+                $recurrenceIds = [];
             }
         }
 
-        if ($rows) {
-            $this->insertOccurrenceRows($rows);
+        if ($recurrenceIds) {
+            $this->insertOccurrences($element, $recurrenceIds, $timeDelta);
         }
+    }
+
+    /**
+     * @param Carbon[] $recurrenceIds
+     */
+    private function insertOccurrences(CalendarEvent $element, array $recurrenceIds, \DateInterval $timeDelta): void
+    {
+        $keys = array_map(static fn (Carbon $recurrenceId) => Db::prepareDateForDb($recurrenceId), $recurrenceIds);
+        $codes = $this->codes->ensure((int) $element->id, $keys);
+
+        $rows = [];
+        foreach ($recurrenceIds as $index => $recurrenceId) {
+            $rows[] = $this->createOccurrenceRow($element, $recurrenceId, $codes[$keys[$index]], $timeDelta);
+        }
+
+        $this->insertOccurrenceRows($rows);
     }
 
     private function getOccurrenceDates(
@@ -137,20 +161,27 @@ class OccurrenceMaterializer
         }
     }
 
+    /**
+     * Until single occurrences can be edited, every occurrence starts at its recurrence ID.
+     */
     private function createOccurrenceRow(
         CalendarEvent $element,
-        Carbon $startDate,
+        Carbon $recurrenceId,
+        string $code,
         \DateInterval $timeDelta,
     ): array {
-        $endDate = $startDate->copy()->add($timeDelta);
+        $endDate = $recurrenceId->copy()->add($timeDelta);
         $now = Db::prepareDateForDb(new Carbon('now', DateHelper::UTC));
 
         return [
             (int) $element->id,
             (int) $element->calendarId,
-            Db::prepareDateForDb($startDate),
+            Db::prepareDateForDb($recurrenceId),
+            $code,
+            Db::prepareDateForDb($recurrenceId),
             Db::prepareDateForDb($endDate),
             (bool) $element->allDay,
+            false,
             $now,
             $now,
             StringHelper::UUID(),
@@ -167,7 +198,19 @@ class OccurrenceMaterializer
             ->createCommand()
             ->batchInsert(
                 OccurrenceRecord::TABLE,
-                ['eventId', 'calendarId', 'startDate', 'endDate', 'allDay', 'dateCreated', 'dateUpdated', 'uid'],
+                [
+                    'eventId',
+                    'calendarId',
+                    'recurrenceId',
+                    'code',
+                    'startDate',
+                    'endDate',
+                    'allDay',
+                    'cancelled',
+                    'dateCreated',
+                    'dateUpdated',
+                    'uid',
+                ],
                 $rows,
             )
             ->execute()

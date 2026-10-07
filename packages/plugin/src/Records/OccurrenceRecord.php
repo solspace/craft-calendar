@@ -7,12 +7,15 @@ use craft\db\ActiveRecord;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 
 /**
- * @property int    $id
- * @property int    $eventId
- * @property int    $calendarId
- * @property string $startDate
- * @property string $endDate
- * @property bool   $allDay
+ * @property int      $eventId
+ * @property int      $calendarId
+ * @property string   $recurrenceId
+ * @property string   $code
+ * @property string   $startDate
+ * @property string   $endDate
+ * @property bool     $allDay
+ * @property bool     $cancelled
+ * @property null|int $overrideId
  */
 class OccurrenceRecord extends ActiveRecord
 {

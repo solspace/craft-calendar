@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\migrations;
 
 use craft\base\Field;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodeGenerator;
 use Solspace\Calendar\Library\Migrations\ForeignKey;
 use Solspace\Calendar\Library\Migrations\StreamlinedInstallMigration;
 use Solspace\Calendar\Library\Migrations\Table;
@@ -51,6 +52,7 @@ class Install extends StreamlinedInstallMigration
                 ->addField('internalId', $this->primaryKey())
                 ->addField('id', $this->integer()->notNull())
                 ->addField('calendarId', $this->integer())
+                ->addField('seriesId', $this->integer())
                 ->addField('authorId', $this->integer())
                 ->addField('timezone', $this->string()->null())
                 ->addField('startDate', $this->dateTime()->notNull())
@@ -74,6 +76,7 @@ class Install extends StreamlinedInstallMigration
                 ->addIndex(['id'], true)
                 ->addIndex(['postDate'])
                 ->addIndex(['calendarId'])
+                ->addIndex(['seriesId'])
                 ->addIndex(['authorId'])
                 ->addIndex(['startDate'])
                 ->addIndex(['endDate'])
@@ -97,9 +100,13 @@ class Install extends StreamlinedInstallMigration
             (new Table('calendar_events_occurrences'))
                 ->addField('eventId', $this->integer()->notNull())
                 ->addField('calendarId', $this->integer()->notNull())
+                ->addField('recurrenceId', $this->dateTime()->notNull())
+                ->addField('code', $this->string(OccurrenceCodeGenerator::LENGTH)->notNull())
                 ->addField('startDate', $this->dateTime()->notNull())
                 ->addField('endDate', $this->dateTime())
                 ->addField('allDay', $this->boolean())
+                ->addField('cancelled', $this->boolean()->notNull()->defaultValue(false))
+                ->addField('overrideId', $this->integer())
                 ->addForeignKey(
                     'eventId',
                     'calendar_events',
@@ -122,7 +129,21 @@ class Install extends StreamlinedInstallMigration
                 ->addIndex(['startDate'], name: 'occurrences_start_date_idx')
                 ->addIndex(['endDate'], name: 'occurrences_end_date_idx')
                 ->addIndex(['startDate', 'endDate'], name: 'occurrences_start_end_idx')
-                ->addIndex(['endDate', 'startDate'], name: 'occurrences_end_start_idx'),
+                ->addIndex(['endDate', 'startDate'], name: 'occurrences_end_start_idx')
+                ->addIndex(['code'], true),
+
+            (new Table('calendar_occurrence_codes'))
+                ->addField('eventId', $this->integer()->notNull())
+                ->addField('recurrenceId', $this->dateTime()->notNull())
+                ->addField('code', $this->string(OccurrenceCodeGenerator::LENGTH)->notNull())
+                ->addForeignKey(
+                    'eventId',
+                    'calendar_events',
+                    'id',
+                    ForeignKey::CASCADE,
+                    name: 'occurrence_codes_event_id_fk',
+                )
+                ->addIndex(['code'], true),
 
             (new Table('calendar_events_occurrence_windows'))
                 ->addField('eventId', $this->integer()->notNull())
@@ -142,7 +163,8 @@ class Install extends StreamlinedInstallMigration
     {
         parent::afterUp();
 
-        $this->addPrimaryKey('pk_calendar_events_occurrences', '{{%calendar_events_occurrences}}', ['eventId', 'startDate']);
+        $this->addPrimaryKey('pk_calendar_events_occurrences', '{{%calendar_events_occurrences}}', ['eventId', 'recurrenceId']);
+        $this->addPrimaryKey('pk_calendar_occurrence_codes', '{{%calendar_occurrence_codes}}', ['eventId', 'recurrenceId']);
         $this->addPrimaryKey('pk_calendar_events_occurrence_windows', '{{%calendar_events_occurrence_windows}}', ['eventId']);
     }
 }

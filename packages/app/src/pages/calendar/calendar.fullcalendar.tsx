@@ -38,7 +38,7 @@ import {
 } from "./calendar.event-content";
 import {
   createCalendarEventsSource,
-  getOccurrenceDateFromId,
+  getRecurrenceIdFromId,
   moveEvent,
   resizeEvent,
 } from "./calendar.events";
@@ -341,7 +341,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
 
   const handleRecurringMove = useCallback(
     (arg: EventDropArg) => {
-      const occurrenceDate = getOccurrenceDateFromId(String(arg.event.id), arg.event.allDay);
+      const recurrenceId = getRecurrenceIdFromId(String(arg.event.id), arg.event.allDay);
 
       showPopover(
         <PopoverModifyEvent
@@ -349,7 +349,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
           onOnlyThisOccurrence={async () => {
             const wasMoved = await moveEvent({
               event: arg.event,
-              occurrenceDate,
+              recurrenceId,
               scope: "occurrence",
               refetchEvents,
               revert: arg.revert,
@@ -362,7 +362,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
           onAllOccurrences={async () => {
             const wasMoved = await moveEvent({
               event: arg.event,
-              occurrenceDate,
+              recurrenceId,
               scope: "series",
               refetchEvents,
               revert: arg.revert,

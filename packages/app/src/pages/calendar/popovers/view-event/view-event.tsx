@@ -1,5 +1,5 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
-import { deleteEvent, getOccurrenceDateFromId } from "@cal/pages/calendar/calendar.events";
+import { deleteEvent, getRecurrenceIdFromId } from "@cal/pages/calendar/calendar.events";
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
@@ -51,7 +51,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         buildPreviewRecurrence(event.extendedProps.rrule, event.start!.getTime() / 1000),
       )
     : null;
-  const occurrenceDate = getOccurrenceDateFromId(String(event.id), event.allDay);
+  const recurrenceId = getRecurrenceIdFromId(String(event.id), event.allDay);
   const dateFormat = event.allDay ? "PP" : "PPp";
 
   const handleDelete = async () => {
@@ -65,7 +65,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       const wasDeleted = await deleteEvent({
         event,
         scope: "series",
-        occurrenceDate,
+        recurrenceId,
         refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
       });
 
@@ -85,7 +85,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
           const wasDeleted = await deleteEvent({
             event,
             scope: "occurrence",
-            occurrenceDate,
+            recurrenceId,
             refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
           });
 
@@ -97,7 +97,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
           const wasDeleted = await deleteEvent({
             event,
             scope: "series",
-            occurrenceDate,
+            recurrenceId,
             refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
           });
 

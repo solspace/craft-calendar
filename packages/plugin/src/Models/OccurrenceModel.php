@@ -8,11 +8,23 @@ use Solspace\Calendar\Elements\Event;
 
 class OccurrenceModel extends Model
 {
+    /**
+     * The start the event's schedule originally produced for this occurrence.
+     * It never changes, even when the occurrence itself is moved.
+     */
+    public Carbon $recurrenceId;
+
+    /**
+     * Short code that identifies this occurrence across the whole install.
+     */
+    public string $code;
+
     public Carbon $startDate;
     public Carbon $startDateLocalized;
     public Carbon $endDate;
     public Carbon $endDateLocalized;
     public bool $allDay = false;
+    public bool $cancelled = false;
 
     public Event $event;
     public CalendarModel $calendar;
@@ -28,6 +40,14 @@ class OccurrenceModel extends Model
 
     public function getOccurrenceKey(): string
     {
-        return $this->event->id.'-'.$this->startDate->format('YmdHis');
+        return $this->event->id.'-'.$this->recurrenceId->format('YmdHis');
+    }
+
+    /**
+     * URL-friendly name: the date the occurrence takes place on, followed by its code.
+     */
+    public function getSlug(): string
+    {
+        return $this->startDate->format('Y-m-d').'-'.$this->code;
     }
 }

@@ -26,7 +26,7 @@ class OccurrenceQueryTest extends TestCase
             [
                 'and',
                 ['eventId' => 42],
-                ['startDate' => '2026-04-07 00:00:00'],
+                ['recurrenceId' => '2026-04-07 00:00:00'],
             ],
             $condition,
         );
@@ -37,6 +37,103 @@ class OccurrenceQueryTest extends TestCase
         $query = $this->makeQuery();
 
         self::assertNull($this->callBuildOccurrenceIdCondition($query, 'not-an-occurrence-id'));
+        self::assertNull($this->callBuildOccurrenceIdCondition($query, '42-20260231000000'));
+    }
+
+    /**
+     * @dataProvider \Solspace\Tests\Unit\Calendar\Elements\Db\OccurrenceQueryTest::recurrenceIdProvider
+     */
+    public function testNormalizeRecurrenceId(mixed $value, ?string $expected): void
+    {
+        $method = new \ReflectionMethod(OccurrenceQuery::class, 'normalizeRecurrenceId');
+
+        self::assertSame($expected, $method->invoke($this->makeQuery(), $value));
+    }
+
+    public static function recurrenceIdProvider(): array
+    {
+        return [
+            'occurrence ID form' => ['20261014100000', '2026-10-14 10:00:00'],
+            'date and time' => ['2026-10-14 10:00:00', '2026-10-14 10:00:00'],
+            'ISO date and time' => ['2026-10-14T10:00', '2026-10-14 10:00:00'],
+            'offset is ignored, because recurrence IDs are floating' => ['2026-10-14T10:00:00+02:00', '2026-10-14 10:00:00'],
+            'date only' => ['2026-10-14', '2026-10-14 00:00:00'],
+            'date object' => [new Carbon('2026-10-14 10:00:00', 'UTC'), '2026-10-14 10:00:00'],
+            'impossible date' => ['20261332100000', null],
+            'not a date' => ['not a date', null],
+            'unsupported type' => [20261014, null],
+        ];
+    }
+
+    public function testBuildSlugCondition(): void
+    {
+        self::assertSame(
+            [
+                'and',
+                ['code' => 'fq4yk'],
+                ['>=', 'startDate', '2026-10-14 00:00:00'],
+                ['<', 'startDate', '2026-10-15 00:00:00'],
+            ],
+            $this->callBuildSlugCondition('2026-10-14-fq4yk'),
+        );
+    }
+
+    public function testBuildSlugConditionIsCaseInsensitive(): void
+    {
+        self::assertSame(
+            $this->callBuildSlugCondition('2026-10-14-fq4yk'),
+            $this->callBuildSlugCondition(' 2026-10-14-FQ4YK '),
+        );
+    }
+
+    public function testBuildSlugConditionRejectsMalformedSlugs(): void
+    {
+        self::assertNull($this->callBuildSlugCondition('fq4yk'));
+        self::assertNull($this->callBuildSlugCondition('2026-10-14-fq4y'));
+        self::assertNull($this->callBuildSlugCondition('2026-10-14fq4yk'));
+        self::assertNull($this->callBuildSlugCondition('2026-02-30-fq4yk'));
+    }
+
+    public function testCodeFilterIsLowercased(): void
+    {
+        $query = $this->makeQuery()->code(' FQ4YK ');
+        $this->callApplyOccurrenceIdentityFilters($query);
+        self::assertSame(['code' => 'fq4yk'], $query->where);
+
+        $query = $this->makeQuery()->code(['FQ4YK', 'b7k2m']);
+        $this->callApplyOccurrenceIdentityFilters($query);
+        self::assertSame(['code' => ['fq4yk', 'b7k2m']], $query->where);
+    }
+
+    public function testCancelledFilter(): void
+    {
+        $all = $this->makeQuery();
+        $this->callApplyOccurrenceIdentityFilters($all);
+        self::assertNull($all->where);
+
+        $notCancelled = $this->makeQuery()->cancelled(false);
+        $this->callApplyOccurrenceIdentityFilters($notCancelled);
+        self::assertSame(['cancelled' => false], $notCancelled->where);
+    }
+
+    public function testRecurrenceIdFilterSkipsValuesThatCantMatch(): void
+    {
+        $query = $this->makeQuery()->recurrenceId(['20261014100000', 'not a date']);
+
+        $this->callApplyOccurrenceIdentityFilters($query);
+
+        self::assertSame(['or', ['recurrenceId' => '2026-10-14 10:00:00']], $query->where);
+    }
+
+    public function testFiltersMatchNothingWhenNoValueCanMatch(): void
+    {
+        $recurrenceId = $this->makeQuery()->recurrenceId('not a date');
+        $this->callApplyOccurrenceIdentityFilters($recurrenceId);
+        self::assertSame('0=1', $recurrenceId->where);
+
+        $slug = $this->makeQuery()->slug('not-a-slug');
+        $this->callApplyOccurrenceIdentityFilters($slug);
+        self::assertSame('0=1', $slug->where);
     }
 
     #[DataProvider('orderByCustomFieldProvider')]
@@ -85,6 +182,20 @@ class OccurrenceQueryTest extends TestCase
         $method = new \ReflectionMethod(OccurrenceQuery::class, 'buildOccurrenceIdCondition');
 
         return $method->invoke($query, $value);
+    }
+
+    private function callBuildSlugCondition(string $slug): ?array
+    {
+        $method = new \ReflectionMethod(OccurrenceQuery::class, 'buildSlugCondition');
+
+        return $method->invoke($this->makeQuery(), $slug);
+    }
+
+    private function callApplyOccurrenceIdentityFilters(OccurrenceQuery $query): void
+    {
+        $method = new \ReflectionMethod(OccurrenceQuery::class, 'applyOccurrenceIdentityFilters');
+
+        $method->invoke($query);
     }
 
     private function makeQuery(): OccurrenceQuery
