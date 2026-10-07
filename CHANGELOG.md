@@ -8,6 +8,7 @@
 - Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.
 
 ### Changed
+- Added a calendar color indicator beside the calendar name on the create/edit event page.
 - Clarified labels and descriptions in **General Settings**, **Event Settings**, **Guest Access**, and calendar creation and editing, including site settings, event titles, and ICS exports.
 - Refreshed the Month, Week, Day, Upcoming Events, Calendars, and event detail demos with more consistent navigation, responsive layouts, calendar color accents, and expandable sidebars.
 - Improved the Create Event demo with clearer date, time, and recurrence controls.
