@@ -3,6 +3,8 @@
 namespace Solspace\Calendar\Records;
 
 use craft\db\ActiveRecord;
+use craft\db\Query;
+use craft\db\Table;
 
 /**
  * Site-independent data of an occurrence override: which occurrence it belongs to,
@@ -25,5 +27,18 @@ class OccurrenceOverrideRecord extends ActiveRecord
     public static function tableName(): string
     {
         return self::TABLE;
+    }
+
+    /**
+     * The event's own overrides, orphaned ones included and trashed ones not, as `overrides`.
+     * Overrides a draft created belong to the draft until it's applied.
+     */
+    public static function findForEvent(int $eventId): Query
+    {
+        return (new Query())
+            ->from(['overrides' => self::TABLE])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[overrides.id]]')
+            ->where(['overrides.primaryOwnerId' => $eventId, 'elements.dateDeleted' => null])
+        ;
     }
 }

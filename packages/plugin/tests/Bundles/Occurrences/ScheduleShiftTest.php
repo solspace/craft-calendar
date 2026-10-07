@@ -56,4 +56,19 @@ class ScheduleShiftTest extends TestCase
     {
         self::assertNull(ScheduleShift::detect([], self::WEEKLY, true));
     }
+
+    public function testStartingLaterOnTheSamePatternIsNotAShift(): void
+    {
+        $before = ['2026-11-02 10:00:00', '2026-11-03 10:00:00', '2026-11-04 10:00:00', '2026-11-05 10:00:00'];
+        $after = ['2026-11-05 10:00:00', '2026-11-06 10:00:00', '2026-11-07 10:00:00', '2026-11-08 10:00:00', '2026-11-09 10:00:00'];
+
+        self::assertNull(ScheduleShift::detect($before, $after, false));
+    }
+
+    public function testStartingEarlierOnTheSamePatternIsNotAShift(): void
+    {
+        $after = ['2026-10-26 10:00:00', '2026-11-02 10:00:00', '2026-11-09 10:00:00', '2026-11-16 10:00:00'];
+
+        self::assertNull(ScheduleShift::detect(self::WEEKLY, $after, false));
+    }
 }

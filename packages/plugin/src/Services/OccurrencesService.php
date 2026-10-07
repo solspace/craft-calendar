@@ -5,18 +5,18 @@ namespace Solspace\Calendar\Services;
 use Carbon\Carbon;
 use craft\base\Component;
 use craft\base\Element;
-use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodes;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
+use Solspace\Calendar\Bundles\Occurrences\OverrideReconciler;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
-use Solspace\Calendar\Records\OccurrenceCodeRecord;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use yii\base\InvalidArgumentException;
 
@@ -28,13 +28,16 @@ use yii\base\InvalidArgumentException;
  */
 class OccurrencesService extends Component
 {
+    private OccurrenceCodes $codes;
+
     private OccurrenceMaterializer $materializer;
 
     public function init(): void
     {
         parent::init();
 
-        $this->materializer = new OccurrenceMaterializer();
+        $this->codes = new OccurrenceCodes();
+        $this->materializer = new OccurrenceMaterializer($this->codes);
     }
 
     /**
@@ -66,17 +69,7 @@ class OccurrencesService extends Component
      */
     public function getCode(Event $event, mixed $recurrenceId): ?string
     {
-        $code = (new Query())
-            ->select(['code'])
-            ->from(OccurrenceCodeRecord::TABLE)
-            ->where([
-                'eventId' => $event->getCanonicalId(),
-                'recurrenceId' => $this->normalizeRecurrenceId($recurrenceId),
-            ])
-            ->scalar()
-        ;
-
-        return false === $code ? null : (string) $code;
+        return $this->codes->find((int) $event->getCanonicalId(), $this->normalizeRecurrenceId($recurrenceId));
     }
 
     /**
@@ -232,6 +225,29 @@ class OccurrencesService extends Component
         }
 
         return true;
+    }
+
+    /**
+     * What saving a changed schedule would do to the event's edited occurrences: how far they'd all move,
+     * and the recurrence IDs of the ones the schedule would no longer have.
+     *
+     * @param Event $changed the event (or its draft) with the changed schedule, unsaved
+     *
+     * @return array{shift: ?int, orphaned: string[]}
+     */
+    public function previewSchedule(Event $changed): array
+    {
+        $overrides = array_map(
+            static fn (OccurrenceOverride $override) => [
+                'recurrenceId' => $override->recurrenceId->format(RecurrenceId::FORMAT),
+                'orphaned' => $override->orphaned,
+            ],
+            $this->getOverrides($changed),
+        );
+
+        return (new OverrideReconciler($this->materializer, $this->codes))
+            ->preview($changed, (int) $changed->getCanonicalId(), $overrides)
+        ;
     }
 
     /**

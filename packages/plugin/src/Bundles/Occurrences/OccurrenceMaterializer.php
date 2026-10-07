@@ -4,9 +4,7 @@ namespace Solspace\Calendar\Bundles\Occurrences;
 
 use Carbon\Carbon;
 use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use RRule\RRuleInterface;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Elements\OccurrenceOverride;
@@ -15,16 +13,31 @@ use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
 use Solspace\Calendar\Records\OccurrenceWindowRecord;
 
+/**
+ * Generates an event's occurrence rows from its schedule, with its overrides applied.
+ *
+ * Infinite schedules are generated up to a window, which queries extend as they reach further.
+ * The window never goes more than ten years ahead, so an infinite schedule's occurrences past that
+ * aren't listed and can't be edited.
+ */
 class OccurrenceMaterializer
 {
     private const BATCH_INSERT_SIZE = 500;
+    private const DEFAULT_WINDOW = '+2 years';
+    private const MAX_WINDOW = '+10 years';
+    private const LOCK_TIMEOUT = 15;
 
     public function __construct(
         private OccurrenceCodes $codes = new OccurrenceCodes(),
     ) {}
 
+    /**
+     * Replaces the event's occurrence rows. An infinite schedule is generated at least as far ahead as before.
+     */
     public function regenerate(CalendarEvent $element, ?Carbon $generatedThrough = null): void
     {
+        $generatedThrough = self::latest($generatedThrough, $this->getGeneratedThrough((int) $element->id));
+
         $this->delete($element);
         $this->materialize($element, $generatedThrough);
     }
@@ -38,28 +51,71 @@ class OccurrenceMaterializer
         OccurrenceRecord::deleteAll(['eventId' => $element->id]);
     }
 
-    public function materialize(CalendarEvent $element, ?Carbon $generatedThrough = null): void
+    /**
+     * Generates an infinite schedule further ahead, up to the limit.
+     */
+    public function extend(CalendarEvent $element, Carbon $generatedThrough): void
     {
-        $rrule = $element->getRRuleObject();
-        if (null === $rrule) {
-            $this->insertOccurrences(
-                $element,
-                [$element->startDate],
-                $element->startDate->diff($element->endDate),
-            );
+        $eventId = (int) $element->id;
+        $generatedThrough = min($generatedThrough, $this->getMaxGeneratedThrough());
 
+        if (!$element->getRRuleObject()?->isInfinite() || !$this->acquireLock($eventId)) {
             return;
         }
 
-        $windowEnd = $rrule->isInfinite()
-            ? ($generatedThrough ?? $this->defaultInfiniteGeneratedThrough())
-            : null;
+        try {
+            // It may have been saved since it was loaded, and its rows follow the saved schedule
+            $element = CalendarEvent::find()->id($eventId)->siteId($element->siteId)->status(null)->one();
+            $rrule = $element?->getRRuleObject();
+            if (!$rrule?->isInfinite()) {
+                return;
+            }
 
-        $this->insertGeneratedOccurrences($element, $rrule, $windowEnd);
+            $currentWindow = $this->getGeneratedThrough($eventId);
+            if (!$currentWindow) {
+                $this->regenerate($element, $generatedThrough);
 
-        if ($windowEnd) {
-            $this->insertOccurrenceWindowRow($element, $windowEnd);
+                return;
+            }
+
+            if ($currentWindow >= $generatedThrough) {
+                return;
+            }
+
+            // So that a request cut short doesn't leave rows past the window behind
+            $transaction = \Craft::$app->getDb()->beginTransaction();
+
+            try {
+                $this->insertGeneratedOccurrences($element, $rrule, $generatedThrough, $currentWindow);
+                Db::update(
+                    OccurrenceWindowRecord::TABLE,
+                    ['generatedThrough' => $generatedThrough->format(RecurrenceId::FORMAT)],
+                    ['eventId' => $eventId],
+                );
+
+                $transaction->commit();
+            } catch (\Throwable $exception) {
+                $transaction->rollBack();
+
+                throw $exception;
+            }
+        } finally {
+            $this->releaseLock($eventId);
         }
+    }
+
+    /**
+     * Saving an event regenerates its rows and extending its window adds to them, so both hold this lock.
+     * Craft keeps it until the current transaction ends, so the changes are committed by the time it's free.
+     */
+    public function acquireLock(int $eventId): bool
+    {
+        return \Craft::$app->getMutex()->acquire(self::lockName($eventId), self::LOCK_TIMEOUT);
+    }
+
+    public function releaseLock(int $eventId): void
+    {
+        \Craft::$app->getMutex()->release(self::lockName($eventId));
     }
 
     /**
@@ -67,21 +123,16 @@ class OccurrenceMaterializer
      */
     public function refreshOccurrence(CalendarEvent $element, Carbon $recurrenceId): void
     {
-        $key = Db::prepareDateForDb($recurrenceId);
+        $key = $recurrenceId->format(RecurrenceId::FORMAT);
         $condition = ['eventId' => $element->id, 'recurrenceId' => $key];
 
         if (!(new Query())->from(OccurrenceRecord::TABLE)->where($condition)->exists()) {
             return;
         }
 
-        $occurrence = $this->resolveOccurrence(
-            $element,
-            $recurrenceId,
-            $element->startDate->diff($element->endDate),
-            $this->findOverrides((int) $element->id, [$key])[$key] ?? null,
-        );
+        $occurrence = $this->resolveOccurrence($element, $recurrenceId, $this->findOverrides((int) $element->id, [$key])[$key] ?? null);
 
-        Db::update(OccurrenceRecord::TABLE, $occurrence, $condition);
+        Db::update(OccurrenceRecord::TABLE, self::formatOccurrence($occurrence), $condition);
     }
 
     /**
@@ -92,29 +143,21 @@ class OccurrenceMaterializer
      */
     public function describeOccurrence(CalendarEvent $element, Carbon $recurrenceId, ?OccurrenceOverride $override): array
     {
-        $occurrence = $this->resolveOccurrence(
-            $element,
-            $recurrenceId,
-            $element->startDate->diff($element->endDate),
-            $override ? [
-                'id' => $override->id,
-                'startDate' => $override->startDate?->format(RecurrenceId::FORMAT),
-                'endDate' => $override->endDate?->format(RecurrenceId::FORMAT),
-                'allDay' => $override->allDay,
-                'cancelled' => $override->cancelled,
-            ] : null,
-        );
+        $occurrence = $this->resolveOccurrence($element, $recurrenceId, $override ? [
+            'id' => $override->id,
+            'startDate' => $override->startDate,
+            'endDate' => $override->endDate,
+            'allDay' => $override->allDay,
+            'cancelled' => $override->cancelled,
+        ] : null);
 
-        return [
-            'startDate' => new Carbon($occurrence['startDate'], DateHelper::UTC),
-            'endDate' => new Carbon($occurrence['endDate'], DateHelper::UTC),
-            'allDay' => $occurrence['allDay'],
-            'cancelled' => $occurrence['cancelled'],
-        ];
+        unset($occurrence['overrideId']);
+
+        return $occurrence;
     }
 
     /**
-     * The first recurrence IDs the event's schedule produces, DB-formatted.
+     * The first recurrence IDs the event's schedule produces.
      *
      * @return string[]
      */
@@ -122,7 +165,7 @@ class OccurrenceMaterializer
     {
         $rrule = $element->getRRuleObject();
         if (null === $rrule) {
-            return [Db::prepareDateForDb($element->startDate)];
+            return [DateHelper::parseFloatingCarbon($element->startDate)->format(RecurrenceId::FORMAT)];
         }
 
         $recurrenceIds = [];
@@ -131,7 +174,7 @@ class OccurrenceMaterializer
                 break;
             }
 
-            $key = Db::prepareDateForDb($date);
+            $key = $date->format(RecurrenceId::FORMAT);
             $recurrenceIds[$key] = $key;
         }
 
@@ -139,11 +182,44 @@ class OccurrenceMaterializer
     }
 
     /**
-     * Whether the event's occurrence rows hold its whole schedule. Infinite schedules are only generated so far ahead.
+     * The first and last recurrence IDs the event's schedule produces. The last is null for an infinite schedule.
+     *
+     * @return array{0: ?string, 1: ?string}
      */
-    public function hasAllOccurrences(int $eventId): bool
+    public function getScheduleSpan(CalendarEvent $element): array
     {
-        return !OccurrenceWindowRecord::find()->where(['eventId' => $eventId])->exists();
+        $rrule = $element->getRRuleObject();
+        if (null === $rrule) {
+            $recurrenceId = DateHelper::parseFloatingCarbon($element->startDate)->format(RecurrenceId::FORMAT);
+
+            return [$recurrenceId, $recurrenceId];
+        }
+
+        if ($rrule->isInfinite()) {
+            return [$this->recurrenceIds($element, 1)[0] ?? null, null];
+        }
+
+        $first = $last = null;
+        foreach ($this->getOccurrenceDates($rrule) as $date) {
+            $first ??= $date;
+            $last = $date;
+        }
+
+        return [$first?->format(RecurrenceId::FORMAT), $last?->format(RecurrenceId::FORMAT)];
+    }
+
+    /**
+     * How far ahead the event's rows go, or null when they hold its whole schedule.
+     */
+    public function getGeneratedThrough(int $eventId): ?Carbon
+    {
+        $generatedThrough = OccurrenceWindowRecord::find()
+            ->select(['generatedThrough'])
+            ->where(['eventId' => $eventId])
+            ->scalar()
+        ;
+
+        return $generatedThrough ? RecurrenceId::toCarbon($generatedThrough) : null;
     }
 
     /**
@@ -151,58 +227,66 @@ class OccurrenceMaterializer
      */
     public function producesRecurrenceId(CalendarEvent $element, Carbon $recurrenceId): bool
     {
-        $key = Db::prepareDateForDb($recurrenceId);
-
         $rrule = $element->getRRuleObject();
         if (null === $rrule) {
-            return Db::prepareDateForDb($element->startDate) === $key;
+            return DateHelper::parseFloatingCarbon($element->startDate)->format(RecurrenceId::FORMAT) === $recurrenceId->format(RecurrenceId::FORMAT);
         }
 
-        foreach ($this->getOccurrenceDates($rrule) as $date) {
-            $current = Db::prepareDateForDb($date);
-            if ($current >= $key) {
-                return $current === $key;
-            }
+        // Never generated, and rules that can't be checked without iterating would take as long as it is far
+        if ($rrule->isInfinite() && $recurrenceId > $this->getMaxGeneratedThrough()) {
+            return false;
         }
 
-        return false;
+        return $rrule->occursAt(RecurrenceId::toCarbon($recurrenceId->format(RecurrenceId::FORMAT)));
     }
 
-    public function defaultInfiniteGeneratedThrough(): Carbon
-    {
-        return new Carbon('+2 years', DateHelper::UTC);
-    }
-
-    public function extend(CalendarEvent $element, Carbon $generatedThrough): void
+    private function materialize(CalendarEvent $element, ?Carbon $generatedThrough): void
     {
         $rrule = $element->getRRuleObject();
-        if (null === $rrule || !$rrule->isInfinite()) {
+        if (null === $rrule) {
+            $this->insertOccurrences($element, [DateHelper::parseFloatingCarbon($element->startDate)]);
+
             return;
         }
 
-        $lockName = 'calendar-occurrences:'.$element->id;
-        $mutex = \Craft::$app->getMutex();
-        if (!$mutex->acquire($lockName, 15)) {
+        if (!$rrule->isInfinite()) {
+            $this->insertGeneratedOccurrences($element, $rrule);
+
             return;
         }
 
-        try {
-            $currentWindow = $this->getGeneratedThrough($element);
-            if ($currentWindow && $currentWindow >= $generatedThrough) {
-                return;
-            }
+        $generatedThrough = $this->resolveWindow($element, $generatedThrough);
 
-            if (!$currentWindow) {
-                $this->regenerate($element, $generatedThrough);
+        $this->insertGeneratedOccurrences($element, $rrule, $generatedThrough);
+        Db::insert(OccurrenceWindowRecord::TABLE, [
+            'eventId' => (int) $element->id,
+            'generatedThrough' => $generatedThrough->format(RecurrenceId::FORMAT),
+        ]);
+    }
 
-                return;
-            }
+    /**
+     * The default window, or further when the schedule was generated further already or one of its
+     * overrides is further ahead, so an occurrence moved closer doesn't disappear. Never past the limit.
+     */
+    private function resolveWindow(CalendarEvent $element, ?Carbon $generatedThrough): Carbon
+    {
+        $latestOverride = OccurrenceOverrideRecord::findForEvent((int) $element->id)
+            ->andWhere(['overrides.orphaned' => false])
+            ->max('[[overrides.recurrenceId]]')
+        ;
 
-            $this->insertGeneratedOccurrences($element, $rrule, $generatedThrough, $currentWindow);
-            $this->updateOccurrenceWindowRow($element, $generatedThrough);
-        } finally {
-            $mutex->release($lockName);
-        }
+        $window = self::latest(
+            new Carbon(self::DEFAULT_WINDOW, DateHelper::UTC),
+            $generatedThrough,
+            $latestOverride ? RecurrenceId::toCarbon($latestOverride) : null,
+        );
+
+        return min($window, $this->getMaxGeneratedThrough());
+    }
+
+    private function getMaxGeneratedThrough(): Carbon
+    {
+        return new Carbon(self::MAX_WINDOW, DateHelper::UTC);
     }
 
     private function insertGeneratedOccurrences(
@@ -211,12 +295,11 @@ class OccurrenceMaterializer
         ?Carbon $generatedThrough = null,
         ?Carbon $startsAfter = null,
     ): void {
-        $timeDelta = $element->startDate->diff($element->endDate);
         $recurrenceIds = [];
         $seen = [];
 
         foreach ($this->getOccurrenceDates($rrule, $generatedThrough, $startsAfter) as $recurrenceId) {
-            $key = $recurrenceId->format('Y-m-d H:i:s');
+            $key = $recurrenceId->format(RecurrenceId::FORMAT);
             if (isset($seen[$key])) {
                 continue;
             }
@@ -225,41 +308,64 @@ class OccurrenceMaterializer
             $recurrenceIds[] = $recurrenceId;
 
             if (\count($recurrenceIds) >= self::BATCH_INSERT_SIZE) {
-                $this->insertOccurrences($element, $recurrenceIds, $timeDelta);
+                $this->insertOccurrences($element, $recurrenceIds);
                 $recurrenceIds = [];
             }
         }
 
         if ($recurrenceIds) {
-            $this->insertOccurrences($element, $recurrenceIds, $timeDelta);
+            $this->insertOccurrences($element, $recurrenceIds);
         }
     }
 
     /**
      * @param Carbon[] $recurrenceIds
      */
-    private function insertOccurrences(CalendarEvent $element, array $recurrenceIds, \DateInterval $timeDelta): void
+    private function insertOccurrences(CalendarEvent $element, array $recurrenceIds): void
     {
-        $keys = array_map(static fn (Carbon $recurrenceId) => Db::prepareDateForDb($recurrenceId), $recurrenceIds);
+        $keys = array_map(static fn (Carbon $recurrenceId) => $recurrenceId->format(RecurrenceId::FORMAT), $recurrenceIds);
         $codes = $this->codes->ensure((int) $element->id, $keys);
         $overrides = $this->findOverrides((int) $element->id, $keys);
 
         $rows = [];
         foreach ($recurrenceIds as $index => $recurrenceId) {
             $key = $keys[$index];
-            $rows[] = $this->createOccurrenceRow($element, $recurrenceId, $codes[$key], $timeDelta, $overrides[$key] ?? null);
+            $occurrence = self::formatOccurrence($this->resolveOccurrence($element, $recurrenceId, $overrides[$key] ?? null));
+
+            $rows[] = [
+                (int) $element->id,
+                (int) $element->calendarId,
+                $key,
+                $codes[$key],
+                $occurrence['startDate'],
+                $occurrence['endDate'],
+                $occurrence['allDay'],
+                $occurrence['cancelled'],
+                $occurrence['overrideId'],
+            ];
         }
 
-        $this->insertOccurrenceRows($rows);
+        \Craft::$app->getDb()
+            ->createCommand()
+            ->batchInsert(
+                OccurrenceRecord::TABLE,
+                ['eventId', 'calendarId', 'recurrenceId', 'code', 'startDate', 'endDate', 'allDay', 'cancelled', 'overrideId'],
+                $rows,
+            )
+            ->execute()
+        ;
     }
 
+    /**
+     * @return iterable<Carbon>
+     */
     private function getOccurrenceDates(
         RRuleInterface $rrule,
         ?Carbon $generatedThrough = null,
         ?Carbon $startsAfter = null,
     ): iterable {
         foreach ($rrule as $occurrence) {
-            $occurrence = new Carbon($occurrence->format('Y-m-d H:i:s'), DateHelper::UTC);
+            $occurrence = DateHelper::parseFloatingCarbon($occurrence);
 
             if ($startsAfter && $occurrence <= $startsAfter) {
                 continue;
@@ -273,59 +379,32 @@ class OccurrenceMaterializer
         }
     }
 
-    private function createOccurrenceRow(
-        CalendarEvent $element,
-        Carbon $recurrenceId,
-        string $code,
-        \DateInterval $timeDelta,
-        ?array $override,
-    ): array {
-        $occurrence = $this->resolveOccurrence($element, $recurrenceId, $timeDelta, $override);
-        $now = Db::prepareDateForDb(new Carbon('now', DateHelper::UTC));
-
-        return [
-            (int) $element->id,
-            (int) $element->calendarId,
-            Db::prepareDateForDb($recurrenceId),
-            $code,
-            $occurrence['startDate'],
-            $occurrence['endDate'],
-            $occurrence['allDay'],
-            $occurrence['cancelled'],
-            $occurrence['overrideId'],
-            $now,
-            $now,
-            StringHelper::UUID(),
-        ];
-    }
-
     /**
      * An occurrence starts at its recurrence ID and lasts as long as the event,
      * unless its override gives it its own times.
      *
-     * @return array{startDate: string, endDate: string, allDay: bool, cancelled: bool, overrideId: ?int}
+     * @param null|array{id: mixed, startDate: mixed, endDate: mixed, allDay: mixed, cancelled: mixed} $override
+     *                                                                                                           stored values or the element's own
+     *
+     * @return array{startDate: Carbon, endDate: Carbon, allDay: bool, cancelled: bool, overrideId: ?int}
      */
-    private function resolveOccurrence(
-        CalendarEvent $element,
-        Carbon $recurrenceId,
-        \DateInterval $timeDelta,
-        ?array $override,
-    ): array {
+    private function resolveOccurrence(CalendarEvent $element, Carbon $recurrenceId, ?array $override): array
+    {
         $startDate = $recurrenceId;
-        $allDay = (bool) $element->allDay;
         $endDate = null;
+        $allDay = (bool) $element->allDay;
 
         if (null !== ($override['startDate'] ?? null)) {
-            $startDate = new Carbon($override['startDate'], DateHelper::UTC);
-            $endDate = null !== $override['endDate'] ? new Carbon($override['endDate'], DateHelper::UTC) : null;
+            $startDate = DateHelper::parseFloatingCarbon($override['startDate']);
+            $endDate = null !== $override['endDate'] ? DateHelper::parseFloatingCarbon($override['endDate']) : null;
             $allDay = null !== $override['allDay'] ? (bool) $override['allDay'] : $allDay;
         }
 
-        $endDate ??= $startDate->copy()->add($timeDelta);
+        $endDate ??= $startDate->copy()->add($element->startDate->diff($element->endDate));
 
         return [
-            'startDate' => Db::prepareDateForDb($startDate),
-            'endDate' => Db::prepareDateForDb($endDate),
+            'startDate' => $startDate,
+            'endDate' => $endDate,
             'allDay' => $allDay,
             'cancelled' => (bool) ($override['cancelled'] ?? false),
             'overrideId' => isset($override['id']) ? (int) $override['id'] : null,
@@ -335,11 +414,11 @@ class OccurrenceMaterializer
     /**
      * @param string[] $recurrenceIds
      *
-     * @return array<string, array> the event's live overrides, by recurrence ID
+     * @return array<string, array> the event's overrides, by recurrence ID
      */
     private function findOverrides(int $eventId, array $recurrenceIds): array
     {
-        return (new Query())
+        return OccurrenceOverrideRecord::findForEvent($eventId)
             ->select([
                 'overrides.id',
                 'overrides.recurrenceId',
@@ -348,13 +427,7 @@ class OccurrenceMaterializer
                 'overrides.allDay',
                 'overrides.cancelled',
             ])
-            ->from(['overrides' => OccurrenceOverrideRecord::TABLE])
-            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[overrides.id]]')
-            ->where([
-                'overrides.primaryOwnerId' => $eventId,
-                'overrides.recurrenceId' => $recurrenceIds,
-                'elements.dateDeleted' => null,
-            ])
+            ->andWhere(['overrides.recurrenceId' => $recurrenceIds])
             // If there are ever two for one occurrence, the oldest one wins
             ->orderBy(['overrides.id' => \SORT_DESC])
             ->indexBy('recurrenceId')
@@ -362,80 +435,23 @@ class OccurrenceMaterializer
         ;
     }
 
-    private function insertOccurrenceRows(array $rows): void
+    private static function formatOccurrence(array $occurrence): array
     {
-        if (!$rows) {
-            return;
-        }
-
-        \Craft::$app->db
-            ->createCommand()
-            ->batchInsert(
-                OccurrenceRecord::TABLE,
-                [
-                    'eventId',
-                    'calendarId',
-                    'recurrenceId',
-                    'code',
-                    'startDate',
-                    'endDate',
-                    'allDay',
-                    'cancelled',
-                    'overrideId',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                ],
-                $rows,
-            )
-            ->execute()
-        ;
+        return [
+            'startDate' => $occurrence['startDate']->format(RecurrenceId::FORMAT),
+            'endDate' => $occurrence['endDate']->format(RecurrenceId::FORMAT),
+        ] + $occurrence;
     }
 
-    private function getGeneratedThrough(CalendarEvent $element): ?Carbon
+    private static function latest(?Carbon ...$dates): ?Carbon
     {
-        $generatedThrough = OccurrenceWindowRecord::find()
-            ->select(['generatedThrough'])
-            ->where(['eventId' => $element->id])
-            ->scalar()
-        ;
+        $dates = array_filter($dates);
 
-        return $generatedThrough ? new Carbon($generatedThrough, DateHelper::UTC) : null;
+        return $dates ? max($dates) : null;
     }
 
-    private function insertOccurrenceWindowRow(CalendarEvent $element, Carbon $generatedThrough): void
+    private static function lockName(int $eventId): string
     {
-        $now = Db::prepareDateForDb(new Carbon('now', DateHelper::UTC));
-
-        \Craft::$app->db
-            ->createCommand()
-            ->insert(
-                OccurrenceWindowRecord::TABLE,
-                [
-                    'eventId' => (int) $element->id,
-                    'generatedThrough' => Db::prepareDateForDb($generatedThrough),
-                    'dateCreated' => $now,
-                    'dateUpdated' => $now,
-                    'uid' => StringHelper::UUID(),
-                ],
-            )
-            ->execute()
-        ;
-    }
-
-    private function updateOccurrenceWindowRow(CalendarEvent $element, Carbon $generatedThrough): void
-    {
-        \Craft::$app->db
-            ->createCommand()
-            ->update(
-                OccurrenceWindowRecord::TABLE,
-                [
-                    'generatedThrough' => Db::prepareDateForDb($generatedThrough),
-                    'dateUpdated' => Db::prepareDateForDb(new Carbon('now', DateHelper::UTC)),
-                ],
-                ['eventId' => $element->id],
-            )
-            ->execute()
-        ;
+        return 'calendar-occurrences:'.$eventId;
     }
 }

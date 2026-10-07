@@ -9,6 +9,7 @@ use craft\db\Table;
 use craft\elements\ElementCollection;
 use craft\errors\InvalidElementException;
 use craft\helpers\Db;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodes;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
 use Solspace\Calendar\Bundles\Occurrences\OverrideReconciler;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
@@ -18,7 +19,6 @@ use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
 use Solspace\Calendar\Records\EventSplitRecord;
-use Solspace\Calendar\Records\OccurrenceCodeRecord;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
 use yii\base\InvalidArgumentException;
@@ -34,13 +34,16 @@ class SeriesService extends Component
 {
     private OccurrenceMaterializer $materializer;
 
+    private OccurrenceCodes $codes;
+
     private RecurringEventMutationHelper $mutationHelper;
 
     public function init(): void
     {
         parent::init();
 
-        $this->materializer = new OccurrenceMaterializer();
+        $this->codes = new OccurrenceCodes();
+        $this->materializer = new OccurrenceMaterializer($this->codes);
         $this->mutationHelper = new RecurringEventMutationHelper();
     }
 
@@ -160,7 +163,7 @@ class SeriesService extends Component
 
             Db::insert(EventSplitRecord::TABLE, [
                 'eventId' => $draft->id,
-                'splitAt' => Db::prepareDateForDb($splitAt),
+                'splitAt' => $splitAt->format(RecurrenceId::FORMAT),
             ]);
 
             // The earlier occurrences' overrides go to the earlier part when the draft is applied, so
@@ -196,7 +199,7 @@ class SeriesService extends Component
             ->scalar()
         ;
 
-        return $splitAt ? new Carbon($splitAt, DateHelper::UTC) : null;
+        return $splitAt ? RecurrenceId::toCarbon($splitAt) : null;
     }
 
     /**
@@ -272,14 +275,13 @@ class SeriesService extends Component
             ['seriesId' => $source->seriesId ?? (int) $source->id] + $this->earlierPartAttributes($source, $split),
         ));
 
-        $before = ['<', 'recurrenceId', Db::prepareDateForDb($splitAt)];
+        $splitKey = $splitAt->format(RecurrenceId::FORMAT);
 
         // Saving the copy gave its occurrences new codes; the earlier occurrences' own codes replace them.
         // Their rows go first, because codes are unique across occurrence rows too.
         $this->materializer->delete($fork);
-        Db::delete(OccurrenceCodeRecord::TABLE, ['eventId' => $fork->id]);
-        Db::delete(OccurrenceRecord::TABLE, ['and', ['eventId' => $source->id], $before]);
-        Db::update(OccurrenceCodeRecord::TABLE, ['eventId' => $fork->id], ['and', ['eventId' => $source->id], $before]);
+        Db::delete(OccurrenceRecord::TABLE, ['and', ['eventId' => $source->id], ['<', 'recurrenceId', $splitKey]]);
+        $this->codes->moveBefore((int) $source->id, (int) $fork->id, $splitKey);
 
         $overrideIds = $this->findOverrideIds((int) $source->id, '<', $splitAt);
         if ($overrideIds) {
@@ -290,7 +292,7 @@ class SeriesService extends Component
             Db::delete(Table::ELEMENTS_OWNERS, ['and', ['elementId' => $overrideIds], ['not', ['ownerId' => $fork->id]]]);
         }
 
-        (new OverrideReconciler($this->materializer))->reconcile($fork);
+        (new OverrideReconciler($this->materializer, $this->codes))->reconcile($fork);
         $this->materializer->regenerate($fork);
         \Craft::$app->getElements()->invalidateCachesForElement($fork);
 
@@ -386,7 +388,7 @@ class SeriesService extends Component
             ->select(['id'])
             ->from(OccurrenceOverrideRecord::TABLE)
             ->where(['primaryOwnerId' => $eventId])
-            ->andWhere([$operator, 'recurrenceId', Db::prepareDateForDb($splitAt)])
+            ->andWhere([$operator, 'recurrenceId', $splitAt->format(RecurrenceId::FORMAT)])
             ->column());
     }
 

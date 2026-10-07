@@ -31,6 +31,7 @@ class RecurringEventMutationHelper
         $event->startDate = $this->normalizeDate($originalStart->copy()->addSeconds($deltaSeconds), $allDay);
         $event->endDate = $this->normalizeEndDate($originalEnd->copy()->addSeconds($deltaSeconds), $allDay);
         $event->allDay = $allDay;
+        $event->setScheduleShift($deltaSeconds);
         $event->rrule = $this->moveSeriesRRule(
             $event->getRRuleRFCString(),
             $originalStart,
@@ -52,6 +53,7 @@ class RecurringEventMutationHelper
         $event->startDate = $this->normalizeDate($originalStart->copy()->addSeconds($startDeltaSeconds), $allDay);
         $event->endDate = $this->normalizeEndDate($originalEnd->copy()->addSeconds($endDeltaSeconds), $allDay);
         $event->allDay = $allDay;
+        $event->setScheduleShift($startDeltaSeconds);
         $event->rrule = $this->resizeSeriesRRule(
             $event->getRRuleRFCString(),
             $originalStart,
@@ -233,7 +235,7 @@ class RecurringEventMutationHelper
             ];
         }
 
-        $parsed = RRule::createFromRfcString($rruleString, true);
+        $parsed = RRuleParser::parse($rruleString);
 
         if ($parsed instanceof RSet) {
             return [

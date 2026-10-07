@@ -2,8 +2,6 @@
 
 namespace Solspace\Calendar\Library\RRule;
 
-use RRule\RRule;
-
 final class EventRecurrenceValidator
 {
     private const REPEAT_TYPES = ['NEVER', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'CUSTOM'];
@@ -34,7 +32,7 @@ final class EventRecurrenceValidator
             }
 
             try {
-                $rules = RRule::createFromRfcString($rrule, true)->getRRules();
+                $rules = RRuleParser::parse($rrule)->getRRules();
             } catch (\Throwable) {
                 $errors['rrule'][] = 'Recurrence rule is invalid.';
             }

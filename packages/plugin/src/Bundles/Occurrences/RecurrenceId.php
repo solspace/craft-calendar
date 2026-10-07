@@ -42,4 +42,9 @@ class RecurrenceId
     {
         return new Carbon($recurrenceId, DateHelper::UTC);
     }
+
+    public static function shift(string $recurrenceId, int $seconds): string
+    {
+        return self::toCarbon($recurrenceId)->addSeconds($seconds)->format(self::FORMAT);
+    }
 }

@@ -2,50 +2,65 @@
 
 namespace Solspace\Calendar\Bundles\Occurrences;
 
-use Carbon\Carbon;
 use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\Db;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
-use Solspace\Calendar\Library\Helpers\DateHelper;
-use Solspace\Calendar\Records\OccurrenceCodeRecord;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Records\OccurrenceRecord;
 
 /**
- * Keeps an event's overrides on their occurrences when its schedule changes.
+ * Keeps an event's overrides and occurrence codes on their occurrences when its schedule changes.
  *
- * When every occurrence moved the same distance, overrides and occurrence codes move with them.
- * Otherwise an override whose occurrence the schedule no longer produces is marked orphaned,
- * and un-marked again once the schedule brings the occurrence back.
+ * When the whole schedule moved by the same distance (see ScheduleShift), codes move with it, and so do the
+ * overrides of the old schedule: those of its occurrences, and orphaned ones, which are kept for occurrences the
+ * schedule may bring back. Other overrides were made for the new schedule, like the ones a draft with the new
+ * schedule brings along when it's applied, so they stay where they are.
+ *
+ * Then an override whose occurrence the schedule no longer produces is marked orphaned, and un-marked
+ * again once the schedule brings the occurrence back.
  */
 class OverrideReconciler
 {
     public function __construct(
         private OccurrenceMaterializer $materializer = new OccurrenceMaterializer(),
+        private OccurrenceCodes $codes = new OccurrenceCodes(),
     ) {}
 
     /**
      * Runs before the event's occurrence rows are regenerated, while they still describe its previous schedule.
+     *
+     * @param null|int $shift seconds the whole schedule was moved by, when the change says so itself
      */
-    public function reconcile(CalendarEvent $event): void
+    public function reconcile(CalendarEvent $event, ?int $shift = null): void
     {
-        $overrides = $this->findOverrides((int) $event->id);
-        if (!$overrides) {
-            return;
+        $eventId = (int) $event->id;
+        $previous = $this->findPreviousSchedule($eventId);
+        $shift ??= $this->detectShift($event, $previous);
+
+        if ($shift) {
+            $this->codes->shift($eventId, $shift);
         }
 
-        $shift = $this->detectShift($event, (int) $event->id);
-        if (null !== $shift) {
-            $overrides = $this->shiftOverrides($overrides, $shift);
-            $this->shiftCodes((int) $event->id, $shift);
-        }
+        $overrides = OccurrenceOverrideRecord::findForEvent($eventId)
+            ->select(['overrides.id', 'overrides.recurrenceId', 'overrides.orphaned'])
+            ->all()
+        ;
 
         foreach ($overrides as $override) {
-            $orphaned = !$this->materializer->producesRecurrenceId($event, new Carbon($override['recurrenceId'], DateHelper::UTC));
+            $changes = [];
+            $recurrenceId = $override['recurrenceId'];
 
+            if ($shift && $this->belongsToPreviousSchedule($override, $previous)) {
+                $recurrenceId = $changes['recurrenceId'] = RecurrenceId::shift($recurrenceId, $shift);
+            }
+
+            $orphaned = !$this->materializer->producesRecurrenceId($event, RecurrenceId::toCarbon($recurrenceId));
             if ($orphaned !== (bool) $override['orphaned']) {
-                Db::update(OccurrenceOverrideRecord::TABLE, ['orphaned' => $orphaned], ['id' => $override['id']]);
+                $changes['orphaned'] = $orphaned;
+            }
+
+            if ($changes) {
+                Db::update(OccurrenceOverrideRecord::TABLE, $changes, ['id' => $override['id']]);
             }
         }
     }
@@ -54,115 +69,75 @@ class OverrideReconciler
      * What saving a changed schedule would do to an event's overrides, without saving anything.
      * Compares with the live event's occurrences, the same way saving (or applying a draft) does.
      *
-     * @param string[] $recurrenceIds the overrides' recurrence IDs
+     * @param array<array{recurrenceId: string, orphaned: bool}> $overrides
      *
      * @return array{shift: ?int, orphaned: string[]} the seconds every occurrence would move by, and the
      *                                                recurrence IDs of the overrides that would be orphaned
      */
-    public function preview(CalendarEvent $changed, int $liveEventId, array $recurrenceIds): array
+    public function preview(CalendarEvent $changed, int $liveEventId, array $overrides): array
     {
-        $shift = $this->detectShift($changed, $liveEventId);
+        $previous = $this->findPreviousSchedule($liveEventId);
+        $shift = $this->detectShift($changed, $previous);
         $orphaned = [];
 
-        foreach ($recurrenceIds as $recurrenceId) {
-            $date = new Carbon($recurrenceId, DateHelper::UTC);
-            if (null !== $shift) {
-                $date->addSeconds($shift);
-            }
+        foreach ($overrides as $override) {
+            $recurrenceId = $shift && $this->belongsToPreviousSchedule($override, $previous)
+                ? RecurrenceId::shift($override['recurrenceId'], $shift)
+                : $override['recurrenceId'];
 
-            if (!$this->materializer->producesRecurrenceId($changed, $date)) {
-                $orphaned[] = $recurrenceId;
+            if (!$this->materializer->producesRecurrenceId($changed, RecurrenceId::toCarbon($recurrenceId))) {
+                $orphaned[] = $override['recurrenceId'];
             }
         }
 
         return ['shift' => $shift, 'orphaned' => $orphaned];
     }
 
-    private function detectShift(CalendarEvent $event, int $liveEventId): ?int
+    /**
+     * The event's occurrences before the change: its rows, and how far ahead they go for an infinite schedule.
+     *
+     * @return array{recurrenceIds: array<string, string>, generatedThrough: ?string}
+     */
+    private function findPreviousSchedule(int $eventId): array
     {
-        $before = (new Query())
+        $recurrenceIds = (new Query())
             ->select(['recurrenceId'])
             ->from(OccurrenceRecord::TABLE)
-            ->where(['eventId' => $liveEventId])
+            ->where(['eventId' => $eventId])
             ->orderBy(['recurrenceId' => \SORT_ASC])
             ->column()
         ;
 
-        if (!$before) {
+        return [
+            'recurrenceIds' => array_combine($recurrenceIds, $recurrenceIds),
+            'generatedThrough' => $this->materializer->getGeneratedThrough($eventId)?->format(RecurrenceId::FORMAT),
+        ];
+    }
+
+    private function detectShift(CalendarEvent $event, array $previous): ?int
+    {
+        if (!$previous['recurrenceIds']) {
             return null;
         }
 
         return ScheduleShift::detect(
-            $before,
-            $this->materializer->recurrenceIds($event, \count($before) + 1),
-            $this->materializer->hasAllOccurrences($liveEventId),
+            $previous['recurrenceIds'],
+            $this->materializer->recurrenceIds($event, \count($previous['recurrenceIds']) + 1),
+            null === $previous['generatedThrough'],
         );
     }
 
     /**
-     * @return array<int, array{id: int, recurrenceId: string, orphaned: bool|int|string}>
+     * Past an infinite schedule's generated rows, an override is taken to be on the schedule.
+     *
+     * @param array{recurrenceId: string, orphaned: mixed} $override
      */
-    private function findOverrides(int $eventId): array
+    private function belongsToPreviousSchedule(array $override, array $previous): bool
     {
-        return (new Query())
-            ->select(['overrides.id', 'overrides.recurrenceId', 'overrides.orphaned'])
-            ->from(['overrides' => OccurrenceOverrideRecord::TABLE])
-            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[overrides.id]]')
-            ->where(['overrides.primaryOwnerId' => $eventId, 'elements.dateDeleted' => null])
-            ->all()
-        ;
-    }
+        $recurrenceId = $override['recurrenceId'];
 
-    private function shiftOverrides(array $overrides, int $seconds): array
-    {
-        foreach ($overrides as &$override) {
-            $override['recurrenceId'] = (new Carbon($override['recurrenceId'], DateHelper::UTC))
-                ->addSeconds($seconds)
-                ->format(RecurrenceId::FORMAT)
-            ;
-
-            Db::update(OccurrenceOverrideRecord::TABLE, ['recurrenceId' => $override['recurrenceId']], ['id' => $override['id']]);
-        }
-
-        return $overrides;
-    }
-
-    /**
-     * Codes are keyed by recurrence ID, and shifting them in place could collide with the next
-     * occurrence's key, so they're deleted and written back shifted.
-     */
-    private function shiftCodes(int $eventId, int $seconds): void
-    {
-        $codes = (new Query())
-            ->select(['recurrenceId', 'code', 'dateCreated', 'dateUpdated', 'uid'])
-            ->from(OccurrenceCodeRecord::TABLE)
-            ->where(['eventId' => $eventId])
-            ->all()
-        ;
-
-        if (!$codes) {
-            return;
-        }
-
-        $rows = array_map(static fn (array $code) => [
-            $eventId,
-            (new Carbon($code['recurrenceId'], DateHelper::UTC))->addSeconds($seconds)->format(RecurrenceId::FORMAT),
-            $code['code'],
-            $code['dateCreated'],
-            $code['dateUpdated'],
-            $code['uid'],
-        ], $codes);
-
-        Db::delete(OccurrenceCodeRecord::TABLE, ['eventId' => $eventId]);
-
-        \Craft::$app->getDb()
-            ->createCommand()
-            ->batchInsert(
-                OccurrenceCodeRecord::TABLE,
-                ['eventId', 'recurrenceId', 'code', 'dateCreated', 'dateUpdated', 'uid'],
-                $rows,
-            )
-            ->execute()
-        ;
+        return $override['orphaned']
+            || isset($previous['recurrenceIds'][$recurrenceId])
+            || (null !== $previous['generatedThrough'] && $recurrenceId > $previous['generatedThrough']);
     }
 }

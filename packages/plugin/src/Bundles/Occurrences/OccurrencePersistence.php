@@ -3,7 +3,6 @@
 namespace Solspace\Calendar\Bundles\Occurrences;
 
 use craft\base\Element;
-use craft\events\ModelEvent;
 use craft\helpers\ElementHelper;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
@@ -36,52 +35,40 @@ class OccurrencePersistence implements BundleInterface
         Event::on(
             CalendarEvent::class,
             Element::EVENT_AFTER_RESTORE,
-            [$this, 'restoreOccurrences']
+            [$this, 'persistOccurrences']
         );
     }
 
-    public function persistOccurrences(ModelEvent $event): void
+    public function persistOccurrences(Event $event): void
     {
         $element = $event->sender;
-        if (!$element instanceof CalendarEvent) {
+        if (!$element instanceof CalendarEvent || ElementHelper::isDraftOrRevision($element) || $element->propagating) {
             return;
         }
 
-        if (ElementHelper::isDraftOrRevision($element)) {
-            return;
-        }
+        $eventId = (int) $element->id;
+        $locked = $this->materializer->acquireLock($eventId);
 
-        $this->persistEventOccurrences($element);
+        try {
+            // Before regenerating, while the occurrence rows still describe the previous schedule
+            $this->reconciler->reconcile($element, $element->getScheduleShift());
+            $element->setScheduleShift(null);
+
+            $this->materializer->regenerate($element);
+        } finally {
+            if ($locked) {
+                $this->materializer->releaseLock($eventId);
+            }
+        }
     }
 
     public function deleteOccurrences(Event $event): void
     {
         $element = $event->sender;
-        if (!$element instanceof CalendarEvent) {
+        if (!$element instanceof CalendarEvent || ElementHelper::isDraftOrRevision($element)) {
             return;
         }
 
         $this->materializer->delete($element);
-    }
-
-    public function restoreOccurrences(Event $event): void
-    {
-        $element = $event->sender;
-        if (!$element instanceof CalendarEvent) {
-            return;
-        }
-
-        $this->persistEventOccurrences($element);
-    }
-
-    private function persistEventOccurrences(CalendarEvent $element): void
-    {
-        if ($element->propagating) {
-            return;
-        }
-
-        // Before regenerating, while the occurrence rows still describe the previous schedule
-        $this->reconciler->reconcile($element);
-        $this->materializer->regenerate($element);
     }
 }

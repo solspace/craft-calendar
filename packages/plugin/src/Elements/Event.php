@@ -37,6 +37,7 @@ use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\RRule\EventRecurrenceValidator;
+use Solspace\Calendar\Library\RRule\RRuleParser;
 use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
 use Solspace\Calendar\Models\CalendarModel;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -108,6 +109,8 @@ class Event extends Element implements \JsonSerializable
     private static int $requestSyncSuspended = 0;
 
     private bool $syncFromRequestOnSave = true;
+
+    private ?int $scheduleShift = null;
 
     private ?NestedElementManager $occurrenceOverrideManager = null;
 
@@ -496,13 +499,16 @@ class Event extends Element implements \JsonSerializable
     {
         $rrule = $this->getRRuleObject();
 
-        return $rrule?->getOccurrencesBetween($rangeStart, $rangeEnd, self::MAX_OCCURRENCES) ?? [];
+        return $rrule?->getOccurrencesBetween(
+            $rangeStart ? DateHelper::parseFloatingCarbon($rangeStart) : null,
+            $rangeEnd ? DateHelper::parseFloatingCarbon($rangeEnd) : null,
+            self::MAX_OCCURRENCES,
+        ) ?? [];
     }
 
     public function happensOn(\DateTime $date): bool
     {
-        $date = Carbon::createFromInterface($date);
-        $date->setTime(0, 0);
+        $date = DateHelper::parseFloatingCarbon($date)->setTime(0, 0);
 
         $rrule = $this->getRRuleObject();
         if (null !== $rrule) {
@@ -634,7 +640,7 @@ class Event extends Element implements \JsonSerializable
             return null;
         }
 
-        return RRule::createFromRfcString($this->rrule, true);
+        return RRuleParser::parse($this->rrule);
     }
 
     public function getReadableRepeatRule(): ?string
@@ -759,6 +765,20 @@ class Event extends Element implements \JsonSerializable
         } finally {
             --self::$requestSyncSuspended;
         }
+    }
+
+    /**
+     * Marks the whole schedule as moved by a known distance, like dragging the series in the calendar does.
+     * Saving then moves the edited occurrences and occurrence codes along, instead of comparing schedules.
+     */
+    public function setScheduleShift(?int $seconds): void
+    {
+        $this->scheduleShift = $seconds;
+    }
+
+    public function getScheduleShift(): ?int
+    {
+        return $this->scheduleShift;
     }
 
     public function afterSave(bool $isNew): void

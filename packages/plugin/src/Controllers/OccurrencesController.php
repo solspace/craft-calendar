@@ -10,7 +10,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
-use Solspace\Calendar\Bundles\Occurrences\OverrideReconciler;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -126,12 +125,7 @@ class OccurrencesController extends BaseController
         $changed = clone $event;
         $changed->setScheduleFromRequest();
 
-        $recurrenceIds = array_map(
-            static fn (OccurrenceOverride $override) => $override->recurrenceId->format(RecurrenceId::FORMAT),
-            $this->getOccurrencesService()->getOverrides($event),
-        );
-
-        return $this->asJson((new OverrideReconciler())->preview($changed, $event->getCanonicalId(), $recurrenceIds));
+        return $this->asJson($this->getOccurrencesService()->previewSchedule($changed));
     }
 
     /**

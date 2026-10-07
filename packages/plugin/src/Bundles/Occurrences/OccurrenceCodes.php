@@ -11,20 +11,23 @@ use Solspace\Calendar\Records\OccurrenceCodeRecord;
 use yii\db\IntegrityException;
 
 /**
- * Keeps one durable code per event and recurrence ID. A code is created the
- * first time its occurrence is generated and never changes, so occurrence
- * regeneration can freely delete and re-insert occurrence rows.
+ * Keeps one durable code per event and recurrence ID. A code is created the first time its occurrence is
+ * generated and stays with that occurrence: regenerating the event's occurrences keeps it, a schedule shift
+ * re-keys it to the occurrence's new recurrence ID, and a split moves it to the part the occurrence ends up in.
+ * An occurrence that leaves the schedule and comes back gets its old code back.
  */
 class OccurrenceCodes
 {
     private const MAX_INSERT_ATTEMPTS = 3;
+    private const BATCH_INSERT_SIZE = 500;
+    private const COLUMNS = ['eventId', 'recurrenceId', 'code', 'dateCreated', 'dateUpdated', 'uid'];
 
     public function __construct(
         private OccurrenceCodeGenerator $generator = new OccurrenceCodeGenerator(),
     ) {}
 
     /**
-     * @param string[] $recurrenceIds DB-formatted recurrence IDs
+     * @param string[] $recurrenceIds
      *
      * @return array<string, string> recurrence ID => code
      */
@@ -36,7 +39,7 @@ class OccurrenceCodes
         }
 
         for ($attempt = 1;; ++$attempt) {
-            $codes = $this->find($eventId, $recurrenceIds);
+            $codes = $this->findAll($eventId, $recurrenceIds);
             $missing = array_values(array_diff($recurrenceIds, array_keys($codes)));
             if (!$missing) {
                 return $codes;
@@ -68,12 +71,62 @@ class OccurrenceCodes
         }
     }
 
+    public function find(int $eventId, string $recurrenceId): ?string
+    {
+        return $this->findAll($eventId, [$recurrenceId])[$recurrenceId] ?? null;
+    }
+
+    /**
+     * Re-keys every code of the event when its whole schedule moved by the same distance. Codes are
+     * deleted and written back, because moving them in place can collide with the next occurrence's key.
+     */
+    public function shift(int $eventId, int $seconds): void
+    {
+        $codes = (new Query())
+            ->select(self::COLUMNS)
+            ->from(OccurrenceCodeRecord::TABLE)
+            ->where(['eventId' => $eventId])
+            ->all()
+        ;
+
+        if (!$codes) {
+            return;
+        }
+
+        Db::delete(OccurrenceCodeRecord::TABLE, ['eventId' => $eventId]);
+
+        foreach (array_chunk($codes, self::BATCH_INSERT_SIZE) as $chunk) {
+            $this->insertRows(array_map(static fn (array $code) => [
+                $eventId,
+                RecurrenceId::shift($code['recurrenceId'], $seconds),
+                $code['code'],
+                $code['dateCreated'],
+                $code['dateUpdated'],
+                $code['uid'],
+            ], $chunk));
+        }
+    }
+
+    /**
+     * Gives the occurrences before a recurrence ID their codes on the event they move to in a split,
+     * replacing any codes that event was given when it was created.
+     */
+    public function moveBefore(int $fromEventId, int $toEventId, string $recurrenceId): void
+    {
+        Db::delete(OccurrenceCodeRecord::TABLE, ['eventId' => $toEventId]);
+        Db::update(
+            OccurrenceCodeRecord::TABLE,
+            ['eventId' => $toEventId],
+            ['and', ['eventId' => $fromEventId], ['<', 'recurrenceId', $recurrenceId]],
+        );
+    }
+
     /**
      * @param string[] $recurrenceIds
      *
      * @return array<string, string> recurrence ID => code
      */
-    private function find(int $eventId, array $recurrenceIds): array
+    private function findAll(int $eventId, array $recurrenceIds): array
     {
         return (new Query())
             ->select(['recurrenceId', 'code'])
@@ -111,13 +164,14 @@ class OccurrenceCodes
             $rows[] = [$eventId, $recurrenceId, $codes[$index], $now, $now, StringHelper::UUID()];
         }
 
+        $this->insertRows($rows);
+    }
+
+    private function insertRows(array $rows): void
+    {
         \Craft::$app->getDb()
             ->createCommand()
-            ->batchInsert(
-                OccurrenceCodeRecord::TABLE,
-                ['eventId', 'recurrenceId', 'code', 'dateCreated', 'dateUpdated', 'uid'],
-                $rows,
-            )
+            ->batchInsert(OccurrenceCodeRecord::TABLE, self::COLUMNS, $rows)
             ->execute()
         ;
     }
