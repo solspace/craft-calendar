@@ -152,7 +152,7 @@ class EventsService extends Component
                 $this->trigger(self::EVENT_AFTER_SAVE, new SaveElementEvent($event, $isNewEvent));
 
                 return true;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 if (null !== $transaction) {
                     $transaction->rollBack();
                 }

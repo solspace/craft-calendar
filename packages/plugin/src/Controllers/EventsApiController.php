@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use Carbon\Carbon;
 use craft\base\Element;
 use craft\errors\InvalidElementException;
+use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -113,42 +114,24 @@ class EventsApiController extends BaseController
         $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
         $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
 
-        if ($this->hasOccurrenceSchedule($event)) {
-            $recurrenceId = $this->parseRequiredRecurrenceId($event);
-
-            if (self::SCOPE_OCCURRENCE === $scope) {
-                return $this->rescheduleOccurrence($event, $recurrenceId, $start, $end, $allDay);
-            }
-
-            // The series moves as far as the occurrence was dragged, which for one with its own times isn't from its recurrence ID
-            $service = $this->getOccurrencesService();
-            $draggedFrom = $service->describeOccurrence($event, $recurrenceId, $service->getOverride($event, $recurrenceId))['startDate'];
-            $move = fn (Event $event) => $this->getRecurringMutationHelper()->moveSeries($event, $draggedFrom, $start, $allDay);
-
-            if (self::SCOPE_FOLLOWING === $scope) {
-                return $this->splitResponse($event, $recurrenceId, $move);
-            }
-
-            $move($event);
-        } else {
-            if ($allDay) {
-                $end = DateHelper::allDayEndFromExclusive($start, $end);
-            }
-
-            $isEqualStart = $event->getStartDate()->equalTo($start);
-            $isEqualEnd = $event->getEndDate()->equalTo($end);
-            $isEqualAllDay = $event->isAllDay() === $allDay;
-
-            if ($isEqualStart && $isEqualEnd && $isEqualAllDay) {
-                return $this->asJson(['success' => true]);
-            }
-
-            $event->startDate = $start;
-            $event->endDate = $end;
-            $event->allDay = $allDay;
+        if (!$this->hasOccurrenceSchedule($event)) {
+            return $this->rescheduleEvent($event, $start, $end, $allDay);
         }
 
-        return $this->saveEventResponse($event, Calendar::t('Could not save event'));
+        $recurrenceId = $this->parseRequiredRecurrenceId();
+        if (self::SCOPE_OCCURRENCE === $scope) {
+            return $this->rescheduleOccurrence($event, $recurrenceId, $start, $end, $allDay);
+        }
+
+        // The series moves as far as the occurrence was dragged, which for one with its own times isn't from its recurrence ID
+        $service = $this->getOccurrencesService();
+        $draggedFrom = $service->describeOccurrence($event, $recurrenceId, $service->getOverride($event, $recurrenceId))['startDate'];
+
+        return $this->changeSeriesResponse(
+            $event,
+            $scope,
+            fn (Event $event) => $this->getRecurringMutationHelper()->moveSeries($event, $draggedFrom, $start, $allDay),
+        );
     }
 
     public function actionDelete(): Response
@@ -161,20 +144,13 @@ class EventsApiController extends BaseController
         }
 
         $scope = $this->parseScope(\Craft::$app->request->getBodyParam('scope'));
-        if ($this->hasOccurrenceSchedule($event) && self::SCOPE_OCCURRENCE === $scope) {
-            $recurrenceId = $this->parseRequiredRecurrenceId($event);
+        if ($this->hasOccurrenceSchedule($event) && self::SCOPE_SERIES !== $scope) {
+            $recurrenceId = $this->parseRequiredRecurrenceId();
 
             return $this->occurrenceResponse(
-                fn () => $this->getOccurrencesService()->deleteOccurrence($event, $recurrenceId),
-                Calendar::t('Couldn’t delete event.'),
-            );
-        }
-
-        if ($this->hasOccurrenceSchedule($event) && self::SCOPE_FOLLOWING === $scope) {
-            $recurrenceId = $this->parseRequiredRecurrenceId($event);
-
-            return $this->occurrenceResponse(
-                fn () => $this->getSeriesService()->endAt($event, $recurrenceId),
+                fn () => self::SCOPE_OCCURRENCE === $scope
+                    ? $this->getOccurrencesService()->deleteOccurrence($event, $recurrenceId)
+                    : $this->getSeriesService()->endAt($event, $recurrenceId),
                 Calendar::t('Couldn’t delete event.'),
             );
         }
@@ -201,8 +177,12 @@ class EventsApiController extends BaseController
         $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
         $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
 
-        if ($this->hasOccurrenceSchedule($event) && self::SCOPE_OCCURRENCE === $scope) {
-            return $this->rescheduleOccurrence($event, $this->parseRequiredRecurrenceId($event), $start, $end, $allDay);
+        if (!$this->hasOccurrenceSchedule($event)) {
+            return $this->rescheduleEvent($event, $start, $end, $allDay);
+        }
+
+        if (self::SCOPE_OCCURRENCE === $scope) {
+            return $this->rescheduleOccurrence($event, $this->parseRequiredRecurrenceId(), $start, $end, $allDay);
         }
 
         $startDeltaSeconds = $this->parseDeltaSeconds(
@@ -218,26 +198,16 @@ class EventsApiController extends BaseController
             $allDay,
         );
 
-        if ($this->hasOccurrenceSchedule($event)) {
-            $resize = fn (Event $event) => $this->getRecurringMutationHelper()->resizeSeries(
+        return $this->changeSeriesResponse(
+            $event,
+            $scope,
+            fn (Event $event) => $this->getRecurringMutationHelper()->resizeSeries(
                 $event,
                 $allDay,
                 $startDeltaSeconds ?? 0,
                 $endDeltaSeconds ?? 0,
-            );
-
-            if (self::SCOPE_FOLLOWING === $scope) {
-                return $this->splitResponse($event, $this->parseRequiredRecurrenceId($event), $resize);
-            }
-
-            $resize($event);
-        } else {
-            $event->startDate = $start;
-            $event->endDate = $allDay ? DateHelper::allDayEndFromExclusive($start, $end) : $end;
-            $event->allDay = $allDay;
-        }
-
-        return $this->saveEventResponse($event, Calendar::t('Could not save event'));
+            ),
+        );
     }
 
     /**
@@ -252,33 +222,13 @@ class EventsApiController extends BaseController
             return $event;
         }
 
-        $recurrenceId = $this->parseRequiredRecurrenceId($event);
+        $recurrenceId = $this->parseRequiredRecurrenceId();
         $cancelled = $this->parseBooleanBodyParam(\Craft::$app->request->getBodyParam('cancelled', true));
 
         return $this->occurrenceResponse(
             fn () => $cancelled
                 ? $this->getOccurrencesService()->cancel($event, $recurrenceId)
                 : $this->getOccurrencesService()->uncancel($event, $recurrenceId),
-            Calendar::t('Could not save event'),
-        );
-    }
-
-    /**
-     * Removes everything one occurrence changed, so it follows its event again.
-     */
-    public function actionResetOccurrence(): Response
-    {
-        $this->requirePostRequest();
-
-        $event = $this->findEditableEvent();
-        if ($event instanceof Response) {
-            return $event;
-        }
-
-        $recurrenceId = $this->parseRequiredRecurrenceId($event);
-
-        return $this->occurrenceResponse(
-            fn () => $this->getOccurrencesService()->resetOverride($event, $recurrenceId),
             Calendar::t('Could not save event'),
         );
     }
@@ -301,7 +251,7 @@ class EventsApiController extends BaseController
         try {
             $draft = $this->getSeriesService()->createSplitDraft(
                 $event,
-                $this->parseRequiredRecurrenceId($event),
+                $this->parseRequiredRecurrenceId(),
                 (int) \Craft::$app->getUser()->getId(),
             );
         } catch (InvalidArgumentException) {
@@ -333,12 +283,21 @@ class EventsApiController extends BaseController
         return $event;
     }
 
-    private function rescheduleOccurrence(Event $event, Carbon $recurrenceId, Carbon $start, Carbon $end, bool $allDay): Response
+    private function rescheduleEvent(Event $event, Carbon $start, Carbon $end, bool $allDay): Response
     {
-        if ($allDay) {
-            $end = DateHelper::allDayEndFromExclusive($start, $end);
+        if ($event->getStartDate()->equalTo($start) && $event->getEndDate()->equalTo($end) && $event->isAllDay() === $allDay) {
+            return $this->asJson(['success' => true]);
         }
 
+        $event->startDate = $start;
+        $event->endDate = $end;
+        $event->allDay = $allDay;
+
+        return $this->saveEventResponse($event, Calendar::t('Could not save event'));
+    }
+
+    private function rescheduleOccurrence(Event $event, Carbon $recurrenceId, Carbon $start, Carbon $end, bool $allDay): Response
+    {
         return $this->occurrenceResponse(
             fn () => $this->getOccurrencesService()->reschedule($event, $recurrenceId, $start, $end, $allDay),
             Calendar::t('Could not save event'),
@@ -359,14 +318,24 @@ class EventsApiController extends BaseController
     }
 
     /**
-     * Changes the event from the occurrence onward, splitting off the occurrences before it.
+     * Changes the whole series, or the event from the occurrence onward, splitting off the occurrences before it.
+     *
+     * @param callable(Event): void $change
      */
-    private function splitResponse(Event $event, Carbon $recurrenceId, callable $change): Response
+    private function changeSeriesResponse(Event $event, string $scope, callable $change): Response
     {
-        return $this->occurrenceResponse(
-            fn () => $this->getSeriesService()->split($event, $recurrenceId, $change),
-            Calendar::t('Could not save event'),
-        );
+        if (self::SCOPE_FOLLOWING === $scope) {
+            $recurrenceId = $this->parseRequiredRecurrenceId();
+
+            return $this->occurrenceResponse(
+                fn () => $this->getSeriesService()->split($event, $recurrenceId, $change),
+                Calendar::t('Could not save event'),
+            );
+        }
+
+        $change($event);
+
+        return $this->saveEventResponse($event, Calendar::t('Could not save event'));
     }
 
     private function saveEventResponse(Event $event, string $fallbackMessage): Response
@@ -403,14 +372,17 @@ class EventsApiController extends BaseController
     /**
      * `occurrenceDate` is the earlier name. Demo templates installed from 6.0 pre-releases still send it.
      */
-    private function parseRequiredRecurrenceId(Event $event): Carbon
+    private function parseRequiredRecurrenceId(): Carbon
     {
         $request = \Craft::$app->request;
+        $value = $request->getBodyParam('recurrenceId') ?? $request->getBodyParam('occurrenceDate');
 
-        return $this->parseMoveDate(
-            $request->getBodyParam('recurrenceId') ?? $request->getBodyParam('occurrenceDate'),
-            $event->isAllDay(),
-        );
+        $recurrenceId = RecurrenceId::normalize($value);
+        if (null === $recurrenceId) {
+            throw new BadRequestHttpException(Calendar::t('Date value is invalid "{date}"', ['date' => \is_scalar($value) ? $value : '']));
+        }
+
+        return RecurrenceId::toCarbon($recurrenceId);
     }
 
     private function parseMoveDate(mixed $value, bool $allDay): Carbon
@@ -434,17 +406,18 @@ class EventsApiController extends BaseController
         return $date;
     }
 
+    /**
+     * FullCalendar sends all-day ends as the day after the last day, while events store the end of the last day.
+     */
     private function parseMoveEndDate(mixed $value, Carbon $start, bool $allDay): Carbon
     {
         if (!$value) {
-            if ($allDay) {
-                return $start->copy()->addDay();
-            }
-
-            $value = $start->copy()->addHour();
+            return $allDay ? DateHelper::allDayEnd($start) : $start->copy()->addHour();
         }
 
-        return $this->parseMoveDate($value, $allDay);
+        $end = $this->parseMoveDate($value, $allDay);
+
+        return $allDay ? DateHelper::allDayEndFromExclusive($start, $end) : $end;
     }
 
     private function parseBooleanBodyParam(mixed $value): bool
