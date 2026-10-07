@@ -36,15 +36,18 @@
                         }).one() %}
 
                         {#
-                        To send old links to the occurrence's current page instead, look it up by its code,
-                        the last part of a generated slug, which never changes:
+                        To send old links to the occurrence's current page instead, try the last part of a slug
+                        that matches nothing as the occurrence's code. Generated slugs end in the code, which
+                        never changes, but custom slugs don't have to include it.
 
-                        {% set occurrence = craft.calendar.occurrences({
-                            code: occurrenceSlug|split('-')|last,
-                            status: null,
-                        }).one() %}
-                        {% if occurrence and occurrence.slug != occurrenceSlug %}
-                            {% redirect siteUrl ~ 'demo/event/' ~ occurrence.event.id ~ '/' ~ occurrence.slug %}
+                        {% if not occurrence %}
+                            {% set occurrenceByCode = craft.calendar.occurrences({
+                                code: occurrenceSlug|split('-')|last,
+                                status: null,
+                            }).one() %}
+                            {% if occurrenceByCode %}
+                                {% redirect siteUrl ~ 'demo/event/' ~ occurrenceByCode.event.id ~ '/' ~ occurrenceByCode.slug %}
+                            {% endif %}
                         {% endif %}
                         #}
 
@@ -59,11 +62,12 @@
                     {% set displayStartDate = occurrence ? occurrence.startDate : event.startDate %}
                     {% set displayEndDate = occurrence ? occurrence.endDate : event.endDate %}
                     {% set displayAllDay = occurrence ? occurrence.allDay : event.allDay %}
+                    {% set displayDuration = occurrence ? occurrence.duration : event.duration %}
                     {% set displayMultiDay = displayStartDate.format('Y-m-d') != displayEndDate.format('Y-m-d') %}
 
                     <header class="flex flex-wrap items-start justify-between gap-4 mb-6">
                         <div class="event-detail-heading">
-                            <h1 class="text-3xl font-semibold mb-2"><span class="{{ occurrence and occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span></h1>
+                            <h1 class="text-3xl font-semibold mb-2">{% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence and occurrence.cancelled} only %}</h1>
                             <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
                                 class="event-detail-calendar rounded-full"
                                 style="--calendar-color: {{ event.calendar.color }};">
@@ -117,7 +121,7 @@
                         {% endif %}
                         <div class="event-detail-field">
                             <dt>Duration</dt>
-                            <dd><span class="far fa-clock text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>{{ event.duration.humanReadable }}</dd>
+                            <dd><span class="far fa-clock text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>{{ displayDuration.humanReadable }}</dd>
                         </div>
                         {% if content['description'] is defined and content.description is not empty %}
                             <div class="event-detail-field">

@@ -96,7 +96,7 @@
                                         <h2 class="text-base font-semibold mb-1">
                                             <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
                                                 class="text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline">
-                                                <span class="{{ occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span>{% if occurrence.cancelled %} <span class="calendar-occurrence-status">Cancelled</span>{% endif %}
+                                                {% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled, badge: true} only %}
                                             </a>
                                         </h2>
                                         <div class="text-sm text-neutral-500 dark:text-neutral-400">

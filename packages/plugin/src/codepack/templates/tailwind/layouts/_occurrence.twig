@@ -14,7 +14,7 @@
         <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
             data-calendar-popover data-calendar-color="{{ event.calendar.color }}" aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}">
             {% if day.containsDate(occurrence.startDate) %}
-                <span class="{{ occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span>
+                {% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}
             {% else %}
                 &nbsp;
             {% endif %}
@@ -22,7 +22,7 @@
     {% else %}
         <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
             data-calendar-popover data-calendar-color="{{ event.calendar.color }}">
-            <span class="{{ occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span>
+            {% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}
         </a>
         {% if not occurrence.allDay %}
             <span class="event-time">{{ occurrence.startDate.format('g:ia') }}</span>

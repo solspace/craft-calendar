@@ -1,0 +1,5 @@
+{# The title, struck through when cancelled. Then "Cancelled" for everyone with `badge`, otherwise only for screen readers. #}
+<span class="{{ cancelled ? 'calendar-occurrence-cancelled' }}">{{ title }}</span>
+{%- if cancelled and (badge ?? false) %} <span class="calendar-occurrence-status">Cancelled</span>
+{%- elseif cancelled %}<span class="visually-hidden">, cancelled</span>
+{%- endif %}

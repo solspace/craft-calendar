@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Transformers;
 
 use Carbon\Carbon;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceList;
+use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -65,6 +66,8 @@ class FullCalTransformer
 
             'title' => $model->getContent()->getTitle(),
             'slug' => $model->event->slug,
+            'occurrenceSlug' => $model->getSlug(),
+            'recurrenceId' => $model->recurrenceId->format(RecurrenceId::FORMAT),
             'url' => $model->event->getCpEditUrl(),
 
             'start' => $this->formatFloatingDate($model->startDate, $model->allDay),

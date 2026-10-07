@@ -12,7 +12,7 @@
         <div class="calendar-upcoming-info pt-1">
             <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
                 class="fw-semibold link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
-                <span class="{{ occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span>{% if occurrence.cancelled %} <span class="calendar-occurrence-status">Cancelled</span>{% endif %}
+                {% include "demo/bootstrap/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled, badge: true} only %}
             </a>
             <div class="small text-body-secondary mt-1">
                 <span class="far fa-clock" aria-hidden="true"></span>

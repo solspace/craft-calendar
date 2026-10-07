@@ -23,7 +23,7 @@
                         href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
                         style="--event-color: {{ event.calendar.color }};"
                         title="{{ content.title }}"
-                        aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}. All day on {{ day.date.format('l, F j, Y') }}"><span class="{{ occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span></a>
+                        aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}. All day on {{ day.date.format('l, F j, Y') }}">{% include "demo/bootstrap/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}</a>
                 {% endfor %}
             </div>
         {% endfor %}
@@ -49,7 +49,7 @@
                             style="--event-color: {{ event.calendar.color }}; top: {{ startMinute * 0.8 }}px; height: {{ (endMinute - startMinute) * 0.8 - 2 }}px;"
                             data-start="{{ startMinute }}" data-end="{{ endMinute }}"
                             aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}. {{ occurrence.startDate.format('l, F j, g:ia') }} to {{ occurrence.endDate.format('l, F j, g:ia') }}">
-                            <span class="week-grid-event-title d-block fw-semibold text-truncate"><span class="{{ occurrence.cancelled ? 'calendar-occurrence-cancelled' }}">{{ content.title }}</span></span>
+                            <span class="week-grid-event-title d-block fw-semibold text-truncate">{% include "demo/bootstrap/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}</span>
                             <span class="week-grid-event-time d-block text-truncate">{{ startsToday ? occurrence.startDate.format('g:ia') : 'Continues' }}{% if endsToday %} – {{ occurrence.endDate.format('g:ia') }}{% endif %}</span>
                         </a>
                     {% endif %}
