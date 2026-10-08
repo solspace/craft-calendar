@@ -22,7 +22,8 @@ import { format, subDays } from "date-fns";
 import { type FC, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { PopoverModifyEvent } from "../modify-event/modify";
-import { PopoverActions, PopoverWrapper } from "./view-event.styles";
+import { type EventMenuAction, PopoverEventMenu } from "./view-event.menu";
+import { PopoverActions, PopoverCloseButton, PopoverWrapper } from "./view-event.styles";
 
 type Props = {
   fcEvent: EventClickArg;
@@ -169,9 +170,44 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     showPopover(<PopoverModifyEvent action="delete" onSelect={deleteOccurrences} />, fcEvent.el);
   };
 
+  const menuActions: EventMenuAction[] = [];
+  if (isRecurring && recurrenceId) {
+    menuActions.push(
+      { label: translate("Edit occurrence"), onSelect: editOccurrence },
+      {
+        label: translate(isOpeningDraft ? "Processing..." : "Edit this and following"),
+        onSelect: () => void editThisAndFollowing(),
+      },
+      {
+        label: translate(isCancelled ? "Restore occurrence" : "Cancel occurrence"),
+        onSelect: () => void toggleCancelled(),
+      },
+    );
+  }
+  menuActions.push({
+    label: translate(isDeleting ? "Deleting..." : "Delete"),
+    destructive: true,
+    onSelect: () => {
+      if (isRecurring) {
+        showRecurringDeletePopover();
+      } else if (window.confirm(translate("Are you sure you want to delete this event?"))) {
+        void handleDelete();
+      }
+    },
+  });
+
   return (
     <PopoverWrapper>
-      <h1 className={clsx(isCancelled && "is-cancelled")}>{event.title}</h1>
+      <PopoverCloseButton
+        type="button"
+        className="icon"
+        data-icon="remove"
+        aria-label={translate("Close")}
+        title={translate("Close")}
+        disabled={isBusy}
+        onClick={hidePopover}
+      />
+      <h1 className={clsx("event-title", isCancelled && "is-cancelled")}>{event.title}</h1>
 
       {calendarName && (
         <div className="calendar-label">
@@ -211,72 +247,18 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       <hr />
 
       <PopoverActions>
-        <a href={event.url} className={clsx("btn submit", isBusy && "disabled")}>
-          {translate(isRecurring ? "Edit event" : "Edit")}
-        </a>
-
-        {isRecurring && recurrenceId && (
-          <button
-            type="button"
-            className={clsx("btn", isBusy && "disabled")}
-            disabled={isBusy}
-            onClick={editOccurrence}
-          >
-            {translate("Edit occurrence")}
-          </button>
-        )}
-
-        {isRecurring && recurrenceId && (
-          <button
-            type="button"
-            className={clsx("btn", isBusy && "disabled")}
-            disabled={isBusy}
-            onClick={() => void editThisAndFollowing()}
-          >
-            {translate(isOpeningDraft ? "Processing..." : "Edit this and following")}
-          </button>
-        )}
-
-        {isRecurring && recurrenceId && (
-          <button
-            type="button"
-            className={clsx("btn", isBusy && "disabled")}
-            disabled={isBusy}
-            onClick={() => void toggleCancelled()}
-          >
-            {translate(isCancelled ? "Restore occurrence" : "Cancel occurrence")}
-          </button>
-        )}
-
-        <button
-          type="button"
-          className={clsx("btn", isBusy && "disabled")}
-          disabled={isBusy}
-          onClick={() => {
-            if (isRecurring) {
-              showRecurringDeletePopover();
-
-              return;
-            }
-
-            if (!window.confirm(translate("Are you sure you want to delete this event?"))) {
-              return;
-            }
-
-            void handleDelete();
+        <a
+          href={event.url}
+          className={clsx("btn submit", isBusy && "disabled")}
+          aria-disabled={isBusy}
+          onClick={(click) => {
+            if (isBusy) click.preventDefault();
           }}
         >
-          {translate(isDeleting ? "Deleting..." : "Delete")}
-        </button>
+          {translate("Edit")}
+        </a>
 
-        <button
-          type="button"
-          className={clsx("btn", isBusy && "disabled")}
-          disabled={isBusy}
-          onClick={() => hidePopover()}
-        >
-          {translate("Close")}
-        </button>
+        <PopoverEventMenu actions={menuActions} disabled={isBusy} />
       </PopoverActions>
     </PopoverWrapper>
   );

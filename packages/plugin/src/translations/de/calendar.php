@@ -754,4 +754,5 @@ return [
     'Occurrence Code' => 'Termincode',
     'Reset Occurrence' => 'Termin zurücksetzen',
     'Remove all customizations and restore the event’s values.' => 'Alle Anpassungen entfernen und die Werte des Ereignisses wiederherstellen.',
+    'More actions' => 'Weitere Aktionen',
 ];

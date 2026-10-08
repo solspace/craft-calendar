@@ -71,6 +71,10 @@ declare namespace Garnish {
   class MenuBtn {
     constructor(target: Element, options?: MenuBtnOptions);
     showMenu(): void;
+    hideMenu(): void;
+    destroy(): void;
+    showingMenu: boolean;
+    menu: { on(event: "show", handler: () => void): void };
   }
 }
 

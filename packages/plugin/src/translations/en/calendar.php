@@ -754,4 +754,5 @@ return [
     'Occurrence Code' => 'Occurrence Code',
     'Reset Occurrence' => 'Reset Occurrence',
     'Remove all customizations and restore the event’s values.' => 'Remove all customizations and restore the event’s values.',
+    'More actions' => 'More actions',
 ];

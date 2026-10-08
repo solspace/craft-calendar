@@ -754,4 +754,5 @@ return [
     'Occurrence Code' => 'Herhalingscode',
     'Reset Occurrence' => 'Herhaling herstellen',
     'Remove all customizations and restore the event’s values.' => 'Verwijder alle aanpassingen en herstel de waarden van het evenement.',
+    'More actions' => 'Meer acties',
 ];

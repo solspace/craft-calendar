@@ -754,4 +754,5 @@ return [
     'Occurrence Code' => 'Codice occorrenza',
     'Reset Occurrence' => 'Ripristina occorrenza',
     'Remove all customizations and restore the event’s values.' => 'Rimuovi tutte le personalizzazioni e ripristina i valori dell’evento.',
+    'More actions' => 'Altre azioni',
 ];
