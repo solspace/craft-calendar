@@ -1,11 +1,8 @@
 import { openOccurrenceEditor } from "@cal/pages/calendar/calendar.events";
-import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { craftFetch } from "@cal/utils/http";
-import { getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
 import { eventSelectors } from "@event-builder/store/event.slice";
 import clsx from "clsx";
-import { format } from "date-fns";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { SectionHeading, SectionInstructions } from "../editor/repeat-rules/date-manager.styles";
@@ -18,6 +15,7 @@ import {
   EditedOccurrenceList,
   EditedOccurrencesWrapper,
 } from "./edited-occurrences.styles";
+import { formatOccurrenceRange } from "./edited-occurrences.utilities";
 
 export type EditedOccurrence = {
   recurrenceId: string;
@@ -77,11 +75,7 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
   const schedule = useSelector(eventSelectors.state);
   const formats = useSelector(appSelectors.formats);
   const formatOccurrenceDate = (occurrence: EditedOccurrence): string =>
-    format(
-      utcToLocalDisplayDate(new Date(occurrence.start * 1000)),
-      occurrence.allDay ? (formats?.date.short.icu ?? "P") : (formats?.datetime.short.icu ?? "Pp"),
-      { locale: getDateLocale() },
-    );
+    formatOccurrenceRange(occurrence, formats);
 
   // The editor moves on to a draft as soon as there are changes, so its ID wins over the one the page loaded with
   const getEventId = useCallback(
@@ -242,20 +236,16 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
                 )}
               >
                 <div className="details">
-                  <div className="title">
-                    {occurrence.title || formatOccurrenceDate(occurrence)}
-                  </div>
-                  {occurrence.title && (
-                    <div className="date">{formatOccurrenceDate(occurrence)}</div>
-                  )}
-                </div>
-                <div className="changes">
+                  <div className="title">{occurrence.title}</div>
                   {occurrence.cancelled && (
                     <span className="state cancelled">{translate("Cancelled")}</span>
                   )}
                   {isOrphaned(occurrence) && (
                     <span className="state">{translate("No longer on the schedule")}</span>
                   )}
+                </div>
+                <div className="date">{formatOccurrenceDate(occurrence)}</div>
+                <div className="changes">
                   <span>{occurrence.changes.join(", ")}</span>
                 </div>
 
@@ -273,14 +263,15 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
                       onClick={() => void edit(occurrence)}
                     />
                   )}
-                  <button
+                  <OccurrenceActionButton
                     type="button"
-                    className={clsx("btn small", busyRecurrenceId !== null && "disabled")}
+                    className="icon occurrence-discard"
+                    data-icon="remove"
+                    aria-label={`${translate("Discard")}: ${formatOccurrenceDate(occurrence)}`}
+                    title={translate("Removes everything this occurrence changes.")}
                     disabled={busyRecurrenceId !== null}
                     onClick={() => void discard(occurrence)}
-                  >
-                    {translate("Discard")}
-                  </button>
+                  />
                 </div>
               </EditedOccurrenceItem>
             ))}

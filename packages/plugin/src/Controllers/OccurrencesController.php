@@ -136,7 +136,7 @@ class OccurrencesController extends BaseController
                 'start' => $occurrence['startDate']->timestamp,
                 'end' => $occurrence['endDate']->timestamp,
                 'allDay' => $occurrence['allDay'],
-                'title' => $override->isFieldOverridden(OccurrenceOverride::TITLE) ? $override->title : null,
+                'title' => $override->isFieldOverridden(OccurrenceOverride::TITLE) ? $override->title : $event->title,
                 'changes' => $this->describeChanges($override),
                 'cancelled' => $override->cancelled,
                 'orphaned' => !$service->hasOccurrence($event, $override->recurrenceId),
@@ -466,7 +466,7 @@ class OccurrencesController extends BaseController
         }
 
         if ($override->hasOwnTimes()) {
-            $changes[] = Calendar::t('Date and time');
+            $changes[] = Calendar::t('Date/Time');
         }
 
         if ($override->hasCustomSlug()) {

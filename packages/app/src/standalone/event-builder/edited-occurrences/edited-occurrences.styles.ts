@@ -34,6 +34,7 @@ export const EditedOccurrenceItem = styled.li`
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     "details actions"
+    "date actions"
     "changes actions";
   align-items: center;
   gap: 4px 12px;
@@ -47,6 +48,10 @@ export const EditedOccurrenceItem = styled.li`
 
   .details {
     grid-area: details;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
     min-width: 0;
   }
 
@@ -62,10 +67,12 @@ export const EditedOccurrenceItem = styled.li`
   }
 
   .date {
-    margin-top: 2px;
+    grid-area: date;
+    min-width: 0;
     color: var(--gray-600);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 400;
+    font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
   }
 
@@ -101,18 +108,19 @@ export const EditedOccurrenceItem = styled.li`
     flex-wrap: wrap;
     flex: 0 0 auto;
     align-items: center;
-    gap: 2px;
-
-    .btn {
-      min-height: 26px;
-      padding-inline: 10px;
-      font-size: 12px;
-    }
+    gap: 0;
   }
 
   @container (min-width: 440px) {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
-    grid-template-areas: "details changes actions";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+    grid-template-areas:
+      "details date actions"
+      "changes changes actions";
     column-gap: 16px;
+  }
+
+  @container (min-width: 560px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, .7fr) auto;
+    grid-template-areas: "details date changes actions";
   }
 `;
