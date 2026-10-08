@@ -5,7 +5,7 @@ import { generateUrl } from "@cal/utils/urls";
 import { useCallback, useState } from "react";
 import { clearCalendarEventsCache } from "../../calendar.events";
 import { useConfig } from "../../context/config.context";
-import { buildCreateEventPayload } from "./create-event.operations";
+import { buildCreateEventPayload, type QuickCreateDetails } from "./create-event.operations";
 
 type UseCreateEventOptions = {
   refetchEvents?: () => void;
@@ -19,7 +19,7 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
   const [error, setError] = useState<string | null>(null);
 
   const createEvent = useCallback(
-    async (event: CalendarCreateDraft, calendarId: number) => {
+    async (event: CalendarCreateDraft, calendarId: number, details?: QuickCreateDetails) => {
       setIsFetching(true);
       setError(null);
 
@@ -29,7 +29,7 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(buildCreateEventPayload(event, calendarId, currentSiteId)),
+          body: JSON.stringify(buildCreateEventPayload(event, calendarId, currentSiteId, details)),
         });
 
         if (!response.ok) {

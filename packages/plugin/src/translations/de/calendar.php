@@ -740,10 +740,10 @@ return [
     'Allow events in this calendar to repeat. Turn this off to allow only a single occurrence per event.' => 'Erlaubt die Wiederholung von Ereignissen in diesem Kalender. Deaktivieren Sie dies, um nur ein einzelnes Vorkommen pro Ereignis zuzulassen.',
     'Choose the timezone used for event dates in ICS exports. Floating preserves the event’s local time without assigning a timezone.' => 'Wählen Sie die Zeitzone für Ereignisdatumswerte in ICS-Exporten. Gleitend behält die lokale Ereigniszeit bei, ohne eine Zeitzone zuzuweisen.',
     'Floating (Recommended)' => 'Gleitend (empfohlen)',
-    'ICS Description Field' => 'ICS-Beschreibungsfeld',
-    'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Wählen Sie das Ereignisfeld für Beschreibungen in ICS-Exporten. Wählen Sie Keine, um Beschreibungen wegzulassen.',
-    'ICS Location Field' => 'ICS-Ortsfeld',
-    'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Wählen Sie das Ereignisfeld für Orte in ICS-Exporten. Wählen Sie Keine, um Orte wegzulassen.',
+    'Description Field' => 'Beschreibungsfeld',
+    'Choose the event’s description field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Wählen Sie das Beschreibungsfeld des Ereignisses. Es wird für ICS-Exporte und bei Klartextfeldern im Fenster Neues Ereignis verwendet. Wählen Sie Keine, um beides zu deaktivieren.',
+    'Location Field' => 'Ortsfeld',
+    'Choose the event’s location field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Wählen Sie das Ortsfeld des Ereignisses. Es wird für ICS-Exporte und bei Klartextfeldern im Fenster Neues Ereignis verwendet. Wählen Sie Keine, um beides zu deaktivieren.',
 
     // Occurrence editor
     'Date & Time' => 'Datum & Uhrzeit',
@@ -755,4 +755,6 @@ return [
     'Reset Occurrence' => 'Termin zurücksetzen',
     'Remove all customizations and restore the event’s values.' => 'Alle Anpassungen entfernen und die Werte des Ereignisses wiederherstellen.',
     'More actions' => 'Weitere Aktionen',
+    'Location' => 'Ort',
+    'Invalid event details.' => 'Ungültige Ereignisdetails.',
 ];

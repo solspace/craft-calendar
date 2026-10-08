@@ -740,10 +740,10 @@ return [
     'Allow events in this calendar to repeat. Turn this off to allow only a single occurrence per event.' => 'Allow events in this calendar to repeat. Turn this off to allow only a single occurrence per event.',
     'Choose the timezone used for event dates in ICS exports. Floating preserves the event’s local time without assigning a timezone.' => 'Choose the timezone used for event dates in ICS exports. Floating preserves the event’s local time without assigning a timezone.',
     'Floating (Recommended)' => 'Floating (Recommended)',
-    'ICS Description Field' => 'ICS Description Field',
-    'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.',
-    'ICS Location Field' => 'ICS Location Field',
-    'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Choose the event field used for locations in ICS exports. Select None to omit locations.',
+    'Description Field' => 'Description Field',
+    'Choose the event’s description field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Choose the event’s description field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.',
+    'Location Field' => 'Location Field',
+    'Choose the event’s location field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Choose the event’s location field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.',
 
     // Occurrence editor
     'Date & Time' => 'Date & Time',
@@ -755,4 +755,6 @@ return [
     'Reset Occurrence' => 'Reset Occurrence',
     'Remove all customizations and restore the event’s values.' => 'Remove all customizations and restore the event’s values.',
     'More actions' => 'More actions',
+    'Location' => 'Location',
+    'Invalid event details.' => 'Invalid event details.',
 ];

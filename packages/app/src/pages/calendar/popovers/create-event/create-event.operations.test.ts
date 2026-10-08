@@ -24,4 +24,17 @@ describe("buildCreateEventPayload", () => {
       siteId: 4,
     });
   });
+
+  it("includes mapped details without exposing arbitrary field handles", () => {
+    const details = { location: "Studio A", description: "Bring a mat.\nDoors open at 6." };
+    const payload = buildCreateEventPayload(
+      { id: "draft-create-event", title: "Yoga", start: 100, end: 3700, allDay: false },
+      12,
+      4,
+      details,
+    );
+
+    expect(payload.details).toEqual(details);
+    expect(payload).not.toHaveProperty("fields");
+  });
 });

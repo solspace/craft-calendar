@@ -1,3 +1,4 @@
+import { Control } from "@cal/components/controls/control";
 import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-picker";
 import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { TextInput } from "@cal/components/controls/text-input/text-input";
@@ -14,7 +15,7 @@ import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import clsx from "clsx";
 import type { FC } from "react";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { useConfig } from "../../context/config.context";
 import { CalendarDropdown } from "./create-event.calendar-dropdown";
@@ -42,8 +43,16 @@ export const PopoverCreateEvent: FC<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { calendars, calendarColors, formats, weekStartDay, eventDuration, timeInterval } =
-    useConfig();
+  const {
+    calendars,
+    calendarColors,
+    quickCreateFields,
+    formats,
+    weekStartDay,
+    eventDuration,
+    timeInterval,
+  } = useConfig();
+  const id = useId();
   const calendarOptions = useMemo(
     () =>
       Object.entries(calendars).map(([value, label]) => ({
@@ -54,6 +63,17 @@ export const PopoverCreateEvent: FC<Props> = ({
     [calendars, calendarColors],
   );
   const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
+  const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>({});
+  const mappedFields = quickCreateFields?.[calendarId];
+  const locationHandle = mappedFields?.location;
+  const descriptionHandle = mappedFields?.description;
+  const values = fieldValues[calendarId] ?? {};
+  const setFieldValue = (handle: string, value: string) => {
+    setFieldValues((current) => ({
+      ...current,
+      [calendarId]: { ...current[calendarId], [handle]: value },
+    }));
+  };
   const { createEvent, error, isFetching } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
@@ -158,6 +178,34 @@ export const PopoverCreateEvent: FC<Props> = ({
             }
           }}
         />
+
+        {(locationHandle || descriptionHandle) && <hr />}
+
+        {locationHandle && (
+          <Control label={translate("Location")} id={`${id}-location`}>
+            <input
+              id={`${id}-location`}
+              type="text"
+              className="text fullwidth"
+              disabled={isFetching}
+              value={values[locationHandle] ?? ""}
+              onChange={(event) => setFieldValue(locationHandle, event.target.value)}
+            />
+          </Control>
+        )}
+
+        {descriptionHandle && (
+          <Control label={translate("Description")} id={`${id}-description`}>
+            <textarea
+              id={`${id}-description`}
+              className="text fullwidth"
+              rows={3}
+              disabled={isFetching}
+              value={values[descriptionHandle] ?? ""}
+              onChange={(event) => setFieldValue(descriptionHandle, event.target.value)}
+            />
+          </Control>
+        )}
       </Fields>
 
       <hr />
@@ -169,7 +217,18 @@ export const PopoverCreateEvent: FC<Props> = ({
           type="button"
           className={clsx("btn submit", isFetching && "disabled")}
           disabled={!draft.title || !calendarId || isFetching}
-          onClick={() => createEvent(draft, calendarId)}
+          onClick={() =>
+            createEvent(
+              draft,
+              calendarId,
+              locationHandle || descriptionHandle
+                ? {
+                    ...(locationHandle && { location: values[locationHandle] ?? "" }),
+                    ...(descriptionHandle && { description: values[descriptionHandle] ?? "" }),
+                  }
+                : undefined,
+            )
+          }
         >
           {translate(isFetching ? "Creating Event..." : "Create Event")}
         </button>

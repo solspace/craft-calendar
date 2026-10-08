@@ -740,10 +740,10 @@ return [
     'Allow events in this calendar to repeat. Turn this off to allow only a single occurrence per event.' => 'Sta herhaling van evenementen in deze kalender toe. Schakel dit uit om slechts één keer per evenement toe te staan.',
     'Choose the timezone used for event dates in ICS exports. Floating preserves the event’s local time without assigning a timezone.' => 'Kies de tijdzone voor evenementdatums in ICS-exports. Zwevend behoudt de lokale tijd van het evenement zonder een tijdzone toe te wijzen.',
     'Floating (Recommended)' => 'Zwevend (aanbevolen)',
-    'ICS Description Field' => 'ICS-beschrijvingsveld',
-    'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Kies het evenementveld voor beschrijvingen in ICS-exports. Selecteer Geen om beschrijvingen weg te laten.',
-    'ICS Location Field' => 'ICS-locatieveld',
-    'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Kies het evenementveld voor locaties in ICS-exports. Selecteer Geen om locaties weg te laten.',
+    'Description Field' => 'Beschrijvingsveld',
+    'Choose the event’s description field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Kies het beschrijvingsveld van het evenement. Dit wordt gebruikt in ICS-exports en, bij velden van het type Platte tekst, in het venster Nieuw evenement. Selecteer Geen om beide uit te schakelen.',
+    'Location Field' => 'Locatieveld',
+    'Choose the event’s location field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Kies het locatieveld van het evenement. Dit wordt gebruikt in ICS-exports en, bij velden van het type Platte tekst, in het venster Nieuw evenement. Selecteer Geen om beide uit te schakelen.',
 
     // Occurrence editor
     'Date & Time' => 'Datum & tijd',
@@ -755,4 +755,6 @@ return [
     'Reset Occurrence' => 'Herhaling herstellen',
     'Remove all customizations and restore the event’s values.' => 'Verwijder alle aanpassingen en herstel de waarden van het evenement.',
     'More actions' => 'Meer acties',
+    'Location' => 'Locatie',
+    'Invalid event details.' => 'Ongeldige evenementdetails.',
 ];

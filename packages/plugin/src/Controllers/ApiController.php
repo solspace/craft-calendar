@@ -10,6 +10,7 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Transformers\FullCalTransformer;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -137,7 +138,34 @@ class ApiController extends BaseController
             $event->endDate = DateHelper::allDayEndFromExclusive($event->startDate, $event->endDate);
         }
 
-        $success = \Craft::$app->getElements()->saveElement($event);
+        $details = $request->post('details');
+        $validDetails = true;
+        if (null !== $details) {
+            if (!\is_array($details)) {
+                throw new BadRequestHttpException(Calendar::t('Invalid event details.'));
+            }
+
+            // Resolve handles on the server; only the selected calendar's mapped text fields are writable.
+            $mappedHandles = $calendar->getQuickCreateFieldHandles();
+            foreach ($mappedHandles as $key => $handle) {
+                if (!\array_key_exists($key, $details)) {
+                    continue;
+                }
+                if (!\is_string($details[$key])) {
+                    throw new BadRequestHttpException(Calendar::t('Invalid event details.'));
+                }
+                $event->setFieldValueFromRequest($handle, $details[$key]);
+            }
+
+            if ($mappedHandles) {
+                // Validate the popup fields fully without requiring unrelated fields in the full editor.
+                $event->setScenario(Element::SCENARIO_LIVE);
+                $validDetails = $event->validate(array_map(static fn ($handle) => 'field:'.$handle, array_values($mappedHandles)));
+                $event->setScenario($scenario);
+            }
+        }
+
+        $success = $validDetails && \Craft::$app->getElements()->saveElement($event);
 
         if (!$success) {
             $this->response->setStatusCode(400);

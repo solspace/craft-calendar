@@ -78,15 +78,18 @@ class OverviewController extends BaseController
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
         $calendarColors = [];
+        $quickCreateFields = [];
         foreach ($this->getCalendarService()->getAllAllowedCalendars() as $calendar) {
             if (isset($calendarOptions[$calendar->id])) {
                 $calendarColors[$calendar->id] = $calendar->color;
+                $quickCreateFields[$calendar->id] = $calendar->getQuickCreateFieldHandles();
             }
         }
 
         $configuration = [
             'calendars' => $calendarOptions,
             'calendarColors' => $calendarColors,
+            'quickCreateFields' => $quickCreateFields,
             'formats' => DateFormatHelper::toConfig(),
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),

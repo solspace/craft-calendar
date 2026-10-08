@@ -740,10 +740,10 @@ return [
     'Allow events in this calendar to repeat. Turn this off to allow only a single occurrence per event.' => 'Consenti la ripetizione degli eventi di questo calendario. Disattiva questa opzione per consentire una sola occorrenza per evento.',
     'Choose the timezone used for event dates in ICS exports. Floating preserves the event’s local time without assigning a timezone.' => 'Scegli il fuso orario usato per le date degli eventi nelle esportazioni ICS. Fluttuante mantiene l’ora locale dell’evento senza assegnare un fuso orario.',
     'Floating (Recommended)' => 'Fluttuante (consigliato)',
-    'ICS Description Field' => 'Campo descrizione ICS',
-    'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Scegli il campo dell’evento usato per le descrizioni nelle esportazioni ICS. Seleziona Nessuno per ometterle.',
-    'ICS Location Field' => 'Campo luogo ICS',
-    'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Scegli il campo dell’evento usato per i luoghi nelle esportazioni ICS. Seleziona Nessuno per ometterli.',
+    'Description Field' => 'Campo descrizione',
+    'Choose the event’s description field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Scegli il campo descrizione dell’evento. Viene usato nelle esportazioni ICS e, per i campi Testo semplice, nella finestra Nuovo evento. Seleziona Nessuno per disattivare entrambi.',
+    'Location Field' => 'Campo luogo',
+    'Choose the event’s location field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Scegli il campo luogo dell’evento. Viene usato nelle esportazioni ICS e, per i campi Testo semplice, nella finestra Nuovo evento. Seleziona Nessuno per disattivare entrambi.',
 
     // Occurrence editor
     'Date & Time' => 'Data e ora',
@@ -755,4 +755,6 @@ return [
     'Reset Occurrence' => 'Ripristina occorrenza',
     'Remove all customizations and restore the event’s values.' => 'Rimuovi tutte le personalizzazioni e ripristina i valori dell’evento.',
     'More actions' => 'Altre azioni',
+    'Location' => 'Luogo',
+    'Invalid event details.' => 'Dettagli dell’evento non validi.',
 ];

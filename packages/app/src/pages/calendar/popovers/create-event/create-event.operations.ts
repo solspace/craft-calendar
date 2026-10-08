@@ -1,10 +1,16 @@
 import type { CalendarCreateDraft } from "@cal/pages/calendar/calendar.create-session";
 import translate from "@cal/utils/translations";
 
+export type QuickCreateDetails = {
+  location?: string;
+  description?: string;
+};
+
 export const buildCreateEventPayload = (
   event: CalendarCreateDraft,
   calendarId: number,
   siteId: number,
+  details?: QuickCreateDetails,
 ) => ({
   title: event.title || translate("New Event"),
   start: event.start,
@@ -12,4 +18,5 @@ export const buildCreateEventPayload = (
   allDay: event.allDay,
   calendarId,
   siteId,
+  ...(details && { details }),
 });

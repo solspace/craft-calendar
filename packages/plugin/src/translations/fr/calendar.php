@@ -740,10 +740,10 @@ return [
     'Allow events in this calendar to repeat. Turn this off to allow only a single occurrence per event.' => 'Autorisez la répétition des événements de ce calendrier. Désactivez cette option pour n’autoriser qu’une seule occurrence par événement.',
     'Choose the timezone used for event dates in ICS exports. Floating preserves the event’s local time without assigning a timezone.' => 'Choisissez le fuseau horaire utilisé pour les dates des événements dans les exports ICS. Flottant conserve l’heure locale de l’événement sans lui attribuer de fuseau horaire.',
     'Floating (Recommended)' => 'Flottant (recommandé)',
-    'ICS Description Field' => 'Champ de description ICS',
-    'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Choisissez le champ de l’événement utilisé pour les descriptions dans les exports ICS. Sélectionnez Aucun pour les omettre.',
-    'ICS Location Field' => 'Champ de lieu ICS',
-    'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Choisissez le champ de l’événement utilisé pour les lieux dans les exports ICS. Sélectionnez Aucun pour les omettre.',
+    'Description Field' => 'Champ de description',
+    'Choose the event’s description field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Choisissez le champ de description de l’événement. Il est utilisé dans les exports ICS et, pour les champs Texte brut, dans la fenêtre Nouvel événement. Sélectionnez Aucun pour désactiver les deux.',
+    'Location Field' => 'Champ de lieu',
+    'Choose the event’s location field. It is used in ICS exports and, for Plain Text fields, the New Event popup. Select None to disable both.' => 'Choisissez le champ de lieu de l’événement. Il est utilisé dans les exports ICS et, pour les champs Texte brut, dans la fenêtre Nouvel événement. Sélectionnez Aucun pour désactiver les deux.',
 
     // Occurrence editor
     'Date & Time' => 'Date et heure',
@@ -755,4 +755,6 @@ return [
     'Reset Occurrence' => 'Réinitialiser l’occurrence',
     'Remove all customizations and restore the event’s values.' => 'Supprimez toutes les personnalisations et restaurez les valeurs de l’événement.',
     'More actions' => 'Autres actions',
+    'Location' => 'Lieu',
+    'Invalid event details.' => 'Détails de l’événement non valides.',
 ];

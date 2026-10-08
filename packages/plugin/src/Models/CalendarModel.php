@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Models;
 use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -159,6 +160,25 @@ class CalendarModel extends Model implements \JsonSerializable
     public function getLocationFieldHandles(): array
     {
         return $this->getDescriptionFieldHandles();
+    }
+
+    /**
+     * Shared ICS mappings that can be edited as text in the quick-create popup.
+     * Other field types remain available for ICS exports.
+     *
+     * @return array<string, string>
+     */
+    public function getQuickCreateFieldHandles(): array
+    {
+        $handles = [];
+        $layout = $this->getFieldLayout();
+        foreach (['location' => $this->locationFieldHandle, 'description' => $this->descriptionFieldHandle] as $key => $handle) {
+            if ($handle && $layout?->getFieldByHandle($handle) instanceof PlainText) {
+                $handles[$key] = $handle;
+            }
+        }
+
+        return $handles;
     }
 
     /**

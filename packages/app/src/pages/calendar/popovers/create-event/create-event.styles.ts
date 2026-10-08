@@ -38,6 +38,11 @@ export const Fields = styled.div`
   hr {
     margin: 3px 0;
   }
+
+  textarea.text {
+    resize: vertical;
+    min-height: 72px;
+  }
 `;
 
 export const AllDayRow = styled.div`
