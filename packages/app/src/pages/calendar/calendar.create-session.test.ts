@@ -14,7 +14,7 @@ const settings = {
 };
 
 describe("calendar create session", () => {
-  it("builds timed drafts directly from the selected range", () => {
+  it("uses the default duration for a single-day timed selection", () => {
     const draft = buildCreateDraftFromSelection(
       {
         start: new Date("2024-01-20T09:00:00Z"),
@@ -29,6 +29,79 @@ describe("calendar create session", () => {
       start: 1705741200,
       end: 1705744800,
     });
+  });
+
+  it.each([
+    false,
+    true,
+  ])("starts a single date cell as timed, even with all-day default %s", (allDayDefault) => {
+    const draft = buildCreateDraftFromSelection(
+      {
+        start: new Date("2026-10-06T00:00:00Z"),
+        end: new Date("2026-10-07T00:00:00Z"),
+        allDay: true,
+      },
+      { allDayDefault, eventDuration: 90 },
+    );
+
+    expect(draft.allDay).toBe(false);
+    expect(draft.end - draft.start).toBe(90 * 60);
+    const moved = setCreateDraftStart(draft, draft.start + 14 * 60 * 60, { eventDuration: 90 });
+    expect(moved.end - moved.start).toBe(90 * 60);
+  });
+
+  it("uses the default duration after changing the start of a manually extended single-day draft", () => {
+    const draft = buildCreateDraftFromSelection(
+      {
+        start: new Date("2026-10-06T14:00:00Z"),
+        end: new Date("2026-10-06T15:00:00Z"),
+        allDay: false,
+      },
+      settings,
+    );
+    const extended = setCreateDraftEnd(draft, draft.start + 4 * 60 * 60, settings);
+    const moved = setCreateDraftStart(extended, draft.start + 60 * 60, settings);
+    expect(moved.end - moved.start).toBe(60 * 60);
+  });
+
+  it("preserves a dragged timed multi-day range and its duration when the start changes", () => {
+    const start = new Date("2026-10-06T14:00:00Z");
+    const end = new Date("2026-10-08T18:00:00Z");
+    const draft = buildCreateDraftFromSelection({ start, end, allDay: false }, settings);
+    const moved = setCreateDraftStart(draft, draft.start + 24 * 60 * 60, settings);
+
+    expect(draft.end).toBe(end.getTime() / 1000);
+    expect(moved.end - moved.start).toBe(draft.end - draft.start);
+  });
+
+  it("uses the default duration when switching a single-day draft from all-day back to timed", () => {
+    const draft = buildCreateDraftFromSelection(
+      {
+        start: new Date("2026-10-06T14:00:00Z"),
+        end: new Date("2026-10-06T15:00:00Z"),
+        allDay: false,
+      },
+      settings,
+    );
+    const timed = setCreateDraftAllDay(
+      setCreateDraftAllDay(draft, true, settings),
+      false,
+      settings,
+    );
+    expect(timed.end - timed.start).toBe(60 * 60);
+  });
+
+  it("retains the last selected date when switching a multi-day draft to timed", () => {
+    const draft = buildCreateDraftFromSelection(
+      {
+        start: new Date("2026-10-06T00:00:00Z"),
+        end: new Date("2026-10-09T00:00:00Z"),
+        allDay: true,
+      },
+      settings,
+    );
+    const timed = setCreateDraftAllDay(draft, false, settings);
+    expect(new Date(timed.end * 1000).toISOString()).toBe("2026-10-08T01:00:00.000Z");
   });
 
   it("uses all-day defaults for timed selections when configured", () => {

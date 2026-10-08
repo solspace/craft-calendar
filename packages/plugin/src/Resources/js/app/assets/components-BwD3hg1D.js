@@ -164,7 +164,7 @@ import{A as e,E as t,M as n,O as r,S as i,T as a,a as o,c as s,d as c,f as l,h a
       }
     }
   }
-`,Pp=({options:e,value:t,onChange:n,translateOptions:r=!1,...i})=>(0,V.jsx)(kp,{...i,children:(0,V.jsx)(`div`,{className:`select fullwidth`,children:(0,V.jsx)(`select`,{className:`fullwidth`,value:t,onChange:e=>n?.(e.target.value),children:e.map(e=>(0,V.jsx)(`option`,{value:e.value,children:r?d(e.label):e.label},e.value))})})}),Fp=({enabled:e,errors:t,onClick:n,...r})=>(0,V.jsx)(kp,{...r,children:(0,V.jsx)(`button`,{type:`button`,role:`switch`,"aria-checked":e??!1,className:B(`lightswitch`,e&&`on`,t&&`error`),onClick:()=>n?.(!e),children:(0,V.jsx)(`div`,{className:`lightswitch-container`,children:(0,V.jsx)(`div`,{className:`handle`})})})}),Ip=({className:e,$direction:t=`row`,$gap:n=16,$justifyContent:r=`start`,$alignItems:i=`start`,style:a,children:o})=>(0,V.jsx)(Lp,{className:e,$direction:t,$gap:n,$justifyContent:r,$alignItems:i,style:a,children:o}),Lp=t.div`
+`,Pp=({enabled:e,errors:t,onClick:n,...r})=>(0,V.jsx)(kp,{...r,children:(0,V.jsx)(`button`,{type:`button`,role:`switch`,"aria-checked":e??!1,className:B(`lightswitch`,e&&`on`,t&&`error`),onClick:()=>n?.(!e),children:(0,V.jsx)(`div`,{className:`lightswitch-container`,children:(0,V.jsx)(`div`,{className:`handle`})})})}),Fp=({className:e,$direction:t=`row`,$gap:n=16,$justifyContent:r=`start`,$alignItems:i=`start`,style:a,children:o})=>(0,V.jsx)(Ip,{className:e,$direction:t,$gap:n,$justifyContent:r,$alignItems:i,style:a,children:o}),Ip=t.div`
   display: flex;
   flex-direction: ${e=>e.$direction};
   justify-content: ${e=>e.$justifyContent};
@@ -174,4 +174,4 @@ import{A as e,E as t,M as n,O as r,S as i,T as a,a as o,c as s,d as c,f as l,h a
   .field {
     margin-block: 0;
   }
-`;export{le as _,jp as a,D as b,Ep as c,qn as d,Kn as f,ve as g,A as h,Mp as i,B as l,Ze as m,Fp as n,Ap as o,wn as p,Pp as r,kp as s,Ip as t,Yn as u,oe as v,S as x,k as y};
+`;export{oe as _,Ap as a,S as b,B as c,Kn as d,wn as f,le as g,ve as h,jp as i,Yn as l,A as m,Pp as n,kp as o,Ze as p,Mp as r,Ep as s,Fp as t,qn as u,k as v,D as y};

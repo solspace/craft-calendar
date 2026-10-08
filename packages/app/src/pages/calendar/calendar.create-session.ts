@@ -12,6 +12,7 @@ export type CalendarCreateDraft = {
   allDay: boolean;
   start: number;
   end: number;
+  preserveDuration?: boolean;
 };
 
 export type CalendarCreateDraftSettings = {
@@ -36,7 +37,10 @@ const getEventDurationSeconds = (
 const getTimedDuration = (
   draft: CalendarCreateDraft,
   settings: Pick<CalendarCreateDraftSettings, "eventDuration">,
-): number => Math.max(getEventDurationSeconds(settings), draft.end - draft.start);
+): number =>
+  draft.preserveDuration
+    ? Math.max(60, draft.end - draft.start)
+    : getEventDurationSeconds(settings);
 
 const getAllDayDurationDays = (draft: CalendarCreateDraft): number =>
   Math.max(1, Math.round((draft.end - draft.start) / DAY_IN_SECONDS));
@@ -49,20 +53,32 @@ const hasClosest = (
 export const buildCreateDraftFromSelection = (
   selection: Pick<DateSelectArg, "start" | "end" | "allDay">,
   settings: CalendarCreateDraftSettings,
-): CalendarCreateDraft => ({
-  id: DEFAULT_CREATE_DRAFT_ID,
-  title: translate(DEFAULT_CREATE_DRAFT_TITLE),
-  allDay: selection.allDay || settings.allDayDefault,
-  start:
-    selection.allDay || settings.allDayDefault
-      ? toUtcDayStartTimestamp(toTimestamp(selection.start))
-      : toTimestamp(selection.start),
-  end: selection.allDay
-    ? toTimestamp(selection.end)
-    : settings.allDayDefault
-      ? addDays(toUtcDayStartTimestamp(toTimestamp(selection.start)), 1)
-      : toTimestamp(selection.start) + getEventDurationSeconds(settings),
-});
+): CalendarCreateDraft => {
+  const selectedStart = toTimestamp(selection.start);
+  const selectedEnd = toTimestamp(selection.end);
+  // FullCalendar supplies an exclusive end for date cells and all-day rows.
+  const multiDay = selection.allDay
+    ? selectedEnd - selectedStart > DAY_IN_SECONDS
+    : toUtcDayStartTimestamp(selectedEnd - 1) > toUtcDayStartTimestamp(selectedStart);
+  const allDay = selection.allDay ? multiDay : settings.allDayDefault;
+  const start = allDay ? toUtcDayStartTimestamp(selectedStart) : selectedStart;
+  const end = allDay
+    ? multiDay
+      ? addDays(toUtcDayStartTimestamp(selectedEnd - 1), 1)
+      : addDays(start, 1)
+    : multiDay
+      ? selectedEnd
+      : start + getEventDurationSeconds(settings);
+
+  return {
+    id: DEFAULT_CREATE_DRAFT_ID,
+    title: translate(DEFAULT_CREATE_DRAFT_TITLE),
+    allDay,
+    start,
+    end,
+    preserveDuration: multiDay,
+  };
+};
 
 export const buildCreateDraftEventInput = (draft: CalendarCreateDraft): EventInput => ({
   id: draft.id,
@@ -113,7 +129,10 @@ export const setCreateDraftAllDay = (
   return {
     ...draft,
     allDay: false,
-    end: Math.max(draft.end, draft.start + getEventDurationSeconds(settings)),
+    end:
+      draft.start +
+      (draft.preserveDuration ? (getAllDayDurationDays(draft) - 1) * DAY_IN_SECONDS : 0) +
+      getEventDurationSeconds(settings),
   };
 };
 

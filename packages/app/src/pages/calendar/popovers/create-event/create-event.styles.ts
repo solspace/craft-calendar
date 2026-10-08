@@ -2,6 +2,9 @@ import { Flex } from "@cal/styles/components";
 import styled from "styled-components";
 
 export const PopoverCreateEventWrapper = styled.div`
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
   padding: 15px;
 
   hr {

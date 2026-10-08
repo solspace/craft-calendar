@@ -1,4 +1,4 @@
-import{A as e,E as t,M as n,O as r}from"./localization-Dt_HqhpZ.js";import{l as i,s as a}from"./components-CYu4dEPZ.js";var o=n(e()),s=r(),c=({value:e,placeholder:t,autofocus:n,className:r,onChange:c,...l})=>{let u=(0,o.useRef)(null);return(0,o.useEffect)(()=>{n&&setTimeout(()=>{u.current?.focus()},10)},[n]),(0,s.jsx)(a,{...l,children:(0,s.jsx)(`input`,{ref:u,type:`text`,className:i(`text`,r),placeholder:t,value:e??``,onChange:e=>c?.(e.target.value)})})};t.div`
+import{A as e,E as t,M as n,O as r}from"./localization-Dt_HqhpZ.js";import{c as i,o as a}from"./components-BwD3hg1D.js";var o=n(e()),s=r(),c=({value:e,placeholder:t,autofocus:n,className:r,onChange:c,...l})=>{let u=(0,o.useRef)(null);return(0,o.useEffect)(()=>{n&&setTimeout(()=>{u.current?.focus()},10)},[n]),(0,s.jsx)(a,{...l,children:(0,s.jsx)(`input`,{ref:u,type:`text`,className:i(`text`,r),placeholder:t,value:e??``,onChange:e=>c?.(e.target.value)})})};t.div`
   box-shadow:
     0 0 0 1px #cdd8e4,
     0 2px 12px rgb(205 216 228 / 50%);

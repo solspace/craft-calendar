@@ -77,9 +77,16 @@ class OverviewController extends BaseController
         $currentDay = Carbon::createFromDate($year, $month, $day, DateHelper::UTC);
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
+        $calendarColors = [];
+        foreach ($this->getCalendarService()->getAllAllowedCalendars() as $calendar) {
+            if (isset($calendarOptions[$calendar->id])) {
+                $calendarColors[$calendar->id] = $calendar->color;
+            }
+        }
 
         $configuration = [
             'calendars' => $calendarOptions,
+            'calendarColors' => $calendarColors,
             'formats' => DateFormatHelper::toConfig(),
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),

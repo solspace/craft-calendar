@@ -17,6 +17,7 @@ export type DateFormats = Record<FormatTypes, Record<FormatLengths, FormatOrigin
 
 export type CalendarConfig = {
   calendars: Record<number, string>;
+  calendarColors?: Record<number, string | null>;
   formats: DateFormats;
   language: string;
   overlapThreshold: number;

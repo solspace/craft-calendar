@@ -1,5 +1,4 @@
 import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-picker";
-import { Dropdown } from "@cal/components/controls/dropdown/dropdown";
 import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { TextInput } from "@cal/components/controls/text-input/text-input";
 import {
@@ -18,6 +17,7 @@ import type { FC } from "react";
 import { useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { useConfig } from "../../context/config.context";
+import { CalendarDropdown } from "./create-event.calendar-dropdown";
 import { useCreateEvent } from "./create-event.mutation";
 import {
   AllDayLabel,
@@ -42,14 +42,16 @@ export const PopoverCreateEvent: FC<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { calendars, formats, weekStartDay, eventDuration, timeInterval } = useConfig();
+  const { calendars, calendarColors, formats, weekStartDay, eventDuration, timeInterval } =
+    useConfig();
   const calendarOptions = useMemo(
     () =>
       Object.entries(calendars).map(([value, label]) => ({
         value: Number(value),
         label,
+        color: calendarColors?.[Number(value)],
       })),
-    [calendars],
+    [calendars, calendarColors],
   );
   const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
   const { createEvent, error, isFetching } = useCreateEvent({
@@ -85,12 +87,7 @@ export const PopoverCreateEvent: FC<Props> = ({
       </FlexTitle>
 
       <Fields>
-        <Dropdown
-          label={translate("Calendar")}
-          value={calendarId}
-          options={calendarOptions}
-          onChange={(value) => setCalendarId(Number(value))}
-        />
+        <CalendarDropdown value={calendarId} options={calendarOptions} onChange={setCalendarId} />
 
         <hr />
 
@@ -114,6 +111,7 @@ export const PopoverCreateEvent: FC<Props> = ({
             icon: <Icon />,
             toggleCalendarOnIconClick: true,
             dateFormat: format,
+            timeFormat: formats.time.short.icu,
             showTimeSelect: !draft.allDay,
             showMonthDropdown: true,
             showYearDropdown: true,
@@ -136,6 +134,7 @@ export const PopoverCreateEvent: FC<Props> = ({
             toggleCalendarOnIconClick: true,
             minDate: utcTimestampToLocalDisplayDate(draft.start),
             dateFormat: format,
+            timeFormat: formats.time.short.icu,
             showTimeSelect: !draft.allDay,
             showMonthDropdown: true,
             showYearDropdown: true,
@@ -165,7 +164,7 @@ export const PopoverCreateEvent: FC<Props> = ({
 
       {error && <p className="error">{error}</p>}
 
-      <Flex>
+      <Flex $justifyContent="flex-end" $gap={8}>
         <button
           type="button"
           className={clsx("btn submit", isFetching && "disabled")}
