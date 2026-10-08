@@ -8,7 +8,7 @@ export const PopoverWrapper = styled.div`
   padding: 15px;
   overflow-wrap: anywhere;
 
-  .btn {
+  .btn:not(.action-btn) {
     max-width: 100%;
     height: auto;
     white-space: normal;
@@ -50,6 +50,16 @@ export const PopoverWrapper = styled.div`
     margin: 8px 0 0;
     color: var(--gray-600);
     font-size: 13px;
+  }
+
+  .occurrence-status.is-edited {
+    margin-top: 12px;
+    padding: 8px 10px;
+    border: 1px solid var(--blue-200);
+    border-radius: var(--radius-sm);
+    background: var(--blue-050);
+    color: var(--blue-800);
+    line-height: 1.4;
   }
 
   .calendar-label-dot {
@@ -96,6 +106,7 @@ export const PopoverWrapper = styled.div`
 export const PopoverActions = styled.div`
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
 `;
@@ -134,26 +145,5 @@ export const PopoverCloseButton = styled.button`
   &:disabled {
     opacity: .5;
     cursor: default;
-  }
-`;
-
-export const PopoverMenuButton = styled.button`
-  && {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    white-space: nowrap;
-  }
-
-  &&::after {
-    display: none;
-  }
-
-  span {
-    font-size: 11px;
-    letter-spacing: 1px;
   }
 `;

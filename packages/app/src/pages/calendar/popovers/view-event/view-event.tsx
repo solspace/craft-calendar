@@ -227,7 +227,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       )}
 
       {(isCancelled || isEdited) && (
-        <div className="occurrence-status">
+        <div className={clsx("occurrence-status", !isCancelled && "is-edited")}>
           {isCancelled
             ? translate("This occurrence is cancelled.")
             : translate("This occurrence has its own changes.")}
@@ -278,7 +278,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
             if (isBusy) click.preventDefault();
           }}
         >
-          {translate("Edit")}
+          {translate("Edit Event")}
         </a>
 
         <PopoverEventMenu actions={menuActions} disabled={isBusy} />

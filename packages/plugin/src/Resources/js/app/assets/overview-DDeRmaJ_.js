@@ -219,7 +219,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   padding: 15px;
   overflow-wrap: anywhere;
 
-  .btn {
+  .btn:not(.action-btn) {
     max-width: 100%;
     height: auto;
     white-space: normal;
@@ -261,6 +261,16 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
     margin: 8px 0 0;
     color: var(--gray-600);
     font-size: 13px;
+  }
+
+  .occurrence-status.is-edited {
+    margin-top: 12px;
+    padding: 8px 10px;
+    border: 1px solid var(--blue-200);
+    border-radius: var(--radius-sm);
+    background: var(--blue-050);
+    color: var(--blue-800);
+    line-height: 1.4;
   }
 
   .calendar-label-dot {
@@ -305,6 +315,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
 `,xa=r.div`
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
 `,Sa=r.button`
@@ -342,28 +353,9 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
     opacity: .5;
     cursor: default;
   }
-`,Ca=r.button`
-  && {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    white-space: nowrap;
-  }
-
-  &&::after {
-    display: none;
-  }
-
-  span {
-    font-size: 11px;
-    letter-spacing: 1px;
-  }
-`,wa={move:`You are moving an event.`,resize:`You are changing an event’s length.`,delete:`You are deleting an event.`},Ta={move:`Which occurrences do you want to move?`,resize:`Which occurrences do you want to change?`,delete:`Which occurrences do you want to delete?`},Ea={occurrence:`Only this occurrence`,following:`This and following`,series:`All occurrences`},Da=({action:e,onSelect:t,onCancel:n})=>{let{hidePopover:r}=ii(),[i,a]=(0,z.useState)(null),o=(0,z.useRef)(!0),s=(0,z.useRef)(!1),c=i!==null;(0,z.useEffect)(()=>()=>{o.current=!1,s.current||n?.()},[]);let u=(0,z.useCallback)(()=>{c||r()},[r,c]);Hi(`keydown`,e=>{e.key===`Escape`&&u()});let d=async e=>{if(!c){s.current=!0,a(e);try{await t(e)&&r()}finally{o.current&&a(null)}}};return(0,J.jsxs)(ba,{children:[(0,J.jsx)(`h3`,{children:l(wa[e])}),(0,J.jsx)(`p`,{children:l(Ta[e])}),(0,J.jsx)(`hr`,{}),(0,J.jsxs)(Pe,{$direction:`column`,$alignItems:`center`,$gap:8,children:[[`occurrence`,`following`,`series`].map(e=>(0,J.jsx)(`button`,{type:`button`,className:R(`btn small`,e===`occurrence`&&`submit`,c&&`disabled`),disabled:c,onClick:()=>d(e),children:l(i===e?`Processing...`:Ea[e])},e)),(0,J.jsx)(`button`,{type:`button`,className:R(`btn small`,c&&`disabled`),disabled:c,onClick:u,children:l(`Cancel`)})]})]})},Oa=({actions:e,disabled:t})=>{let{keepPopoverOpen:n}=ii(),r=(0,z.useRef)(null),i=(0,z.useRef)({actions:e,disabled:t}),a=JSON.stringify(e.map(({label:e,destructive:t})=>({label:e,destructive:t})));return(0,z.useEffect)(()=>{i.current={actions:e,disabled:t}},[e,t]),(0,z.useEffect)(()=>{let e=r.current;if(!e)return;let t=document.createElement(`div`);t.className=`menu`,t.setAttribute(`aria-label`,l(`More actions`));let o=document.createElement(`ul`);t.append(o),JSON.parse(a).forEach((e,n)=>{e.destructive&&n>0&&(t.append(document.createElement(`hr`)),o=document.createElement(`ul`),t.append(o));let r=document.createElement(`li`),i=document.createElement(`a`);i.textContent=e.label,i.dataset.action=String(n),e.destructive&&(i.className=`error`),r.append(i),o.append(r)}),e.after(t);let s=new Garnish.MenuBtn(e,{onOptionSelect:e=>{i.current.disabled||(s.hideMenu(),i.current.actions[Number(e.dataset.action)]?.onSelect())}});s.menu.on(`show`,n);let c=t=>{t.key===`Escape`&&s.showingMenu&&(t.preventDefault(),t.stopPropagation(),s.hideMenu(),e.focus())};return document.addEventListener(`keydown`,c,!0),()=>{document.removeEventListener(`keydown`,c,!0),s.hideMenu(),s.destroy(),t.remove()}},[a,n]),(0,J.jsx)(Ca,{ref:r,type:`button`,className:`btn menubtn`,disabled:t,"aria-label":l(`More actions`),title:l(`More actions`),children:(0,J.jsx)(`span`,{"aria-hidden":`true`,children:`•••`})})},ka=({fcEvent:e})=>{let{hidePopover:n,showPopover:r}=ii(),{currentSiteId:i}=Q(),[a,o]=(0,z.useState)(!1),[s,c]=(0,z.useState)(!1),[u,d]=(0,z.useState)(!1),p=a||s||u;Hi(`keydown`,e=>{e.key===`Escape`&&n()});let m=e.event,{end:h,allDay:g}=m,_=m.extendedProps.calendarName,b=typeof m.extendedProps.location==`string`?m.extendedProps.location.trim():``,x=typeof m.extendedProps.description==`string`?m.extendedProps.description.trim():``,S=m.extendedProps.calendarColor??m.backgroundColor??m.borderColor??`#607d9f`,C=(0,z.useMemo)(()=>g?Oe(h,1):h,[g,h]),w=!!m.extendedProps.rrule,T=w?y(v(m.extendedProps.rrule,m.start.getTime()/1e3)):null,E=de(String(m.id)),D=m.allDay?`PP`:`PPp`,O=!!m.extendedProps.cancelled,k=!!m.extendedProps.isEdited,A=!!m.extendedProps.hasOverride,j=()=>e.view.calendar.refetchEvents(),M=()=>{E&&(n(),ee({eventId:N(String(m.id)),recurrenceId:E,siteId:i,onSave:j}))},P=async()=>{if(!E||p)return;d(!0);let e=await ae({event:m,recurrenceId:E,siteId:i});if(e){window.location.href=e;return}d(!1)},te=async()=>{if(!(!E||p)){c(!0);try{await ve({event:m,recurrenceId:E,cancelled:!O,siteId:i,refetchEvents:j})&&n()}finally{c(!1)}}},ne=async()=>{if(!a){o(!0);try{await me({event:m,scope:`series`,recurrenceId:E,siteId:i,refetchEvents:j})&&n()}finally{o(!1)}}},re=()=>{r((0,J.jsx)(Da,{action:`delete`,onSelect:async e=>e===`occurrence`&&A&&!window.confirm(l(`This occurrence has its own changes, which are deleted with it. Delete it?`))?!1:me({event:m,scope:e,recurrenceId:E,siteId:i,refetchEvents:j})}),e.el)},F=[];return w&&E&&F.push({label:l(`Edit occurrence`),onSelect:M},{label:l(u?`Processing...`:`Edit this and following occurrences`),onSelect:()=>void P()},{label:l(O?`Restore occurrence`:`Cancel occurrence`),onSelect:()=>void te()}),F.push({label:l(a?`Deleting...`:`Delete`),destructive:!0,onSelect:()=>{w?re():window.confirm(l(`Are you sure you want to delete this event?`))&&ne()}}),(0,J.jsxs)(ba,{children:[(0,J.jsx)(Sa,{type:`button`,className:`icon`,"data-icon":`remove`,"aria-label":l(`Close`),title:l(`Close`),disabled:p,onClick:n}),(0,J.jsx)(`h1`,{className:R(`event-title`,O&&`is-cancelled`),children:m.title}),_&&(0,J.jsxs)(`div`,{className:`calendar-label`,children:[(0,J.jsx)(`span`,{className:`calendar-label-dot`,style:{backgroundColor:S},"aria-hidden":`true`}),(0,J.jsx)(`span`,{children:_})]}),(O||k)&&(0,J.jsx)(`div`,{className:`occurrence-status`,children:l(O?`This occurrence is cancelled.`:`This occurrence has its own changes.`)}),(0,J.jsx)(`hr`,{}),(0,J.jsxs)(`div`,{children:[(0,J.jsxs)(`b`,{children:[l(`Starts`),`:`]}),` `,je(t(m.start),D,{locale:f()}),(0,J.jsx)(`br`,{}),(0,J.jsxs)(`b`,{children:[l(`Ends`),`:`]}),` `,je(t(C),D,{locale:f()})]}),T&&(0,J.jsxs)(`div`,{children:[(0,J.jsxs)(`b`,{children:[l(`Repeats`),`:`]}),` `,T]}),(b||x)&&(0,J.jsxs)(`dl`,{className:`event-details`,children:[b&&(0,J.jsxs)(`div`,{children:[(0,J.jsx)(`dt`,{children:l(`Location`)}),(0,J.jsx)(`dd`,{className:`event-location`,children:b})]}),x&&(0,J.jsxs)(`div`,{children:[(0,J.jsx)(`dt`,{children:l(`Description`)}),(0,J.jsx)(`dd`,{className:`event-description`,children:x})]})]}),(0,J.jsx)(`hr`,{}),(0,J.jsxs)(xa,{children:[(0,J.jsx)(`a`,{href:m.url,className:R(`btn submit`,p&&`disabled`),"aria-disabled":p,onClick:e=>{p&&e.preventDefault()},children:l(`Edit`)}),(0,J.jsx)(Oa,{actions:F,disabled:p})]})]})},Aa=new Intl.DateTimeFormat(f().code,{weekday:`short`,timeZone:`UTC`}),ja=new Intl.DateTimeFormat(f().code,{day:`numeric`,timeZone:`UTC`}),Ma={dayGridMonth:{dayHeaderFormat:{weekday:`long`}}},Na={closeDelayMs:300,position:[`bottom`,`top`,`right`,`left`]},Pa=e=>{let t=Math.floor(e/60),n=e%60;return`${String(t).padStart(2,`0`)}:${String(n).padStart(2,`0`)}:00`},Fa=e=>!!(e.extendedProps?.rrule||e.extendedProps?.repeats),Ia=({hiddenCalendarIds:e,selectedDate:t,onDateChange:n,miniDateSelection:r,onMiniDateSelectionHandled:i})=>{let{hidePopover:a,showPopover:o}=ii(),{view:c,setView:l,isReady:u}=Zi(),{currentDay:d,language:f,formats:p,weekStartDay:h,overlapThresholdString:_,allDayDefault:v,eventDuration:y,timeInterval:b,canEditEvents:x,isDragAndDropEnabled:S,isQuickCreateEnabled:C,currentSiteId:w}=Q(),T=x&&C,E=(0,z.useRef)(null),D=e.join(`,`),O=(0,z.useRef)(null),k=(0,z.useRef)(void 0),A=(0,z.useRef)(!1),j=(0,z.useRef)(0),[M,N]=(0,z.useState)(null),[P,ee]=(0,z.useState)(null),[te,ne]=(0,z.useState)(!1),F=(0,z.useCallback)(()=>E.current?.getApi(),[E.current]),I=(0,z.useMemo)(()=>F(),[F]),ie=(0,z.useMemo)(()=>({alignment:`center`,position:[`right`,`left`,`bottom`,`top`]}),[]),{datePickerButton:ae,dateSelector:oe}=ta(I),se=(0,z.useMemo)(()=>new Set(e),[e]),L=Pa(b),le=(0,z.useMemo)(()=>ue(se,w),[se,w]),fe=(0,z.useMemo)(()=>Bi(I,{datePickerButton:ae}),[ae,I]),me=(0,z.useCallback)(()=>{E.current?.getApi().refetchEvents()},[]),ge=(0,z.useCallback)(()=>{N(null),ee(null)},[]);(0,z.useEffect)(()=>{if(!u)return;let e=E.current?.getApi();if(e){if(O.current===null){O.current=D;return}O.current!==D&&(O.current=D,e.refetchEvents())}},[D,u]);let _e=(0,z.useCallback)(()=>{ge(),a()},[ge,a]);(0,z.useEffect)(()=>{let e=E.current?.getApi();if(!e)return;let t=e.getEvents().find(e=>Z(e));if(!M){t?.remove();return}if(t){Ii(t,M);return}e.addEvent(Ai(M))},[M]),(0,z.useEffect)(()=>{if(!M){a();return}if(!P){a();return}o((0,J.jsx)(ya,{draft:M,onChange:N,refetchEvents:me,onConfirm:ge,onCancel:_e}),P,ie)},[_e,ge,M,P,a,ie,me,o]);let ve=(0,z.useCallback)(e=>{a(),e.view.calendar.getEvents().find(e=>Z(e))?.remove(),ee(null),N(ki(e,{allDayDefault:v,eventDuration:y})),e.view.calendar.unselect()},[v,y,a]),ye=(0,z.useCallback)(e=>{e.jsEvent.detail<2||(a(),I.getEvents().find(e=>Z(e))?.remove(),ee(null),N(ki({start:e.date,end:e.allDay?De(e.date,1):e.date,allDay:e.allDay},{allDayDefault:v,eventDuration:y})))},[I,v,y,a]);(0,z.useEffect)(()=>()=>clearTimeout(k.current),[]),(0,z.useEffect)(()=>{let e=E.current?.getApi();!e||!r||(e.changeView(`timeGridDay`,r),Ri(r),i())},[r,i]),(0,z.useEffect)(()=>{let e=E.current?.getApi();!e||g(e.getDate())===g(t)||e.gotoDate(t)},[t]);let be=(0,z.useCallback)(()=>clearTimeout(k.current),[]),xe=(0,z.useCallback)(()=>{A.current=!0,clearTimeout(k.current),a()},[a]),Se=(0,z.useCallback)(()=>{A.current=!1},[]),Ce=(0,z.useCallback)(e=>{Z(e.event)&&ee(e.el)},[]),Ee=(0,z.useCallback)(e=>{Z(e.event)&&ee(t=>t===e.el?null:t)},[]),R=(0,z.useCallback)((e,t)=>{if(Z(t.event)){t.revert();return}let n=n=>{let r={event:t.event,recurrenceId:de(String(t.event.id)),scope:n,siteId:w,refetchEvents:me,revert:t.revert};return e===`move`?he(r):ce({...r,oldEvent:t.oldEvent})};if(!Fa(t.event)){n();return}o((0,J.jsx)(Da,{action:e,onSelect:async e=>{let t=await n(e);return t||a(),t},onCancel:t.revert},++j.current),t.jsEvent)},[w,a,me,o]),Oe=(0,z.useCallback)(e=>{let t=s(e);Ri(t),E.current?.getApi().changeView(`timeGridDay`,t)},[]),ke=(0,z.useCallback)(e=>e.view.type===`timeGridWeek`&&g(e.date)===g(d)?[`fc-title-today`]:[],[d]),Ae=(0,z.useCallback)(e=>{if(e.view.type!==`timeGridWeek`)return e.text;let t=Aa.format(e.date),n=ja.format(e.date);return(0,J.jsxs)(J.Fragment,{children:[(0,J.jsx)(`span`,{className:`fc-day-header-label`,children:t}),(0,J.jsx)(`span`,{className:`fc-day-header-date`,children:n})]})},[]);return u?(0,J.jsxs)(Fe,{className:te?`is-fetching-events`:void 0,children:[(0,J.jsx)(re,{...m(),ref:E,themeSystem:`bootstrap5`,plugins:[pe,Te,bi,we],customButtons:fe,initialView:c,initialDate:d,locale:f,views:Ma,timeZone:`UTC`,firstDay:h,nextDayThreshold:_,fixedWeekCount:!0,dayMaxEventRows:!0,editable:x&&S,selectable:T,selectMirror:!1,selectMinDistance:5,slotDuration:L,snapDuration:L,navLinks:!0,navLinkDayClick:Oe,select:T?ve:void 0,dateClick:T?ye:void 0,dayHeaderClassNames:ke,dayHeaderContent:Ae,events:le,eventClassNames:aa,eventContent:sa,progressiveEventRendering:!0,eventTimeFormat:p.time.short.js,loading:ne,eventDidMount:Ce,eventWillUnmount:Ee,eventMouseEnter:e=>{e.view.type===`dayGridMonth`&&(A.current||oa(e.event,e.jsEvent.target)!==`ignore`&&(clearTimeout(k.current),k.current=setTimeout(()=>o((0,J.jsx)(ka,{fcEvent:e}),e.el,Na),300),e.jsEvent.preventDefault(),e.jsEvent.stopPropagation()))},eventMouseLeave:be,eventDragStart:xe,eventDragStop:Se,eventResizeStart:xe,eventResizeStop:Se,eventClick:e=>{oa(e.event,e.jsEvent.target)===`open`&&(o((0,J.jsx)(ka,{fcEvent:e}),e.el),e.jsEvent.preventDefault(),e.jsEvent.stopPropagation())},eventDrop:e=>R(`move`,e),eventResize:e=>R(`resize`,e),headerToolbar:{start:`title`,center:`dayGridMonth,timeGridWeek,timeGridDay`,end:zi},buttonText:{dayGridMonth:Craft.t(`calendar`,`Month`),timeGridWeek:Craft.t(`calendar`,`Week`),timeGridDay:Craft.t(`calendar`,`Day`),today:Craft.t(`calendar`,`Today`)},datesSet:({view:e})=>{n(e.calendar.getDate()),setTimeout(()=>{l(e.type),Ri()},50)}}),oe]}):null},La=r.div`
+`,Ca={move:`You are moving an event.`,resize:`You are changing an event’s length.`,delete:`You are deleting an event.`},wa={move:`Which occurrences do you want to move?`,resize:`Which occurrences do you want to change?`,delete:`Which occurrences do you want to delete?`},Ta={occurrence:`Only this occurrence`,following:`This and following`,series:`All occurrences`},Ea=({action:e,onSelect:t,onCancel:n})=>{let{hidePopover:r}=ii(),[i,a]=(0,z.useState)(null),o=(0,z.useRef)(!0),s=(0,z.useRef)(!1),c=i!==null;(0,z.useEffect)(()=>()=>{o.current=!1,s.current||n?.()},[]);let u=(0,z.useCallback)(()=>{c||r()},[r,c]);Hi(`keydown`,e=>{e.key===`Escape`&&u()});let d=async e=>{if(!c){s.current=!0,a(e);try{await t(e)&&r()}finally{o.current&&a(null)}}};return(0,J.jsxs)(ba,{children:[(0,J.jsx)(`h3`,{children:l(Ca[e])}),(0,J.jsx)(`p`,{children:l(wa[e])}),(0,J.jsx)(`hr`,{}),(0,J.jsxs)(Pe,{$direction:`column`,$alignItems:`center`,$gap:8,children:[[`occurrence`,`following`,`series`].map(e=>(0,J.jsx)(`button`,{type:`button`,className:R(`btn small`,e===`occurrence`&&`submit`,c&&`disabled`),disabled:c,onClick:()=>d(e),children:l(i===e?`Processing...`:Ta[e])},e)),(0,J.jsx)(`button`,{type:`button`,className:R(`btn small`,c&&`disabled`),disabled:c,onClick:u,children:l(`Cancel`)})]})]})},Da=({actions:e,disabled:t})=>{let{keepPopoverOpen:n}=ii(),r=(0,z.useRef)(null),i=(0,z.useRef)({actions:e,disabled:t}),a=JSON.stringify(e.map(({label:e,destructive:t})=>({label:e,destructive:t})));return(0,z.useEffect)(()=>{i.current={actions:e,disabled:t}},[e,t]),(0,z.useEffect)(()=>{let e=r.current;if(!e)return;let t=document.createElement(`div`);t.className=`menu`,t.setAttribute(`aria-label`,l(`More actions`));let o=document.createElement(`ul`);t.append(o),JSON.parse(a).forEach((e,n)=>{e.destructive&&n>0&&(t.append(document.createElement(`hr`)),o=document.createElement(`ul`),t.append(o));let r=document.createElement(`li`),i=document.createElement(`a`);i.textContent=e.label,i.dataset.action=String(n),e.destructive&&(i.className=`error`),r.append(i),o.append(r)}),e.after(t);let s=new Garnish.MenuBtn(e,{onOptionSelect:e=>{i.current.disabled||(s.hideMenu(),i.current.actions[Number(e.dataset.action)]?.onSelect())}});s.menu.on(`show`,n);let c=t=>{t.key===`Escape`&&s.showingMenu&&(t.preventDefault(),t.stopPropagation(),s.hideMenu(),e.focus())};return document.addEventListener(`keydown`,c,!0),()=>{document.removeEventListener(`keydown`,c,!0),s.hideMenu(),s.destroy(),t.remove()}},[a,n]),(0,J.jsx)(`button`,{ref:r,type:`button`,className:`btn menubtn action-btn`,disabled:t,"aria-label":l(`More actions`),title:l(`More actions`)})},Oa=({fcEvent:e})=>{let{hidePopover:n,showPopover:r}=ii(),{currentSiteId:i}=Q(),[a,o]=(0,z.useState)(!1),[s,c]=(0,z.useState)(!1),[u,d]=(0,z.useState)(!1),p=a||s||u;Hi(`keydown`,e=>{e.key===`Escape`&&n()});let m=e.event,{end:h,allDay:g}=m,_=m.extendedProps.calendarName,b=typeof m.extendedProps.location==`string`?m.extendedProps.location.trim():``,x=typeof m.extendedProps.description==`string`?m.extendedProps.description.trim():``,S=m.extendedProps.calendarColor??m.backgroundColor??m.borderColor??`#607d9f`,C=(0,z.useMemo)(()=>g?Oe(h,1):h,[g,h]),w=!!m.extendedProps.rrule,T=w?y(v(m.extendedProps.rrule,m.start.getTime()/1e3)):null,E=de(String(m.id)),D=m.allDay?`PP`:`PPp`,O=!!m.extendedProps.cancelled,k=!!m.extendedProps.isEdited,A=!!m.extendedProps.hasOverride,j=()=>e.view.calendar.refetchEvents(),M=()=>{E&&(n(),ee({eventId:N(String(m.id)),recurrenceId:E,siteId:i,onSave:j}))},P=async()=>{if(!E||p)return;d(!0);let e=await ae({event:m,recurrenceId:E,siteId:i});if(e){window.location.href=e;return}d(!1)},te=async()=>{if(!(!E||p)){c(!0);try{await ve({event:m,recurrenceId:E,cancelled:!O,siteId:i,refetchEvents:j})&&n()}finally{c(!1)}}},ne=async()=>{if(!a){o(!0);try{await me({event:m,scope:`series`,recurrenceId:E,siteId:i,refetchEvents:j})&&n()}finally{o(!1)}}},re=()=>{r((0,J.jsx)(Ea,{action:`delete`,onSelect:async e=>e===`occurrence`&&A&&!window.confirm(l(`This occurrence has its own changes, which are deleted with it. Delete it?`))?!1:me({event:m,scope:e,recurrenceId:E,siteId:i,refetchEvents:j})}),e.el)},F=[];return w&&E&&F.push({label:l(`Edit occurrence`),onSelect:M},{label:l(u?`Processing...`:`Edit this and following occurrences`),onSelect:()=>void P()},{label:l(O?`Restore occurrence`:`Cancel occurrence`),onSelect:()=>void te()}),F.push({label:l(a?`Deleting...`:`Delete`),destructive:!0,onSelect:()=>{w?re():window.confirm(l(`Are you sure you want to delete this event?`))&&ne()}}),(0,J.jsxs)(ba,{children:[(0,J.jsx)(Sa,{type:`button`,className:`icon`,"data-icon":`remove`,"aria-label":l(`Close`),title:l(`Close`),disabled:p,onClick:n}),(0,J.jsx)(`h1`,{className:R(`event-title`,O&&`is-cancelled`),children:m.title}),_&&(0,J.jsxs)(`div`,{className:`calendar-label`,children:[(0,J.jsx)(`span`,{className:`calendar-label-dot`,style:{backgroundColor:S},"aria-hidden":`true`}),(0,J.jsx)(`span`,{children:_})]}),(O||k)&&(0,J.jsx)(`div`,{className:R(`occurrence-status`,!O&&`is-edited`),children:l(O?`This occurrence is cancelled.`:`This occurrence has its own changes.`)}),(0,J.jsx)(`hr`,{}),(0,J.jsxs)(`div`,{children:[(0,J.jsxs)(`b`,{children:[l(`Starts`),`:`]}),` `,je(t(m.start),D,{locale:f()}),(0,J.jsx)(`br`,{}),(0,J.jsxs)(`b`,{children:[l(`Ends`),`:`]}),` `,je(t(C),D,{locale:f()})]}),T&&(0,J.jsxs)(`div`,{children:[(0,J.jsxs)(`b`,{children:[l(`Repeats`),`:`]}),` `,T]}),(b||x)&&(0,J.jsxs)(`dl`,{className:`event-details`,children:[b&&(0,J.jsxs)(`div`,{children:[(0,J.jsx)(`dt`,{children:l(`Location`)}),(0,J.jsx)(`dd`,{className:`event-location`,children:b})]}),x&&(0,J.jsxs)(`div`,{children:[(0,J.jsx)(`dt`,{children:l(`Description`)}),(0,J.jsx)(`dd`,{className:`event-description`,children:x})]})]}),(0,J.jsx)(`hr`,{}),(0,J.jsxs)(xa,{children:[(0,J.jsx)(`a`,{href:m.url,className:R(`btn submit`,p&&`disabled`),"aria-disabled":p,onClick:e=>{p&&e.preventDefault()},children:l(`Edit Event`)}),(0,J.jsx)(Da,{actions:F,disabled:p})]})]})},ka=new Intl.DateTimeFormat(f().code,{weekday:`short`,timeZone:`UTC`}),Aa=new Intl.DateTimeFormat(f().code,{day:`numeric`,timeZone:`UTC`}),ja={dayGridMonth:{dayHeaderFormat:{weekday:`long`}}},Ma={closeDelayMs:300,position:[`bottom`,`top`,`right`,`left`]},Na=e=>{let t=Math.floor(e/60),n=e%60;return`${String(t).padStart(2,`0`)}:${String(n).padStart(2,`0`)}:00`},Pa=e=>!!(e.extendedProps?.rrule||e.extendedProps?.repeats),Fa=({hiddenCalendarIds:e,selectedDate:t,onDateChange:n,miniDateSelection:r,onMiniDateSelectionHandled:i})=>{let{hidePopover:a,showPopover:o}=ii(),{view:c,setView:l,isReady:u}=Zi(),{currentDay:d,language:f,formats:p,weekStartDay:h,overlapThresholdString:_,allDayDefault:v,eventDuration:y,timeInterval:b,canEditEvents:x,isDragAndDropEnabled:S,isQuickCreateEnabled:C,currentSiteId:w}=Q(),T=x&&C,E=(0,z.useRef)(null),D=e.join(`,`),O=(0,z.useRef)(null),k=(0,z.useRef)(void 0),A=(0,z.useRef)(!1),j=(0,z.useRef)(0),[M,N]=(0,z.useState)(null),[P,ee]=(0,z.useState)(null),[te,ne]=(0,z.useState)(!1),F=(0,z.useCallback)(()=>E.current?.getApi(),[E.current]),I=(0,z.useMemo)(()=>F(),[F]),ie=(0,z.useMemo)(()=>({alignment:`center`,position:[`right`,`left`,`bottom`,`top`]}),[]),{datePickerButton:ae,dateSelector:oe}=ta(I),se=(0,z.useMemo)(()=>new Set(e),[e]),L=Na(b),le=(0,z.useMemo)(()=>ue(se,w),[se,w]),fe=(0,z.useMemo)(()=>Bi(I,{datePickerButton:ae}),[ae,I]),me=(0,z.useCallback)(()=>{E.current?.getApi().refetchEvents()},[]),ge=(0,z.useCallback)(()=>{N(null),ee(null)},[]);(0,z.useEffect)(()=>{if(!u)return;let e=E.current?.getApi();if(e){if(O.current===null){O.current=D;return}O.current!==D&&(O.current=D,e.refetchEvents())}},[D,u]);let _e=(0,z.useCallback)(()=>{ge(),a()},[ge,a]);(0,z.useEffect)(()=>{let e=E.current?.getApi();if(!e)return;let t=e.getEvents().find(e=>Z(e));if(!M){t?.remove();return}if(t){Ii(t,M);return}e.addEvent(Ai(M))},[M]),(0,z.useEffect)(()=>{if(!M){a();return}if(!P){a();return}o((0,J.jsx)(ya,{draft:M,onChange:N,refetchEvents:me,onConfirm:ge,onCancel:_e}),P,ie)},[_e,ge,M,P,a,ie,me,o]);let ve=(0,z.useCallback)(e=>{a(),e.view.calendar.getEvents().find(e=>Z(e))?.remove(),ee(null),N(ki(e,{allDayDefault:v,eventDuration:y})),e.view.calendar.unselect()},[v,y,a]),ye=(0,z.useCallback)(e=>{e.jsEvent.detail<2||(a(),I.getEvents().find(e=>Z(e))?.remove(),ee(null),N(ki({start:e.date,end:e.allDay?De(e.date,1):e.date,allDay:e.allDay},{allDayDefault:v,eventDuration:y})))},[I,v,y,a]);(0,z.useEffect)(()=>()=>clearTimeout(k.current),[]),(0,z.useEffect)(()=>{let e=E.current?.getApi();!e||!r||(e.changeView(`timeGridDay`,r),Ri(r),i())},[r,i]),(0,z.useEffect)(()=>{let e=E.current?.getApi();!e||g(e.getDate())===g(t)||e.gotoDate(t)},[t]);let be=(0,z.useCallback)(()=>clearTimeout(k.current),[]),xe=(0,z.useCallback)(()=>{A.current=!0,clearTimeout(k.current),a()},[a]),Se=(0,z.useCallback)(()=>{A.current=!1},[]),Ce=(0,z.useCallback)(e=>{Z(e.event)&&ee(e.el)},[]),Ee=(0,z.useCallback)(e=>{Z(e.event)&&ee(t=>t===e.el?null:t)},[]),R=(0,z.useCallback)((e,t)=>{if(Z(t.event)){t.revert();return}let n=n=>{let r={event:t.event,recurrenceId:de(String(t.event.id)),scope:n,siteId:w,refetchEvents:me,revert:t.revert};return e===`move`?he(r):ce({...r,oldEvent:t.oldEvent})};if(!Pa(t.event)){n();return}o((0,J.jsx)(Ea,{action:e,onSelect:async e=>{let t=await n(e);return t||a(),t},onCancel:t.revert},++j.current),t.jsEvent)},[w,a,me,o]),Oe=(0,z.useCallback)(e=>{let t=s(e);Ri(t),E.current?.getApi().changeView(`timeGridDay`,t)},[]),ke=(0,z.useCallback)(e=>e.view.type===`timeGridWeek`&&g(e.date)===g(d)?[`fc-title-today`]:[],[d]),Ae=(0,z.useCallback)(e=>{if(e.view.type!==`timeGridWeek`)return e.text;let t=ka.format(e.date),n=Aa.format(e.date);return(0,J.jsxs)(J.Fragment,{children:[(0,J.jsx)(`span`,{className:`fc-day-header-label`,children:t}),(0,J.jsx)(`span`,{className:`fc-day-header-date`,children:n})]})},[]);return u?(0,J.jsxs)(Fe,{className:te?`is-fetching-events`:void 0,children:[(0,J.jsx)(re,{...m(),ref:E,themeSystem:`bootstrap5`,plugins:[pe,Te,bi,we],customButtons:fe,initialView:c,initialDate:d,locale:f,views:ja,timeZone:`UTC`,firstDay:h,nextDayThreshold:_,fixedWeekCount:!0,dayMaxEventRows:!0,editable:x&&S,selectable:T,selectMirror:!1,selectMinDistance:5,slotDuration:L,snapDuration:L,navLinks:!0,navLinkDayClick:Oe,select:T?ve:void 0,dateClick:T?ye:void 0,dayHeaderClassNames:ke,dayHeaderContent:Ae,events:le,eventClassNames:aa,eventContent:sa,progressiveEventRendering:!0,eventTimeFormat:p.time.short.js,loading:ne,eventDidMount:Ce,eventWillUnmount:Ee,eventMouseEnter:e=>{e.view.type===`dayGridMonth`&&(A.current||oa(e.event,e.jsEvent.target)!==`ignore`&&(clearTimeout(k.current),k.current=setTimeout(()=>o((0,J.jsx)(Oa,{fcEvent:e}),e.el,Ma),300),e.jsEvent.preventDefault(),e.jsEvent.stopPropagation()))},eventMouseLeave:be,eventDragStart:xe,eventDragStop:Se,eventResizeStart:xe,eventResizeStop:Se,eventClick:e=>{oa(e.event,e.jsEvent.target)===`open`&&(o((0,J.jsx)(Oa,{fcEvent:e}),e.el),e.jsEvent.preventDefault(),e.jsEvent.stopPropagation())},eventDrop:e=>R(`move`,e),eventResize:e=>R(`resize`,e),headerToolbar:{start:`title`,center:`dayGridMonth,timeGridWeek,timeGridDay`,end:zi},buttonText:{dayGridMonth:Craft.t(`calendar`,`Month`),timeGridWeek:Craft.t(`calendar`,`Week`),timeGridDay:Craft.t(`calendar`,`Day`),today:Craft.t(`calendar`,`Today`)},datesSet:({view:e})=>{n(e.calendar.getDate()),setTimeout(()=>{l(e.type),Ri()},50)}}),oe]}):null},Ia=r.div`
   color: var(--gray-600);
-`,Ra=r.div`
+`,La=r.div`
   display: grid;
   grid-template-columns: 20px 1fr 20px;
   align-items: center;
@@ -376,7 +368,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
     text-align: center;
     white-space: nowrap;
   }
-`,za=r.button`
+`,Ra=r.button`
   position: relative;
   width: 20px;
   height: 20px;
@@ -402,7 +394,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   &:hover {
     background: var(--gray-100);
   }
-`,Ba=r.div`
+`,za=r.div`
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   margin-bottom: 7px;
@@ -413,11 +405,11 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
     font-weight: 600;
     text-align: center;
   }
-`,Va=r.div`
+`,Ba=r.div`
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   row-gap: 4px;
-`,Ha=r.button`
+`,Va=r.button`
   justify-self: center;
   display: inline-flex;
   width: 24px;
@@ -437,11 +429,11 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   &:hover {
     background: ${({$isToday:e})=>e?`var(--primary-button-bg)`:`var(--gray-200)`};
   }
-`,$=(e,t,n)=>new Date(Date.UTC(e,t,n)),Ua=e=>$(e.getUTCFullYear(),e.getUTCMonth(),1),Wa=(e,t)=>$(e.getUTCFullYear(),e.getUTCMonth()+t,1),Ga=({selectedDate:e,onDateSelect:t})=>{let{language:n,weekStartDay:r}=Q(),[i,a]=(0,z.useState)(()=>Ua(e));(0,z.useEffect)(()=>{a(Ua(e))},[e]);let o=(0,z.useMemo)(()=>new Intl.DateTimeFormat(n,{month:`long`,year:`numeric`,timeZone:`UTC`}),[n]),s=(0,z.useMemo)(()=>new Intl.DateTimeFormat(n,{weekday:`narrow`,timeZone:`UTC`}),[n]),c=(0,z.useMemo)(()=>Array.from({length:7},(e,t)=>s.format($(2023,0,1+r+t))),[r,s]),l=(0,z.useMemo)(()=>{let e=i.getUTCFullYear(),t=i.getUTCMonth(),n=$(e,t,1),a=$(e,t+1,0),o=(n.getUTCDay()-r+7)%7,s=((r+6)%7-a.getUTCDay()+7)%7,c=o+a.getUTCDate()+s;return Array.from({length:c},(n,r)=>$(e,t,1-o+r))},[i,r]),u=g(new Date);return(0,J.jsxs)(La,{children:[(0,J.jsxs)(Ra,{children:[(0,J.jsx)(za,{"aria-label":Craft.t(`calendar`,`Previous month`),type:`button`,onClick:()=>a(e=>Wa(e,-1))}),(0,J.jsx)(`span`,{children:o.format(i)}),(0,J.jsx)(za,{"aria-label":Craft.t(`calendar`,`Next month`),type:`button`,$next:!0,onClick:()=>a(e=>Wa(e,1))})]}),(0,J.jsx)(Ba,{children:c.map((e,t)=>(0,J.jsx)(`span`,{children:e},`${e}-${t}`))}),(0,J.jsx)(Va,{children:l.map(e=>{let r=g(e);return(0,J.jsx)(Ha,{"aria-label":e.toLocaleDateString(n,{timeZone:`UTC`}),type:`button`,$isCurrentMonth:e.getUTCMonth()===i.getUTCMonth(),$isToday:r===u,onClick:()=>t(e),children:e.getUTCDate()},r)})})]})},Ka=h`
+`,$=(e,t,n)=>new Date(Date.UTC(e,t,n)),Ha=e=>$(e.getUTCFullYear(),e.getUTCMonth(),1),Ua=(e,t)=>$(e.getUTCFullYear(),e.getUTCMonth()+t,1),Wa=({selectedDate:e,onDateSelect:t})=>{let{language:n,weekStartDay:r}=Q(),[i,a]=(0,z.useState)(()=>Ha(e));(0,z.useEffect)(()=>{a(Ha(e))},[e]);let o=(0,z.useMemo)(()=>new Intl.DateTimeFormat(n,{month:`long`,year:`numeric`,timeZone:`UTC`}),[n]),s=(0,z.useMemo)(()=>new Intl.DateTimeFormat(n,{weekday:`narrow`,timeZone:`UTC`}),[n]),c=(0,z.useMemo)(()=>Array.from({length:7},(e,t)=>s.format($(2023,0,1+r+t))),[r,s]),l=(0,z.useMemo)(()=>{let e=i.getUTCFullYear(),t=i.getUTCMonth(),n=$(e,t,1),a=$(e,t+1,0),o=(n.getUTCDay()-r+7)%7,s=((r+6)%7-a.getUTCDay()+7)%7,c=o+a.getUTCDate()+s;return Array.from({length:c},(n,r)=>$(e,t,1-o+r))},[i,r]),u=g(new Date);return(0,J.jsxs)(Ia,{children:[(0,J.jsxs)(La,{children:[(0,J.jsx)(Ra,{"aria-label":Craft.t(`calendar`,`Previous month`),type:`button`,onClick:()=>a(e=>Ua(e,-1))}),(0,J.jsx)(`span`,{children:o.format(i)}),(0,J.jsx)(Ra,{"aria-label":Craft.t(`calendar`,`Next month`),type:`button`,$next:!0,onClick:()=>a(e=>Ua(e,1))})]}),(0,J.jsx)(za,{children:c.map((e,t)=>(0,J.jsx)(`span`,{children:e},`${e}-${t}`))}),(0,J.jsx)(Ba,{children:l.map(e=>{let r=g(e);return(0,J.jsx)(Va,{"aria-label":e.toLocaleDateString(n,{timeZone:`UTC`}),type:`button`,$isCurrentMonth:e.getUTCMonth()===i.getUTCMonth(),$isToday:r===u,onClick:()=>t(e),children:e.getUTCDate()},r)})})]})},Ga=h`
   100% {
     transform: translateX(100%);
   }
-`,qa=r.div`
+`,Ka=r.div`
   position: relative;
   overflow: hidden;
 
@@ -461,19 +453,19 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
       transparent
     );
 
-    animation: ${Ka} 1.4s ${Re.easeInOut} infinite;
+    animation: ${Ga} 1.4s ${Re.easeInOut} infinite;
   }
-`,Ja=({width:e=`100%`,height:t=16,borderRadius:n=4,className:r})=>(0,J.jsx)(qa,{"aria-hidden":`true`,className:r,style:{borderRadius:n,height:t,width:e}}),Ya=async e=>{let t=await ne(Yr(`/api/calendars`),{signal:e});if(!t.ok)throw Error(`Failed to fetch calendars`);return t.json()},Xa=()=>{let[e,t]=(0,z.useState)([]),[n,r]=(0,z.useState)(null),[i,a]=(0,z.useState)(!1),o=(0,z.useCallback)(async e=>{a(!0),r(null);try{let n=await Ya(e);t(n)}catch(e){if(e instanceof DOMException&&e.name===`AbortError`)return;r(e instanceof Error?e:Error(`Failed to fetch calendars`))}finally{a(!1)}},[]);return(0,z.useEffect)(()=>{let e=new AbortController;return o(e.signal),()=>{e.abort()}},[o]),{data:e,error:n,isPending:i,refetch:o}},Za=r.div`
+`,qa=({width:e=`100%`,height:t=16,borderRadius:n=4,className:r})=>(0,J.jsx)(Ka,{"aria-hidden":`true`,className:r,style:{borderRadius:n,height:t,width:e}}),Ja=async e=>{let t=await ne(Yr(`/api/calendars`),{signal:e});if(!t.ok)throw Error(`Failed to fetch calendars`);return t.json()},Ya=()=>{let[e,t]=(0,z.useState)([]),[n,r]=(0,z.useState)(null),[i,a]=(0,z.useState)(!1),o=(0,z.useCallback)(async e=>{a(!0),r(null);try{let n=await Ja(e);t(n)}catch(e){if(e instanceof DOMException&&e.name===`AbortError`)return;r(e instanceof Error?e:Error(`Failed to fetch calendars`))}finally{a(!1)}},[]);return(0,z.useEffect)(()=>{let e=new AbortController;return o(e.signal),()=>{e.abort()}},[o]),{data:e,error:n,isPending:i,refetch:o}},Xa=r.div`
   padding: 0;
-`,Qa=r.div`
+`,Za=r.div`
   display: flex;
   flex-direction: column;
-`,$a=r.hr`
+`,Qa=r.hr`
   width: 100%;
   margin: 16px 0;
   border: 0;
   border-top: 1px solid var(--gray-200);
-`,eo=r.ul`
+`,$a=r.ul`
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -482,9 +474,9 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   padding: 0;
 
   list-style: none;
-`,to=r.li`
+`,eo=r.li`
   margin: 0;
-`,no=r.label`
+`,to=r.label`
   display: flex;
   align-items: center;
   gap: 9px;
@@ -495,7 +487,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
 
   color: ${Ie.gray800};
   cursor: pointer;
-`,ro=r.input`
+`,no=r.input`
   position: absolute;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
@@ -511,7 +503,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   &:checked + span:after {
     opacity: 1;
   }
-`,io=r.span`
+`,ro=r.span`
   position: relative;
 
   width: 15px;
@@ -537,17 +529,17 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
     opacity: 0;
     transform: translate(-50%, -60%) rotate(45deg);
   }
-`,ao=r.span`
+`,io=r.span`
   font-size: 13px;
 
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`,oo=r.div`
+`,ao=r.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-`,so=r.div`
+`,oo=r.div`
   font-size: 13px;
   color: ${Ie.error};
-`,co=({hiddenCalendarIds:e,onToggleCalendar:t})=>{let{data:n,error:r,isPending:i}=Xa(),a=new Set(e),o=i&&n.length===0;return(0,J.jsxs)(Za,{children:[o&&(0,J.jsxs)(oo,{children:[(0,J.jsx)(Ja,{height:16}),(0,J.jsx)(Ja,{height:16}),(0,J.jsx)(Ja,{height:16})]}),!o&&r&&(0,J.jsx)(so,{children:r.message}),!o&&!r&&(0,J.jsx)(eo,{children:n.map(e=>(0,J.jsx)(to,{children:(0,J.jsxs)(no,{style:{"--calendar-color":e.color.base,"--calendar-color-contrast":e.color.contrast},children:[(0,J.jsx)(ro,{type:`checkbox`,checked:!a.has(e.id),onChange:()=>t(e.id)}),(0,J.jsx)(io,{}),(0,J.jsx)(ao,{children:e.title})]})},e.id))})]})},lo=()=>{let e=document.querySelector(`[data-sidebar-root]`),{hiddenCalendarIds:t,toggleCalendarVisibility:n}=Qi(),{currentDay:r}=Q(),[i,a]=(0,z.useState)(()=>new Date(r)),[o,s]=(0,z.useState)(null);return(0,J.jsxs)(ai,{children:[(0,J.jsx)(Ia,{hiddenCalendarIds:t,selectedDate:i,onDateChange:a,miniDateSelection:o,onMiniDateSelectionHandled:()=>s(null)}),e&&(0,oi.createPortal)((0,J.jsxs)(Qa,{children:[(0,J.jsx)(co,{hiddenCalendarIds:t,onToggleCalendar:n}),(0,J.jsx)($a,{}),(0,J.jsx)(Ga,{selectedDate:i,onDateSelect:e=>{a(e),s(e)}})]}),e)]})},uo=document.getElementById(`calendar-overview`),fo=uo.querySelector(`[data-root]`),po=uo.querySelector(`[data-config]`),mo=JSON.parse(po?.textContent||`{}`);Xr.createRoot(fo).render((0,J.jsx)(ea,{config:mo,children:(0,J.jsx)(wr,{basename:Yr(`/`,!1),children:(0,J.jsx)(Ln,{children:(0,J.jsxs)(Fn,{path:`/`,element:(0,J.jsx)(Wr,{}),children:[(0,J.jsx)(Fn,{index:!0,element:(0,J.jsx)(lo,{})}),(0,J.jsx)(Fn,{path:`overview`,element:(0,J.jsx)(lo,{})}),(0,J.jsx)(Fn,{path:`:year/:month/:day/:view?`,element:(0,J.jsx)(lo,{})})]})})})}));
+`,so=({hiddenCalendarIds:e,onToggleCalendar:t})=>{let{data:n,error:r,isPending:i}=Ya(),a=new Set(e),o=i&&n.length===0;return(0,J.jsxs)(Xa,{children:[o&&(0,J.jsxs)(ao,{children:[(0,J.jsx)(qa,{height:16}),(0,J.jsx)(qa,{height:16}),(0,J.jsx)(qa,{height:16})]}),!o&&r&&(0,J.jsx)(oo,{children:r.message}),!o&&!r&&(0,J.jsx)($a,{children:n.map(e=>(0,J.jsx)(eo,{children:(0,J.jsxs)(to,{style:{"--calendar-color":e.color.base,"--calendar-color-contrast":e.color.contrast},children:[(0,J.jsx)(no,{type:`checkbox`,checked:!a.has(e.id),onChange:()=>t(e.id)}),(0,J.jsx)(ro,{}),(0,J.jsx)(io,{children:e.title})]})},e.id))})]})},co=()=>{let e=document.querySelector(`[data-sidebar-root]`),{hiddenCalendarIds:t,toggleCalendarVisibility:n}=Qi(),{currentDay:r}=Q(),[i,a]=(0,z.useState)(()=>new Date(r)),[o,s]=(0,z.useState)(null);return(0,J.jsxs)(ai,{children:[(0,J.jsx)(Fa,{hiddenCalendarIds:t,selectedDate:i,onDateChange:a,miniDateSelection:o,onMiniDateSelectionHandled:()=>s(null)}),e&&(0,oi.createPortal)((0,J.jsxs)(Za,{children:[(0,J.jsx)(so,{hiddenCalendarIds:t,onToggleCalendar:n}),(0,J.jsx)(Qa,{}),(0,J.jsx)(Wa,{selectedDate:i,onDateSelect:e=>{a(e),s(e)}})]}),e)]})},lo=document.getElementById(`calendar-overview`),uo=lo.querySelector(`[data-root]`),fo=lo.querySelector(`[data-config]`),po=JSON.parse(fo?.textContent||`{}`);Xr.createRoot(uo).render((0,J.jsx)(ea,{config:po,children:(0,J.jsx)(wr,{basename:Yr(`/`,!1),children:(0,J.jsx)(Ln,{children:(0,J.jsxs)(Fn,{path:`/`,element:(0,J.jsx)(Wr,{}),children:[(0,J.jsx)(Fn,{index:!0,element:(0,J.jsx)(co,{})}),(0,J.jsx)(Fn,{path:`overview`,element:(0,J.jsx)(co,{})}),(0,J.jsx)(Fn,{path:`:year/:month/:day/:view?`,element:(0,J.jsx)(co,{})})]})})})}));

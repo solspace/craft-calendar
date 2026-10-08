@@ -201,6 +201,7 @@ return [
     'Drag and drop enabled' => 'Trascinamento abilitato',
     'Each' => 'Ogni',
     'Edit' => 'Modifica',
+    'Edit Event' => 'Modifica evento',
     'Effective first day of week' => 'Primo giorno effettivo della settimana',
     'Enable JavaScript to collect browser diagnostics.' => 'Abilita JavaScript per raccogliere i dati diagnostici del browser.',
     'Enable this to allow guests to post events to specific calendars on the front end.' => 'Attiva questa opzione per consentire agli ospiti di pubblicare eventi in calendari specifici dal sito.',

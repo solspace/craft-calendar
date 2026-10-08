@@ -161,7 +161,7 @@ describe("event popup actions", () => {
   it("keeps Edit visible and routes occurrence actions from the native menu", async () => {
     await show();
     const edit = container.querySelector<HTMLAnchorElement>("a.submit")!;
-    expect(edit.textContent).toBe("Edit");
+    expect(edit.textContent).toBe("Edit Event");
     expect(edit.getAttribute("href")).toBe(fcEvent.event.url);
     expect(container.textContent).not.toContain("Edit occurrence");
 

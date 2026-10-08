@@ -1,7 +1,6 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import translate from "@cal/utils/translations";
 import { type FC, useEffect, useRef } from "react";
-import { PopoverMenuButton } from "./view-event.styles";
 
 export type EventMenuAction = {
   label: string;
@@ -81,15 +80,13 @@ export const PopoverEventMenu: FC<Props> = ({ actions, disabled }) => {
   }, [menuDefinition, keepPopoverOpen]);
 
   return (
-    <PopoverMenuButton
+    <button
       ref={buttonRef}
       type="button"
-      className="btn menubtn"
+      className="btn menubtn action-btn"
       disabled={disabled}
       aria-label={translate("More actions")}
       title={translate("More actions")}
-    >
-      <span aria-hidden="true">•••</span>
-    </PopoverMenuButton>
+    />
   );
 };

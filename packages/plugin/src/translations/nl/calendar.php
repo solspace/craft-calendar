@@ -201,6 +201,7 @@ return [
     'Drag and drop enabled' => 'Slepen en neerzetten ingeschakeld',
     'Each' => 'Elke',
     'Edit' => 'Bewerk',
+    'Edit Event' => 'Bewerk evenement',
     'Effective first day of week' => 'Effectieve eerste dag van de week',
     'Enable JavaScript to collect browser diagnostics.' => 'Schakel JavaScript in om browserdiagnostiek te verzamelen.',
     'Enable this to allow guests to post events to specific calendars on the front end.' => 'Schakel dit in om gasten via de website evenementen in bepaalde kalenders te laten plaatsen.',

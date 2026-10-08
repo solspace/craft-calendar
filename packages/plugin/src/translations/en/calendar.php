@@ -201,6 +201,7 @@ return [
     'Drag and drop enabled' => 'Drag and drop enabled',
     'Each' => 'Each',
     'Edit' => 'Edit',
+    'Edit Event' => 'Edit Event',
     'Effective first day of week' => 'Effective first day of week',
     'Enable JavaScript to collect browser diagnostics.' => 'Enable JavaScript to collect browser diagnostics.',
     'Enable this to allow guests to post events to specific calendars on the front end.' => 'Enable this to allow guests to post events to specific calendars on the front end.',

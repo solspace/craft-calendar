@@ -201,6 +201,7 @@ return [
     'Drag and drop enabled' => 'Glisser-déposer activé',
     'Each' => 'Chaque',
     'Edit' => 'Modifier',
+    'Edit Event' => 'Modifier l’événement',
     'Effective first day of week' => 'Premier jour effectif de la semaine',
     'Enable JavaScript to collect browser diagnostics.' => 'Activez JavaScript pour recueillir les diagnostics du navigateur.',
     'Enable this to allow guests to post events to specific calendars on the front end.' => 'Activez cette option pour autoriser les visiteurs à publier des événements dans certains calendriers depuis le site.',

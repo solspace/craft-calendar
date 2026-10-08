@@ -201,6 +201,7 @@ return [
     'Drag and drop enabled' => 'Drag-and-drop aktiviert',
     'Each' => 'Jeden',
     'Edit' => 'Bearbeiten',
+    'Edit Event' => 'Ereignis bearbeiten',
     'Effective first day of week' => 'Tatsächlicher erster Wochentag',
     'Enable JavaScript to collect browser diagnostics.' => 'Aktivieren Sie JavaScript, um Browserdiagnosedaten zu erfassen.',
     'Enable this to allow guests to post events to specific calendars on the front end.' => 'Aktivieren Sie dies, damit Gäste auf der Website Ereignisse in bestimmten Kalendern veröffentlichen können.',
