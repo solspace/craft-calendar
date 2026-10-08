@@ -4,8 +4,9 @@ import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
-import { type FC, useId, useMemo } from "react";
+import { type FC, useId, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { EditedOccurrences } from "../edited-occurrences/edited-occurrences";
 import { appSelectors } from "../store/app.slice";
 import type { BuilderContext } from "../types";
 import { CalendarPreview } from "./calendar-preview/calendar-preview";
@@ -30,6 +31,7 @@ export const Editor: FC<Props> = ({ context, onOccurrenceSaved }) => {
   const allDayId = useId();
   const startId = useId();
   const endId = useId();
+  const [occurrencesRevision, setOccurrencesRevision] = useState(0);
 
   const dispatch = useDispatch<AppDispatch>();
   const { start, end, allDay } = useSelector(eventSelectors.state);
@@ -114,8 +116,17 @@ export const Editor: FC<Props> = ({ context, onOccurrenceSaved }) => {
           />
         </DatePickersLightSwitchWrapper>
         <RepeatRules />
+        {context?.eventId && (
+          <EditedOccurrences context={context} refreshKey={occurrencesRevision} />
+        )}
       </DatePickersLightSwitchRepeatRulesWrapper>
-      <CalendarPreview context={context} onOccurrenceSaved={onOccurrenceSaved} />
+      <CalendarPreview
+        context={context}
+        onOccurrenceSaved={() => {
+          setOccurrencesRevision((revision) => revision + 1);
+          onOccurrenceSaved?.();
+        }}
+      />
     </EventEditorWrapper>
   );
 };

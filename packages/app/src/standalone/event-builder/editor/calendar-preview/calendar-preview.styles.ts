@@ -288,4 +288,11 @@ export const DateItem = styled.li`
   > span {
     flex: 1;
   }
+
+  .occurrence-actions {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 0;
+  }
 `;

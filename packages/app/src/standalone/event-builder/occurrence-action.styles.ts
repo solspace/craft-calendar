@@ -4,9 +4,9 @@ export const OccurrenceActionButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 24px;
-  width: 24px;
-  height: 24px;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -20,6 +20,15 @@ export const OccurrenceActionButton = styled.button`
   &::before {
     color: inherit;
     font-size: inherit;
+  }
+
+  /* Craft's edit glyph fills an em; remove fills 5/8. Both draw at about 10px. */
+  &[data-icon="edit"]::before {
+    font-size: 10px;
+  }
+
+  &[data-icon="remove"]::before {
+    font-size: 16px;
   }
 
   &:hover:not(:disabled) {

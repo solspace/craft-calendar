@@ -5,20 +5,22 @@ export const EditedOccurrencesWrapper = styled.div`
     display: none;
   }
 
-  margin-top: 20px;
-  padding: 20px;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg, var(--large-border-radius, 5px));
-  background-color: var(--gray-050);
+  margin: 0 20px 20px;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--gray-200);
 
   h3 {
-    margin: 0 0 4px;
-    font-size: 14px;
+    margin: 0 0 6px;
+    color: var(--gray-700);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     line-height: 20px;
   }
 
   > p {
-    margin: 0 0 16px;
+    margin: 0 0 8px;
     color: var(--gray-600);
     font-size: 13px;
     line-height: 20px;
@@ -33,19 +35,15 @@ export const EditedOccurrenceList = styled.ul`
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--large-border-radius, 5px);
-  background-color: var(--custom-bg-color, var(--gray-050));
-  overflow: hidden;
 `;
 
 export const EditedOccurrenceItem = styled.li`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 16px;
+  gap: 6px 12px;
   margin: 0;
-  padding: 12px 16px;
+  padding: 8px 0;
   line-height: 1.5;
 
   &:not(:last-child) {
@@ -67,7 +65,7 @@ export const EditedOccurrenceItem = styled.li`
     align-items: baseline;
     gap: 4px 8px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 400;
   }
 
   .title {
@@ -95,16 +93,12 @@ export const EditedOccurrenceItem = styled.li`
     flex-wrap: wrap;
     flex: 0 0 auto;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
 
     .btn {
       min-height: 26px;
       padding-inline: 10px;
       font-size: 12px;
     }
-  }
-
-  @media (max-width: 600px) {
-    padding: 12px;
   }
 `;

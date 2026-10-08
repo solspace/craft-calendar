@@ -64,7 +64,7 @@ describe("calendar preview rendering", () => {
     const edit = container.querySelector<HTMLButtonElement>(".occurrence-edit")!;
 
     expect(edit.getAttribute("aria-label")).toBe(`Edit occurrence on ${date}`);
-    expect(edit.parentElement?.querySelector("span")?.textContent).toBe(date);
+    expect(edit.closest("li")?.querySelector("span")?.textContent).toBe(date);
   });
 
   it("opens the first occurrence in the draft and notifies the builder after saving", async () => {
