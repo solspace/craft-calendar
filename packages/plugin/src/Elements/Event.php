@@ -17,6 +17,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
@@ -1043,12 +1044,28 @@ class Event extends Element implements \JsonSerializable
         $view = \Craft::$app->getView();
 
         $fields[] = (function () {
-            return Cp::textFieldHtml([
+            $calendar = $this->getCalendar();
+            $color = Html::tag('span', '', [
+                'aria-hidden' => 'true',
+                'style' => [
+                    'display' => 'inline-block',
+                    'width' => '12px',
+                    'height' => '12px',
+                    'border-radius' => '50%',
+                    'flex-shrink' => '0',
+                    'background-color' => $calendar->color,
+                    'box-shadow' => 'inset 0 0 1px rgba(0, 0, 0, 0.6)',
+                ],
+            ]);
+            $value = Html::tag('div', $color.Html::tag('span', Html::encode($calendar->name)), [
+                'id' => 'calendar',
+                'class' => 'flex flex-nowrap',
+                'aria-labelledby' => 'calendar-label',
+            ]);
+
+            return Cp::fieldHtml($value, [
                 'label' => \Craft::t('app', 'Calendar'),
                 'id' => 'calendar',
-                'name' => 'calendar',
-                'value' => $this->getCalendar()->name,
-                'readonly' => true,
             ]);
         })();
 
@@ -1103,6 +1120,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         $screen->selectedSubnavItem('events');
+        $calendar = $this->getCalendar();
         $existingCrumbs = \is_array($screen->crumbs) ? $screen->crumbs : [];
         $screen->crumbs([
             [
@@ -1112,6 +1130,13 @@ class Event extends Element implements \JsonSerializable
             [
                 'label' => Calendar::t('Events'),
                 'url' => UrlHelper::cpUrl('calendar/events'),
+            ],
+            [
+                'label' => $calendar->name,
+                'url' => UrlHelper::cpUrl('calendar/events', [
+                    'source' => 'calendar:'.$calendar->id,
+                    'site' => $this->getSite()->handle,
+                ]),
             ],
             ...$existingCrumbs,
         ]);

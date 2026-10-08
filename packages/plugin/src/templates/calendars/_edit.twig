@@ -40,8 +40,8 @@
 
     {{ forms.textField({
         first: true,
-        label: "Name"|t('calendar'),
-        instructions: "What this calendar will be called in the CP."|t('calendar'),
+        label: "Calendar Name"|t('calendar'),
+        instructions: "Enter the display name for this calendar."|t('calendar'),
         id: 'name',
         name: 'name',
         value: calendar.name,
@@ -52,7 +52,7 @@
 
     {{ forms.textField({
         label: "Handle"|t('calendar'),
-        instructions: "How you’ll refer to this calendar in the templates."|t('calendar'),
+        instructions: "Enter a unique handle to identify this calendar in templates and queries."|t('calendar'),
         id: 'handle',
         class: 'code',
         name: 'handle',
@@ -65,7 +65,7 @@
 
     {{ forms.textareaField({
         label: "Description"|t('calendar'),
-        instructions: "A small description describing what this calendar is about"|t('calendar'),
+        instructions: "Add a short description of this calendar. Optional."|t('calendar'),
         id: 'description',
         name: 'description',
         value: calendar.description,
@@ -77,7 +77,7 @@
 
     {{ forms.colorField({
         label: "Color"|t('calendar'),
-        instructions: "Events assigned to this calendar will use this color"|t('calendar'),
+        instructions: "Choose the color used to identify this calendar and its events."|t('calendar'),
         id: 'color',
         name: 'color',
         value: calendar.color,
@@ -125,7 +125,7 @@
 
     {{ forms.editableTableField({
         label: "Site Settings"|t('app'),
-        instructions: "Choose which sites this calendar should be available in, and configure the site-specific settings."|t('calendar'),
+        instructions: "Choose the sites where this calendar is available, then set event URL formats, templates, and whether new events are enabled by default."|t('calendar'),
         id: 'sites',
         name: 'sites',
         cols: {
@@ -141,19 +141,19 @@
             uriFormat: {
                 type: 'singleline',
                 heading: "Event URI Format"|t('calendar'),
-                info: "What event URIs should look like for the site. Leave blank if events don’t have URLs."|t('calendar'),
-                placeholder: "Leave blank if events don’t have URLs"|t('calendar'),
+                info: "Set the event URL path using event properties, such as {ex}. Leave blank if events do not need URLs."|t('calendar', { ex: '<code>events/{slug}</code>' }),
+                placeholder: "Leave blank to disable event URLs"|t('calendar'),
                 code: true,
             },
             template: {
                 type: 'singleline',
                 heading: "Template"|t('app'),
-                info: "Which template should be loaded when an event’s URL is requested."|t('calendar'),
+                info: "Enter the template path used to display events on this site."|t('calendar'),
                 code: true
             },
             enabledByDefault: {
                 type: 'lightswitch',
-                heading: "Default Status"|t('app'),
+                heading: "Enable Events by Default"|t('calendar'),
                 class: 'thin'
             }
         },
@@ -169,7 +169,8 @@
 
 
     {{ forms.checkboxField({
-        label: "Show the Title field"|t('app'),
+        label: "Show Title Field"|t('calendar'),
+        instructions: "Let authors enter event titles. Turn this off to generate titles using the Automatic Title Format."|t('calendar'),
         name: 'hasTitleField',
         toggle: '.titleLabel-container',
         reverseToggle: '.titleFormat-container, .fld-title-field-icon',
@@ -180,9 +181,7 @@
         {% if craft.app.getIsMultiSite() %}
             {{ forms.selectField({
                 label: 'Title Translation Method'|t('app'),
-                instructions: 'How should {type} titles be translated?'|t('app', {
-                    type: lowerTypeName,
-                }),
+                instructions: "Choose how event titles are shared or translated across sites."|t('calendar'),
                 id: 'translation-method',
                 name: 'titleTranslationMethod',
                 options: [
@@ -200,9 +199,7 @@
             <div id="translation-method-custom" {% if calendar.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
                 {{ forms.textField({
                     label: 'Title Translation Key Format'|t('app'),
-                    instructions: 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
-                        type: typeName,
-                    }),
+                    instructions: "Use a template to group sites that share the same event title. Sites with the same key share a title; for example, {ex} groups sites by the first two characters of their handles."|t('calendar', { ex: '<code>{site.handle[:2]}</code>' }),
                     id: 'translation-key-format',
                     name: 'titleTranslationKeyFormat',
                     value: calendar.titleTranslationKeyFormat,
@@ -216,7 +213,7 @@
 
         {{ forms.textField({
             label: "Title Field Label"|t('app'),
-            instructions: "What do you want the Title field to be called?"|t('app'),
+            instructions: "Set the label shown above the event title field."|t('calendar'),
             id: 'titleLabel',
             name: 'titleLabel',
             value: calendar.titleLabel,
@@ -227,8 +224,8 @@
 
     <div {% if calendar.hasTitleField %}class="titleFormat-container hidden"{% else %}class="titleFormat-container"{% endif %}>
         {{ forms.textField({
-            label: "Title Format"|t('app'),
-            instructions: "What the auto-generated event titles should look like. You can include tags that output entry properties, such as {ex}."|t('calendar', { ex: '<code>{myCustomField}</code>' }),
+            label: "Automatic Title Format"|t('calendar'),
+            instructions: "Use event properties to generate titles automatically, such as {ex}."|t('calendar', { ex: '<code>{myCustomField}</code>' }),
             id: 'titleFormat',
             name: 'titleFormat',
             class: 'code',
@@ -243,14 +240,14 @@
     <div class="field" {% if craft.calendar.lite %}style="display: none;"{% endif %}>
         {{ forms.lightswitchField({
             label: "Allow Repeating Events"|t("calendar"),
-            instructions: "Disable this option to allow only single occurrence events for this calendar."|t("calendar"),
+            instructions: "Allow events in this calendar to repeat. Turn this off to allow only a single occurrence per event."|t("calendar"),
             name: "allowRepeatingEvents",
             on: calendar.allowRepeatingEvents,
         }) }}
 
     {{ forms.selectField({
-        label: "Forced ICS Event Timezone"|t('calendar'),
-        instructions: "Choose a timezone that will be forced upon exported ICS event dates"|t('calendar'),
+        label: "ICS Export Timezone"|t('calendar'),
+        instructions: "Choose the timezone used for event dates in ICS exports. Floating preserves the event’s local time without assigning a timezone."|t('calendar'),
         name: 'icsTimezone',
         value: calendar.icsTimezone,
         options: timezoneOptions
@@ -262,8 +259,8 @@
     {% endfor %}
 
     {{ forms.selectField({
-        label: "ICS Description field"|t('calendar'),
-        instructions: "Set the field to be used for event description when exporting ICS file."|t('calendar'),
+        label: "ICS Description Field"|t('calendar'),
+        instructions: "Choose the event field used for descriptions in ICS exports. Select None to omit descriptions."|t('calendar'),
         id: 'descriptionFieldHandle',
         name: 'descriptionFieldHandle',
         options: descriptionFieldOptions,
@@ -272,8 +269,8 @@
     }) }}
 
     {{ forms.selectField({
-        label: "ICS Location field"|t('calendar'),
-        instructions: "Set the field to be used for event location when exporting ICS file."|t('calendar'),
+        label: "ICS Location Field"|t('calendar'),
+        instructions: "Choose the event field used for locations in ICS exports. Select None to omit locations."|t('calendar'),
         id: 'locationFieldHandle',
         name: 'locationFieldHandle',
         options: descriptionFieldOptions,

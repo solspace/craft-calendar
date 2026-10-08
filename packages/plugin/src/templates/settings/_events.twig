@@ -14,8 +14,8 @@
 
         {{ forms.selectField({
             first: true,
-            label: "Default Event Duration"|t('calendar'),
-            instructions: "The default event time duration for fieldtype, in minutes. When event Start Time is selected, this number of minutes will automatically be added to that time for End Time field."|t('calendar'),
+            label: "Default Event Duration (Minutes)"|t('calendar'),
+            instructions: "New timed events end this many minutes after their start time by default."|t('calendar'),
             id: 'eventDuration',
             name: 'settings[eventDuration]',
             options: settings.eventDurations,
@@ -24,8 +24,8 @@
         }) }}
 
         {{ forms.selectField({
-            label: "Time Interval"|t('calendar'),
-            instructions: "The time picker interval for fieldtype, in minutes. The Start Time and End Time field time pickers will contain a list of times of the day by this interval."|t('calendar'),
+            label: "Time Picker Interval (Minutes)"|t('calendar'),
+            instructions: "Set the number of minutes between options in the Start Time and End Time pickers."|t('calendar'),
             name: 'settings[timeInterval]',
             options: settings.timeIntervals,
             value: settings.timeInterval,
@@ -33,8 +33,8 @@
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Select "All Day" by default?'|t('calendar'),
-            instructions: "When enabled, when creating new events the 'All Day' option will be selected by default."|t('calendar'),
+            label: 'All-Day Events By Default'|t('calendar'),
+            instructions: "Create new events with All Day enabled by default. You can change this for each event."|t('calendar'),
             id: 'allDay',
             name: 'settings[allDay]',
             on: settings.allDay,
@@ -42,8 +42,8 @@
         }) }}
 
         {{ forms.selectField({
-            label: "Date Overlap Threshold"|t('calendar'),
-            instructions: "Specify the amount of hours in the next day which are still considered as those of the previous day. This prevents late night events from showing up the next day for calendars in control panel and front end."|t('calendar'),
+            label: "Late-Night Event Cutoff (Hours)"|t('calendar'),
+            instructions: "Keep events that cross midnight on the previous day when they end within this many hours after midnight. For example, 5 means 5:00 AM. Event dates are unchanged."|t('calendar'),
             id: 'overlapThreshold',
             name: 'settings[overlapThreshold]',
             options: settings.overlapThresholds,

@@ -473,7 +473,7 @@ class DateHelper
 
         array_multisort($offsets, $timezoneIds, $timezoneOptions);
 
-        $appended = [self::FLOATING_TIMEZONE => Calendar::t('Floating Timezone (recommended)')];
+        $appended = [self::FLOATING_TIMEZONE => Calendar::t('Floating (Recommended)')];
 
         return array_merge($appended, $timezoneOptions);
     }

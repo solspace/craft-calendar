@@ -15,25 +15,24 @@
 
 {% block content %}
     <div id="calendar-diagnostics" data-sampled-at="{{ sampledAt|e('html_attr') }}">
-        <div class="pane calendar-diag-banner {{ errorCount ? 'is-error' : (concernCount ? 'is-warning' : 'is-success') }}" role="status">
+        <div class="pane calendar-diag-banner {{ errorCount ? 'is-error' : (advisoryCount ? 'is-warning' : 'is-success') }}" role="status">
             <p>
-                <span class="{{ errorCount or concernCount ? 'alert-icon' : 'checkmark-icon' }}" aria-hidden="true"></span>
+                <span class="{{ errorCount or advisoryCount ? 'alert-icon' : 'checkmark-icon' }}" aria-hidden="true"></span>
                 {% if errorCount %}
                     <span>{{ 'Potential issues: {count}'|t('calendar', {count: errorCount}) }}</span>
-                {% elseif concernCount %}
-                    <span>{{ 'Concerns: {count}'|t('calendar', {count: concernCount}) }}</span>
+                {% elseif advisoryCount %}
+                    <span>{{ 'Advisories: {count}'|t('calendar', {count: advisoryCount}) }}</span>
                 {% else %}
                     <strong>{{ 'No diagnostic warnings'|t('calendar') }}</strong>
                 {% endif %}
-                {% if errorCount and concernCount %}<span>{{ 'Concerns: {count}'|t('calendar', {count: concernCount}) }}</span>{% endif %}
+                {% if errorCount and advisoryCount %}<span>{{ 'Advisories: {count}'|t('calendar', {count: advisoryCount}) }}</span>{% endif %}
             </p>
         </div>
-        <p class="light">{{ 'Read-only checks for troubleshooting Calendar. Values reflect this control panel request and may differ for queue or console processes.'|t('calendar') }}</p>
         <div class="calendar-diag-legend">
             {% for status, label in {
                 pass: 'Enabled / Valid'|t('calendar'),
                 disabled: 'Disabled'|t('calendar'),
-                warning: 'Concern'|t('calendar'),
+                warning: 'Advisory'|t('calendar'),
                 error: 'Potential issue'|t('calendar')
             } %}
                 <span>{{ _self.status(status, label) }}{{ label }}</span>
