@@ -744,4 +744,14 @@ return [
     'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Wählen Sie das Ereignisfeld für Beschreibungen in ICS-Exporten. Wählen Sie Keine, um Beschreibungen wegzulassen.',
     'ICS Location Field' => 'ICS-Ortsfeld',
     'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Wählen Sie das Ereignisfeld für Orte in ICS-Exporten. Wählen Sie Keine, um Orte wegzulassen.',
+
+    // Occurrence editor
+    'Date & Time' => 'Datum & Uhrzeit',
+    'Enable Override to change the date or time for this occurrence only.' => 'Aktivieren Sie Überschreiben, um Datum oder Uhrzeit nur für diesen Termin zu ändern.',
+    'Cancel Occurrence' => 'Termin absagen',
+    'Mark this occurrence as cancelled without deleting it.' => 'Diesen Termin als abgesagt markieren, ohne ihn zu löschen.',
+    'Leave blank to use the automatically generated slug.' => 'Leer lassen, um den automatisch generierten Slug zu verwenden.',
+    'Occurrence Code' => 'Termincode',
+    'Reset Occurrence' => 'Termin zurücksetzen',
+    'Remove all customizations and restore the event’s values.' => 'Alle Anpassungen entfernen und die Werte des Ereignisses wiederherstellen.',
 ];

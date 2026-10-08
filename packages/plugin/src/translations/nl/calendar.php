@@ -744,4 +744,14 @@ return [
     'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Kies het evenementveld voor beschrijvingen in ICS-exports. Selecteer Geen om beschrijvingen weg te laten.',
     'ICS Location Field' => 'ICS-locatieveld',
     'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Kies het evenementveld voor locaties in ICS-exports. Selecteer Geen om locaties weg te laten.',
+
+    // Occurrence editor
+    'Date & Time' => 'Datum & tijd',
+    'Enable Override to change the date or time for this occurrence only.' => 'Schakel Overschrijven in om de datum of tijd alleen voor deze herhaling te wijzigen.',
+    'Cancel Occurrence' => 'Herhaling annuleren',
+    'Mark this occurrence as cancelled without deleting it.' => 'Markeer deze herhaling als geannuleerd zonder deze te verwijderen.',
+    'Leave blank to use the automatically generated slug.' => 'Laat leeg om de automatisch gegenereerde slug te gebruiken.',
+    'Occurrence Code' => 'Herhalingscode',
+    'Reset Occurrence' => 'Herhaling herstellen',
+    'Remove all customizations and restore the event’s values.' => 'Verwijder alle aanpassingen en herstel de waarden van het evenement.',
 ];

@@ -1,0 +1,35 @@
+{% import '_includes/forms' as forms %}
+
+{% set prefix = readOnly ? 'inherited-' : '' %}
+{% set hidden = readOnly ? ownTimes : not ownTimes %}
+<fieldset class="{{ readOnly ? 'calendar-occurrence-inherited-times' : 'calendar-occurrence-times' }}{{ allDay ? ' is-all-day' }}{{ hidden ? ' hidden' }}"{{ readOnly or hidden ? ' disabled' }}>
+    <legend class="visually-hidden">{{ 'Date & Time'|t('calendar') }}</legend>
+    <div class="calendar-occurrence-meta-row">
+        {{ forms.dateTimeField({
+            label: 'Start'|t('calendar'),
+            id: prefix ~ 'startDate',
+            name: readOnly ? null : 'startDate',
+            value: startDate,
+            disabled: readOnly,
+            data: readOnly ? {} : {'error-key': 'startDate'},
+        }) }}
+
+        {{ forms.dateTimeField({
+            label: 'End'|t('calendar'),
+            id: prefix ~ 'endDate',
+            name: readOnly ? null : 'endDate',
+            value: endDate,
+            disabled: readOnly,
+            data: readOnly ? {} : {'error-key': 'endDate'},
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'All Day'|t('calendar'),
+            id: prefix ~ 'allDay',
+            name: readOnly ? 'inheritedTimes[allDay]' : 'allDay',
+            on: allDay,
+            disabled: readOnly,
+            fieldClass: 'calendar-occurrence-all-day',
+        }) }}
+    </div>
+</fieldset>

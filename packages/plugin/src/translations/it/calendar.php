@@ -744,4 +744,14 @@ return [
     'Choose the event field used for descriptions in ICS exports. Select None to omit descriptions.' => 'Scegli il campo dell’evento usato per le descrizioni nelle esportazioni ICS. Seleziona Nessuno per ometterle.',
     'ICS Location Field' => 'Campo luogo ICS',
     'Choose the event field used for locations in ICS exports. Select None to omit locations.' => 'Scegli il campo dell’evento usato per i luoghi nelle esportazioni ICS. Seleziona Nessuno per ometterli.',
+
+    // Occurrence editor
+    'Date & Time' => 'Data e ora',
+    'Enable Override to change the date or time for this occurrence only.' => 'Abilita Sostituisci per modificare la data o l’ora solo per questa occorrenza.',
+    'Cancel Occurrence' => 'Annulla occorrenza',
+    'Mark this occurrence as cancelled without deleting it.' => 'Segna questa occorrenza come annullata senza eliminarla.',
+    'Leave blank to use the automatically generated slug.' => 'Lascia vuoto per usare lo slug generato automaticamente.',
+    'Occurrence Code' => 'Codice occorrenza',
+    'Reset Occurrence' => 'Ripristina occorrenza',
+    'Remove all customizations and restore the event’s values.' => 'Rimuovi tutte le personalizzazioni e ripristina i valori dell’evento.',
 ];

@@ -55,22 +55,28 @@
 
     initTimes() {
       const $ownTimes = this.$container.find(".calendar-occurrence-own-times .lightswitch");
-      const $allDay = this.$container.find(".calendar-occurrence-all-day .lightswitch");
       const $times = this.$container.find(".calendar-occurrence-times");
-      const $seriesTimes = this.$container.find(".calendar-occurrence-series-times");
+      const $allDay = $times.find(".calendar-occurrence-all-day .lightswitch");
+      const $seriesTimes = this.$container.find(".calendar-occurrence-inherited-times");
 
       const updateAllDay = () => {
-        $times.find(".timewrapper").toggleClass("hidden", $allDay.hasClass("on"));
+        $times.toggleClass("is-all-day", $allDay.hasClass("on"));
       };
 
-      this.addListener($ownTimes, "change", () => {
+      const update = () => {
         const hasOwnTimes = $ownTimes.hasClass("on");
 
         $times.toggleClass("hidden", !hasOwnTimes).prop("disabled", !hasOwnTimes);
         $seriesTimes.toggleClass("hidden", hasOwnTimes);
+      };
+
+      this.addListener($ownTimes, "change", () => {
+        update();
+        Garnish.$win.trigger("resize");
       });
 
       this.addListener($allDay, "change", updateAllDay);
+      update();
       updateAllDay();
     },
 
@@ -79,30 +85,34 @@
      * the result, tells whoever opened it, and closes.
      */
     initReset() {
-      this.addListener(this.$container.find(".calendar-occurrence-reset-btn"), "click", async () => {
-        if (!window.confirm(Craft.t("calendar", "Remove everything this occurrence changes?"))) {
-          return;
-        }
+      this.addListener(
+        this.$container.find(".calendar-occurrence-reset-btn"),
+        "click",
+        async () => {
+          if (!window.confirm(Craft.t("calendar", "Remove everything this occurrence changes?"))) {
+            return;
+          }
 
-        const screen = this.$form.data("cpScreen");
-        const data = {
-          eventId: this.$container.data("eventId"),
-          siteId: this.$container.data("siteId"),
-          recurrenceId: this.$container.data("recurrenceId"),
-        };
+          const screen = this.$form.data("cpScreen");
+          const data = {
+            eventId: this.$container.data("eventId"),
+            siteId: this.$container.data("siteId"),
+            recurrenceId: this.$container.data("recurrenceId"),
+          };
 
-        screen.showSubmitSpinner();
+          screen.showSubmitSpinner();
 
-        try {
-          screen.handleSubmitResponse(
-            await Craft.sendActionRequest("POST", "calendar/occurrences/reset", { data }),
-          );
-        } catch (error) {
-          screen.handleSubmitError(error);
-        } finally {
-          screen.hideSubmitSpinner();
-        }
-      });
+          try {
+            screen.handleSubmitResponse(
+              await Craft.sendActionRequest("POST", "calendar/occurrences/reset", { data }),
+            );
+          } catch (error) {
+            screen.handleSubmitError(error);
+          } finally {
+            screen.hideSubmitSpinner();
+          }
+        },
+      );
     },
   });
 })();

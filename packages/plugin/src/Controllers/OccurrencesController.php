@@ -10,7 +10,6 @@ use craft\fieldlayoutelements\BaseUiElement;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\DateTimeHelper;
-use craft\i18n\Locale;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
@@ -322,7 +321,9 @@ class OccurrencesController extends BaseController
             'startDate' => DateHelper::floatingToLocal($occurrence['startDate']),
             'endDate' => DateHelper::floatingToLocal($occurrence['endDate']),
             'allDay' => $occurrence['allDay'],
-            'seriesTimes' => $this->formatRange($series['startDate'], $series['endDate'], $series['allDay']),
+            'seriesStartDate' => DateHelper::floatingToLocal($series['startDate']),
+            'seriesEndDate' => DateHelper::floatingToLocal($series['endDate']),
+            'seriesAllDay' => $series['allDay'],
             'cancelled' => (bool) $override?->cancelled,
             'slug' => $override?->hasCustomSlug() ? $override->slug : null,
             'generatedSlug' => $code ? $occurrence['startDate']->format('Y-m-d').'-'.$code : null,
@@ -494,17 +495,6 @@ class OccurrencesController extends BaseController
         $date = DateTimeHelper::toDateTime($value, true);
 
         return $date ? DateHelper::parseFloatingCarbon($date) : null;
-    }
-
-    private function formatRange(Carbon $startDate, Carbon $endDate, bool $allDay): string
-    {
-        if ($startDate->isSameDay($endDate)) {
-            return $allDay
-                ? DateHelper::formatFloating($startDate, true)
-                : DateHelper::formatFloating($startDate, false).' – '.\Craft::$app->getFormatter()->asTime(DateHelper::floatingToLocal($endDate), Locale::LENGTH_SHORT);
-        }
-
-        return DateHelper::formatFloating($startDate, $allDay).' – '.DateHelper::formatFloating($endDate, $allDay);
     }
 
     private function getOccurrencesService(): OccurrencesService

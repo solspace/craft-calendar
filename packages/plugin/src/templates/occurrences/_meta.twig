@@ -2,60 +2,49 @@
 {% import '_includes/forms' as forms %}
 
 <div class="calendar-occurrence-meta">
-    <div class="calendar-occurrence-meta-row calendar-occurrence-options">
-        {{ forms.lightswitchField({
-            label: 'Own date and time'|t('calendar'),
-            id: 'ownTimes',
-            name: 'ownTimes',
-            on: ownTimes,
-            fieldClass: 'calendar-occurrence-own-times',
-        }) }}
+    <section class="calendar-occurrence-date-time" aria-labelledby="occurrence-date-time-label">
+        <div class="calendar-occurrence-date-time-heading">
+            <h2 id="occurrence-date-time-label">{{ 'Date & Time'|t('calendar') }}</h2>
+            <div class="calendar-occurrence-field-toggle calendar-occurrence-own-times">
+                {{ forms.lightswitch({
+                    id: 'ownTimes',
+                    labelId: 'ownTimes-label',
+                    name: 'ownTimes',
+                    on: ownTimes,
+                    small: true,
+                }) }}
+                <label id="ownTimes-label" for="ownTimes">{{ 'Override'|t('calendar') }}</label>
+            </div>
+        </div>
+        <p class="instructions">{{ 'Enable Override to change the date or time for this occurrence only.'|t('calendar') }}</p>
 
+        {% include 'calendar/occurrences/_times' with {
+            readOnly: false,
+            ownTimes: ownTimes,
+            startDate: startDate,
+            endDate: endDate,
+            allDay: allDay,
+        } only %}
+        {% include 'calendar/occurrences/_times' with {
+            readOnly: true,
+            ownTimes: ownTimes,
+            startDate: seriesStartDate,
+            endDate: seriesEndDate,
+            allDay: seriesAllDay,
+        } only %}
+    </section>
+
+    <div class="calendar-occurrence-status">
         {{ forms.lightswitchField({
-            label: 'Cancelled'|t('calendar'),
+            label: 'Cancel Occurrence'|t('calendar'),
             id: 'cancelled',
             name: 'cancelled',
             on: cancelled,
-            instructions: 'Cancelled occurrences stay listed, marked as not taking place.'|t('calendar'),
+            instructions: 'Mark this occurrence as cancelled without deleting it.'|t('calendar'),
             instructionsPosition: 'after',
             fieldClass: 'calendar-occurrence-cancelled',
         }) }}
     </div>
-
-    <div class="field calendar-occurrence-series-times{{ ownTimes ? ' hidden' }}">
-        <div class="heading">
-            <label>{{ 'From the event'|t('calendar') }}</label>
-        </div>
-        <div class="input ltr">{{ seriesTimes }}</div>
-    </div>
-
-    <fieldset class="calendar-occurrence-times{{ not ownTimes ? ' hidden' }}"{{ not ownTimes ? ' disabled' }}>
-        <div class="calendar-occurrence-meta-row">
-            {{ forms.dateTimeField({
-                label: 'Start'|t('calendar'),
-                id: 'startDate',
-                name: 'startDate',
-                value: startDate,
-                data: {'error-key': 'startDate'},
-            }) }}
-
-            {{ forms.dateTimeField({
-                label: 'End'|t('calendar'),
-                id: 'endDate',
-                name: 'endDate',
-                value: endDate,
-                data: {'error-key': 'endDate'},
-            }) }}
-
-            {{ forms.lightswitchField({
-                label: 'All Day'|t('calendar'),
-                id: 'allDay',
-                name: 'allDay',
-                on: allDay,
-                fieldClass: 'calendar-occurrence-all-day',
-            }) }}
-        </div>
-    </fieldset>
 
     <div class="calendar-occurrence-meta-row calendar-occurrence-identity">
         {# The ID isn't `slug`, which the title field's slug generator would fill in #}
@@ -65,7 +54,7 @@
             name: 'slug',
             value: slug,
             placeholder: generatedSlug,
-            instructions: 'Leave blank to use the date and code.'|t('calendar'),
+            instructions: 'Leave blank to use the automatically generated slug.'|t('calendar'),
             instructionsPosition: 'after',
             data: {'error-key': 'slug'},
         }) }}
@@ -73,7 +62,7 @@
         {% if code %}
             <div class="field calendar-occurrence-code">
                 <div class="heading">
-                    <label>{{ 'Code'|t('calendar') }}</label>
+                    <label>{{ 'Occurrence Code'|t('calendar') }}</label>
                 </div>
                 <div class="input ltr"><code>{{ code }}</code></div>
             </div>
@@ -82,8 +71,8 @@
 
     {% if canReset %}
         <div class="calendar-occurrence-reset">
-            <button type="button" class="btn calendar-occurrence-reset-btn">{{ 'Reset to the event'|t('calendar') }}</button>
-            <span class="light">{{ 'Removes everything this occurrence changes.'|t('calendar') }}</span>
+            <button type="button" class="btn calendar-occurrence-reset-btn">{{ 'Reset Occurrence'|t('calendar') }}</button>
+            <span class="light">{{ 'Remove all customizations and restore the event’s values.'|t('calendar') }}</span>
         </div>
     {% endif %}
 </div>
