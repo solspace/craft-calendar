@@ -1,6 +1,7 @@
 import {
   localDisplayDateToUtcTimestamp,
   utcDateKey,
+  utcDateTimeString,
   utcTimestampToLocalDisplayDate,
   utcToLocalDisplayDate,
 } from "@cal/utils/date";
@@ -107,6 +108,20 @@ export const getOccurrenceStatus = (
     excluded: base && !full,
     rdate: previewRecurrence.addedDateSet.has(timestamp),
   };
+};
+
+/** The date list shows days; editing needs the original scheduled start, including its time. */
+export const getOccurrenceRecurrenceId = (
+  previewRecurrence: PreviewRecurrence,
+  date: Date,
+): string | null => {
+  const occurrence = previewRecurrence.recurrenceSet?.between(
+    toUtcDayStart(date),
+    toUtcDayEnd(date),
+    true,
+  )[0];
+
+  return occurrence ? utcDateTimeString(occurrence) : null;
 };
 
 export const isProtectedOccurrence = (

@@ -7,6 +7,7 @@ import type { AppDispatch } from "@event-builder/store/store";
 import { type FC, useId, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { appSelectors } from "../store/app.slice";
+import type { BuilderContext } from "../types";
 import { CalendarPreview } from "./calendar-preview/calendar-preview";
 import {
   DatePickersLightSwitchRepeatRulesWrapper,
@@ -20,7 +21,12 @@ import {
 } from "./editor.utilities";
 import { RepeatRules } from "./repeat-rules/repeat-rules";
 
-export const Editor: FC = () => {
+type Props = {
+  context?: BuilderContext;
+  onOccurrenceSaved?: () => void;
+};
+
+export const Editor: FC<Props> = ({ context, onOccurrenceSaved }) => {
   const allDayId = useId();
   const startId = useId();
   const endId = useId();
@@ -109,7 +115,7 @@ export const Editor: FC = () => {
         </DatePickersLightSwitchWrapper>
         <RepeatRules />
       </DatePickersLightSwitchRepeatRulesWrapper>
-      <CalendarPreview />
+      <CalendarPreview context={context} onOccurrenceSaved={onOccurrenceSaved} />
     </EventEditorWrapper>
   );
 };

@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { format } from "date-fns";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { findElementEditor, getDraftEventId } from "../occurrence-editor";
 import type { BuilderContext } from "../types";
 import {
   EditedOccurrenceItem,
@@ -28,6 +29,7 @@ type EditedOccurrence = {
 
 type Props = {
   context: BuilderContext;
+  refreshKey?: number;
 };
 
 const SCHEDULE_INPUTS = [
@@ -56,15 +58,6 @@ const readSchedule = (node: HTMLElement | null): Record<string, string> => {
   return schedule;
 };
 
-const findElementEditor = (node: HTMLElement | null): Craft.ElementEditor | undefined => {
-  const jQuery = (window as typeof window & { jQuery?: JQueryStatic }).jQuery;
-  if (!node || !jQuery) {
-    return undefined;
-  }
-
-  return jQuery(node).closest("form").data("elementEditor");
-};
-
 const formatOccurrenceDate = (occurrence: EditedOccurrence): string =>
   format(
     utcToLocalDisplayDate(new Date(occurrence.start * 1000)),
@@ -76,7 +69,7 @@ const formatOccurrenceDate = (occurrence: EditedOccurrence): string =>
  * The event's edited occurrences, including ones the schedule no longer has.
  * Changes made from here are saved into the event's draft.
  */
-export const EditedOccurrences: FC<Props> = ({ context }) => {
+export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [occurrences, setOccurrences] = useState<EditedOccurrence[]>([]);
   const [busyRecurrenceId, setBusyRecurrenceId] = useState<string | null>(null);
@@ -111,9 +104,10 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
     setOccurrences(data.occurrences ?? []);
   }, [context.siteId, getEventId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reload after a preview occurrence is saved.
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, refreshKey]);
 
   const checkSchedule = useCallback(async () => {
     const eventId = getEventId();
@@ -153,19 +147,12 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
   const isOrphaned = (occurrence: EditedOccurrence): boolean =>
     notOnSchedule ? notOnSchedule.has(occurrence.recurrenceId) : occurrence.orphaned;
 
-  const getDraftEventId = async (): Promise<number | null> => {
-    const editor = findElementEditor(ref.current);
-    await editor?.ensureIsDraftOrRevision();
-
-    return editor?.settings.elementId ?? context.eventId;
-  };
-
   // Creating the draft takes a moment, so the buttons stay disabled until the slideout opens
   const edit = async (occurrence: EditedOccurrence) => {
     setBusyRecurrenceId(occurrence.recurrenceId);
 
     try {
-      const eventId = await getDraftEventId();
+      const eventId = await getDraftEventId(ref.current);
       if (!eventId) {
         return;
       }
@@ -191,7 +178,7 @@ export const EditedOccurrences: FC<Props> = ({ context }) => {
     setBusyRecurrenceId(occurrence.recurrenceId);
 
     try {
-      const eventId = await getDraftEventId();
+      const eventId = await getDraftEventId(ref.current);
       if (!eventId) {
         return;
       }

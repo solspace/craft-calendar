@@ -1,7 +1,7 @@
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { isDebugMode } from "@cal/utils/debug";
 import { format, formatISO } from "date-fns";
-import { type FC, useMemo } from "react";
+import { type FC, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { rrulestr } from "rrule";
 import { EditedOccurrences } from "./edited-occurrences/edited-occurrences";
@@ -16,6 +16,7 @@ type Props = {
 };
 
 export const EventBuilder: FC<Props> = ({ context }) => {
+  const [occurrencesRevision, setOccurrencesRevision] = useState(0);
   const { rrule } = useSelector(eventSelectors.state);
 
   const isDebug = useMemo(isDebugMode, []);
@@ -33,9 +34,12 @@ export const EventBuilder: FC<Props> = ({ context }) => {
     <EventBuilderWrapper>
       {context && <Series context={context} />}
 
-      <Editor />
+      <Editor
+        context={context}
+        onOccurrenceSaved={() => setOccurrencesRevision((revision) => revision + 1)}
+      />
 
-      {context?.eventId && <EditedOccurrences context={context} />}
+      {context?.eventId && <EditedOccurrences context={context} refreshKey={occurrencesRevision} />}
 
       {isDebug && (
         <code>

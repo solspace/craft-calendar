@@ -667,6 +667,7 @@ return [
     'Cancel occurrence' => 'Annulla occorrenza',
     'You are changing an event’s length.' => 'Stai cambiando la durata di un evento.',
     'Edited occurrences' => 'Occorrenze modificate',
+    'Edit occurrence on {date}' => 'Modifica l’occorrenza del {date}',
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Occorrenze con modifiche proprie. Le modifiche fatte qui vanno online con l’evento.',
     'No longer on the schedule' => 'Non più in programma',
     'Discard' => 'Scarta',

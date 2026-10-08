@@ -9,11 +9,11 @@ export const CalendarPreviewWrapper = styled.div`
 
   padding: 20px;
   width: 100%;
-  flex: 0 0 440px;
+  flex: 0 0 495px;
   box-sizing: border-box;
     
   @container (min-width: 1024px) {
-    width: 440px;
+    width: 495px;
   }
 
   > .field {
@@ -211,11 +211,12 @@ export const CalendarPreviewWrapper = styled.div`
 export const FullCalendarOccurrencePreviewWrapper = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 20px;
 
   margin-top: 10px;
-  width: 400px;
-  flex: 0 0 400px;
+  width: 455px;
+  max-width: 100%;
   box-sizing: border-box;
 `;
 
@@ -242,8 +243,8 @@ export const OccurrencePreviewSummary = styled.p`
 `;
 
 export const OccurrencePreviewDateList = styled.div`
-  min-width: 120px;
-  max-width: 120px;
+  min-width: max-content;
+  flex: 1;
   height: 100%;
 
   p {
@@ -262,9 +263,9 @@ export const DateList = styled.ul<DateListProps>`
   justify-content: ${(props) => (props.$count > 7 ? "space-between" : "start")};
   gap: 4px;
 
-  height: 100%;
-  max-height: 215px;
-  margin-top: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 `;
 
 export const DateItem = styled.li`
@@ -282,6 +283,20 @@ export const DateItem = styled.li`
   background-color: var(--gray-050);
   border: 1px solid var(--gray-200);
   border-left: 5px solid var(--gray-200);
+
+  > span {
+    flex: 1;
+  }
+
+  .occurrence-edit {
+    flex-shrink: 0;
+    min-height: 0;
+    height: 20px;
+    padding: 0 5px;
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 20px;
+  }
 `;
 
 export const RemoveOccurrenceButton = styled.button`

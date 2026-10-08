@@ -667,6 +667,7 @@ return [
     'Cancel occurrence' => 'Herhaling annuleren',
     'You are changing an event’s length.' => 'Je wijzigt de duur van een evenement.',
     'Edited occurrences' => 'Aangepaste herhalingen',
+    'Edit occurrence on {date}' => 'Herhaling op {date} bewerken',
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Herhalingen met eigen wijzigingen. Wijzigingen hier gaan live met het evenement.',
     'No longer on the schedule' => 'Niet meer in het schema',
     'Discard' => 'Verwerpen',

@@ -667,6 +667,7 @@ return [
     'Cancel occurrence' => 'Termin absagen',
     'You are changing an event’s length.' => 'Sie ändern die Dauer eines Ereignisses.',
     'Edited occurrences' => 'Geänderte Termine',
+    'Edit occurrence on {date}' => 'Termin am {date} bearbeiten',
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Termine mit eigenen Änderungen. Änderungen hier gehen mit dem Ereignis live.',
     'No longer on the schedule' => 'Nicht mehr im Zeitplan',
     'Discard' => 'Verwerfen',

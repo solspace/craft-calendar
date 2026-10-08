@@ -667,6 +667,7 @@ return [
     'Cancel occurrence' => 'Annuler l’occurrence',
     'You are changing an event’s length.' => 'Vous modifiez la durée d’un événement.',
     'Edited occurrences' => 'Occurrences modifiées',
+    'Edit occurrence on {date}' => 'Modifier l’occurrence du {date}',
     'Occurrences with their own changes. Changes made here go live with the event.' => 'Occurrences ayant leurs propres modifications. Les modifications faites ici sont publiées avec l’événement.',
     'No longer on the schedule' => 'N’est plus au calendrier',
     'Discard' => 'Abandonner',

@@ -663,6 +663,7 @@ return [
     'This occurrence is cancelled.' => 'This occurrence is cancelled.',
     'Edit event' => 'Edit event',
     'Edit occurrence' => 'Edit occurrence',
+    'Edit occurrence on {date}' => 'Edit occurrence on {date}',
     'Restore occurrence' => 'Restore occurrence',
     'Cancel occurrence' => 'Cancel occurrence',
     'You are changing an event’s length.' => 'You are changing an event’s length.',

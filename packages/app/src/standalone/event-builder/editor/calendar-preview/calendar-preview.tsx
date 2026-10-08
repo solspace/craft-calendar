@@ -1,4 +1,5 @@
 import { Control } from "@cal/components/controls/control";
+import { openOccurrenceEditor } from "@cal/pages/calendar/calendar.events";
 import { Flex } from "@cal/styles/components";
 import { utcDateKey, utcToLocalDisplayDate } from "@cal/utils/date";
 import { getCalendarTranslations, getDateLocale } from "@cal/utils/localization";
@@ -11,8 +12,10 @@ import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import { format } from "date-fns";
 import type { FC } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { getDraftEventId } from "../../occurrence-editor";
+import type { BuilderContext } from "../../types";
 import {
   buildNextRRuleForDateMutation,
   buildOccurrenceSummary,
@@ -21,6 +24,7 @@ import {
   buildUpcomingOccurrences,
   describeOccurrenceSummary,
   describeRecurrence,
+  getOccurrenceRecurrenceId,
   getOccurrenceRemovalType,
   getOccurrenceStatus,
 } from "./calendar-preview.operations";
@@ -38,12 +42,20 @@ import {
 
 const MAX_OCCURRENCES = 8;
 
-export const CalendarPreview: FC = () => {
+type Props = {
+  context?: BuilderContext;
+  onOccurrenceSaved?: () => void;
+};
+
+export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isOpeningOccurrence, setIsOpeningOccurrence] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const weekStartDay = useSelector(appSelectors.weekStartDay);
   const dateFormat = useSelector(appSelectors.formats)?.date.short.icu ?? "P";
   const state = useSelector(eventSelectors.state);
   const { start, rrule } = state;
+  const canEditOccurrences = Boolean(context?.eventId && rrule);
   const [viewRange, setViewRange] = useState<{
     start: Date;
     end: Date;
@@ -122,8 +134,30 @@ export const CalendarPreview: FC = () => {
     [previewRecurrence],
   );
 
+  const editOccurrence = async (recurrenceId: string) => {
+    if (!context || isOpeningOccurrence) {
+      return;
+    }
+
+    setIsOpeningOccurrence(true);
+
+    try {
+      const eventId = await getDraftEventId(ref.current);
+      openOccurrenceEditor({
+        eventId,
+        recurrenceId,
+        siteId: context.siteId,
+        onSave: () => onOccurrenceSaved?.(),
+      });
+    } catch {
+      Craft.cp.displayError(translate("Couldn’t open the occurrence for editing."));
+    } finally {
+      setIsOpeningOccurrence(false);
+    }
+  };
+
   return (
-    <CalendarPreviewWrapper>
+    <CalendarPreviewWrapper ref={ref}>
       <Control>
         <Flex $direction={"column"} $gap={10}>
           <OccurrencePreviewHeading>{translate("Schedule Preview")}</OccurrencePreviewHeading>
@@ -199,6 +233,9 @@ export const CalendarPreview: FC = () => {
                     locale: getDateLocale(),
                   });
                   const removalType = getOccurrenceRemovalType(previewRecurrence, occurrenceDate);
+                  const recurrenceId = canEditOccurrences
+                    ? getOccurrenceRecurrenceId(previewRecurrence, occurrenceDate)
+                    : null;
                   const removalLabel = translate(
                     removalType === "rdate"
                       ? "Remove additional date {date}"
@@ -209,9 +246,22 @@ export const CalendarPreview: FC = () => {
                   return (
                     <DateItem key={utcDateKey(occurrenceDate)}>
                       <span>{date}</span>
+                      {recurrenceId && (
+                        <button
+                          type="button"
+                          className="btn small occurrence-edit"
+                          aria-label={translate("Edit occurrence on {date}", { date })}
+                          title={translate("Edit occurrence")}
+                          disabled={isOpeningOccurrence}
+                          onClick={() => void editOccurrence(recurrenceId)}
+                        >
+                          {translate("Edit")}
+                        </button>
+                      )}
                       {removalType && (
                         <RemoveOccurrenceButton
                           type="button"
+                          disabled={isOpeningOccurrence}
                           aria-label={removalLabel}
                           title={removalLabel}
                           onClick={() => removeOccurrence(occurrenceDate)}

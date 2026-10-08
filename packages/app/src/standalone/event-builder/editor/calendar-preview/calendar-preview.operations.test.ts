@@ -8,11 +8,39 @@ import {
   buildUpcomingOccurrences,
   describeOccurrenceSummary,
   describeRecurrence,
+  getOccurrenceRecurrenceId,
   getOccurrenceRemovalType,
   getOccurrenceStatus,
 } from "./calendar-preview.operations";
 
 describe("calendar preview operations", () => {
+  it("uses the scheduled time rather than the date-list midnight when editing", () => {
+    const preview = buildPreviewRecurrence(
+      "DTSTART:20260904T143025\nRRULE:FREQ=DAILY;COUNT=2\nRDATE:20260910T170000",
+      Date.UTC(2026, 8, 4, 14, 30, 25) / 1000,
+    );
+
+    expect(getOccurrenceRecurrenceId(preview, new Date(Date.UTC(2026, 8, 5)))).toBe(
+      "2026-09-05T14:30:25",
+    );
+    expect(getOccurrenceRecurrenceId(preview, new Date(Date.UTC(2026, 8, 10)))).toBe(
+      "2026-09-10T17:00:00",
+    );
+    expect(getOccurrenceRecurrenceId(preview, new Date(Date.UTC(2026, 8, 6)))).toBeNull();
+  });
+
+  it("uses midnight for an all-day occurrence and skips excluded dates", () => {
+    const preview = buildPreviewRecurrence(
+      "DTSTART:20260904\nRRULE:FREQ=DAILY;COUNT=3\nEXDATE;VALUE=DATE:20260905",
+      Date.UTC(2026, 8, 4) / 1000,
+    );
+
+    expect(getOccurrenceRecurrenceId(preview, new Date(Date.UTC(2026, 8, 4)))).toBe(
+      "2026-09-04T00:00:00",
+    );
+    expect(getOccurrenceRecurrenceId(preview, new Date(Date.UTC(2026, 8, 5)))).toBeNull();
+  });
+
   it("matches FullCalendar UTC day cells to excluded dates", () => {
     const rrule = [
       "DTSTART:20260601T100000",

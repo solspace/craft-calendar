@@ -50,6 +50,7 @@ declare namespace Craft {
   class ElementEditor {
     settings: ElementEditorSettings;
     ensureIsDraftOrRevision(onlyIfChanged?: boolean): Promise<void>;
+    checkForm(force?: boolean, saveDraft?: boolean | null): Promise<void>;
   }
 
   const cp: {
