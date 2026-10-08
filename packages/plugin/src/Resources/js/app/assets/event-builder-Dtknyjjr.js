@@ -205,6 +205,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
 
   && > li {
     margin: 0;
+    padding: 8px 0;
     list-style: none;
   }
 `,Rr=r.li`
@@ -214,17 +215,20 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     "details actions"
     "date actions"
     "changes actions";
-  align-items: center;
-  gap: 4px 12px;
-  margin: 0;
-  padding: 10px 0;
-  line-height: 18px;
+  align-items: start;
+  gap: 2px 12px;
+  line-height: 22px;
 
   &:not(:last-child) {
     border-bottom: 1px solid var(--gray-200);
   }
 
-  .details {
+  > div {
+    margin: 0;
+    padding: 0;
+  }
+
+  .occurrence-details {
     grid-area: details;
     display: flex;
     flex-wrap: wrap;
@@ -233,18 +237,18 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     min-width: 0;
   }
 
-  &.is-orphaned .details {
+  &.is-orphaned .occurrence-details {
     color: var(--gray-600);
   }
 
-  .title {
+  .occurrence-title {
     min-width: 0;
     font-size: 13px;
     font-weight: 700;
     overflow-wrap: anywhere;
   }
 
-  .date {
+  .occurrence-date {
     grid-area: date;
     min-width: 0;
     color: var(--gray-600);
@@ -254,7 +258,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     overflow-wrap: anywhere;
   }
 
-  .changes {
+  .occurrence-changes {
     grid-area: changes;
     display: flex;
     flex-wrap: wrap;
@@ -266,12 +270,14 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     overflow-wrap: anywhere;
   }
 
-  .state {
+  .occurrence-state {
     padding: 1px 6px;
     border-radius: var(--small-border-radius, 3px);
     background-color: var(--gray-100);
     font-size: 11px;
     font-weight: 400;
+    line-height: 18px;
+    white-space: nowrap;
     color: var(--gray-600);
 
     &.cancelled {
@@ -280,11 +286,9 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     }
   }
 
-  .actions {
+  .occurrence-actions {
     grid-area: actions;
     display: flex;
-    flex-wrap: wrap;
-    flex: 0 0 auto;
     align-items: center;
     gap: 0;
   }
@@ -301,7 +305,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, .7fr) auto;
     grid-template-areas: "details date changes actions";
   }
-`,zr=(e,t)=>{let n=o(e.start),r=o(e.end),i={locale:d()},a=t?.date.short.icu??`P`,s=t?.time.short.icu??`p`,c=O(n,a,i),u=O(r,a,i),f=Se(n,r);if(e.allDay)return`${f?c:`${c} - ${u}`} (${l(`all day`)})`;let p=O(n,s,i),m=O(r,s,i);return`${c} ${p} - ${f?m:`${u} ${m}`}`},X=a(),Br=[`start`,`end`,`until`,`timezone`,`allDay`,`repeatType`,`repeatEndType`,`rrule`],Vr=e=>{let t=e?.closest(`[data-event-builder]`),n={};for(let e of Br){let r=t?.querySelector(`input[name="${e}"]`);r&&(n[e]=r.value)}return n},Hr=({context:e,refreshKey:t,onOccurrencesChanged:n})=>{let r=(0,M.useRef)(null),[i,a]=(0,M.useState)([]),[o,s]=(0,M.useState)(null),[c,u]=(0,M.useState)(null),d=(0,M.useRef)(0),f=F(J.state),p=F(Y.formats),m=e=>zr(e,p),h=(0,M.useCallback)(()=>jr(r.current)?.settings.elementId??e.eventId,[e.eventId]),g=(0,M.useCallback)(async()=>{let t=h();if(!t)return;let r=new URL(Craft.getActionUrl(`calendar/occurrences/list`),window.location.origin);r.searchParams.set(`eventId`,String(t)),r.searchParams.set(`siteId`,String(e.siteId));let i=await ve(r,{headers:{Accept:`application/json`}});if(!i.ok)return;let o=(await i.json()).occurrences??[];a(o),n?.(o)},[e.siteId,h,n]);(0,M.useEffect)(()=>{g()},[g,t]);let _=(0,M.useCallback)(async()=>{let t=h();if(!t)return;let n=++d.current,i=await ve(Craft.getActionUrl(`calendar/occurrences/check-schedule`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:t,siteId:e.siteId,...Vr(r.current)})});if(!i.ok)return;let a=await i.json();n===d.current&&u(new Set(a.orphaned??[]))},[e.siteId,h]);(0,M.useEffect)(()=>{if(i.length===0)return;let e=setTimeout(()=>void _(),400);return()=>clearTimeout(e)},[f,i.length,_]);let v=e=>c?c.has(e.recurrenceId):e.orphaned,y=async t=>{s(t.recurrenceId);try{let n=await Mr(r.current);if(!n)return;_e({eventId:n,recurrenceId:t.recurrenceId,siteId:e.siteId,onSave:()=>void g()})}catch{Craft.cp.displayError(l(`Couldn’t open the occurrence for editing.`))}finally{s(null)}},b=async t=>{if(window.confirm(l(`Remove everything this occurrence changes?`))){s(t.recurrenceId);try{let n=await Mr(r.current);if(!n)return;let i=await ve(Craft.getActionUrl(`calendar/occurrences/reset`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:n,siteId:e.siteId,recurrenceId:t.recurrenceId})});if(!i.ok){let e=await i.json().catch(()=>null);Craft.cp.displayError(e?.message||l(`Couldn’t reset the occurrence.`));return}await g()}catch{Craft.cp.displayError(l(`Couldn’t reset the occurrence.`))}finally{s(null)}}};return(0,X.jsx)(Ir,{ref:r,children:i.length>0&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(yr,{as:`h3`,children:l(`Edited occurrences`)}),(0,X.jsx)(br,{children:l(`Occurrences with their own changes. Changes made here go live with the event.`)}),i.some(v)&&(0,X.jsx)(br,{className:`warning`,children:l(`Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.`)}),(0,X.jsx)(Lr,{children:i.map(e=>(0,X.jsxs)(Rr,{className:D(v(e)&&`is-orphaned`,e.cancelled&&`is-cancelled`),children:[(0,X.jsxs)(`div`,{className:`details`,children:[(0,X.jsx)(`div`,{className:`title`,children:e.title}),e.cancelled&&(0,X.jsx)(`span`,{className:`state cancelled`,children:l(`Cancelled`)}),v(e)&&(0,X.jsx)(`span`,{className:`state`,children:l(`No longer on the schedule`)})]}),(0,X.jsx)(`div`,{className:`date`,children:m(e)}),(0,X.jsx)(`div`,{className:`changes`,children:(0,X.jsx)(`span`,{children:e.changes.join(`, `)})}),(0,X.jsxs)(`div`,{className:`actions`,children:[!v(e)&&(0,X.jsx)(Ar,{type:`button`,className:`icon occurrence-edit`,"data-icon":`edit`,"aria-label":l(`Edit occurrence on {date}`,{date:m(e)}),title:l(`Edit occurrence`),disabled:o!==null,onClick:()=>void y(e)}),(0,X.jsx)(Ar,{type:`button`,className:`icon occurrence-discard`,"data-icon":`remove`,"aria-label":`${l(`Discard`)}: ${m(e)}`,title:l(`Removes everything this occurrence changes.`),disabled:o!==null,onClick:()=>void b(e)})]})]},e.recurrenceId))})]})})},Ur=r.div`
+`,zr=(e,t)=>{let n=o(e.start),r=o(e.end),i={locale:d()},a=t?.date.short.icu??`P`,s=t?.time.short.icu??`p`,c=O(n,a,i),u=O(r,a,i),f=Se(n,r);if(e.allDay)return`${f?c:`${c} - ${u}`} (${l(`all day`)})`;let p=O(n,s,i),m=O(r,s,i);return`${c} ${p} - ${f?m:`${u} ${m}`}`},X=a(),Br=[`start`,`end`,`until`,`timezone`,`allDay`,`repeatType`,`repeatEndType`,`rrule`],Vr=e=>{let t=e?.closest(`[data-event-builder]`),n={};for(let e of Br){let r=t?.querySelector(`input[name="${e}"]`);r&&(n[e]=r.value)}return n},Hr=({context:e,refreshKey:t,onOccurrencesChanged:n})=>{let r=(0,M.useRef)(null),[i,a]=(0,M.useState)([]),[o,s]=(0,M.useState)(null),[c,u]=(0,M.useState)(null),d=(0,M.useRef)(0),f=F(J.state),p=F(Y.formats),m=e=>zr(e,p),h=(0,M.useCallback)(()=>jr(r.current)?.settings.elementId??e.eventId,[e.eventId]),g=(0,M.useCallback)(async()=>{let t=h();if(!t)return;let r=new URL(Craft.getActionUrl(`calendar/occurrences/list`),window.location.origin);r.searchParams.set(`eventId`,String(t)),r.searchParams.set(`siteId`,String(e.siteId));let i=await ve(r,{headers:{Accept:`application/json`}});if(!i.ok)return;let o=(await i.json()).occurrences??[];a(o),n?.(o)},[e.siteId,h,n]);(0,M.useEffect)(()=>{g()},[g,t]);let _=(0,M.useCallback)(async()=>{let t=h();if(!t)return;let n=++d.current,i=await ve(Craft.getActionUrl(`calendar/occurrences/check-schedule`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:t,siteId:e.siteId,...Vr(r.current)})});if(!i.ok)return;let a=await i.json();n===d.current&&u(new Set(a.orphaned??[]))},[e.siteId,h]);(0,M.useEffect)(()=>{if(i.length===0)return;let e=setTimeout(()=>void _(),400);return()=>clearTimeout(e)},[f,i.length,_]);let v=e=>c?c.has(e.recurrenceId):e.orphaned,y=async t=>{s(t.recurrenceId);try{let n=await Mr(r.current);if(!n)return;_e({eventId:n,recurrenceId:t.recurrenceId,siteId:e.siteId,onSave:()=>void g()})}catch{Craft.cp.displayError(l(`Couldn’t open the occurrence for editing.`))}finally{s(null)}},b=async t=>{if(window.confirm(l(`Remove everything this occurrence changes?`))){s(t.recurrenceId);try{let n=await Mr(r.current);if(!n)return;let i=await ve(Craft.getActionUrl(`calendar/occurrences/reset`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:n,siteId:e.siteId,recurrenceId:t.recurrenceId})});if(!i.ok){let e=await i.json().catch(()=>null);Craft.cp.displayError(e?.message||l(`Couldn’t reset the occurrence.`));return}await g()}catch{Craft.cp.displayError(l(`Couldn’t reset the occurrence.`))}finally{s(null)}}};return(0,X.jsx)(Ir,{ref:r,children:i.length>0&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(yr,{as:`h3`,children:l(`Edited occurrences`)}),(0,X.jsx)(br,{children:l(`Occurrences with their own changes. Changes made here go live with the event.`)}),i.some(v)&&(0,X.jsx)(br,{className:`warning`,children:l(`Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.`)}),(0,X.jsx)(Lr,{children:i.map(e=>(0,X.jsxs)(Rr,{className:D(v(e)&&`is-orphaned`,e.cancelled&&`is-cancelled`),children:[(0,X.jsxs)(`div`,{className:`occurrence-details`,children:[(0,X.jsx)(`span`,{className:`occurrence-title`,children:e.title}),e.cancelled&&(0,X.jsx)(`span`,{className:`occurrence-state cancelled`,children:l(`Cancelled`)}),v(e)&&(0,X.jsx)(`span`,{className:`occurrence-state`,children:l(`No longer on the schedule`)})]}),(0,X.jsx)(`div`,{className:`occurrence-date`,children:m(e)}),(0,X.jsx)(`div`,{className:`occurrence-changes`,children:(0,X.jsx)(`span`,{children:e.changes.join(`, `)})}),(0,X.jsxs)(`div`,{className:`occurrence-actions`,children:[!v(e)&&(0,X.jsx)(Ar,{type:`button`,className:`icon occurrence-edit`,"data-icon":`edit`,"aria-label":l(`Edit occurrence on {date}`,{date:m(e)}),title:l(`Edit occurrence`),disabled:o!==null,onClick:()=>void y(e)}),(0,X.jsx)(Ar,{type:`button`,className:`icon occurrence-discard`,"data-icon":`remove`,"aria-label":`${l(`Discard`)}: ${m(e)}`,title:l(`Removes everything this occurrence changes.`),disabled:o!==null,onClick:()=>void b(e)})]})]},e.recurrenceId))})]})})},Ur=r.div`
   container-type: inline-size;
 
   display: flex;

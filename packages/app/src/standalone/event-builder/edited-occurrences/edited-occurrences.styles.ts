@@ -25,6 +25,7 @@ export const EditedOccurrenceList = styled.ul`
 
   && > li {
     margin: 0;
+    padding: 8px 0;
     list-style: none;
   }
 `;
@@ -36,17 +37,20 @@ export const EditedOccurrenceItem = styled.li`
     "details actions"
     "date actions"
     "changes actions";
-  align-items: center;
-  gap: 4px 12px;
-  margin: 0;
-  padding: 10px 0;
-  line-height: 18px;
+  align-items: start;
+  gap: 2px 12px;
+  line-height: 22px;
 
   &:not(:last-child) {
     border-bottom: 1px solid var(--gray-200);
   }
 
-  .details {
+  > div {
+    margin: 0;
+    padding: 0;
+  }
+
+  .occurrence-details {
     grid-area: details;
     display: flex;
     flex-wrap: wrap;
@@ -55,18 +59,18 @@ export const EditedOccurrenceItem = styled.li`
     min-width: 0;
   }
 
-  &.is-orphaned .details {
+  &.is-orphaned .occurrence-details {
     color: var(--gray-600);
   }
 
-  .title {
+  .occurrence-title {
     min-width: 0;
     font-size: 13px;
     font-weight: 700;
     overflow-wrap: anywhere;
   }
 
-  .date {
+  .occurrence-date {
     grid-area: date;
     min-width: 0;
     color: var(--gray-600);
@@ -76,7 +80,7 @@ export const EditedOccurrenceItem = styled.li`
     overflow-wrap: anywhere;
   }
 
-  .changes {
+  .occurrence-changes {
     grid-area: changes;
     display: flex;
     flex-wrap: wrap;
@@ -88,12 +92,14 @@ export const EditedOccurrenceItem = styled.li`
     overflow-wrap: anywhere;
   }
 
-  .state {
+  .occurrence-state {
     padding: 1px 6px;
     border-radius: var(--small-border-radius, 3px);
     background-color: var(--gray-100);
     font-size: 11px;
     font-weight: 400;
+    line-height: 18px;
+    white-space: nowrap;
     color: var(--gray-600);
 
     &.cancelled {
@@ -102,11 +108,9 @@ export const EditedOccurrenceItem = styled.li`
     }
   }
 
-  .actions {
+  .occurrence-actions {
     grid-area: actions;
     display: flex;
-    flex-wrap: wrap;
-    flex: 0 0 auto;
     align-items: center;
     gap: 0;
   }

@@ -83,7 +83,9 @@ describe("edited occurrences", () => {
 
       expect(container.textContent).toContain("Edited occurrences");
       expect(container.textContent).toContain("Special occurrence");
-      expect(container.querySelector(".date")?.textContent).toBe("2026-09-04 14:00 - 15:00");
+      expect(container.querySelector(".occurrence-date")?.textContent).toBe(
+        "2026-09-04 14:00 - 15:00",
+      );
       expect(fetch.mock.calls[1][0].searchParams.get("eventId")).toBe("34");
       expect(fetch.mock.calls[1][0].searchParams.get("siteId")).toBe("2");
 

@@ -235,21 +235,23 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
                   occurrence.cancelled && "is-cancelled",
                 )}
               >
-                <div className="details">
-                  <div className="title">{occurrence.title}</div>
+                <div className="occurrence-details">
+                  <span className="occurrence-title">{occurrence.title}</span>
                   {occurrence.cancelled && (
-                    <span className="state cancelled">{translate("Cancelled")}</span>
+                    <span className="occurrence-state cancelled">{translate("Cancelled")}</span>
                   )}
                   {isOrphaned(occurrence) && (
-                    <span className="state">{translate("No longer on the schedule")}</span>
+                    <span className="occurrence-state">
+                      {translate("No longer on the schedule")}
+                    </span>
                   )}
                 </div>
-                <div className="date">{formatOccurrenceDate(occurrence)}</div>
-                <div className="changes">
+                <div className="occurrence-date">{formatOccurrenceDate(occurrence)}</div>
+                <div className="occurrence-changes">
                   <span>{occurrence.changes.join(", ")}</span>
                 </div>
 
-                <div className="actions">
+                <div className="occurrence-actions">
                   {!isOrphaned(occurrence) && (
                     <OccurrenceActionButton
                       type="button"
