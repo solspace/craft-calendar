@@ -4,40 +4,40 @@
 
 .calendar-occurrence-editor fieldset {
   min-width: 0;
-  margin: 0;
   padding: 0;
+  margin: 0;
   border: 0;
 }
 
 .calendar-occurrence-editor > .notice,
 .calendar-occurrence-editor > .warning {
-  margin: 0 0 16px;
+  margin: 0 0 24px;
   font-size: 13px;
   line-height: 1.5;
 }
 
 /* Times, cancellation and slug, above the fields */
 .calendar-occurrence-meta {
-  margin-bottom: 24px;
-  padding: 20px;
+  padding: 28px;
+  margin-bottom: 32px;
+  background-color: var(--gray-050, #f3f7fc);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg, var(--large-border-radius, 5px));
-  background-color: var(--gray-050, #f3f7fc);
 }
 
 .calendar-occurrence-meta .field {
   margin: 0;
 }
 
-.calendar-occurrence-meta > * + * {
-  margin-top: 16px;
+.calendar-occurrence-editor .calendar-occurrence-meta > * + * {
+  margin-top: 24px;
 }
 
 .calendar-occurrence-meta-row {
   display: flex;
   flex-wrap: wrap;
+  gap: 24px 32px;
   align-items: flex-start;
-  gap: 16px 24px;
 }
 
 .calendar-occurrence-options {
@@ -46,12 +46,12 @@
 }
 
 .calendar-occurrence-meta .heading {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .calendar-occurrence-meta .instructions {
-  margin-top: 6px;
-  font-size: 12px;
+  margin-top: 8px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -59,12 +59,12 @@
 .calendar-occurrence-meta .calendar-occurrence-times,
 .calendar-occurrence-identity,
 .calendar-occurrence-reset {
-  padding-top: 16px;
+  padding-top: 24px;
   border-top: 1px solid var(--gray-200);
 }
 
 .calendar-occurrence-meta .calendar-occurrence-series-times {
-  margin-top: 16px;
+  margin-top: 24px;
 }
 
 .calendar-occurrence-series-times .input {
@@ -75,6 +75,10 @@
 .calendar-occurrence-times .field:not(.calendar-occurrence-all-day) {
   flex: 1 1 240px;
   min-width: 0;
+}
+
+.calendar-occurrence-all-day {
+  min-width: 72px;
 }
 
 .calendar-occurrence-identity {
@@ -89,25 +93,25 @@
 .calendar-occurrence-code .input {
   display: flex;
   align-items: center;
-  min-height: 34px;
+  min-height: 32px;
 }
 
 .calendar-occurrence-code code {
   display: inline-block;
   padding: 3px 7px;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--small-border-radius, 3px);
-  background-color: var(--gray-100);
   font-size: 12px;
   line-height: 1.5;
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--small-border-radius, 3px);
 }
 
 .calendar-occurrence-reset {
   display: flex;
   flex-wrap: wrap;
+  gap: 12px 16px;
   align-items: center;
-  gap: 8px 12px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -115,22 +119,36 @@
   width: 100%;
 }
 
+.calendar-occurrence-editor > .flex-fields {
+  row-gap: 32px;
+}
+
+.calendar-occurrence-field > .calendar-occurrence-field-own > .field,
+.calendar-occurrence-field > .calendar-occurrence-field-inherited > .field {
+  margin: 0;
+}
+
+.calendar-occurrence-field > .calendar-occurrence-field-own > .field > .heading,
+.calendar-occurrence-field > .calendar-occurrence-field-inherited > .field > .heading {
+  margin-bottom: 10px;
+}
+
 /* The toggle sits at the end of the field's heading */
 .calendar-occurrence-field-toggle {
   display: flex;
-  align-items: center;
   flex: 0 0 auto;
-  gap: 6px;
+  gap: 8px;
+  align-items: center;
+  padding-inline-start: 16px;
   margin-inline-start: auto;
-  padding-inline-start: 12px;
 }
 
 .calendar-occurrence-editor .calendar-occurrence-field-toggle > label {
   margin: 0;
-  color: var(--light-text-color, #606d7b);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 20px;
+  color: var(--light-text-color, #606d7b);
   cursor: pointer;
 }
 
@@ -144,13 +162,20 @@
 }
 
 .calendar-occurrence-field-inherited > .field > .input :is(input.text, textarea) {
-  border-style: dashed;
   background-color: transparent;
+  border-style: dashed;
   box-shadow: none;
 }
 
 .calendar-occurrence-field[data-calendar-copied-on-save] > .calendar-occurrence-field-own .notice {
   margin-bottom: 8px;
+}
+
+@container (min-width: 760px) {
+  .calendar-occurrence-times > .calendar-occurrence-meta-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  }
 }
 
 @container (max-width: 520px) {
@@ -159,6 +184,14 @@
   }
 
   .calendar-occurrence-meta {
-    padding: 16px;
+    padding: 20px;
+  }
+
+  .calendar-occurrence-meta-row {
+    column-gap: 20px;
+  }
+
+  .calendar-occurrence-identity {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
