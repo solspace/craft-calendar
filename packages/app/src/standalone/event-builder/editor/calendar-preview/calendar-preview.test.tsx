@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { openOccurrenceEditor } from "@cal/pages/calendar/calendar.events";
+import type { DateFormats } from "@cal/types/config";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Provider } from "react-redux";
@@ -23,12 +24,16 @@ describe("calendar preview rendering", () => {
     root = createRoot(container);
   });
 
-  const renderEditablePreview = async (eventId: number | null, rrule = true) => {
+  const renderEditablePreview = async (
+    eventId: number | null,
+    rrule = true,
+    formats?: DateFormats,
+  ) => {
     const now = new Date();
     const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 10, 30) / 1000;
     const stamp = new Date(start * 1000).toISOString().replace(/[-:]/g, "").slice(0, 15);
     const store = createEventBuilderStore({
-      app: { pro: true, weekStartDay: 1 },
+      app: { pro: true, weekStartDay: 1, formats },
       event: {
         start,
         end: start + 3600,
@@ -50,6 +55,17 @@ describe("calendar preview rendering", () => {
 
     return { start, onOccurrenceSaved };
   };
+
+  it("uses Craft's year-first formatting pattern for occurrence labels", async () => {
+    const { start } = await renderEditablePreview(12, true, {
+      date: { short: { icu: "yyyy-MM-dd" } },
+    } as DateFormats);
+    const date = new Date(start * 1000).toISOString().slice(0, 10);
+    const edit = container.querySelector<HTMLButtonElement>(".occurrence-edit")!;
+
+    expect(edit.getAttribute("aria-label")).toBe(`Edit occurrence on ${date}`);
+    expect(edit.parentElement?.querySelector("span")?.textContent).toBe(date);
+  });
 
   it("opens the first occurrence in the draft and notifies the builder after saving", async () => {
     const { start, onOccurrenceSaved } = await renderEditablePreview(12);

@@ -372,7 +372,10 @@ const describeInterval = (frequency: Frequency, interval: number): string => {
   return interval > 1 ? translate(plural, { count: interval }) : translate(single);
 };
 
-export const describeRecurrence = (previewRecurrence: PreviewRecurrence): string | null => {
+export const describeRecurrence = (
+  previewRecurrence: PreviewRecurrence,
+  dateFormat = "PP",
+): string | null => {
   const { baseRule } = previewRecurrence;
 
   if (!baseRule) {
@@ -424,7 +427,7 @@ export const describeRecurrence = (previewRecurrence: PreviewRecurrence): string
   if (options.until) {
     return translate("{description}, ending on {date}.", {
       description,
-      date: format(utcToLocalDisplayDate(options.until), "PP", { locale: getDateLocale() }),
+      date: format(utcToLocalDisplayDate(options.until), dateFormat, { locale: getDateLocale() }),
     });
   }
 

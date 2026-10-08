@@ -102,14 +102,6 @@ export const EditedOccurrenceItem = styled.li`
       padding-inline: 10px;
       font-size: 12px;
     }
-
-    .occurrence-edit {
-      width: 24px;
-      min-height: 24px;
-      height: 24px;
-      padding: 0;
-      line-height: 24px;
-    }
   }
 
   @media (max-width: 600px) {

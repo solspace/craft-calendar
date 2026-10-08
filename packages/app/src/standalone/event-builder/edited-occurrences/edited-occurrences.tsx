@@ -8,7 +8,9 @@ import clsx from "clsx";
 import { format } from "date-fns";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { OccurrenceActionButton } from "../occurrence-action.styles";
 import { findElementEditor, getDraftEventId } from "../occurrence-editor";
+import { appSelectors } from "../store/app.slice";
 import type { BuilderContext } from "../types";
 import {
   EditedOccurrenceItem,
@@ -58,13 +60,6 @@ const readSchedule = (node: HTMLElement | null): Record<string, string> => {
   return schedule;
 };
 
-const formatOccurrenceDate = (occurrence: EditedOccurrence): string =>
-  format(
-    utcToLocalDisplayDate(new Date(occurrence.start * 1000)),
-    occurrence.allDay ? "EEE, PP" : "EEE, PP, p",
-    { locale: getDateLocale() },
-  );
-
 /**
  * The event's edited occurrences, including ones the schedule no longer has.
  * Changes made from here are saved into the event's draft.
@@ -78,6 +73,13 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
   // Checks can answer out of order, so only the latest one counts
   const latestScheduleCheck = useRef(0);
   const schedule = useSelector(eventSelectors.state);
+  const formats = useSelector(appSelectors.formats);
+  const formatOccurrenceDate = (occurrence: EditedOccurrence): string =>
+    format(
+      utcToLocalDisplayDate(new Date(occurrence.start * 1000)),
+      occurrence.allDay ? (formats?.date.short.icu ?? "P") : (formats?.datetime.short.icu ?? "Pp"),
+      { locale: getDateLocale() },
+    );
 
   // The editor moves on to a draft as soon as there are changes, so its ID wins over the one the page loaded with
   const getEventId = useCallback(
@@ -250,12 +252,10 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
 
                 <div className="actions">
                   {!isOrphaned(occurrence) && (
-                    <button
+                    <OccurrenceActionButton
                       type="button"
-                      className={clsx(
-                        "btn chromeless small icon edit occurrence-edit",
-                        busyRecurrenceId !== null && "disabled",
-                      )}
+                      className="icon occurrence-edit"
+                      data-icon="edit"
                       aria-label={translate("Edit occurrence on {date}", {
                         date: formatOccurrenceDate(occurrence),
                       })}

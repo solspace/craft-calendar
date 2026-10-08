@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import type { DateFormats } from "@cal/types/config";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
@@ -39,7 +40,10 @@ describe("edited occurrences", () => {
       });
     vi.stubGlobal("fetch", fetch);
     const store = createEventBuilderStore({
-      app: { pro: true },
+      app: {
+        pro: true,
+        formats: { datetime: { short: { icu: "yyyy-MM-dd HH:mm" } } } as DateFormats,
+      },
       event: { start: 0, end: 3600, allDay: false, repeatType: "DAILY", repeatEndType: "NEVER" },
     });
     const container = document.createElement("div");
@@ -61,6 +65,7 @@ describe("edited occurrences", () => {
 
       expect(container.textContent).toContain("Edited occurrences");
       expect(container.textContent).toContain("Special occurrence");
+      expect(container.querySelector(".date")?.textContent).toBe("2026-09-04 14:00");
       expect(fetch.mock.calls[1][0].searchParams.get("eventId")).toBe("34");
       expect(fetch.mock.calls[1][0].searchParams.get("siteId")).toBe("2");
     } finally {

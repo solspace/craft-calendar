@@ -26,6 +26,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed control panel date and time formats ignoring the user's formatting locale.
 - Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.
 - Fixed multi-day all-day events showing a day short in the control panel calendar and in ICS exports.
 - Fixed dragging a repeating event in the control panel calendar on multi-site installs moving the whole event to the dropped date.

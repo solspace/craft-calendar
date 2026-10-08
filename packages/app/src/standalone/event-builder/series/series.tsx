@@ -5,6 +5,7 @@ import { eventSelectors } from "@event-builder/store/event.slice";
 import { format } from "date-fns";
 import type { FC } from "react";
 import { useSelector } from "react-redux";
+import { appSelectors } from "../store/app.slice";
 import type { BuilderContext } from "../types";
 import { SeriesWrapper } from "./series.styles";
 
@@ -12,16 +13,18 @@ type Props = {
   context: BuilderContext;
 };
 
-const formatDate = (timestamp: number, withTime = false): string =>
-  format(utcToLocalDisplayDate(new Date(timestamp * 1000)), withTime ? "PP, p" : "PP", {
-    locale: getDateLocale(),
-  });
-
 /**
  * Where the event sits in its series, and what applying an "Edit this and following" draft does.
  */
 export const Series: FC<Props> = ({ context }) => {
   const { allDay } = useSelector(eventSelectors.state);
+  const formats = useSelector(appSelectors.formats);
+  const formatDate = (timestamp: number, withTime = false): string =>
+    format(
+      utcToLocalDisplayDate(new Date(timestamp * 1000)),
+      withTime ? (formats?.datetime.short.icu ?? "Pp") : (formats?.date.short.icu ?? "P"),
+      { locale: getDateLocale() },
+    );
   const { splitAt, series } = context;
   const earlier = series?.earlier ?? null;
   const later = series?.later ?? null;

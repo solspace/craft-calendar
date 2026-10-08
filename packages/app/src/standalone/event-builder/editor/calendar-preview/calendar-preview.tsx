@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import type { FC } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { OccurrenceActionButton } from "../../occurrence-action.styles";
 import { getDraftEventId } from "../../occurrence-editor";
 import type { BuilderContext } from "../../types";
 import {
@@ -37,7 +38,6 @@ import {
   OccurrencePreviewDescription,
   OccurrencePreviewHeading,
   OccurrencePreviewSummary,
-  RemoveOccurrenceButton,
 } from "./calendar-preview.styles";
 
 const MAX_OCCURRENCES = 8;
@@ -75,8 +75,8 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
   );
 
   const occurrencePreviewDescription = useMemo(
-    () => describeRecurrence(previewRecurrence),
-    [previewRecurrence],
+    () => describeRecurrence(previewRecurrence, dateFormat),
+    [previewRecurrence, dateFormat],
   );
 
   const occurrencePreviewSummary = useMemo(() => {
@@ -247,9 +247,10 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
                     <DateItem key={utcDateKey(occurrenceDate)}>
                       <span>{date}</span>
                       {recurrenceId && (
-                        <button
+                        <OccurrenceActionButton
                           type="button"
-                          className="btn chromeless small icon edit occurrence-edit"
+                          className="icon occurrence-edit"
+                          data-icon="edit"
                           aria-label={translate("Edit occurrence on {date}", { date })}
                           title={translate("Edit occurrence")}
                           disabled={isOpeningOccurrence}
@@ -257,15 +258,15 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
                         />
                       )}
                       {removalType && (
-                        <RemoveOccurrenceButton
+                        <OccurrenceActionButton
                           type="button"
+                          className="icon occurrence-remove"
+                          data-icon="remove"
                           disabled={isOpeningOccurrence}
                           aria-label={removalLabel}
                           title={removalLabel}
                           onClick={() => removeOccurrence(occurrenceDate)}
-                        >
-                          ×
-                        </RemoveOccurrenceButton>
+                        />
                       )}
                     </DateItem>
                   );

@@ -288,43 +288,4 @@ export const DateItem = styled.li`
   > span {
     flex: 1;
   }
-
-  .occurrence-edit {
-    flex-shrink: 0;
-    width: 24px;
-    min-height: 24px;
-    height: 24px;
-    padding: 0;
-    font-size: 12px;
-    line-height: 24px;
-  }
-`;
-
-export const RemoveOccurrenceButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 14px;
-  height: 13px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 2px;
-  background: transparent;
-  color: var(--gray-500);
-  font: inherit;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--gray-150);
-    color: var(--gray-700);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--gray-400);
-    outline-offset: 1px;
-  }
 `;
