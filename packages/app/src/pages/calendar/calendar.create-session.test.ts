@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildCreateDraftEventInput,
   buildCreateDraftFromSelection,
@@ -14,6 +14,8 @@ const settings = {
 };
 
 describe("calendar create session", () => {
+  afterEach(() => vi.useRealTimers());
+
   it("uses the default duration for a single-day timed selection", () => {
     const draft = buildCreateDraftFromSelection(
       {
@@ -35,6 +37,8 @@ describe("calendar create session", () => {
     false,
     true,
   ])("starts a single date cell as timed, even with all-day default %s", (allDayDefault) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 8, 13, 47, 31));
     const draft = buildCreateDraftFromSelection(
       {
         start: new Date("2026-10-06T00:00:00Z"),
@@ -45,9 +49,39 @@ describe("calendar create session", () => {
     );
 
     expect(draft.allDay).toBe(false);
+    expect(new Date(draft.start * 1000).toISOString()).toBe("2026-10-06T13:00:00.000Z");
+    expect(new Date(draft.end * 1000).toISOString()).toBe("2026-10-06T14:30:00.000Z");
     expect(draft.end - draft.start).toBe(90 * 60);
     const moved = setCreateDraftStart(draft, draft.start + 14 * 60 * 60, { eventDuration: 90 });
     expect(moved.end - moved.start).toBe(90 * 60);
+  });
+
+  it("allows the default duration to cross midnight for a late current hour", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 8, 23, 47));
+    const draft = buildCreateDraftFromSelection(
+      {
+        start: new Date("2026-10-06T00:00:00Z"),
+        end: new Date("2026-10-07T00:00:00Z"),
+        allDay: true,
+      },
+      { ...settings, eventDuration: 90 },
+    );
+
+    expect(new Date(draft.start * 1000).toISOString()).toBe("2026-10-06T23:00:00.000Z");
+    expect(new Date(draft.end * 1000).toISOString()).toBe("2026-10-07T00:30:00.000Z");
+  });
+
+  it("keeps the clicked time in the timed grid, including a midnight slot", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 8, 13, 47));
+    for (const time of ["00:00:00", "09:30:00"]) {
+      const start = new Date(`2026-10-06T${time}Z`);
+      const draft = buildCreateDraftFromSelection({ start, end: start, allDay: false }, settings);
+
+      expect(draft.start).toBe(start.getTime() / 1000);
+      expect(draft.end - draft.start).toBe(60 * 60);
+    }
   });
 
   it("uses the default duration after changing the start of a manually extended single-day draft", () => {

@@ -61,7 +61,12 @@ export const buildCreateDraftFromSelection = (
     ? selectedEnd - selectedStart > DAY_IN_SECONDS
     : toUtcDayStartTimestamp(selectedEnd - 1) > toUtcDayStartTimestamp(selectedStart);
   const allDay = selection.allDay ? multiDay : settings.allDayDefault;
-  const start = allDay ? toUtcDayStartTimestamp(selectedStart) : selectedStart;
+  // Date cells have no chosen hour; use the current local hour as a floating wall time.
+  const start = allDay
+    ? toUtcDayStartTimestamp(selectedStart)
+    : selection.allDay
+      ? toUtcDayStartTimestamp(selectedStart) + new Date().getHours() * 60 * 60
+      : selectedStart;
   const end = allDay
     ? multiDay
       ? addDays(toUtcDayStartTimestamp(selectedEnd - 1), 1)
