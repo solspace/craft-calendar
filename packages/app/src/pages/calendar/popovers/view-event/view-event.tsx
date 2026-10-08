@@ -175,7 +175,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     menuActions.push(
       { label: translate("Edit occurrence"), onSelect: editOccurrence },
       {
-        label: translate(isOpeningDraft ? "Processing..." : "Edit this and following"),
+        label: translate(isOpeningDraft ? "Processing..." : "Edit this and following occurrences"),
         onSelect: () => void editThisAndFollowing(),
       },
       {

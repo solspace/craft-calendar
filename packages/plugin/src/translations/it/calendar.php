@@ -676,7 +676,7 @@ return [
     'Which occurrences do you want to change?' => 'Quali occorrenze vuoi modificare?',
     'Which occurrences do you want to delete?' => 'Quali occorrenze vuoi eliminare?',
     'This and following' => 'Questa e le successive',
-    'Edit this and following' => 'Modifica questa e le successive',
+    'Edit this and following occurrences' => 'Modifica questa occorrenza e le successive',
     'Couldn’t open the occurrences for editing.' => 'Impossibile aprire le occorrenze per la modifica.',
     'This draft changes the event from {date} on. Applying it makes the occurrences before then a separate event in the same series.' => 'Questa bozza modifica l’evento a partire dal {date}. Applicandola, le occorrenze precedenti diventano un evento separato nella stessa serie.',
     'Part of a series' => 'Parte di una serie',

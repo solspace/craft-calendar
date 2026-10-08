@@ -676,7 +676,7 @@ return [
     'Which occurrences do you want to change?' => 'Which occurrences do you want to change?',
     'Which occurrences do you want to delete?' => 'Which occurrences do you want to delete?',
     'This and following' => 'This and following',
-    'Edit this and following' => 'Edit this and following',
+    'Edit this and following occurrences' => 'Edit this and following occurrences',
     'Couldn’t open the occurrences for editing.' => 'Couldn’t open the occurrences for editing.',
     'This draft changes the event from {date} on. Applying it makes the occurrences before then a separate event in the same series.' => 'This draft changes the event from {date} on. Applying it makes the occurrences before then a separate event in the same series.',
     'Part of a series' => 'Part of a series',

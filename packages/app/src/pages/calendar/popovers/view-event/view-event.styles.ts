@@ -64,6 +64,7 @@ export const PopoverWrapper = styled.div`
 export const PopoverActions = styled.div`
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 `;
 
@@ -113,6 +114,10 @@ export const PopoverMenuButton = styled.button`
     height: 34px;
     padding: 0;
     white-space: nowrap;
+  }
+
+  &&::after {
+    display: none;
   }
 
   span {

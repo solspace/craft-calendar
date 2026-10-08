@@ -676,7 +676,7 @@ return [
     'Which occurrences do you want to change?' => 'Quelles occurrences voulez-vous modifier ?',
     'Which occurrences do you want to delete?' => 'Quelles occurrences voulez-vous supprimer ?',
     'This and following' => 'Celle-ci et les suivantes',
-    'Edit this and following' => 'Modifier celle-ci et les suivantes',
+    'Edit this and following occurrences' => 'Modifier cette occurrence et les suivantes',
     'Couldn’t open the occurrences for editing.' => 'Impossible d’ouvrir les occurrences pour les modifier.',
     'This draft changes the event from {date} on. Applying it makes the occurrences before then a separate event in the same series.' => 'Ce brouillon modifie l’événement à partir du {date}. En l’appliquant, les occurrences précédentes deviennent un événement distinct de la même série.',
     'Part of a series' => 'Fait partie d’une série',

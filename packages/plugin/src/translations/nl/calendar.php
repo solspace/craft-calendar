@@ -676,7 +676,7 @@ return [
     'Which occurrences do you want to change?' => 'Welke herhalingen wil je wijzigen?',
     'Which occurrences do you want to delete?' => 'Welke herhalingen wil je verwijderen?',
     'This and following' => 'Deze en volgende',
-    'Edit this and following' => 'Deze en volgende bewerken',
+    'Edit this and following occurrences' => 'Deze en volgende herhalingen bewerken',
     'Couldn’t open the occurrences for editing.' => 'De herhalingen konden niet worden geopend om te bewerken.',
     'This draft changes the event from {date} on. Applying it makes the occurrences before then a separate event in the same series.' => 'Dit concept wijzigt het evenement vanaf {date}. Bij het toepassen worden de herhalingen daarvoor een apart evenement in dezelfde reeks.',
     'Part of a series' => 'Onderdeel van een reeks',

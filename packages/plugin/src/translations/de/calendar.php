@@ -676,7 +676,7 @@ return [
     'Which occurrences do you want to change?' => 'Welche Termine möchten Sie ändern?',
     'Which occurrences do you want to delete?' => 'Welche Termine möchten Sie löschen?',
     'This and following' => 'Dieser und alle folgenden',
-    'Edit this and following' => 'Diesen und folgende bearbeiten',
+    'Edit this and following occurrences' => 'Diesen und folgende Termine bearbeiten',
     'Couldn’t open the occurrences for editing.' => 'Die Termine konnten nicht zum Bearbeiten geöffnet werden.',
     'This draft changes the event from {date} on. Applying it makes the occurrences before then a separate event in the same series.' => 'Dieser Entwurf ändert das Ereignis ab {date}. Beim Übernehmen werden die Termine davor zu einem eigenen Ereignis in derselben Serie.',
     'Part of a series' => 'Teil einer Serie',

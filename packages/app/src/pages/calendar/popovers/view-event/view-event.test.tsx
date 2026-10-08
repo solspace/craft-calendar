@@ -136,7 +136,12 @@ describe("event popup actions", () => {
     await openMenu();
     expect(
       Array.from(document.querySelectorAll(".menu a")).map((option) => option.textContent),
-    ).toEqual(["Edit occurrence", "Edit this and following", "Cancel occurrence", "Delete"]);
+    ).toEqual([
+      "Edit occurrence",
+      "Edit this and following occurrences",
+      "Cancel occurrence",
+      "Delete",
+    ]);
     await select("Edit occurrence");
     expect(openOccurrenceEditor).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -84,7 +84,7 @@ export const PopoverEventMenu: FC<Props> = ({ actions, disabled }) => {
     <PopoverMenuButton
       ref={buttonRef}
       type="button"
-      className="btn menubtn no-arrow"
+      className="btn menubtn"
       disabled={disabled}
       aria-label={translate("More actions")}
       title={translate("More actions")}
