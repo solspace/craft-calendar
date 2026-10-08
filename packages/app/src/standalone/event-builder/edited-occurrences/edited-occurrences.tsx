@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { format } from "date-fns";
 import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { SectionHeading, SectionInstructions } from "../editor/repeat-rules/date-manager.styles";
 import { OccurrenceActionButton } from "../occurrence-action.styles";
 import { findElementEditor, getDraftEventId } from "../occurrence-editor";
 import { appSelectors } from "../store/app.slice";
@@ -214,41 +215,38 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
     <EditedOccurrencesWrapper ref={ref}>
       {occurrences.length > 0 && (
         <>
-          <h3>{translate("Edited occurrences")}</h3>
-          <p>
+          <SectionHeading as="h3">{translate("Edited occurrences")}</SectionHeading>
+          <SectionInstructions>
             {translate(
               "Occurrences with their own changes. Changes made here go live with the event.",
             )}
-          </p>
+          </SectionInstructions>
           {occurrences.some(isOrphaned) && (
-            <p className="warning">
+            <SectionInstructions className="warning">
               {translate(
                 "Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.",
               )}
-            </p>
+            </SectionInstructions>
           )}
 
           <EditedOccurrenceList>
             {occurrences.map((occurrence) => (
               <EditedOccurrenceItem
                 key={occurrence.recurrenceId}
-                className={clsx(isOrphaned(occurrence) && "is-orphaned")}
+                className={clsx(
+                  isOrphaned(occurrence) && "is-orphaned",
+                  !occurrence.title && "no-custom-title",
+                )}
               >
-                <div className="details">
-                  <div className="date">
-                    {formatOccurrenceDate(occurrence)}
-                    {occurrence.cancelled && (
-                      <span className="state">{translate("Cancelled")}</span>
-                    )}
-                    {isOrphaned(occurrence) && (
-                      <span className="state">{translate("No longer on the schedule")}</span>
-                    )}
-                  </div>
-                  {occurrence.title && <div className="title">{occurrence.title}</div>}
-                  {occurrence.changes.length > 0 && (
-                    <div className="changes">{occurrence.changes.join(", ")}</div>
+                <div className="title">{occurrence.title}</div>
+                <div className="date">
+                  <span className="date-value">{formatOccurrenceDate(occurrence)}</span>
+                  {occurrence.cancelled && <span className="state">{translate("Cancelled")}</span>}
+                  {isOrphaned(occurrence) && (
+                    <span className="state">{translate("No longer on the schedule")}</span>
                   )}
                 </div>
+                <div className="changes">{occurrence.changes.join(", ")}</div>
 
                 <div className="actions">
                   {!isOrphaned(occurrence) && (

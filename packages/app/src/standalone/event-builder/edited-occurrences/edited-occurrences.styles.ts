@@ -1,30 +1,15 @@
 import styled from "styled-components";
 
 export const EditedOccurrencesWrapper = styled.div`
+  container-type: inline-size;
+
   &:empty {
     display: none;
   }
 
   margin: 0 20px 20px;
-  padding: 18px 0 0;
+  padding: 16px 0 0;
   border-top: 1px solid var(--gray-200);
-
-  h3 {
-    margin: 0 0 6px;
-    color: var(--gray-700);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    line-height: 20px;
-  }
-
-  > p {
-    margin: 0 0 8px;
-    color: var(--gray-600);
-    font-size: 13px;
-    line-height: 20px;
-  }
 
   > p.warning {
     color: var(--error-color, #cf1124);
@@ -32,19 +17,30 @@ export const EditedOccurrencesWrapper = styled.div`
 `;
 
 export const EditedOccurrenceList = styled.ul`
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  && {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  && > li {
+    margin: 0;
+    list-style: none;
+  }
 `;
 
 export const EditedOccurrenceItem = styled.li`
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "title actions"
+    "date actions"
+    "changes actions";
   align-items: center;
-  gap: 6px 12px;
+  gap: 2px 12px;
   margin: 0;
   padding: 8px 0;
-  line-height: 1.5;
+  line-height: 18px;
 
   &:not(:last-child) {
     border-bottom: 1px solid var(--gray-200);
@@ -54,12 +50,15 @@ export const EditedOccurrenceItem = styled.li`
     color: var(--gray-500);
   }
 
-  .details {
-    flex: 1 1 220px;
+  .title {
+    grid-area: title;
     min-width: 0;
+    font-size: 13px;
+    overflow-wrap: anywhere;
   }
 
   .date {
+    grid-area: date;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -68,15 +67,16 @@ export const EditedOccurrenceItem = styled.li`
     font-weight: 400;
   }
 
-  .title {
-    margin-top: 2px;
-    font-size: 13px;
+  .date-value {
+    white-space: nowrap;
   }
 
   .changes {
-    margin-top: 2px;
+    grid-area: changes;
+    min-width: 0;
     color: var(--gray-600);
     font-size: 12px;
+    overflow-wrap: anywhere;
   }
 
   .state {
@@ -89,6 +89,7 @@ export const EditedOccurrenceItem = styled.li`
   }
 
   .actions {
+    grid-area: actions;
     display: flex;
     flex-wrap: wrap;
     flex: 0 0 auto;
@@ -99,6 +100,40 @@ export const EditedOccurrenceItem = styled.li`
       min-height: 26px;
       padding-inline: 10px;
       font-size: 12px;
+    }
+  }
+
+  &.no-custom-title {
+    grid-template-areas:
+      "date actions"
+      "changes actions";
+
+    .title {
+      display: none;
+    }
+  }
+
+  @container (min-width: 440px) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "title date actions"
+      "changes changes actions";
+    gap: 2px 12px;
+
+    &.no-custom-title {
+      grid-template-areas:
+        "date date actions"
+        "changes changes actions";
+    }
+  }
+
+  @container (min-width: 560px) {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+    grid-template-areas: "title date changes actions";
+    gap: 12px;
+
+    &.no-custom-title {
+      grid-template-areas: "date date changes actions";
     }
   }
 `;
