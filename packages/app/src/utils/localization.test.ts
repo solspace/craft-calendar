@@ -65,6 +65,7 @@ const sharedWords: Record<string, string[]> = {
     "Feb",
     "Support",
     "in {months}",
+    "Code",
   ],
   nl: [
     "Week",
@@ -92,6 +93,7 @@ const sharedWords: Record<string, string[]> = {
     "Site",
     "Stack Exchange",
     "Community",
+    "Code",
   ],
   fr: [
     "Calendar",
@@ -109,6 +111,7 @@ const sharedWords: Record<string, string[]> = {
     "Site",
     "Stack Exchange",
     "Community",
+    "Code",
   ],
   it: [
     "Calendar",

@@ -9,11 +9,11 @@ export const CalendarPreviewWrapper = styled.div`
 
   padding: 20px;
   width: 100%;
-  flex: 0 0 440px;
+  flex: 0 0 495px;
   box-sizing: border-box;
     
   @container (min-width: 1024px) {
-    width: 440px;
+    width: 495px;
   }
 
   > .field {
@@ -49,6 +49,16 @@ export const CalendarPreviewWrapper = styled.div`
     min-width: 260px;
     max-width: 260px;
     color: var(--gray-600);
+
+    .cancelled-date-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
 
     .fc-scrollgrid,
     th,
@@ -181,6 +191,15 @@ export const CalendarPreviewWrapper = styled.div`
             color: var(--gray-600);
           }
 
+          &.fc-cancelled-date {
+            background-color: var(--yellow-050);
+
+            .fc-daygrid-day-number {
+              color: var(--yellow-700);
+              text-decoration: line-through;
+            }
+          }
+
           div.fc-daygrid-day-frame {
             display: flex;
             align-items: center;
@@ -211,11 +230,12 @@ export const CalendarPreviewWrapper = styled.div`
 export const FullCalendarOccurrencePreviewWrapper = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 20px;
 
   margin-top: 10px;
-  width: 400px;
-  flex: 0 0 400px;
+  width: 455px;
+  max-width: 100%;
   box-sizing: border-box;
 `;
 
@@ -242,8 +262,8 @@ export const OccurrencePreviewSummary = styled.p`
 `;
 
 export const OccurrencePreviewDateList = styled.div`
-  min-width: 120px;
-  max-width: 120px;
+  min-width: max-content;
+  flex: 1;
   height: 100%;
 
   p {
@@ -260,55 +280,58 @@ export const DateList = styled.ul<DateListProps>`
   display: flex;
   flex-direction: column;
   justify-content: ${(props) => (props.$count > 7 ? "space-between" : "start")};
-  gap: 4px;
+  gap: 5px;
 
-  height: 100%;
-  max-height: 215px;
-  margin-top: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 `;
 
 export const DateItem = styled.li`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  padding: 4px 5px 4px 8px;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 6px;
 
   font-size: 13px;
-  line-height: 13px;
-  font-family: monospace;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 
   background-color: var(--gray-050);
   border: 1px solid var(--gray-200);
-  border-left: 5px solid var(--gray-200);
-`;
+  border-radius: var(--small-border-radius, 3px);
 
-export const RemoveOccurrenceButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 14px;
-  height: 13px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 2px;
-  background: transparent;
-  color: var(--gray-500);
-  font: inherit;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--gray-150);
-    color: var(--gray-700);
+  > span {
+    flex: 1;
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--gray-400);
-    outline-offset: 1px;
+  .occurrence-actions {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 0;
+  }
+
+  .occurrence-date {
+    display: flex;
+    flex-direction: column;
+    line-height: 18px;
+  }
+
+  &.is-cancelled {
+    background-color: var(--yellow-050);
+
+    .occurrence-date > span:first-child {
+      color: var(--gray-600);
+      text-decoration: line-through;
+    }
+
+    .occurrence-state {
+      color: var(--yellow-700);
+      font-size: 11px;
+    }
   }
 `;

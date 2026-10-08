@@ -59,16 +59,9 @@
         return String(event.id).split("-", 1)[0];
     }
 
-    function getOccurrenceDate(event) {
-        const match = /^\d+-(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(String(event.id));
-        if (!match) {
-            return null;
-        }
-
-        const [, year, month, day, hour, minute, second] = match;
-        const date = `${year}-${month}-${day}`;
-
-        return event.allDay ? date : `${date}T${hour}:${minute}:${second}`;
+    // The start the schedule gave the occurrence, which stays the same when it's moved or made all-day
+    function getRecurrenceId(event) {
+        return event.extendedProps.recurrenceId || null;
     }
 
     function differenceInSeconds(next, previous) {
@@ -153,8 +146,11 @@
         const eventInput = { ...rawEvent };
 
         delete eventInput.calendar;
+        delete eventInput.cancelled;
         delete eventInput.editable;
         delete eventInput.multiDay;
+        delete eventInput.occurrenceSlug;
+        delete eventInput.recurrenceId;
         delete eventInput.repeats;
         delete eventInput.rrule;
         delete eventInput.readableRepeatRule;
@@ -168,7 +164,10 @@
                 ...(rawEvent.extendedProps || {}),
                 calendar: calendarId,
                 canManage: canManage && Boolean(rawEvent.editable),
+                cancelled: Boolean(rawEvent.cancelled),
                 multiDay: Boolean(rawEvent.multiDay),
+                occurrenceSlug: rawEvent.occurrenceSlug || "",
+                recurrenceId: rawEvent.recurrenceId || "",
                 repeats: Boolean(rawEvent.repeats),
                 rrule: rawEvent.rrule || "",
                 readableRepeatRule: rawEvent.readableRepeatRule || "",
@@ -226,6 +225,8 @@
 
     const detailsDialog = document.getElementById("event-details-dialog");
     const detailsTitle = document.getElementById("event-details-title");
+    const detailsTitleText = detailsTitle.querySelector("[data-event-title]");
+    const detailsCancelled = detailsTitle.querySelector("[data-event-cancelled]");
     const detailsCalendarColor = detailsDialog.querySelector("[data-event-calendar-color]");
     const detailsCalendarName = detailsDialog.querySelector("[data-event-calendar-name]");
     const detailsStart = detailsDialog.querySelector("[data-event-start]");
@@ -299,10 +300,14 @@
         const calendarData = calendarsById.get(calendarId);
         const canManage = Boolean(event.extendedProps.canManage);
         const repeats = Boolean(event.extendedProps.repeats || event.extendedProps.rrule);
+        const cancelled = Boolean(event.extendedProps.cancelled);
         const eventId = getElementEventId(event);
-        const occurrencePath = repeats && event.start ? formatUtcDate(event.start).replaceAll("-", "/") : "";
+        // Each occurrence of a repeating event has its own page, at event/{id}/{occurrence slug}
+        const occurrenceSlug = repeats ? event.extendedProps.occurrenceSlug : "";
 
-        detailsTitle.textContent = event.title;
+        detailsTitleText.textContent = event.title;
+        detailsTitleText.classList.toggle("calendar-occurrence-cancelled", cancelled);
+        detailsCancelled.hidden = !cancelled;
         detailsCalendarColor.style.backgroundColor = event.backgroundColor || calendarData?.color || "transparent";
         detailsCalendarName.textContent = calendarData?.name || "";
         detailsStart.textContent = formatEventDate(event.start, event.allDay);
@@ -311,7 +316,7 @@
         detailsRepeat.textContent = event.extendedProps.readableRepeatRule || config.labels.recurring;
         detailsRepeatRow.hidden = !repeats;
 
-        viewEventLink.href = window.calendarDemoUrl(`${config.urls.event.replace(/\/$/, "")}/${encodeURIComponent(eventId)}${occurrencePath ? `/${occurrencePath}` : ""}`);
+        viewEventLink.href = window.calendarDemoUrl(`${config.urls.event.replace(/\/$/, "")}/${encodeURIComponent(eventId)}${occurrenceSlug ? `/${encodeURIComponent(occurrenceSlug)}` : ""}`);
         editEventLink.href = window.calendarDemoUrl(`${config.urls.editEvent.replace(/\/$/, "")}/${encodeURIComponent(eventId)}`);
         editEventLink.hidden = !canManage;
         manageActions.hidden = !canManage;
@@ -367,7 +372,7 @@
             end: serializeEventDate(event.end, event.allDay),
             endDeltaSeconds: differenceInSeconds(event.end, oldEvent.end),
             eventId: getElementEventId(event),
-            occurrenceDate: getOccurrenceDate(oldEvent),
+            recurrenceId: getRecurrenceId(oldEvent),
             oldEnd: serializeEventDate(oldEvent.end, oldEvent.allDay),
             oldStart: serializeEventDate(oldEvent.start, oldEvent.allDay),
             scope: "series",
@@ -399,8 +404,8 @@
             return;
         }
 
-        const occurrenceDate = getOccurrenceDate(activeDetailEvent);
-        if (isOccurrence && !occurrenceDate) {
+        const recurrenceId = getRecurrenceId(activeDetailEvent);
+        if (isOccurrence && !recurrenceId) {
             showInlineError(detailsError, config.labels.couldNotDelete);
 
             return;
@@ -412,7 +417,7 @@
         try {
             await postAction("calendar/events-api/delete", {
                 eventId: getElementEventId(activeDetailEvent),
-                occurrenceDate,
+                recurrenceId,
                 scope,
                 siteId: config.siteId,
             }, config.labels.couldNotDelete);
@@ -458,11 +463,19 @@
         dayMaxEvents: 5,
         editable: editableCalendarIds.size > 0,
         eventClassNames(info) {
+            const classNames = [];
             if (info.event.allDay) {
-                return ["fc-event-all-day"];
+                classNames.push("fc-event-all-day");
+            } else {
+                classNames.push(info.event.extendedProps.multiDay ? "fc-event-multi-day" : "fc-event-single-day");
             }
 
-            return [info.event.extendedProps.multiDay ? "fc-event-multi-day" : "fc-event-single-day"];
+            // Cancelled occurrences stay on the calendar, struck through like in the other demos
+            if (info.event.extendedProps.cancelled) {
+                classNames.push("calendar-occurrence-cancelled");
+            }
+
+            return classNames;
         },
         eventClick(info) {
             info.jsEvent.preventDefault();
@@ -476,7 +489,12 @@
                 info.el.style.setProperty("--calendar-event-color", eventColor);
             }
 
-            info.el.setAttribute("aria-label", calendarName ? `${info.event.title}, ${calendarName}` : info.event.title);
+            const labelParts = [
+                info.event.title,
+                info.event.extendedProps.cancelled ? config.labels.cancelled : "",
+                calendarName,
+            ];
+            info.el.setAttribute("aria-label", labelParts.filter(Boolean).join(", "));
         },
         eventDrop(info) {
             void mutateEvent("move", info);

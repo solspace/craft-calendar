@@ -53,6 +53,7 @@
         'fullCalendar': url('%prefix%/fullcalendar'),
     },
     'labels': {
+        'cancelled': 'Cancelled'|t,
         'couldNotCreate': 'Could not save event.'|t,
         'couldNotDelete': 'Could not delete event.'|t,
         'couldNotLoad': 'Could not load events.'|t,
@@ -71,7 +72,7 @@
 } %}
 
 {% block headerCss %}
-    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/full-calendar.css?v=2">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/full-calendar.css?v=3">
 {% endblock %}
 
 {% block content %}
@@ -115,7 +116,10 @@
         <div class="calendar-dialog__surface">
             <div class="calendar-dialog__header">
                 <div class="calendar-dialog__heading">
-                    <h2 id="event-details-title" class="calendar-dialog__title" tabindex="-1"></h2>
+                    <h2 id="event-details-title" class="calendar-dialog__title" tabindex="-1">
+                        <span data-event-title></span>
+                        <span class="calendar-occurrence-status" data-event-cancelled hidden>{{ 'Cancelled'|t }}</span>
+                    </h2>
                     <div class="calendar-data">
                         <span class="color-indicator" data-event-calendar-color aria-hidden="true"></span>
                         <span data-event-calendar-name></span>
@@ -231,5 +235,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.19/locales-all.global.min.js"></script>
-    <script src="{{ siteUrl }}assets/demo/js/full-calendar.js"></script>
+    <script src="{{ siteUrl }}assets/demo/js/full-calendar.js?v=2"></script>
 {% endblock %}

@@ -2,6 +2,8 @@
 
 namespace Solspace\Tests\Unit\Calendar\Library;
 
+use craft\i18n\Locale;
+use craft\web\Application;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 
@@ -12,6 +14,22 @@ use Solspace\Calendar\Library\Helpers\DateFormatHelper;
  */
 class DateFormatHelperTest extends TestCase
 {
+    public function testDateFormatsUseTheFormattingLocaleInsteadOfTheInterfaceLanguage(): void
+    {
+        $previousApp = \Craft::$app;
+        $locale = new Locale('en-CA');
+        $app = $this->createMock(Application::class);
+        $app->expects(self::once())->method('getFormattingLocale')->willReturn($locale);
+        $app->expects(self::never())->method('getLocale');
+        \Craft::$app = $app;
+
+        try {
+            self::assertSame($locale->getDateFormat('short'), DateFormatHelper::get(length: 'short'));
+        } finally {
+            \Craft::$app = $previousApp;
+        }
+    }
+
     /**
      * @dataProvider jsDateFormatDataProvider
      */

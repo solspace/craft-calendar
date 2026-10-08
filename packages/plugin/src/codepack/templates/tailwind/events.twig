@@ -74,6 +74,7 @@
                 <ul class="list-none p-0 border-t border-neutral-200 dark:border-neutral-700 mb-0">
                     {% for occurrence in occurrences %}
                         {% set event = occurrence.event %}
+                        {% set content = occurrence.content %}
                         <li class="flex flex-col sm:flex-row items-start gap-2 sm:gap-4 py-4 px-2 md:px-4{{ not loop.first ? ' border-t border-neutral-200 dark:border-neutral-700' }}">
                             <div class="events-date sm:pt-1">
                                 <a class="inline-flex items-center gap-2 text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline"
@@ -93,23 +94,23 @@
                                 <div class="flex flex-wrap items-center justify-between gap-2">
                                     <div>
                                         <h2 class="text-base font-semibold mb-1">
-                                            <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+                                            <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
                                                 class="text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline">
-                                                {{ event.title }}
+                                                {% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled, badge: true} only %}
                                             </a>
                                         </h2>
                                         <div class="text-sm text-neutral-500 dark:text-neutral-400">
                                             <span class="far fa-clock" aria-hidden="true"></span>
-                                            {% if event.allDay %}
+                                            {% if occurrence.allDay %}
                                                 All day
-                                            {% elseif event.multiDay %}
+                                            {% elseif occurrence.multiDay %}
                                                 {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('M j, g:ia') }}
                                             {% else %}
                                                 {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('g:ia') }}
                                             {% endif %}
-                                            {% if event['location'] is defined and event.location is not empty %}
+                                            {% if content['location'] is defined and content.location is not empty %}
                                                 <span class="mx-1" aria-hidden="true">·</span>
-                                                <span class="fas fa-map-marker-alt" aria-hidden="true"></span> {{ event.location|striptags }}
+                                                <span class="fas fa-map-marker-alt" aria-hidden="true"></span> {{ content.location|striptags }}
                                             {% endif %}
                                         </div>
                                     </div>
@@ -119,8 +120,8 @@
                                         {{ event.calendar.name }}
                                     </a>
                                 </div>
-                                {% if event['description'] is defined and event.description is not empty %}
-                                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-2 mb-0">{{ event.description|striptags }}</p>
+                                {% if content['description'] is defined and content.description is not empty %}
+                                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-2 mb-0">{{ content.description|striptags }}</p>
                                 {% endif %}
                             </article>
                         </li>

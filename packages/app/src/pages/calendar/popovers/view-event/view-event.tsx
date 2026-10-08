@@ -1,5 +1,14 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
-import { deleteEvent, getOccurrenceDateFromId } from "@cal/pages/calendar/calendar.events";
+import {
+  deleteEvent,
+  type EventMutationScope,
+  editFollowing,
+  getEventId,
+  getRecurrenceIdFromId,
+  openOccurrenceEditor,
+  setOccurrenceCancelled,
+} from "@cal/pages/calendar/calendar.events";
+import { useConfig } from "@cal/pages/calendar/context/config.context";
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDateLocale } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
@@ -13,7 +22,8 @@ import { format, subDays } from "date-fns";
 import { type FC, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { PopoverModifyEvent } from "../modify-event/modify";
-import { PopoverActions, PopoverWrapper } from "./view-event.styles";
+import { type EventMenuAction, PopoverEventMenu } from "./view-event.menu";
+import { PopoverActions, PopoverCloseButton, PopoverWrapper } from "./view-event.styles";
 
 type Props = {
   fcEvent: EventClickArg;
@@ -21,7 +31,11 @@ type Props = {
 
 export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { hidePopover, showPopover } = usePopover();
+  const { currentSiteId } = useConfig();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isOpeningDraft, setIsOpeningDraft] = useState(false);
+  const isBusy = isDeleting || isCancelling || isOpeningDraft;
 
   useEventListener("keydown", (keyboardEvent) => {
     if (keyboardEvent.key === "Escape") {
@@ -33,6 +47,12 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { end, allDay } = event;
 
   const calendarName = event.extendedProps.calendarName;
+  const location =
+    typeof event.extendedProps.location === "string" ? event.extendedProps.location.trim() : "";
+  const description =
+    typeof event.extendedProps.description === "string"
+      ? event.extendedProps.description.trim()
+      : "";
 
   const calendarColor =
     event.extendedProps.calendarColor ?? event.backgroundColor ?? event.borderColor ?? "#607d9f";
@@ -51,8 +71,68 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         buildPreviewRecurrence(event.extendedProps.rrule, event.start!.getTime() / 1000),
       )
     : null;
-  const occurrenceDate = getOccurrenceDateFromId(String(event.id), event.allDay);
+  const recurrenceId = getRecurrenceIdFromId(String(event.id));
   const dateFormat = event.allDay ? "PP" : "PPp";
+  const isCancelled = Boolean(event.extendedProps.cancelled);
+  const isEdited = Boolean(event.extendedProps.isEdited);
+  const hasOverride = Boolean(event.extendedProps.hasOverride);
+  const refetchEvents = () => fcEvent.view.calendar.refetchEvents();
+
+  const editOccurrence = () => {
+    if (!recurrenceId) {
+      return;
+    }
+
+    hidePopover();
+    openOccurrenceEditor({
+      eventId: getEventId(String(event.id)),
+      recurrenceId,
+      siteId: currentSiteId,
+      onSave: refetchEvents,
+    });
+  };
+
+  // Changes from this occurrence onward go into a draft, which splits the event when it's applied
+  const editThisAndFollowing = async () => {
+    if (!recurrenceId || isBusy) {
+      return;
+    }
+
+    setIsOpeningDraft(true);
+
+    const url = await editFollowing({ event, recurrenceId, siteId: currentSiteId });
+    if (url) {
+      window.location.href = url;
+
+      return;
+    }
+
+    setIsOpeningDraft(false);
+  };
+
+  const toggleCancelled = async () => {
+    if (!recurrenceId || isBusy) {
+      return;
+    }
+
+    setIsCancelling(true);
+
+    try {
+      const wasChanged = await setOccurrenceCancelled({
+        event,
+        recurrenceId,
+        cancelled: !isCancelled,
+        siteId: currentSiteId,
+        refetchEvents,
+      });
+
+      if (wasChanged) {
+        hidePopover();
+      }
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (isDeleting) {
@@ -65,8 +145,9 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       const wasDeleted = await deleteEvent({
         event,
         scope: "series",
-        occurrenceDate,
-        refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
+        recurrenceId,
+        siteId: currentSiteId,
+        refetchEvents,
       });
 
       if (wasDeleted) {
@@ -78,41 +159,61 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   };
 
   const showRecurringDeletePopover = () => {
-    showPopover(
-      <PopoverModifyEvent
-        action="delete"
-        onOnlyThisOccurrence={async () => {
-          const wasDeleted = await deleteEvent({
-            event,
-            scope: "occurrence",
-            occurrenceDate,
-            refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
-          });
+    const deleteOccurrences = async (scope: EventMutationScope): Promise<boolean> => {
+      if (
+        scope === "occurrence" &&
+        hasOverride &&
+        !window.confirm(
+          translate("This occurrence has its own changes, which are deleted with it. Delete it?"),
+        )
+      ) {
+        return false;
+      }
 
-          if (wasDeleted) {
-            hidePopover();
-          }
-        }}
-        onAllOccurrences={async () => {
-          const wasDeleted = await deleteEvent({
-            event,
-            scope: "series",
-            occurrenceDate,
-            refetchEvents: () => fcEvent.view.calendar.refetchEvents(),
-          });
+      return deleteEvent({ event, scope, recurrenceId, siteId: currentSiteId, refetchEvents });
+    };
 
-          if (wasDeleted) {
-            hidePopover();
-          }
-        }}
-      />,
-      fcEvent.el,
-    );
+    showPopover(<PopoverModifyEvent action="delete" onSelect={deleteOccurrences} />, fcEvent.el);
   };
+
+  const menuActions: EventMenuAction[] = [];
+  if (isRecurring && recurrenceId) {
+    menuActions.push(
+      { label: translate("Edit occurrence"), onSelect: editOccurrence },
+      {
+        label: translate(isOpeningDraft ? "Processing..." : "Edit this and following occurrences"),
+        onSelect: () => void editThisAndFollowing(),
+      },
+      {
+        label: translate(isCancelled ? "Restore occurrence" : "Cancel occurrence"),
+        onSelect: () => void toggleCancelled(),
+      },
+    );
+  }
+  menuActions.push({
+    label: translate(isDeleting ? "Deleting..." : "Delete"),
+    destructive: true,
+    onSelect: () => {
+      if (isRecurring) {
+        showRecurringDeletePopover();
+      } else if (window.confirm(translate("Are you sure you want to delete this event?"))) {
+        void handleDelete();
+      }
+    },
+  });
 
   return (
     <PopoverWrapper>
-      <h1>{event.title}</h1>
+      <PopoverCloseButton
+        type="button"
+        className="icon"
+        data-icon="remove"
+        aria-label={translate("Close")}
+        title={translate("Close")}
+        disabled={isBusy}
+        onClick={hidePopover}
+      />
+      <h1 className={clsx("event-title", isCancelled && "is-cancelled")}>{event.title}</h1>
 
       {calendarName && (
         <div className="calendar-label">
@@ -122,6 +223,14 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
             aria-hidden="true"
           />
           <span>{calendarName}</span>
+        </div>
+      )}
+
+      {(isCancelled || isEdited) && (
+        <div className={clsx("occurrence-status", !isCancelled && "is-edited")}>
+          {isCancelled
+            ? translate("This occurrence is cancelled.")
+            : translate("This occurrence has its own changes.")}
         </div>
       )}
 
@@ -141,42 +250,38 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         </div>
       )}
 
+      {(location || description) && (
+        <dl className="event-details">
+          {location && (
+            <div>
+              <dt>{translate("Location")}</dt>
+              <dd className="event-location">{location}</dd>
+            </div>
+          )}
+          {description && (
+            <div>
+              <dt>{translate("Description")}</dt>
+              <dd className="event-description">{description}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+
       <hr />
 
       <PopoverActions>
-        <a href={event.url} className={clsx("btn submit", isDeleting && "disabled")}>
-          {translate("Edit")}
-        </a>
-
-        <button
-          type="button"
-          className={clsx("btn", isDeleting && "disabled")}
-          disabled={isDeleting}
-          onClick={() => {
-            if (isRecurring) {
-              showRecurringDeletePopover();
-
-              return;
-            }
-
-            if (!window.confirm(translate("Are you sure you want to delete this event?"))) {
-              return;
-            }
-
-            void handleDelete();
+        <a
+          href={event.url}
+          className={clsx("btn submit", isBusy && "disabled")}
+          aria-disabled={isBusy}
+          onClick={(click) => {
+            if (isBusy) click.preventDefault();
           }}
         >
-          {translate(isDeleting ? "Deleting..." : "Delete")}
-        </button>
+          {translate("Edit Event")}
+        </a>
 
-        <button
-          type="button"
-          className={clsx("btn", isDeleting && "disabled")}
-          disabled={isDeleting}
-          onClick={() => hidePopover()}
-        >
-          {translate("Close")}
-        </button>
+        <PopoverEventMenu actions={menuActions} disabled={isBusy} />
       </PopoverActions>
     </PopoverWrapper>
   );

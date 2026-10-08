@@ -17,7 +17,7 @@ return [
     'demo/day/calendar/(?P<slug>[^\/]+)/(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})' => 'demo/day',
     'demo/calendars/(?P<slug>[^\/]+)' => 'demo/calendars',
     'demo/event/(?P<id>\d+)' => 'demo/event',
-    'demo/event/(?P<id>\d+)/(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})' => 'demo/event',
+    'demo/event/(?P<id>\d+)/(?P<slug>[^\/]+)' => 'demo/event',
     'demo/events/(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})' => 'demo/events',
     'demo/export/event/(?P<id>\d+)' => 'demo/export',
     'demo/edit/event/(?P<id>\d+)' => 'demo/edit',

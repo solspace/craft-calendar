@@ -3,8 +3,15 @@
 namespace Solspace\Calendar\Library\Export;
 
 use Carbon\Carbon;
+use RRule\RRule;
+use RRule\RSet;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\RRule\RRuleParser;
+use Solspace\Calendar\Models\OccurrenceContent;
+use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 
 class ExportCalendarToIcs extends AbstractExportCalendar
 {
@@ -17,6 +24,7 @@ class ExportCalendarToIcs extends AbstractExportCalendar
     protected function prepareStringForExport(): string
     {
         $events = $this->getEventQuery()->all();
+        $overrides = $this->findOverrides($events);
 
         $exportString = "BEGIN:VCALENDAR\r\n";
         $exportString .= "PRODID:-//Solspace/Calendar//EN\r\n";
@@ -27,154 +35,216 @@ class ExportCalendarToIcs extends AbstractExportCalendar
 
         /** @var Event $event */
         foreach ($events as $event) {
-            $startDate = $event->getStartDate();
-            $exportString .= $this->combineExportString($event, $startDate);
+            $exportString .= $this->combineExportString($event, $overrides[$event->id.'-'.$event->siteId] ?? []);
         }
 
         return $exportString.'END:VCALENDAR';
     }
 
     /**
-     * Builds a VEVENT string and returns it.
+     * Builds the event's VEVENT, followed by one for each occurrence with its own changes, linked to it by UID
+     * and RECURRENCE-ID. A one-off event's only occurrence is the event itself, so its changes go on that VEVENT.
+     *
+     * @param OccurrenceOverride[] $overrides
      */
-    private function combineExportString(Event $event, Carbon $date): string
+    private function combineExportString(Event $event, array $overrides): string
     {
-        $exportString = '';
+        $oneOff = null === $event->getRRuleRFCString();
+        $exportString = $this->createEventLines($event, $oneOff ? array_shift($overrides) : null, false);
 
-        $timezone = $this->getOption('timezone', $event->getCalendar()->getIcsTimezone());
-        $dateDiff = $event->getStartDate()->diff($event->getEndDate());
-
-        $startDate = $date->copy();
-        $startDate->setTime(
-            $event->getStartDate()->hour,
-            $event->getStartDate()->minute,
-            $event->getStartDate()->second
-        );
-        $endDate = $startDate->copy()->add($dateDiff);
-
-        $description = null;
-        $descriptionFieldHandle = $event->getCalendar()->descriptionFieldHandle;
-        if ($descriptionFieldHandle && isset($event->{$descriptionFieldHandle})) {
-            $description = $event->{$descriptionFieldHandle};
-        }
-
-        $location = null;
-        $locationFieldHandle = $event->getCalendar()->locationFieldHandle;
-        if ($locationFieldHandle && isset($event->{$locationFieldHandle})) {
-            $location = $event->{$locationFieldHandle};
-        }
-        $title = $event->title;
-
-        $uid = $event->uid ?: $event->id.'@solspace.com';
-
-        $exportString .= "BEGIN:VEVENT\r\n";
-        $exportString .= $this->createLine('UID', $uid);
-        $exportString .= $this->createLine('DTSTAMP', $this->formatUtcDateTime($this->now));
-        $exportString .= $this->createLine('CREATED', $this->formatUtcDateTime($event->dateCreated));
-        $exportString .= $this->createLine('LAST-MODIFIED', $this->formatUtcDateTime($event->dateUpdated));
-
-        if ($description) {
-            $exportString .= $this->createLine('DESCRIPTION', $this->prepareString($this->htmlToText($description)));
-        }
-        if ($location) {
-            $exportString .= $this->createLine('LOCATION', $this->prepareString($this->htmlToText($location)));
-        }
-
-        $this->appendDateRange($exportString, $event, $startDate, $endDate, $timezone);
-
-        $rdateStarts = [];
-        $rrule = $event->getRRule();
-        if ($rrule) {
-            $rrule = preg_replace('/\r\n?/', "\n", $rrule);
-            $lines = array_filter(
-                explode("\n", $rrule),
-                static fn (string $line) => !preg_match('/^DTSTART(?:[:;])/', $line)
-            );
-
-            foreach ($lines as $line) {
-                $line = trim($line);
-
-                if (str_starts_with($line, 'RDATE')) {
-                    $rdateStarts = array_merge($rdateStarts, $this->parseRDateStarts($line, $event->isAllDay(), $timezone));
-
-                    continue;
-                }
-
-                $exportString .= $this->foldLine($line)."\r\n";
-            }
-        }
-
-        $exportString .= $this->createLine('SUMMARY', $this->prepareString($title));
-        $exportString .= "END:VEVENT\r\n";
-
-        foreach ($rdateStarts as $rdateStart) {
-            if ($rdateStart->equalTo($startDate)) {
-                continue;
-            }
-
-            $rdateEnd = $rdateStart->copy()->add($dateDiff);
-            $exportString .= "BEGIN:VEVENT\r\n";
-            $exportString .= $this->createLine('UID', $uid.'-rdate-'.$rdateStart->format(self::DATE_TIME_FORMAT));
-            $exportString .= $this->createLine('DTSTAMP', $this->formatUtcDateTime($this->now));
-            $exportString .= $this->createLine('CREATED', $this->formatUtcDateTime($event->dateCreated));
-            $exportString .= $this->createLine('LAST-MODIFIED', $this->formatUtcDateTime($event->dateUpdated));
-
-            if ($description) {
-                $exportString .= $this->createLine('DESCRIPTION', $this->prepareString($this->htmlToText($description)));
-            }
-            if ($location) {
-                $exportString .= $this->createLine('LOCATION', $this->prepareString($this->htmlToText($location)));
-            }
-
-            $this->appendDateRange($exportString, $event, $rdateStart, $rdateEnd, $timezone);
-            $exportString .= $this->createLine('SUMMARY', $this->prepareString($title));
-            $exportString .= "END:VEVENT\r\n";
+        foreach ($overrides as $override) {
+            $exportString .= $this->createEventLines($event, $override, true);
         }
 
         return $exportString;
     }
 
-    private function appendDateRange(string &$exportString, Event $event, Carbon $startDate, Carbon $endDate, string $timezone): void
+    /**
+     * One VEVENT: the event with its schedule, or one of its occurrences with its override applied.
+     */
+    private function createEventLines(Event $event, ?OccurrenceOverride $override, bool $isOccurrence): string
     {
-        if ($event->isAllDay()) {
-            $exportString .= $this->createLine('DTSTART;VALUE=DATE', $startDate->format(self::DATE_FORMAT));
-            $exportString .= $this->createLine('DTEND;VALUE=DATE', $endDate->format(self::DATE_FORMAT));
-        } elseif ('UTC' === $timezone) {
-            $exportString .= $this->createLine('DTSTART', $startDate->format(self::DATE_TIME_FORMAT).'Z');
-            $exportString .= $this->createLine('DTEND', $endDate->format(self::DATE_TIME_FORMAT).'Z');
-        } elseif (DateHelper::FLOATING_TIMEZONE === $timezone) {
-            $exportString .= $this->createLine('DTSTART', $startDate->format(self::DATE_TIME_FORMAT));
-            $exportString .= $this->createLine('DTEND', $endDate->format(self::DATE_TIME_FORMAT));
+        $timezone = $this->getOption('timezone', $event->getCalendar()->getIcsTimezone());
+        $allDay = $event->isAllDay();
+        $occurrence = $override
+            ? Calendar::getInstance()->occurrences->describeOccurrence($event, $override->recurrenceId, $override)
+            : ['startDate' => $event->getStartDate(), 'endDate' => $event->getEndDate(), 'allDay' => $allDay, 'cancelled' => false];
+        $content = new OccurrenceContent($event, $override);
+
+        $lines = "BEGIN:VEVENT\r\n";
+        $lines .= $this->createLine('UID', $event->uid ?: $event->id.'@solspace.com');
+
+        if ($isOccurrence) {
+            $lines .= $this->createDateLine('RECURRENCE-ID', $override->recurrenceId, $allDay, $timezone);
+            $lines .= $this->createStampLines($override->dateCreated, $override->dateUpdated);
         } else {
-            $exportString .= $this->createLine('DTSTART;TZID='.$timezone, $startDate->format(self::DATE_TIME_FORMAT));
-            $exportString .= $this->createLine('DTEND;TZID='.$timezone, $endDate->format(self::DATE_TIME_FORMAT));
+            $updated = $override?->dateUpdated > $event->dateUpdated ? $override->dateUpdated : $event->dateUpdated;
+            $lines .= $this->createStampLines($event->dateCreated, $updated);
         }
+
+        $lines .= $this->createContentLines($event, $content);
+        $lines .= $this->createDateRangeLines($occurrence['startDate'], $occurrence['endDate'], $occurrence['allDay'], $timezone);
+
+        if (!$isOccurrence) {
+            $lines .= $this->createRecurrenceLines($event->getRRuleRFCString(), $allDay, $timezone);
+        }
+
+        if ($occurrence['cancelled']) {
+            $lines .= $this->createLine('STATUS', 'CANCELLED');
+        }
+
+        $lines .= $this->createLine('SUMMARY', $this->prepareString((string) $content->getTitle()));
+
+        return $lines."END:VEVENT\r\n";
     }
 
-    private function parseRDateStarts(string $line, bool $allDay, string $timezone): array
+    /**
+     * The overrides of the exported events whose occurrences are still on the schedule, by event and site.
+     *
+     * @param Event[] $events
+     *
+     * @return array<string, OccurrenceOverride[]>
+     */
+    private function findOverrides(array $events): array
     {
-        [, $valueList] = array_pad(explode(':', $line, 2), 2, '');
+        if (!$events) {
+            return [];
+        }
 
-        return array_values(
-            array_filter(
-                array_map(
-                    fn (string $value) => $this->parseRDateStart(trim($value), $allDay, $timezone),
-                    explode(',', $valueList),
-                ),
-            ),
-        );
+        $overrides = OccurrenceOverride::find()
+            ->primaryOwnerId(array_map(static fn (Event $event) => $event->id, $events))
+            ->siteId(array_values(array_unique(array_map(static fn (Event $event) => $event->siteId, $events))))
+            ->status(null)
+            ->orphaned(false)
+            ->orderBy([OccurrenceOverrideRecord::TABLE_STD.'.recurrenceId' => \SORT_ASC])
+            ->all()
+        ;
+
+        $grouped = [];
+        foreach ($overrides as $override) {
+            $grouped[$override->getPrimaryOwnerId().'-'.$override->siteId][] = $override;
+        }
+
+        return $grouped;
     }
 
-    private function parseRDateStart(string $value, bool $allDay, string $timezone): ?Carbon
+    private function createStampLines(?\DateTimeInterface $created, ?\DateTimeInterface $updated): string
     {
+        return $this->createLine('DTSTAMP', $this->formatUtcDateTime($this->now))
+            .$this->createLine('CREATED', $this->formatUtcDateTime($created))
+            .$this->createLine('LAST-MODIFIED', $this->formatUtcDateTime($updated));
+    }
+
+    private function createContentLines(Event $event, OccurrenceContent $content): string
+    {
+        $lines = '';
+        $calendar = $event->getCalendar();
+
+        foreach (['DESCRIPTION' => $calendar->descriptionFieldHandle, 'LOCATION' => $calendar->locationFieldHandle] as $property => $handle) {
+            $value = $handle && isset($content->{$handle}) ? $content->{$handle} : null;
+            if ($value) {
+                $lines .= $this->createLine($property, $this->prepareString($this->htmlToText($value)));
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * All-day ends are stored as the end of the last day, while DTEND is the day after it.
+     */
+    private function createDateRangeLines(Carbon $startDate, Carbon $endDate, bool $allDay, string $timezone): string
+    {
+        return $this->createDateLine('DTSTART', $startDate, $allDay, $timezone)
+            .$this->createDateLine('DTEND', $allDay ? DateHelper::allDayExclusiveEnd($endDate) : $endDate, $allDay, $timezone);
+    }
+
+    /**
+     * The rule, additional dates and excluded dates, written the same way as DTSTART. An unreadable
+     * rule is left out, so the rest of the export still works.
+     */
+    private function createRecurrenceLines(?string $rrule, bool $allDay, string $timezone): string
+    {
+        if (!$rrule) {
+            return '';
+        }
+
+        try {
+            $parsed = RRuleParser::parse($rrule);
+        } catch (\Throwable) {
+            return '';
+        }
+
+        $lines = '';
+        $rule = $parsed instanceof RSet ? ($parsed->getRRules()[0] ?? null) : $parsed;
+
+        foreach (preg_split('/\R/', $rrule) ?: [] as $line) {
+            $line = trim($line);
+
+            if ($rule instanceof RRule && str_starts_with($line, 'RRULE:')) {
+                $lines .= $this->foldLine($this->formatUntil($line, $rule, $allDay, $timezone))."\r\n";
+            }
+        }
+
+        if ($parsed instanceof RSet) {
+            foreach (['RDATE' => $parsed->getDates(), 'EXDATE' => $parsed->getExDates()] as $property => $dates) {
+                if ($dates) {
+                    $lines .= $this->createDateLine($property, array_map(DateHelper::parseFloatingCarbon(...), $dates), $allDay, $timezone);
+                }
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * @param Carbon|Carbon[] $dates
+     */
+    private function createDateLine(string $property, array|Carbon $dates, bool $allDay, string $timezone): string
+    {
+        $dates = \is_array($dates) ? $dates : [$dates];
+
         if ($allDay) {
-            return Carbon::createFromFormat('Ymd', substr($value, 0, 8), DateHelper::UTC) ?: null;
+            return $this->createLine(
+                $property.';VALUE=DATE',
+                implode(',', array_map(static fn (Carbon $date) => $date->format(self::DATE_FORMAT), $dates)),
+            );
         }
 
-        $value = rtrim($value, 'Z');
-        $timezone = DateHelper::FLOATING_TIMEZONE === $timezone ? DateHelper::UTC : $timezone;
+        $values = implode(',', array_map(
+            static fn (Carbon $date) => $date->format(self::DATE_TIME_FORMAT).('UTC' === $timezone ? 'Z' : ''),
+            $dates,
+        ));
 
-        return Carbon::createFromFormat(self::DATE_TIME_FORMAT, $value, $timezone) ?: null;
+        if ('UTC' === $timezone || DateHelper::FLOATING_TIMEZONE === $timezone) {
+            return $this->createLine($property, $values);
+        }
+
+        return $this->createLine($property.';TZID='.$timezone, $values);
+    }
+
+    /**
+     * UNTIL is a date for all-day events and floating with a floating DTSTART. Otherwise it has to be in UTC.
+     */
+    private function formatUntil(string $line, RRule $rule, bool $allDay, string $timezone): string
+    {
+        $until = $rule->getRule()['UNTIL'] ?? null;
+        if (!$until instanceof \DateTimeInterface) {
+            return $line;
+        }
+
+        $until = DateHelper::parseFloatingCarbon($until);
+
+        if ($allDay) {
+            $value = $until->format(self::DATE_FORMAT);
+        } elseif (DateHelper::FLOATING_TIMEZONE === $timezone) {
+            $value = $until->format(self::DATE_TIME_FORMAT);
+        } else {
+            $local = new Carbon($until->format('Y-m-d H:i:s'), 'UTC' === $timezone ? DateHelper::UTC : $timezone);
+            $value = $local->setTimezone(DateHelper::UTC)->format(self::DATE_TIME_FORMAT).'Z';
+        }
+
+        return (string) preg_replace('/UNTIL=[0-9TZ]+/', 'UNTIL='.$value, $line);
     }
 
     private function createLine(string $property, int|string $value): string

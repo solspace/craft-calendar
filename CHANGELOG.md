@@ -6,6 +6,13 @@
 - Added a **Diagnostics** page with system and compatibility checks, timezone details, Calendar configuration and event statistics, and a copyable support report.
 - Added **Tailwind CSS 4** demo templates alongside the upgraded **Bootstrap 5.3** templates, with a framework selector and Light, Dark, and Auto color modes.
 - Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.
+- Added editing of single occurrences of repeating events: their own title and custom field values, their own times, a custom slug, or cancelling them. Everything an occurrence doesn't change keeps following its event. Edit occurrences from the control panel calendar or from the event editor's **Schedule Preview** and **Edited occurrences** lists.
+- Added **This and following** for changing a repeating event from one occurrence onward. The event is split into a series: the part from that occurrence keeps the event's ID, URL and relations, and the earlier occurrences become a new event with their changes. The parts of a series can't overlap, so a draft started before its event was split can't bring the earlier occurrences back.
+- Added a code and a slug to every occurrence, so single occurrences can be linked to and looked up.
+- Added `occurrence.content`, which returns an occurrence's own title and field values where it changes them and the event's everywhere else, along with `recurrenceId`, `code`, `slug`, `cancelled`, `isEdited` and `duration` on occurrences.
+- Added the `recurrenceId`, `code`, `slug`, `cancelled`, `search` and `relatedTo` parameters to occurrence queries, and the `seriesId` parameter and `event.series` to events.
+- Added edited occurrences and series to GraphQL.
+- Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
 - Made the publishing calendar clearer on the create/edit event page with a color indicator beside its name and a calendar breadcrumb linking to its events.
@@ -13,9 +20,20 @@
 - Refreshed the Month, Week, Day, Upcoming Events, Calendars, and event detail demos with more consistent navigation, responsive layouts, calendar color accents, and expandable sidebars.
 - Improved the Create Event demo with clearer date, time, and recurrence controls.
 - Updated the custom **FullCalendar** integration demo with refined event styling and dialogs, plus links to FullCalendar and its v6 documentation.
+- Moving, resizing, cancelling or deleting one occurrence in the control panel calendar now changes that occurrence instead of adding excluded and additional dates to its event.
+- Changing an event's schedule now keeps edited occurrences with their dates. When every occurrence moves the same distance, the changes move with them. Otherwise, changes to a date the schedule no longer has are kept but hidden, and the event editor shows which dates are affected before the change is saved.
+- ICS exports now include edited and cancelled occurrences, write additional dates as `RDATE` lines instead of separate events, and write excluded dates and end dates in the same time format as the event's start.
+- The demo templates now show each occurrence's own title and fields, link to occurrences by slug, and show cancelled occurrences.
+- Repeating events without an end now list their occurrences up to ten years ahead.
+- Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed control panel date and time formats ignoring the user's formatting locale.
 - Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.
+- Fixed multi-day all-day events showing a day short in the control panel calendar and in ICS exports.
+- Fixed dragging a repeating event in the control panel calendar on multi-site installs moving the whole event to the dropped date.
+- Fixed all-day events created in the control panel calendar ending a day late.
+- Fixed resizing a repeating event from its start leaving its excluded and additional dates where they were.
 
 ## 5.0.31 - 2026-08-31
 

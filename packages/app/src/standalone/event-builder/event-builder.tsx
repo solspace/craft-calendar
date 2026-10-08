@@ -6,9 +6,15 @@ import { useSelector } from "react-redux";
 import { rrulestr } from "rrule";
 import { Editor } from "./editor/editor";
 import { EventBuilderWrapper } from "./event-builder.styles";
+import { Series } from "./series/series";
 import { eventSelectors } from "./store/event.slice";
+import type { BuilderContext } from "./types";
 
-export const EventBuilder: FC = () => {
+type Props = {
+  context?: BuilderContext;
+};
+
+export const EventBuilder: FC<Props> = ({ context }) => {
   const { rrule } = useSelector(eventSelectors.state);
 
   const isDebug = useMemo(isDebugMode, []);
@@ -24,7 +30,9 @@ export const EventBuilder: FC = () => {
 
   return (
     <EventBuilderWrapper>
-      <Editor />
+      {context && <Series context={context} />}
+
+      <Editor context={context} />
 
       {isDebug && (
         <code>

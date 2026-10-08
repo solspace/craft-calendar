@@ -1,6 +1,7 @@
 import {
   localDisplayDateToUtcTimestamp,
   utcDateKey,
+  utcDateTimeString,
   utcTimestampToLocalDisplayDate,
   utcToLocalDisplayDate,
 } from "@cal/utils/date";
@@ -107,6 +108,20 @@ export const getOccurrenceStatus = (
     excluded: base && !full,
     rdate: previewRecurrence.addedDateSet.has(timestamp),
   };
+};
+
+/** The date list shows days; editing needs the original scheduled start, including its time. */
+export const getOccurrenceRecurrenceId = (
+  previewRecurrence: PreviewRecurrence,
+  date: Date,
+): string | null => {
+  const occurrence = previewRecurrence.recurrenceSet?.between(
+    toUtcDayStart(date),
+    toUtcDayEnd(date),
+    true,
+  )[0];
+
+  return occurrence ? utcDateTimeString(occurrence) : null;
 };
 
 export const isProtectedOccurrence = (
@@ -357,7 +372,10 @@ const describeInterval = (frequency: Frequency, interval: number): string => {
   return interval > 1 ? translate(plural, { count: interval }) : translate(single);
 };
 
-export const describeRecurrence = (previewRecurrence: PreviewRecurrence): string | null => {
+export const describeRecurrence = (
+  previewRecurrence: PreviewRecurrence,
+  dateFormat = "PP",
+): string | null => {
   const { baseRule } = previewRecurrence;
 
   if (!baseRule) {
@@ -409,7 +427,7 @@ export const describeRecurrence = (previewRecurrence: PreviewRecurrence): string
   if (options.until) {
     return translate("{description}, ending on {date}.", {
       description,
-      date: format(utcToLocalDisplayDate(options.until), "PP", { locale: getDateLocale() }),
+      date: format(utcToLocalDisplayDate(options.until), dateFormat, { locale: getDateLocale() }),
     });
   }
 

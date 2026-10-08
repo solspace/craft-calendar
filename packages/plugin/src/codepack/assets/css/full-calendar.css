@@ -192,6 +192,11 @@
   font-weight: 500;
 }
 
+/* Events are links without underlines, so the title carries the cancelled strikethrough */
+#calendar-wrapper.fc .calendar-occurrence-cancelled .fc-event-title {
+  text-decoration: line-through;
+}
+
 #calendar-wrapper.fc .fc-event-time {
   font-size: 0.75rem;
   font-weight: 500;

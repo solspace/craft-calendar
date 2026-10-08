@@ -74,8 +74,8 @@
                                 {% set weekMultiDayKeys = [] %}
                                 {% for day in week %}
                                     {% for occurrence in day.occurrences %}
-                                        {% if occurrence.event.multiDay %}
-                                            {% set occurrenceKey = occurrence.event.id ~ '-' ~ occurrence.startDate.format('YmdHis') %}
+                                        {% if occurrence.multiDay %}
+                                            {% set occurrenceKey = occurrence.id %}
                                             {% if occurrenceKey not in weekMultiDayKeys %}
                                                 {% set weekMultiDayKeys = weekMultiDayKeys|merge([occurrenceKey]) %}
                                             {% endif %}
@@ -98,8 +98,8 @@
                                             </div>
                                             {% set dayMultiDayKeys = [] %}
                                             {% for occurrence in day.occurrences %}
-                                                {% if occurrence.event.multiDay %}
-                                                    {% set dayMultiDayKeys = dayMultiDayKeys|merge([occurrence.event.id ~ '-' ~ occurrence.startDate.format('YmdHis')]) %}
+                                                {% if occurrence.multiDay %}
+                                                    {% set dayMultiDayKeys = dayMultiDayKeys|merge([occurrence.id]) %}
                                                 {% endif %}
                                             {% endfor %}
                                             {% set lastActiveLane = -1 %}
@@ -113,7 +113,7 @@
                                                 {% if loop.index0 <= lastActiveLane %}
                                                     {% set matchingOccurrence = null %}
                                                     {% for candidate in day.occurrences %}
-                                                        {% if (candidate.event.id ~ '-' ~ candidate.startDate.format('YmdHis')) == occurrenceKey %}
+                                                        {% if candidate.id == occurrenceKey %}
                                                             {% set matchingOccurrence = candidate %}
                                                         {% endif %}
                                                     {% endfor %}
@@ -126,7 +126,7 @@
                                                 {% endif %}
                                             {% endfor %}
                                             {% for occurrence in day.occurrences %}
-                                                {% if not occurrence.event.multiDay %}
+                                                {% if not occurrence.multiDay %}
                                                     {% include "demo/tailwind/layouts/_occurrence" %}
                                                 {% endif %}
                                             {% endfor %}

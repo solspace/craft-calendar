@@ -2,7 +2,14 @@ import { Flex } from "@cal/styles/components";
 import styled from "styled-components";
 
 export const PopoverCreateEventWrapper = styled.div`
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
   padding: 15px;
+
+  label.required::after {
+    font-size: 10px;
+  }
 
   hr {
     margin: 15px 0;
@@ -35,6 +42,11 @@ export const Fields = styled.div`
   hr {
     margin: 3px 0;
   }
+
+  textarea.text {
+    resize: vertical;
+    min-height: 72px;
+  }
 `;
 
 export const AllDayRow = styled.div`
@@ -46,4 +58,27 @@ export const AllDayRow = styled.div`
 export const AllDayLabel = styled.label`
   font-weight: 600;
   cursor: pointer;
+`;
+
+export const CreateActions = styled(Flex)`
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+export const MoreDetailsButton = styled.button`
+  margin-inline-end: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--link-color);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: default;
+  }
 `;

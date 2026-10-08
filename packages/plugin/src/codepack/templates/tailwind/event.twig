@@ -15,10 +15,8 @@
     <div class="flex flex-wrap -mx-3 gap-y-6">
         <div class="w-full px-3 lg:w-3/4">
             <article id="events_calendar" class="rounded-2xl bg-white shadow-sm dark:bg-neutral-900/50 p-4 lg:p-6">
-                {% set occurrenceDate = null %}
-                {% if segment4 and segment5 and segment6 %}
-                    {% set occurrenceDate = segment4 ~ "-" ~ segment5 ~ "-" ~ segment6 %}
-                {% endif %}
+                {# demo/event/{id}/{slug} shows one occurrence #}
+                {% set occurrenceSlug = segment4 ?: null %}
 
                 {% if event is not defined %}
                     {% set event = craft.calendar.events({
@@ -29,23 +27,47 @@
 
                 {% if event %}
                     {% set occurrence = null %}
-                    {% if occurrenceDate %}
+                    {% if occurrenceSlug %}
+                        {# Slugs only match an occurrence's current slug, so the old link of an occurrence that moved is a 404 #}
                         {% set occurrence = craft.calendar.occurrences({
                             event: event.id,
-                            rangeStart: occurrenceDate,
-                            rangeEnd: occurrenceDate ~ " 23:59:59",
+                            slug: occurrenceSlug,
                             status: null,
                         }).one() %}
+
+                        {#
+                        To send old links to the occurrence's current page instead, try the last part of a slug
+                        that matches nothing as the occurrence's code. Generated slugs end in the code, which
+                        never changes, but custom slugs don't have to include it.
+
+                        {% if not occurrence %}
+                            {% set occurrenceByCode = craft.calendar.occurrences({
+                                code: occurrenceSlug|split('-')|last,
+                                status: null,
+                            }).one() %}
+                            {% if occurrenceByCode %}
+                                {% redirect siteUrl ~ 'demo/event/' ~ occurrenceByCode.event.id ~ '/' ~ occurrenceByCode.slug %}
+                            {% endif %}
+                        {% endif %}
+                        #}
+
+                        {% if not occurrence %}
+                            {% exit 404 %}
+                        {% endif %}
                     {% endif %}
+
+                    {# The occurrence's own title and field values where it changes them, the event's everywhere else #}
+                    {% set content = occurrence ? occurrence.content : event %}
 
                     {% set displayStartDate = occurrence ? occurrence.startDate : event.startDate %}
                     {% set displayEndDate = occurrence ? occurrence.endDate : event.endDate %}
                     {% set displayAllDay = occurrence ? occurrence.allDay : event.allDay %}
+                    {% set displayDuration = occurrence ? occurrence.duration : event.duration %}
                     {% set displayMultiDay = displayStartDate.format('Y-m-d') != displayEndDate.format('Y-m-d') %}
 
                     <header class="flex flex-wrap items-start justify-between gap-4 mb-6">
                         <div class="event-detail-heading">
-                            <h1 class="text-3xl font-semibold mb-2">{{ event.title }}</h1>
+                            <h1 class="text-3xl font-semibold mb-2">{% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence and occurrence.cancelled} only %}</h1>
                             <a href="{{ siteUrl }}demo/calendars/{{ event.calendar.handle }}"
                                 class="event-detail-calendar rounded-full"
                                 style="--calendar-color: {{ event.calendar.color }};">
@@ -69,6 +91,10 @@
                         {% endif %}
                     </header>
 
+                    {% if occurrence and occurrence.cancelled %}
+                        <div class="demo-alert demo-alert-warning mb-6" role="status">This occurrence is cancelled.</div>
+                    {% endif %}
+
                     <div class="event-detail-summary rounded-lg p-4 md:p-6 mb-6" style="--calendar-color: {{ event.calendar.color }};">
                         <p class="text-neutral-500 dark:text-neutral-400 text-sm font-semibold uppercase mb-1">When</p>
                         <p class="text-xl font-semibold mb-1">{{ displayStartDate.format('l, F j, Y') }}</p>
@@ -87,20 +113,20 @@
                     </div>
 
                     <dl class="event-detail-fields mb-0">
-                        {% if event['location'] is defined and event.location is not empty %}
+                        {% if content['location'] is defined and content.location is not empty %}
                             <div class="event-detail-field">
                                 <dt>Location</dt>
-                                <dd>{{ event.location }}</dd>
+                                <dd>{{ content.location }}</dd>
                             </div>
                         {% endif %}
                         <div class="event-detail-field">
                             <dt>Duration</dt>
-                            <dd><span class="far fa-clock text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>{{ event.duration.humanReadable }}</dd>
+                            <dd><span class="far fa-clock text-neutral-500 dark:text-neutral-400 me-1" aria-hidden="true"></span>{{ displayDuration.humanReadable }}</dd>
                         </div>
-                        {% if event['description'] is defined and event.description is not empty %}
+                        {% if content['description'] is defined and content.description is not empty %}
                             <div class="event-detail-field">
                                 <dt>Details</dt>
-                                <dd>{{ event.description }}</dd>
+                                <dd>{{ content.description }}</dd>
                             </div>
                         {% endif %}
                         <div class="event-detail-field">
@@ -134,9 +160,10 @@
                                             <div class="event-detail-occurrence-date flex items-start gap-3">
                                                 <span class="far fa-calendar mt-1 text-neutral-500 dark:text-neutral-400" aria-hidden="true"></span>
                                                 <div>
-                                                    <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.startDate.format('Y/m/d') }}" class="font-semibold text-neutral-900 no-underline hover:text-blue-700 dark:text-neutral-100 dark:hover:text-blue-300">
+                                                    <a href="{{ siteUrl }}demo/event/{{ occurrence.event.id }}/{{ occurrence.slug }}" class="font-semibold text-neutral-900 no-underline hover:text-blue-700 dark:text-neutral-100 dark:hover:text-blue-300">
                                                         <time datetime="{{ occurrence.startDate.format('c') }}">{{ occurrence.startDate.format('l, F j, Y') }}</time>
                                                     </a>
+                                                    {% if occurrence.cancelled %}<span class="calendar-occurrence-status">Cancelled</span>{% endif %}
                                                     <div class="text-sm text-neutral-600 dark:text-neutral-400">
                                                         {% if occurrence.allDay %}
                                                             All day{% if occurrenceMultiDay %} · through {{ occurrence.endDate.format('l, F j, Y') }}{% endif %}

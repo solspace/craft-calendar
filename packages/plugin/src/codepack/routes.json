@@ -60,8 +60,8 @@
     "template": "/event"
   },
   {
-    "urlParts": ["event\\/",["number","\\\\d+"],"\\/",["year","\\\\d{4}"],"\\/",["month","(?:0?[1-9]|1[012])"],"\\/",["day","(?:0?[1-9]|[12][0-9]|3[01])"]],
-    "urlPattern": "event/{id}/{year}/{month}/{day}",
+    "urlParts": ["event\\/",["number","\\\\d+"],"\\/",["slug","[^\\\\\\/]+"]],
+    "urlPattern": "event/{id}/{slug}",
     "template": "/event"
   },
   {

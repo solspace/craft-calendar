@@ -16,6 +16,7 @@ import type { PopoverAnchor, ShowPopoverOptions } from "./popover.types";
 type PopoverContextType = {
   showPopover: (content: ReactNode, anchor: PopoverAnchor, options?: ShowPopoverOptions) => void;
   hidePopover: () => void;
+  keepPopoverOpen: () => void;
 };
 
 type PopoverState = {
@@ -40,9 +41,11 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
   const bridgeRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const autoClosePaused = useRef(false);
 
   const showPopover = useCallback<PopoverContextType["showPopover"]>((content, anchor, options) => {
     clearTimeout(closeTimer.current);
+    autoClosePaused.current = false;
     setState({ content, anchor, options });
   }, []);
 
@@ -51,13 +54,18 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
     setState(undefined);
   }, []);
 
+  const keepPopoverOpen = useCallback(() => {
+    clearTimeout(closeTimer.current);
+    autoClosePaused.current = true;
+  }, []);
+
   const layout = usePopoverPosition({ state, bridgeRef, popoverRef });
   const closeDelayMs = state?.options?.closeDelayMs;
 
   const cancelClose = useCallback(() => clearTimeout(closeTimer.current), []);
 
   const scheduleClose = useCallback(() => {
-    if (closeDelayMs === undefined) {
+    if (closeDelayMs === undefined || autoClosePaused.current) {
       return;
     }
 
@@ -101,6 +109,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
       value={{
         showPopover,
         hidePopover,
+        keepPopoverOpen,
       }}
     >
       <PopoverBridge ref={bridgeRef}>

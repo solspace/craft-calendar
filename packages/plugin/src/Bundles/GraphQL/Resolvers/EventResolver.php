@@ -10,6 +10,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\OccurrenceContent;
 
 class EventResolver extends ElementResolver
 {
@@ -23,8 +24,14 @@ class EventResolver extends ElementResolver
             }
 
             $arguments['calendarId'] = $source->id;
-        } elseif ($source instanceof ElementInterface && null !== $fieldName) {
-            return self::applyCalendarPermissionsToValue($source->{$fieldName});
+        } elseif (($source instanceof ElementInterface || $source instanceof OccurrenceContent) && null !== $fieldName) {
+            // Reading the field hands out a copy of its query, so the arguments only apply to this read
+            $value = $source->{$fieldName};
+            if ($value instanceof EventQuery && false !== $arguments) {
+                \Craft::configure($value, $arguments);
+            }
+
+            return self::applyCalendarPermissionsToValue($value);
         } elseif (false === $arguments) {
             return new Collection();
         }
@@ -32,22 +39,10 @@ class EventResolver extends ElementResolver
         return Calendar::getInstance()->events->getEventQuery($arguments);
     }
 
-    private static function applyCalendarPermissions(array $arguments): array|false
-    {
-        $calendarUids = GqlPermissions::allowedEventCalendarUids();
-
-        if ([] === $calendarUids) {
-            return false;
-        }
-
-        if (\is_array($calendarUids)) {
-            $arguments['calendarUid'] = $calendarUids;
-        }
-
-        return $arguments;
-    }
-
-    private static function applyCalendarPermissionsToValue(mixed $value): mixed
+    /**
+     * Leaves out events from calendars the schema can't read.
+     */
+    public static function applyCalendarPermissionsToValue(mixed $value): mixed
     {
         $calendarUids = GqlPermissions::allowedEventCalendarUids();
 
@@ -83,5 +78,20 @@ class EventResolver extends ElementResolver
         }
 
         return $value;
+    }
+
+    private static function applyCalendarPermissions(array $arguments): array|false
+    {
+        $calendarUids = GqlPermissions::allowedEventCalendarUids();
+
+        if ([] === $calendarUids) {
+            return false;
+        }
+
+        if (\is_array($calendarUids)) {
+            $arguments['calendarUid'] = $calendarUids;
+        }
+
+        return $arguments;
     }
 }

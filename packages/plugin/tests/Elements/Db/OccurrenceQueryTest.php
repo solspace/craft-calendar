@@ -4,10 +4,14 @@ namespace Solspace\Tests\Unit\Calendar\Elements\Db;
 
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\OccurrenceModel;
+use yii\base\InvalidArgumentException;
+use yii\db\Expression;
+use yii\db\Query;
 
 /**
  * @internal
@@ -26,7 +30,7 @@ class OccurrenceQueryTest extends TestCase
             [
                 'and',
                 ['eventId' => 42],
-                ['startDate' => '2026-04-07 00:00:00'],
+                ['recurrenceId' => '2026-04-07 00:00:00'],
             ],
             $condition,
         );
@@ -37,6 +41,123 @@ class OccurrenceQueryTest extends TestCase
         $query = $this->makeQuery();
 
         self::assertNull($this->callBuildOccurrenceIdCondition($query, 'not-an-occurrence-id'));
+        self::assertNull($this->callBuildOccurrenceIdCondition($query, '42-20260231000000'));
+    }
+
+    /**
+     * @dataProvider \Solspace\Tests\Unit\Calendar\Elements\Db\OccurrenceQueryTest::recurrenceIdProvider
+     */
+    public function testNormalizeRecurrenceId(mixed $value, ?string $expected): void
+    {
+        self::assertSame($expected, RecurrenceId::normalize($value));
+    }
+
+    public static function recurrenceIdProvider(): array
+    {
+        return [
+            'occurrence ID form' => ['20261014100000', '2026-10-14 10:00:00'],
+            'date and time' => ['2026-10-14 10:00:00', '2026-10-14 10:00:00'],
+            'ISO date and time' => ['2026-10-14T10:00', '2026-10-14 10:00:00'],
+            'offset is ignored, because recurrence IDs are floating' => ['2026-10-14T10:00:00+02:00', '2026-10-14 10:00:00'],
+            'date only' => ['2026-10-14', '2026-10-14 00:00:00'],
+            'date object' => [new Carbon('2026-10-14 10:00:00', 'UTC'), '2026-10-14 10:00:00'],
+            'impossible date' => ['20261332100000', null],
+            'not a date' => ['not a date', null],
+            'unsupported type' => [20261014, null],
+        ];
+    }
+
+    public function testGeneratedSlugMatchesCodeAndDay(): void
+    {
+        $condition = $this->callBuildSlugCondition('2026-10-14-fq4yk');
+
+        self::assertSame(
+            [
+                'and',
+                ['code' => 'fq4yk'],
+                ['>=', 'startDate', '2026-10-14 00:00:00'],
+                ['<', 'startDate', '2026-10-15 00:00:00'],
+            ],
+            \array_slice($condition, 0, 4),
+        );
+    }
+
+    public function testGeneratedSlugDoesNotMatchOccurrencesWithACustomSlug(): void
+    {
+        [$operator, $withoutOverride, [$notIn, $column, $customSlugs]] = $this->callBuildSlugCondition('2026-10-14-fq4yk')[4];
+
+        self::assertSame('or', $operator);
+        self::assertSame(['overrideId' => null], $withoutOverride);
+        self::assertSame(['not in', 'overrideId'], [$notIn, $column]);
+        self::assertInstanceOf(Query::class, $customSlugs);
+        self::assertContains(['elements_sites.siteId' => 3], $customSlugs->where);
+    }
+
+    public function testGeneratedSlugIsCaseInsensitive(): void
+    {
+        self::assertEquals(
+            $this->callBuildSlugCondition('2026-10-14-fq4yk'),
+            $this->callBuildSlugCondition(' 2026-10-14-FQ4YK '),
+        );
+    }
+
+    public function testCustomSlugMatchesTheOverridesSlugInTheSite(): void
+    {
+        $condition = $this->callBuildSlugCondition('guest-night');
+
+        self::assertSame(['overrideId'], array_keys($condition));
+        self::assertInstanceOf(Query::class, $condition['overrideId']);
+        self::assertContains(['elements_sites.slug' => 'guest-night'], $condition['overrideId']->where);
+        self::assertContains(['elements_sites.siteId' => 3], $condition['overrideId']->where);
+    }
+
+    public function testSlugsThatCantMatchAnything(): void
+    {
+        self::assertNull($this->callBuildSlugCondition('   '));
+        self::assertNull($this->callBuildSlugCondition('2026-02-30-fq4yk'));
+    }
+
+    public function testCodeFilterIsLowercased(): void
+    {
+        $query = $this->makeQuery()->code(' FQ4YK ');
+        $this->callApplyOccurrenceIdentityFilters($query);
+        self::assertSame(['code' => 'fq4yk'], $query->where);
+
+        $query = $this->makeQuery()->code(['FQ4YK', 'b7k2m']);
+        $this->callApplyOccurrenceIdentityFilters($query);
+        self::assertSame(['code' => ['fq4yk', 'b7k2m']], $query->where);
+    }
+
+    public function testCancelledFilter(): void
+    {
+        $all = $this->makeQuery();
+        $this->callApplyOccurrenceIdentityFilters($all);
+        self::assertNull($all->where);
+
+        $notCancelled = $this->makeQuery()->cancelled(false);
+        $this->callApplyOccurrenceIdentityFilters($notCancelled);
+        self::assertSame(['cancelled' => false], $notCancelled->where);
+    }
+
+    public function testRecurrenceIdFilterSkipsValuesThatCantMatch(): void
+    {
+        $query = $this->makeQuery()->recurrenceId(['20261014100000', 'not a date']);
+
+        $this->callApplyOccurrenceIdentityFilters($query);
+
+        self::assertSame(['or', ['recurrenceId' => '2026-10-14 10:00:00']], $query->where);
+    }
+
+    public function testFiltersMatchNothingWhenNoValueCanMatch(): void
+    {
+        $recurrenceId = $this->makeQuery()->recurrenceId('not a date');
+        $this->callApplyOccurrenceIdentityFilters($recurrenceId);
+        self::assertSame('0=1', $recurrenceId->where);
+
+        $slug = $this->makeQuery()->slug('2026-02-30-fq4yk');
+        $slug->setSiteId(3);
+        $this->callApplyOccurrenceIdentityFilters($slug);
+        self::assertSame('0=1', $slug->where);
     }
 
     #[DataProvider('orderByCustomFieldProvider')]
@@ -80,11 +201,64 @@ class OccurrenceQueryTest extends TestCase
         self::assertSame([$modelB, $modelC, $modelA], $models);
     }
 
+    public function testOrderByReadsStringsLikeYii(): void
+    {
+        self::assertSame(
+            ['startDate' => \SORT_DESC, 'title' => \SORT_ASC],
+            $this->makeQuery()->orderBy(' startDate DESC,title ')->orderBy,
+        );
+    }
+
+    public function testOrderByNormalizesArrays(): void
+    {
+        self::assertSame(
+            ['startDate' => \SORT_DESC, 'title' => \SORT_ASC, 'location' => \SORT_ASC],
+            $this->makeQuery()->orderBy(['startDate' => 'desc', 'title' => \SORT_ASC, 'location'])->orderBy,
+        );
+    }
+
+    /**
+     * @dataProvider rejectedOrderByProvider
+     */
+    public function testOrderByOnlyTakesColumnsAndFieldHandles(mixed $orderBy): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->makeQuery()->orderBy($orderBy);
+    }
+
+    public static function rejectedOrderByProvider(): array
+    {
+        return [
+            'subquery' => ['(SELECT SLEEP(5))'],
+            'function' => ['RAND()'],
+            'expression' => [new Expression('RAND()')],
+            'expression in a list' => [[new Expression('RAND()')]],
+            'qualified column' => [['elements.id' => \SORT_ASC]],
+            'unknown direction' => [['startDate' => 'sideways']],
+            'extra words' => ['startDate desc nulls first'],
+        ];
+    }
+
     private function callBuildOccurrenceIdCondition(OccurrenceQuery $query, string $value): ?array
     {
         $method = new \ReflectionMethod(OccurrenceQuery::class, 'buildOccurrenceIdCondition');
 
         return $method->invoke($query, $value);
+    }
+
+    private function callBuildSlugCondition(string $slug): ?array
+    {
+        $method = new \ReflectionMethod(OccurrenceQuery::class, 'buildSlugCondition');
+
+        return $method->invoke($this->makeQuery(), $slug, 3);
+    }
+
+    private function callApplyOccurrenceIdentityFilters(OccurrenceQuery $query): void
+    {
+        $method = new \ReflectionMethod(OccurrenceQuery::class, 'applyOccurrenceIdentityFilters');
+
+        $method->invoke($query);
     }
 
     private function makeQuery(): OccurrenceQuery

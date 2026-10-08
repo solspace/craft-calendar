@@ -32,6 +32,11 @@ class EventArguments extends ElementArguments
                     'type' => Type::listOf(Type::int()),
                     'description' => 'Load events specific to a calendar',
                 ],
+                'seriesId' => [
+                    'name' => 'seriesId',
+                    'type' => Type::listOf(Type::int()),
+                    'description' => 'Load the events of a series',
+                ],
                 'authorId' => [
                     'name' => 'authorId',
                     'type' => Type::listOf(Type::int()),

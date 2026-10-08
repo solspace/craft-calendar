@@ -4,17 +4,24 @@ namespace Solspace\Calendar\Controllers;
 
 use Carbon\Carbon;
 use craft\base\Element;
+use craft\helpers\UrlHelper;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Transformers\FullCalTransformer;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class ApiController extends BaseController
 {
+    /**
+     * Filters a feed request can add to its own range, calendars and site.
+     */
+    private const FEED_CRITERIA = ['cancelled', 'search', 'relatedTo'];
+
     protected array|bool|int $allowAnonymous = ['ics'];
 
     public function __construct(
@@ -63,8 +70,9 @@ class ApiController extends BaseController
         $calendars = $request->getParam('calendars');
         $siteId = $request->getParam('siteId');
         $criteria = $request->getParam('criteria', []);
-        if (!\is_array($criteria)) {
-            $criteria = [];
+        $criteria = \is_array($criteria) ? array_intersect_key($criteria, array_flip(self::FEED_CRITERIA)) : [];
+        if (isset($criteria['cancelled'])) {
+            $criteria['cancelled'] = filter_var($criteria['cancelled'], \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE);
         }
 
         $criteria = array_merge([
@@ -102,9 +110,21 @@ class ApiController extends BaseController
 
     public function actionCreateEvent(): Response
     {
+        return $this->createEvent();
+    }
+
+    public function actionPrepareEvent(): Response
+    {
+        $this->requirePostRequest();
+
+        return $this->createEvent(asDraft: true);
+    }
+
+    private function createEvent(bool $asDraft = false): Response
+    {
         $request = \Craft::$app->getRequest();
 
-        $scenario = match ($request->headers->get('X-Scenario')) {
+        $scenario = $asDraft ? Element::SCENARIO_ESSENTIALS : match ($request->headers->get('X-Scenario')) {
             'live' => Element::SCENARIO_LIVE,
             default => Element::SCENARIO_ESSENTIALS,
         };
@@ -127,7 +147,44 @@ class ApiController extends BaseController
         $event->title = $request->post('title');
         $event->allDay = (bool) $request->post('allDay');
 
-        $success = \Craft::$app->getElements()->saveElement($event);
+        if ($event->allDay) {
+            $event->endDate = DateHelper::allDayEndFromExclusive($event->startDate, $event->endDate);
+        }
+
+        $details = $request->post('details');
+        $validDetails = true;
+        if (null !== $details) {
+            if (!\is_array($details)) {
+                throw new BadRequestHttpException(Calendar::t('Invalid event details.'));
+            }
+
+            // Resolve handles on the server; only the selected calendar's mapped text fields are writable.
+            $mappedHandles = $calendar->getQuickCreateFieldHandles();
+            foreach ($mappedHandles as $key => $handle) {
+                if (!\array_key_exists($key, $details)) {
+                    continue;
+                }
+                if (!\is_string($details[$key])) {
+                    throw new BadRequestHttpException(Calendar::t('Invalid event details.'));
+                }
+                $event->setFieldValueFromRequest($handle, $details[$key]);
+            }
+
+            if ($mappedHandles && !$asDraft) {
+                // Validate the popup fields fully without requiring unrelated fields in the full editor.
+                $event->setScenario(Element::SCENARIO_LIVE);
+                $validDetails = $event->validate(array_map(static fn ($handle) => 'field:'.$handle, array_values($mappedHandles)));
+                $event->setScenario($scenario);
+            }
+        }
+
+        $success = $validDetails && ($asDraft
+            ? \Craft::$app->getDrafts()->saveElementAsDraft(
+                $event,
+                \Craft::$app->getUser()->getIdentity()->id,
+                markAsSaved: false,
+            )
+            : \Craft::$app->getElements()->saveElement($event));
 
         if (!$success) {
             $this->response->setStatusCode(400);
@@ -136,6 +193,10 @@ class ApiController extends BaseController
                 'message' => Calendar::t('Could not save event'),
                 'errors' => $event->getErrorSummary(true),
             ]);
+        }
+
+        if ($asDraft) {
+            return $this->asJson(['url' => UrlHelper::urlWithParams($event->getCpEditUrl(), ['fresh' => 1])]);
         }
 
         $transformer = new FullCalTransformer();

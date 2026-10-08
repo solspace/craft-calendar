@@ -1,15 +1,16 @@
 {% set displayStartDate = occurrence is defined ? occurrence.startDate : event.startDate %}
 {% set displayEndDate = occurrence is defined ? occurrence.endDate : event.endDate %}
 {% set displayAllDay = occurrence is defined ? occurrence.allDay : event.allDay %}
+{% set displayDuration = occurrence is defined ? occurrence.duration : event.duration %}
 {% set displayMultiDay = displayStartDate.format('Y-m-d') != displayEndDate.format('Y-m-d') %}
 
 <div class="qtip hidden">
     <div class="title">
-        {{ event.title }}
+        {{ occurrence is defined ? occurrence.content.title : event.title }}
         <span class="event_time">
             <span class="far fa-clock" aria-hidden="true"></span>
             {% if displayAllDay %}
-                All day{% if displayMultiDay %} ({{ event.duration.days }} days){% endif %}
+                All day{% if displayMultiDay %} ({{ displayDuration.days }} days){% endif %}
             {% elseif displayMultiDay %}
                 {% if day.containsDate(displayStartDate) %}
                     Starts {{ displayStartDate.format('g:ia') }}
@@ -18,10 +19,10 @@
                 {% else %}
                     All day
                 {% endif %}
-                ({{ event.duration.days }} days)
+                ({{ displayDuration.days }} days)
             {% else %}
                 {{ displayStartDate.format('g:ia') }} – {{ displayEndDate.format('g:ia') }}
-                ({{ event.duration.humanReadable }})
+                ({{ displayDuration.humanReadable }})
             {% endif %}
         </span>
     </div>

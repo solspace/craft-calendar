@@ -1,5 +1,6 @@
 {% for occurrence in occurrences %}
     {% set event = occurrence.event %}
+    {% set content = occurrence.content %}
 
     <li class="flex items-start gap-4 py-4{{ not loop.first ? ' border-t border-neutral-200 dark:border-neutral-800' }}">
         <time class="calendar-upcoming-date shrink-0 rounded-lg bg-white dark:bg-neutral-800 text-center py-1"
@@ -9,15 +10,15 @@
             <span class="block text-sm text-neutral-500 dark:text-neutral-400">{{ occurrence.startDate.format('Y') }}</span>
         </time>
         <div class="calendar-upcoming-info pt-1">
-            <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+            <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
                 class="font-semibold text-neutral-900 dark:text-neutral-100 no-underline hover:underline focus-visible:underline">
-                {{ event.title }}
+                {% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled, badge: true} only %}
             </a>
             <div class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                 <span class="far fa-clock" aria-hidden="true"></span>
-                {% if event.allDay %}
+                {% if occurrence.allDay %}
                     All day
-                {% elseif event.multiDay %}
+                {% elseif occurrence.multiDay %}
                     {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('M j, g:ia') }}
                 {% else %}
                     {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('g:ia') }}

@@ -1,0 +1,214 @@
+.calendar-occurrence-editor {
+  container-type: inline-size;
+}
+
+.calendar-occurrence-editor fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.calendar-occurrence-editor > .notice,
+.calendar-occurrence-editor > .warning {
+  margin: 0 0 24px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Times, cancellation and slug, above the fields */
+.calendar-occurrence-meta {
+  margin-bottom: 32px;
+}
+
+.calendar-occurrence-meta .field {
+  margin: 0;
+}
+
+.calendar-occurrence-editor .calendar-occurrence-meta > * + * {
+  margin-top: 24px;
+}
+
+.calendar-occurrence-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+  align-items: flex-start;
+}
+
+.calendar-occurrence-date-time-heading {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.calendar-occurrence-date-time-heading h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.calendar-occurrence-meta .heading {
+  margin-bottom: 10px;
+}
+
+.calendar-occurrence-meta .instructions {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.calendar-occurrence-meta .calendar-occurrence-date-time > .instructions {
+  margin: 8px 0 12px;
+}
+
+.calendar-occurrence-status,
+.calendar-occurrence-identity,
+.calendar-occurrence-reset {
+  padding-top: 24px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.calendar-occurrence-editor .calendar-occurrence-times,
+.calendar-occurrence-editor .calendar-occurrence-inherited-times {
+  padding: 20px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--large-border-radius, 5px);
+}
+
+.calendar-occurrence-editor .calendar-occurrence-inherited-times {
+  border-style: dashed;
+}
+
+.calendar-occurrence-inherited-times input.text {
+  color: var(--light-text-color, #606d7b);
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.calendar-occurrence-times.is-all-day .timewrapper,
+.calendar-occurrence-inherited-times.is-all-day .timewrapper {
+  display: none;
+}
+
+.calendar-occurrence-date-time .field:not(.calendar-occurrence-all-day) {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.calendar-occurrence-all-day {
+  min-width: 72px;
+}
+
+.calendar-occurrence-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(80px, 140px);
+}
+
+.calendar-occurrence-identity input.text {
+  width: 100%;
+}
+
+.calendar-occurrence-code .input {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.calendar-occurrence-code code {
+  display: inline-block;
+  padding: 3px 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--small-border-radius, 3px);
+}
+
+.calendar-occurrence-reset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: center;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.calendar-occurrence-field {
+  width: 100%;
+}
+
+.calendar-occurrence-editor > .flex-fields {
+  row-gap: 32px;
+}
+
+.calendar-occurrence-field > .calendar-occurrence-field-own > .field,
+.calendar-occurrence-field > .calendar-occurrence-field-inherited > .field {
+  margin: 0;
+}
+
+.calendar-occurrence-field > .calendar-occurrence-field-own > .field > .heading,
+.calendar-occurrence-field > .calendar-occurrence-field-inherited > .field > .heading {
+  margin-bottom: 10px;
+}
+
+/* The toggle sits at the end of the field's heading */
+.calendar-occurrence-field-toggle {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+  padding-inline-start: 16px;
+  margin-inline-start: auto;
+}
+
+.calendar-occurrence-editor .calendar-occurrence-field-toggle > label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--light-text-color, #606d7b);
+  cursor: pointer;
+}
+
+.calendar-occurrence-field-inherited .read-only-badge {
+  display: none;
+}
+
+/* The event's values are shown read-only, so they shouldn't look like inputs */
+.calendar-occurrence-field-inherited > .field > .input {
+  color: var(--light-text-color, #606d7b);
+}
+
+.calendar-occurrence-field-inherited > .field > .input :is(input.text, textarea) {
+  background-color: transparent;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.calendar-occurrence-field[data-calendar-copied-on-save] > .calendar-occurrence-field-own .notice {
+  margin-bottom: 8px;
+}
+
+@container (min-width: 760px) {
+  .calendar-occurrence-date-time .calendar-occurrence-meta-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  }
+}
+
+@container (max-width: 520px) {
+  .calendar-occurrence-editor .calendar-occurrence-times,
+  .calendar-occurrence-editor .calendar-occurrence-inherited-times {
+    padding: 16px;
+  }
+
+  .calendar-occurrence-meta-row {
+    column-gap: 20px;
+  }
+
+  .calendar-occurrence-identity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

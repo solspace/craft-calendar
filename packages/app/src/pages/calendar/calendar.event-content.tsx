@@ -1,3 +1,4 @@
+import translate from "@cal/utils/translations";
 import type { EventApi, EventContentArg } from "@fullcalendar/core/index.js";
 import clsx from "clsx";
 import { isCreateDraftEvent, isCreateDraftEventClickTarget } from "./calendar.create-session";
@@ -36,6 +37,10 @@ export const getCalendarEventClassNames = ({ event }: { event: EventApi }): stri
     classNames.push("fc-event-disabled");
   }
 
+  if (event.extendedProps?.cancelled) {
+    classNames.push("fc-event-cancelled");
+  }
+
   const contrastColorClass = getCalendarContrastColorClass(event.textColor);
   if (contrastColorClass) {
     classNames.push(contrastColorClass);
@@ -67,6 +72,24 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
   );
 
   const isLink = !isCreateDraftEvent(event) && event.url;
+  const isCancelled = Boolean(event.extendedProps?.cancelled);
+  const isEdited = !isCancelled && Boolean(event.extendedProps?.isEdited);
+
+  // The pencil isn't part of the title screen readers announce
+  const editedFlag = isEdited ? (
+    <span
+      className="fc-event-flag"
+      title={translate("This occurrence has its own changes.")}
+      aria-hidden="true"
+    >
+      ✎
+    </span>
+  ) : null;
+
+  // The strikethrough alone isn't announced
+  const cancelledLabel = isCancelled ? (
+    <span className="visually-hidden">, {translate("Cancelled")}</span>
+  ) : null;
 
   const titleContent = isLink ? (
     <button
@@ -75,10 +98,16 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
       className={titleClassName}
       data-calendar-event-title-link
     >
+      {editedFlag}
       {event.title}
+      {cancelledLabel}
     </button>
   ) : (
-    <div className={titleClassName}>{event.title}</div>
+    <div className={titleClassName}>
+      {editedFlag}
+      {event.title}
+      {cancelledLabel}
+    </div>
   );
 
   if (isMonthSingleDayTimedEvent(arg)) {

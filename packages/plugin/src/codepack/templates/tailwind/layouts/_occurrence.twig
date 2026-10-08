@@ -1,29 +1,30 @@
 {% set event = occurrence.event %}
+{% set content = occurrence.content %}
 {% set classes = "" %}
-{% set classes = classes ~ (event.allDay ? " all_day") %}
-{% if event.multiDay %}
+{% set classes = classes ~ (occurrence.allDay ? " all_day") %}
+{% if occurrence.multiDay %}
     {% set classes = classes ~ " multi_day" %}
     {% set classes = classes ~ (day.containsDate(occurrence.startDate) ? " first_day") %}
     {% set classes = classes ~ (day.containsDate(occurrence.endDate) ? " last_day") %}
 {% endif %}
 
-<div class="event tips{{ event.multiDay ? '' : ' calendar-agenda-event' }}{{ classes }}"
+<div class="event tips{{ occurrence.multiDay ? '' : ' calendar-agenda-event' }}{{ classes }}"
     style="--calendar-color: {{ event.calendar.color }}; --calendar-surface: {{ event.calendar.lighterColor }}; --calendar-contrast: {{ event.calendar.contrastColor }};">
-    {% if event.multiDay %}
-        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
-            data-calendar-popover data-calendar-color="{{ event.calendar.color }}" aria-label="{{ event.title }}">
+    {% if occurrence.multiDay %}
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
+            data-calendar-popover data-calendar-color="{{ event.calendar.color }}" aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}">
             {% if day.containsDate(occurrence.startDate) %}
-                {{ event.title }}
+                {% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}
             {% else %}
                 &nbsp;
             {% endif %}
         </a>
     {% else %}
-        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.startDate.format('Y/m/d') }}{% endif %}"
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
             data-calendar-popover data-calendar-color="{{ event.calendar.color }}">
-            {{ event.title }}
+            {% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}
         </a>
-        {% if not event.allDay %}
+        {% if not occurrence.allDay %}
             <span class="event-time">{{ occurrence.startDate.format('g:ia') }}</span>
         {% endif %}
     {% endif %}

@@ -9,7 +9,10 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
+use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\PropagationMethod;
 use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\helpers\Cp;
@@ -28,12 +31,14 @@ use Solspace\Calendar\Elements\Actions\DeleteEventAction;
 use Solspace\Calendar\Elements\Actions\SetStatusAction;
 use Solspace\Calendar\Elements\conditions\EventCondition;
 use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Elements\Db\OccurrenceOverrideQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
 use Solspace\Calendar\Library\Duration\EventDuration;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\RRule\EventRecurrenceValidator;
+use Solspace\Calendar\Library\RRule\RRuleParser;
 use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
 use Solspace\Calendar\Models\CalendarModel;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -69,7 +74,29 @@ class Event extends Element implements \JsonSerializable
         'until',
     ];
 
+    /**
+     * What the event builder posts for the schedule. `startDate` and `endDate` are older names for `start` and `end`.
+     */
+    private const SCHEDULE_PARAMS = [
+        'start',
+        'startDate',
+        'end',
+        'endDate',
+        'until',
+        'timezone',
+        'allDay',
+        'repeatType',
+        'repeatEndType',
+        'rrule',
+    ];
+
     public ?int $calendarId = null;
+
+    /**
+     * Shared by the parts of a split event, so each part can find the others. Null for an event that was never split.
+     * Only splitting sets it: saving an event doesn't write it, so drafts and copies of an event can't change it.
+     */
+    public ?int $seriesId = null;
     public ?int $authorId = null;
     public ?string $username = null;
     public ?string $name = null;
@@ -90,7 +117,14 @@ class Event extends Element implements \JsonSerializable
     public ?int $interval = null;
     public ?int $count = null;
 
-    private bool $syncFromRequestOnSave = true;
+    private ?int $scheduleShift = null;
+
+    private ?NestedElementManager $occurrenceOverrideManager = null;
+
+    /**
+     * @var null|ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery
+     */
+    private ElementCollection|OccurrenceOverrideQuery|null $occurrenceOverrides = null;
 
     private ?int $persistedCalendarId = null;
 
@@ -136,6 +170,14 @@ class Event extends Element implements \JsonSerializable
         if ($this->endDate) {
             $this->endDateLocalized = new Carbon($this->endDate->toDateTimeString());
         }
+    }
+
+    public function __clone()
+    {
+        parent::__clone();
+
+        $this->occurrenceOverrideManager = null;
+        $this->occurrenceOverrides = null;
     }
 
     public function canCreateDrafts(User $user): bool
@@ -420,18 +462,7 @@ class Event extends Element implements \JsonSerializable
 
     public function isMultiDay(): bool
     {
-        $startDate = $this->getStartDate();
-        $endDate = $this->getEndDate();
-
-        $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
-        if ($diffInDays > 1) {
-            return true;
-        }
-
-        $threshold = $this->getOverlapThreshold();
-        $dateBeforeOverlap = DateHelper::isDateBeforeOverlap($this->getEndDate(), $threshold);
-
-        return $diffInDays === 1 && !$dateBeforeOverlap;
+        return DateHelper::isMultiDay($this->getStartDate(), $this->getEndDate(), $this->getOverlapThreshold());
     }
 
     public function isCurrentlyHappening(): bool
@@ -475,13 +506,16 @@ class Event extends Element implements \JsonSerializable
     {
         $rrule = $this->getRRuleObject();
 
-        return $rrule?->getOccurrencesBetween($rangeStart, $rangeEnd, self::MAX_OCCURRENCES) ?? [];
+        return $rrule?->getOccurrencesBetween(
+            $rangeStart ? DateHelper::parseFloatingCarbon($rangeStart) : null,
+            $rangeEnd ? DateHelper::parseFloatingCarbon($rangeEnd) : null,
+            self::MAX_OCCURRENCES,
+        ) ?? [];
     }
 
     public function happensOn(\DateTime $date): bool
     {
-        $date = Carbon::createFromInterface($date);
-        $date->setTime(0, 0);
+        $date = DateHelper::parseFloatingCarbon($date)->setTime(0, 0);
 
         $rrule = $this->getRRuleObject();
         if (null !== $rrule) {
@@ -613,7 +647,7 @@ class Event extends Element implements \JsonSerializable
             return null;
         }
 
-        return RRule::createFromRfcString($this->rrule, true);
+        return RRuleParser::parse($this->rrule);
     }
 
     public function getReadableRepeatRule(): ?string
@@ -652,56 +686,66 @@ class Event extends Element implements \JsonSerializable
 
         $this->updateTitle();
 
-        if (!$this->syncFromRequestOnSave) {
-            if (!$this->timezone || '' === trim((string) $this->timezone)) {
-                $this->timezone = \Craft::$app->getTimeZone();
-            }
-
-            return true;
+        // A draft made with "Edit this and following" splits its event as it's applied
+        if ($this->updatingFromDerivative && !$this->propagating && $this->duplicateOf instanceof self) {
+            Calendar::getInstance()->series->splitForDraft($this, $this->duplicateOf);
         }
 
-        $request = \Craft::$app->getRequest();
-
-        $timezone = $request->getBodyParam('timezone', $this->timezone);
-        if (!\is_string($timezone) || '' === trim($timezone)) {
-            $timezone = \Craft::$app->getTimeZone();
+        if (!$this->timezone || '' === trim((string) $this->timezone)) {
+            $this->timezone = \Craft::$app->getTimeZone();
         }
-        $timezone = trim((string) $timezone);
-
-        $start = $this->bodyParamToCarbon('start', $this->startDate, 'startDate', $timezone);
-        $end = $this->bodyParamToCarbon('end', $this->endDate, 'endDate', $timezone);
-        $until = $this->bodyParamToCarbon('until', $this->until, null, $timezone);
-        if ('' === $request->getBodyParam('until')) {
-            $until = null;
-        }
-
-        $allDay = (bool) $request->getBodyParam('allDay', $this->allDay);
-
-        $repeatType = $request->getBodyParam('repeatType', $this->repeatType);
-        $repeatEndType = $request->getBodyParam('repeatEndType', $this->repeatEndType);
-        $rrule = $request->getBodyParam('rrule', $this->rrule);
-        if (\is_string($rrule)) {
-            $rrule = self::normalizeRRule($rrule, $allDay);
-        }
-
-        $this->startDate = $start;
-        $this->endDate = $end;
-        $this->until = $until;
-        $this->timezone = $timezone;
-        $this->allDay = $allDay;
-
-        $this->repeatType = $repeatType;
-        $this->repeatEndType = $repeatEndType;
-        $this->rrule = $rrule;
 
         return true;
     }
 
-    public function disableRequestSyncOnSave(): self
+    /**
+     * Craft passes the editor's posted values here when it saves the event, saves a draft of it or applies one.
+     * Saves made any other way, like moving an occurrence in the calendar, never read the schedule from the request.
+     */
+    public function setAttributesFromRequest(array $values): void
     {
-        $this->syncFromRequestOnSave = false;
+        $schedule = array_intersect_key($values, array_flip(self::SCHEDULE_PARAMS));
 
-        return $this;
+        parent::setAttributesFromRequest(array_diff_key($values, $schedule));
+        $this->setScheduleFromRequest($schedule);
+    }
+
+    /**
+     * Sets the schedule from what the event builder posts: `start`, `end`, `until`, `timezone`, `allDay`,
+     * `repeatType`, `repeatEndType` and `rrule`. Anything not posted keeps its current value.
+     */
+    public function setScheduleFromRequest(array $values): void
+    {
+        if (!$values) {
+            return;
+        }
+
+        $timezone = $values['timezone'] ?? $this->timezone;
+        $this->timezone = \is_string($timezone) && '' !== trim($timezone) ? trim($timezone) : \Craft::$app->getTimeZone();
+
+        $this->startDate = self::parseScheduleDate($values['start'] ?? null) ?? self::parseScheduleDate($values['startDate'] ?? null) ?? $this->startDate;
+        $this->endDate = self::parseScheduleDate($values['end'] ?? null) ?? self::parseScheduleDate($values['endDate'] ?? null) ?? $this->endDate;
+        $this->until = '' === ($values['until'] ?? null) ? null : self::parseScheduleDate($values['until'] ?? null) ?? $this->until;
+        $this->allDay = (bool) ($values['allDay'] ?? $this->allDay);
+        $this->repeatType = $values['repeatType'] ?? $this->repeatType;
+        $this->repeatEndType = $values['repeatEndType'] ?? $this->repeatEndType;
+
+        $rrule = $values['rrule'] ?? $this->rrule;
+        $this->rrule = \is_string($rrule) ? self::normalizeRRule($rrule, $this->allDay) : $rrule;
+    }
+
+    /**
+     * Marks the whole schedule as moved by a known distance, like dragging the series in the calendar does.
+     * Saving then moves the edited occurrences and occurrence codes along, instead of comparing schedules.
+     */
+    public function setScheduleShift(?int $seconds): void
+    {
+        $this->scheduleShift = $seconds;
+    }
+
+    public function getScheduleShift(): ?int
+    {
+        return $this->scheduleShift;
     }
 
     public function afterSave(bool $isNew): void
@@ -735,6 +779,11 @@ class Event extends Element implements \JsonSerializable
             ;
         }
 
+        // A copy of a draft made with "Edit this and following" still splits the event when it's applied
+        if ($isNew && !$this->propagating && $this->duplicateOf instanceof self && $this->getIsDraft()) {
+            Calendar::getInstance()->series->copySplitAt($this->duplicateOf, $this);
+        }
+
         parent::afterSave($isNew);
 
         $this->persistedCalendarId = $this->calendarId;
@@ -746,6 +795,80 @@ class Event extends Element implements \JsonSerializable
     public function getFieldLayout(): ?FieldLayout
     {
         return $this->getCalendar()->getFieldLayout();
+    }
+
+    /**
+     * Overrides of single occurrences belong to their event, so Craft carries them through
+     * drafts, duplication, deletion and restoring along with it.
+     */
+    public function getOccurrenceOverrideManager(): NestedElementManager
+    {
+        return $this->occurrenceOverrideManager ??= new NestedElementManager(
+            OccurrenceOverride::class,
+            static fn (self $owner) => $owner->createOccurrenceOverrideQuery(),
+            [
+                'attribute' => 'occurrenceOverrides',
+                'propagationMethod' => PropagationMethod::All,
+                'valueGetter' => static fn (self $owner) => $owner->getOccurrenceOverrides(),
+                'valueSetter' => static function (ElementCollection|OccurrenceOverrideQuery $value, self $owner): void {
+                    $owner->occurrenceOverrides = $value;
+                },
+            ],
+        );
+    }
+
+    /**
+     * @return ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery
+     */
+    public function getOccurrenceOverrides(): ElementCollection|OccurrenceOverrideQuery
+    {
+        return $this->occurrenceOverrides ??= $this->createOccurrenceOverrideQuery();
+    }
+
+    /**
+     * Sets the overrides that duplicating this event copies. Null loads them from the database again.
+     *
+     * @param null|ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery $value
+     */
+    public function setOccurrenceOverrides(ElementCollection|OccurrenceOverrideQuery|null $value): void
+    {
+        $this->occurrenceOverrides = $value;
+    }
+
+    /**
+     * Every event in this event's series, in order. An event that was never split is a series of one.
+     *
+     * @return self[]
+     */
+    public function getSeries(): array
+    {
+        return Calendar::getInstance()->series->findParts($this)?->all() ?? [$this];
+    }
+
+    public function afterPropagate(bool $isNew): void
+    {
+        $this->getOccurrenceOverrideManager()->maintainNestedElements($this, $isNew);
+
+        parent::afterPropagate($isNew);
+    }
+
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Before the event is gone, because its ownership rows go with it
+        $this->getOccurrenceOverrideManager()->deleteNestedElements($this, $this->hardDelete);
+
+        return true;
+    }
+
+    public function afterRestore(): void
+    {
+        $this->getOccurrenceOverrideManager()->restoreNestedElements($this);
+
+        parent::afterRestore();
     }
 
     public function builderConfig(): array
@@ -772,6 +895,19 @@ class Event extends Element implements \JsonSerializable
                 'repeatType' => $this->repeatType,
                 'repeatEndType' => $this->repeatEndType,
                 'rrule' => $this->rrule,
+            ],
+            // Lists the event's edited occurrences; the editor may move on to a draft's ID later
+            'context' => [
+                'eventId' => $this->id,
+                'siteId' => $this->siteId,
+                'splitAt' => $plugin->series->getSplitAt($this)?->timestamp,
+                'series' => array_map(
+                    static fn (?self $part) => $part ? [
+                        'url' => $part->getCpEditUrl(),
+                        'start' => $part->startDate->timestamp,
+                    ] : null,
+                    $plugin->series->getNeighbours($this),
+                ),
             ],
         ];
     }
@@ -842,8 +978,23 @@ class Event extends Element implements \JsonSerializable
         $rules[] = [['startDate'], 'validateDates'];
         $rules[] = [['startDate', 'endDate'], 'required'];
         $rules[] = [['rrule'], 'validateRecurrence', 'skipOnEmpty' => false];
+        $rules[] = [['startDate'], 'validateSeriesOverlap', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
 
         return $rules;
+    }
+
+    /**
+     * Each part of a series covers its own stretch of time. A draft started before the event was split
+     * would otherwise bring back occurrences the earlier part has now.
+     */
+    public function validateSeriesOverlap(): void
+    {
+        $part = Calendar::getInstance()->series->findOverlappingPart($this);
+        if ($part) {
+            $this->addError('startDate', Calendar::t('The schedule overlaps “{title}”, another part of this event’s series.', [
+                'title' => $part->title,
+            ]));
+        }
     }
 
     public function validateRecurrence(): void
@@ -1341,38 +1492,32 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function bodyParamToCarbon(
-        string $name,
-        ?Carbon $fallback = null,
-        ?string $fallbackName = null,
-        ?string $timezone = null,
-    ): ?Carbon {
-        $request = \Craft::$app->getRequest();
-        $value = $request->getBodyParam($name);
-
-        if ((null === $value || '' === $value) && null !== $fallbackName) {
-            $value = $request->getBodyParam($fallbackName);
+    /**
+     * Dates are posted as strings or as Craft's `date`/`time` pairs. Returns null for anything else.
+     */
+    private static function parseScheduleDate(mixed $value): ?Carbon
+    {
+        if (\is_array($value)) {
+            $value = trim(($value['date'] ?? '').' '.($value['time'] ?? ''));
         }
 
         if (null === $value || '' === $value) {
-            return $fallback;
-        }
-
-        if (\is_array($value)) {
-            $date = (string) ($value['date'] ?? '');
-            $time = (string) ($value['time'] ?? '');
-            $value = trim($date.' '.$time);
-
-            if ('' === $value) {
-                return $fallback;
-            }
+            return null;
         }
 
         try {
             return DateHelper::parseFloatingCarbon($value);
         } catch (\Throwable) {
-            return $fallback;
+            return null;
         }
+    }
+
+    private function createOccurrenceOverrideQuery(): OccurrenceOverrideQuery
+    {
+        return OccurrenceOverride::find()
+            ->owner($this)
+            ->orderBy(['calendar_occurrence_overrides.recurrenceId' => \SORT_ASC])
+        ;
     }
 
     private function getOverlapThreshold(): int

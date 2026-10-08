@@ -2,26 +2,32 @@ import { datePickerTheme } from "@cal/components/controls/date-picker/date-picke
 import styled from "styled-components";
 
 export const FixedDatesSection = styled.div`
-  padding-top: 18px;
+  padding-top: 16px;
   width: 100%;
 `;
 
 export const SectionHeading = styled.div`
-  margin: 0 0 6px 0;
-  padding: 0;
-  color: var(--gray-700);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  && {
+    margin: 0 0 3px;
+    padding: 0;
+    color: var(--gray-700);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 18px;
+  }
 `;
 
 export const SectionInstructions = styled.p`
-  margin: 0 0 6px 0;
-  padding: 0;
-  color: var(--gray-700);
-  font-size: 13px;
-  font-weight: 400;
+  && {
+    margin: 0 0 8px;
+    padding: 0;
+    color: var(--gray-600);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+  }
 `;
 
 export const FixedDatesToolbar = styled.div`

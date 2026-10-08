@@ -17,7 +17,14 @@ type Props = {
   datePickerProps?: Omit<DatePickerProps, "onChange">;
 } & ControlProps;
 
-export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerProps }) => {
+export const DatePicker: FC<Props> = ({
+  value,
+  onChange,
+  label,
+  id,
+  required,
+  datePickerProps,
+}) => {
   const [date, setDate] = useState<Date | null>(
     value !== null ? utcTimestampToLocalDisplayDate(value) : null,
   );
@@ -27,12 +34,14 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
   }, [value]);
 
   return (
-    <Control label={label} id={id} style={{ margin: 0 }}>
+    <Control label={label} id={id} required={required} style={{ margin: 0 }}>
       <DatePickerWrapper>
         {/* @ts-ignore cannot get the types to work well when passing props */}
         <DatePickerControl
           {...getDatePickerTranslations()}
           {...datePickerProps}
+          id={id ?? datePickerProps?.id}
+          ariaRequired={required ? "true" : undefined}
           wrapperClassName="fullwidth"
           className="text fullwidth"
           selected={date}

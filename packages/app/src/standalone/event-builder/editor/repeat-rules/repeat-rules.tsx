@@ -118,6 +118,7 @@ export const RepeatRules: FC = () => {
               value={until || null}
               onChange={(value) => dispatch(eventActions.setUntil(value))}
               datePickerProps={{
+                dateFormat,
                 showTimeInput: false,
                 showMonthDropdown: true,
                 showYearDropdown: true,

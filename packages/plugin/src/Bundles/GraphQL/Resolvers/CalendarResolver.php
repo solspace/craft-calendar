@@ -2,19 +2,20 @@
 
 namespace Solspace\Calendar\Bundles\GraphQL\Resolvers;
 
-use craft\elements\Entry;
+use craft\base\ElementInterface;
 use craft\gql\base\Resolver;
 use GraphQL\Type\Definition\ResolveInfo;
 use Solspace\Calendar\Bundles\GraphQL\GqlPermissions;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\OccurrenceContent;
 
 class CalendarResolver extends Resolver
 {
     public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): array
     {
-        // If this field is being resolved on an Entry, use the entry's actual field value.
-        if ($source instanceof Entry) {
+        // If this field is being resolved on an element or an occurrence's content, use the actual field value.
+        if ($source instanceof ElementInterface || $source instanceof OccurrenceContent) {
             if ([] === GqlPermissions::allowedCalendarUids()) {
                 return [];
             }
@@ -54,8 +55,8 @@ class CalendarResolver extends Resolver
 
     public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        // If this field is being resolved on an Entry, use the entry's actual field value.
-        if ($source instanceof Entry) {
+        // If this field is being resolved on an element or an occurrence's content, use the actual field value.
+        if ($source instanceof ElementInterface || $source instanceof OccurrenceContent) {
             if ([] === GqlPermissions::allowedCalendarUids()) {
                 return null;
             }
@@ -85,7 +86,7 @@ class CalendarResolver extends Resolver
             return null;
         }
 
-        // Fallback for top-level queries where there's no Entry $source
+        // Fallback for top-level queries where there's no element or content $source
         $arguments = self::applyCalendarPermissions($arguments);
         if (false === $arguments) {
             return null; // NONE allowed
