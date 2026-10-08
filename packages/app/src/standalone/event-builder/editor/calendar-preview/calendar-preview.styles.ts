@@ -50,6 +50,16 @@ export const CalendarPreviewWrapper = styled.div`
     max-width: 260px;
     color: var(--gray-600);
 
+    .cancelled-date-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
     .fc-scrollgrid,
     th,
     td {
@@ -181,6 +191,15 @@ export const CalendarPreviewWrapper = styled.div`
             color: var(--gray-600);
           }
 
+          &.fc-cancelled-date {
+            background-color: var(--yellow-050);
+
+            .fc-daygrid-day-number {
+              color: var(--yellow-700);
+              text-decoration: line-through;
+            }
+          }
+
           div.fc-daygrid-day-frame {
             display: flex;
             align-items: center;
@@ -294,5 +313,25 @@ export const DateItem = styled.li`
     align-items: center;
     flex: 0 0 auto;
     gap: 0;
+  }
+
+  .occurrence-date {
+    display: flex;
+    flex-direction: column;
+    line-height: 18px;
+  }
+
+  &.is-cancelled {
+    background-color: var(--yellow-050);
+
+    .occurrence-date > span:first-child {
+      color: var(--gray-600);
+      text-decoration: line-through;
+    }
+
+    .occurrence-state {
+      color: var(--yellow-700);
+      font-size: 11px;
+    }
   }
 `;

@@ -5,6 +5,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { EditedOccurrence } from "../../edited-occurrences/edited-occurrences";
 import { getDraftEventId } from "../../occurrence-editor";
 import { createEventBuilderStore } from "../../store/store";
 import { CalendarPreview } from "./calendar-preview";
@@ -28,6 +29,7 @@ describe("calendar preview rendering", () => {
     eventId: number | null,
     rrule = true,
     formats?: DateFormats,
+    editedOccurrences?: EditedOccurrence[],
   ) => {
     const now = new Date();
     const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 10, 30) / 1000;
@@ -48,13 +50,56 @@ describe("calendar preview rendering", () => {
     await act(async () => {
       root.render(
         <Provider store={store}>
-          <CalendarPreview context={{ eventId, siteId: 2 }} onOccurrenceSaved={onOccurrenceSaved} />
+          <CalendarPreview
+            context={{ eventId, siteId: 2 }}
+            onOccurrenceSaved={onOccurrenceSaved}
+            editedOccurrences={editedOccurrences}
+          />
         </Provider>,
       );
     });
 
     return { start, onOccurrenceSaved };
   };
+
+  const makeCancellation = (start: number, orphaned = false): EditedOccurrence => ({
+    recurrenceId: new Date(start * 1000).toISOString().slice(0, 19).replace("T", " "),
+    start,
+    end: start + 3600,
+    allDay: false,
+    title: null,
+    changes: [],
+    cancelled: true,
+    orphaned,
+  });
+
+  it("marks a cancelled occurrence in the grid and date list, and clears it after reset", async () => {
+    const { start } = await renderEditablePreview(12);
+    await renderEditablePreview(12, true, undefined, [makeCancellation(start)]);
+
+    expect(container.querySelectorAll(".fc-cancelled-date")).toHaveLength(1);
+    expect(container.querySelector(".fc-cancelled-date [title]")?.getAttribute("title")).toBe(
+      "Cancelled",
+    );
+    expect(container.querySelector("li.is-cancelled")?.textContent).toContain("Cancelled");
+    expect(container.querySelector("li.is-cancelled .occurrence-edit")).not.toBeNull();
+
+    await renderEditablePreview(12, true, undefined, []);
+
+    expect(container.querySelector(".fc-cancelled-date")).toBeNull();
+    expect(container.querySelector("li.is-cancelled")).toBeNull();
+  });
+
+  it("does not mark orphaned cancellations or a different scheduled time on the same date", async () => {
+    const { start } = await renderEditablePreview(12);
+    await renderEditablePreview(12, true, undefined, [
+      makeCancellation(start, true),
+      makeCancellation(start + 3600),
+    ]);
+
+    expect(container.querySelector(".fc-cancelled-date")).toBeNull();
+    expect(container.querySelector("li.is-cancelled")).toBeNull();
+  });
 
   it("uses Craft's year-first formatting pattern for occurrence labels", async () => {
     const { start } = await renderEditablePreview(12, true, {

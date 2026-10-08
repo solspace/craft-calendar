@@ -92,13 +92,13 @@ describe("event editor date formats", () => {
         json: async () => ({
           occurrences: [
             {
-              recurrenceId: stamp,
+              recurrenceId: new Date(start * 1000).toISOString().slice(0, 19).replace("T", " "),
               start,
               end: start + 3600,
               allDay: false,
               title: "Customized title",
               changes: ["Title"],
-              cancelled: false,
+              cancelled: true,
               orphaned: false,
             },
           ],
@@ -144,6 +144,10 @@ describe("event editor date formats", () => {
       await act(async () => onSave());
 
       expect(container.textContent).toContain("Customized title");
+      expect(container.querySelector(".fc-cancelled-date")).not.toBeNull();
+      expect(container.querySelector("li.is-cancelled .occurrence-state")?.textContent).toBe(
+        "Cancelled",
+      );
       expect(fetch.mock.calls[1][0].searchParams.get("eventId")).toBe("34");
     } finally {
       await act(async () => root.unmount());

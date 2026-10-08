@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import type { FC } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import type { EditedOccurrence } from "../../edited-occurrences/edited-occurrences";
 import { OccurrenceActionButton } from "../../occurrence-action.styles";
 import { getDraftEventId } from "../../occurrence-editor";
 import type { BuilderContext } from "../../types";
@@ -45,9 +46,10 @@ const MAX_OCCURRENCES = 8;
 type Props = {
   context?: BuilderContext;
   onOccurrenceSaved?: () => void;
+  editedOccurrences?: EditedOccurrence[];
 };
 
-export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
+export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedOccurrences }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isOpeningOccurrence, setIsOpeningOccurrence] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
@@ -63,6 +65,22 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
   } | null>(null);
 
   const previewRecurrence = useMemo(() => buildPreviewRecurrence(rrule, start), [rrule, start]);
+
+  const cancelledRecurrenceIds = useMemo(
+    () =>
+      new Set(
+        editedOccurrences
+          ?.filter((occurrence) => occurrence.cancelled && !occurrence.orphaned)
+          .map((occurrence) => occurrence.recurrenceId.replace(" ", "T")),
+      ),
+    [editedOccurrences],
+  );
+
+  const isCancelledDate = (date: Date): boolean => {
+    const recurrenceId = getOccurrenceRecurrenceId(previewRecurrence, date);
+
+    return recurrenceId !== null && cancelledRecurrenceIds.has(recurrenceId);
+  };
 
   const events = useMemo(
     () => buildPreviewEvents(previewRecurrence, viewRange),
@@ -208,7 +226,19 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
                   status.full ? "fc-has-event" : "",
                   status.rdate ? "fc-extra-date" : "",
                   status.excluded ? "fc-excluded-date" : "",
+                  isCancelledDate(info.date) ? "fc-cancelled-date" : "",
                 ].filter(Boolean);
+              }}
+              dayCellContent={(info) => {
+                const cancelled = isCancelledDate(info.date);
+                const label = cancelled ? translate("Cancelled") : undefined;
+
+                return (
+                  <span title={label}>
+                    {info.dayNumberText}
+                    {cancelled && <span className="cancelled-date-label">, {label}</span>}
+                  </span>
+                );
               }}
               dateClick={(info) => handleDateClick(info.date)}
             />
@@ -229,6 +259,7 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
               <DateList $count={upcomingOccurrences.length}>
                 {upcomingOccurrences.map((timestamp) => {
                   const occurrenceDate = new Date(timestamp * 1000);
+                  const cancelled = isCancelledDate(occurrenceDate);
                   const date = format(utcToLocalDisplayDate(occurrenceDate), dateFormat, {
                     locale: getDateLocale(),
                   });
@@ -244,8 +275,16 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
                   );
 
                   return (
-                    <DateItem key={utcDateKey(occurrenceDate)}>
-                      <span>{date}</span>
+                    <DateItem
+                      key={utcDateKey(occurrenceDate)}
+                      className={cancelled ? "is-cancelled" : undefined}
+                    >
+                      <span className="occurrence-date">
+                        <span>{date}</span>
+                        {cancelled && (
+                          <span className="occurrence-state">{translate("Cancelled")}</span>
+                        )}
+                      </span>
                       <div className="occurrence-actions">
                         {recurrenceId && (
                           <OccurrenceActionButton

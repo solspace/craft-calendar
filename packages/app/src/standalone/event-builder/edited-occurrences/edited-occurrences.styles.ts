@@ -33,46 +33,48 @@ export const EditedOccurrenceItem = styled.li`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
-    "title actions"
-    "date actions"
+    "details actions"
     "changes actions";
   align-items: center;
-  gap: 2px 12px;
+  gap: 4px 12px;
   margin: 0;
-  padding: 8px 0;
+  padding: 10px 0;
   line-height: 18px;
 
   &:not(:last-child) {
     border-bottom: 1px solid var(--gray-200);
   }
 
-  &.is-orphaned .date {
-    color: var(--gray-500);
+  .details {
+    grid-area: details;
+    min-width: 0;
+  }
+
+  &.is-orphaned .details {
+    color: var(--gray-600);
   }
 
   .title {
-    grid-area: title;
     min-width: 0;
     font-size: 13px;
+    font-weight: 700;
     overflow-wrap: anywhere;
   }
 
   .date {
-    grid-area: date;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 8px;
-    font-size: 13px;
+    margin-top: 2px;
+    color: var(--gray-600);
+    font-size: 12px;
     font-weight: 400;
-  }
-
-  .date-value {
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   .changes {
     grid-area: changes;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
     min-width: 0;
     color: var(--gray-600);
     font-size: 12px;
@@ -86,6 +88,11 @@ export const EditedOccurrenceItem = styled.li`
     font-size: 11px;
     font-weight: 400;
     color: var(--gray-600);
+
+    &.cancelled {
+      color: var(--yellow-700);
+      background-color: var(--yellow-050);
+    }
   }
 
   .actions {
@@ -103,37 +110,9 @@ export const EditedOccurrenceItem = styled.li`
     }
   }
 
-  &.no-custom-title {
-    grid-template-areas:
-      "date actions"
-      "changes actions";
-
-    .title {
-      display: none;
-    }
-  }
-
   @container (min-width: 440px) {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-areas:
-      "title date actions"
-      "changes changes actions";
-    gap: 2px 12px;
-
-    &.no-custom-title {
-      grid-template-areas:
-        "date date actions"
-        "changes changes actions";
-    }
-  }
-
-  @container (min-width: 560px) {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
-    grid-template-areas: "title date changes actions";
-    gap: 12px;
-
-    &.no-custom-title {
-      grid-template-areas: "date date changes actions";
-    }
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+    grid-template-areas: "details changes actions";
+    column-gap: 16px;
   }
 `;

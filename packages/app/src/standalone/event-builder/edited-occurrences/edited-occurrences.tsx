@@ -19,7 +19,7 @@ import {
   EditedOccurrencesWrapper,
 } from "./edited-occurrences.styles";
 
-type EditedOccurrence = {
+export type EditedOccurrence = {
   recurrenceId: string;
   start: number;
   end: number;
@@ -33,6 +33,7 @@ type EditedOccurrence = {
 type Props = {
   context: BuilderContext;
   refreshKey?: number;
+  onOccurrencesChanged?: (occurrences: EditedOccurrence[]) => void;
 };
 
 const SCHEDULE_INPUTS = [
@@ -65,7 +66,7 @@ const readSchedule = (node: HTMLElement | null): Record<string, string> => {
  * The event's edited occurrences, including ones the schedule no longer has.
  * Changes made from here are saved into the event's draft.
  */
-export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
+export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrencesChanged }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [occurrences, setOccurrences] = useState<EditedOccurrence[]>([]);
   const [busyRecurrenceId, setBusyRecurrenceId] = useState<string | null>(null);
@@ -104,8 +105,10 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
     }
 
     const data: { occurrences?: EditedOccurrence[] } = await response.json();
-    setOccurrences(data.occurrences ?? []);
-  }, [context.siteId, getEventId]);
+    const loaded = data.occurrences ?? [];
+    setOccurrences(loaded);
+    onOccurrencesChanged?.(loaded);
+  }, [context.siteId, getEventId, onOccurrencesChanged]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reload after a preview occurrence is saved.
   useEffect(() => {
@@ -235,18 +238,26 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
                 key={occurrence.recurrenceId}
                 className={clsx(
                   isOrphaned(occurrence) && "is-orphaned",
-                  !occurrence.title && "no-custom-title",
+                  occurrence.cancelled && "is-cancelled",
                 )}
               >
-                <div className="title">{occurrence.title}</div>
-                <div className="date">
-                  <span className="date-value">{formatOccurrenceDate(occurrence)}</span>
-                  {occurrence.cancelled && <span className="state">{translate("Cancelled")}</span>}
+                <div className="details">
+                  <div className="title">
+                    {occurrence.title || formatOccurrenceDate(occurrence)}
+                  </div>
+                  {occurrence.title && (
+                    <div className="date">{formatOccurrenceDate(occurrence)}</div>
+                  )}
+                </div>
+                <div className="changes">
+                  {occurrence.cancelled && (
+                    <span className="state cancelled">{translate("Cancelled")}</span>
+                  )}
                   {isOrphaned(occurrence) && (
                     <span className="state">{translate("No longer on the schedule")}</span>
                   )}
+                  <span>{occurrence.changes.join(", ")}</span>
                 </div>
-                <div className="changes">{occurrence.changes.join(", ")}</div>
 
                 <div className="actions">
                   {!isOrphaned(occurrence) && (
