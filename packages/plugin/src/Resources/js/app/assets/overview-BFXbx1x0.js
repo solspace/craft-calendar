@@ -315,9 +315,29 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
 `,xa=r.div`
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-end;
   gap: 8px;
+
+  && .btn.action-btn {
+    width: 40px;
+    min-height: var(--input-height, 34px);
+    height: auto;
+    padding: 0;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-050);
+
+    &:hover:not(:disabled) {
+      border-color: var(--gray-300);
+      background: var(--gray-100);
+    }
+
+    &:active:not(:disabled),
+    &.active {
+      border-color: var(--gray-300);
+      background: var(--gray-100);
+    }
+  }
 `,Sa=r.button`
   && {
     position: absolute;
