@@ -149,6 +149,10 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
   box-sizing: border-box;
   padding: 15px;
 
+  label.required::after {
+    font-size: 10px;
+  }
+
   hr {
     margin: 15px 0;
   }

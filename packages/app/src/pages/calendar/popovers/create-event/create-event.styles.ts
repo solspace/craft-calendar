@@ -7,6 +7,10 @@ export const PopoverCreateEventWrapper = styled.div`
   box-sizing: border-box;
   padding: 15px;
 
+  label.required::after {
+    font-size: 10px;
+  }
+
   hr {
     margin: 15px 0;
   }
