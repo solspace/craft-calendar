@@ -2,7 +2,7 @@
 {% import '_includes/forms' as forms %}
 
 <div class="calendar-occurrence-meta">
-    <div class="calendar-occurrence-meta-row">
+    <div class="calendar-occurrence-meta-row calendar-occurrence-options">
         {{ forms.lightswitchField({
             label: 'Own date and time'|t('calendar'),
             id: 'ownTimes',
@@ -17,6 +17,7 @@
             name: 'cancelled',
             on: cancelled,
             instructions: 'Cancelled occurrences stay listed, marked as not taking place.'|t('calendar'),
+            instructionsPosition: 'after',
             fieldClass: 'calendar-occurrence-cancelled',
         }) }}
     </div>
@@ -56,7 +57,7 @@
         </div>
     </fieldset>
 
-    <div class="calendar-occurrence-meta-row">
+    <div class="calendar-occurrence-meta-row calendar-occurrence-identity">
         {# The ID isn't `slug`, which the title field's slug generator would fill in #}
         {{ forms.textField({
             label: 'Slug'|t('app'),
@@ -65,11 +66,12 @@
             value: slug,
             placeholder: generatedSlug,
             instructions: 'Leave blank to use the date and code.'|t('calendar'),
+            instructionsPosition: 'after',
             data: {'error-key': 'slug'},
         }) }}
 
         {% if code %}
-            <div class="field">
+            <div class="field calendar-occurrence-code">
                 <div class="heading">
                     <label>{{ 'Code'|t('calendar') }}</label>
                 </div>

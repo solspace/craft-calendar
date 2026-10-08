@@ -242,7 +242,7 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
                       <span className="state">{translate("No longer on the schedule")}</span>
                     )}
                   </div>
-                  {occurrence.title && <div>{occurrence.title}</div>}
+                  {occurrence.title && <div className="title">{occurrence.title}</div>}
                   {occurrence.changes.length > 0 && (
                     <div className="changes">{occurrence.changes.join(", ")}</div>
                   )}

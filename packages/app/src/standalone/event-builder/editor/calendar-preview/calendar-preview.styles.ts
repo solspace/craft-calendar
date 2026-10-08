@@ -261,7 +261,7 @@ export const DateList = styled.ul<DateListProps>`
   display: flex;
   flex-direction: column;
   justify-content: ${(props) => (props.$count > 7 ? "space-between" : "start")};
-  gap: 4px;
+  gap: 5px;
 
   margin: 0;
   padding: 0;
@@ -272,17 +272,18 @@ export const DateItem = styled.li`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  padding: 4px 5px 4px 8px;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 6px;
 
   font-size: 13px;
-  line-height: 13px;
-  font-family: monospace;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 
   background-color: var(--gray-050);
   border: 1px solid var(--gray-200);
-  border-left: 5px solid var(--gray-200);
+  border-radius: var(--small-border-radius, 3px);
 
   > span {
     flex: 1;
@@ -293,8 +294,7 @@ export const DateItem = styled.li`
     min-height: 0;
     height: 20px;
     padding: 0 5px;
-    font-family: inherit;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 20px;
   }
 `;

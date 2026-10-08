@@ -31,11 +31,13 @@
                     <div class="calendar-occurrence-field" data-calendar-occurrence-field="{{ row.key }}"{{ row.copiedOnSave ? ' data-calendar-copied-on-save' }}>
                         <div class="calendar-occurrence-field-toggle">
                             {{ forms.lightswitch({
+                                id: "#{id}-override-#{row.key}",
+                                labelId: "#{id}-override-label-#{row.key}",
                                 name: "overrides[#{row.key}]",
                                 on: row.overridden,
                                 small: true,
-                                label: 'Override'|t('calendar'),
                             }) }}
+                            <label id="{{ id }}-override-label-{{ row.key }}" for="{{ id }}-override-{{ row.key }}">{{ 'Override'|t('calendar') }}</label>
                         </div>
                         <fieldset class="calendar-occurrence-field-own{{ not row.overridden ? ' hidden' }}"{{ not row.overridden ? ' disabled' }}>
                             {{ row.ownHtml|raw }}

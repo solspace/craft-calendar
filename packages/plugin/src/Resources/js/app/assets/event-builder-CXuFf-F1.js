@@ -3,15 +3,23 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     display: none;
   }
 
-  margin-top: 24px;
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg, var(--large-border-radius, 5px));
+  background-color: var(--gray-050);
 
   h3 {
     margin: 0 0 4px;
+    font-size: 14px;
+    line-height: 20px;
   }
 
   > p {
-    margin: 0 0 10px;
+    margin: 0 0 16px;
     color: var(--gray-600);
+    font-size: 13px;
+    line-height: 20px;
   }
 
   > p.warning {
@@ -23,11 +31,16 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
   list-style: none;
   border: 1px solid var(--gray-200);
   border-radius: var(--large-border-radius, 5px);
+  background-color: var(--custom-bg-color, var(--gray-050));
+  overflow: hidden;
 `,Sr=r.li`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: 10px 16px;
+  margin: 0;
+  padding: 12px 16px;
+  line-height: 1.5;
 
   &:not(:last-child) {
     border-bottom: 1px solid var(--gray-200);
@@ -38,31 +51,56 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
   }
 
   .details {
-    flex: 1 1 auto;
+    flex: 1 1 220px;
     min-width: 0;
   }
 
   .date {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    font-size: 13px;
     font-weight: 600;
   }
 
-  .changes {
-    color: var(--gray-600);
+  .title {
+    margin-top: 2px;
     font-size: 13px;
   }
 
+  .changes {
+    margin-top: 2px;
+    color: var(--gray-600);
+    font-size: 12px;
+  }
+
   .state {
-    margin-inline-start: 6px;
+    padding: 1px 6px;
+    border-radius: var(--small-border-radius, 3px);
+    background-color: var(--gray-100);
+    font-size: 11px;
     font-weight: 400;
     color: var(--gray-600);
   }
 
   .actions {
     display: flex;
+    flex-wrap: wrap;
     flex: 0 0 auto;
     gap: 6px;
+
+    .btn {
+      min-height: 26px;
+      padding-inline: 10px;
+      font-size: 12px;
+    }
   }
-`,J=a(),Cr=[`start`,`end`,`until`,`timezone`,`allDay`,`repeatType`,`repeatEndType`,`rrule`],wr=e=>{let t=e?.closest(`[data-event-builder]`),n={};for(let e of Cr){let r=t?.querySelector(`input[name="${e}"]`);r&&(n[e]=r.value)}return n},Tr=e=>D(t(new Date(e.start*1e3)),e.allDay?`EEE, PP`:`EEE, PP, p`,{locale:d()}),Er=({context:e,refreshKey:t})=>{let n=(0,j.useRef)(null),[r,i]=(0,j.useState)([]),[a,o]=(0,j.useState)(null),[s,c]=(0,j.useState)(null),u=(0,j.useRef)(0),d=P(q.state),f=(0,j.useCallback)(()=>vr(n.current)?.settings.elementId??e.eventId,[e.eventId]),p=(0,j.useCallback)(async()=>{let t=f();if(!t)return;let n=new URL(Craft.getActionUrl(`calendar/occurrences/list`),window.location.origin);n.searchParams.set(`eventId`,String(t)),n.searchParams.set(`siteId`,String(e.siteId));let r=await ve(n,{headers:{Accept:`application/json`}});if(!r.ok)return;let a=await r.json();i(a.occurrences??[])},[e.siteId,f]);(0,j.useEffect)(()=>{p()},[p,t]);let m=(0,j.useCallback)(async()=>{let t=f();if(!t)return;let r=++u.current,i=await ve(Craft.getActionUrl(`calendar/occurrences/check-schedule`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:t,siteId:e.siteId,...wr(n.current)})});if(!i.ok)return;let a=await i.json();r===u.current&&c(new Set(a.orphaned??[]))},[e.siteId,f]);(0,j.useEffect)(()=>{if(r.length===0)return;let e=setTimeout(()=>void m(),400);return()=>clearTimeout(e)},[d,r.length,m]);let h=e=>s?s.has(e.recurrenceId):e.orphaned,g=async t=>{o(t.recurrenceId);try{let r=await yr(n.current);if(!r)return;_e({eventId:r,recurrenceId:t.recurrenceId,siteId:e.siteId,onSave:()=>void p()})}catch{Craft.cp.displayError(l(`Couldn’t open the occurrence for editing.`))}finally{o(null)}},_=async t=>{if(window.confirm(l(`Remove everything this occurrence changes?`))){o(t.recurrenceId);try{let r=await yr(n.current);if(!r)return;let i=await ve(Craft.getActionUrl(`calendar/occurrences/reset`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:r,siteId:e.siteId,recurrenceId:t.recurrenceId})});if(!i.ok){let e=await i.json().catch(()=>null);Craft.cp.displayError(e?.message||l(`Couldn’t reset the occurrence.`));return}await p()}catch{Craft.cp.displayError(l(`Couldn’t reset the occurrence.`))}finally{o(null)}}};return(0,J.jsx)(br,{ref:n,children:r.length>0&&(0,J.jsxs)(J.Fragment,{children:[(0,J.jsx)(`h3`,{children:l(`Edited occurrences`)}),(0,J.jsx)(`p`,{children:l(`Occurrences with their own changes. Changes made here go live with the event.`)}),r.some(h)&&(0,J.jsx)(`p`,{className:`warning`,children:l(`Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.`)}),(0,J.jsx)(xr,{children:r.map(e=>(0,J.jsxs)(Sr,{className:E(h(e)&&`is-orphaned`),children:[(0,J.jsxs)(`div`,{className:`details`,children:[(0,J.jsxs)(`div`,{className:`date`,children:[Tr(e),e.cancelled&&(0,J.jsx)(`span`,{className:`state`,children:l(`Cancelled`)}),h(e)&&(0,J.jsx)(`span`,{className:`state`,children:l(`No longer on the schedule`)})]}),e.title&&(0,J.jsx)(`div`,{children:e.title}),e.changes.length>0&&(0,J.jsx)(`div`,{className:`changes`,children:e.changes.join(`, `)})]}),(0,J.jsxs)(`div`,{className:`actions`,children:[!h(e)&&(0,J.jsx)(`button`,{type:`button`,className:E(`btn small`,a!==null&&`disabled`),disabled:a!==null,onClick:()=>void g(e),children:l(`Edit`)}),(0,J.jsx)(`button`,{type:`button`,className:E(`btn small`,a!==null&&`disabled`),disabled:a!==null,onClick:()=>void _(e),children:l(`Discard`)})]})]},e.recurrenceId))})]})})},Dr=Xn({name:`app`,initialState:{pro:!1},reducers:{}}),{actions:Or}=Dr,kr=Dr.reducer,Y={config:e=>e.app,isPro:e=>e.app.pro,formats:e=>e.app.formats,weekStartDay:e=>e.app.weekStartDay??0,timeInterval:e=>e.app.timeInterval??30,eventDuration:e=>e.app.eventDuration??60,allDayDefault:e=>e.app.allDayDefault??!1,overlapThreshold:e=>e.app.overlapThreshold??0},Ar=r.div`
+
+  @media (max-width: 600px) {
+    padding: 12px;
+  }
+`,J=a(),Cr=[`start`,`end`,`until`,`timezone`,`allDay`,`repeatType`,`repeatEndType`,`rrule`],wr=e=>{let t=e?.closest(`[data-event-builder]`),n={};for(let e of Cr){let r=t?.querySelector(`input[name="${e}"]`);r&&(n[e]=r.value)}return n},Tr=e=>D(t(new Date(e.start*1e3)),e.allDay?`EEE, PP`:`EEE, PP, p`,{locale:d()}),Er=({context:e,refreshKey:t})=>{let n=(0,j.useRef)(null),[r,i]=(0,j.useState)([]),[a,o]=(0,j.useState)(null),[s,c]=(0,j.useState)(null),u=(0,j.useRef)(0),d=P(q.state),f=(0,j.useCallback)(()=>vr(n.current)?.settings.elementId??e.eventId,[e.eventId]),p=(0,j.useCallback)(async()=>{let t=f();if(!t)return;let n=new URL(Craft.getActionUrl(`calendar/occurrences/list`),window.location.origin);n.searchParams.set(`eventId`,String(t)),n.searchParams.set(`siteId`,String(e.siteId));let r=await ve(n,{headers:{Accept:`application/json`}});if(!r.ok)return;let a=await r.json();i(a.occurrences??[])},[e.siteId,f]);(0,j.useEffect)(()=>{p()},[p,t]);let m=(0,j.useCallback)(async()=>{let t=f();if(!t)return;let r=++u.current,i=await ve(Craft.getActionUrl(`calendar/occurrences/check-schedule`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:t,siteId:e.siteId,...wr(n.current)})});if(!i.ok)return;let a=await i.json();r===u.current&&c(new Set(a.orphaned??[]))},[e.siteId,f]);(0,j.useEffect)(()=>{if(r.length===0)return;let e=setTimeout(()=>void m(),400);return()=>clearTimeout(e)},[d,r.length,m]);let h=e=>s?s.has(e.recurrenceId):e.orphaned,g=async t=>{o(t.recurrenceId);try{let r=await yr(n.current);if(!r)return;_e({eventId:r,recurrenceId:t.recurrenceId,siteId:e.siteId,onSave:()=>void p()})}catch{Craft.cp.displayError(l(`Couldn’t open the occurrence for editing.`))}finally{o(null)}},_=async t=>{if(window.confirm(l(`Remove everything this occurrence changes?`))){o(t.recurrenceId);try{let r=await yr(n.current);if(!r)return;let i=await ve(Craft.getActionUrl(`calendar/occurrences/reset`),{method:`POST`,headers:{"Content-Type":`application/json`,Accept:`application/json`},body:JSON.stringify({eventId:r,siteId:e.siteId,recurrenceId:t.recurrenceId})});if(!i.ok){let e=await i.json().catch(()=>null);Craft.cp.displayError(e?.message||l(`Couldn’t reset the occurrence.`));return}await p()}catch{Craft.cp.displayError(l(`Couldn’t reset the occurrence.`))}finally{o(null)}}};return(0,J.jsx)(br,{ref:n,children:r.length>0&&(0,J.jsxs)(J.Fragment,{children:[(0,J.jsx)(`h3`,{children:l(`Edited occurrences`)}),(0,J.jsx)(`p`,{children:l(`Occurrences with their own changes. Changes made here go live with the event.`)}),r.some(h)&&(0,J.jsx)(`p`,{className:`warning`,children:l(`Edited occurrences that don’t fall on the schedule are kept, but hidden, until you discard them.`)}),(0,J.jsx)(xr,{children:r.map(e=>(0,J.jsxs)(Sr,{className:E(h(e)&&`is-orphaned`),children:[(0,J.jsxs)(`div`,{className:`details`,children:[(0,J.jsxs)(`div`,{className:`date`,children:[Tr(e),e.cancelled&&(0,J.jsx)(`span`,{className:`state`,children:l(`Cancelled`)}),h(e)&&(0,J.jsx)(`span`,{className:`state`,children:l(`No longer on the schedule`)})]}),e.title&&(0,J.jsx)(`div`,{className:`title`,children:e.title}),e.changes.length>0&&(0,J.jsx)(`div`,{className:`changes`,children:e.changes.join(`, `)})]}),(0,J.jsxs)(`div`,{className:`actions`,children:[!h(e)&&(0,J.jsx)(`button`,{type:`button`,className:E(`btn small`,a!==null&&`disabled`),disabled:a!==null,onClick:()=>void g(e),children:l(`Edit`)}),(0,J.jsx)(`button`,{type:`button`,className:E(`btn small`,a!==null&&`disabled`),disabled:a!==null,onClick:()=>void _(e),children:l(`Discard`)})]})]},e.recurrenceId))})]})})},Dr=Xn({name:`app`,initialState:{pro:!1},reducers:{}}),{actions:Or}=Dr,kr=Dr.reducer,Y={config:e=>e.app,isPro:e=>e.app.pro,formats:e=>e.app.formats,weekStartDay:e=>e.app.weekStartDay??0,timeInterval:e=>e.app.timeInterval??30,eventDuration:e=>e.app.eventDuration??60,allDayDefault:e=>e.app.allDayDefault??!1,overlapThreshold:e=>e.app.overlapThreshold??0},Ar=r.div`
   container-type: inline-size;
 
   display: flex;
@@ -307,7 +345,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
   display: flex;
   flex-direction: column;
   justify-content: ${e=>e.$count>7?`space-between`:`start`};
-  gap: 4px;
+  gap: 5px;
 
   margin: 0;
   padding: 0;
@@ -316,17 +354,18 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  padding: 4px 5px 4px 8px;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 6px;
 
   font-size: 13px;
-  line-height: 13px;
-  font-family: monospace;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 
   background-color: var(--gray-050);
   border: 1px solid var(--gray-200);
-  border-left: 5px solid var(--gray-200);
+  border-radius: var(--small-border-radius, 3px);
 
   > span {
     flex: 1;
@@ -337,8 +376,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     min-height: 0;
     height: 20px;
     padding: 0 5px;
-    font-family: inherit;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 20px;
   }
 `,Rr=r.button`
