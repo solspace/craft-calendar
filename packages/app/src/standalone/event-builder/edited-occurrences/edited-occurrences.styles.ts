@@ -94,12 +94,21 @@ export const EditedOccurrenceItem = styled.li`
     display: flex;
     flex-wrap: wrap;
     flex: 0 0 auto;
+    align-items: center;
     gap: 6px;
 
     .btn {
       min-height: 26px;
       padding-inline: 10px;
       font-size: 12px;
+    }
+
+    .occurrence-edit {
+      width: 24px;
+      min-height: 24px;
+      height: 24px;
+      padding: 0;
+      line-height: 24px;
     }
   }
 

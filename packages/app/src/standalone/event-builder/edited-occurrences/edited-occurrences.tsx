@@ -252,12 +252,17 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey }) => {
                   {!isOrphaned(occurrence) && (
                     <button
                       type="button"
-                      className={clsx("btn small", busyRecurrenceId !== null && "disabled")}
+                      className={clsx(
+                        "btn chromeless small icon edit occurrence-edit",
+                        busyRecurrenceId !== null && "disabled",
+                      )}
+                      aria-label={translate("Edit occurrence on {date}", {
+                        date: formatOccurrenceDate(occurrence),
+                      })}
+                      title={translate("Edit occurrence")}
                       disabled={busyRecurrenceId !== null}
                       onClick={() => void edit(occurrence)}
-                    >
-                      {translate("Edit")}
-                    </button>
+                    />
                   )}
                   <button
                     type="button"

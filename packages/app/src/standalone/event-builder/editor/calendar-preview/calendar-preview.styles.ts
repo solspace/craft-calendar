@@ -291,11 +291,12 @@ export const DateItem = styled.li`
 
   .occurrence-edit {
     flex-shrink: 0;
-    min-height: 0;
-    height: 20px;
-    padding: 0 5px;
+    width: 24px;
+    min-height: 24px;
+    height: 24px;
+    padding: 0;
     font-size: 12px;
-    line-height: 20px;
+    line-height: 24px;
   }
 `;
 

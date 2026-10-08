@@ -249,14 +249,12 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved }) => {
                       {recurrenceId && (
                         <button
                           type="button"
-                          className="btn small occurrence-edit"
+                          className="btn chromeless small icon edit occurrence-edit"
                           aria-label={translate("Edit occurrence on {date}", { date })}
                           title={translate("Edit occurrence")}
                           disabled={isOpeningOccurrence}
                           onClick={() => void editOccurrence(recurrenceId)}
-                        >
-                          {translate("Edit")}
-                        </button>
+                        />
                       )}
                       {removalType && (
                         <RemoveOccurrenceButton
