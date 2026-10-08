@@ -16,21 +16,34 @@ const settings = {
 describe("calendar create session", () => {
   afterEach(() => vi.useRealTimers());
 
-  it("uses the default duration for a single-day timed selection", () => {
-    const draft = buildCreateDraftFromSelection(
-      {
-        start: new Date("2024-01-20T09:00:00Z"),
-        end: new Date("2024-01-20T11:00:00Z"),
-        allDay: false,
-      },
-      settings,
-    );
+  it.each([
+    30, 120, 360,
+  ])("preserves a %s-minute timed drag and its duration when the start changes", (minutes) => {
+    const start = new Date("2024-01-20T09:00:00Z");
+    const end = new Date(start.getTime() + minutes * 60 * 1000);
+    const draft = buildCreateDraftFromSelection({ start, end, allDay: false }, settings);
 
     expect(draft).toMatchObject({
       allDay: false,
       start: 1705741200,
-      end: 1705744800,
+      end: end.getTime() / 1000,
+      preserveDuration: true,
     });
+    const moved = setCreateDraftStart(draft, draft.start + 60 * 60, settings);
+    expect(moved.end - moved.start).toBe(minutes * 60);
+  });
+
+  it("allows editing a dragged end time to less than the default duration", () => {
+    const draft = buildCreateDraftFromSelection(
+      {
+        start: new Date("2026-11-01T04:00:00Z"),
+        end: new Date("2026-11-01T09:30:00Z"),
+        allDay: false,
+      },
+      settings,
+    );
+    const shortened = setCreateDraftEnd(draft, draft.start + 30 * 60, settings);
+    expect(shortened.end - shortened.start).toBe(30 * 60);
   });
 
   it.each([
@@ -88,7 +101,7 @@ describe("calendar create session", () => {
     const draft = buildCreateDraftFromSelection(
       {
         start: new Date("2026-10-06T14:00:00Z"),
-        end: new Date("2026-10-06T15:00:00Z"),
+        end: new Date("2026-10-06T14:00:00Z"),
         allDay: false,
       },
       settings,
@@ -239,6 +252,6 @@ describe("calendar create session", () => {
       start: 1705827600,
       end: 1705836600,
     });
-    expect(resized.end).toBe(1705831200);
+    expect(resized.end).toBe(moved.start + 60);
   });
 });

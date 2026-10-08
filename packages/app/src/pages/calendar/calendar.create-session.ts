@@ -61,6 +61,8 @@ export const buildCreateDraftFromSelection = (
     ? selectedEnd - selectedStart > DAY_IN_SECONDS
     : toUtcDayStartTimestamp(selectedEnd - 1) > toUtcDayStartTimestamp(selectedStart);
   const allDay = selection.allDay ? multiDay : settings.allDayDefault;
+  const preserveDuration =
+    multiDay || (!allDay && !selection.allDay && selectedEnd > selectedStart);
   // Date cells have no chosen hour; use the current local hour as a floating wall time.
   const start = allDay
     ? toUtcDayStartTimestamp(selectedStart)
@@ -71,7 +73,7 @@ export const buildCreateDraftFromSelection = (
     ? multiDay
       ? addDays(toUtcDayStartTimestamp(selectedEnd - 1), 1)
       : addDays(start, 1)
-    : multiDay
+    : preserveDuration
       ? selectedEnd
       : start + getEventDurationSeconds(settings);
 
@@ -81,7 +83,7 @@ export const buildCreateDraftFromSelection = (
     allDay,
     start,
     end,
-    preserveDuration: multiDay,
+    preserveDuration,
   };
 };
 
@@ -180,7 +182,10 @@ export const setCreateDraftEnd = (
 
   return {
     ...draft,
-    end: Math.max(end, draft.start + getEventDurationSeconds(settings)),
+    end: Math.max(
+      end,
+      draft.start + (draft.preserveDuration ? 60 : getEventDurationSeconds(settings)),
+    ),
   };
 };
 
