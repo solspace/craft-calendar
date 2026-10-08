@@ -182,6 +182,26 @@ class CalendarModel extends Model implements \JsonSerializable
     }
 
     /**
+     * Required flags belong to field layout elements, not the shared Craft field.
+     *
+     * @return array<string, bool>
+     */
+    public function getQuickCreateRequiredFields(): array
+    {
+        $handles = $this->getQuickCreateFieldHandles();
+        $required = array_fill_keys(array_keys($handles), false);
+        foreach ($this->getFieldLayout()?->getCustomFieldElements() ?? [] as $element) {
+            foreach ($handles as $key => $handle) {
+                if ($element->getField()->handle === $handle) {
+                    $required[$key] = (bool) $element->required;
+                }
+            }
+        }
+
+        return $required;
+    }
+
+    /**
      * Returns the owner's field layout.
      */
     public function getFieldLayout(): ?FieldLayout

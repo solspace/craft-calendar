@@ -32,6 +32,8 @@ export const TextInput: FC<Props & ControlProps> = ({
     <Control {...controlProps}>
       <input
         ref={ref}
+        id={controlProps.id}
+        aria-required={controlProps.required || undefined}
         type="text"
         className={clsx("text", className)}
         placeholder={placeholder}

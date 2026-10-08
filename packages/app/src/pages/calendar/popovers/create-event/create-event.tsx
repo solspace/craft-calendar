@@ -10,7 +10,6 @@ import {
   setCreateDraftStart,
   setCreateDraftTitle,
 } from "@cal/pages/calendar/calendar.create-session";
-import { Flex } from "@cal/styles/components";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import clsx from "clsx";
@@ -23,8 +22,10 @@ import { useCreateEvent } from "./create-event.mutation";
 import {
   AllDayLabel,
   AllDayRow,
+  CreateActions,
   Fields,
   FlexTitle,
+  MoreDetailsButton,
   PopoverCreateEventWrapper,
 } from "./create-event.styles";
 
@@ -47,6 +48,7 @@ export const PopoverCreateEvent: FC<Props> = ({
     calendars,
     calendarColors,
     quickCreateFields,
+    quickCreateRequiredFields,
     formats,
     weekStartDay,
     eventDuration,
@@ -67,14 +69,22 @@ export const PopoverCreateEvent: FC<Props> = ({
   const mappedFields = quickCreateFields?.[calendarId];
   const locationHandle = mappedFields?.location;
   const descriptionHandle = mappedFields?.description;
+  const requiredFields = quickCreateRequiredFields?.[calendarId];
   const values = fieldValues[calendarId] ?? {};
+  const details =
+    locationHandle || descriptionHandle
+      ? {
+          ...(locationHandle && { location: values[locationHandle] ?? "" }),
+          ...(descriptionHandle && { description: values[descriptionHandle] ?? "" }),
+        }
+      : undefined;
   const setFieldValue = (handle: string, value: string) => {
     setFieldValues((current) => ({
       ...current,
       [calendarId]: { ...current[calendarId], [handle]: value },
     }));
   };
-  const { createEvent, error, isFetching } = useCreateEvent({
+  const { createEvent, prepareEvent, error, isFetching, isOpeningEditor } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
   });
@@ -90,7 +100,7 @@ export const PopoverCreateEvent: FC<Props> = ({
   const displayEnd = useMemo(() => getCreateDraftDisplayEnd(draft), [draft]);
 
   useEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
+    if (event.key === "Escape" && !isFetching) {
       onCancel();
     }
   });
@@ -99,6 +109,9 @@ export const PopoverCreateEvent: FC<Props> = ({
     <PopoverCreateEventWrapper>
       <FlexTitle>
         <TextInput
+          label={translate("Title")}
+          id={`${id}-title`}
+          required
           autofocus
           value={draft.title}
           placeholder={translate("Event Title")}
@@ -124,6 +137,8 @@ export const PopoverCreateEvent: FC<Props> = ({
         </AllDayRow>
 
         <DatePicker
+          id={`${id}-start`}
+          required
           label={translate("Starts")}
           value={draft.start}
           datePickerProps={{
@@ -146,6 +161,8 @@ export const PopoverCreateEvent: FC<Props> = ({
           }}
         />
         <DatePicker
+          id={`${id}-end`}
+          required
           label={translate("Ends")}
           value={displayEnd}
           datePickerProps={{
@@ -182,12 +199,17 @@ export const PopoverCreateEvent: FC<Props> = ({
         {(locationHandle || descriptionHandle) && <hr />}
 
         {locationHandle && (
-          <Control label={translate("Location")} id={`${id}-location`}>
+          <Control
+            label={translate("Location")}
+            id={`${id}-location`}
+            required={requiredFields?.location}
+          >
             <input
               id={`${id}-location`}
               type="text"
               className="text fullwidth"
               disabled={isFetching}
+              aria-required={requiredFields?.location || undefined}
               value={values[locationHandle] ?? ""}
               onChange={(event) => setFieldValue(locationHandle, event.target.value)}
             />
@@ -195,12 +217,17 @@ export const PopoverCreateEvent: FC<Props> = ({
         )}
 
         {descriptionHandle && (
-          <Control label={translate("Description")} id={`${id}-description`}>
+          <Control
+            label={translate("Description")}
+            id={`${id}-description`}
+            required={requiredFields?.description}
+          >
             <textarea
               id={`${id}-description`}
               className="text fullwidth"
               rows={3}
               disabled={isFetching}
+              aria-required={requiredFields?.description || undefined}
               value={values[descriptionHandle] ?? ""}
               onChange={(event) => setFieldValue(descriptionHandle, event.target.value)}
             />
@@ -212,25 +239,24 @@ export const PopoverCreateEvent: FC<Props> = ({
 
       {error && <p className="error">{error}</p>}
 
-      <Flex $justifyContent="flex-end" $gap={8}>
+      <CreateActions $justifyContent="flex-end" $gap={8}>
+        <MoreDetailsButton
+          type="button"
+          disabled={!calendarId || isFetching}
+          onClick={async () => {
+            const url = await prepareEvent(draft, calendarId, details);
+            if (url) window.location.href = url;
+          }}
+        >
+          {translate(isOpeningEditor ? "Processing..." : "More details…")}
+        </MoreDetailsButton>
         <button
           type="button"
           className={clsx("btn submit", isFetching && "disabled")}
           disabled={!draft.title || !calendarId || isFetching}
-          onClick={() =>
-            createEvent(
-              draft,
-              calendarId,
-              locationHandle || descriptionHandle
-                ? {
-                    ...(locationHandle && { location: values[locationHandle] ?? "" }),
-                    ...(descriptionHandle && { description: values[descriptionHandle] ?? "" }),
-                  }
-                : undefined,
-            )
-          }
+          onClick={() => createEvent(draft, calendarId, details)}
         >
-          {translate(isFetching ? "Creating Event..." : "Create Event")}
+          {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
         </button>
 
         <button
@@ -241,7 +267,7 @@ export const PopoverCreateEvent: FC<Props> = ({
         >
           {translate("Cancel")}
         </button>
-      </Flex>
+      </CreateActions>
     </PopoverCreateEventWrapper>
   );
 };

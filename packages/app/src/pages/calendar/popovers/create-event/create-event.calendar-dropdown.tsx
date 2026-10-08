@@ -89,8 +89,14 @@ export const CalendarDropdown: FC<Props> = ({ options, value, onChange }) => {
   }, [value, definition]);
 
   return (
-    <Control label={translate("Calendar")} id={id}>
-      <CalendarButton ref={buttonRef} id={id} type="button" className="btn menubtn fullwidth">
+    <Control label={translate("Calendar")} id={id} required>
+      <CalendarButton
+        ref={buttonRef}
+        id={id}
+        type="button"
+        className="btn menubtn fullwidth"
+        aria-required="true"
+      >
         <span
           className="color-indicator"
           style={{ backgroundColor: selected?.color || "var(--gray-400)" }}

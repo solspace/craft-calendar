@@ -757,4 +757,5 @@ return [
     'More actions' => 'Meer acties',
     'Location' => 'Locatie',
     'Invalid event details.' => 'Ongeldige evenementdetails.',
+    'More details…' => 'Meer details…',
 ];

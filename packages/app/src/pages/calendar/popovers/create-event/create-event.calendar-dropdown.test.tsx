@@ -67,6 +67,8 @@ describe("quick-create calendar selector", () => {
     expect(container.querySelector<HTMLElement>(".color-indicator")!.style.backgroundColor).toBe(
       "rgb(255, 0, 0)",
     );
+    expect(container.querySelector("label")!.classList.contains("required")).toBe(true);
+    expect(container.querySelector("button")!.getAttribute("aria-required")).toBe("true");
     await openMenu();
     const menu = document.querySelector(".menu")!;
     expect(menu.querySelectorAll(".color-indicator")).toHaveLength(2);

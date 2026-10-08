@@ -4,6 +4,7 @@ namespace Solspace\Tests\Unit\Calendar\Models;
 
 use craft\fields\Number;
 use craft\fields\PlainText;
+use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Models\CalendarModel;
@@ -51,5 +52,32 @@ class CalendarQuickCreateFieldsTest extends TestCase
         $calendar->descriptionFieldHandle = 'summary';
 
         self::assertSame([], $calendar->getQuickCreateFieldHandles());
+        self::assertSame([], $calendar->getQuickCreateRequiredFields());
+    }
+
+    public function testRequiredFlagsComeFromTheSelectedCalendarsFieldLayout(): void
+    {
+        $venue = $this->getMockBuilder(PlainText::class)->disableOriginalConstructor()->getMock();
+        $venue->handle = 'venue';
+        $summary = $this->getMockBuilder(PlainText::class)->disableOriginalConstructor()->getMock();
+        $summary->handle = 'summary';
+        $locationElement = $this->getMockBuilder(CustomField::class)->disableOriginalConstructor()->onlyMethods(['getField'])->getMock();
+        $locationElement->method('getField')->willReturn($venue);
+        $locationElement->required = true;
+        $descriptionElement = $this->getMockBuilder(CustomField::class)->disableOriginalConstructor()->onlyMethods(['getField'])->getMock();
+        $descriptionElement->method('getField')->willReturn($summary);
+        $descriptionElement->required = false;
+        $layout = $this->getMockBuilder(FieldLayout::class)->disableOriginalConstructor()->onlyMethods(['getFieldByHandle', 'getCustomFieldElements'])->getMock();
+        $layout->method('getFieldByHandle')->willReturnMap([['venue', $venue], ['summary', $summary]]);
+        $layout->method('getCustomFieldElements')->willReturn([$locationElement, $descriptionElement]);
+        $calendar = $this->getMockBuilder(CalendarModel::class)->disableOriginalConstructor()->onlyMethods(['getFieldLayout'])->getMock();
+        $calendar->method('getFieldLayout')->willReturn($layout);
+        $calendar->locationFieldHandle = 'venue';
+        $calendar->descriptionFieldHandle = 'summary';
+
+        self::assertSame(['location' => true, 'description' => false], $calendar->getQuickCreateRequiredFields());
+        $locationElement->required = false;
+        $descriptionElement->required = true;
+        self::assertSame(['location' => false, 'description' => true], $calendar->getQuickCreateRequiredFields());
     }
 }

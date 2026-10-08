@@ -55,3 +55,26 @@ export const AllDayLabel = styled.label`
   font-weight: 600;
   cursor: pointer;
 `;
+
+export const CreateActions = styled(Flex)`
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+export const MoreDetailsButton = styled.button`
+  margin-inline-end: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--link-color);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: default;
+  }
+`;

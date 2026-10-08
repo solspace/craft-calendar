@@ -4,9 +4,18 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PopoverCreateEvent } from "./create-event";
 
-const { createEvent } = vi.hoisted(() => ({ createEvent: vi.fn() }));
+const { createEvent, prepareEvent } = vi.hoisted(() => ({
+  createEvent: vi.fn(),
+  prepareEvent: vi.fn(async (): Promise<string | null> => null),
+}));
 vi.mock("./create-event.mutation", () => ({
-  useCreateEvent: () => ({ createEvent, error: null as string | null, isFetching: false }),
+  useCreateEvent: () => ({
+    createEvent,
+    prepareEvent,
+    error: null as string | null,
+    isFetching: false,
+    isOpeningEditor: false,
+  }),
 }));
 vi.mock("../../context/config.context", () => ({
   useConfig: () => ({
@@ -22,6 +31,11 @@ vi.mock("../../context/config.context", () => ({
       2: { location: "address" },
       4: { description: "notes" },
       5: { location: "details", description: "details" },
+    },
+    quickCreateRequiredFields: {
+      1: { location: true, description: false },
+      2: { location: false },
+      4: { description: true },
     },
     formats: {
       date: { short: { icu: "yyyy-MM-dd" } },
@@ -58,7 +72,14 @@ vi.mock("./create-event.calendar-dropdown", () => ({
   ),
 }));
 vi.mock("@cal/components/controls/date-picker/date-picker", () => ({
-  DatePicker: ({ label }: { label: string }) => <div>{label}</div>,
+  DatePicker: ({ label, id, required }: { label: string; id: string; required: boolean }) => (
+    <div>
+      <label htmlFor={id} className={required ? "required" : undefined}>
+        {label}
+      </label>
+      <input id={id} />
+    </div>
+  ),
   Icon: (): null => null,
 }));
 
@@ -156,6 +177,34 @@ describe("quick-create mapped fields", () => {
       location: "Studio A",
       description: "Bring a mat.\nDoors open at 6.",
     });
+  });
+
+  it("marks required basic and mapped inputs using Craft's native label styling", async () => {
+    const label = (text: string) =>
+      Array.from(container.querySelectorAll("label")).find((item) => item.textContent === text)!;
+    for (const text of ["Title", "Starts", "Ends", "Location"])
+      expect(label(text).classList.contains("required")).toBe(true);
+    expect(field("Location")!.getAttribute("aria-required")).toBe("true");
+    expect(label("Description").classList.contains("required")).toBe(false);
+    await chooseCalendar(2);
+    expect(label("Location").classList.contains("required")).toBe(false);
+    await chooseCalendar(4);
+    expect(label("Description").classList.contains("required")).toBe(true);
+    expect(field("Description")!.getAttribute("aria-required")).toBe("true");
+  });
+
+  it("hands the selected calendar and entered values to the full editor, allowing incomplete required fields", async () => {
+    await type("Description", "Bring a mat.");
+    await act(async () =>
+      Array.from(container.querySelectorAll("button"))
+        .find((button) => button.textContent === "More details…")!
+        .click(),
+    );
+    expect(prepareEvent).toHaveBeenCalledWith(draft, 1, {
+      location: "",
+      description: "Bring a mat.",
+    });
+    expect(createEvent).not.toHaveBeenCalled();
   });
 
   it("keeps both inputs synchronized if both mappings use the same Craft field", async () => {
