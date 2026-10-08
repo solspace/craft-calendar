@@ -47,6 +47,12 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { end, allDay } = event;
 
   const calendarName = event.extendedProps.calendarName;
+  const location =
+    typeof event.extendedProps.location === "string" ? event.extendedProps.location.trim() : "";
+  const description =
+    typeof event.extendedProps.description === "string"
+      ? event.extendedProps.description.trim()
+      : "";
 
   const calendarColor =
     event.extendedProps.calendarColor ?? event.backgroundColor ?? event.borderColor ?? "#607d9f";
@@ -242,6 +248,23 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         <div>
           <b>{translate("Repeats")}:</b> {rruleText}
         </div>
+      )}
+
+      {(location || description) && (
+        <dl className="event-details">
+          {location && (
+            <div>
+              <dt>{translate("Location")}</dt>
+              <dd className="event-location">{location}</dd>
+            </div>
+          )}
+          {description && (
+            <div>
+              <dt>{translate("Description")}</dt>
+              <dd className="event-description">{description}</dd>
+            </div>
+          )}
+        </dl>
       )}
 
       <hr />

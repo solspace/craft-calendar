@@ -126,6 +126,38 @@ describe("event popup actions", () => {
         .click(),
     );
 
+  it("shows mapped occurrence details as text without rendering their markup", async () => {
+    fcEvent.event.extendedProps.location = "  Custom venue  ";
+    fcEvent.event.extendedProps.description = "Bring <strong>comfortable shoes</strong>.";
+    await show();
+
+    expect(container.querySelector(".event-location")?.textContent).toBe("Custom venue");
+    expect(container.querySelector(".event-description")?.textContent).toBe(
+      "Bring <strong>comfortable shoes</strong>.",
+    );
+    expect(container.querySelector(".event-description strong")).toBeNull();
+    expect(
+      Array.from(container.querySelectorAll(".event-details dt"), (label) => label.textContent),
+    ).toEqual(["Location", "Description"]);
+  });
+
+  it("omits missing or empty details and can show either field on its own", async () => {
+    await show();
+    expect(container.querySelector(".event-details")).toBeNull();
+
+    fcEvent.event.extendedProps.location = " \n ";
+    fcEvent.event.extendedProps.description = "Only a description";
+    await show();
+    expect(container.querySelector(".event-location")).toBeNull();
+    expect(container.querySelector(".event-description")?.textContent).toBe("Only a description");
+
+    fcEvent.event.extendedProps.location = "Only a location";
+    fcEvent.event.extendedProps.description = null;
+    await show();
+    expect(container.querySelector(".event-location")?.textContent).toBe("Only a location");
+    expect(container.querySelector(".event-description")).toBeNull();
+  });
+
   it("keeps Edit visible and routes occurrence actions from the native menu", async () => {
     await show();
     const edit = container.querySelector<HTMLAnchorElement>("a.submit")!;

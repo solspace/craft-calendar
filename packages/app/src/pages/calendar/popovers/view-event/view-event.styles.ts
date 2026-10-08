@@ -59,6 +59,38 @@ export const PopoverWrapper = styled.div`
     flex: 0 0 10px;
     border-radius: 50%;
   }
+
+  .event-details {
+    display: grid;
+    gap: 8px;
+    margin: 12px 0 0;
+    line-height: 1.4;
+  }
+
+  .event-details dt {
+    font-weight: 600;
+  }
+
+  .event-details > div {
+    min-width: 0;
+  }
+
+  .event-details dd {
+    margin: 2px 0 0;
+    color: var(--gray-600);
+    overflow: hidden;
+  }
+
+  .event-location {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .event-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 `;
 
 export const PopoverActions = styled.div`
