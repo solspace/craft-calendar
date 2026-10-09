@@ -36,7 +36,7 @@ class EventCalendarController extends BaseController
         $suggested = $mapper->suggest($event->getFieldLayout(), $target->getFieldLayout());
         $rows = [];
         foreach ($destinations as $uid => $field) {
-            $options = [['label' => Calendar::t('Leave empty'), 'value' => '']];
+            $options = [['label' => Calendar::t('Do not map'), 'value' => '']];
             foreach ($source as $sourceUid => $sourceField) {
                 if ($mapper->compatible($sourceField, $field)) {
                     $options[] = ['label' => $mapper->label($sourceField).' ('.$sourceField->handle.')', 'value' => $sourceUid];
