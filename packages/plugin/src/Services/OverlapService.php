@@ -28,7 +28,7 @@ class OverlapService
     {
         $targets = [];
         foreach ($occurrences as $occurrence) {
-            if (!$occurrence->cancelled && $occurrence->event->enabled && $occurrence->event->getEnabledForSite()) {
+            if (!$occurrence->cancelled && Event::STATUS_LIVE === $occurrence->event->getStatus()) {
                 $targets[] = $this->interval($occurrence);
             }
         }
@@ -40,7 +40,7 @@ class OverlapService
     public function forOccurrence(Event $event, string $recurrenceId, array $times): array
     {
         $target = $this->times($times, $event->getCanonicalId().'-'.RecurrenceId::toCarbon($recurrenceId)->format('YmdHis'), (int) $event->calendarId);
-        $matches = $this->check($times['cancelled'] || !$event->enabled || !$event->getEnabledForSite() ? [] : [$target], (int) $event->siteId);
+        $matches = $this->check($times['cancelled'] || Event::STATUS_LIVE !== $event->getStatus() ? [] : [$target], (int) $event->siteId);
 
         return $matches[$target['id']] ?? ['count' => 0, 'events' => []];
     }
@@ -91,7 +91,7 @@ class OverlapService
         usort($targets, static fn (array $a, array $b) => $a['start'] <=> $b['start']);
         $limited = $limited || \count($targets) > self::PREVIEW_LIMIT;
         $targets = \array_slice($targets, 0, self::PREVIEW_LIMIT);
-        if (!$event->enabled || !$event->getEnabledForSite()) {
+        if (Event::STATUS_LIVE !== $event->getStatus()) {
             $targets = [];
         }
         $external = $this->detector->summarize($targets, $this->candidates($targets, (int) $event->siteId, (int) $event->getCanonicalId()));

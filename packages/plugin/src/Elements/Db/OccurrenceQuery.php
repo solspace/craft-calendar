@@ -44,7 +44,7 @@ class OccurrenceQuery extends ActiveQuery
         'dateUpdated',
     ];
 
-    public ?string $status = Event::STATUS_ENABLED;
+    public ?string $status = Event::STATUS_LIVE;
 
     public array|string|null $id = null;
     public array|string|null $uid = null;
