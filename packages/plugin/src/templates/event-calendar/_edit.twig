@@ -7,12 +7,20 @@
     {{ hiddenInput('reviewToken', reviewToken) }}
 
     <div class="calendar-transfer-route">
-        <div><span class="light">{{ 'From'|t('calendar') }}</span><strong>{{ event.calendar.name }}</strong></div>
-        <span class="light" aria-hidden="true">→</span>
-        <div><span class="light">{{ 'To'|t('calendar') }}</span><strong>{{ target.name }}</strong></div>
+        <div class="calendar-transfer-calendar">
+            <span class="light">{{ 'Current calendar'|t('calendar') }}</span>
+            <strong><span class="calendar-transfer-dot" style="background-color: {{ event.calendar.color }}" aria-hidden="true"></span>{{ event.calendar.name }}</strong>
+        </div>
+        <span class="calendar-transfer-arrow" aria-hidden="true">→</span>
+        <div class="calendar-transfer-calendar">
+            <span class="light">{{ 'New calendar'|t('calendar') }}</span>
+            <strong><span class="calendar-transfer-dot" style="background-color: {{ target.color }}" aria-hidden="true"></span>{{ target.name }}</strong>
+        </div>
     </div>
-    <p class="notice">{{ 'This change is saved in your draft. Review the new layout and complete any required fields before saving the event.'|t('calendar') }}</p>
-    <p class="light">{{ 'The title, schedule, and occurrence dates, cancellations, and custom titles are kept. Field mappings also apply to customized occurrences.'|t('calendar') }}</p>
+    <div class="calendar-transfer-notice">
+        <strong>{{ 'Changes stay in your draft'|t('calendar') }}</strong>
+        <p>{{ 'Review the new layout and complete any required fields before saving the event.'|t('calendar') }}</p>
+    </div>
     {% if event.seriesId %}
         <p class="light">{{ 'Only this part of the event series changes calendar. Other parts keep their current calendar.'|t('calendar') }}</p>
     {% endif %}
@@ -22,45 +30,90 @@
     {% for message in blockers %}<p class="warning">{{ message }}</p>{% endfor %}
 
     {% if not blockers %}
-        <h2>{{ 'Field mapping'|t('calendar') }}</h2>
-        <p class="light">{{ 'Similar fields are preselected. Choose which existing field supplies each destination field. Nested content and relations can only transfer to the same Craft field.'|t('calendar') }}</p>
-        {% if rows %}
-            <table class="data fullwidth calendar-transfer-fields">
-                <thead><tr><th>{{ 'Destination field'|t('calendar') }}</th><th>{{ 'Use content from'|t('calendar') }}</th></tr></thead>
-                <tbody>
-                    {% for row in rows %}
-                        <tr>
-                            <th scope="row"><label for="mapping-{{ row.uid }}">{{ row.label }}{% if row.required %}<span class="required" aria-label="{{ 'Required'|t('app') }}"></span>{% endif %}</label><div class="light">{{ row.type }} · {{ row.handle }}</div></th>
-                            <td>{{ forms.select({id: 'mapping-' ~ row.uid, name: 'mapping[' ~ row.uid ~ ']', options: row.options, value: row.value, inputAttributes: {'data-field-mapping': true}}) }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}<p class="light">{{ 'This calendar has no custom fields.'|t('calendar') }}</p>{% endif %}
-        <div class="calendar-transfer-unmapped warning" data-unmapped-warning hidden>
-            <strong>{{ 'Content that will not carry over'|t('calendar') }}</strong>
-            <p>{{ 'These populated fields are not mapped. Their event and occurrence content will be omitted from the destination layout.'|t('calendar') }}</p>
-            <ul data-unmapped-fields></ul>
+        <section class="calendar-transfer-mapping" aria-labelledby="calendar-transfer-heading">
+            <div class="calendar-transfer-section-heading">
+                <h2 id="calendar-transfer-heading">{{ 'Field mapping'|t('calendar') }}</h2>
+                <p class="light">{{ 'Similar fields are preselected. Choose the content to keep in each new field.'|t('calendar') }}</p>
+            </div>
+            {% if rows %}
+                <div class="calendar-transfer-fields-wrap">
+                    <table class="data fullwidth calendar-transfer-fields">
+                        <thead><tr><th>{{ 'Destination field'|t('calendar') }}</th><th>{{ 'Use content from'|t('calendar') }}</th></tr></thead>
+                        <tbody>
+                            {% for row in rows %}
+                                <tr>
+                                    <th scope="row">
+                                        <label for="mapping-{{ row.uid }}">{{ row.label }}{% if row.required %}<span class="required" aria-label="{{ 'Required'|t('app') }}"></span>{% endif %}</label>
+                                        <div class="calendar-transfer-field-meta"><span>{{ row.type }}</span><code>{{ row.handle }}</code></div>
+                                    </th>
+                                    <td>{{ forms.select({id: 'mapping-' ~ row.uid, name: 'mapping[' ~ row.uid ~ ']', options: row.options, value: row.value, inputAttributes: {'data-field-mapping': true}}) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}<p class="light">{{ 'This calendar has no custom fields.'|t('calendar') }}</p>{% endif %}
+            <div class="calendar-transfer-unmapped" data-unmapped-warning hidden>
+                <strong>{{ 'Content that will not carry over'|t('calendar') }}</strong>
+                <p>{{ 'These populated fields are not mapped. Their event and occurrence content will be omitted.'|t('calendar') }}</p>
+                <ul data-unmapped-fields></ul>
+            </div>
+            <p class="error" data-mapping-error hidden>{{ 'Each source field can only be mapped once.'|t('calendar') }}</p>
+        </section>
+        <details class="calendar-transfer-details">
+            <summary>{{ 'What happens to my event content?'|t('calendar') }}</summary>
+            <div>
+                <p class="light">{{ 'The title, schedule, occurrence dates, cancellations, and custom titles are kept. Field mappings also apply to customized occurrences.'|t('calendar') }}</p>
+                <p class="light">{{ 'Nested content and relations can only transfer to the same Craft field. Destination field validation and translation settings apply.'|t('calendar') }}</p>
+            </div>
+        </details>
+        <div class="calendar-transfer-confirm">
+            {{ forms.checkboxField({name: 'confirmTransfer', label: 'I have reviewed the field mapping.'|t('calendar'), required: true}) }}
         </div>
-        <p class="error" data-mapping-error hidden>{{ 'Each source field can only be mapped once.'|t('calendar') }}</p>
-        <p class="light">{{ 'Destination field validation and translation settings apply. Unmapped required fields must be completed in the event editor.'|t('calendar') }}</p>
-        {{ forms.checkboxField({name: 'confirmTransfer', label: 'I have reviewed the field mapping.'|t('calendar'), required: true}) }}
     {% else %}
         <p class="light">{{ 'Close this panel and choose another calendar.'|t('calendar') }}</p>
     {% endif %}
 </div>
 {% css %}
-.calendar-transfer { display: grid; gap: 20px; }
+.calendar-transfer { display: grid; gap: 24px; container-type: inline-size; }
 .calendar-transfer p, .calendar-transfer h2 { margin: 0; }
-.calendar-transfer-route { display: flex; align-items: center; gap: 24px; padding-block: 8px; }
-.calendar-transfer-route > div { display: grid; gap: 6px; flex: 1; min-width: 0; }
-.calendar-transfer-route strong { font-size: 18px; overflow-wrap: anywhere; }
-.calendar-transfer-fields th, .calendar-transfer-fields td { padding-block: 16px; vertical-align: middle; }
-.calendar-transfer-fields th { width: 45%; }
-.calendar-transfer-fields th .light { margin-top: 5px; font-weight: normal; font-size: 12px; }
-.calendar-transfer-fields td .select, .calendar-transfer-fields td select { width: 100%; }
-.calendar-transfer-unmapped { border: 1px solid rgb(184 115 0); border-radius: var(--radius-small, 4px); padding: 16px; background: var(--warning-bg-color, #fff8e6); color: rgb(184 115 0); }
-.calendar-transfer-unmapped p { margin-block: 8px; }
-.calendar-transfer-unmapped ul { list-style: disc; padding-inline-start: 20px; }
+.calendar-transfer-route { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 16px; }
+.calendar-transfer-calendar { display: grid; gap: 10px; padding: 18px 20px; border: 1px solid var(--hairline-color); border-radius: var(--radius-lg, 8px); background: var(--gray-050); min-width: 0; }
+.calendar-transfer-calendar > .light { font-size: 12px; }
+.calendar-transfer-calendar strong { display: flex; align-items: center; gap: 10px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+.calendar-transfer-dot { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; }
+.calendar-transfer-arrow { display: grid; place-items: center; width: 32px; height: 32px; color: var(--gray-500); font-size: 20px; }
+.calendar-transfer-notice { display: grid; gap: 4px; padding: 14px 18px; border-radius: var(--radius-lg, 8px); background: var(--blue-050); color: var(--blue-700); border-inline-start: 3px solid var(--blue-300); }
+.calendar-transfer-mapping { display: grid; gap: 16px; }
+.calendar-transfer-section-heading { display: grid; gap: 6px; }
+.calendar-transfer-section-heading h2 { font-size: 16px; }
+.calendar-transfer-fields-wrap { border: 1px solid var(--hairline-color); border-radius: var(--radius-lg, 8px); overflow: hidden; }
+.calendar-transfer table.calendar-transfer-fields { margin: 0; table-layout: fixed; }
+.calendar-transfer table.calendar-transfer-fields th, .calendar-transfer table.calendar-transfer-fields td { padding: 16px 20px; vertical-align: middle; }
+.calendar-transfer table.calendar-transfer-fields thead th { white-space: normal; padding-block: 12px; background: var(--gray-050); font-size: 12px; }
+.calendar-transfer table.calendar-transfer-fields th:first-child { width: 42%; }
+.calendar-transfer table.calendar-transfer-fields tbody tr + tr > * { border-block-start: 1px solid var(--hairline-color); }
+.calendar-transfer table.calendar-transfer-fields tbody th label { font-weight: 600; overflow-wrap: anywhere; }
+.calendar-transfer-field-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 6px; color: var(--gray-500); font-weight: normal; font-size: 12px; }
+.calendar-transfer-field-meta code { border-radius: var(--radius-sm, 3px); background: var(--gray-050); padding: 1px 5px; font-size: 11px; overflow-wrap: anywhere; }
+.calendar-transfer table.calendar-transfer-fields td .select, .calendar-transfer table.calendar-transfer-fields td select { width: 100%; }
+.calendar-transfer table.calendar-transfer-fields td .select { --button-bg: var(--gray-050); --button-bg--hover: var(--gray-100); }
+.calendar-transfer table.calendar-transfer-fields td select { box-shadow: inset 0 0 0 1px var(--hairline-color); }
+.calendar-transfer-unmapped { display: grid; gap: 8px; border: 1px solid rgb(184 115 0 / 35%); border-inline-start: 3px solid rgb(184 115 0); border-radius: var(--radius-lg, 8px); padding: 16px 18px; background: var(--amber-050); color: rgb(184 115 0); }
+.calendar-transfer-unmapped ul { list-style: disc; padding-inline-start: 20px; margin: 0; }
+.calendar-transfer-unmapped li + li { margin-top: 4px; }
+.calendar-transfer-details { font-size: 12px; }
+.calendar-transfer-details summary { cursor: pointer; color: var(--gray-600); width: fit-content; }
+.calendar-transfer-details summary:hover { color: var(--blue-600); }
+.calendar-transfer-details > div { display: grid; gap: 8px; margin-top: 12px; }
+.calendar-transfer-confirm { border-block-start: 1px solid var(--hairline-color); padding-block-start: 20px; }
+.calendar-transfer-confirm .field { margin: 0; }
 .calendar-transfer [hidden] { display: none; }
+@container (max-width: 500px) {
+    .calendar-transfer-route { gap: 8px; }
+    .calendar-transfer-calendar { padding: 12px; }
+    .calendar-transfer-calendar strong { font-size: 15px; }
+    .calendar-transfer table.calendar-transfer-fields th, .calendar-transfer table.calendar-transfer-fields td { padding: 12px; }
+    .calendar-transfer table.calendar-transfer-fields th:first-child { width: 40%; }
+}
 {% endcss %}
