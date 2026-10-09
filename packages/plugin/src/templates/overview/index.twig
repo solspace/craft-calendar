@@ -4,6 +4,35 @@
 {% set title = "Calendar"|t('calendar') %}
 {% set selectedSubnavItem = "overview" %}
 
+{% block actionButton %}
+	<div class="calendar-overview-actions">
+		<div data-calendar-search-root></div>
+		{{ parent() }}
+	</div>
+{% endblock %}
+
+{% css %}
+	.calendar-overview-actions {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 12px;
+	}
+	.calendar-overview-actions > .buttons {
+		margin: 0;
+		flex-shrink: 0;
+	}
+	.calendar-overview-actions [data-calendar-search-root] {
+		width: clamp(200px, 28vw, 420px);
+		min-width: 0;
+	}
+	@media (max-width: 600px) {
+		.calendar-overview-actions [data-calendar-search-root] {
+			width: 180px;
+		}
+	}
+{% endcss %}
+
 {% block sidebar %}
 	<div id="calendar-sidebar">
 		<div data-sidebar-root></div>

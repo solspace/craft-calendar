@@ -128,7 +128,18 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
           )}
         </div>
         <div className="calendar-agenda-meta">
-          {calendarName && <span>{calendarName}</span>}
+          {calendarName && (
+            <span className="calendar-agenda-calendar">
+              <span
+                className="calendar-agenda-calendar-dot"
+                style={{
+                  backgroundColor: event.extendedProps.calendarColor || event.backgroundColor,
+                }}
+                aria-hidden="true"
+              />
+              {calendarName}
+            </span>
+          )}
           {location && <span className="calendar-agenda-location">{location}</span>}
         </div>
         {description && <div className="calendar-agenda-description">{description}</div>}

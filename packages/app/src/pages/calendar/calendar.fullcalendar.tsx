@@ -1,6 +1,6 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import type { ShowPopoverOptions } from "@cal/contexts/popover/popover.types";
-import { UTCifyDateOnly, utcDateKey } from "@cal/utils/date";
+import { UTCifyDateOnly, utcDateKey, utcDatePath } from "@cal/utils/date";
 import { getCalendarTranslations, getDateLocale } from "@cal/utils/localization";
 import type {
   CalendarApi,
@@ -17,7 +17,16 @@ import list from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGrid from "@fullcalendar/timegrid";
 import { addDays } from "date-fns";
-import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type AnchorHTMLAttributes,
+  type FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import {
   buildCreateDraftEventInput,
   buildCreateDraftFromSelection,
@@ -65,6 +74,15 @@ const weekHeaderWeekdayFormatter = new Intl.DateTimeFormat(getDateLocale().code,
 });
 const weekHeaderDayFormatter = new Intl.DateTimeFormat(getDateLocale().code, {
   day: "numeric",
+  timeZone: "UTC",
+});
+const agendaWeekdayFormatter = new Intl.DateTimeFormat(getDateLocale().code, {
+  weekday: "long",
+  timeZone: "UTC",
+});
+const agendaMonthFormatter = new Intl.DateTimeFormat(getDateLocale().code, {
+  month: "long",
+  year: "numeric",
   timeZone: "UTC",
 });
 
@@ -442,6 +460,32 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   );
 
   const renderDayHeaderContent = useCallback((arg: DayHeaderContentArg) => {
+    if (arg.view.type === "listMonth") {
+      // List headers provide navigation attributes and an ID for the table's date labels.
+      const header = arg as DayHeaderContentArg & {
+        textId: string;
+        navLinkAttrs: AnchorHTMLAttributes<HTMLAnchorElement>;
+      };
+      return (
+        <a
+          {...header.navLinkAttrs}
+          href={Craft.getCpUrl(`calendar/${utcDatePath(arg.date)}/day`)}
+          id={header.textId}
+          className="calendar-agenda-day"
+          aria-label={arg.text}
+        >
+          <span className="calendar-agenda-day-number" aria-hidden="true">
+            {weekHeaderDayFormatter.format(arg.date)}
+          </span>
+          <span className="calendar-agenda-day-label" aria-hidden="true">
+            <span>{agendaWeekdayFormatter.format(arg.date)}</span>
+            <span className="calendar-agenda-day-month">
+              {agendaMonthFormatter.format(arg.date)}
+            </span>
+          </span>
+        </a>
+      );
+    }
     if (arg.view.type !== "timeGridWeek") {
       return arg.text;
     }
@@ -460,10 +504,14 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   if (!isReady) {
     return null;
   }
+  const searchRoot = document.querySelector<HTMLElement>("[data-calendar-search-root]");
+  const searchControl = (
+    <CalendarSearch initialSearch={search} onSearchChange={handleSearchChange} />
+  );
 
   return (
     <CalendarWrapper className={isFetchingEvents ? "is-fetching-events" : undefined}>
-      <CalendarSearch initialSearch={search} onSearchChange={handleSearchChange} />
+      {searchRoot ? createPortal(searchControl, searchRoot) : searchControl}
       <FullCalendar
         {...getCalendarTranslations()}
         ref={calendar}

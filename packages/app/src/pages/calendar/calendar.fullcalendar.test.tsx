@@ -118,9 +118,15 @@ describe("control panel Agenda", () => {
     await mount();
     expect(container.querySelector(".fc-listMonth-button")?.textContent).toBe("Agenda");
     expect(container.querySelectorAll(".fc-list-day")).toHaveLength(2);
+    const dateHeader = container.querySelector(".fc-list-day th") as HTMLTableCellElement;
+    const dateLink = dateHeader.querySelector("a") as HTMLAnchorElement;
+    expect(dateHeader.getAttribute("aria-labelledby")).toBe(dateLink.id);
+    expect(dateLink.getAttribute("href")).toBe("/admin/calendar/2026/10/09/day");
+    expect(dateLink.querySelector(".calendar-agenda-day-number")?.textContent).toBe("9");
     const rows = container.querySelectorAll(".fc-list-event");
     expect(rows[0].textContent).toContain("Custom workshop");
     expect(rows[0].textContent).toContain("Studio two");
+    expect(rows[0].querySelector(".calendar-agenda-calendar")?.textContent).toBe("Workshops");
     expect(rows[0].textContent).toContain("A description from the custom occurrence.");
     expect(rows[0].querySelector(".fc-list-event-time")?.textContent).toMatch(/10:00.*12:00/);
     expect(rows[1].querySelector(".fc-list-event-time")?.textContent).toBe("All Day");
@@ -150,5 +156,19 @@ describe("control panel Agenda", () => {
     await settle();
     expect(container.querySelectorAll(".fc-list-event")).toHaveLength(2);
     expect(new URL(window.location.href).searchParams.has("search")).toBe(false);
+  });
+
+  it("places search in the page header when the template supplies its host", async () => {
+    const header = document.createElement("div");
+    header.dataset.calendarSearchRoot = "";
+    document.body.append(header);
+    try {
+      await mount();
+      expect(header.querySelector("input")?.getAttribute("placeholder")).toBe("Search");
+      expect(container.querySelector("input")).toBeNull();
+      expect(container.querySelector(".fc-listMonth-view")).not.toBeNull();
+    } finally {
+      header.remove();
+    }
   });
 });
