@@ -109,7 +109,6 @@ class CodePackController extends BaseController
 
         try {
             $codePack->install($prefix);
-            Calendar::getInstance()->settings->dismissDemoBanner();
         } catch (FileObjectException $exception) {
             return $this->renderTemplate(
                 'calendar/code-pack',

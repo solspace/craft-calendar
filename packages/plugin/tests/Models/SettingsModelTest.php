@@ -18,6 +18,7 @@ class SettingsModelTest extends TestCase
 
         self::assertSame('month', $settings->getDefaultCalendarView());
         self::assertTrue($settings->validate(['defaultCalendarView']));
+        self::assertSame(SettingsModel::CALENDAR_VIEWS, $settings->getEnabledCalendarViews());
     }
 
     public function testConfiguredTabsAreRetainedAndValidated(): void
@@ -39,5 +40,38 @@ class SettingsModelTest extends TestCase
             self::assertFalse($settings->validate(['defaultCalendarView']));
             self::assertTrue($settings->hasErrors('defaultCalendarView'));
         }
+    }
+
+    public function testVisibleTabsKeepDisplayOrderAndDefaultMustBeVisible(): void
+    {
+        $settings = new SettingsModel([
+            'enabledCalendarViews' => ['agenda', 'week'],
+            'defaultCalendarView' => 'agenda',
+        ]);
+        self::assertSame(['week', 'agenda'], $settings->getEnabledCalendarViews());
+        self::assertTrue($settings->validate());
+
+        $settings->defaultCalendarView = 'month';
+        self::assertSame('week', $settings->getDefaultCalendarView());
+        self::assertFalse($settings->validate());
+        self::assertTrue($settings->hasErrors('defaultCalendarView'));
+    }
+
+    public function testEmptyAndUnknownViewsCannotBeSaved(): void
+    {
+        foreach (['', [], ['invalid'], ['month', 'invalid']] as $enabled) {
+            $settings = new SettingsModel(['enabledCalendarViews' => $enabled]);
+            self::assertFalse($settings->validate());
+            self::assertTrue($settings->hasErrors('enabledCalendarViews'));
+            self::assertNotEmpty($settings->getEnabledCalendarViews());
+        }
+    }
+
+    public function testRemovedBannerSettingIsIgnoredWhenLoadingOldConfiguration(): void
+    {
+        $settings = new SettingsModel();
+        $settings->setAttributes(['demoBannerDisabled' => true, 'defaultCalendarView' => 'agenda'], false);
+        self::assertSame('agenda', $settings->getDefaultCalendarView());
+        self::assertArrayNotHasKey('demoBannerDisabled', $settings->toArray());
     }
 }

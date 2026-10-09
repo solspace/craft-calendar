@@ -277,7 +277,6 @@ return [
     'Fri' => 'Fri',
     'Friday' => 'Friday',
     'General Settings' => 'General Settings',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>',
     'Get an Invite' => 'Get an Invite',
     'Get it' => 'Get it',
     'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!' => 'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!',
@@ -286,7 +285,6 @@ return [
     'Guest Access' => 'Guest Access',
     'Handle' => 'Handle',
     'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!' => 'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!',
-    'Hide \'Install Demo\' alert message?' => 'Hide \'Install Demo\' alert message?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Hides the alert message suggesting to install demo templates when this setting is enabled.',
     'How you’ll refer to this calendar in the templates.' => 'How you’ll refer to this calendar in the templates.',
     'ICS Description field' => 'ICS Description field',
@@ -702,8 +700,6 @@ return [
     'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.' => 'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.',
     'Default Page' => 'Default Page',
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Choose the page that opens when you click Calendar in the control panel navigation.',
-    'Hide Demo Installation Banner' => 'Hide Demo Installation Banner',
-    'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Hide the banner that prompts you to install Calendar\'s demo templates.',
 
     // Event settings
     'Default Event Duration (Minutes)' => 'Default Event Duration (Minutes)',
@@ -805,4 +801,18 @@ return [
     'No overlaps found.' => 'No overlaps found.',
     'The event schedule could not be checked.' => 'The event schedule could not be checked.',
     'Showing up to five conflicting occurrences.' => 'Showing up to five conflicting occurrences.',
+
+    // Overview settings
+    'Visible Calendar Tabs' => 'Visible Calendar Tabs',
+    'Choose the views available on the Overview page. Select at least one.' => 'Choose the views available on the Overview page. Select at least one.',
+    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.',
+    'Display disabled events with faded styling in all Overview views.' => 'Display disabled events with faded styling in all Overview views.',
+    'Drag and Drop' => 'Drag and Drop',
+    'Quick Event Creation' => 'Quick Event Creation',
+    'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.',
+    'Allow users with permission to create events to add them directly from Month, Week, and Day views.' => 'Allow users with permission to create events to add them directly from Month, Week, and Day views.',
+    'Select at least one calendar tab.' => 'Select at least one calendar tab.',
+    'Select valid calendar tabs.' => 'Select valid calendar tabs.',
+    'Choose a default tab that is enabled.' => 'Choose a default tab that is enabled.',
+    'Couldn’t save settings.' => 'Couldn’t save settings.',
 ];

@@ -26,6 +26,7 @@ export type EventActionIcon =
 
 export type CalendarConfig = {
   defaultCalendarView?: CalendarTab;
+  enabledCalendarViews?: CalendarTab[];
   eventActionIcons?: Partial<Record<EventActionIcon, string>>;
   calendars: Record<number, string>;
   calendarColors?: Record<number, string | null>;

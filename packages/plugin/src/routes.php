@@ -45,6 +45,7 @@ return [
     'calendar/settings/diagnostics' => 'calendar/diagnostics/index',
     'calendar/settings/license' => 'calendar/settings/license',
     'calendar/settings/general' => 'calendar/settings/general',
+    'calendar/settings/overview' => 'calendar/settings/overview',
     'calendar/settings/events' => 'calendar/settings/events',
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
     'calendar/settings/ics' => 'calendar/settings/ics',

@@ -182,14 +182,15 @@ class DiagnosticsService extends Component
         $configuration = [
             $row(Calendar::t('Default Page'), Calendar::t(ucfirst($model->defaultView ?: SettingsModel::DEFAULT_VIEW))),
             $row(Calendar::t('Default Calendar Tab'), Calendar::t(ucfirst($model->getDefaultCalendarView()))),
+            $row(Calendar::t('Visible Calendar Tabs'), implode(', ', array_map(static fn (string $view) => Calendar::t(ucfirst($view)), $model->getEnabledCalendarViews()))),
             $row(Calendar::t('Time Picker Interval (Minutes)'), $settings->getTimeInterval()),
             $row(Calendar::t('Default Event Duration (Minutes)'), $settings->getEventDuration()),
             $row(Calendar::t('Late-Night Event Cutoff (Hours)'), $settings->getOverlapThreshold()),
             $booleanRow(Calendar::t('All-Day Events By Default'), $settings->isAllDayDefault()),
             $booleanRow(Calendar::t('Show Disabled Events'), $settings->showDisabledEvents()),
             $booleanRow(Calendar::t('Show Overlap Warnings'), $settings->showOverlapWarnings()),
-            $booleanRow(Calendar::t('Enable Quick Event Creation'), $settings->isQuickCreateEnabled()),
-            $booleanRow(Calendar::t('Enable Drag and Drop'), $settings->isDragAndDropEnabled()),
+            $booleanRow(Calendar::t('Quick Event Creation'), $settings->isQuickCreateEnabled()),
+            $booleanRow(Calendar::t('Drag and Drop'), $settings->isDragAndDropEnabled()),
             $booleanRow(Calendar::t('Restrict Editing to Own Events'), $settings->isAuthoredEventEditOnly()),
         ];
 

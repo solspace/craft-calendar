@@ -58,6 +58,11 @@ class SettingsController extends BaseController
         return $this->provideTemplate('general', ['label' => 'General Settings']);
     }
 
+    public function actionOverview(): Response
+    {
+        return $this->provideTemplate('overview', ['label' => 'Overview']);
+    }
+
     /**
      * Renders the Events settings page template.
      */
@@ -110,7 +115,7 @@ class SettingsController extends BaseController
     /**
      * Handles layout saving and ICS field special treatment if necessery.
      */
-    public function actionSaveSettings(): Response
+    public function actionSaveSettings(): ?Response
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
 
@@ -130,7 +135,12 @@ class SettingsController extends BaseController
 
         $allSettings = $plugin->getSettings()->toArray();
 
-        \Craft::$app->plugins->savePluginSettings($plugin, $allSettings);
+        if (!\Craft::$app->plugins->savePluginSettings($plugin, $allSettings)) {
+            return $this->asFailure(
+                Calendar::t('Couldn’t save settings.'),
+                routeParams: ['settings' => $plugin->getSettings()],
+            );
+        }
         \Craft::$app->session->setNotice(Calendar::t('Settings saved successfully.'));
 
         return $this->redirectToPostedUrl();

@@ -277,7 +277,6 @@ return [
     'Fri' => 'ven.',
     'Friday' => 'Vendredi',
     'General Settings' => 'Paramètres généraux',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Configurez Calendar sur votre site en quelques clics ! <a href="{link}" class="alert-link">Cliquez ici pour installer les modèles de démonstration.</a>',
     'Get an Invite' => 'Obtenir une invitation',
     'Get it' => 'Obtenir',
     'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!' => 'Profitez davantage de Calendar avec l’édition Pro ! Accédez aux règles de répétition, à l’export ICS et aux abonnements, aux widgets de tableau de bord et au renommage du plugin.',
@@ -286,7 +285,6 @@ return [
     'Guest Access' => 'Accès des visiteurs',
     'Handle' => 'Identifiant',
     'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!' => 'Des questions ou des idées à partager ? Rendez-vous dans notre espace GitHub Discussions !',
-    'Hide \'Install Demo\' alert message?' => 'Masquer l’invitation à installer la démonstration ?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Si activé, masque le message proposant l’installation des modèles de démonstration.',
     'How you’ll refer to this calendar in the templates.' => 'La façon de faire référence à ce calendrier dans les modèles.',
     'ICS Description field' => 'Champ de description ICS',
@@ -702,8 +700,6 @@ return [
     'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.' => 'Limitez les utilisateurs non administrateurs à la modification ou à la suppression des événements dont ils sont les auteurs. Les autorisations Calendar restent applicables.',
     'Default Page' => 'Page par défaut',
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Choisissez la page qui s\'ouvre lorsque vous cliquez sur Calendar dans la navigation du panneau de contrôle.',
-    'Hide Demo Installation Banner' => 'Masquer la bannière d\'installation des démos',
-    'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Masquez la bannière qui vous invite à installer les modèles de démonstration de Calendar.',
 
     // Event settings
     'Default Event Duration (Minutes)' => 'Durée par défaut des événements (minutes)',
@@ -805,4 +801,18 @@ return [
     'No overlaps found.' => 'Aucun chevauchement trouvé.',
     'The event schedule could not be checked.' => 'Impossible de vérifier le programme de l’événement.',
     'Showing up to five conflicting occurrences.' => 'Affichage de cinq occurrences en conflit au maximum.',
+
+    // Overview settings
+    'Visible Calendar Tabs' => 'Onglets de calendrier visibles',
+    'Choose the views available on the Overview page. Select at least one.' => 'Choisissez les vues disponibles sur la page Vue d’ensemble. Sélectionnez-en au moins une.',
+    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Choisissez l’onglet activé qui s’ouvre sur la page Vue d’ensemble. Les liens vers un onglet masqué ouvrent cet onglet à la place.',
+    'Display disabled events with faded styling in all Overview views.' => 'Affichez les événements désactivés avec un style atténué dans toutes les vues de la page Vue d’ensemble.',
+    'Drag and Drop' => 'Glisser-déposer',
+    'Quick Event Creation' => 'Création rapide d’événements',
+    'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Autorisez les utilisateurs ayant le droit de modifier les événements à les déplacer ou à modifier leur durée dans les vues Mois, Semaine et Jour.',
+    'Allow users with permission to create events to add them directly from Month, Week, and Day views.' => 'Autorisez les utilisateurs ayant le droit de créer des événements à les ajouter directement depuis les vues Mois, Semaine et Jour.',
+    'Select at least one calendar tab.' => 'Sélectionnez au moins un onglet de calendrier.',
+    'Select valid calendar tabs.' => 'Sélectionnez des onglets de calendrier valides.',
+    'Choose a default tab that is enabled.' => 'Choisissez un onglet par défaut qui est activé.',
+    'Couldn’t save settings.' => 'Impossible d’enregistrer les paramètres.',
 ];

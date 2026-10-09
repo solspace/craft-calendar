@@ -277,7 +277,6 @@ return [
     'Fri' => 'vr',
     'Friday' => 'Vrijdag',
     'General Settings' => 'Algemene instellingen',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Begin met Calendar in de front end met enkele klikken! <a href="{link}" class="alert-link">Klik hier om de voorbeeldsjablonen te installeren.</a>',
     'Get an Invite' => 'Uitnodiging aanvragen',
     'Get it' => 'Aanschaffen',
     'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!' => 'Haal meer uit Calendar met de Pro-editie! Pro biedt herhalingsregels voor evenementen, ICS-export en abonnementen, dashboardwidgets en de mogelijkheid om de plugin te hernoemen.',
@@ -286,7 +285,6 @@ return [
     'Guest Access' => 'Gasttoegang',
     'Handle' => 'Handle',
     'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!' => 'Heb je vragen of ideeën die je wilt delen? Bezoek onze GitHub Discussions!',
-    'Hide \'Install Demo\' alert message?' => 'Verberg \'Installeer voorbeeld\' bericht?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Verbergt het bericht dat voorstelt om voorbeeldsjablonen te installeren.',
     'How you’ll refer to this calendar in the templates.' => 'Naam van deze kalender in de sjablonen.',
     'ICS Description field' => 'ICS Beschrijvingveld',
@@ -702,8 +700,6 @@ return [
     'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.' => 'Beperk gebruikers zonder beheerdersrechten tot het bewerken of verwijderen van evenementen waarvan zij de auteur zijn. Calendar-rechten blijven van toepassing.',
     'Default Page' => 'Standaardpagina',
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Kies de pagina die wordt geopend wanneer je op Calendar in de navigatie van het controlepaneel klikt.',
-    'Hide Demo Installation Banner' => 'Banner voor demo-installatie verbergen',
-    'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Verberg de banner die je vraagt de demosjablonen van Calendar te installeren.',
 
     // Event settings
     'Default Event Duration (Minutes)' => 'Standaardduur van evenementen (minuten)',
@@ -805,4 +801,18 @@ return [
     'No overlaps found.' => 'Geen overlappingen gevonden.',
     'The event schedule could not be checked.' => 'De evenementplanning kon niet worden gecontroleerd.',
     'Showing up to five conflicting occurrences.' => 'Er worden maximaal vijf conflicterende voorkomens weergegeven.',
+
+    // Overview settings
+    'Visible Calendar Tabs' => 'Zichtbare kalendertabbladen',
+    'Choose the views available on the Overview page. Select at least one.' => 'Kies de beschikbare weergaven op de overzichtspagina. Selecteer er minstens één.',
+    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Kies welk ingeschakeld tabblad op de overzichtspagina opent. Links naar een verborgen tabblad openen dit tabblad.',
+    'Display disabled events with faded styling in all Overview views.' => 'Toon uitgeschakelde evenementen vervaagd in alle overzichtsweergaven.',
+    'Drag and Drop' => 'Verslepen',
+    'Quick Event Creation' => 'Snel evenementen aanmaken',
+    'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Laat gebruikers met bewerkingsrechten evenementen verplaatsen of de duur aanpassen in de maand-, week- en dagweergave.',
+    'Allow users with permission to create events to add them directly from Month, Week, and Day views.' => 'Laat gebruikers met aanmaakrechten evenementen rechtstreeks toevoegen vanuit de maand-, week- en dagweergave.',
+    'Select at least one calendar tab.' => 'Selecteer minstens één kalendertabblad.',
+    'Select valid calendar tabs.' => 'Selecteer geldige kalendertabbladen.',
+    'Choose a default tab that is enabled.' => 'Kies een ingeschakeld standaardtabblad.',
+    'Couldn’t save settings.' => 'De instellingen konden niet worden opgeslagen.',
 ];

@@ -1,30 +1,43 @@
 import type { CalendarTab } from "@cal/types/config";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
 const HIDDEN_CALENDARS_KEY = "solspace-calendar-hidden-calendars";
 
 export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listMonth" | "calendarYear";
-const viewByUrlSuffix: Record<string, View> = {
-  month: "dayGridMonth",
-  week: "timeGridWeek",
+const viewByUrlSuffix: Record<CalendarTab, View> = {
   day: "timeGridDay",
-  agenda: "listMonth",
+  week: "timeGridWeek",
+  month: "dayGridMonth",
   year: "calendarYear",
+  agenda: "listMonth",
 };
 
 export const getUrlView = (): View | null => {
   const suffix = window.location.pathname.split("/").filter(Boolean).at(-1);
 
-  return suffix ? viewByUrlSuffix[suffix] || null : null;
+  return suffix ? viewByUrlSuffix[suffix as CalendarTab] || null : null;
 };
 
 export const getViewUrlSuffix = (view: View): string =>
   Object.entries(viewByUrlSuffix).find(([, value]) => value === view)?.[0] ?? "month";
 
-export const useViewSettings = (defaultTab: CalendarTab = "month") => {
-  const [view, setViewState] = useState<View>(
-    () => getUrlView() || viewByUrlSuffix[defaultTab] || "dayGridMonth",
+export const useViewSettings = (defaultTab: CalendarTab = "month", enabledTabs?: CalendarTab[]) => {
+  const enabledViews = useMemo(() => {
+    const tabs = Object.keys(viewByUrlSuffix) as CalendarTab[];
+    const enabled = tabs.filter((tab) => !enabledTabs || enabledTabs.includes(tab));
+    return (enabled.length ? enabled : tabs).map((tab) => viewByUrlSuffix[tab]);
+  }, [enabledTabs]);
+  const resolveView = useCallback(
+    (preferred: View): View => {
+      if (enabledViews.includes(preferred)) return preferred;
+      if (enabledViews.includes(viewByUrlSuffix[defaultTab])) return viewByUrlSuffix[defaultTab];
+      return enabledViews.includes("dayGridMonth") ? "dayGridMonth" : enabledViews[0];
+    },
+    [defaultTab, enabledViews],
+  );
+  const [view, setViewState] = useState<View>(() =>
+    resolveView(getUrlView() || viewByUrlSuffix[defaultTab] || "dayGridMonth"),
   );
   const [isReady, setIsReady] = useState(false);
 
@@ -33,7 +46,7 @@ export const useViewSettings = (defaultTab: CalendarTab = "month") => {
   }, []);
 
   const setView = (view: View) => {
-    setViewState(view);
+    setViewState(resolveView(view));
     setIsReady(true);
   };
 
@@ -41,6 +54,8 @@ export const useViewSettings = (defaultTab: CalendarTab = "month") => {
     view,
     setView,
     isReady,
+    enabledViews,
+    resolveView,
   };
 };
 

@@ -60,7 +60,7 @@ import {
   resizeEvent,
 } from "./calendar.events";
 import { CalendarHistory, useCalendarHistory } from "./calendar.history";
-import { useViewSettings, type View } from "./calendar.persistence";
+import { getViewUrlSuffix, useViewSettings, type View } from "./calendar.persistence";
 import { CalendarSearch, getCalendarSearch } from "./calendar.search";
 import { CalendarWrapper } from "./calendar.styles";
 import { CalendarYear } from "./calendar.year";
@@ -146,8 +146,12 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     isQuickCreateEnabled,
     currentSiteId,
     defaultCalendarView,
+    enabledCalendarViews,
   } = useConfig();
-  const { view, setView, isReady } = useViewSettings(defaultCalendarView);
+  const { view, setView, isReady, enabledViews, resolveView } = useViewSettings(
+    defaultCalendarView,
+    enabledCalendarViews,
+  );
   const canCreateEvents = canEditEvents && isQuickCreateEnabled;
 
   const calendar = useRef<FullCalendar>(null);
@@ -227,10 +231,11 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     (date: Date, targetView: View) => {
       clearTimeout(hoverTimer.current);
       hidePopover();
-      changeCalendarUrl(date);
-      calendar.current?.getApi().changeView(targetView, date);
+      const nextView = resolveView(targetView);
+      changeCalendarUrl(date, nextView);
+      calendar.current?.getApi().changeView(nextView, date);
     },
-    [hidePopover],
+    [hidePopover, resolveView],
   );
 
   const previewYearEvent = useCallback(
@@ -446,15 +451,15 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
       return;
     }
 
-    calendarApi.changeView(
+    const nextView = resolveView(
       calendarApi.view.type === "listMonth" ? "listMonth" : "timeGridDay",
-      miniDateSelection,
     );
+    calendarApi.changeView(nextView, miniDateSelection);
 
-    changeCalendarUrl(miniDateSelection);
+    changeCalendarUrl(miniDateSelection, nextView);
 
     onMiniDateSelectionHandled();
-  }, [miniDateSelection, onMiniDateSelectionHandled]);
+  }, [miniDateSelection, onMiniDateSelectionHandled, resolveView]);
 
   useEffect(() => {
     const calendarApi = calendar.current?.getApi();
@@ -563,12 +568,16 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     ],
   );
 
-  const handleNavLinkDayClick = useCallback((date: Date) => {
-    const utcDate = UTCifyDateOnly(date);
+  const handleNavLinkDayClick = useCallback(
+    (date: Date) => {
+      const utcDate = UTCifyDateOnly(date);
+      const nextView = resolveView("timeGridDay");
 
-    changeCalendarUrl(utcDate);
-    calendar.current?.getApi().changeView("timeGridDay", utcDate);
-  }, []);
+      changeCalendarUrl(utcDate, nextView);
+      calendar.current?.getApi().changeView(nextView, utcDate);
+    },
+    [resolveView],
+  );
 
   const getDayHeaderClassNames = useCallback(
     (arg: { date: Date; view: { type: string } }): string[] => {
@@ -581,47 +590,52 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     [currentDay],
   );
 
-  const renderDayHeaderContent = useCallback((arg: DayHeaderContentArg) => {
-    if (arg.view.type === "listMonth") {
-      // List headers provide navigation attributes and an ID for the table's date labels.
-      const header = arg as DayHeaderContentArg & {
-        textId: string;
-        navLinkAttrs: AnchorHTMLAttributes<HTMLAnchorElement>;
-      };
-      return (
-        <a
-          {...header.navLinkAttrs}
-          href={Craft.getCpUrl(`calendar/${utcDatePath(arg.date)}/day`)}
-          id={header.textId}
-          className="calendar-agenda-day"
-          aria-label={arg.text}
-        >
-          <span className="calendar-agenda-day-number" aria-hidden="true">
-            {weekHeaderDayFormatter.format(arg.date)}
-          </span>
-          <span className="calendar-agenda-day-label" aria-hidden="true">
-            <span>{agendaWeekdayFormatter.format(arg.date)}</span>
-            <span className="calendar-agenda-day-month">
-              {agendaMonthFormatter.format(arg.date)}
+  const renderDayHeaderContent = useCallback(
+    (arg: DayHeaderContentArg) => {
+      if (arg.view.type === "listMonth") {
+        // List headers provide navigation attributes and an ID for the table's date labels.
+        const header = arg as DayHeaderContentArg & {
+          textId: string;
+          navLinkAttrs: AnchorHTMLAttributes<HTMLAnchorElement>;
+        };
+        return (
+          <a
+            {...header.navLinkAttrs}
+            href={Craft.getCpUrl(
+              `calendar/${utcDatePath(arg.date)}/${getViewUrlSuffix(resolveView("timeGridDay"))}`,
+            )}
+            id={header.textId}
+            className="calendar-agenda-day"
+            aria-label={arg.text}
+          >
+            <span className="calendar-agenda-day-number" aria-hidden="true">
+              {weekHeaderDayFormatter.format(arg.date)}
             </span>
-          </span>
-        </a>
+            <span className="calendar-agenda-day-label" aria-hidden="true">
+              <span>{agendaWeekdayFormatter.format(arg.date)}</span>
+              <span className="calendar-agenda-day-month">
+                {agendaMonthFormatter.format(arg.date)}
+              </span>
+            </span>
+          </a>
+        );
+      }
+      if (arg.view.type !== "timeGridWeek") {
+        return arg.text;
+      }
+
+      const weekday = weekHeaderWeekdayFormatter.format(arg.date);
+      const dayNumber = weekHeaderDayFormatter.format(arg.date);
+
+      return (
+        <>
+          <span className="fc-day-header-label">{weekday}</span>
+          <span className="fc-day-header-date">{dayNumber}</span>
+        </>
       );
-    }
-    if (arg.view.type !== "timeGridWeek") {
-      return arg.text;
-    }
-
-    const weekday = weekHeaderWeekdayFormatter.format(arg.date);
-    const dayNumber = weekHeaderDayFormatter.format(arg.date);
-
-    return (
-      <>
-        <span className="fc-day-header-label">{weekday}</span>
-        <span className="fc-day-header-date">{dayNumber}</span>
-      </>
-    );
-  }, []);
+    },
+    [resolveView],
+  );
 
   if (!isReady) {
     return null;
@@ -770,7 +784,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventResize={(arg) => handleEventChange("resize", arg)}
         headerToolbar={{
           start: "title",
-          center: "timeGridDay,timeGridWeek,dayGridMonth,calendarYear,listMonth",
+          center: enabledViews.join(","),
           end: headerToolbarEnd,
         }}
         buttonText={{

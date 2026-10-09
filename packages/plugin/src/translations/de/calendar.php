@@ -277,7 +277,6 @@ return [
     'Fri' => 'Fr',
     'Friday' => 'Freitag',
     'General Settings' => 'Allgemeine Einstellungen',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Bringen Sie Calendar nur mit ein paar wenigen Klicks zum Laufen! <a href="{link}" class="alert-link">Klicken Sie hier</a> um die Demo-Templates zu installieren.',
     'Get an Invite' => 'Einladung erhalten',
     'Get it' => 'Jetzt holen',
     'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!' => 'Holen Sie mit der Pro-Edition mehr aus Calendar heraus! Pro bietet Wiederholungsregeln für Ereignisse, ICS-Export und Abonnements, Dashboard-Widgets und die Möglichkeit, das Plugin umzubenennen.',
@@ -286,7 +285,6 @@ return [
     'Guest Access' => 'Gastzugriff',
     'Handle' => 'Kurzname',
     'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!' => 'Haben Sie Fragen oder Ideen, die Sie teilen möchten? Besuchen Sie unseren Diskussionsbereich auf GitHub!',
-    'Hide \'Install Demo\' alert message?' => '\'Demo Installieren\'-Hinweis verbergen?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Blendet den Hinweis für die Demo-Templates aus.',
     'How you’ll refer to this calendar in the templates.' => 'Wie Sie in Templates auf diese Sektion verweisen.',
     'ICS Description field' => 'ICS Beschreibungsfeld',
@@ -702,8 +700,6 @@ return [
     'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.' => 'Beschränkt Benutzer ohne Administratorrechte auf das Bearbeiten oder Löschen ihrer eigenen Ereignisse. Calendar-Berechtigungen gelten weiterhin.',
     'Default Page' => 'Standardseite',
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Wählt die Seite, die beim Klicken auf Calendar in der Navigation des Kontrollpanels geöffnet wird.',
-    'Hide Demo Installation Banner' => 'Banner zur Demo-Installation ausblenden',
-    'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Blendet das Banner aus, das zur Installation der Calendar-Demovorlagen auffordert.',
 
     // Event settings
     'Default Event Duration (Minutes)' => 'Standarddauer für Ereignisse (Minuten)',
@@ -805,4 +801,18 @@ return [
     'No overlaps found.' => 'Keine Überschneidungen gefunden.',
     'The event schedule could not be checked.' => 'Der Terminplan konnte nicht geprüft werden.',
     'Showing up to five conflicting occurrences.' => 'Es werden bis zu fünf widersprüchliche Vorkommen angezeigt.',
+
+    // Overview settings
+    'Visible Calendar Tabs' => 'Sichtbare Kalender-Tabs',
+    'Choose the views available on the Overview page. Select at least one.' => 'Wählen Sie die verfügbaren Ansichten auf der Übersichtsseite. Wählen Sie mindestens eine.',
+    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Wählen Sie den aktivierten Tab, der auf der Übersichtsseite geöffnet wird. Links zu ausgeblendeten Tabs öffnen stattdessen diesen Tab.',
+    'Display disabled events with faded styling in all Overview views.' => 'Zeigen Sie deaktivierte Ereignisse in allen Übersichtsansichten abgeschwächt an.',
+    'Drag and Drop' => 'Drag & Drop',
+    'Quick Event Creation' => 'Schnelle Ereigniserstellung',
+    'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Erlauben Sie Benutzern mit Bearbeitungsberechtigung, Ereignisse in der Monats-, Wochen- und Tagesansicht zu verschieben oder ihre Dauer zu ändern.',
+    'Allow users with permission to create events to add them directly from Month, Week, and Day views.' => 'Erlauben Sie Benutzern mit Erstellungsberechtigung, Ereignisse direkt in der Monats-, Wochen- und Tagesansicht hinzuzufügen.',
+    'Select at least one calendar tab.' => 'Wählen Sie mindestens einen Kalender-Tab.',
+    'Select valid calendar tabs.' => 'Wählen Sie gültige Kalender-Tabs.',
+    'Choose a default tab that is enabled.' => 'Wählen Sie einen aktivierten Standard-Tab.',
+    'Couldn’t save settings.' => 'Die Einstellungen konnten nicht gespeichert werden.',
 ];

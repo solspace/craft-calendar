@@ -15,6 +15,7 @@ const { showPopover, hidePopover, controlPanelSettings } = vi.hoisted(() => ({
     weekStartDay: 0,
     realPopover: false,
     defaultCalendarView: "month",
+    enabledCalendarViews: undefined as string[] | undefined,
   },
 }));
 
@@ -43,6 +44,7 @@ vi.mock("./context/config.context", () => ({
     isQuickCreateEnabled: true,
     currentSiteId: 1,
     defaultCalendarView: controlPanelSettings.defaultCalendarView,
+    enabledCalendarViews: controlPanelSettings.enabledCalendarViews,
   }),
 }));
 
@@ -80,6 +82,7 @@ describe("control panel Agenda", () => {
       weekStartDay: 0,
       realPopover: false,
       defaultCalendarView: "month",
+      enabledCalendarViews: undefined,
     });
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     vi.stubGlobal("Craft", {
@@ -547,5 +550,71 @@ describe("control panel Agenda", () => {
     expect(container.querySelector(".fc-calendarYear-button")?.getAttribute("aria-pressed")).toBe(
       "true",
     );
+  });
+
+  it.each([
+    ["day", "timeGridDay"],
+    ["week", "timeGridWeek"],
+    ["month", "dayGridMonth"],
+    ["year", "calendarYear"],
+    ["agenda", "listMonth"],
+  ])("supports %s as the only visible tab", async (tab, view) => {
+    controlPanelSettings.enabledCalendarViews = [tab];
+    controlPanelSettings.defaultCalendarView = tab;
+    history.replaceState(null, "", "/admin/calendar/overview");
+    await mount();
+    expect(container.querySelectorAll(".fc-toolbar-chunk:nth-child(2) button")).toHaveLength(1);
+    expect(container.querySelector(`.fc-${view}-button`)?.getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+  });
+
+  it("opens the enabled default for hidden-tab URLs while preserving date and filters", async () => {
+    controlPanelSettings.enabledCalendarViews = ["agenda", "month"];
+    controlPanelSettings.defaultCalendarView = "month";
+    history.replaceState(null, "", "/admin/calendar/2026/10/09/year?site=2&search=workshop");
+    await mount();
+    expect(container.querySelector(".fc-calendarYear-button")).toBeNull();
+    expect(container.querySelector(".fc-dayGridMonth-view")).not.toBeNull();
+    expect(window.location.pathname).toBe("/admin/calendar/2026/10/09/month");
+    expect(window.location.search).toBe("?site=2&search=workshop");
+    expect(
+      Array.from(
+        container.querySelectorAll(".fc-toolbar-chunk:nth-child(2) button"),
+        (button) => button.textContent,
+      ),
+    ).toEqual(["Month", "Agenda"]);
+  });
+
+  it("keeps Year date and month links within enabled views", async () => {
+    controlPanelSettings.enabledCalendarViews = ["year"];
+    controlPanelSettings.defaultCalendarView = "year";
+    history.replaceState(null, "", "/admin/calendar/overview");
+    await mount();
+    act(() => container.querySelector<HTMLButtonElement>('[data-date="2026-10-10"]')?.click());
+    await settle();
+    expect(container.querySelector(".fc-calendarYear-view")).not.toBeNull();
+    expect(container.querySelector(".fc-timeGridDay-view")).toBeNull();
+    act(() =>
+      container
+        .querySelector<HTMLButtonElement>('.calendar-year-month[aria-label="March"] h3 button')
+        ?.click(),
+    );
+    await settle();
+    expect(container.querySelector(".fc-calendarYear-view")).not.toBeNull();
+    expect(container.querySelector(".fc-dayGridMonth-view")).toBeNull();
+    expect(window.location.pathname).toMatch(/\/year$/);
+  });
+
+  it("uses an enabled view for Agenda date links when Day is hidden", async () => {
+    controlPanelSettings.enabledCalendarViews = ["agenda", "month"];
+    controlPanelSettings.defaultCalendarView = "agenda";
+    await mount();
+    const dateLink = container.querySelector<HTMLAnchorElement>(".calendar-agenda-day");
+    expect(dateLink?.getAttribute("href")).toMatch(/\/agenda$/);
+    act(() => dateLink?.click());
+    await settle();
+    expect(container.querySelector(".fc-listMonth-view")).not.toBeNull();
+    expect(container.querySelector(".fc-timeGridDay-view")).toBeNull();
   });
 });

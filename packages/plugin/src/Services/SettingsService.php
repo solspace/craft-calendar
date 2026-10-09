@@ -43,11 +43,6 @@ class SettingsService extends Component
         return $this->getSettingsModel()->locationFieldHandle;
     }
 
-    public function isDemoBannerDisabled(): bool
-    {
-        return $this->getSettingsModel()->isDemoBannerDisabled();
-    }
-
     public function showDisabledEvents(): bool
     {
         return $this->getSettingsModel()->showDisabledEvents;
@@ -66,16 +61,6 @@ class SettingsService extends Component
     public function isAuthoredEventEditOnly(): bool
     {
         return (bool) $this->getSettingsModel()->authoredEventEditOnly;
-    }
-
-    /**
-     * Disables the demo-install banner in month view.
-     */
-    public function dismissDemoBanner(): bool
-    {
-        $plugin = Calendar::getInstance();
-
-        return \Craft::$app->plugins->savePluginSettings($plugin, ['demoBannerDisabled' => true]);
     }
 
     public function getFirstDayOfWeek(): int

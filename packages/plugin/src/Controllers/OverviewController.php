@@ -102,6 +102,7 @@ class OverviewController extends BaseController
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),
             'defaultCalendarView' => $this->getSettingsService()->getSettingsModel()->getDefaultCalendarView(),
+            'enabledCalendarViews' => $this->getSettingsService()->getSettingsModel()->getEnabledCalendarViews(),
             'currentSiteId' => $selectedSiteId,
             'canEditEvents' => $user
                 && (
