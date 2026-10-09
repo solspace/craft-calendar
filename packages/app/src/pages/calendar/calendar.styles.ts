@@ -392,21 +392,175 @@ export const CalendarBase = styled.div`
   .fc-datepicker-popover {
     position: fixed;
     z-index: 40;
-
     width: max-content;
-
+    max-width: calc(100vw - 32px);
     transform: translateX(-100%);
-    box-shadow: 0 8px 18px rgb(0 0 0 / 20%);
-    border-radius: 8px;
+    box-shadow: 0 12px 32px rgb(31 41 51 / 14%), 0 2px 6px rgb(31 41 51 / 6%);
+    border-radius: var(--radius-lg, 8px);
 
     .react-datepicker {
       display: block;
+      width: 280px;
+      max-width: calc(100vw - 32px);
+      box-sizing: border-box;
+      border: 1px solid var(--gray-150);
+      border-radius: var(--radius-lg, 8px);
+      background: white;
+      color: var(--gray-700);
+      font-family: inherit;
+      font-size: 13px;
 
-      border: 1px solid #d6d9de;
-      border-radius: 8px;
-
-      &__month-container {
+      &__month-container,
+      &__year-container {
         float: none;
+      }
+
+      &__header {
+        min-height: 48px;
+        box-sizing: border-box;
+        padding: 12px 8px 8px;
+        border-bottom: 1px solid var(--gray-150);
+        border-radius: var(--radius-lg, 8px) var(--radius-lg, 8px) 0 0;
+        background: var(--gray-050);
+        color: var(--gray-800);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 24px;
+      }
+
+      &__current-month {
+        margin: 0 32px;
+        color: var(--gray-800);
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      &__navigation {
+        top: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm, 4px);
+
+        &--previous { left: 8px; }
+        &--next { right: 8px; }
+
+        &:hover { background: var(--gray-100); }
+      }
+
+      &__navigation-icon::before {
+        width: 8px;
+        height: 8px;
+        border-color: var(--gray-500);
+        border-width: 2px 2px 0 0;
+      }
+
+      &__navigation:hover *::before { border-color: var(--gray-700); }
+
+      &__month,
+      &__year {
+        margin: 12px;
+      }
+
+      &__month-wrapper,
+      &__year-wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        max-width: none;
+      }
+
+      &__month-wrapper + .react-datepicker__month-wrapper { margin-top: 6px; }
+
+      &__month .react-datepicker__month-text,
+      &__year .react-datepicker__year-text {
+        width: auto;
+        margin: 0;
+        padding: 8px 4px;
+        border-radius: var(--radius-sm, 4px);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 22px;
+      }
+
+      &__day,
+      &__day-name {
+        width: 29px;
+        margin: 2px;
+        line-height: 30px;
+      }
+
+      &__day-name {
+        color: var(--gray-500);
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 24px;
+      }
+
+      &__day-names { margin-top: 6px; }
+
+      &__week-number {
+        width: 22px;
+        margin: 2px 0;
+        color: var(--gray-500);
+        font-size: 11px;
+        line-height: 30px;
+      }
+
+      &__day--keyboard-selected,
+      &__month-text--keyboard-selected,
+      &__year-text--keyboard-selected {
+        background: var(--gray-100);
+        color: var(--gray-800);
+      }
+
+      &__day:not([aria-disabled="true"]):hover,
+      &__month-text:not([aria-disabled="true"]):hover,
+      &__year-text:not([aria-disabled="true"]):hover,
+      &__week-number:not([aria-disabled="true"]):hover {
+        border-radius: var(--radius-sm, 4px);
+        background: var(--gray-100);
+        color: var(--blue-600);
+      }
+
+      &__day--selected,
+      &__month-text--selected,
+      &__year-text--selected,
+      &__week-number--selected {
+        &,
+        &:not([aria-disabled="true"]):hover {
+          border-radius: var(--radius-sm, 4px);
+          background: var(--bg-selection-dark);
+          color: white;
+        }
+      }
+
+      &__day--today:not(.react-datepicker__day--selected) {
+        border-radius: var(--radius-sm, 4px);
+        box-shadow: inset 0 0 0 1px var(--gray-300);
+      }
+
+      &__month-dropdown-container--select,
+      &__year-dropdown-container--select { margin: 4px 3px 0; }
+
+      &__month-select,
+      &__year-select {
+        max-width: 100%;
+        padding: 4px;
+        border: 1px solid var(--gray-150);
+        border-radius: var(--radius-sm, 4px);
+        background: white;
+        color: var(--gray-700);
+        font: inherit;
+        font-size: 12px;
+      }
+
+      &__navigation:focus-visible,
+      &__day:focus-visible,
+      &__month-text:focus-visible,
+      &__year-text:focus-visible,
+      &__week-number:focus-visible {
+        outline: 2px solid var(--blue-500);
+        outline-offset: 2px;
       }
     }
   }
