@@ -800,7 +800,7 @@ return [
     'Checked up to {count} occurrences within one year, through {date}.' => 'Tot {count} voorkomens binnen één jaar gecontroleerd, tot {date}.',
     'No overlaps found.' => 'Geen overlappingen gevonden.',
     'The event schedule could not be checked.' => 'De evenementplanning kon niet worden gecontroleerd.',
-    'Showing up to five conflicting occurrences.' => 'Er worden maximaal vijf conflicterende voorkomens weergegeven.',
+    'And {count} more' => 'En nog {count} meer',
 
     // Overview settings
     'Visible Calendar Tabs' => 'Zichtbare kalendertabbladen',

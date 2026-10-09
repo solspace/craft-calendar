@@ -800,7 +800,7 @@ return [
     'Checked up to {count} occurrences within one year, through {date}.' => 'Checked up to {count} occurrences within one year, through {date}.',
     'No overlaps found.' => 'No overlaps found.',
     'The event schedule could not be checked.' => 'The event schedule could not be checked.',
-    'Showing up to five conflicting occurrences.' => 'Showing up to five conflicting occurrences.',
+    'And {count} more' => 'And {count} more',
 
     // Overview settings
     'Visible Calendar Tabs' => 'Visible Calendar Tabs',

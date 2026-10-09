@@ -94,25 +94,13 @@ class OverlapService
         if (!$event->enabled || !$event->getEnabledForSite()) {
             $targets = [];
         }
-        $matches = $this->check($targets, (int) $event->siteId, (int) $event->getCanonicalId());
+        $external = $this->detector->summarize($targets, $this->candidates($targets, (int) $event->siteId, (int) $event->getCanonicalId()));
         // An event whose duration exceeds its repeat interval can conflict with its own later occurrences.
-        foreach ($this->detector->detect($targets, $targets) as $id => $internal) {
-            $match = $matches[$id] ?? ['count' => 0, 'events' => []];
-            $matches[$id] = [
-                'count' => $match['count'] + $internal['count'],
-                'events' => \array_slice(array_merge($match['events'], $internal['events']), 0, OverlapDetector::DETAIL_LIMIT),
-            ];
-        }
-        $events = [];
-        foreach ($matches as $match) {
-            foreach ($match['events'] as $conflict) {
-                $events[$conflict['id']] = $conflict;
-            }
-        }
+        $internal = $this->detector->summarize($targets, $targets);
 
         return [
-            'count' => \count($matches),
-            'events' => \array_slice(array_values($events), 0, OverlapDetector::DETAIL_LIMIT),
+            'count' => $external['count'] + $internal['count'],
+            'events' => \array_slice(array_merge($external['events'], $internal['events']), 0, OverlapDetector::DETAIL_LIMIT),
             'recurring' => null !== $rrule,
             'checked' => \count($targets),
             'through' => $through->format('Y-m-d'),
@@ -122,6 +110,12 @@ class OverlapService
 
     /** @param array[] $targets */
     private function check(array $targets, int $siteId, int $excludeEventId = 0): array
+    {
+        return $this->detector->detect($targets, $this->candidates($targets, $siteId, $excludeEventId));
+    }
+
+    /** @param array[] $targets */
+    private function candidates(array $targets, int $siteId, int $excludeEventId = 0): array
     {
         if (!$targets) {
             return [];
@@ -136,9 +130,8 @@ class OverlapService
         if ($excludeEventId) {
             $query->event(['not', $excludeEventId]);
         }
-        $candidates = array_map($this->interval(...), $query->all());
 
-        return $this->detector->detect($targets, $candidates);
+        return array_map($this->interval(...), $query->all());
     }
 
     private function interval(OccurrenceModel $occurrence): array

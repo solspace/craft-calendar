@@ -800,7 +800,7 @@ return [
     'Checked up to {count} occurrences within one year, through {date}.' => 'Bis zu {count} Vorkommen innerhalb eines Jahres bis zum {date} geprüft.',
     'No overlaps found.' => 'Keine Überschneidungen gefunden.',
     'The event schedule could not be checked.' => 'Der Terminplan konnte nicht geprüft werden.',
-    'Showing up to five conflicting occurrences.' => 'Es werden bis zu fünf widersprüchliche Vorkommen angezeigt.',
+    'And {count} more' => 'Und {count} weitere',
 
     // Overview settings
     'Visible Calendar Tabs' => 'Sichtbare Kalender-Tabs',

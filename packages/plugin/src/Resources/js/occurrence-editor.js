@@ -112,10 +112,15 @@
               Craft.t("calendar", "Overlaps with other events in this calendar. You can still save."),
             );
             const $list = $("<ul>");
-            for (const event of response.data.events) {
+            const events = response.data.events.slice(0, 3);
+            for (const event of events) {
               $("<li>").append($("<a>").attr({ href: event.url, target: "_blank", rel: "noopener noreferrer" }).text(event.title)).appendTo($list);
             }
             $warning.append($message, $list);
+            const remaining = response.data.count - events.length;
+            if (remaining > 0) {
+              $warning.append($("<p>").addClass("light").text(Craft.t("calendar", "And {count} more", { count: remaining })));
+            }
           } catch {
             if (check === revision && this.$container[0].isConnected) {
               $warning.text(Craft.t("calendar", "Couldn’t check for overlaps. You can still save."));

@@ -111,6 +111,29 @@ class OverlapServiceTest extends TestCase
         self::assertSame('Event 44', $result['events'][0]['title']);
     }
 
+    public function testPreviewCountsAllConflictsBeforeLimitingDetails(): void
+    {
+        $event = $this->occurrence(42, '2026-10-14 10:00:00', '2026-10-14 11:00:00')->event;
+        $event->id = null;
+        for ($id = 43; $id < 53; ++$id) {
+            $this->candidates[] = $this->occurrence($id, '2026-10-14 10:30:00', '2026-10-14 11:30:00');
+        }
+        $result = $this->service()->forSchedule($event);
+        self::assertSame(10, $result['count']);
+        self::assertCount(3, $result['events']);
+    }
+
+    public function testRecurringPreviewCountsSharedConflictsOnce(): void
+    {
+        $event = $this->occurrence(42, '2026-10-14 10:00:00', '2026-10-14 11:00:00')->event;
+        $event->id = null;
+        $event->rrule = "DTSTART:20261014T100000\nRRULE:FREQ=DAILY;COUNT=2";
+        $this->candidates = [$this->occurrence(43, '2026-10-14 10:30:00', '2026-10-15 11:30:00')];
+        $result = $this->service()->forSchedule($event);
+        self::assertSame(1, $result['count']);
+        self::assertCount(1, $result['events']);
+    }
+
     public function testInfinitePreviewIsBounded(): void
     {
         $event = $this->occurrence(42, '2026-10-14 10:00:00', '2026-10-14 11:00:00')->event;

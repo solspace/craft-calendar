@@ -5,7 +5,7 @@ import { replace } from "@cal/utils/translations";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { LiveOverlapWarning } from "./overlap-warning";
+import { LiveOverlapWarning, OverlapWarning } from "./overlap-warning";
 
 let container: HTMLDivElement;
 let root: Root;
@@ -54,6 +54,20 @@ afterEach(async () => {
 });
 
 describe("live overlap warnings", () => {
+  it.each([
+    3, 4, 10,
+  ])("shows three details with an accurate remainder for %s conflicts", async (count) => {
+    const events = Array.from({ length: Math.min(count, 5) }, (_, index) => ({
+      ...conflict.events[0],
+      id: String(index),
+      title: `Conflict ${index + 1}`,
+    }));
+    await act(async () => root.render(<OverlapWarning result={{ count, events }} />));
+    expect(container.querySelectorAll("li")).toHaveLength(3);
+    expect(container.textContent).not.toContain("Conflict 4");
+    if (count > 3) expect(container.textContent).toContain(`And ${count - 3} more`);
+    else expect(container.textContent).not.toContain("more");
+  });
   it("does no work when disabled", async () => {
     const fetch = vi.fn();
     vi.stubGlobal("fetch", fetch);

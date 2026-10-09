@@ -7,6 +7,7 @@ use Solspace\Calendar\Bundles\Occurrences\OverlapDetector;
 
 /**
  * @internal
+ *
  * @covers \Solspace\Calendar\Bundles\Occurrences\OverlapDetector
  */
 class OverlapDetectorTest extends TestCase
@@ -44,7 +45,7 @@ class OverlapDetectorTest extends TestCase
         }
         $result = (new OverlapDetector())->detect([$this->interval('target', 10, 20)], $candidates);
         self::assertSame(10, $result['target']['count']);
-        self::assertCount(5, $result['target']['events']);
+        self::assertCount(3, $result['target']['events']);
     }
 
     public function testEmptyAndInvalidTargetsHaveNoConflicts(): void

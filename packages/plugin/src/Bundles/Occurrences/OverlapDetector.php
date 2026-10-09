@@ -5,15 +5,15 @@ namespace Solspace\Calendar\Bundles\Occurrences;
 /** Half-open floating-time intervals: an event ending when another starts is not a conflict. */
 final class OverlapDetector
 {
-    public const DETAIL_LIMIT = 5;
+    public const DETAIL_LIMIT = 3;
 
     /**
-     * @param array[] $targets   intervals with id, calendarId, start and end (timestamps)
+     * @param array[] $targets    intervals with id, calendarId, start and end (timestamps)
      * @param array[] $candidates active intervals in the same site
      *
      * @return array<string, array{count: int, events: array}>
      */
-    public function detect(array $targets, array $candidates): array
+    public function detect(array $targets, array $candidates, int $detailLimit = self::DETAIL_LIMIT): array
     {
         $calendars = [];
         foreach ($candidates as $candidate) {
@@ -40,7 +40,7 @@ final class OverlapDetector
                     continue;
                 }
                 ++$conflicts['count'];
-                if (\count($conflicts['events']) < self::DETAIL_LIMIT) {
+                if (\count($conflicts['events']) < $detailLimit) {
                     $conflicts['events'][] = $candidate;
                 }
             }
@@ -50,5 +50,23 @@ final class OverlapDetector
         }
 
         return $result;
+    }
+
+    /** Count each conflicting occurrence once across a schedule, before limiting its details. */
+    public function summarize(array $targets, array $candidates): array
+    {
+        $matches = $this->detect($candidates, $targets, 0);
+        $events = [];
+        foreach ($candidates as $candidate) {
+            if (isset($matches[$candidate['id']])) {
+                $events[$candidate['id']] = $candidate;
+            }
+        }
+        usort($events, static fn (array $a, array $b) => $a['start'] <=> $b['start']);
+
+        return [
+            'count' => \count($events),
+            'events' => \array_slice($events, 0, self::DETAIL_LIMIT),
+        ];
     }
 }

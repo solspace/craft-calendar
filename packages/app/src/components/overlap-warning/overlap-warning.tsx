@@ -23,16 +23,21 @@ export type OverlapResult = {
 
 const Warning = styled.div`
   display: grid;
-  gap: 8px;
+  gap: 6px;
   border: 1px solid var(--warning-color, #ad6500);
   border-radius: 5px;
   background: var(--warning-bg-color, #fff8e6);
   color: var(--text-color, #33404d);
-  padding: 10px 12px;
+  padding: 8px 10px;
   font-size: 12px;
   line-height: 1.5;
   margin-block: 10px;
   overflow-wrap: anywhere;
+
+  .overlap-summary {
+    display: grid;
+    gap: 2px;
+  }
 
   && .overlap-heading {
     display: flex;
@@ -50,12 +55,28 @@ const Warning = styled.div`
   && p { margin: 0; text-align: start; }
   && ul {
     display: grid;
-    gap: 8px;
+    gap: 6px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  && li { display: grid; gap: 2px; margin: 0; }
+  && li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    margin: 0;
+  }
+  .overlap-event-title {
+    flex: 1 1 80px;
+    min-width: 0;
+  }
+  li small {
+    margin-inline-start: auto;
+    max-width: 100%;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
   a { text-decoration: underline; }
   small {
     display: block;
@@ -107,22 +128,31 @@ export const OverlapWarning = ({
   formats?: DateFormats;
 }) => {
   if (!result?.count) return null;
+  const events = result.events.slice(0, 3);
+  const remaining = result.count - events.length;
   return (
     <Warning role="status" aria-live="polite">
-      <strong className="overlap-heading">
-        <OverlapFlag count={result.count} />
-        <span>{translate("Scheduling conflict")}</span>
-      </strong>
-      <p>{translate("Overlaps with other events in this calendar. You can still save.")}</p>
+      <div className="overlap-summary">
+        <strong className="overlap-heading">
+          <OverlapFlag count={result.count} />
+          <span>{translate("Scheduling conflict")}</span>
+        </strong>
+        <p>{translate("Overlaps with other events in this calendar. You can still save.")}</p>
+      </div>
       <ul>
-        {result.events.map((event) => (
+        {events.map((event) => (
           <li key={event.id}>
             {event.url ? (
-              <a href={event.url} target="_blank" rel="noopener noreferrer">
+              <a
+                className="overlap-event-title"
+                href={event.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {event.title}
               </a>
             ) : (
-              event.title
+              <span className="overlap-event-title">{event.title}</span>
             )}
             <small>
               {formatOccurrenceRange(
@@ -133,9 +163,7 @@ export const OverlapWarning = ({
           </li>
         ))}
       </ul>
-      {result.events.length >= 5 && (
-        <small>{translate("Showing up to five conflicting occurrences.")}</small>
-      )}
+      {remaining > 0 && <small>{translate("And {count} more", { count: remaining })}</small>}
     </Warning>
   );
 };
