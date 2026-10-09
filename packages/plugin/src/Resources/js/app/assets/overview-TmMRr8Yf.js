@@ -412,7 +412,7 @@ Please change the parent <Route path="${e}"> to <Route path="${e===`/`?`*`:`${e}
     white-space: nowrap;
   }
 `,Pa=(e,t,n,r)=>({title:e.title||l(`New Event`),start:e.start,end:e.end,allDay:e.allDay,calendarId:t,siteId:n,...r&&{details:r}}),Fa=({refetchEvents:e,onSuccess:t})=>{let{hidePopover:n}=ci(),{currentSiteId:r}=$(),[i,a]=(0,U.useState)(null),[o,s]=(0,U.useState)(null),c=(0,U.useCallback)(async(i,o,c,u)=>{a(u?`prepare`:`create`),s(null);try{let a=Pa(i,o,r,c);u&&(a.title=i.title);let s=await _e($r(u?`/api/events/prepare`:`/api/events`),{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify(a)});if(!s.ok){let e=null;try{e=await s.json()}catch{}let t=e?.message||`Failed to create event`;throw Array.isArray(e?.errors)&&(t=e.errors.join(` `)),Error(t)}let d=await s.json();if(u){if(typeof d?.url!=`string`||!d.url)throw Error(l(`Couldn’t create event.`));return d.url}return xe(),window.dispatchEvent(new Event(`calendar:schedule-history-reset`)),e?.(),t?.(),n(),null}catch(e){return e instanceof Error?s(e.message):s(`Failed to create event`),null}finally{a(null)}},[n,t,e,r]);return{createEvent:(e,t,n)=>c(e,t,n,!1),prepareEvent:(e,t,n)=>c(e,t,n,!0),error:o,isFetching:i!==null,isOpeningEditor:i===`prepare`}},Ia=r.div`
-  width: 340px;
+  width: 440px;
   max-width: calc(100vw - 32px);
   box-sizing: border-box;
   padding: 15px;
