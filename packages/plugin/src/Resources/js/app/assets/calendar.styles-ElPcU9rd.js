@@ -350,8 +350,11 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
     color: #ffffff;
   }
 
-  .fc-color-white .calendar-overlap-flag {
-    color: var(--yellow-200, #fef08a);
+  .fc-color-white:not(.fc-daygrid-dot-event) .calendar-overlap-flag svg {
+    stroke: #ffffff;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    paint-order: stroke fill;
   }
 
   .fc-event-cancelled {

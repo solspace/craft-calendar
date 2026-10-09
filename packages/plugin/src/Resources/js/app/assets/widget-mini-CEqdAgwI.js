@@ -1,4 +1,4 @@
-import{A as e,E as t,M as n,O as r,b as i,t as a}from"./localization-Dt_HqhpZ.js";import{h as o,m as s,n as c}from"./calendar.events-DxgmBNw7.js";import{t as l}from"./interaction-D2VE812o.js";import{t as u}from"./calendar.styles-IV_4jcp-.js";import{t as d}from"./loader-Cmv0MXol.js";var f=n(e()),p=t(u)`
+import{A as e,E as t,M as n,O as r,b as i,t as a}from"./localization-Dt_HqhpZ.js";import{h as o,m as s,n as c}from"./calendar.events-DxgmBNw7.js";import{t as l}from"./interaction-D2VE812o.js";import{t as u}from"./calendar.styles-ElPcU9rd.js";import{t as d}from"./loader-Cmv0MXol.js";var f=n(e()),p=t(u)`
   && .fc {
     &-header-toolbar {
       margin-bottom: 0.5em;
