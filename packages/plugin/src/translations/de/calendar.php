@@ -759,4 +759,14 @@ return [
     'Location' => 'Ort',
     'Invalid event details.' => 'Ungültige Ereignisdetails.',
     'More details…' => 'Weitere Details…',
+
+    // Calendar search
+    'Couldn’t load events. Use Refresh to try again.' => 'Ereignisse konnten nicht geladen werden. Mit Aktualisieren erneut versuchen.',
+    'Loading events…' => 'Ereignisse werden geladen…',
+    'No matching events in this date range.' => 'Keine passenden Ereignisse in diesem Zeitraum.',
+    'No events in this date range.' => 'Keine Ereignisse in diesem Zeitraum.',
+    'Search events' => 'Ereignisse suchen',
+    'Search events…' => 'Ereignisse suchen…',
+    'Clear search' => 'Suche löschen',
+    'Searches events in the displayed date range.' => 'Durchsucht Ereignisse im angezeigten Zeitraum.',
 ];

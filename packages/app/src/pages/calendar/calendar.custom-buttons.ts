@@ -6,11 +6,16 @@ import type { CustomButtonInput } from "./calendar.types";
 export const changeCalendarUrl = (date?: Date) => {
   let url: string;
   if (date) {
-    url = Craft.getCpUrl(`calendar/${utcDatePath(date)}`);
+    const nextUrl = new URL(
+      Craft.getCpUrl(`calendar/${utcDatePath(date)}`),
+      window.location.origin,
+    );
+    nextUrl.search = window.location.search;
+    url = nextUrl.toString();
   } else {
     const currentUrl = new URL(window.location.href);
-    if (/\/(day|week|month)$/.test(currentUrl.pathname)) {
-      currentUrl.pathname = currentUrl.pathname.replace(/\/(day|week|month)$/, "");
+    if (/\/(day|week|month|agenda)$/.test(currentUrl.pathname)) {
+      currentUrl.pathname = currentUrl.pathname.replace(/\/(day|week|month|agenda)$/, "");
     }
 
     url = currentUrl.toString();

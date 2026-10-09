@@ -1,9 +1,10 @@
 import type { WeekStartDay } from "@cal/types/config";
-import { UTCifyDateOnly, utcDatePath, utcToLocalDisplayDate } from "@cal/utils/date";
+import { UTCifyDateOnly, utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDatePickerTranslations } from "@cal/utils/localization";
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { type FC, type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import DatePickerControl from "react-datepicker";
+import { changeCalendarUrl } from "./calendar.custom-buttons";
 import { useViewSettings, type View } from "./calendar.persistence";
 import type { CustomButtonInput, DatePickerPosition } from "./calendar.types";
 import { useConfig } from "./context/config.context";
@@ -77,9 +78,7 @@ export const useDateSelector = (api: CalendarApi): UseDateSelectorResult => {
       }
 
       const utcDate = UTCifyDateOnly(date);
-      const url = Craft.getCpUrl(`calendar/${utcDatePath(utcDate)}`);
-
-      history.pushState("data", "", url);
+      changeCalendarUrl(utcDate);
       api.gotoDate(utcDate);
 
       setSelectedDate(date);
@@ -133,7 +132,7 @@ const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
   onDateSelect,
 }) => {
   const showWeekPicker = view === "timeGridWeek";
-  const showMonthYearPicker = view === "dayGridMonth";
+  const showMonthYearPicker = view === "dayGridMonth" || view === "listMonth";
 
   return (
     <div

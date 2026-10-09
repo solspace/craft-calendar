@@ -47,19 +47,22 @@ const toRangeKey = (
   endIso: string,
   siteId?: number,
   calendars?: string,
-): string => `${startIso}|${endIso}|${siteId ?? ""}|${calendars ?? ""}`;
+  search = "",
+): string => JSON.stringify([startIso, endIso, siteId, calendars, search]);
 
 const fetchRange = (
   start: Date,
   end: Date,
   siteId?: number,
   calendars?: string | string[],
+  search = "",
 ): Promise<EventInput[]> => {
   const startIso = utcDateKey(start);
   const endIso = utcDateKey(end);
   const calendarsParam = normalizeCalendarsParam(calendars);
 
-  const key = toRangeKey(startIso, endIso, siteId, calendarsParam);
+  const searchParam = search.trim();
+  const key = toRangeKey(startIso, endIso, siteId, calendarsParam, searchParam);
   const cached = rangeCache.get(key);
 
   if (cached) {
@@ -79,6 +82,9 @@ const fetchRange = (
   }
   if (calendarsParam !== undefined) {
     url.searchParams.set("calendars", calendarsParam);
+  }
+  if (searchParam) {
+    url.searchParams.set("criteria[search]", searchParam);
   }
 
   const request = craftFetch(url)
@@ -321,12 +327,13 @@ export const createCalendarEventsSource = (
   hiddenCalendarIds: Set<number>,
   siteId?: number,
   calendars?: string | string[],
+  search = "",
 ): EventSourceFunc => {
   return (info, success, failure): Promise<EventInput[]> => {
     const start = info.start;
     const end = info.end;
 
-    return fetchRange(start, end, siteId, calendars)
+    return fetchRange(start, end, siteId, calendars, search)
       .then((data) => {
         let events: EventInput[];
 

@@ -759,4 +759,14 @@ return [
     'Location' => 'Lieu',
     'Invalid event details.' => 'Détails de l’événement non valides.',
     'More details…' => 'Plus de détails…',
+
+    // Calendar search
+    'Couldn’t load events. Use Refresh to try again.' => 'Impossible de charger les événements. Utilisez Actualiser pour réessayer.',
+    'Loading events…' => 'Chargement des événements…',
+    'No matching events in this date range.' => 'Aucun événement correspondant dans cette période.',
+    'No events in this date range.' => 'Aucun événement dans cette période.',
+    'Search events' => 'Rechercher des événements',
+    'Search events…' => 'Rechercher des événements…',
+    'Clear search' => 'Effacer la recherche',
+    'Searches events in the displayed date range.' => 'Recherche les événements dans la période affichée.',
 ];

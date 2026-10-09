@@ -66,6 +66,7 @@ export const getCalendarEventClickAction = (
 
 export const renderCalendarEventContent = (arg: EventContentArg) => {
   const { event, timeText } = arg;
+  const isAgenda = arg.view.type === "listMonth";
   const titleClassName = clsx(
     "fc-event-title",
     isMonthSingleDayTimedEvent(arg) && "fc-event-title-inline",
@@ -87,11 +88,17 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
   ) : null;
 
   // The strikethrough alone isn't announced
-  const cancelledLabel = isCancelled ? (
-    <span className="visually-hidden">, {translate("Cancelled")}</span>
-  ) : null;
+  const cancelledLabel =
+    isCancelled && !isAgenda ? (
+      <span className="visually-hidden">, {translate("Cancelled")}</span>
+    ) : null;
 
-  const titleContent = isLink ? (
+  const titleContent = isAgenda ? (
+    <a href={event.url || "#"} className={titleClassName}>
+      {editedFlag}
+      {event.title}
+    </a>
+  ) : isLink ? (
     <button
       type="button"
       onClick={() => (window.location.href = event.url)}
@@ -109,6 +116,25 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
       {cancelledLabel}
     </div>
   );
+
+  if (isAgenda) {
+    const { calendarName, location, description } = event.extendedProps;
+    return (
+      <div className="calendar-agenda-event">
+        <div className="calendar-agenda-title">
+          {titleContent}
+          {isCancelled && (
+            <span className="calendar-agenda-cancelled">{translate("Cancelled")}</span>
+          )}
+        </div>
+        <div className="calendar-agenda-meta">
+          {calendarName && <span>{calendarName}</span>}
+          {location && <span className="calendar-agenda-location">{location}</span>}
+        </div>
+        {description && <div className="calendar-agenda-description">{description}</div>}
+      </div>
+    );
+  }
 
   if (isMonthSingleDayTimedEvent(arg)) {
     return (

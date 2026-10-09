@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import type { EventApi } from "@fullcalendar/core";
+import type { EventApi, EventSourceFuncArg } from "@fullcalendar/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  clearCalendarEventsCache,
+  createCalendarEventsSource,
   deleteEvent,
   editFollowing,
   getRecurrenceIdFromId,
@@ -31,6 +33,67 @@ describe("calendar events", () => {
   it("ignores IDs that aren't occurrence IDs", () => {
     expect(getRecurrenceIdFromId("42")).toBeNull();
     expect(getRecurrenceIdFromId("draft-create")).toBeNull();
+  });
+});
+
+describe("calendar search feed", () => {
+  const range = {
+    start: new Date("2026-10-01T00:00:00Z"),
+    end: new Date("2026-11-01T00:00:00Z"),
+  } as EventSourceFuncArg;
+
+  beforeEach(() => {
+    clearCalendarEventsCache();
+    vi.stubGlobal("Craft", { getCpUrl: (path: string) => `/admin/${path}` });
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("separates cached searches, preserves calendar/site filters, and restores unfiltered results", async () => {
+    const fetch = vi.fn(async (url: URL) => {
+      const search = url.searchParams.get("criteria[search]");
+      return new Response(
+        JSON.stringify([
+          { id: search || "all", title: search || "All events", calendar: 1 },
+          { id: "hidden", title: "Hidden event", calendar: 2 },
+        ]),
+      );
+    });
+    vi.stubGlobal("fetch", fetch);
+    const success = vi.fn();
+    const failure = vi.fn();
+    const load = (search: string) =>
+      createCalendarEventsSource(new Set([2]), 3, ["1", "2"], search)(range, success, failure);
+
+    await load("");
+    expect(success).toHaveBeenLastCalledWith([expect.objectContaining({ id: "all" })]);
+    await load(" room two ");
+    expect(success).toHaveBeenLastCalledWith([expect.objectContaining({ id: "room two" })]);
+    const url = fetch.mock.calls[1][0];
+    expect(url.searchParams.get("criteria[search]")).toBe("room two");
+    expect(url.searchParams.get("siteId")).toBe("3");
+    expect(url.searchParams.get("calendars")).toBe("1,2");
+    expect(url.searchParams.get("start")).toBe("2026-10-01");
+    expect(url.searchParams.get("end")).toBe("2026-11-01");
+    await load("other");
+    await load("");
+    expect(success).toHaveBeenLastCalledWith([expect.objectContaining({ id: "all" })]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(failure).not.toHaveBeenCalled();
+  });
+
+  it("does not cache failed searches", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 500 }))
+      .mockResolvedValueOnce(new Response("[]"));
+    vi.stubGlobal("fetch", fetch);
+    const failure = vi.fn();
+    const source = createCalendarEventsSource(new Set(), undefined, undefined, "meeting");
+    await source(range, vi.fn(), failure);
+    await source(range, vi.fn(), failure);
+    expect(failure).toHaveBeenCalledOnce();
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
 

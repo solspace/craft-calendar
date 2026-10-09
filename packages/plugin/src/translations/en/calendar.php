@@ -759,4 +759,14 @@ return [
     'Location' => 'Location',
     'Invalid event details.' => 'Invalid event details.',
     'More details…' => 'More details…',
+
+    // Calendar search
+    'Couldn’t load events. Use Refresh to try again.' => 'Couldn’t load events. Use Refresh to try again.',
+    'Loading events…' => 'Loading events…',
+    'No matching events in this date range.' => 'No matching events in this date range.',
+    'No events in this date range.' => 'No events in this date range.',
+    'Search events' => 'Search events',
+    'Search events…' => 'Search events…',
+    'Clear search' => 'Clear search',
+    'Searches events in the displayed date range.' => 'Searches events in the displayed date range.',
 ];

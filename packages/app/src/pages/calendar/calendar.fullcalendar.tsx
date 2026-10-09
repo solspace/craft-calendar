@@ -44,6 +44,7 @@ import {
   resizeEvent,
 } from "./calendar.events";
 import { useViewSettings, type View } from "./calendar.persistence";
+import { CalendarSearch, getCalendarSearch } from "./calendar.search";
 import { CalendarWrapper } from "./calendar.styles";
 import { useConfig } from "./context/config.context";
 import { PopoverCreateEvent } from "./popovers/create-event/create-event";
@@ -72,6 +73,11 @@ const calendarViewOptions = {
     dayHeaderFormat: {
       weekday: "long" as const,
     },
+  },
+  listMonth: {
+    displayEventEnd: true,
+    listDayFormat: { weekday: "long" as const, month: "long" as const, day: "numeric" as const },
+    listDaySideFormat: false as const,
   },
 };
 
@@ -124,6 +130,8 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
   const [draftAnchorEl, setDraftAnchorEl] = useState<HTMLElement | null>(null);
   const [isFetchingEvents, setIsFetchingEvents] = useState(false);
+  const [search, setSearch] = useState(getCalendarSearch);
+  const [eventsError, setEventsError] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: The dependency is needed to get the latest calendar instance for the API.
   const getApi = useCallback(() => calendar.current?.getApi(), [calendar.current]);
@@ -140,8 +148,8 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const hiddenCalendarIdSet = useMemo(() => new Set(hiddenCalendarIds), [hiddenCalendarIds]);
   const timeIntervalDuration = formatDuration(timeInterval);
   const events = useMemo(
-    () => createCalendarEventsSource(hiddenCalendarIdSet, currentSiteId),
-    [hiddenCalendarIdSet, currentSiteId],
+    () => createCalendarEventsSource(hiddenCalendarIdSet, currentSiteId, undefined, search),
+    [hiddenCalendarIdSet, currentSiteId, search],
   );
 
   const customButtons = useMemo(
@@ -189,6 +197,23 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     clearDraft();
     hidePopover();
   }, [clearDraft, hidePopover]);
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (value === search) return;
+      clearTimeout(hoverTimer.current);
+      cancelDraft();
+      setSearch(value);
+      const url = new URL(window.location.href);
+      if (value) {
+        url.searchParams.set("search", value);
+      } else {
+        url.searchParams.delete("search");
+      }
+      history.replaceState(null, "", url);
+    },
+    [search, cancelDraft],
+  );
 
   useEffect(() => {
     const calendarApi = calendar.current?.getApi();
@@ -301,7 +326,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
       return;
     }
 
-    calendarApi.changeView("timeGridDay", miniDateSelection);
+    calendarApi.changeView(
+      calendarApi.view.type === "listMonth" ? "listMonth" : "timeGridDay",
+      miniDateSelection,
+    );
 
     changeCalendarUrl(miniDateSelection);
 
@@ -435,6 +463,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
 
   return (
     <CalendarWrapper className={isFetchingEvents ? "is-fetching-events" : undefined}>
+      <CalendarSearch initialSearch={search} onSearchChange={handleSearchChange} />
       <FullCalendar
         {...getCalendarTranslations()}
         ref={calendar}
@@ -443,6 +472,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         customButtons={customButtons}
         initialView={view}
         initialDate={currentDay}
+        height={view === "listMonth" ? "auto" : undefined}
         locale={language}
         views={calendarViewOptions}
         timeZone="UTC"
@@ -467,11 +497,29 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventContent={renderCalendarEventContent}
         progressiveEventRendering
         eventTimeFormat={formats.time.short.js}
-        loading={setIsFetchingEvents}
+        loading={(loading) => {
+          if (loading) setEventsError(false);
+          setIsFetchingEvents(loading);
+        }}
+        eventSourceFailure={() => setEventsError(true)}
+        noEventsContent={() => (
+          <span role="status">
+            {Craft.t(
+              "calendar",
+              eventsError
+                ? "Couldn’t load events. Use Refresh to try again."
+                : isFetchingEvents
+                  ? "Loading events…"
+                  : search
+                    ? "No matching events in this date range."
+                    : "No events in this date range.",
+            )}
+          </span>
+        )}
         eventDidMount={handleEventDidMount}
         eventWillUnmount={handleEventWillUnmount}
         eventMouseEnter={(arg) => {
-          if (arg.view.type !== "dayGridMonth") {
+          if (arg.view.type !== "dayGridMonth" && arg.view.type !== "listMonth") {
             return;
           }
 
@@ -511,13 +559,14 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventResize={(arg) => handleEventChange("resize", arg)}
         headerToolbar={{
           start: "title",
-          center: "dayGridMonth,timeGridWeek,timeGridDay",
+          center: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
           end: headerToolbarEnd,
         }}
         buttonText={{
           dayGridMonth: Craft.t("calendar", "Month"),
           timeGridWeek: Craft.t("calendar", "Week"),
           timeGridDay: Craft.t("calendar", "Day"),
+          listMonth: Craft.t("calendar", "Agenda"),
           today: Craft.t("calendar", "Today"),
         }}
         datesSet={({ view }: DatesSetArg) => {
