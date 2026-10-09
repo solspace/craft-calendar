@@ -26,7 +26,7 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
     --fc-button-border-color: rgb(96 125 159 / 25%);
     --fc-button-hover-bg-color: #bac6d6;
     --fc-button-hover-border-color: #bac6d6;
-    --fc-button-active-bg-color: var(--gray-500);
+    --fc-button-active-bg-color: var(--button-bg--active);
     --fc-button-active-border-color: #ffffff;
     --fc-more-link-bg-color: transparent;
     --fc-more-link-text-color: #606060;
@@ -73,7 +73,7 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
 
     &.fc-button-active,
     &.fc-button-active:focus {
-      color: #ffffff;
+      color: var(--button-text-color);
     }
 
     &:focus-visible {
