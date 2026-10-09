@@ -355,8 +355,11 @@ export const CalendarBase = styled.div`
 
   .fc-event-cancelled {
     opacity: 0.6;
+  }
 
-    .fc-event-title {
+  && .fc-event.fc-event-cancelled .fc-event-title {
+    &,
+    &:hover {
       text-decoration: line-through;
     }
   }

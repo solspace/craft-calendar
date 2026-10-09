@@ -352,8 +352,11 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
 
   .fc-event-cancelled {
     opacity: 0.6;
+  }
 
-    .fc-event-title {
+  && .fc-event.fc-event-cancelled .fc-event-title {
+    &,
+    &:hover {
       text-decoration: line-through;
     }
   }

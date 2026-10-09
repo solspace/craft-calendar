@@ -103,7 +103,11 @@ const LiveWarning = styled.div`
 const Flag = styled.span`
   display: inline-flex;
   align-items: center;
+  vertical-align: -0.1em;
+  line-height: 1;
   margin-inline-end: 4px;
+
+  svg { display: block; }
 `;
 
 export const OverlapFlag = ({ count }: { count?: number }) =>
@@ -114,7 +118,7 @@ export const OverlapFlag = ({ count }: { count?: number }) =>
       title={translate("Scheduling conflict")}
       aria-label={translate("Scheduling conflict")}
     >
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
         <path d="M8 1a1 1 0 0 1 .87.5l7 12A1 1 0 0 1 15 15H1a1 1 0 0 1-.87-1.5l7-12A1 1 0 0 1 8 1Zm0 3.5a.75.75 0 0 0-.75.75v4a.75.75 0 0 0 1.5 0v-4A.75.75 0 0 0 8 4.5ZM8 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
       </svg>
     </Flag>
