@@ -815,4 +815,8 @@ return [
     'Select valid calendar tabs.' => 'Wählen Sie gültige Kalender-Tabs.',
     'Choose a default tab that is enabled.' => 'Wählen Sie einen aktivierten Standard-Tab.',
     'Couldn’t save settings.' => 'Die Einstellungen konnten nicht gespeichert werden.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Abgesagte Ereignisse anzeigen',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Zeigen Sie abgesagte Vorkommen mit ihrer Absagemarkierung in allen Übersichtsansichten an.',
 ];

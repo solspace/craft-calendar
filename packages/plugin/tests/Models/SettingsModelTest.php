@@ -12,6 +12,12 @@ use Solspace\Calendar\Models\SettingsModel;
  */
 class SettingsModelTest extends TestCase
 {
+    public function testCancelledEventsRemainVisibleByDefaultAndCanBeHidden(): void
+    {
+        self::assertTrue((new SettingsModel())->showCancelledEvents);
+        self::assertFalse((new SettingsModel(['showCancelledEvents' => false]))->showCancelledEvents);
+    }
+
     public function testOverviewDefaultsToMonth(): void
     {
         $settings = new SettingsModel();

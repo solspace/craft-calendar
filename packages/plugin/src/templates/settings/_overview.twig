@@ -47,6 +47,15 @@
         }) }}
 
         {{ forms.lightswitchField({
+            label: "Show Cancelled Events"|t('calendar'),
+            instructions: "Display cancelled occurrences with their cancellation styling in all Overview views."|t('calendar'),
+            id: 'showCancelledEvents',
+            name: 'settings[showCancelledEvents]',
+            on: settings.showCancelledEvents,
+            errors: settings.getErrors('showCancelledEvents'),
+        }) }}
+
+        {{ forms.lightswitchField({
             label: "Drag and Drop"|t('calendar'),
             instructions: "Allow users with permission to edit events to move or resize them in Month, Week, and Day views."|t('calendar'),
             id: 'isDragAndDropEnabled',

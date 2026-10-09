@@ -815,4 +815,8 @@ return [
     'Select valid calendar tabs.' => 'Selecteer geldige kalendertabbladen.',
     'Choose a default tab that is enabled.' => 'Kies een ingeschakeld standaardtabblad.',
     'Couldn’t save settings.' => 'De instellingen konden niet worden opgeslagen.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Geannuleerde evenementen tonen',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Toon geannuleerde gebeurtenissen met hun annuleringsstijl in alle overzichtsweergaven.',
 ];

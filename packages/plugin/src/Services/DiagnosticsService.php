@@ -188,6 +188,7 @@ class DiagnosticsService extends Component
             $row(Calendar::t('Late-Night Event Cutoff (Hours)'), $settings->getOverlapThreshold()),
             $booleanRow(Calendar::t('All-Day Events By Default'), $settings->isAllDayDefault()),
             $booleanRow(Calendar::t('Show Disabled Events'), $settings->showDisabledEvents()),
+            $booleanRow(Calendar::t('Show Cancelled Events'), $settings->showCancelledEvents()),
             $booleanRow(Calendar::t('Show Overlap Warnings'), $settings->showOverlapWarnings()),
             $booleanRow(Calendar::t('Quick Event Creation'), $settings->isQuickCreateEnabled()),
             $booleanRow(Calendar::t('Drag and Drop'), $settings->isDragAndDropEnabled()),

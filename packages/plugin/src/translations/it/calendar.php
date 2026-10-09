@@ -815,4 +815,8 @@ return [
     'Select valid calendar tabs.' => 'Seleziona schede del calendario valide.',
     'Choose a default tab that is enabled.' => 'Scegli una scheda predefinita abilitata.',
     'Couldn’t save settings.' => 'Impossibile salvare le impostazioni.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Mostra eventi annullati',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Mostra le occorrenze annullate con il relativo stile di annullamento in tutte le viste della Panoramica.',
 ];

@@ -815,4 +815,8 @@ return [
     'Select valid calendar tabs.' => 'Select valid calendar tabs.',
     'Choose a default tab that is enabled.' => 'Choose a default tab that is enabled.',
     'Couldn’t save settings.' => 'Couldn’t save settings.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Show Cancelled Events',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Display cancelled occurrences with their cancellation styling in all Overview views.',
 ];

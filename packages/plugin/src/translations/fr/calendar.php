@@ -815,4 +815,8 @@ return [
     'Select valid calendar tabs.' => 'Sélectionnez des onglets de calendrier valides.',
     'Choose a default tab that is enabled.' => 'Choisissez un onglet par défaut qui est activé.',
     'Couldn’t save settings.' => 'Impossible d’enregistrer les paramètres.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Afficher les événements annulés',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Affichez les occurrences annulées avec leur style d’annulation dans toutes les vues de la page Vue d’ensemble.',
 ];

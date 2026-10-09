@@ -48,6 +48,11 @@ class SettingsService extends Component
         return $this->getSettingsModel()->showDisabledEvents;
     }
 
+    public function showCancelledEvents(): bool
+    {
+        return $this->getSettingsModel()->showCancelledEvents;
+    }
+
     public function isDragAndDropEnabled(): bool
     {
         return $this->getSettingsModel()->isDragAndDropEnabled;

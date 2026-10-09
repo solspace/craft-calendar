@@ -10,8 +10,8 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
-use Solspace\Calendar\Transformers\FullCalTransformer;
 use Solspace\Calendar\Services\OverlapService;
+use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -102,6 +102,10 @@ class ApiController extends BaseController
         }
 
         if ($request->getIsCpRequest()) {
+            if (!$this->getSettingsService()->showCancelledEvents()) {
+                $criteria['cancelled'] = false;
+            }
+
             $allowed = array_keys($this->getCalendarService()->getAllAllowedCalendarTitles($siteId ?: \Craft::$app->sites->currentSite->id));
             $requested = $criteria['calendarId'] ?? $allowed;
             $criteria['calendarId'] = array_values(array_intersect($allowed, (array) $requested)) ?: -1;
@@ -134,6 +138,40 @@ class ApiController extends BaseController
         $this->requirePostRequest();
 
         return $this->createEvent(asDraft: true);
+    }
+
+    public function actionIcs(): void
+    {
+        Calendar::getInstance()->requirePro();
+
+        $site = \Craft::$app->request->get('site', null);
+        $icsHash = \Craft::$app->request->get('hash', '');
+        $icsHash = str_replace('.ics', '', $icsHash);
+
+        $calendar = Calendar::getInstance()->calendars->getCalendarByIcsHash($icsHash);
+        if (!$calendar) {
+            throw new NotFoundHttpException(Calendar::t('Page does not exist'));
+        }
+
+        $eventQuery = Event::find()
+            ->setCalendarId($calendar->id)
+            ->status(null)
+            ->site($site)
+        ;
+
+        $exporter = new ExportCalendarToIcs($eventQuery);
+        $exportString = $exporter->output();
+
+        header('Content-type: text/calendar; charset=utf-8');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: '.\strlen($exportString));
+        header('Content-Disposition: attachment; filename="'.$calendar->handle.'-'.time().'.ics"');
+
+        echo $exportString;
+
+        exit;
     }
 
     private function createEvent(bool $asDraft = false): Response
@@ -218,39 +256,5 @@ class ApiController extends BaseController
         $transformer = new FullCalTransformer();
 
         return $this->asJson($transformer->fromElement($event));
-    }
-
-    public function actionIcs(): void
-    {
-        Calendar::getInstance()->requirePro();
-
-        $site = \Craft::$app->request->get('site', null);
-        $icsHash = \Craft::$app->request->get('hash', '');
-        $icsHash = str_replace('.ics', '', $icsHash);
-
-        $calendar = Calendar::getInstance()->calendars->getCalendarByIcsHash($icsHash);
-        if (!$calendar) {
-            throw new NotFoundHttpException(Calendar::t('Page does not exist'));
-        }
-
-        $eventQuery = Event::find()
-            ->setCalendarId($calendar->id)
-            ->status(null)
-            ->site($site)
-        ;
-
-        $exporter = new ExportCalendarToIcs($eventQuery);
-        $exportString = $exporter->output();
-
-        header('Content-type: text/calendar; charset=utf-8');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Pragma: public');
-        header('Content-Length: '.\strlen($exportString));
-        header('Content-Disposition: attachment; filename="'.$calendar->handle.'-'.time().'.ics"');
-
-        echo $exportString;
-
-        exit;
     }
 }
