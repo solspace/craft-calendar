@@ -4,6 +4,9 @@ namespace Solspace\Tests\Unit\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\ExpirableElementInterface;
+use craft\db\Command;
+use craft\db\Connection;
+use craft\db\mysql\ColumnSchema;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
@@ -114,6 +117,53 @@ class EventPublicationTest extends TestCase
         $event->expiryDate->modify('-1 day');
         $event->setScenario(Event::SCENARIO_ESSENTIALS);
         self::assertTrue($event->validate(['postDate', 'expiryDate']));
+    }
+
+    /**
+     * @dataProvider expiryPersistenceProvider
+     */
+    public function testSavingExpiryUsesDatabaseDateFormat(bool $isNew, ?\DateTime $expiry, ?string $expected): void
+    {
+        $event = $this->event();
+        $event->id = 42;
+        $event->expiryDate = $expiry;
+        $original = $expiry ? clone $expiry : null;
+        $command = $this->createMock(Command::class);
+        $command->expects(self::once())->method($isNew ? 'insert' : 'update')->with(
+            Event::TABLE,
+            self::callback(static function (array $data) use ($expected): bool {
+                $column = new ColumnSchema(['type' => 'datetime', 'phpType' => 'string']);
+                self::assertSame($expected, $column->dbTypecast($data['expiryDate']));
+                self::assertSame($expected, $data['expiryDate']);
+
+                return true;
+            }),
+        )->willReturnSelf();
+        $command->expects(self::once())->method('execute')->willReturn(1);
+        $db = $this->createMock(Connection::class);
+        $db->method('createCommand')->willReturn($command);
+        \Craft::$app->method('__get')->with('db')->willReturn($db);
+
+        $event->afterSave($isNew);
+
+        self::assertEquals($original, $event->expiryDate);
+        if ($expiry) {
+            self::assertSame($original->getTimezone()->getName(), $expiry->getTimezone()->getName());
+        }
+    }
+
+    public static function expiryPersistenceProvider(): array
+    {
+        $cases = [];
+        foreach ([true, false] as $isNew) {
+            $operation = $isNew ? 'insert' : 'update';
+            $cases[$operation.' UTC'] = [$isNew, new \DateTime('2026-10-10 19:30:00', new \DateTimeZone('UTC')), '2026-10-10 19:30:00'];
+            $cases[$operation.' local time'] = [$isNew, new \DateTime('2026-10-10 14:30:00', new \DateTimeZone('America/Winnipeg')), '2026-10-10 19:30:00'];
+            $cases[$operation.' Carbon'] = [$isNew, new Carbon('2026-10-10 14:30:00', 'America/Winnipeg'), '2026-10-10 19:30:00'];
+            $cases[$operation.' no expiry'] = [$isNew, null, null];
+        }
+
+        return $cases;
     }
 
     public function testBlankPostDateDefaultsOnPublicationAndLeavesExpiredEventsExpired(): void

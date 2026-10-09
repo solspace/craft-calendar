@@ -18,6 +18,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -809,7 +810,7 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
             'repeatType' => $this->repeatType,
             'repeatEndType' => $this->repeatEndType,
             'postDate' => $this->postDate,
-            'expiryDate' => $this->expiryDate,
+            'expiryDate' => Db::prepareDateForDb($this->expiryDate),
         ];
 
         $db = \Craft::$app->db;
