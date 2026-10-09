@@ -1062,7 +1062,7 @@ class Event extends Element implements \JsonSerializable
                     'options' => array_map(static fn (CalendarModel $candidate) => [
                         'value' => $candidate->id,
                         'label' => $candidate->name,
-                        'icon' => Html::tag('svg', Html::tag('circle', '', ['cx' => 8, 'cy' => 8, 'r' => 5, 'fill' => $candidate->color]), ['xmlns' => 'http://www.w3.org/2000/svg', 'viewBox' => '0 0 16 16']),
+                        'icon' => Html::tag('svg', Html::tag('circle', '', ['cx' => 8, 'cy' => 8, 'r' => 5, 'style' => ['fill' => $candidate->color]]), ['xmlns' => 'http://www.w3.org/2000/svg', 'viewBox' => '0 0 16 16']),
                     ], array_values($calendars)),
                 ]);
             }
