@@ -54,6 +54,12 @@ afterEach(async () => {
 });
 
 describe("live overlap warnings", () => {
+  it("omits save guidance when previewing an existing event", async () => {
+    await act(async () => root.render(<OverlapWarning result={conflict} />));
+    expect(container.textContent).toContain("Overlaps with other events in this calendar.");
+    expect(container.textContent).not.toContain("You can still save.");
+    expect(container.querySelector("a")?.textContent).toBe(conflict.events[0].title);
+  });
   it.each([
     3, 4, 10,
   ])("shows three details with an accurate remainder for %s conflicts", async (count) => {

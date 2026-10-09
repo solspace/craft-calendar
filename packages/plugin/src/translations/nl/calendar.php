@@ -794,6 +794,7 @@ return [
     'Show Overlap Warnings' => 'Overlapwaarschuwingen tonen',
     'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Waarschuw als ingeschakelde, niet-geannuleerde evenementen binnen dezelfde kalender en site overlappen. Waarschuwingen verhinderen het opslaan niet.',
     'Scheduling conflict' => 'Planningsconflict',
+    'Overlaps with other events in this calendar.' => 'Overlapt met andere evenementen in deze kalender.',
     'Overlaps with other events in this calendar. You can still save.' => 'Overlapt met andere evenementen in deze kalender. Je kunt nog steeds opslaan.',
     'Checking for overlaps…' => 'Controleren op overlappingen…',
     'Couldn’t check for overlaps. You can still save.' => 'Overlappingen konden niet worden gecontroleerd. Je kunt nog steeds opslaan.',

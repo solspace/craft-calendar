@@ -794,6 +794,7 @@ return [
     'Show Overlap Warnings' => 'Show Overlap Warnings',
     'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.',
     'Scheduling conflict' => 'Scheduling conflict',
+    'Overlaps with other events in this calendar.' => 'Overlaps with other events in this calendar.',
     'Overlaps with other events in this calendar. You can still save.' => 'Overlaps with other events in this calendar. You can still save.',
     'Checking for overlaps…' => 'Checking for overlaps…',
     'Couldn’t check for overlaps. You can still save.' => 'Couldn’t check for overlaps. You can still save.',

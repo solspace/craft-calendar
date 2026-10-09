@@ -127,9 +127,11 @@ export const OverlapFlag = ({ count }: { count?: number }) =>
 export const OverlapWarning = ({
   result,
   formats,
+  isEditing = false,
 }: {
   result?: OverlapResult | null;
   formats?: DateFormats;
+  isEditing?: boolean;
 }) => {
   if (!result?.count) return null;
   const events = result.events.slice(0, 3);
@@ -141,7 +143,13 @@ export const OverlapWarning = ({
           <OverlapFlag count={result.count} />
           <span>{translate("Scheduling conflict")}</span>
         </strong>
-        <p>{translate("Overlaps with other events in this calendar. You can still save.")}</p>
+        <p>
+          {translate(
+            isEditing
+              ? "Overlaps with other events in this calendar. You can still save."
+              : "Overlaps with other events in this calendar.",
+          )}
+        </p>
       </div>
       <ul>
         {events.map((event) => (
@@ -238,7 +246,7 @@ export const LiveOverlapWarning = ({
             : null;
   return (
     <LiveWarning>
-      <OverlapWarning result={result} formats={formats} />
+      <OverlapWarning result={result} formats={formats} isEditing />
       {statusText && (
         <p className="light" role="status" aria-live="polite">
           {statusText}

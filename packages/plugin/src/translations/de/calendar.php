@@ -794,6 +794,7 @@ return [
     'Show Overlap Warnings' => 'Überlappungswarnungen anzeigen',
     'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Warnen, wenn sich aktivierte, nicht abgesagte Termine im selben Kalender und auf derselben Website überschneiden. Warnungen verhindern das Speichern nicht.',
     'Scheduling conflict' => 'Terminkonflikt',
+    'Overlaps with other events in this calendar.' => 'Überschneidet sich mit anderen Terminen in diesem Kalender.',
     'Overlaps with other events in this calendar. You can still save.' => 'Überschneidet sich mit anderen Terminen in diesem Kalender. Sie können trotzdem speichern.',
     'Checking for overlaps…' => 'Überschneidungen werden geprüft…',
     'Couldn’t check for overlaps. You can still save.' => 'Überschneidungen konnten nicht geprüft werden. Sie können trotzdem speichern.',
