@@ -786,4 +786,9 @@ return [
     'Range' => 'Zeitraum',
     'Agenda range' => 'Agenda-Zeitraum',
     '3 months' => '3 Monate',
+
+    // Year overview
+    '{count} event' => '{count} Termin',
+    '{count} events' => '{count} Termine',
+    'Hover a date to preview its events.' => 'Bewegen Sie den Mauszeiger über ein Datum, um seine Termine anzuzeigen.',
 ];

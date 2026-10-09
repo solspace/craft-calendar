@@ -786,4 +786,9 @@ return [
     'Range' => 'Periode',
     'Agenda range' => 'Agendaperiode',
     '3 months' => '3 maanden',
+
+    // Year overview
+    '{count} event' => '{count} evenement',
+    '{count} events' => '{count} evenementen',
+    'Hover a date to preview its events.' => 'Beweeg de muis over een datum om de evenementen te bekijken.',
 ];

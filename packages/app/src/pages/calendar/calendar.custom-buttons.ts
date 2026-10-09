@@ -14,8 +14,8 @@ export const changeCalendarUrl = (date?: Date) => {
     url = nextUrl.toString();
   } else {
     const currentUrl = new URL(window.location.href);
-    if (/\/(day|week|month|agenda)$/.test(currentUrl.pathname)) {
-      currentUrl.pathname = currentUrl.pathname.replace(/\/(day|week|month|agenda)$/, "");
+    if (/\/(day|week|month|agenda|year)$/.test(currentUrl.pathname)) {
+      currentUrl.pathname = currentUrl.pathname.replace(/\/(day|week|month|agenda|year)$/, "");
     }
 
     url = currentUrl.toString();

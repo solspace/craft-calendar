@@ -467,6 +467,10 @@ export const CalendarSearchWrapper = styled.div`
 `;
 
 export const CalendarWrapper = styled(CalendarBase)`
+  .fc-calendarYear-view {
+    overflow: visible;
+    background: transparent;
+  }
   container-type: inline-size;
 
   && .fc-list {

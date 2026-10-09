@@ -17,7 +17,7 @@ import {
   buildPreviewRecurrence,
   describeRecurrence,
 } from "@event-builder/editor/calendar-preview/calendar-preview.operations";
-import type { EventClickArg } from "@fullcalendar/core/index.js";
+import type { EventApi, EventClickArg } from "@fullcalendar/core/index.js";
 import clsx from "clsx";
 import { format, subDays } from "date-fns";
 import { type FC, useMemo, useState } from "react";
@@ -27,7 +27,7 @@ import { type EventMenuAction, PopoverEventMenu } from "./view-event.menu";
 import { PopoverActions, PopoverCloseButton, PopoverWrapper } from "./view-event.styles";
 
 type Props = {
-  fcEvent: EventClickArg;
+  fcEvent: Omit<EventClickArg, "event"> & { event: EventApi };
 };
 
 export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {

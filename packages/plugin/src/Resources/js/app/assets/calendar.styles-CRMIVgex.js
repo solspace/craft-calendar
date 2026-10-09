@@ -460,6 +460,10 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
   }
 
 `,a=e(r)`
+  .fc-calendarYear-view {
+    overflow: visible;
+    background: transparent;
+  }
   container-type: inline-size;
 
   && .fc-list {

@@ -140,7 +140,8 @@ const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
 }) => {
   const showWeekPicker =
     view === "timeGridWeek" || (view === "listMonth" && agendaRange === "week");
-  const showYearPicker = view === "listMonth" && agendaRange === "year";
+  const showYearPicker =
+    view === "calendarYear" || (view === "listMonth" && agendaRange === "year");
   const showMonthYearPicker =
     view === "dayGridMonth" || (view === "listMonth" && !showWeekPicker && !showYearPicker);
 

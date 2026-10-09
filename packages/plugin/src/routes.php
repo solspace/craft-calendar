@@ -5,7 +5,7 @@ return [
     'calendar' => 'calendar/settings/default-view',
     'calendar/overview' => 'calendar/overview',
     'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/overview',
-    'calendar/<year:\d+>/<month:\d+>/<day:\d+>/<view:day|week|month|agenda>' => 'calendar/overview',
+    'calendar/<year:\d+>/<month:\d+>/<day:\d+>/<view:day|week|month|agenda|year>' => 'calendar/overview',
 
     // Calendars
     'calendar/calendars' => 'calendar/calendars/calendars-index',

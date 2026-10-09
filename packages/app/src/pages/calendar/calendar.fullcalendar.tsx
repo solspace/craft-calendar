@@ -10,6 +10,7 @@ import type {
   EventApi,
   EventDropArg,
   EventMountArg,
+  SpecificViewContentArg,
 } from "@fullcalendar/core/index.js";
 import dayGrid from "@fullcalendar/daygrid";
 import interaction, { type DateClickArg, type EventResizeDoneArg } from "@fullcalendar/interaction";
@@ -20,6 +21,7 @@ import { addDays } from "date-fns";
 import {
   type AnchorHTMLAttributes,
   type FC,
+  type MouseEvent as ReactMouseEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -61,6 +63,7 @@ import { CalendarHistory, useCalendarHistory } from "./calendar.history";
 import { useViewSettings, type View } from "./calendar.persistence";
 import { CalendarSearch, getCalendarSearch } from "./calendar.search";
 import { CalendarWrapper } from "./calendar.styles";
+import { CalendarYear } from "./calendar.year";
 import { useConfig } from "./context/config.context";
 import { PopoverCreateEvent } from "./popovers/create-event/create-event";
 import { PopoverModifyEvent } from "./popovers/modify-event/modify";
@@ -183,13 +186,6 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   );
 
   const { datePickerButton, dateSelector } = useDateSelector(api, view, agendaRange);
-  const viewOptions = useMemo(
-    () => ({
-      ...calendarViewOptions,
-      listMonth: { ...calendarViewOptions.listMonth, ...getAgendaRangeOptions(agendaRange) },
-    }),
-    [agendaRange],
-  );
 
   useEffect(() => {
     if (lastAgendaRange.current === agendaRange) {
@@ -225,6 +221,67 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const eventHistory = useCalendarHistory(refetchEvents);
   const { add: addHistoryEntry, run: runHistoryAction, busy: isHistoryBusy } = eventHistory;
   const [isChoosingScope, setIsChoosingScope] = useState(false);
+
+  const selectYearDate = useCallback(
+    (date: Date, targetView: View) => {
+      clearTimeout(hoverTimer.current);
+      hidePopover();
+      changeCalendarUrl(date);
+      calendar.current?.getApi().changeView(targetView, date);
+    },
+    [hidePopover],
+  );
+
+  const previewYearEvent = useCallback(
+    (id: string, element: HTMLElement, click: ReactMouseEvent<HTMLButtonElement>) => {
+      const calendarApi = calendar.current?.getApi();
+      const event = calendarApi?.getEventById(id);
+      if (!event || !calendarApi || isHistoryBusy || isChoosingScope || isFetchingEvents) return;
+      showPopover(
+        <PopoverViewEvent
+          fcEvent={{ event, el: element, jsEvent: click.nativeEvent, view: calendarApi.view }}
+        />,
+        element,
+      );
+    },
+    [showPopover, isHistoryBusy, isChoosingScope, isFetchingEvents],
+  );
+
+  const viewOptions = useMemo(
+    () => ({
+      ...calendarViewOptions,
+      listMonth: { ...calendarViewOptions.listMonth, ...getAgendaRangeOptions(agendaRange) },
+      calendarYear: {
+        duration: { years: 1 },
+        dateAlignment: "year",
+        dateIncrement: { years: 1 },
+        titleFormat: { year: "numeric" as const },
+        content: (content: SpecificViewContentArg) => (
+          <CalendarYear
+            content={content}
+            disabled={isHistoryBusy || isChoosingScope || draft !== null}
+            loading={isFetchingEvents}
+            error={eventsError}
+            search={search}
+            onDateSelect={(date) => selectYearDate(date, "timeGridDay")}
+            onMonthSelect={(date) => selectYearDate(date, "dayGridMonth")}
+            onEventSelect={previewYearEvent}
+          />
+        ),
+      },
+    }),
+    [
+      agendaRange,
+      isHistoryBusy,
+      isChoosingScope,
+      draft,
+      isFetchingEvents,
+      eventsError,
+      search,
+      selectYearDate,
+      previewYearEvent,
+    ],
+  );
 
   const clearDraft = useCallback(() => {
     setDraft(null);
@@ -615,7 +672,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         customButtons={customButtons}
         initialView={view}
         initialDate={currentDay}
-        height={view === "listMonth" ? "auto" : undefined}
+        height={view === "listMonth" || view === "calendarYear" ? "auto" : undefined}
         locale={language}
         views={viewOptions}
         timeZone="UTC"
@@ -712,7 +769,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventResize={(arg) => handleEventChange("resize", arg)}
         headerToolbar={{
           start: "title",
-          center: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
+          center: "dayGridMonth,timeGridWeek,timeGridDay,listMonth,calendarYear",
           end: headerToolbarEnd,
         }}
         buttonText={{
@@ -720,6 +777,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
           timeGridWeek: Craft.t("calendar", "Week"),
           timeGridDay: Craft.t("calendar", "Day"),
           listMonth: Craft.t("calendar", "Agenda"),
+          calendarYear: Craft.t("calendar", "Year"),
           today: Craft.t("calendar", "Today"),
         }}
         datesSet={({ view }: DatesSetArg) => {

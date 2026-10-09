@@ -4,7 +4,7 @@ import { useLocalStorage } from "usehooks-ts";
 const KEY = "solspace-calendar-view";
 const HIDDEN_CALENDARS_KEY = "solspace-calendar-hidden-calendars";
 
-export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listMonth";
+export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listMonth" | "calendarYear";
 type ViewSettings = {
   view: View;
 };
@@ -18,6 +18,7 @@ const viewByUrlSuffix: Record<string, View> = {
   week: "timeGridWeek",
   day: "timeGridDay",
   agenda: "listMonth",
+  year: "calendarYear",
 };
 
 const getUrlView = (): View | null => {
