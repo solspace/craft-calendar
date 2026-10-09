@@ -65,6 +65,18 @@ export const updateMappingWarnings = (container: HTMLElement): void => {
   const warning = container.querySelector<HTMLElement>("[data-unmapped-warning]");
   const list = container.querySelector<HTMLElement>("[data-unmapped-fields]");
   const error = container.querySelector<HTMLElement>("[data-mapping-error]");
+  const confirmed = container.querySelector<HTMLInputElement>(
+    "input[data-calendar-transfer-confirm]",
+  )?.checked;
+  const submit = container
+    .closest("form.cp-screen")
+    ?.querySelector<HTMLButtonElement>(".so-footer button.submit");
+  if (submit) {
+    const disabled = !confirmed || duplicate;
+    submit.disabled = disabled;
+    submit.classList.toggle("disabled", disabled);
+    submit.setAttribute("aria-disabled", String(disabled));
+  }
   if (warning) warning.hidden = omitted.length === 0;
   if (error) error.hidden = !duplicate;
   if (list) {

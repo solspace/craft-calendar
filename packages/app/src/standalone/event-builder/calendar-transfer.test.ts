@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mountCalendarTransferSelect, updateMappingWarnings } from "./calendar-transfer";
+import {
+  mountCalendarTransferMapping,
+  mountCalendarTransferSelect,
+  updateMappingWarnings,
+} from "./calendar-transfer";
 import { findElementEditor, getDraftEventId } from "./occurrence-editor";
 
 vi.mock("./occurrence-editor", () => ({ findElementEditor: vi.fn(), getDraftEventId: vi.fn() }));
@@ -51,6 +55,61 @@ describe("calendar transfer review", () => {
     updateMappingWarnings(container);
     expect(selects[1].checkValidity()).toBe(true);
     expect(container.querySelector("[data-mapping-error]")?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("requires confirmation and disables the slideout action again when unchecked", () => {
+    const container = panel();
+    const form = document.createElement("form");
+    form.className = "cp-screen";
+    document.body.append(form);
+    form.append(container);
+    container.insertAdjacentHTML(
+      "beforeend",
+      '<input type="checkbox" data-calendar-transfer-confirm>',
+    );
+    form.insertAdjacentHTML(
+      "beforeend",
+      '<div class="so-footer"><button type="button">Cancel</button><button class="submit" type="submit">Change calendar</button></div>',
+    );
+    const checkbox = container.querySelector<HTMLInputElement>("input")!;
+    const submit = form.querySelector<HTMLButtonElement>("button.submit")!;
+    mountCalendarTransferMapping(container);
+    expect(submit.disabled).toBe(true);
+    expect(submit.getAttribute("aria-disabled")).toBe("true");
+    expect(form.querySelector<HTMLButtonElement>("button")?.disabled).toBe(false);
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(submit.disabled).toBe(false);
+    expect(submit.classList.contains("disabled")).toBe(false);
+    checkbox.checked = false;
+    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(submit.disabled).toBe(true);
+  });
+
+  it("keeps a confirmed transfer disabled while mappings conflict", () => {
+    const container = panel();
+    const form = document.createElement("form");
+    form.className = "cp-screen";
+    document.body.append(form);
+    form.append(container);
+    container.insertAdjacentHTML(
+      "beforeend",
+      '<input type="checkbox" data-calendar-transfer-confirm checked>',
+    );
+    form.insertAdjacentHTML(
+      "beforeend",
+      '<div class="so-footer"><button class="submit" type="submit">Change calendar</button></div>',
+    );
+    mountCalendarTransferMapping(container);
+    const select = container.querySelectorAll("select")[1];
+    const submit = form.querySelector<HTMLButtonElement>("button.submit")!;
+    expect(submit.disabled).toBe(false);
+    select.value = "location";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(submit.disabled).toBe(true);
+    select.value = "description";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(submit.disabled).toBe(false);
   });
 });
 

@@ -68,7 +68,8 @@
             </div>
         </details>
         <div class="calendar-transfer-confirm">
-            {{ forms.checkboxField({name: 'confirmTransfer', label: 'I have reviewed the field mapping.'|t('calendar'), required: true}) }}
+            {{ forms.checkboxField({name: 'confirmTransfer', label: 'I have reviewed the mapping and understand that unmapped content will not carry over.'|t('calendar'), required: true, inputAttributes: {'data-calendar-transfer-confirm': true, required: true}}) }}
+            <p>{{ 'The original event stays unchanged until you publish this draft.'|t('calendar') }}</p>
         </div>
     {% else %}
         <p class="light">{{ 'Close this panel and choose another calendar.'|t('calendar') }}</p>
@@ -106,8 +107,10 @@
 .calendar-transfer-details summary { cursor: pointer; color: var(--gray-600); width: fit-content; }
 .calendar-transfer-details summary:hover { color: var(--blue-600); }
 .calendar-transfer-details > div { display: grid; gap: 8px; margin-top: 12px; }
-.calendar-transfer-confirm { border-block-start: 1px solid var(--hairline-color); padding-block-start: 20px; }
+.calendar-transfer-confirm { display: grid; gap: 8px; border: 1px solid rgb(184 115 0 / 35%); border-radius: var(--radius-lg, 8px); padding: 16px 18px; background: var(--amber-050); }
 .calendar-transfer-confirm .field { margin: 0; }
+.calendar-transfer-confirm label { color: rgb(184 115 0); font-weight: 600; }
+.calendar-transfer-confirm p { color: var(--gray-600); font-size: 12px; padding-inline-start: calc(var(--checkbox-size, 16px) + 7px); }
 .calendar-transfer [hidden] { display: none; }
 @container (max-width: 500px) {
     .calendar-transfer-route { gap: 8px; }
