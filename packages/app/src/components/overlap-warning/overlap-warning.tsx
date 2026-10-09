@@ -44,6 +44,7 @@ const Warning = styled.div`
     align-items: center;
     gap: 6px;
     margin: 0;
+    color: var(--warning-color, #ad6500);
     line-height: 1.4;
   }
 
@@ -106,6 +107,7 @@ const Flag = styled.span`
   vertical-align: -0.1em;
   line-height: 1;
   margin-inline-end: 4px;
+  color: var(--warning-color, #ad6500);
 
   svg { display: block; }
 `;

@@ -251,7 +251,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
       )}
 
       {(isCancelled || isEdited) && (
-        <div className={clsx("occurrence-status", !isCancelled && "is-edited")}>
+        <div className={clsx("occurrence-status", isCancelled ? "is-cancelled" : "is-edited")}>
           {isCancelled
             ? translate("This occurrence is cancelled.")
             : translate("This occurrence has its own changes.")}
