@@ -14,7 +14,7 @@ export const EditorOverlapWarning = ({
   refreshKey: number;
 }) => {
   const schedule = useSelector(eventSelectors.state);
-  const { showOverlapWarnings } = useSelector(appSelectors.config);
+  const { showOverlapWarnings, formats } = useSelector(appSelectors.config);
   const ref = useRef<HTMLDivElement>(null);
   const resolveEventId = useCallback(
     () => findElementEditor(ref.current)?.settings.elementId ?? context?.eventId,
@@ -24,6 +24,7 @@ export const EditorOverlapWarning = ({
   return (
     <div ref={ref} style={{ padding: "0 20px" }}>
       <LiveOverlapWarning
+        formats={formats}
         enabled={showOverlapWarnings}
         schedule={{
           ...schedule,

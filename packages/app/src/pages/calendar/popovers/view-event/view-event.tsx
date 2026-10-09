@@ -33,7 +33,7 @@ type Props = {
 
 export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { hidePopover, showPopover } = usePopover();
-  const { currentSiteId } = useConfig();
+  const { currentSiteId, formats } = useConfig();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isOpeningDraft, setIsOpeningDraft] = useState(false);
@@ -258,7 +258,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         </div>
       )}
 
-      <OverlapWarning result={event.extendedProps.overlaps} />
+      <OverlapWarning result={event.extendedProps.overlaps} formats={formats} />
 
       <hr />
 

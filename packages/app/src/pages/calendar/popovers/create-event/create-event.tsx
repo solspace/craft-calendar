@@ -200,6 +200,7 @@ export const PopoverCreateEvent: FC<Props> = ({
         />
 
         <LiveOverlapWarning
+          formats={formats}
           enabled={showOverlapWarnings && !!calendarId}
           schedule={{
             start: draft.start,

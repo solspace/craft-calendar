@@ -399,6 +399,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
 
   const handleDraftSelection = useCallback(
     (selection: DateSelectArg) => {
+      clearTimeout(hoverTimer.current);
       hidePopover();
       selection.view.calendar
         .getEvents()
@@ -420,6 +421,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         return;
       }
 
+      clearTimeout(hoverTimer.current);
       hidePopover();
       api
         .getEvents()
@@ -744,7 +746,13 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
             return;
           }
 
-          if (isDraggingRef.current || isHistoryBusy || isFetchingEvents || isChoosingScope) {
+          if (
+            draft !== null ||
+            isDraggingRef.current ||
+            isHistoryBusy ||
+            isFetchingEvents ||
+            isChoosingScope
+          ) {
             return;
           }
 
@@ -767,7 +775,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventResizeStart={dismissPopoverForInteraction}
         eventResizeStop={endInteraction}
         eventClick={(arg) => {
-          if (isHistoryBusy || isFetchingEvents || isChoosingScope) {
+          if (draft !== null || isHistoryBusy || isFetchingEvents || isChoosingScope) {
             arg.jsEvent.preventDefault();
             return;
           }

@@ -1,15 +1,18 @@
 // @vitest-environment jsdom
 
 import { PopoverProvider } from "@cal/contexts/popover/popover.context";
+import type { CalendarApi, CalendarOptions } from "@fullcalendar/core";
+import type FullCalendar from "@fullcalendar/react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearCalendarEventsCache } from "./calendar.events";
 import { CalendarFullcalendar } from "./calendar.fullcalendar";
 
-const { showPopover, hidePopover, controlPanelSettings } = vi.hoisted(() => ({
+const { showPopover, hidePopover, controlPanelSettings, calendarRef } = vi.hoisted(() => ({
   showPopover: vi.fn(),
   hidePopover: vi.fn(),
+  calendarRef: { current: null as CalendarApi | null },
   controlPanelSettings: {
     language: "en-US",
     weekStartDay: 0,
@@ -18,6 +21,24 @@ const { showPopover, hidePopover, controlPanelSettings } = vi.hoisted(() => ({
     enabledCalendarViews: undefined as string[] | undefined,
   },
 }));
+
+// Keep the real FullCalendar, exposing its API to start a selection without jsdom layout hits.
+vi.mock("@fullcalendar/react", async (original) => {
+  const { default: ActualCalendar } = await original<typeof import("@fullcalendar/react")>();
+  const { forwardRef } = await import("react");
+  return {
+    default: forwardRef<FullCalendar, CalendarOptions>((props, ref) => (
+      <ActualCalendar
+        {...props}
+        ref={(instance) => {
+          calendarRef.current = instance?.getApi() ?? null;
+          if (typeof ref === "function") ref(instance);
+          else if (ref) ref.current = instance;
+        }}
+      />
+    )),
+  };
+});
 
 vi.mock("@cal/contexts/popover/popover.context", async (original) => {
   const actual = await original<typeof import("@cal/contexts/popover/popover.context")>();
@@ -33,7 +54,15 @@ vi.mock("./context/config.context", () => ({
   useConfig: () => ({
     currentDay: new Date("2026-10-09T00:00:00Z"),
     language: controlPanelSettings.language,
-    formats: { time: { short: { js: { hour: "numeric", minute: "2-digit", hour12: true } } } },
+    formats: {
+      date: { short: { icu: "yyyy-MM-dd" } },
+      datetime: { short: { icu: "yyyy-MM-dd h:mm a" } },
+      time: {
+        short: { icu: "h:mm a", js: { hour: "numeric", minute: "2-digit", hour12: true } },
+      },
+    },
+    calendars: { 1: "Workshops", 2: "Outdoors" },
+    quickCreateFields: { 1: { location: "venue", description: "summary" } },
     weekStartDay: controlPanelSettings.weekStartDay,
     overlapThresholdString: "00:00:00",
     allDayDefault: false,
@@ -92,6 +121,14 @@ describe("control panel Agenda", () => {
           message,
         ),
       getCpUrl: (path: string) => `/admin/${path}`,
+    });
+    vi.stubGlobal("Garnish", {
+      MenuBtn: class {
+        showingMenu = false;
+        menu = { on: vi.fn() };
+        hideMenu() {}
+        destroy() {}
+      },
     });
     vi.stubGlobal(
       "fetch",
@@ -152,6 +189,99 @@ describe("control panel Agenda", () => {
     const url = vi.mocked(fetch).mock.calls.at(-1)?.[0] as URL;
     return [url.searchParams.get("start"), url.searchParams.get("end")];
   };
+
+  const newDraft = async () => {
+    act(() => {
+      calendarRef.current?.select({ start: "2026-10-09", end: "2026-10-10", allDay: true });
+    });
+    await settle();
+  };
+
+  const field = (label: string) => {
+    const id = Array.from(container.querySelectorAll("label")).find(
+      (item) => item.textContent === label,
+    )?.htmlFor;
+    return container.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[id="${id}"]`);
+  };
+
+  const typeField = (label: string, value: string) => {
+    const input = field(label);
+    expect(input).not.toBeNull();
+    const prototype =
+      input instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : HTMLInputElement.prototype;
+    act(() => {
+      Object.getOwnPropertyDescriptor(prototype, "value")?.set?.call(input, value);
+      input?.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  };
+
+  it.each([
+    "cancel",
+    "save",
+  ])("keeps creation values after hovering another event, then cleans up on %s", async (action) => {
+    controlPanelSettings.realPopover = true;
+    history.replaceState(null, "", "/admin/calendar/2026/10/09/month");
+    await mount();
+    await newDraft();
+    typeField("Title", "My unfinished event");
+    typeField("Location", "Studio three");
+    typeField("Description", "Bring a notebook.");
+    const titleInput = field("Title");
+    const start = field("Starts")?.value;
+    const existing = container
+      .querySelector("[data-calendar-event-title-link]")
+      ?.closest<HTMLElement>(".fc-event");
+    expect(existing?.textContent).toContain("Custom workshop");
+    act(() => existing?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
+    await settle();
+    act(() => existing?.click());
+    expect(field("Title")).toBe(titleInput);
+    expect(field("Title")?.value).toBe("My unfinished event");
+    expect(field("Location")?.value).toBe("Studio three");
+    expect(field("Description")?.value).toBe("Bring a notebook.");
+    expect(field("Starts")?.value).toBe(start);
+    expect(container.querySelector(".event-title")).toBeNull();
+
+    act(() => existing?.dispatchEvent(new MouseEvent("mouseleave")));
+    if (action === "cancel") {
+      act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })));
+    } else {
+      vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ id: 3 })));
+      act(() => {
+        Array.from(container.querySelectorAll("button"))
+          .find((button) => button.textContent === "Create Event")
+          ?.click();
+      });
+    }
+    await settle();
+    if (action === "save") {
+      const request = vi.mocked(fetch).mock.calls.find((call) => call[1]?.method === "POST");
+      expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({
+        title: "My unfinished event",
+        calendarId: 1,
+        details: { location: "Studio three", description: "Bring a notebook." },
+      });
+    }
+    expect(field("Title")).toBeNull();
+    expect(container.textContent).not.toContain("My unfinished event");
+    const savedEvent = container.querySelector<HTMLElement>(".fc-event");
+    act(() => savedEvent?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
+    await settle();
+    expect(container.querySelector(".event-title")?.textContent).toBe("Custom workshop");
+  });
+
+  it("cancels a queued hover preview when starting creation", async () => {
+    controlPanelSettings.realPopover = true;
+    history.replaceState(null, "", "/admin/calendar/2026/10/09/month");
+    await mount();
+    const existing = container.querySelector<HTMLElement>(".fc-event");
+    act(() => existing?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
+    await newDraft();
+    expect(field("Title")?.value).toBe("New Event");
+    expect(container.querySelector(".event-title")).toBeNull();
+  });
 
   it.each([
     ["week", ["2026-10-04", "2026-10-11"], ["2026-10-11", "2026-10-18"]],

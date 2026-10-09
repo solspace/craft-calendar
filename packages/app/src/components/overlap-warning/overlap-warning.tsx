@@ -1,3 +1,4 @@
+import type { DateFormats } from "@cal/types/config";
 import { craftFetch } from "@cal/utils/http";
 import translate from "@cal/utils/translations";
 import { formatOccurrenceRange } from "@event-builder/edited-occurrences/edited-occurrences.utilities";
@@ -21,6 +22,8 @@ export type OverlapResult = {
 };
 
 const Warning = styled.div`
+  display: grid;
+  gap: 8px;
   border: 1px solid var(--warning-color, #ad6500);
   border-radius: 5px;
   background: var(--warning-bg-color, #fff8e6);
@@ -29,38 +32,88 @@ const Warning = styled.div`
   font-size: 12px;
   line-height: 1.5;
   margin-block: 10px;
-  strong { display: block; }
-  ul { margin: 6px 0 0; padding-inline-start: 18px; }
-  li { margin: 3px 0; }
+  overflow-wrap: anywhere;
+
+  && .overlap-heading {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .overlap-heading .calendar-overlap-flag {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  && p { margin: 0; text-align: start; }
+  && ul {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  && li { display: grid; gap: 2px; margin: 0; }
   a { text-decoration: underline; }
-  small { display: block; color: var(--light-text-color); }
-  p { margin: 6px 0 0; }
+  small {
+    display: block;
+    color: var(--light-text-color, #596673);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+`;
+
+const LiveWarning = styled.div`
+  display: grid;
+  gap: 8px;
+
+  ${Warning} { margin: 0; }
+
+  && > p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: start;
+  }
+`;
+
+const Flag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: 4px;
 `;
 
 export const OverlapFlag = ({ count }: { count?: number }) =>
   count ? (
-    <span
+    <Flag
       role="img"
       className="calendar-overlap-flag"
       title={translate("Scheduling conflict")}
       aria-label={translate("Scheduling conflict")}
-      style={{ marginInlineEnd: 4 }}
     >
       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
         <path d="M8 1a1 1 0 0 1 .87.5l7 12A1 1 0 0 1 15 15H1a1 1 0 0 1-.87-1.5l7-12A1 1 0 0 1 8 1Zm0 3.5a.75.75 0 0 0-.75.75v4a.75.75 0 0 0 1.5 0v-4A.75.75 0 0 0 8 4.5ZM8 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
       </svg>
-    </span>
+    </Flag>
   ) : null;
 
-export const OverlapWarning = ({ result }: { result?: OverlapResult | null }) => {
+export const OverlapWarning = ({
+  result,
+  formats,
+}: {
+  result?: OverlapResult | null;
+  formats?: DateFormats;
+}) => {
   if (!result?.count) return null;
   return (
     <Warning role="status" aria-live="polite">
-      <strong>
+      <strong className="overlap-heading">
         <OverlapFlag count={result.count} />
-        {translate("Scheduling conflict")}
+        <span>{translate("Scheduling conflict")}</span>
       </strong>
-      {translate("Overlaps with other events in this calendar. You can still save.")}
+      <p>{translate("Overlaps with other events in this calendar. You can still save.")}</p>
       <ul>
         {result.events.map((event) => (
           <li key={event.id}>
@@ -72,7 +125,10 @@ export const OverlapWarning = ({ result }: { result?: OverlapResult | null }) =>
               event.title
             )}
             <small>
-              {formatOccurrenceRange({ ...event, end: event.allDay ? event.end - 1 : event.end })}
+              {formatOccurrenceRange(
+                { ...event, end: event.allDay ? event.end - 1 : event.end },
+                formats,
+              )}
             </small>
           </li>
         ))}
@@ -86,11 +142,13 @@ export const OverlapWarning = ({ result }: { result?: OverlapResult | null }) =>
 
 export const LiveOverlapWarning = ({
   enabled,
+  formats,
   schedule,
   resolveEventId,
   refreshKey = 0,
 }: {
   enabled?: boolean;
+  formats?: DateFormats;
   schedule: Record<string, unknown>;
   resolveEventId?: () => number | null | undefined;
   refreshKey?: number;
@@ -133,28 +191,27 @@ export const LiveOverlapWarning = ({
   }, [enabled, payload, resolveEventId, refreshKey]);
 
   if (!enabled) return null;
+  const statusText =
+    status === "loading"
+      ? translate("Checking for overlaps…")
+      : status === "error"
+        ? translate("Couldn’t check for overlaps. You can still save.")
+        : result?.recurring
+          ? translate("Checked up to {count} occurrences within one year, through {date}.", {
+              count: 100,
+              date: result.through ?? "",
+            })
+          : !result?.count
+            ? translate("No overlaps found.")
+            : null;
   return (
-    <div>
-      <OverlapWarning result={result} />
-      <p
-        className="light"
-        role="status"
-        aria-live="polite"
-        style={{ fontSize: 12, margin: "8px 0" }}
-      >
-        {status === "loading"
-          ? translate("Checking for overlaps…")
-          : status === "error"
-            ? translate("Couldn’t check for overlaps. You can still save.")
-            : result?.recurring
-              ? translate("Checked up to {count} occurrences within one year, through {date}.", {
-                  count: 100,
-                  date: result.through ?? "",
-                })
-              : !result?.count
-                ? translate("No overlaps found.")
-                : null}
-      </p>
-    </div>
+    <LiveWarning>
+      <OverlapWarning result={result} formats={formats} />
+      {statusText && (
+        <p className="light" role="status" aria-live="polite">
+          {statusText}
+        </p>
+      )}
+    </LiveWarning>
   );
 };

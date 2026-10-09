@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import type { DateFormats } from "@cal/types/config";
 import { replace } from "@cal/utils/translations";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -98,6 +99,22 @@ describe("live overlap warnings", () => {
     await act(async () => resolveOld(response(conflict)));
     expect(container.textContent).toContain("No overlaps found.");
     expect(container.textContent).not.toContain("Scheduling conflict");
+  });
+  it("uses the editor's date and time formats without a blank trailing status", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => response(conflict)),
+    );
+    const formats = {
+      date: { short: { icu: "yyyy-MM-dd" } },
+      time: { short: { icu: "h:mm a" } },
+    } as DateFormats;
+    await act(async () =>
+      root.render(<LiveOverlapWarning enabled schedule={schedule} formats={formats} />),
+    );
+    await flush();
+    expect(container.querySelector("li small")?.textContent).toBe("2026-10-14 10:00 AM - 11:00 AM");
+    expect(container.querySelectorAll('[role="status"]')).toHaveLength(1);
   });
   it("shows a check failure without blocking the editor", async () => {
     vi.stubGlobal(
