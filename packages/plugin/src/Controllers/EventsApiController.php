@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use craft\base\Element;
 use craft\errors\InvalidElementException;
 use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
+use Solspace\Calendar\Bundles\Occurrences\ScheduleHistory;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -101,37 +102,56 @@ class EventsApiController extends BaseController
 
     public function actionMove(): Response
     {
-        $this->requirePostRequest();
+        return $this->recordScheduleChange(fn () => $this->moveResponse());
+    }
 
+    public function actionResize(): Response
+    {
+        return $this->recordScheduleChange(fn () => $this->resizeResponse());
+    }
+
+    public function actionHistory(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requireCpRequest();
+
+        try {
+            (new ScheduleHistory())->replay(
+                (string) \Craft::$app->request->getRequiredBodyParam('token'),
+                (string) \Craft::$app->request->getRequiredBodyParam('direction'),
+            );
+        } catch (\RuntimeException $exception) {
+            return $this->asFailure($exception->getMessage());
+        }
+
+        return $this->asJson(['success' => true]);
+    }
+
+    public function actionDuplicate(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireLogin();
+        $this->requireCpRequest();
         $event = $this->findEditableEvent();
         if ($event instanceof Response) {
             return $event;
         }
+        $this->getEventsService()->requireEventCreatePermissions($event->getCalendar());
 
-        $request = \Craft::$app->request;
-        $scope = $this->parseScope($request->getBodyParam('scope'));
-        $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
-        $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
-        $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
-
-        if (!$this->hasOccurrenceSchedule($event)) {
-            return $this->rescheduleEvent($event, $start, $end, $allDay);
+        try {
+            /** @var Event $copy */
+            $copy = \Craft::$app->getElements()->duplicateElement($event, [
+                'title' => Calendar::t('{title} (copy)', ['title' => $event->title]),
+                'slug' => null,
+                'seriesId' => null,
+                'authorId' => (int) \Craft::$app->getUser()->getId(),
+            ]);
+        } catch (InvalidElementException $exception) {
+            return $this->asFailure($exception->getMessage() ?: Calendar::t('Couldn’t duplicate event.'));
         }
 
-        $recurrenceId = $this->parseRequiredRecurrenceId();
-        if (self::SCOPE_OCCURRENCE === $scope) {
-            return $this->rescheduleOccurrence($event, $recurrenceId, $start, $end, $allDay);
-        }
-
-        // The series moves as far as the occurrence was dragged, which for one with its own times isn't from its recurrence ID
-        $service = $this->getOccurrencesService();
-        $draggedFrom = $service->describeOccurrence($event, $recurrenceId, $service->getOverride($event, $recurrenceId))['startDate'];
-
-        return $this->changeSeriesResponse(
-            $event,
-            $scope,
-            fn (Event $event) => $this->getRecurringMutationHelper()->moveSeries($event, $draggedFrom, $start, $allDay),
-        );
+        return $this->asJson(['success' => true, 'url' => $copy->getCpEditUrl()]);
     }
 
     public function actionDelete(): Response
@@ -160,54 +180,6 @@ class EventsApiController extends BaseController
         }
 
         return $this->asFailure(Calendar::t('Couldn’t delete event.'));
-    }
-
-    public function actionResize(): Response
-    {
-        $this->requirePostRequest();
-
-        $event = $this->findEditableEvent();
-        if ($event instanceof Response) {
-            return $event;
-        }
-
-        $request = \Craft::$app->request;
-        $scope = $this->parseScope($request->getBodyParam('scope'));
-        $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
-        $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
-        $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
-
-        if (!$this->hasOccurrenceSchedule($event)) {
-            return $this->rescheduleEvent($event, $start, $end, $allDay);
-        }
-
-        if (self::SCOPE_OCCURRENCE === $scope) {
-            return $this->rescheduleOccurrence($event, $this->parseRequiredRecurrenceId(), $start, $end, $allDay);
-        }
-
-        $startDeltaSeconds = $this->parseDeltaSeconds(
-            $request->getBodyParam('startDeltaSeconds'),
-            $request->getBodyParam('oldStart'),
-            $request->getBodyParam('start'),
-            $allDay,
-        );
-        $endDeltaSeconds = $this->parseDeltaSeconds(
-            $request->getBodyParam('endDeltaSeconds'),
-            $request->getBodyParam('oldEnd'),
-            $request->getBodyParam('end'),
-            $allDay,
-        );
-
-        return $this->changeSeriesResponse(
-            $event,
-            $scope,
-            fn (Event $event) => $this->getRecurringMutationHelper()->resizeSeries(
-                $event,
-                $allDay,
-                $startDeltaSeconds ?? 0,
-                $endDeltaSeconds ?? 0,
-            ),
-        );
     }
 
     /**
@@ -259,6 +231,104 @@ class EventsApiController extends BaseController
         }
 
         return $this->asJson(['success' => true, 'url' => ($draft ?? $event)->getCpEditUrl()]);
+    }
+
+    private function recordScheduleChange(callable $change): Response
+    {
+        $this->requirePostRequest();
+        if (!\Craft::$app->request->getBodyParam('recordHistory') || \Craft::$app->getUser()->getIsGuest()) {
+            return $change();
+        }
+        $this->requireCpRequest();
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
+        return (new ScheduleHistory())->record($event, $change);
+    }
+
+    private function moveResponse(): Response
+    {
+        $this->requirePostRequest();
+
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
+        $request = \Craft::$app->request;
+        $scope = $this->parseScope($request->getBodyParam('scope'));
+        $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
+        $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
+        $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
+
+        if (!$this->hasOccurrenceSchedule($event)) {
+            return $this->rescheduleEvent($event, $start, $end, $allDay);
+        }
+
+        $recurrenceId = $this->parseRequiredRecurrenceId();
+        if (self::SCOPE_OCCURRENCE === $scope) {
+            return $this->rescheduleOccurrence($event, $recurrenceId, $start, $end, $allDay);
+        }
+
+        // The series moves as far as the occurrence was dragged, which for one with its own times isn't from its recurrence ID
+        $service = $this->getOccurrencesService();
+        $draggedFrom = $service->describeOccurrence($event, $recurrenceId, $service->getOverride($event, $recurrenceId))['startDate'];
+
+        return $this->changeSeriesResponse(
+            $event,
+            $scope,
+            fn (Event $event) => $this->getRecurringMutationHelper()->moveSeries($event, $draggedFrom, $start, $allDay),
+        );
+    }
+
+    private function resizeResponse(): Response
+    {
+        $this->requirePostRequest();
+
+        $event = $this->findEditableEvent();
+        if ($event instanceof Response) {
+            return $event;
+        }
+
+        $request = \Craft::$app->request;
+        $scope = $this->parseScope($request->getBodyParam('scope'));
+        $allDay = $this->parseBooleanBodyParam($request->getBodyParam('allDay', $event->isAllDay()));
+        $start = $this->parseMoveDate($request->getBodyParam('start'), $allDay);
+        $end = $this->parseMoveEndDate($request->getBodyParam('end'), $start, $allDay);
+
+        if (!$this->hasOccurrenceSchedule($event)) {
+            return $this->rescheduleEvent($event, $start, $end, $allDay);
+        }
+
+        if (self::SCOPE_OCCURRENCE === $scope) {
+            return $this->rescheduleOccurrence($event, $this->parseRequiredRecurrenceId(), $start, $end, $allDay);
+        }
+
+        $startDeltaSeconds = $this->parseDeltaSeconds(
+            $request->getBodyParam('startDeltaSeconds'),
+            $request->getBodyParam('oldStart'),
+            $request->getBodyParam('start'),
+            $allDay,
+        );
+        $endDeltaSeconds = $this->parseDeltaSeconds(
+            $request->getBodyParam('endDeltaSeconds'),
+            $request->getBodyParam('oldEnd'),
+            $request->getBodyParam('end'),
+            $allDay,
+        );
+
+        return $this->changeSeriesResponse(
+            $event,
+            $scope,
+            fn (Event $event) => $this->getRecurringMutationHelper()->resizeSeries(
+                $event,
+                $allDay,
+                $startDeltaSeconds ?? 0,
+                $endDeltaSeconds ?? 0,
+            ),
+        );
     }
 
     /**

@@ -68,6 +68,7 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
         }
 
         clearCalendarEventsCache();
+        window.dispatchEvent(new Event("calendar:schedule-history-reset"));
         refetchEvents?.();
         onSuccess?.();
         hidePopover();

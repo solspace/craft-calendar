@@ -30,6 +30,8 @@ return [
     'POST calendar/api/events/delete' => 'calendar/events-api/delete',
     'POST calendar/api/events/move' => 'calendar/events-api/move',
     'POST calendar/api/events/resize' => 'calendar/events-api/resize',
+    'POST calendar/api/events/history' => 'calendar/events-api/history',
+    'POST calendar/api/events/duplicate' => 'calendar/events-api/duplicate',
     'POST calendar/api/events/cancel' => 'calendar/events-api/cancel',
     'POST calendar/api/events/edit-following' => 'calendar/events-api/edit-following',
 

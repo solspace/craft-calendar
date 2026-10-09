@@ -52,6 +52,7 @@ import {
   moveEvent,
   resizeEvent,
 } from "./calendar.events";
+import { CalendarHistory, useCalendarHistory } from "./calendar.history";
 import { useViewSettings, type View } from "./calendar.persistence";
 import { CalendarSearch, getCalendarSearch } from "./calendar.search";
 import { CalendarWrapper } from "./calendar.styles";
@@ -181,6 +182,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const refetchEvents = useCallback(() => {
     calendar.current?.getApi().refetchEvents();
   }, []);
+
+  const eventHistory = useCalendarHistory(refetchEvents);
+  const { add: addHistoryEntry, run: runHistoryAction, busy: isHistoryBusy } = eventHistory;
+  const [isChoosingScope, setIsChoosingScope] = useState(false);
 
   const clearDraft = useCallback(() => {
     setDraft(null);
@@ -390,13 +395,13 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   // Saves a drag or resize. For a recurring event, the user first picks which occurrences it changes.
   const handleEventChange = useCallback(
     (action: "move" | "resize", arg: EventDropArg | EventResizeDoneArg) => {
-      if (isCreateDraftEvent(arg.event)) {
+      if (isCreateDraftEvent(arg.event) || isHistoryBusy) {
         arg.revert();
 
         return;
       }
 
-      const save = (scope?: EventMutationScope) => {
+      const save = async (scope?: EventMutationScope) => {
         const args = {
           event: arg.event,
           recurrenceId: getRecurrenceIdFromId(String(arg.event.id)),
@@ -404,11 +409,18 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
           siteId: currentSiteId,
           refetchEvents,
           revert: arg.revert,
+          onHistoryEntry: addHistoryEntry,
         };
 
-        return action === "move"
-          ? moveEvent(args)
-          : resizeEvent({ ...args, oldEvent: arg.oldEvent });
+        let started = false;
+        const saved = await runHistoryAction(() => {
+          started = true;
+          return action === "move"
+            ? moveEvent(args)
+            : resizeEvent({ ...args, oldEvent: arg.oldEvent });
+        });
+        if (!started) arg.revert();
+        return saved;
       };
 
       if (!isRecurringEvent(arg.event)) {
@@ -420,6 +432,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
       // A change that couldn't be saved is reverted, so its prompt has nothing left to save
       const select = async (scope: EventMutationScope) => {
         const saved = await save(scope);
+        setIsChoosingScope(false);
         if (!saved) {
           hidePopover();
         }
@@ -427,18 +440,30 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         return saved;
       };
 
+      setIsChoosingScope(true);
       // Each change gets its own prompt, which reverts it when replaced without a choice
       showPopover(
         <PopoverModifyEvent
           key={++scopePromptCount.current}
           action={action}
           onSelect={select}
-          onCancel={arg.revert}
+          onCancel={() => {
+            arg.revert();
+            setIsChoosingScope(false);
+          }}
         />,
         arg.jsEvent,
       );
     },
-    [currentSiteId, hidePopover, refetchEvents, showPopover],
+    [
+      currentSiteId,
+      hidePopover,
+      refetchEvents,
+      showPopover,
+      addHistoryEntry,
+      runHistoryAction,
+      isHistoryBusy,
+    ],
   );
 
   const handleNavLinkDayClick = useCallback((date: Date) => {
@@ -504,6 +529,19 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   if (!isReady) {
     return null;
   }
+  const historyRoot = document.querySelector<HTMLElement>("[data-calendar-history-root]");
+  const historyControl =
+    canEditEvents && isDragAndDropEnabled ? (
+      <CalendarHistory
+        canUndo={eventHistory.canUndo}
+        canRedo={eventHistory.canRedo}
+        disabled={isHistoryBusy || isFetchingEvents || isChoosingScope || draft !== null}
+        onReplay={(direction) => {
+          hidePopover();
+          void eventHistory.replay(direction);
+        }}
+      />
+    ) : null;
   const searchRoot = document.querySelector<HTMLElement>("[data-calendar-search-root]");
   const searchControl = (
     <CalendarSearch initialSearch={search} onSearchChange={handleSearchChange} />
@@ -512,6 +550,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   return (
     <CalendarWrapper className={isFetchingEvents ? "is-fetching-events" : undefined}>
       {searchRoot ? createPortal(searchControl, searchRoot) : searchControl}
+      {historyRoot ? createPortal(historyControl, historyRoot) : historyControl}
       <FullCalendar
         {...getCalendarTranslations()}
         ref={calendar}
@@ -528,7 +567,13 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         nextDayThreshold={overlapThresholdString}
         fixedWeekCount
         dayMaxEventRows
-        editable={canEditEvents && isDragAndDropEnabled}
+        editable={
+          canEditEvents &&
+          isDragAndDropEnabled &&
+          !isHistoryBusy &&
+          !isChoosingScope &&
+          !isFetchingEvents
+        }
         selectable={canCreateEvents}
         selectMirror={false}
         selectMinDistance={5}
@@ -571,7 +616,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
             return;
           }
 
-          if (isDraggingRef.current) {
+          if (isDraggingRef.current || isHistoryBusy || isFetchingEvents || isChoosingScope) {
             return;
           }
 
@@ -594,6 +639,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventResizeStart={dismissPopoverForInteraction}
         eventResizeStop={endInteraction}
         eventClick={(arg) => {
+          if (isHistoryBusy || isFetchingEvents || isChoosingScope) {
+            arg.jsEvent.preventDefault();
+            return;
+          }
           if (getCalendarEventClickAction(arg.event, arg.jsEvent.target) !== "open") {
             return;
           }

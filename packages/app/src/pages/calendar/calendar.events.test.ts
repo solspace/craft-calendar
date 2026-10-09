@@ -5,9 +5,11 @@ import {
   clearCalendarEventsCache,
   createCalendarEventsSource,
   deleteEvent,
+  duplicateEvent,
   editFollowing,
   getRecurrenceIdFromId,
   moveEvent,
+  replayEventHistory,
   setOccurrenceCancelled,
 } from "./calendar.events";
 
@@ -19,7 +21,10 @@ const event = {
 } as unknown as EventApi;
 
 const respondWith = (status: number, body: unknown) =>
-  vi.fn(async () => new Response(JSON.stringify(body), { status }));
+  vi.fn(
+    async (_url: string | URL, _init: RequestInit) =>
+      new Response(JSON.stringify(body), { status }),
+  );
 
 describe("calendar events", () => {
   it("reads the recurrence ID of an occurrence", () => {
@@ -111,6 +116,37 @@ describe("calendar event changes", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     displayError.mockReset();
+  });
+
+  it("records history only after the server saves a change", async () => {
+    const fetch = respondWith(200, { success: true, historyToken: "trusted-token" });
+    vi.stubGlobal("fetch", fetch);
+    const onHistoryEntry = vi.fn();
+    await moveEvent({ event, refetchEvents: vi.fn(), onHistoryEntry });
+    expect(JSON.parse(String(fetch.mock.calls[0][1].body))).toMatchObject({ recordHistory: true });
+    expect(onHistoryEntry).toHaveBeenCalledWith("trusted-token");
+    vi.stubGlobal("fetch", respondWith(200, { success: false, message: "Cannot save" }));
+    await moveEvent({ event, refetchEvents: vi.fn(), onHistoryEntry });
+    expect(onHistoryEntry).toHaveBeenCalledOnce();
+  });
+
+  it("replays trusted server history tokens without posting schedules", async () => {
+    const fetch = respondWith(200, { success: true });
+    vi.stubGlobal("fetch", fetch);
+    expect(await replayEventHistory("trusted-token", "undo")).toBe(true);
+    expect(fetch.mock.calls[0][0]).toBe("/admin/calendar/api/events/history");
+    expect(JSON.parse(String(fetch.mock.calls[0][1].body))).toEqual({
+      token: "trusted-token",
+      direction: "undo",
+    });
+  });
+
+  it("duplicates the source event in the selected site and returns its edit URL", async () => {
+    const fetch = respondWith(200, { success: true, url: "/admin/calendar/events/99" });
+    vi.stubGlobal("fetch", fetch);
+    expect(await duplicateEvent(event, 2)).toBe("/admin/calendar/events/99");
+    expect(fetch.mock.calls[0][0]).toBe("/admin/calendar/api/events/duplicate");
+    expect(JSON.parse(String(fetch.mock.calls[0][1].body))).toEqual({ eventId: 42, siteId: 2 });
   });
 
   it("asks for JSON, sends the site and reloads the calendar", async () => {

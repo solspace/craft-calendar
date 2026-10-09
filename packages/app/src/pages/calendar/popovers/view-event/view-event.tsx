@@ -1,6 +1,7 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import {
   deleteEvent,
+  duplicateEvent,
   type EventMutationScope,
   editFollowing,
   getEventId,
@@ -35,7 +36,8 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isOpeningDraft, setIsOpeningDraft] = useState(false);
-  const isBusy = isDeleting || isCancelling || isOpeningDraft;
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const isBusy = isDeleting || isCancelling || isOpeningDraft || isDuplicating;
 
   useEventListener("keydown", (keyboardEvent) => {
     if (keyboardEvent.key === "Escape") {
@@ -176,7 +178,23 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     showPopover(<PopoverModifyEvent action="delete" onSelect={deleteOccurrences} />, fcEvent.el);
   };
 
-  const menuActions: EventMenuAction[] = [];
+  const handleDuplicate = async () => {
+    if (isBusy) return;
+    setIsDuplicating(true);
+    const url = await duplicateEvent(event, currentSiteId);
+    if (url) {
+      window.location.href = url;
+      return;
+    }
+    setIsDuplicating(false);
+  };
+
+  const menuActions: EventMenuAction[] = [
+    {
+      label: translate(isDuplicating ? "Duplicating..." : "Duplicate Event"),
+      onSelect: () => void handleDuplicate(),
+    },
+  ];
   if (isRecurring && recurrenceId) {
     menuActions.push(
       { label: translate("Edit occurrence"), onSelect: editOccurrence },

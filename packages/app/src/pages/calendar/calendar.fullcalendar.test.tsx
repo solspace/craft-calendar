@@ -158,6 +158,20 @@ describe("control panel Agenda", () => {
     expect(new URL(window.location.href).searchParams.has("search")).toBe(false);
   });
 
+  it("places history in the action-button host supplied beside New Event", async () => {
+    const actions = document.createElement("div");
+    actions.dataset.calendarHistoryRoot = "";
+    document.body.append(actions);
+    try {
+      await mount();
+      expect(actions.querySelector('[aria-label="Event history"]')).not.toBeNull();
+      expect(actions.querySelector<HTMLButtonElement>('[aria-label="Undo"]')?.disabled).toBe(true);
+      expect(container.querySelector('[aria-label="Event history"]')).toBeNull();
+    } finally {
+      actions.remove();
+    }
+  });
+
   it("places search in the page header when the template supplies its host", async () => {
     const header = document.createElement("div");
     header.dataset.calendarSearchRoot = "";
