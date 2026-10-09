@@ -108,6 +108,22 @@
             },
         }) }}
 
+        {{ forms.selectField({
+            label: "Default Calendar Tab"|t('calendar'),
+            instructions: "Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead."|t('calendar'),
+            id: "defaultCalendarView",
+            name: "settings[defaultCalendarView]",
+            value: settings.getDefaultCalendarView(),
+            errors: settings.errors("defaultCalendarView"),
+            options: {
+                day: "Day"|t('calendar'),
+                week: "Week"|t('calendar'),
+                month: "Month"|t('calendar'),
+                year: "Year"|t('calendar'),
+                agenda: "Agenda"|t('calendar'),
+            },
+        }) }}
+
         {{ forms.lightswitchField({
             label: "Hide Demo Installation Banner"|t('calendar'),
             instructions: "Hide the banner that prompts you to install Calendar's demo templates."|t('calendar'),

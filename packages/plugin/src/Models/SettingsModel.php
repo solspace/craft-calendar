@@ -13,6 +13,8 @@ class SettingsModel extends Model
     public const DEFAULT_ALL_DAY = false;
     public const DEFAULT_SHOW_DISABLED_EVENTS = true;
     public const DEFAULT_VIEW = Calendar::VIEW_OVERVIEW;
+    public const DEFAULT_CALENDAR_VIEW = 'month';
+    public const CALENDAR_VIEWS = ['day', 'week', 'month', 'year', 'agenda'];
     public const DEFAULT_IS_DRAG_AND_DROP_ENABLED = true;
     public const DEFAULT_ALLOW_QUICK_CREATE = true;
     public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
@@ -38,6 +40,8 @@ class SettingsModel extends Model
     public array|bool|null $isDragAndDropEnabled = null;
 
     public ?string $defaultView = null;
+
+    public string $defaultCalendarView = self::DEFAULT_CALENDAR_VIEW;
 
     public array|bool|null $guestAccess = null;
 
@@ -121,5 +125,19 @@ class SettingsModel extends Model
     public function getFirstDayOfWeek(): int
     {
         return (int) $this->firstDayOfWeek;
+    }
+
+    public function getDefaultCalendarView(): string
+    {
+        return \in_array($this->defaultCalendarView, self::CALENDAR_VIEWS, true)
+            ? $this->defaultCalendarView
+            : self::DEFAULT_CALENDAR_VIEW;
+    }
+
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            [['defaultCalendarView'], 'in', 'range' => self::CALENDAR_VIEWS, 'skipOnEmpty' => false],
+        ]);
     }
 }

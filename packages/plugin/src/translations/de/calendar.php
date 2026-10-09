@@ -791,4 +791,8 @@ return [
     '{count} event' => '{count} Termin',
     '{count} events' => '{count} Termine',
     'Hover a date to preview its events.' => 'Bewegen Sie den Mauszeiger über ein Datum, um seine Termine anzuzeigen.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Standard-Kalenderansicht',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Wählen Sie die Ansicht, die auf der Übersichtsseite geöffnet wird. Links zu einer bestimmten Ansicht öffnen diese Ansicht.',
 ];

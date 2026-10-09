@@ -791,4 +791,8 @@ return [
     '{count} event' => '{count} evenement',
     '{count} events' => '{count} evenementen',
     'Hover a date to preview its events.' => 'Beweeg de muis over een datum om de evenementen te bekijken.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Standaard kalendertabblad',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Kies het tabblad dat op de overzichtspagina wordt geopend. Links naar een specifiek tabblad openen dat tabblad.',
 ];

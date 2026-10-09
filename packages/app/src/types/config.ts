@@ -1,4 +1,5 @@
 export type WeekStartDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type CalendarTab = "day" | "week" | "month" | "year" | "agenda";
 
 export type FullCalendarDateFormat = Intl.DateTimeFormatOptions & {
   meridiem?: "lowercase" | "short" | "narrow" | boolean;
@@ -24,6 +25,7 @@ export type EventActionIcon =
   | "trash";
 
 export type CalendarConfig = {
+  defaultCalendarView?: CalendarTab;
   eventActionIcons?: Partial<Record<EventActionIcon, string>>;
   calendars: Record<number, string>;
   calendarColors?: Record<number, string | null>;

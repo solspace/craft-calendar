@@ -181,6 +181,7 @@ class DiagnosticsService extends Component
         ];
         $configuration = [
             $row(Calendar::t('Default Page'), Calendar::t(ucfirst($model->defaultView ?: SettingsModel::DEFAULT_VIEW))),
+            $row(Calendar::t('Default Calendar Tab'), Calendar::t(ucfirst($model->getDefaultCalendarView()))),
             $row(Calendar::t('Time Picker Interval (Minutes)'), $settings->getTimeInterval()),
             $row(Calendar::t('Default Event Duration (Minutes)'), $settings->getEventDuration()),
             $row(Calendar::t('Late-Night Event Cutoff (Hours)'), $settings->getOverlapThreshold()),

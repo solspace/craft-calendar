@@ -791,4 +791,8 @@ return [
     '{count} event' => '{count} événement',
     '{count} events' => '{count} événements',
     'Hover a date to preview its events.' => 'Survolez une date pour afficher ses événements.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Onglet de calendrier par défaut',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Choisissez l’onglet qui s’ouvre sur la page Vue d’ensemble. Les liens vers un onglet précis ouvrent cet onglet.',
 ];

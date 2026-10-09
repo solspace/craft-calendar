@@ -791,4 +791,8 @@ return [
     '{count} event' => '{count} event',
     '{count} events' => '{count} events',
     'Hover a date to preview its events.' => 'Hover a date to preview its events.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Default Calendar Tab',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.',
 ];

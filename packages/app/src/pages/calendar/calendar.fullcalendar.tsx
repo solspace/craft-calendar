@@ -131,7 +131,6 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   onMiniDateSelectionHandled,
 }) => {
   const { hidePopover, showPopover } = usePopover();
-  const { view, setView, isReady } = useViewSettings();
   const { range: agendaRange, setRange: setAgendaRange } = useAgendaRange();
   const {
     currentDay,
@@ -146,7 +145,9 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     isDragAndDropEnabled,
     isQuickCreateEnabled,
     currentSiteId,
+    defaultCalendarView,
   } = useConfig();
+  const { view, setView, isReady } = useViewSettings(defaultCalendarView);
   const canCreateEvents = canEditEvents && isQuickCreateEnabled;
 
   const calendar = useRef<FullCalendar>(null);
@@ -769,7 +770,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         eventResize={(arg) => handleEventChange("resize", arg)}
         headerToolbar={{
           start: "title",
-          center: "dayGridMonth,timeGridWeek,timeGridDay,listMonth,calendarYear",
+          center: "timeGridDay,timeGridWeek,dayGridMonth,calendarYear,listMonth",
           end: headerToolbarEnd,
         }}
         buttonText={{
@@ -785,7 +786,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
 
           setTimeout(() => {
             setView(view.type as View);
-            changeCalendarUrl();
+            changeCalendarUrl(view.calendar.getDate(), view.type as View);
           }, 50);
         }}
       />

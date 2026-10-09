@@ -791,4 +791,8 @@ return [
     '{count} event' => '{count} evento',
     '{count} events' => '{count} eventi',
     'Hover a date to preview its events.' => 'Passa il mouse su una data per vedere i suoi eventi.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Scheda calendario predefinita',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Scegli la scheda da aprire nella pagina Panoramica. I link a una scheda specifica aprono quella scheda.',
 ];

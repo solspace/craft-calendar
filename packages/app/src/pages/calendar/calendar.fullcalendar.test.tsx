@@ -10,7 +10,12 @@ import { CalendarFullcalendar } from "./calendar.fullcalendar";
 const { showPopover, hidePopover, controlPanelSettings } = vi.hoisted(() => ({
   showPopover: vi.fn(),
   hidePopover: vi.fn(),
-  controlPanelSettings: { language: "en-US", weekStartDay: 0, realPopover: false },
+  controlPanelSettings: {
+    language: "en-US",
+    weekStartDay: 0,
+    realPopover: false,
+    defaultCalendarView: "month",
+  },
 }));
 
 vi.mock("@cal/contexts/popover/popover.context", async (original) => {
@@ -37,6 +42,7 @@ vi.mock("./context/config.context", () => ({
     isDragAndDropEnabled: true,
     isQuickCreateEnabled: true,
     currentSiteId: 1,
+    defaultCalendarView: controlPanelSettings.defaultCalendarView,
   }),
 }));
 
@@ -69,7 +75,12 @@ describe("control panel Agenda", () => {
   let root: Root;
 
   beforeEach(() => {
-    Object.assign(controlPanelSettings, { language: "en-US", weekStartDay: 0, realPopover: false });
+    Object.assign(controlPanelSettings, {
+      language: "en-US",
+      weekStartDay: 0,
+      realPopover: false,
+      defaultCalendarView: "month",
+    });
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     vi.stubGlobal("Craft", {
       t: (_category: string, message: string, params: Record<string, string | number> = {}) =>
@@ -232,9 +243,7 @@ describe("control panel Agenda", () => {
     expect(rows[0].querySelector(".fc-list-event-time")?.textContent).toMatch(/10:00.*12:00/);
     expect(rows[1].querySelector(".fc-list-event-time")?.textContent).toBe("All Day");
     expect(rows[1].querySelector(".calendar-agenda-cancelled")?.textContent).toBe("Cancelled");
-    expect(JSON.parse(localStorage.getItem("solspace-calendar-view") ?? "{}").view).toBe(
-      "listMonth",
-    );
+    expect(window.location.pathname).toBe("/admin/calendar/2026/10/09/agenda");
     act(() => rows[0].querySelector<HTMLAnchorElement>("a.fc-event-title")?.click());
     expect(showPopover).toHaveBeenCalledOnce();
   });
@@ -300,9 +309,7 @@ describe("control panel Agenda", () => {
       container.querySelector('[data-date="2026-10-10"] .calendar-year-dot.is-cancelled'),
     ).not.toBeNull();
     expect(container.querySelector('[data-date="2026-10-11"] .calendar-year-dot')).toBeNull();
-    expect(JSON.parse(localStorage.getItem("solspace-calendar-view") ?? "{}").view).toBe(
-      "calendarYear",
-    );
+    expect(window.location.pathname).toBe("/admin/calendar/2026/10/09/year");
     expect(new URL(window.location.href).searchParams.get("site")).toBe("2");
 
     const previewContainer = document.createElement("div");
@@ -488,5 +495,57 @@ describe("control panel Agenda", () => {
     expect(container.querySelector("[data-calendar-year-preview]")).toBeNull();
     expect(container.querySelector(".event-title")).toBeNull();
     expect(container.querySelector(".fc-dayGridMonth-view")).not.toBeNull();
+  });
+
+  it("orders the tabs Day, Week, Month, Year, Agenda and defaults to Month on Overview", async () => {
+    history.replaceState(null, "", "/admin/calendar/overview");
+    localStorage.setItem("solspace-calendar-view", JSON.stringify({ view: "calendarYear" }));
+    await mount();
+    expect(
+      Array.from(
+        container.querySelectorAll(".fc-toolbar-chunk:nth-child(2) button"),
+        (button) => button.textContent,
+      ),
+    ).toEqual(["Day", "Week", "Month", "Year", "Agenda"]);
+    expect(container.querySelector(".fc-dayGridMonth-button")?.getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    expect(window.location.pathname).toBe("/admin/calendar/2026/10/09/month");
+  });
+
+  it.each([
+    ["day", "timeGridDay"],
+    ["week", "timeGridWeek"],
+    ["month", "dayGridMonth"],
+    ["year", "calendarYear"],
+    ["agenda", "listMonth"],
+  ])("opens the admin-configured %s tab", async (tab, view) => {
+    controlPanelSettings.defaultCalendarView = tab;
+    history.replaceState(null, "", "/admin/calendar/overview?site=2&search=workshop");
+    await mount();
+    expect(container.querySelector(`.fc-${view}-button`)?.getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    expect(window.location.pathname).toBe(`/admin/calendar/2026/10/09/${tab}`);
+    expect(new URL(window.location.href).searchParams.get("site")).toBe("2");
+    expect(new URL(window.location.href).searchParams.get("search")).toBe("workshop");
+  });
+
+  it("keeps explicit tab links when the admin default differs", async () => {
+    controlPanelSettings.defaultCalendarView = "day";
+    history.replaceState(null, "", "/admin/calendar/2026/10/09/year?site=2");
+    await mount();
+    expect(container.querySelector(".fc-calendarYear-button")?.getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    act(() => container.querySelector<HTMLButtonElement>(".fc-next-button")?.click());
+    await settle();
+    expect(window.location.pathname).toBe("/admin/calendar/2027/01/01/year");
+    await act(async () => root.unmount());
+    root = createRoot(container);
+    await mount();
+    expect(container.querySelector(".fc-calendarYear-button")?.getAttribute("aria-pressed")).toBe(
+      "true",
+    );
   });
 });

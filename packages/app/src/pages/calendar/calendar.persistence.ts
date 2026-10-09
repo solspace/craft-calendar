@@ -1,18 +1,10 @@
+import type { CalendarTab } from "@cal/types/config";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
-const KEY = "solspace-calendar-view";
 const HIDDEN_CALENDARS_KEY = "solspace-calendar-hidden-calendars";
 
 export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listMonth" | "calendarYear";
-type ViewSettings = {
-  view: View;
-};
-
-const defaultState: ViewSettings = {
-  view: "dayGridMonth",
-};
-
 const viewByUrlSuffix: Record<string, View> = {
   month: "dayGridMonth",
   week: "timeGridWeek",
@@ -21,32 +13,27 @@ const viewByUrlSuffix: Record<string, View> = {
   year: "calendarYear",
 };
 
-const getUrlView = (): View | null => {
+export const getUrlView = (): View | null => {
   const suffix = window.location.pathname.split("/").filter(Boolean).at(-1);
 
   return suffix ? viewByUrlSuffix[suffix] || null : null;
 };
 
-export const useViewSettings = () => {
-  const [value, setValue] = useLocalStorage<ViewSettings>(KEY, defaultState);
-  const [view, setViewState] = useState<View>(value.view);
+export const getViewUrlSuffix = (view: View): string =>
+  Object.entries(viewByUrlSuffix).find(([, value]) => value === view)?.[0] ?? "month";
+
+export const useViewSettings = (defaultTab: CalendarTab = "month") => {
+  const [view, setViewState] = useState<View>(
+    () => getUrlView() || viewByUrlSuffix[defaultTab] || "dayGridMonth",
+  );
   const [isReady, setIsReady] = useState(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: we only want to run this on mount
   useEffect(() => {
-    const urlView = getUrlView();
-    const initialView = urlView || value.view;
-
-    if (urlView) {
-      setViewState(initialView);
-    }
-
     setIsReady(true);
   }, []);
 
   const setView = (view: View) => {
     setViewState(view);
-    setValue({ view });
     setIsReady(true);
   };
 
