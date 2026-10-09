@@ -126,13 +126,13 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
     const { calendarName, location, description } = event.extendedProps;
     return (
       <div className="calendar-agenda-event">
-        <div className="calendar-agenda-title">
-          {titleContent}
-          {isCancelled && (
-            <span className="calendar-agenda-cancelled">{translate("Cancelled")}</span>
-          )}
-        </div>
-        <div className="calendar-agenda-meta">
+        <div className="calendar-agenda-header">
+          <div className="calendar-agenda-title">
+            {titleContent}
+            {isCancelled && (
+              <span className="calendar-agenda-cancelled">{translate("Cancelled")}</span>
+            )}
+          </div>
           {calendarName && (
             <span className="calendar-agenda-calendar">
               <span
@@ -145,8 +145,12 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
               {calendarName}
             </span>
           )}
-          {location && <span className="calendar-agenda-location">{location}</span>}
         </div>
+        {location && (
+          <div className="calendar-agenda-meta">
+            <span className="calendar-agenda-location">{location}</span>
+          </div>
+        )}
         {description && <div className="calendar-agenda-description">{description}</div>}
       </div>
     );

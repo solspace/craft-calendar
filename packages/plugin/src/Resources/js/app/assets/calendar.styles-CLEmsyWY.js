@@ -593,10 +593,19 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
     opacity: 1;
   }
 
-  .calendar-agenda-title {
+  .calendar-agenda-header {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    gap: 8px 16px;
+  }
+
+  .calendar-agenda-title {
+    display: flex;
+    flex: 1 1 220px;
+    flex-wrap: wrap;
+    align-items: center;
+    min-width: 0;
     gap: 8px;
     font-size: 14px;
 
@@ -645,10 +654,13 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    max-width: 100%;
+    margin-inline-start: auto;
     padding: 1px 7px;
     border: 1px solid var(--gray-150);
     border-radius: 4px;
     background: var(--gray-050);
+    color: var(--gray-600);
     font-size: 11px;
     line-height: 18px;
   }
