@@ -302,6 +302,12 @@ class OccurrencesService extends Component
         }
 
         if ($rows) {
+            if ($draft->calendarId !== $draft->getCanonical()->calendarId) {
+                // New live overrides still use the old layout, and were not part of the reviewed mapping.
+                $draft->addError('calendarId', Calendar::t('New occurrence changes were added to the live event after this draft changed calendar. Start a fresh draft to include and map those changes.'));
+
+                throw new InvalidElementException($draft);
+            }
             Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $rows);
         }
     }

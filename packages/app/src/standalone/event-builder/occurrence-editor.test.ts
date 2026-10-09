@@ -20,7 +20,7 @@ describe("event-builder occurrence editing", () => {
     vi.stubGlobal("jQuery", () => ({ closest }));
 
     expect(await getDraftEventId(document.createElement("div"))).toBe(56);
-    expect(closest).toHaveBeenCalledWith("form");
+    expect(closest).toHaveBeenCalledWith("[data-element-editor]");
     expect(checkForm).toHaveBeenCalledWith(false, true);
   });
 

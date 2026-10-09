@@ -41,6 +41,7 @@ use Solspace\Calendar\Library\RRule\EventRecurrenceValidator;
 use Solspace\Calendar\Library\RRule\RRuleParser;
 use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use yii\base\Event as BaseEvent;
 use yii\base\Exception;
@@ -1043,8 +1044,25 @@ class Event extends Element implements \JsonSerializable
         $fields = [];
         $view = \Craft::$app->getView();
 
-        $fields[] = (function () {
+        $fields[] = (function () use ($static, $view) {
             $calendar = $this->getCalendar();
+            $calendars = array_filter(Calendar::getInstance()->calendars->getAllAllowedCalendars(), fn (CalendarModel $candidate) => PermissionHelper::canEditCalendar($candidate) && $candidate->getSiteSettingsForSite($this->siteId));
+            if (!$static && $this->isEditable() && \count($calendars) > 1) {
+                $view->registerAssetBundle(EventEditBundle::class);
+                $view->registerTranslations('calendar', ['Couldn’t open the calendar mapping.']);
+
+                return Cp::customSelectFieldHtml([
+                    'label' => \Craft::t('app', 'Calendar'),
+                    'id' => 'calendar-transfer-select',
+                    'value' => $this->calendarId,
+                    // The slideout changes the draft after the mapping is reviewed. No calendarId input here.
+                    'attributes' => ['data-calendar-transfer-select' => true, 'data-calendar-id' => $this->calendarId, 'data-site-id' => $this->siteId],
+                    'options' => array_map(static fn (CalendarModel $candidate) => [
+                        'value' => $candidate->id,
+                        'labelHtml' => Html::tag('span', '', ['aria-hidden' => 'true', 'style' => ['display' => 'inline-block', 'width' => '10px', 'height' => '10px', 'border-radius' => '50%', 'margin-inline-end' => '8px', 'background-color' => $candidate->color]]).Html::encode($candidate->name),
+                    ], array_values($calendars)),
+                ]);
+            }
             $color = Html::tag('span', '', [
                 'aria-hidden' => 'true',
                 'style' => [

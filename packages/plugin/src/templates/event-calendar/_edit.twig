@@ -1,0 +1,66 @@
+{% import '_includes/forms' as forms %}
+
+<div class="calendar-transfer" data-calendar-transfer data-populated="{{ populated|json_encode|e('html_attr') }}">
+    {{ hiddenInput('eventId', event.id) }}
+    {{ hiddenInput('siteId', event.siteId) }}
+    {{ hiddenInput('targetCalendarId', target.id) }}
+    {{ hiddenInput('reviewToken', reviewToken) }}
+
+    <div class="calendar-transfer-route">
+        <div><span class="light">{{ 'From'|t('calendar') }}</span><strong>{{ event.calendar.name }}</strong></div>
+        <span class="light" aria-hidden="true">→</span>
+        <div><span class="light">{{ 'To'|t('calendar') }}</span><strong>{{ target.name }}</strong></div>
+    </div>
+    <p class="notice">{{ 'This change is saved in your draft. Review the new layout and complete any required fields before saving the event.'|t('calendar') }}</p>
+    <p class="light">{{ 'The title, schedule, and occurrence dates, cancellations, and custom titles are kept. Field mappings also apply to customized occurrences.'|t('calendar') }}</p>
+    {% if event.seriesId %}
+        <p class="light">{{ 'Only this part of the event series changes calendar. Other parts keep their current calendar.'|t('calendar') }}</p>
+    {% endif %}
+    {% if not target.hasTitleField %}
+        <p class="warning">{{ 'The destination calendar generates event titles automatically. Its title format will apply.'|t('calendar') }}</p>
+    {% endif %}
+    {% for message in blockers %}<p class="warning">{{ message }}</p>{% endfor %}
+
+    {% if not blockers %}
+        <h2>{{ 'Field mapping'|t('calendar') }}</h2>
+        <p class="light">{{ 'Similar fields are preselected. Choose which existing field supplies each destination field. Nested content and relations can only transfer to the same Craft field.'|t('calendar') }}</p>
+        {% if rows %}
+            <table class="data fullwidth calendar-transfer-fields">
+                <thead><tr><th>{{ 'Destination field'|t('calendar') }}</th><th>{{ 'Use content from'|t('calendar') }}</th></tr></thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <th scope="row"><label for="mapping-{{ row.uid }}">{{ row.label }}{% if row.required %}<span class="required" aria-label="{{ 'Required'|t('app') }}"></span>{% endif %}</label><div class="light">{{ row.type }} · {{ row.handle }}</div></th>
+                            <td>{{ forms.select({id: 'mapping-' ~ row.uid, name: 'mapping[' ~ row.uid ~ ']', options: row.options, value: row.value, inputAttributes: {'data-field-mapping': true}}) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}<p class="light">{{ 'This calendar has no custom fields.'|t('calendar') }}</p>{% endif %}
+        <div class="calendar-transfer-unmapped warning" data-unmapped-warning hidden>
+            <strong>{{ 'Content that will not carry over'|t('calendar') }}</strong>
+            <p>{{ 'These populated fields are not mapped. Their event and occurrence content will be omitted from the destination layout.'|t('calendar') }}</p>
+            <ul data-unmapped-fields></ul>
+        </div>
+        <p class="error" data-mapping-error hidden>{{ 'Each source field can only be mapped once.'|t('calendar') }}</p>
+        <p class="light">{{ 'Destination field validation and translation settings apply. Unmapped required fields must be completed in the event editor.'|t('calendar') }}</p>
+        {{ forms.checkboxField({name: 'confirmTransfer', label: 'I have reviewed the field mapping.'|t('calendar'), required: true}) }}
+    {% else %}
+        <p class="light">{{ 'Close this panel and choose another calendar.'|t('calendar') }}</p>
+    {% endif %}
+</div>
+{% css %}
+.calendar-transfer { display: grid; gap: 20px; }
+.calendar-transfer p, .calendar-transfer h2 { margin: 0; }
+.calendar-transfer-route { display: flex; align-items: center; gap: 24px; padding-block: 8px; }
+.calendar-transfer-route > div { display: grid; gap: 6px; flex: 1; min-width: 0; }
+.calendar-transfer-route strong { font-size: 18px; overflow-wrap: anywhere; }
+.calendar-transfer-fields th, .calendar-transfer-fields td { padding-block: 16px; vertical-align: middle; }
+.calendar-transfer-fields th { width: 45%; }
+.calendar-transfer-fields th .light { margin-top: 5px; font-weight: normal; font-size: 12px; }
+.calendar-transfer-fields td .select, .calendar-transfer-fields td select { width: 100%; }
+.calendar-transfer-unmapped { border: 1px solid rgb(184 115 0); border-radius: var(--radius-small, 4px); padding: 16px; background: var(--warning-bg-color, #fff8e6); color: rgb(184 115 0); }
+.calendar-transfer-unmapped p { margin-block: 8px; }
+.calendar-transfer-unmapped ul { list-style: disc; padding-inline-start: 20px; }
+.calendar-transfer [hidden] { display: none; }
+{% endcss %}
