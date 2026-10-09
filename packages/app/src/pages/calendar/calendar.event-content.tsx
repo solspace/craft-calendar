@@ -1,3 +1,4 @@
+import { OverlapFlag } from "@cal/components/overlap-warning/overlap-warning";
 import translate from "@cal/utils/translations";
 import type { EventApi, EventContentArg } from "@fullcalendar/core/index.js";
 import clsx from "clsx";
@@ -66,6 +67,7 @@ export const getCalendarEventClickAction = (
 
 export const renderCalendarEventContent = (arg: EventContentArg) => {
   const { event, timeText } = arg;
+  const isAgenda = arg.view.type === "listMonth";
   const titleClassName = clsx(
     "fc-event-title",
     isMonthSingleDayTimedEvent(arg) && "fc-event-title-inline",
@@ -87,28 +89,72 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
   ) : null;
 
   // The strikethrough alone isn't announced
-  const cancelledLabel = isCancelled ? (
-    <span className="visually-hidden">, {translate("Cancelled")}</span>
-  ) : null;
+  const cancelledLabel =
+    isCancelled && !isAgenda ? (
+      <span className="visually-hidden">, {translate("Cancelled")}</span>
+    ) : null;
 
-  const titleContent = isLink ? (
+  const overlapFlag = <OverlapFlag count={event.extendedProps.overlaps?.count} />;
+  const titleContent = isAgenda ? (
+    <a href={event.url || "#"} className={titleClassName}>
+      {overlapFlag}
+      {editedFlag}
+      {event.title}
+    </a>
+  ) : isLink ? (
     <button
       type="button"
       onClick={() => (window.location.href = event.url)}
       className={titleClassName}
       data-calendar-event-title-link
     >
+      {overlapFlag}
       {editedFlag}
       {event.title}
       {cancelledLabel}
     </button>
   ) : (
     <div className={titleClassName}>
+      {overlapFlag}
       {editedFlag}
       {event.title}
       {cancelledLabel}
     </div>
   );
+
+  if (isAgenda) {
+    const { calendarName, location, description } = event.extendedProps;
+    return (
+      <div className="calendar-agenda-event">
+        <div className="calendar-agenda-header">
+          <div className="calendar-agenda-title">
+            {titleContent}
+            {isCancelled && (
+              <span className="calendar-agenda-cancelled">{translate("Cancelled")}</span>
+            )}
+          </div>
+          {calendarName && (
+            <span className="calendar-agenda-calendar">
+              <span
+                className="calendar-agenda-calendar-dot"
+                style={{
+                  backgroundColor: event.extendedProps.calendarColor || event.backgroundColor,
+                }}
+                aria-hidden="true"
+              />
+              {calendarName}
+            </span>
+          )}
+        </div>
+        {location && (
+          <div className="calendar-agenda-meta">
+            <span className="calendar-agenda-location">{location}</span>
+          </div>
+        )}
+        {description && <div className="calendar-agenda-description">{description}</div>}
+      </div>
+    );
+  }
 
   if (isMonthSingleDayTimedEvent(arg)) {
     return (

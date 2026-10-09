@@ -22,6 +22,10 @@
 
     {% include 'calendar/occurrences/_meta' with meta only %}
 
+    {% if showOverlapWarnings %}
+        <div data-overlap-warning role="status" aria-live="polite"></div>
+    {% endif %}
+
     {% for tab in tabs %}
         <div id="{{ tab.id }}" class="flex-fields{{ not loop.first ? ' hidden' }}" data-layout-tab="{{ tab.uid }}">
             {% for row in tab.rows %}

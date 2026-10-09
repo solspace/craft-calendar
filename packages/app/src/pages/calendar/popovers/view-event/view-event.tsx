@@ -1,6 +1,8 @@
+import { OverlapWarning } from "@cal/components/overlap-warning/overlap-warning";
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import {
   deleteEvent,
+  duplicateEvent,
   type EventMutationScope,
   editFollowing,
   getEventId,
@@ -16,7 +18,7 @@ import {
   buildPreviewRecurrence,
   describeRecurrence,
 } from "@event-builder/editor/calendar-preview/calendar-preview.operations";
-import type { EventClickArg } from "@fullcalendar/core/index.js";
+import type { EventApi, EventClickArg } from "@fullcalendar/core/index.js";
 import clsx from "clsx";
 import { format, subDays } from "date-fns";
 import { type FC, useMemo, useState } from "react";
@@ -26,16 +28,17 @@ import { type EventMenuAction, PopoverEventMenu } from "./view-event.menu";
 import { PopoverActions, PopoverCloseButton, PopoverWrapper } from "./view-event.styles";
 
 type Props = {
-  fcEvent: EventClickArg;
+  fcEvent: Omit<EventClickArg, "event"> & { event: EventApi };
 };
 
 export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const { hidePopover, showPopover } = usePopover();
-  const { currentSiteId } = useConfig();
+  const { currentSiteId, formats } = useConfig();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isOpeningDraft, setIsOpeningDraft] = useState(false);
-  const isBusy = isDeleting || isCancelling || isOpeningDraft;
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const isBusy = isDeleting || isCancelling || isOpeningDraft || isDuplicating;
 
   useEventListener("keydown", (keyboardEvent) => {
     if (keyboardEvent.key === "Escape") {
@@ -73,6 +76,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     : null;
   const recurrenceId = getRecurrenceIdFromId(String(event.id));
   const dateFormat = event.allDay ? "PP" : "PPp";
+  const isDisabled = event.extendedProps.enabled === false;
   const isCancelled = Boolean(event.extendedProps.cancelled);
   const isEdited = Boolean(event.extendedProps.isEdited);
   const hasOverride = Boolean(event.extendedProps.hasOverride);
@@ -176,22 +180,43 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     showPopover(<PopoverModifyEvent action="delete" onSelect={deleteOccurrences} />, fcEvent.el);
   };
 
-  const menuActions: EventMenuAction[] = [];
+  const handleDuplicate = async () => {
+    if (isBusy) return;
+    setIsDuplicating(true);
+    const url = await duplicateEvent(event, currentSiteId);
+    if (url) {
+      window.location.href = url;
+      return;
+    }
+    setIsDuplicating(false);
+  };
+
+  const menuActions: EventMenuAction[] = [
+    {
+      label: translate(isDuplicating ? "Duplicating..." : "Duplicate Event"),
+      icon: "clone-dashed",
+      color: "fuchsia",
+      onSelect: () => void handleDuplicate(),
+    },
+  ];
   if (isRecurring && recurrenceId) {
     menuActions.push(
-      { label: translate("Edit occurrence"), onSelect: editOccurrence },
+      { label: translate("Edit occurrence"), icon: "pencil", onSelect: editOccurrence },
       {
         label: translate(isOpeningDraft ? "Processing..." : "Edit this and following occurrences"),
+        icon: "calendar-pen",
         onSelect: () => void editThisAndFollowing(),
       },
       {
         label: translate(isCancelled ? "Restore occurrence" : "Cancel occurrence"),
+        icon: isCancelled ? "rotate-left" : "ban",
         onSelect: () => void toggleCancelled(),
       },
     );
   }
   menuActions.push({
     label: translate(isDeleting ? "Deleting..." : "Delete"),
+    icon: "trash",
     destructive: true,
     onSelect: () => {
       if (isRecurring) {
@@ -226,13 +251,19 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
         </div>
       )}
 
+      {isDisabled && (
+        <div className="occurrence-status is-disabled">{translate("This event is disabled.")}</div>
+      )}
+
       {(isCancelled || isEdited) && (
-        <div className={clsx("occurrence-status", !isCancelled && "is-edited")}>
+        <div className={clsx("occurrence-status", isCancelled ? "is-cancelled" : "is-edited")}>
           {isCancelled
             ? translate("This occurrence is cancelled.")
             : translate("This occurrence has its own changes.")}
         </div>
       )}
+
+      <OverlapWarning result={event.extendedProps.overlaps} formats={formats} />
 
       <hr />
 

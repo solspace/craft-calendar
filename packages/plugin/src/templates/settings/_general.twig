@@ -60,30 +60,12 @@
         }) }}
 
         {{ forms.lightswitchField({
-            label: "Show Disabled Events"|t('calendar'),
-            instructions: "Display disabled events with faded styling in the control panel Month, Week, and Day views."|t('calendar'),
-            id: 'showDisabledEvents',
-            name: 'settings[showDisabledEvents]',
-            on: settings.showDisabledEvents,
-            errors: settings.getErrors('showDisabledEvents')
-        }) }}
-
-        {{ forms.lightswitchField({
-            label: "Enable Drag and Drop"|t('calendar'),
-            instructions: "Allow users with permission to edit events to move or resize them in the control panel Month, Week, and Day views."|t('calendar'),
-            id: 'isDragAndDropEnabled',
-            name: 'settings[isDragAndDropEnabled]',
-            on: settings.isDragAndDropEnabled,
-            errors: settings.getErrors('isDragAndDropEnabled')
-        }) }}
-
-        {{ forms.lightswitchField({
-            label: "Enable Quick Event Creation"|t('calendar'),
-            instructions: "Allow users with permission to create events to add them directly from the control panel Month, Week, and Day views."|t('calendar'),
-            id: 'quickCreateEnabled',
-            name: 'settings[quickCreateEnabled]',
-            on: settings.quickCreateEnabled,
-            errors: settings.getErrors('quickCreateEnabled')
+            label: "Show Overlap Warnings"|t('calendar'),
+            instructions: "Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving."|t('calendar'),
+            id: 'showOverlapWarnings',
+            name: 'settings[showOverlapWarnings]',
+            on: settings.showOverlapWarnings,
+            errors: settings.getErrors('showOverlapWarnings')
         }) }}
 
         {{ forms.lightswitchField({
@@ -108,14 +90,6 @@
             },
         }) }}
 
-        {{ forms.lightswitchField({
-            label: "Hide Demo Installation Banner"|t('calendar'),
-            instructions: "Hide the banner that prompts you to install Calendar's demo templates."|t('calendar'),
-            id: 'demoBannerDisabled',
-            name: 'settings[demoBannerDisabled]',
-            on: settings.demoBannerDisabled,
-            errors: settings.getErrors('demoBannerDisabled')
-        }) }}
     </form>
 
 {% endblock %}

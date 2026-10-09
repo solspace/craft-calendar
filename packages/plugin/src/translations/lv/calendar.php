@@ -166,7 +166,6 @@ $demoTemplates = [
     'Successfully installed <b>{templates} templates</b> and <b>{assets} assets</b>' => 'Veiksmīgi uzinstallēti <b>{templates} šabloni</b> un <b>{assets} resursi</b>',
     'You can view the templates <a href="{link}">here</a>' => 'Jūs varat apskatīt šablonus <a href="{link}">šeit</a>',
     'Install Demo' => 'Installēt demo',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Iedarbiniet kalendāru mājas lapā vien ar pāris klikšķiem! <a href="{link}" class="alert-link">Spiediet šeit, lai installētu demo šablonus.</a>',
 ];
 $settings = [
     'Date Overlap Threshold' => 'Datumu pārklājuma slieksnis',
@@ -183,7 +182,6 @@ $settings = [
     'Set the field to be used for event location when exporting ICS file.' => 'Izvēlaties, kurš lauks tiks izmantots pasākuma lokācijai eksportējot ICS formātā.',
     'License key' => 'Licences atslēga',
     'Enter your Calendar license key here.' => 'Ievadiet savu licences atslēgu šajā laukā.',
-    'Hide \'Install Demo\' alert message?' => 'Paslēpt \'Installēt demo\' paziņojumu?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Paslēpj paziņojumu, kurš piedāvā installēt demo šablonus, kad šī izvēlne ir ieslēgta.',
     'None' => 'Neizmantot',
     'Display Mini Calendar & Calendars list in Month/Week/Day views?' => 'Parādīt mini kalendāra un kalendāra sarakstu mēneša/nedēļas/dienas skatos?',

@@ -2,7 +2,7 @@ import { Flex } from "@cal/styles/components";
 import styled from "styled-components";
 
 export const PopoverCreateEventWrapper = styled.div`
-  width: 340px;
+  width: 440px;
   max-width: calc(100vw - 32px);
   box-sizing: border-box;
   padding: 15px;
@@ -63,6 +63,18 @@ export const AllDayLabel = styled.label`
 export const CreateActions = styled(Flex)`
   flex-wrap: wrap;
   align-items: center;
+`;
+
+export const CreateActionButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+
+  .btn + .btn {
+    margin-inline-start: 0;
+  }
 `;
 
 export const MoreDetailsButton = styled.button`

@@ -23,6 +23,11 @@ class SettingsService extends Component
         return $this->getSettingsModel()->eventDuration;
     }
 
+    public function showOverlapWarnings(): bool
+    {
+        return $this->getSettingsModel()->showOverlapWarnings;
+    }
+
     public function isAllDayDefault(): bool
     {
         return $this->getSettingsModel()->allDay ?? false;
@@ -38,14 +43,14 @@ class SettingsService extends Component
         return $this->getSettingsModel()->locationFieldHandle;
     }
 
-    public function isDemoBannerDisabled(): bool
-    {
-        return $this->getSettingsModel()->isDemoBannerDisabled();
-    }
-
     public function showDisabledEvents(): bool
     {
         return $this->getSettingsModel()->showDisabledEvents;
+    }
+
+    public function showCancelledEvents(): bool
+    {
+        return $this->getSettingsModel()->showCancelledEvents;
     }
 
     public function isDragAndDropEnabled(): bool
@@ -61,16 +66,6 @@ class SettingsService extends Component
     public function isAuthoredEventEditOnly(): bool
     {
         return (bool) $this->getSettingsModel()->authoredEventEditOnly;
-    }
-
-    /**
-     * Disables the demo-install banner in month view.
-     */
-    public function dismissDemoBanner(): bool
-    {
-        $plugin = Calendar::getInstance();
-
-        return \Craft::$app->plugins->savePluginSettings($plugin, ['demoBannerDisabled' => true]);
     }
 
     public function getFirstDayOfWeek(): int

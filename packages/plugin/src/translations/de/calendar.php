@@ -277,7 +277,6 @@ return [
     'Fri' => 'Fr',
     'Friday' => 'Freitag',
     'General Settings' => 'Allgemeine Einstellungen',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Bringen Sie Calendar nur mit ein paar wenigen Klicks zum Laufen! <a href="{link}" class="alert-link">Klicken Sie hier</a> um die Demo-Templates zu installieren.',
     'Get an Invite' => 'Einladung erhalten',
     'Get it' => 'Jetzt holen',
     'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!' => 'Holen Sie mit der Pro-Edition mehr aus Calendar heraus! Pro bietet Wiederholungsregeln für Ereignisse, ICS-Export und Abonnements, Dashboard-Widgets und die Möglichkeit, das Plugin umzubenennen.',
@@ -286,7 +285,6 @@ return [
     'Guest Access' => 'Gastzugriff',
     'Handle' => 'Kurzname',
     'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!' => 'Haben Sie Fragen oder Ideen, die Sie teilen möchten? Besuchen Sie unseren Diskussionsbereich auf GitHub!',
-    'Hide \'Install Demo\' alert message?' => '\'Demo Installieren\'-Hinweis verbergen?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Blendet den Hinweis für die Demo-Templates aus.',
     'How you’ll refer to this calendar in the templates.' => 'Wie Sie in Templates auf diese Sektion verweisen.',
     'ICS Description field' => 'ICS Beschreibungsfeld',
@@ -702,8 +700,6 @@ return [
     'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.' => 'Beschränkt Benutzer ohne Administratorrechte auf das Bearbeiten oder Löschen ihrer eigenen Ereignisse. Calendar-Berechtigungen gelten weiterhin.',
     'Default Page' => 'Standardseite',
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Wählt die Seite, die beim Klicken auf Calendar in der Navigation des Kontrollpanels geöffnet wird.',
-    'Hide Demo Installation Banner' => 'Banner zur Demo-Installation ausblenden',
-    'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Blendet das Banner aus, das zur Installation der Calendar-Demovorlagen auffordert.',
 
     // Event settings
     'Default Event Duration (Minutes)' => 'Standarddauer für Ereignisse (Minuten)',
@@ -759,4 +755,71 @@ return [
     'Location' => 'Ort',
     'Invalid event details.' => 'Ungültige Ereignisdetails.',
     'More details…' => 'Weitere Details…',
+
+    // Calendar search
+    'Couldn’t load events. Use Refresh to try again.' => 'Ereignisse konnten nicht geladen werden. Mit Aktualisieren erneut versuchen.',
+    'Loading events…' => 'Ereignisse werden geladen…',
+    'No matching events in this date range.' => 'Keine passenden Ereignisse in diesem Zeitraum.',
+    'No events in this date range.' => 'Keine Ereignisse in diesem Zeitraum.',
+    'Search events' => 'Ereignisse suchen',
+    'Search events…' => 'Ereignisse suchen…',
+    'Clear search' => 'Suche löschen',
+    'Searches events in the displayed date range.' => 'Durchsucht Ereignisse im angezeigten Zeitraum.',
+    'Undo' => 'Rückgängig',
+    'Redo' => 'Wiederholen',
+    'Event history' => 'Ereignisverlauf',
+    'Duplicate Event' => 'Ereignis duplizieren',
+    'Duplicating...' => 'Wird dupliziert...',
+    '{title} (copy)' => '{title} (Kopie)',
+    'Couldn’t duplicate event.' => 'Das Ereignis konnte nicht dupliziert werden.',
+    'Couldn’t restore the event change.' => 'Die Ereignisänderung konnte nicht wiederhergestellt werden.',
+    'This change is no longer available. Reload the calendar to continue.' => 'Diese Änderung ist nicht mehr verfügbar. Laden Sie den Kalender neu, um fortzufahren.',
+    'This event has changed since your last action. Reload the calendar to continue.' => 'Dieses Ereignis wurde seit Ihrer letzten Aktion geändert. Laden Sie den Kalender neu, um fortzufahren.',
+    'Could not restore the event change.' => 'Die Ereignisänderung konnte nicht wiederhergestellt werden.',
+    'This event is being changed. Try again.' => 'Dieses Ereignis wird gerade geändert. Versuchen Sie es erneut.',
+
+    // Agenda range
+    'Range' => 'Zeitraum',
+    'Agenda range' => 'Agenda-Zeitraum',
+    '3 months' => '3 Monate',
+
+    // Year overview
+    '{count} event' => '{count} Termin',
+    '{count} events' => '{count} Termine',
+    'Hover a date to preview its events.' => 'Bewegen Sie den Mauszeiger über ein Datum, um seine Termine anzuzeigen.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Standard-Kalenderansicht',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Wählen Sie die Ansicht, die auf der Übersichtsseite geöffnet wird. Links zu einer bestimmten Ansicht öffnen diese Ansicht.',
+    'Show Overlap Warnings' => 'Überlappungswarnungen anzeigen',
+    'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Warnen, wenn sich aktivierte, nicht abgesagte Termine im selben Kalender und auf derselben Website überschneiden. Warnungen verhindern das Speichern nicht.',
+    'Scheduling conflict' => 'Terminkonflikt',
+    'Overlaps with other events in this calendar.' => 'Überschneidet sich mit anderen Terminen in diesem Kalender.',
+    'Overlaps with other events in this calendar. You can still save.' => 'Überschneidet sich mit anderen Terminen in diesem Kalender. Sie können trotzdem speichern.',
+    'Checking for overlaps…' => 'Überschneidungen werden geprüft…',
+    'Couldn’t check for overlaps. You can still save.' => 'Überschneidungen konnten nicht geprüft werden. Sie können trotzdem speichern.',
+    'Checked up to {count} occurrences within one year, through {date}.' => 'Bis zu {count} Vorkommen innerhalb eines Jahres bis zum {date} geprüft.',
+    'No overlaps found.' => 'Keine Überschneidungen gefunden.',
+    'The event schedule could not be checked.' => 'Der Terminplan konnte nicht geprüft werden.',
+    'And {count} more' => 'Und {count} weitere',
+
+    // Overview settings
+    'Visible Calendar Tabs' => 'Sichtbare Kalender-Tabs',
+    'Choose the views available on the Overview page. Select at least one.' => 'Wählen Sie die verfügbaren Ansichten auf der Übersichtsseite. Wählen Sie mindestens eine.',
+    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Wählen Sie den aktivierten Tab, der auf der Übersichtsseite geöffnet wird. Links zu ausgeblendeten Tabs öffnen stattdessen diesen Tab.',
+    'Display disabled events with faded styling in all Overview views.' => 'Zeigen Sie deaktivierte Ereignisse in allen Übersichtsansichten abgeschwächt an.',
+    'Drag and Drop' => 'Drag & Drop',
+    'Quick Event Creation' => 'Schnelle Ereigniserstellung',
+    'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Erlauben Sie Benutzern mit Bearbeitungsberechtigung, Ereignisse in der Monats-, Wochen- und Tagesansicht zu verschieben oder ihre Dauer zu ändern.',
+    'Allow users with permission to create events to add them directly from Month, Week, and Day views.' => 'Erlauben Sie Benutzern mit Erstellungsberechtigung, Ereignisse direkt in der Monats-, Wochen- und Tagesansicht hinzuzufügen.',
+    'Select at least one calendar tab.' => 'Wählen Sie mindestens einen Kalender-Tab.',
+    'Select valid calendar tabs.' => 'Wählen Sie gültige Kalender-Tabs.',
+    'Choose a default tab that is enabled.' => 'Wählen Sie einen aktivierten Standard-Tab.',
+    'Couldn’t save settings.' => 'Die Einstellungen konnten nicht gespeichert werden.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Abgesagte Ereignisse anzeigen',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Zeigen Sie abgesagte Vorkommen mit ihrer Absagemarkierung in allen Übersichtsansichten an.',
+
+    'This event is disabled.' => 'Dieser Termin ist deaktiviert.',
 ];

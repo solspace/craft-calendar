@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -59,6 +60,12 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
     autoClosePaused.current = true;
   }, []);
 
+  // Opening a preview shouldn't rerender (and remount) FullCalendar's custom views.
+  const controls = useMemo(
+    () => ({ showPopover, hidePopover, keepPopoverOpen }),
+    [showPopover, hidePopover, keepPopoverOpen],
+  );
+
   const layout = usePopoverPosition({ state, bridgeRef, popoverRef });
   const closeDelayMs = state?.options?.closeDelayMs;
 
@@ -105,13 +112,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   return (
-    <PopoverContext.Provider
-      value={{
-        showPopover,
-        hidePopover,
-        keepPopoverOpen,
-      }}
-    >
+    <PopoverContext.Provider value={controls}>
       <PopoverBridge ref={bridgeRef}>
         {PopoverElement}
         {children}
