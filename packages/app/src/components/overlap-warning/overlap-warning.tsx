@@ -21,13 +21,12 @@ export type OverlapResult = {
   limited?: boolean;
 };
 
-const warningForeground = "#bf4e0a";
-const warningBorder = "#d18a36";
+const warningColor = "rgb(184 115 0)";
 
 const Warning = styled.div`
   display: grid;
   gap: 6px;
-  border: 1px solid ${warningBorder};
+  border: 1px solid ${warningColor};
   border-radius: 5px;
   background: var(--warning-bg-color, #fff8e6);
   color: var(--text-color, #33404d);
@@ -47,7 +46,7 @@ const Warning = styled.div`
     align-items: center;
     gap: 6px;
     margin: 0;
-    color: ${warningForeground};
+    color: ${warningColor};
     line-height: 1.4;
   }
 
@@ -110,7 +109,7 @@ const Flag = styled.span`
   vertical-align: -0.1em;
   line-height: 1;
   margin-inline-end: 4px;
-  color: ${warningForeground};
+  color: ${warningColor};
 
   svg { display: block; }
 `;
