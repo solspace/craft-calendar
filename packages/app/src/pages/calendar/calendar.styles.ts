@@ -699,33 +699,6 @@ export const CalendarWrapper = styled(CalendarBase)`
     }
   }
 
-  .fc-toolbar-chunk:nth-child(2) .fc-button-group {
-    gap: 2px;
-    padding: 3px;
-    border: 1px solid var(--gray-150);
-    border-radius: 7px;
-    background: var(--gray-050);
-
-    .fc-button {
-      margin: 0;
-      padding: 5px 13px;
-      border: 0;
-      border-radius: 4px;
-      background: transparent;
-      color: var(--gray-600);
-
-      &:hover:not(.fc-button-active) {
-        background: var(--gray-100);
-      }
-
-      &.fc-button-active {
-        background: var(--gray-600);
-        color: white;
-        box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
-      }
-    }
-  }
-
   @container (max-width: 900px) {
     .fc-header-toolbar.fc-toolbar {
       grid-template-columns: minmax(0, 1fr) auto;
