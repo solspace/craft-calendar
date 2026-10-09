@@ -1061,7 +1061,8 @@ class Event extends Element implements \JsonSerializable
                     'attributes' => ['data-calendar-transfer-select' => true, 'data-calendar-id' => $this->calendarId, 'data-site-id' => $this->siteId],
                     'options' => array_map(static fn (CalendarModel $candidate) => [
                         'value' => $candidate->id,
-                        'labelHtml' => Html::tag('span', '', ['aria-hidden' => 'true', 'style' => ['display' => 'inline-block', 'width' => '10px', 'height' => '10px', 'border-radius' => '50%', 'margin-inline-end' => '8px', 'background-color' => $candidate->color]]).Html::encode($candidate->name),
+                        'label' => $candidate->name,
+                        'icon' => Html::tag('svg', Html::tag('circle', '', ['cx' => 8, 'cy' => 8, 'r' => 5, 'fill' => $candidate->color]), ['xmlns' => 'http://www.w3.org/2000/svg', 'viewBox' => '0 0 16 16']),
                     ], array_values($calendars)),
                 ]);
             }
