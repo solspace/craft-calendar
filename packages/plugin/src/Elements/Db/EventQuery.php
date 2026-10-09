@@ -61,6 +61,7 @@ class EventQuery extends ElementQuery
     ];
 
     public ?int $typeId = null;
+    public mixed $expiryDate = null;
 
     private ?array $calendarId = null;
     private ?array $calendarUid = null;
@@ -101,6 +102,7 @@ class EventQuery extends ElementQuery
 
     public function __construct(string $elementType, array $config = [])
     {
+        $this->status = Event::STATUS_LIVE;
         $this->orderBy = ['startDate' => \SORT_ASC];
         $this->firstDay = Calendar::getInstance()->settings->getFirstDayOfWeek();
 
@@ -212,6 +214,18 @@ class EventQuery extends ElementQuery
         $this->postDate = $value;
 
         return $this;
+    }
+
+    public function expiryDate(mixed $value): static
+    {
+        $this->expiryDate = $value;
+
+        return $this;
+    }
+
+    public function setExpiryDate(mixed $value = null): self
+    {
+        return $this->expiryDate($value);
     }
 
     public function setStartDate(mixed $value = null): self
@@ -340,6 +354,36 @@ class EventQuery extends ElementQuery
         return $this;
     }
 
+    protected function statusCondition(string $status): mixed
+    {
+        if (!\in_array($status, [Event::STATUS_LIVE, Event::STATUS_ENABLED, Event::STATUS_PENDING, Event::STATUS_EXPIRED], true)) {
+            return parent::statusCondition($status);
+        }
+
+        // Match Craft entry queries: publication conditions change once per minute.
+        $now = new \DateTime();
+        $now->setTime((int) $now->format('H'), (int) $now->format('i'), 59);
+        $currentTimeDb = Db::prepareDateForDb($now);
+        $enabled = ['elements.enabled' => true, 'elements_sites.enabled' => true];
+
+        return match ($status) {
+            // Keep the existing `enabled` query parameter as an alias for published events.
+            Event::STATUS_LIVE, Event::STATUS_ENABLED => [
+                'and',
+                $enabled,
+                ['<=', 'calendar_events.postDate', $currentTimeDb],
+                ['or', ['calendar_events.expiryDate' => null], ['>', 'calendar_events.expiryDate', $currentTimeDb]],
+            ],
+            Event::STATUS_PENDING => ['and', $enabled, ['>', 'calendar_events.postDate', $currentTimeDb]],
+            Event::STATUS_EXPIRED => [
+                'and',
+                $enabled,
+                ['not', ['calendar_events.expiryDate' => null]],
+                ['<=', 'calendar_events.expiryDate', $currentTimeDb],
+            ],
+        };
+    }
+
     protected function beforePrepare(): bool
     {
         $eventsTable = Event::TABLE;
@@ -379,6 +423,7 @@ class EventQuery extends ElementQuery
             "[[{$eventsAlias}.repeatType]]",
             "[[{$eventsAlias}.repeatEndType]]",
             "[[{$eventsAlias}.postDate]]",
+            "[[{$eventsAlias}.expiryDate]]",
             "[[{$eventsAlias}.dateCreated]]",
             "[[{$eventsAlias}.dateUpdated]]",
             $users.'.[[username]]',
@@ -442,6 +487,10 @@ class EventQuery extends ElementQuery
                     \is_array($value) ? $value : $this->extractDateAsFormattedString($value)
                 )
             );
+        }
+
+        if (null !== $this->expiryDate) {
+            $this->subQuery->andWhere(Db::parseDateParam("[[{$eventsAlias}.expiryDate]]", $this->expiryDate));
         }
 
         if ($this->startDate) {

@@ -107,6 +107,11 @@ class EventArguments extends ElementArguments
                     'type' => Type::string(),
                     'description' => 'Specify end date',
                 ],
+                'expiryDate' => [
+                    'name' => 'expiryDate',
+                    'type' => QueryArgument::getType(),
+                    'description' => 'Filter events by their expiry date.',
+                ],
             ]
         );
     }

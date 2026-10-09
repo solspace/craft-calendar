@@ -153,6 +153,11 @@ class EventMutation extends Mutation
                 'type' => Type::string(),
                 'description' => 'The event post date.',
             ],
+            'expiryDate' => [
+                'name' => 'expiryDate',
+                'type' => Type::string(),
+                'description' => 'The event expiry date. Set null to clear it.',
+            ],
             'startDate' => [
                 'name' => 'startDate',
                 'type' => Type::string(),
