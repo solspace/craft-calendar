@@ -38,15 +38,16 @@
             {% if rows %}
                 <div class="calendar-transfer-fields-wrap">
                     <table class="data fullwidth calendar-transfer-fields">
-                        <thead><tr><th>{{ 'Destination field'|t('calendar') }}</th><th>{{ 'Use content from'|t('calendar') }}</th></tr></thead>
+                        <thead><tr><th>{{ 'Use content from'|t('calendar') }}</th><th class="calendar-transfer-direction" aria-hidden="true"></th><th>{{ 'Destination field'|t('calendar') }}</th></tr></thead>
                         <tbody>
                             {% for row in rows %}
                                 <tr>
+                                    <td>{{ forms.select({id: 'mapping-' ~ row.uid, name: 'mapping[' ~ row.uid ~ ']', options: row.options, value: row.value, inputAttributes: {'data-field-mapping': true}}) }}</td>
+                                    <td class="calendar-transfer-direction" aria-hidden="true">→</td>
                                     <th scope="row">
                                         <label for="mapping-{{ row.uid }}">{{ row.label }}{% if row.required %}<span class="required" aria-label="{{ 'Required'|t('app') }}"></span>{% endif %}</label>
                                         <div class="calendar-transfer-field-meta"><span>{{ row.type }}</span><code>{{ row.handle }}</code></div>
                                     </th>
-                                    <td>{{ forms.select({id: 'mapping-' ~ row.uid, name: 'mapping[' ~ row.uid ~ ']', options: row.options, value: row.value, inputAttributes: {'data-field-mapping': true}}) }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -87,7 +88,7 @@
 .calendar-transfer table.calendar-transfer-fields { margin: 0; table-layout: fixed; }
 .calendar-transfer table.calendar-transfer-fields th, .calendar-transfer table.calendar-transfer-fields td { padding: 16px 20px; vertical-align: middle; }
 .calendar-transfer table.calendar-transfer-fields thead th { white-space: normal; padding-block: 12px; background: var(--gray-050); font-size: 12px; }
-.calendar-transfer table.calendar-transfer-fields th:first-child { width: 42%; }
+.calendar-transfer table.calendar-transfer-fields .calendar-transfer-direction { width: 48px; padding-inline: 8px; text-align: center; color: var(--gray-500); font-size: 18px; }
 .calendar-transfer table.calendar-transfer-fields tbody tr + tr > * { border-block-start: 1px solid var(--hairline-color); }
 .calendar-transfer table.calendar-transfer-fields tbody th label { font-weight: 600; overflow-wrap: anywhere; }
 .calendar-transfer-field-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 6px; color: var(--gray-500); font-weight: normal; font-size: 12px; }
@@ -109,6 +110,6 @@
     .calendar-transfer-calendar { padding: 12px; }
     .calendar-transfer-calendar strong { font-size: 15px; }
     .calendar-transfer table.calendar-transfer-fields th, .calendar-transfer table.calendar-transfer-fields td { padding: 12px; }
-    .calendar-transfer table.calendar-transfer-fields th:first-child { width: 40%; }
+    .calendar-transfer table.calendar-transfer-fields .calendar-transfer-direction { width: 32px; padding-inline: 4px; }
 }
 {% endcss %}
