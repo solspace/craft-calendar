@@ -4,6 +4,7 @@ namespace Solspace\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\Element;
+use craft\base\ExpirableElementInterface;
 use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
@@ -16,11 +17,15 @@ use craft\enums\PropagationMethod;
 use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
+use craft\validators\DateCompareValidator;
+use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
 use Illuminate\Support\Collection;
 use RRule\RRule;
@@ -46,10 +51,14 @@ use yii\base\Event as BaseEvent;
 use yii\base\Exception;
 use yii\web\Response;
 
-class Event extends Element implements \JsonSerializable
+class Event extends Element implements ExpirableElementInterface, \JsonSerializable
 {
     public const TABLE = '{{%calendar_events}}';
     public const TABLE_STD = 'calendar_events';
+
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
     public const REPEAT_NEVER = 'NEVER';
     public const REPEAT_DAILY = 'DAILY';
@@ -102,6 +111,7 @@ class Event extends Element implements \JsonSerializable
     public ?string $name = null;
 
     public ?Carbon $postDate = null;
+    public ?\DateTime $expiryDate = null;
     public ?Carbon $startDate = null;
     public ?Carbon $startDateLocalized = null;
     public ?Carbon $endDate = null;
@@ -151,7 +161,7 @@ class Event extends Element implements \JsonSerializable
 
         foreach (self::CARBON_PROPERTIES as $property) {
             if (isset($config[$property]) && \is_string($config[$property])) {
-                $config[$property] = new Carbon($config[$property]);
+                $config[$property] = new Carbon($config[$property], DateHelper::UTC);
             }
         }
 
@@ -305,7 +315,9 @@ class Event extends Element implements \JsonSerializable
     public static function statuses(): array
     {
         return [
-            self::STATUS_ENABLED => \Craft::t('app', 'Enabled'),
+            self::STATUS_LIVE => \Craft::t('app', 'Live'),
+            self::STATUS_PENDING => \Craft::t('app', 'Pending'),
+            self::STATUS_EXPIRED => \Craft::t('app', 'Expired'),
             self::STATUS_DISABLED => \Craft::t('app', 'Disabled'),
         ];
     }
@@ -614,6 +626,34 @@ class Event extends Element implements \JsonSerializable
         return $this->postDate;
     }
 
+    public function getExpiryDate(): ?\DateTime
+    {
+        return $this->expiryDate;
+    }
+
+    public function getStatus(): ?string
+    {
+        $status = parent::getStatus();
+        if (self::STATUS_ENABLED !== $status) {
+            return $status;
+        }
+
+        $now = DateTimeHelper::now();
+
+        return match (true) {
+            !$this->postDate || $this->postDate > $now => self::STATUS_PENDING,
+            $this->expiryDate && $this->expiryDate <= $now => self::STATUS_EXPIRED,
+            default => self::STATUS_LIVE,
+        };
+    }
+
+    public function beforeValidate(): bool
+    {
+        $this->setDefaultPostDate();
+
+        return parent::beforeValidate();
+    }
+
     public function getDuration(): EventDuration
     {
         $startDate = $this->getStartDate();
@@ -684,6 +724,7 @@ class Event extends Element implements \JsonSerializable
             return false;
         }
 
+        $this->setDefaultPostDate();
         $this->updateTitle();
 
         // A draft made with "Edit this and following" splits its event as it's applied
@@ -705,6 +746,13 @@ class Event extends Element implements \JsonSerializable
     public function setAttributesFromRequest(array $values): void
     {
         $schedule = array_intersect_key($values, array_flip(self::SCHEDULE_PARAMS));
+
+        // Craft's date/time inputs post a localized date, time, and timezone array.
+        // postDate uses Carbon, which Craft's native DateTime typecasting does not normalize.
+        if (\array_key_exists('postDate', $values)) {
+            $date = DateTimeHelper::toDateTime($values['postDate']);
+            $values['postDate'] = $date ? Carbon::instance($date) : null;
+        }
 
         parent::setAttributesFromRequest(array_diff_key($values, $schedule));
         $this->setScheduleFromRequest($schedule);
@@ -762,6 +810,7 @@ class Event extends Element implements \JsonSerializable
             'repeatType' => $this->repeatType,
             'repeatEndType' => $this->repeatEndType,
             'postDate' => $this->postDate,
+            'expiryDate' => Db::prepareDateForDb($this->expiryDate),
         ];
 
         $db = \Craft::$app->db;
@@ -971,12 +1020,23 @@ class Event extends Element implements \JsonSerializable
             'startDate' => Calendar::t('Start Date'),
             'endDate' => Calendar::t('End Date'),
             'rrule' => Calendar::t('Repeats'),
+            'postDate' => \Craft::t('app', 'Post Date'),
+            'expiryDate' => \Craft::t('app', 'Expiry Date'),
         ]);
     }
 
     public function rules(): array
     {
         $rules = parent::rules();
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+        $rules[] = [
+            ['postDate'],
+            DateCompareValidator::class,
+            'operator' => '<',
+            'compareAttribute' => 'expiryDate',
+            'when' => fn () => $this->postDate && $this->expiryDate,
+            'on' => self::SCENARIO_LIVE,
+        ];
         $rules[] = [['startDate'], 'validateDates'];
         $rules[] = [['startDate', 'endDate'], 'required'];
         $rules[] = [['rrule'], 'validateRecurrence', 'skipOnEmpty' => false];
@@ -1096,15 +1156,27 @@ class Event extends Element implements \JsonSerializable
         $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
         $view->setIsDeltaRegistrationActive(true);
         $view->registerDeltaName('postDate');
+        $view->registerDeltaName('expiryDate');
         $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
         // Post Date
         $fields[] = Cp::dateTimeFieldHtml([
+            'status' => $this->getAttributeStatus('postDate'),
             'label' => \Craft::t('app', 'Post Date'),
             'id' => 'postDate',
             'name' => 'postDate',
             'value' => $this->getPostDate(),
             'errors' => $this->getErrors('postDate'),
+            'disabled' => $static,
+        ]);
+
+        $fields[] = Cp::dateTimeFieldHtml([
+            'status' => $this->getAttributeStatus('expiryDate'),
+            'label' => \Craft::t('app', 'Expiry Date'),
+            'id' => 'expiryDate',
+            'name' => 'expiryDate',
+            'value' => $this->expiryDate,
+            'errors' => $this->getErrors('expiryDate'),
             'disabled' => $static,
         ]);
 
@@ -1250,6 +1322,7 @@ class Event extends Element implements \JsonSerializable
             'authorId' => ['label' => Calendar::t('Author ID')],
             'author' => ['label' => Calendar::t('Author')],
             'postDate' => ['label' => Calendar::t('Post Date')],
+            'expiryDate' => ['label' => \Craft::t('app', 'Expiry Date')],
             'link' => ['label' => Calendar::t('Link'), 'icon' => 'world'],
         ];
 
@@ -1273,6 +1346,7 @@ class Event extends Element implements \JsonSerializable
             'dateUpdated' => Calendar::t('Date Updated'),
             'allDay' => Calendar::t('All Day'),
             'postDate' => Calendar::t('Post Date'),
+            'expiryDate' => \Craft::t('app', 'Expiry Date'),
         ];
 
         // Hide Author from Craft Solo
@@ -1404,7 +1478,7 @@ class Event extends Element implements \JsonSerializable
 
     protected function route(): array|string|null
     {
-        if (!$this->enabled) {
+        if (!$this->previewing && self::STATUS_LIVE !== $this->getStatus()) {
             return null;
         }
 
@@ -1492,6 +1566,19 @@ class Event extends Element implements \JsonSerializable
 
         return $destructiveItems;
         */
+    }
+
+    private function setDefaultPostDate(): void
+    {
+        if ($this->postDate || !$this->enabled || $this->resaving || $this->getIsRevision()
+            || !\in_array($this->getScenario(), [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE], true)) {
+            return;
+        }
+
+        $this->postDate = Carbon::instance(DateTimeHelper::now())->startOfMinute();
+        if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+            $this->postDate = Carbon::instance($this->expiryDate)->subDay();
+        }
     }
 
     /**

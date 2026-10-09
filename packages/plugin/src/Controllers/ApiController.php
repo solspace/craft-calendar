@@ -155,7 +155,6 @@ class ApiController extends BaseController
 
         $eventQuery = Event::find()
             ->setCalendarId($calendar->id)
-            ->status(null)
             ->site($site)
         ;
 

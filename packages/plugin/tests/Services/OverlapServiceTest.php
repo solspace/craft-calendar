@@ -56,7 +56,7 @@ class OverlapServiceTest extends TestCase
         self::assertFalse($this->criteria['cancelled']);
         self::assertArrayNotHasKey('search', $this->criteria);
         self::assertNull($this->query->event);
-        self::assertSame(Event::STATUS_ENABLED, $this->query->status);
+        self::assertSame(Event::STATUS_LIVE, $this->query->status);
     }
 
     public function testAllDayUsesInclusiveStoredLastDayAndExclusiveConflictBoundary(): void
@@ -78,6 +78,16 @@ class OverlapServiceTest extends TestCase
         $cancelled = clone $disabled;
         $cancelled->cancelled = true;
         self::assertSame([], $this->service()->forFeed([$disabled, $cancelled], 1));
+        self::assertSame([], $this->criteria);
+    }
+
+    public function testExpiredAndPendingTargetsDoNotProduceConflictWarnings(): void
+    {
+        $expired = $this->occurrence(42, '2026-10-14 10:00:00', '2026-10-14 11:00:00');
+        $expired->event->expiryDate = new \DateTime('2026-10-01 00:00:00', new \DateTimeZone('UTC'));
+        $pending = $this->occurrence(43, '2026-10-14 10:00:00', '2026-10-14 11:00:00');
+        $pending->event->postDate = new Carbon('2099-01-01 00:00:00', 'UTC');
+        self::assertSame([], $this->service()->forFeed([$expired, $pending], 1));
         self::assertSame([], $this->criteria);
     }
 
@@ -235,6 +245,7 @@ class OverlapServiceTest extends TestCase
         $event->title = 'Event '.$eventId;
         $event->enabled = true;
         $event->enabledForSite = true;
+        $event->postDate = new Carbon('2026-10-01 00:00:00', 'UTC');
         $event->allDay = $allDay;
         $event->startDate = new Carbon($start, 'UTC');
         $event->endDate = new Carbon($end, 'UTC');

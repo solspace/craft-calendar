@@ -151,7 +151,7 @@ class EventMutationResolver extends ElementMutationResolver
 
     private function normalizeDateArguments(array $arguments): array
     {
-        foreach (['postDate', 'startDate', 'endDate', 'until'] as $name) {
+        foreach (['postDate', 'expiryDate', 'startDate', 'endDate', 'until'] as $name) {
             if (!empty($arguments[$name]) && \is_string($arguments[$name])) {
                 $arguments[$name] = new Carbon($arguments[$name]);
             }

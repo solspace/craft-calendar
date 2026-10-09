@@ -63,6 +63,11 @@ class EventInterface extends AbstractInterface
                         'type' => Type::string(),
                         'description' => "The event's Post Date",
                     ],
+                    'expiryDate' => [
+                        'name' => 'expiryDate',
+                        'type' => DateTime::getType(),
+                        'description' => 'When the event expires. Null if it does not expire.',
+                    ],
                     'siteId' => [
                         'name' => 'siteId',
                         'type' => Type::int(),
