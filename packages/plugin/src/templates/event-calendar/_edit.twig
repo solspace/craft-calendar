@@ -60,15 +60,10 @@
             </div>
             <p class="error" data-mapping-error hidden>{{ 'Each source field can only be mapped once.'|t('calendar') }}</p>
         </section>
-        <details class="calendar-transfer-details">
-            <summary>{{ 'What happens to my event content?'|t('calendar') }}</summary>
-            <div>
-                <p class="light">{{ 'The title, schedule, occurrence dates, cancellations, and custom titles are kept. Field mappings also apply to customized occurrences.'|t('calendar') }}</p>
-                <p class="light">{{ 'Nested content and relations can only transfer to the same Craft field. Destination field validation and translation settings apply.'|t('calendar') }}</p>
-            </div>
-        </details>
         <div class="calendar-transfer-confirm">
-            {{ forms.checkboxField({name: 'confirmTransfer', label: 'I have reviewed the mapping and understand that unmapped content will not carry over.'|t('calendar'), required: true, inputAttributes: {'data-calendar-transfer-confirm': true, required: true}}) }}
+            {{ forms.checkboxField({name: 'confirmTransfer', label: 'I understand that unmapped content will not carry over.'|t('calendar'), required: true, inputAttributes: {'data-calendar-transfer-confirm': true, required: true}}) }}
+            <p>{{ 'The title, schedule, occurrence dates, cancellations, and custom titles are kept. Field mappings also apply to customized occurrences.'|t('calendar') }}</p>
+            <p class="calendar-transfer-confirm-note">{{ 'Nested content and relations can only transfer to the same Craft field. Destination field validation and translation settings apply.'|t('calendar') }}</p>
             <p>{{ 'The original event stays unchanged until you publish this draft.'|t('calendar') }}</p>
         </div>
     {% else %}
@@ -103,14 +98,11 @@
 .calendar-transfer-unmapped { display: grid; gap: 8px; border: 1px solid rgb(184 115 0 / 35%); border-inline-start: 3px solid rgb(184 115 0); border-radius: var(--radius-lg, 8px); padding: 16px 18px; background: var(--amber-050); color: rgb(184 115 0); }
 .calendar-transfer-unmapped ul { list-style: disc; padding-inline-start: 20px; margin: 0; }
 .calendar-transfer-unmapped li + li { margin-top: 4px; }
-.calendar-transfer-details { font-size: 12px; }
-.calendar-transfer-details summary { cursor: pointer; color: var(--gray-600); width: fit-content; }
-.calendar-transfer-details summary:hover { color: var(--blue-600); }
-.calendar-transfer-details > div { display: grid; gap: 8px; margin-top: 12px; }
 .calendar-transfer-confirm { display: grid; gap: 8px; border: 1px solid rgb(184 115 0 / 35%); border-radius: var(--radius-lg, 8px); padding: 16px 18px; background: var(--amber-050); }
 .calendar-transfer-confirm .field { margin: 0; }
 .calendar-transfer-confirm label { color: rgb(184 115 0); font-weight: 600; }
 .calendar-transfer-confirm p { color: var(--gray-600); font-size: 12px; padding-inline-start: calc(var(--checkbox-size, 16px) + 7px); }
+.calendar-transfer-confirm p.calendar-transfer-confirm-note { font-size: 11px; }
 .calendar-transfer [hidden] { display: none; }
 @container (max-width: 500px) {
     .calendar-transfer-route { gap: 8px; }
