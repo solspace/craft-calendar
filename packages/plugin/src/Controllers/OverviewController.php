@@ -88,11 +88,16 @@ class OverviewController extends BaseController
             }
         }
 
+        $actionIcons = ['clone-dashed', 'pencil', 'calendar-pen', 'ban', 'rotate-left', 'trash'];
         $configuration = [
             'calendars' => $calendarOptions,
             'calendarColors' => $calendarColors,
             'quickCreateFields' => $quickCreateFields,
             'quickCreateRequiredFields' => $quickCreateRequiredFields,
+            'eventActionIcons' => array_combine(
+                $actionIcons,
+                array_map(static fn (string $icon) => Cp::iconSvg($icon), $actionIcons),
+            ),
             'formats' => DateFormatHelper::toConfig(),
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),

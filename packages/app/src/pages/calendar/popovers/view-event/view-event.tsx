@@ -192,24 +192,29 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
   const menuActions: EventMenuAction[] = [
     {
       label: translate(isDuplicating ? "Duplicating..." : "Duplicate Event"),
+      icon: "clone-dashed",
+      color: "fuchsia",
       onSelect: () => void handleDuplicate(),
     },
   ];
   if (isRecurring && recurrenceId) {
     menuActions.push(
-      { label: translate("Edit occurrence"), onSelect: editOccurrence },
+      { label: translate("Edit occurrence"), icon: "pencil", onSelect: editOccurrence },
       {
         label: translate(isOpeningDraft ? "Processing..." : "Edit this and following occurrences"),
+        icon: "calendar-pen",
         onSelect: () => void editThisAndFollowing(),
       },
       {
         label: translate(isCancelled ? "Restore occurrence" : "Cancel occurrence"),
+        icon: isCancelled ? "rotate-left" : "ban",
         onSelect: () => void toggleCancelled(),
       },
     );
   }
   menuActions.push({
     label: translate(isDeleting ? "Deleting..." : "Delete"),
+    icon: "trash",
     destructive: true,
     onSelect: () => {
       if (isRecurring) {

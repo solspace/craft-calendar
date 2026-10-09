@@ -1,9 +1,13 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
+import { useConfig } from "@cal/pages/calendar/context/config.context";
+import type { EventActionIcon } from "@cal/types/config";
 import translate from "@cal/utils/translations";
 import { type FC, useEffect, useRef } from "react";
 
 export type EventMenuAction = {
   label: string;
+  icon?: EventActionIcon;
+  color?: "fuchsia";
   destructive?: boolean;
   onSelect: () => void;
 };
@@ -14,11 +18,17 @@ type Props = {
 };
 
 export const PopoverEventMenu: FC<Props> = ({ actions, disabled }) => {
+  const { eventActionIcons } = useConfig();
   const { keepPopoverOpen } = usePopover();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const interactionRef = useRef({ actions, disabled });
   const menuDefinition = JSON.stringify(
-    actions.map(({ label, destructive }) => ({ label, destructive })),
+    actions.map(({ label, destructive, icon, color }) => ({
+      label,
+      destructive,
+      icon: icon ? eventActionIcons?.[icon] : undefined,
+      color,
+    })),
   );
 
   useEffect(() => {
@@ -35,7 +45,8 @@ export const PopoverEventMenu: FC<Props> = ({ actions, disabled }) => {
     menu.setAttribute("aria-label", translate("More actions"));
     let list = document.createElement("ul");
     menu.append(list);
-    const options: Pick<EventMenuAction, "label" | "destructive">[] = JSON.parse(menuDefinition);
+    const options: { label: string; destructive?: boolean; icon?: string; color?: "fuchsia" }[] =
+      JSON.parse(menuDefinition);
     options.forEach((action, index) => {
       if (action.destructive && index > 0) {
         menu.append(document.createElement("hr"));
@@ -44,9 +55,21 @@ export const PopoverEventMenu: FC<Props> = ({ actions, disabled }) => {
       }
       const item = document.createElement("li");
       const option = document.createElement("a");
-      option.textContent = action.label;
+      option.className = "menu-item";
+      if (action.icon) {
+        const icon = document.createElement("span");
+        icon.className = action.color ? `icon ${action.color}` : "icon";
+        icon.setAttribute("aria-hidden", "true");
+        // Markup comes exclusively from Craft's Cp::iconSvg() for the fixed server-side icon list.
+        icon.innerHTML = action.icon;
+        option.append(icon);
+      }
+      const label = document.createElement("span");
+      label.className = "menu-item-label";
+      label.textContent = action.label;
+      option.append(label);
       option.dataset.action = String(index);
-      if (action.destructive) option.className = "error";
+      if (action.destructive) option.classList.add("error");
       item.append(option);
       list.append(item);
     });

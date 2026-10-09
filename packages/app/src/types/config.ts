@@ -15,7 +15,16 @@ type FormatOrigins = {
 
 export type DateFormats = Record<FormatTypes, Record<FormatLengths, FormatOrigins>>;
 
+export type EventActionIcon =
+  | "clone-dashed"
+  | "pencil"
+  | "calendar-pen"
+  | "ban"
+  | "rotate-left"
+  | "trash";
+
 export type CalendarConfig = {
+  eventActionIcons?: Partial<Record<EventActionIcon, string>>;
   calendars: Record<number, string>;
   calendarColors?: Record<number, string | null>;
   quickCreateFields?: Record<number, { location?: string; description?: string }>;

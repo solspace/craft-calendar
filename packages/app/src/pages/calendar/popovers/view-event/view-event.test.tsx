@@ -13,7 +13,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PopoverViewEvent } from "./view-event";
 
 vi.mock("@cal/pages/calendar/context/config.context", () => ({
-  useConfig: () => ({ currentSiteId: 2 }),
+  useConfig: () => ({
+    currentSiteId: 2,
+    eventActionIcons: Object.fromEntries(
+      ["clone-dashed", "pencil", "calendar-pen", "ban", "rotate-left", "trash"].map((name) => [
+        name,
+        `<svg viewBox="0 0 16 16" data-craft-icon="${name}" focusable="false"><path d="M0 0h16v16H0z"/></svg>`,
+      ]),
+    ),
+  }),
 }));
 vi.mock("@cal/pages/calendar/calendar.events", async (original) => ({
   ...(await original<typeof import("@cal/pages/calendar/calendar.events")>()),
@@ -186,6 +194,43 @@ describe("event popup actions", () => {
       }),
     );
     expect(document.querySelector(".menu")).toBeNull();
+  });
+
+  it("uses Craft SVG menu icons with decorative markup and a red delete action", async () => {
+    await show();
+    await openMenu();
+    const options = Array.from(document.querySelectorAll<HTMLAnchorElement>(".menu a"));
+    expect(
+      options.map((option) => option.querySelector("svg")?.getAttribute("data-craft-icon")),
+    ).toEqual(["clone-dashed", "pencil", "calendar-pen", "ban", "trash"]);
+    expect(options.every((option) => option.classList.contains("menu-item"))).toBe(true);
+    expect(
+      options.every(
+        (option) => option.querySelector(".icon")?.getAttribute("aria-hidden") === "true",
+      ),
+    ).toBe(true);
+    expect(options[0].querySelector(".icon")?.classList.contains("fuchsia")).toBe(true);
+    expect(options.at(-1)?.classList.contains("error")).toBe(true);
+    expect(options[0].querySelector(".menu-item-label")?.textContent).toBe("Duplicate Event");
+    await select("Cancel occurrence");
+    expect(setOccurrenceCancelled).toHaveBeenCalledWith(
+      expect.objectContaining({ cancelled: true }),
+    );
+    fcEvent.event.extendedProps.cancelled = true;
+    await show();
+    await openMenu();
+    const restore = Array.from(document.querySelectorAll<HTMLAnchorElement>(".menu a")).find(
+      (option) => option.textContent === "Restore occurrence",
+    )!;
+    expect(restore.querySelector("svg")?.getAttribute("data-craft-icon")).toBe("rotate-left");
+    await act(async () =>
+      restore
+        .querySelector<SVGElement>("svg")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true })),
+    );
+    expect(setOccurrenceCancelled).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cancelled: false }),
+    );
   });
 
   it("keeps a hover popup open while interacting with its detached menu and dismisses in stages", async () => {
