@@ -17,6 +17,7 @@
 
       this.initTimes();
       this.initReset();
+      this.initOverlaps();
     },
 
     /**
@@ -84,6 +85,48 @@
      * Resets through its own action, then finishes the way saving does: the slideout reports
      * the result, tells whoever opened it, and closes.
      */
+    initOverlaps() {
+      const $warning = this.$container.find("[data-overlap-warning]");
+      if (!$warning.length) return;
+      let timer;
+      let revision = 0;
+      const update = () => {
+        const check = ++revision;
+        clearTimeout(timer);
+        $warning.empty();
+        timer = setTimeout(async () => {
+          if (!this.$container[0].isConnected) return;
+          // Date/time controls post nested arrays, including their timezone. Garnish serializes these for Craft.
+          try {
+            const response = await Craft.sendActionRequest("POST", "calendar/occurrences/check-overlaps", {
+              data: this.$container.find("input").filter((_, input) => {
+                const name = input.name;
+                return /(?:^|\[)(?:eventId|siteId|recurrenceId|ownTimes|cancelled|startDate|endDate|allDay)(?:\[|\]|$)/.test(name);
+              }).serialize(),
+              headers: { "X-Craft-Namespace": this.$form.data("cpScreen")?.namespace },
+            });
+            if (check !== revision || !this.$container[0].isConnected) return;
+            $warning.empty();
+            if (!response.data.count) return;
+            const $message = $("<p>").addClass("warning").text(
+              Craft.t("calendar", "Overlaps with other events in this calendar. You can still save."),
+            );
+            const $list = $("<ul>");
+            for (const event of response.data.events) {
+              $("<li>").append($("<a>").attr({ href: event.url, target: "_blank", rel: "noopener noreferrer" }).text(event.title)).appendTo($list);
+            }
+            $warning.append($message, $list);
+          } catch {
+            if (check === revision && this.$container[0].isConnected) {
+              $warning.text(Craft.t("calendar", "Couldn’t check for overlaps. You can still save."));
+            }
+          }
+        }, 400);
+      };
+      this.addListener(this.$container.find("input, .lightswitch"), "change input", update);
+      update();
+    },
+
     initReset() {
       this.addListener(
         this.$container.find(".calendar-occurrence-reset-btn"),

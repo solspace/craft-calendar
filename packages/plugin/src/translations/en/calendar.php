@@ -795,4 +795,14 @@ return [
     // Default calendar tab
     'Default Calendar Tab' => 'Default Calendar Tab',
     'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.',
+    'Show Overlap Warnings' => 'Show Overlap Warnings',
+    'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.',
+    'Scheduling conflict' => 'Scheduling conflict',
+    'Overlaps with other events in this calendar. You can still save.' => 'Overlaps with other events in this calendar. You can still save.',
+    'Checking for overlaps…' => 'Checking for overlaps…',
+    'Couldn’t check for overlaps. You can still save.' => 'Couldn’t check for overlaps. You can still save.',
+    'Checked up to {count} occurrences within one year, through {date}.' => 'Checked up to {count} occurrences within one year, through {date}.',
+    'No overlaps found.' => 'No overlaps found.',
+    'The event schedule could not be checked.' => 'The event schedule could not be checked.',
+    'Showing up to five conflicting occurrences.' => 'Showing up to five conflicting occurrences.',
 ];

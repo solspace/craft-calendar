@@ -2,6 +2,7 @@ import { Control } from "@cal/components/controls/control";
 import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-picker";
 import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { TextInput } from "@cal/components/controls/text-input/text-input";
+import { LiveOverlapWarning } from "@cal/components/overlap-warning/overlap-warning";
 import {
   type CalendarCreateDraft,
   getCreateDraftDisplayEnd,
@@ -45,6 +46,8 @@ export const PopoverCreateEvent: FC<Props> = ({
   onCancel,
 }) => {
   const {
+    currentSiteId,
+    showOverlapWarnings,
     calendars,
     calendarColors,
     quickCreateFields,
@@ -193,6 +196,17 @@ export const PopoverCreateEvent: FC<Props> = ({
             if (value !== null) {
               onChange(setCreateDraftEnd(draft, value, { eventDuration }));
             }
+          }}
+        />
+
+        <LiveOverlapWarning
+          enabled={showOverlapWarnings && !!calendarId}
+          schedule={{
+            start: draft.start,
+            end: draft.allDay ? draft.end - 1 : draft.end,
+            allDay: draft.allDay,
+            calendarId,
+            siteId: currentSiteId,
           }}
         />
 

@@ -1,3 +1,4 @@
+import { OverlapWarning } from "@cal/components/overlap-warning/overlap-warning";
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import {
   deleteEvent,
@@ -256,6 +257,8 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
             : translate("This occurrence has its own changes.")}
         </div>
       )}
+
+      <OverlapWarning result={event.extendedProps.overlaps} />
 
       <hr />
 

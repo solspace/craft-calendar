@@ -883,6 +883,7 @@ class Event extends Element implements \JsonSerializable
                 'timeInterval' => $plugin->settings->getTimeInterval(),
                 'eventDuration' => $plugin->settings->getEventDuration(),
                 'allDayDefault' => $plugin->settings->isAllDayDefault(),
+                'showOverlapWarnings' => $plugin->settings->showOverlapWarnings(),
                 'overlapThreshold' => $plugin->settings->getOverlapThreshold(),
             ],
             'event' => [
@@ -899,6 +900,7 @@ class Event extends Element implements \JsonSerializable
             // Lists the event's edited occurrences; the editor may move on to a draft's ID later
             'context' => [
                 'eventId' => $this->id,
+                'calendarId' => (int) $this->calendarId,
                 'siteId' => $this->siteId,
                 'splitAt' => $plugin->series->getSplitAt($this)?->timestamp,
                 'series' => array_map(

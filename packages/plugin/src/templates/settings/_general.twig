@@ -69,6 +69,15 @@
         }) }}
 
         {{ forms.lightswitchField({
+            label: "Show Overlap Warnings"|t('calendar'),
+            instructions: "Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving."|t('calendar'),
+            id: 'showOverlapWarnings',
+            name: 'settings[showOverlapWarnings]',
+            on: settings.showOverlapWarnings,
+            errors: settings.getErrors('showOverlapWarnings')
+        }) }}
+
+        {{ forms.lightswitchField({
             label: "Enable Drag and Drop"|t('calendar'),
             instructions: "Allow users with permission to edit events to move or resize them in the control panel Month, Week, and Day views."|t('calendar'),
             id: 'isDragAndDropEnabled',

@@ -25,6 +25,7 @@ class FullCalTransformer
             'id' => $id,
             // 'groupId' => $model->event->id,
 
+            'enabled' => (bool) ($element->enabled && $element->getEnabledForSite()),
             'title' => $element->title,
             ...$this->getDetails(new OccurrenceContent($element)),
             'slug' => $element->slug,
@@ -67,6 +68,7 @@ class FullCalTransformer
             'id' => $model->getOccurrenceKey(),
             // 'groupId' => $model->event->id,
 
+            'enabled' => (bool) ($model->event->enabled && $model->event->getEnabledForSite()),
             'title' => $model->getContent()->getTitle(),
             ...$this->getDetails($model->getContent()),
             'slug' => $model->event->slug,

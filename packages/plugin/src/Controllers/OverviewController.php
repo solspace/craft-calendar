@@ -113,6 +113,7 @@ class OverviewController extends BaseController
             'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
             'isDragAndDropEnabled' => $this->getSettingsService()->isDragAndDropEnabled(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
+            'showOverlapWarnings' => $this->getSettingsService()->showOverlapWarnings(),
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
             'timeInterval' => $this->getSettingsService()->getTimeInterval(),
             'eventDuration' => $this->getSettingsService()->getEventDuration(),

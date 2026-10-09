@@ -11,6 +11,7 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Transformers\FullCalTransformer;
+use Solspace\Calendar\Services\OverlapService;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -100,12 +101,27 @@ class ApiController extends BaseController
             $criteria['status'] = null;
         }
 
+        if ($request->getIsCpRequest()) {
+            $allowed = array_keys($this->getCalendarService()->getAllAllowedCalendarTitles($siteId ?: \Craft::$app->sites->currentSite->id));
+            $requested = $criteria['calendarId'] ?? $allowed;
+            $criteria['calendarId'] = array_values(array_intersect($allowed, (array) $requested)) ?: -1;
+        }
+
         $query = $this->occurrenceProvider->createQuery($criteria);
         $occurrences = $this->occurrenceProvider->getOccurrences($query);
 
         $transformer = new FullCalTransformer();
 
-        return $this->asJson($transformer->fromList($occurrences));
+        $data = $transformer->fromList($occurrences);
+        if ($this->getSettingsService()->showOverlapWarnings() && $request->getIsCpRequest()) {
+            $conflicts = (new OverlapService())->forFeed($occurrences->getOccurrences(), $this->resolveEventSiteId($siteId));
+            foreach ($data as &$item) {
+                $item['overlaps'] = $conflicts[$item['id']] ?? ['count' => 0, 'events' => []];
+            }
+            unset($item);
+        }
+
+        return $this->asJson($data);
     }
 
     public function actionCreateEvent(): Response

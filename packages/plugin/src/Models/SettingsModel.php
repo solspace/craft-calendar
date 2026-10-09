@@ -32,6 +32,8 @@ class SettingsModel extends Model
 
     public ?bool $allDay = null;
 
+    public bool $showOverlapWarnings = false;
+
     public ?bool $demoBannerDisabled = null;
 
     public array|bool|null $showDisabledEvents = null;

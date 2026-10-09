@@ -795,4 +795,14 @@ return [
     // Default calendar tab
     'Default Calendar Tab' => 'Scheda calendario predefinita',
     'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Scegli la scheda da aprire nella pagina Panoramica. I link a una scheda specifica aprono quella scheda.',
+    'Show Overlap Warnings' => 'Mostra avvisi di sovrapposizione',
+    'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Avvisa quando eventi attivi e non annullati si sovrappongono nello stesso calendario e sito. Gli avvisi non impediscono il salvataggio.',
+    'Scheduling conflict' => 'Conflitto di programmazione',
+    'Overlaps with other events in this calendar. You can still save.' => 'Si sovrappone ad altri eventi di questo calendario. Puoi comunque salvare.',
+    'Checking for overlaps…' => 'Verifica delle sovrapposizioni…',
+    'Couldn’t check for overlaps. You can still save.' => 'Impossibile verificare le sovrapposizioni. Puoi comunque salvare.',
+    'Checked up to {count} occurrences within one year, through {date}.' => 'Verificate fino a {count} occorrenze nell’arco di un anno, fino al {date}.',
+    'No overlaps found.' => 'Nessuna sovrapposizione trovata.',
+    'The event schedule could not be checked.' => 'Impossibile verificare il programma dell’evento.',
+    'Showing up to five conflicting occurrences.' => 'Vengono mostrate fino a cinque occorrenze in conflitto.',
 ];

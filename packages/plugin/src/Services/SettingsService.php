@@ -23,6 +23,11 @@ class SettingsService extends Component
         return $this->getSettingsModel()->eventDuration;
     }
 
+    public function showOverlapWarnings(): bool
+    {
+        return $this->getSettingsModel()->showOverlapWarnings;
+    }
+
     public function isAllDayDefault(): bool
     {
         return $this->getSettingsModel()->allDay ?? false;

@@ -795,4 +795,14 @@ return [
     // Default calendar tab
     'Default Calendar Tab' => 'Standaard kalendertabblad',
     'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Kies het tabblad dat op de overzichtspagina wordt geopend. Links naar een specifiek tabblad openen dat tabblad.',
+    'Show Overlap Warnings' => 'Overlapwaarschuwingen tonen',
+    'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Waarschuw als ingeschakelde, niet-geannuleerde evenementen binnen dezelfde kalender en site overlappen. Waarschuwingen verhinderen het opslaan niet.',
+    'Scheduling conflict' => 'Planningsconflict',
+    'Overlaps with other events in this calendar. You can still save.' => 'Overlapt met andere evenementen in deze kalender. Je kunt nog steeds opslaan.',
+    'Checking for overlaps…' => 'Controleren op overlappingen…',
+    'Couldn’t check for overlaps. You can still save.' => 'Overlappingen konden niet worden gecontroleerd. Je kunt nog steeds opslaan.',
+    'Checked up to {count} occurrences within one year, through {date}.' => 'Tot {count} voorkomens binnen één jaar gecontroleerd, tot {date}.',
+    'No overlaps found.' => 'Geen overlappingen gevonden.',
+    'The event schedule could not be checked.' => 'De evenementplanning kon niet worden gecontroleerd.',
+    'Showing up to five conflicting occurrences.' => 'Er worden maximaal vijf conflicterende voorkomens weergegeven.',
 ];

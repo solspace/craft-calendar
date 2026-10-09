@@ -1,3 +1,4 @@
+import { OverlapFlag } from "@cal/components/overlap-warning/overlap-warning";
 import translate from "@cal/utils/translations";
 import type { EventApi, EventContentArg } from "@fullcalendar/core/index.js";
 import clsx from "clsx";
@@ -93,8 +94,10 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
       <span className="visually-hidden">, {translate("Cancelled")}</span>
     ) : null;
 
+  const overlapFlag = <OverlapFlag count={event.extendedProps.overlaps?.count} />;
   const titleContent = isAgenda ? (
     <a href={event.url || "#"} className={titleClassName}>
+      {overlapFlag}
       {editedFlag}
       {event.title}
     </a>
@@ -105,12 +108,14 @@ export const renderCalendarEventContent = (arg: EventContentArg) => {
       className={titleClassName}
       data-calendar-event-title-link
     >
+      {overlapFlag}
       {editedFlag}
       {event.title}
       {cancelledLabel}
     </button>
   ) : (
     <div className={titleClassName}>
+      {overlapFlag}
       {editedFlag}
       {event.title}
       {cancelledLabel}

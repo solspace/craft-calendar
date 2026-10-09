@@ -795,4 +795,14 @@ return [
     // Default calendar tab
     'Default Calendar Tab' => 'Onglet de calendrier par défaut',
     'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Choisissez l’onglet qui s’ouvre sur la page Vue d’ensemble. Les liens vers un onglet précis ouvrent cet onglet.',
+    'Show Overlap Warnings' => 'Afficher les avertissements de chevauchement',
+    'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Avertir lorsque des événements activés et non annulés se chevauchent dans le même calendrier et site. Les avertissements n’empêchent pas l’enregistrement.',
+    'Scheduling conflict' => 'Conflit de planification',
+    'Overlaps with other events in this calendar. You can still save.' => 'Chevauche d’autres événements de ce calendrier. Vous pouvez toujours enregistrer.',
+    'Checking for overlaps…' => 'Recherche de chevauchements…',
+    'Couldn’t check for overlaps. You can still save.' => 'Impossible de vérifier les chevauchements. Vous pouvez toujours enregistrer.',
+    'Checked up to {count} occurrences within one year, through {date}.' => 'Jusqu’à {count} occurrences vérifiées sur un an, jusqu’au {date}.',
+    'No overlaps found.' => 'Aucun chevauchement trouvé.',
+    'The event schedule could not be checked.' => 'Impossible de vérifier le programme de l’événement.',
+    'Showing up to five conflicting occurrences.' => 'Affichage de cinq occurrences en conflit au maximum.',
 ];

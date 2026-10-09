@@ -34,6 +34,7 @@ export type CalendarConfig = {
   formats: DateFormats;
   language: string;
   overlapThreshold: number;
+  showOverlapWarnings?: boolean;
   timeInterval: number;
   eventDuration: number;
   allDayDefault: boolean;

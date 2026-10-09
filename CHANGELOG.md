@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added optional **overlap warnings** for scheduling conflicts within a calendar, with live checks in event editors and conflict indicators in control panel calendar views.
 - Added a **Diagnostics** page with system and compatibility checks, timezone details, Calendar configuration and event statistics, and a copyable support report.
 - Added **Tailwind CSS 4** demo templates alongside the upgraded **Bootstrap 5.3** templates, with a framework selector and Light, Dark, and Auto color modes.
 - Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.

@@ -1,3 +1,4 @@
+import { OverlapFlag } from "@cal/components/overlap-warning/overlap-warning";
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import { utcDateKey } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
@@ -138,7 +139,10 @@ const YearDayPreview = ({
               <span className="year-preview-dot" style={{ backgroundColor: eventColor(event) }} />
               <span className="year-preview-details">
                 <span className="year-preview-title">
-                  <strong>{event.def.title}</strong>
+                  <strong>
+                    <OverlapFlag count={event.def.extendedProps.overlaps?.count} />
+                    {event.def.title}
+                  </strong>
                   {event.def.extendedProps.cancelled && (
                     <span className="year-preview-cancelled">{translate("Cancelled")}</span>
                   )}
