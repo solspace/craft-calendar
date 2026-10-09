@@ -27,8 +27,8 @@ export const CalendarBase = styled.div`
     --fc-button-text-color: #29323d;
     --fc-button-bg-color: rgb(96 125 159 / 25%);
     --fc-button-border-color: rgb(96 125 159 / 25%);
-    --fc-button-hover-bg-color: #bac6d6;
-    --fc-button-hover-border-color: #bac6d6;
+    --fc-button-hover-bg-color: var(--button-bg--hover);
+    --fc-button-hover-border-color: #ffffff;
     --fc-button-active-bg-color: var(--button-bg--active);
     --fc-button-active-border-color: #ffffff;
     --fc-more-link-bg-color: transparent;
@@ -63,6 +63,16 @@ export const CalendarBase = styled.div`
   }
 
   .fc .fc-button.fc-button-primary {
+    &:not(:disabled):hover {
+      background-color: var(--button-bg--hover);
+      color: var(--button-text-color);
+    }
+
+    &:not(:disabled):active {
+      background-color: var(--button-bg--active);
+      color: var(--button-text-color);
+    }
+
     &:focus,
     &:active,
     &:active:focus,
@@ -74,9 +84,17 @@ export const CalendarBase = styled.div`
       outline: none;
     }
 
-    &.fc-button-active,
-    &.fc-button-active:focus {
-      color: var(--button-text-color);
+    &:not(:disabled).fc-button-active {
+      background-color: var(--gray-500);
+      color: var(--white);
+
+      &:hover {
+        background-color: #55616d;
+      }
+
+      &:active {
+        background-color: #4a545e;
+      }
     }
 
     &:focus-visible {

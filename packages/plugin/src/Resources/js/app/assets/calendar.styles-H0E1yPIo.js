@@ -24,8 +24,8 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
     --fc-button-text-color: #29323d;
     --fc-button-bg-color: rgb(96 125 159 / 25%);
     --fc-button-border-color: rgb(96 125 159 / 25%);
-    --fc-button-hover-bg-color: #bac6d6;
-    --fc-button-hover-border-color: #bac6d6;
+    --fc-button-hover-bg-color: var(--button-bg--hover);
+    --fc-button-hover-border-color: #ffffff;
     --fc-button-active-bg-color: var(--button-bg--active);
     --fc-button-active-border-color: #ffffff;
     --fc-more-link-bg-color: transparent;
@@ -60,6 +60,16 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
   }
 
   .fc .fc-button.fc-button-primary {
+    &:not(:disabled):hover {
+      background-color: var(--button-bg--hover);
+      color: var(--button-text-color);
+    }
+
+    &:not(:disabled):active {
+      background-color: var(--button-bg--active);
+      color: var(--button-text-color);
+    }
+
     &:focus,
     &:active,
     &:active:focus,
@@ -71,9 +81,17 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
       outline: none;
     }
 
-    &.fc-button-active,
-    &.fc-button-active:focus {
-      color: var(--button-text-color);
+    &:not(:disabled).fc-button-active {
+      background-color: var(--gray-500);
+      color: var(--white);
+
+      &:hover {
+        background-color: #55616d;
+      }
+
+      &:active {
+        background-color: #4a545e;
+      }
     }
 
     &:focus-visible {
