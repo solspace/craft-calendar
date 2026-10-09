@@ -781,4 +781,9 @@ return [
     'This event has changed since your last action. Reload the calendar to continue.' => 'Cet événement a été modifié depuis votre dernière action. Rechargez le calendrier pour continuer.',
     'Could not restore the event change.' => 'Impossible de rétablir la modification de l’événement.',
     'This event is being changed. Try again.' => 'Cet événement est en cours de modification. Réessayez.',
+
+    // Agenda range
+    'Range' => 'Période',
+    'Agenda range' => 'Période de l’agenda',
+    '3 months' => '3 mois',
 ];

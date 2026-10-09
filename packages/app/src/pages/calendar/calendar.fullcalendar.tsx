@@ -28,6 +28,11 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
+  AgendaRangeSelector,
+  getAgendaRangeOptions,
+  useAgendaRange,
+} from "./calendar.agenda-range";
+import {
   buildCreateDraftEventInput,
   buildCreateDraftFromSelection,
   type CalendarCreateDraft,
@@ -124,6 +129,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
 }) => {
   const { hidePopover, showPopover } = usePopover();
   const { view, setView, isReady } = useViewSettings();
+  const { range: agendaRange, setRange: setAgendaRange } = useAgendaRange();
   const {
     currentDay,
     language,
@@ -141,6 +147,9 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const canCreateEvents = canEditEvents && isQuickCreateEnabled;
 
   const calendar = useRef<FullCalendar>(null);
+  const calendarWrapper = useRef<HTMLDivElement>(null);
+  const [agendaRangeHost, setAgendaRangeHost] = useState<HTMLElement | null>(null);
+  const lastAgendaRange = useRef(agendaRange);
   const calendarFilterKey = hiddenCalendarIds.join(",");
   const lastCalendarFilterKey = useRef<string | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -151,6 +160,16 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   const [isFetchingEvents, setIsFetchingEvents] = useState(false);
   const [search, setSearch] = useState(getCalendarSearch);
   const [eventsError, setEventsError] = useState(false);
+
+  useEffect(() => {
+    if (isReady) {
+      setAgendaRangeHost(
+        calendarWrapper.current?.querySelector<HTMLElement>(
+          ".fc-header-toolbar .fc-toolbar-chunk:first-child",
+        ) ?? null,
+      );
+    }
+  }, [isReady]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: The dependency is needed to get the latest calendar instance for the API.
   const getApi = useCallback(() => calendar.current?.getApi(), [calendar.current]);
@@ -163,7 +182,27 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     [],
   );
 
-  const { datePickerButton, dateSelector } = useDateSelector(api);
+  const { datePickerButton, dateSelector } = useDateSelector(api, view, agendaRange);
+  const viewOptions = useMemo(
+    () => ({
+      ...calendarViewOptions,
+      listMonth: { ...calendarViewOptions.listMonth, ...getAgendaRangeOptions(agendaRange) },
+    }),
+    [agendaRange],
+  );
+
+  useEffect(() => {
+    if (lastAgendaRange.current === agendaRange) {
+      return;
+    }
+    lastAgendaRange.current = agendaRange;
+
+    // Updating view options changes the range, but FullCalendar doesn't fetch it automatically.
+    const calendarApi = calendar.current?.getApi();
+    if (calendarApi?.view.type === "listMonth") {
+      calendarApi.refetchEvents();
+    }
+  }, [agendaRange]);
   const hiddenCalendarIdSet = useMemo(() => new Set(hiddenCalendarIds), [hiddenCalendarIds]);
   const timeIntervalDuration = formatDuration(timeInterval);
   const events = useMemo(
@@ -548,9 +587,26 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   );
 
   return (
-    <CalendarWrapper className={isFetchingEvents ? "is-fetching-events" : undefined}>
+    <CalendarWrapper
+      ref={calendarWrapper}
+      className={isFetchingEvents ? "is-fetching-events" : undefined}
+    >
       {searchRoot ? createPortal(searchControl, searchRoot) : searchControl}
       {historyRoot ? createPortal(historyControl, historyRoot) : historyControl}
+      {view === "listMonth" &&
+        agendaRangeHost &&
+        createPortal(
+          <AgendaRangeSelector
+            range={agendaRange}
+            disabled={isHistoryBusy || isChoosingScope || draft !== null}
+            onChange={(range) => {
+              clearTimeout(hoverTimer.current);
+              hidePopover();
+              setAgendaRange(range);
+            }}
+          />,
+          agendaRangeHost,
+        )}
       <FullCalendar
         {...getCalendarTranslations()}
         ref={calendar}
@@ -561,7 +617,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         initialDate={currentDay}
         height={view === "listMonth" ? "auto" : undefined}
         locale={language}
-        views={calendarViewOptions}
+        views={viewOptions}
         timeZone="UTC"
         firstDay={weekStartDay}
         nextDayThreshold={overlapThresholdString}

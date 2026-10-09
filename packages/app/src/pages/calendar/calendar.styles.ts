@@ -684,6 +684,8 @@ export const CalendarWrapper = styled(CalendarBase)`
 
       &:first-child {
         justify-self: start;
+        flex-wrap: wrap;
+        gap: 8px 14px;
       }
 
       &:nth-child(2) {
@@ -735,6 +737,23 @@ export const CalendarWrapper = styled(CalendarBase)`
     font-weight: 500;
     line-height: 1.2;
     color: var(--gray-800);
+  }
+
+  .fc-toolbar-chunk > .calendar-agenda-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 13px;
+    white-space: nowrap;
+
+    label {
+      color: var(--gray-600);
+    }
+
+    .select {
+      margin: 0;
+    }
   }
 
   .fc-refresh-button,

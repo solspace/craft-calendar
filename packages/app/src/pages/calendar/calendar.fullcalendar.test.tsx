@@ -13,12 +13,6 @@ const { showPopover, hidePopover } = vi.hoisted(() => ({
 vi.mock("@cal/contexts/popover/popover.context", () => ({
   usePopover: () => ({ showPopover, hidePopover }),
 }));
-vi.mock("./calendar.date-selector", () => ({
-  useDateSelector: () => ({
-    datePickerButton: { text: "Choose date" },
-    dateSelector: null as React.ReactNode,
-  }),
-}));
 vi.mock("./context/config.context", () => ({
   useConfig: () => ({
     currentDay: new Date("2026-10-09T00:00:00Z"),
@@ -113,6 +107,99 @@ describe("control panel Agenda", () => {
     );
     await settle();
   };
+
+  const changeRange = async (range: string) => {
+    const selector = container.querySelector<HTMLSelectElement>('[aria-label="Agenda range"]');
+    expect(selector).not.toBeNull();
+    act(() => {
+      if (selector) {
+        selector.value = range;
+        selector.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+    await settle();
+  };
+
+  const lastFetchedRange = () => {
+    const url = vi.mocked(fetch).mock.calls.at(-1)?.[0] as URL;
+    return [url.searchParams.get("start"), url.searchParams.get("end")];
+  };
+
+  it.each([
+    ["week", ["2026-10-04", "2026-10-11"], ["2026-10-11", "2026-10-18"]],
+    ["threeMonths", ["2026-10-01", "2027-01-01"], ["2027-01-01", "2027-04-01"]],
+    ["year", ["2026-01-01", "2027-01-01"], ["2027-01-01", "2028-01-01"]],
+  ])("fetches the %s range and navigates by that range", async (range, initial, next) => {
+    await mount();
+    expect(lastFetchedRange()).toEqual(["2026-10-01", "2026-11-01"]);
+    await changeRange(range);
+    expect(lastFetchedRange()).toEqual(initial);
+    expect(
+      container
+        .querySelector('[aria-label="Agenda range"]')
+        ?.parentElement?.closest(".fc-toolbar-chunk"),
+    ).not.toBeNull();
+    act(() => container.querySelector<HTMLButtonElement>(".fc-next-button")?.click());
+    await settle();
+    expect(lastFetchedRange()).toEqual(next);
+    act(() => container.querySelector<HTMLButtonElement>(".fc-prev-button")?.click());
+    await settle();
+    // Returning to the previous range may use the cache instead of another request.
+    expect(container.querySelector(".fc-toolbar-title")?.textContent).toContain("2026");
+    expect(container.querySelectorAll(".fc-list-event")).toHaveLength(2);
+  });
+
+  it("preserves the selected Agenda range across view changes and reloads", async () => {
+    await mount();
+    await changeRange("threeMonths");
+    act(() => container.querySelector<HTMLButtonElement>(".fc-dayGridMonth-button")?.click());
+    await settle();
+    expect(container.querySelector('[aria-label="Agenda range"]')).toBeNull();
+    expect(container.querySelector(".fc-dayGridMonth-view")).not.toBeNull();
+    expect(container.querySelector(".fc-toolbar-title")?.textContent).toBe("October 2026");
+    act(() => container.querySelector<HTMLButtonElement>(".fc-listMonth-button")?.click());
+    await settle();
+    expect(container.querySelector<HTMLSelectElement>('[aria-label="Agenda range"]')?.value).toBe(
+      "threeMonths",
+    );
+    await act(async () => root.unmount());
+    root = createRoot(container);
+    clearCalendarEventsCache();
+    await mount();
+    expect(lastFetchedRange()).toEqual(["2026-10-01", "2027-01-01"]);
+    expect(container.querySelectorAll('[aria-label="Agenda range"]')).toHaveLength(1);
+  });
+
+  it("falls back to Month when a stored Agenda range is invalid", async () => {
+    localStorage.setItem("solspace-calendar-agenda-range", JSON.stringify("outdated"));
+    await mount();
+    expect(lastFetchedRange()).toEqual(["2026-10-01", "2026-11-01"]);
+    expect(container.querySelector<HTMLSelectElement>('[aria-label="Agenda range"]')?.value).toBe(
+      "month",
+    );
+  });
+
+  it("uses the date picker to navigate the selected week or year", async () => {
+    await mount();
+    await changeRange("week");
+    act(() => container.querySelector<HTMLButtonElement>(".fc-datepicker-button")?.click());
+    expect(container.querySelector(".react-datepicker__week-number")).not.toBeNull();
+    act(() => container.querySelector<HTMLDivElement>(".react-datepicker__day--018")?.click());
+    await settle();
+    expect(lastFetchedRange()).toEqual(["2026-10-18", "2026-10-25"]);
+    expect(container.querySelector(".fc-datepicker-popover")).toBeNull();
+
+    await changeRange("year");
+    act(() => container.querySelector<HTMLButtonElement>(".fc-datepicker-button")?.click());
+    const year = Array.from(
+      container.querySelectorAll<HTMLDivElement>(".react-datepicker__year-text"),
+    ).find((element) => element.textContent === "2027");
+    expect(year).toBeDefined();
+    act(() => year?.click());
+    await settle();
+    expect(lastFetchedRange()).toEqual(["2027-01-01", "2028-01-01"]);
+    expect(container.querySelector(".fc-datepicker-popover")).toBeNull();
+  });
 
   it("groups customized events by day, formats times, and opens the existing preview", async () => {
     await mount();
