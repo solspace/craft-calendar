@@ -23,6 +23,7 @@ import { useCreateEvent } from "./create-event.mutation";
 import {
   AllDayLabel,
   AllDayRow,
+  CreateActionButtons,
   CreateActions,
   Fields,
   FlexTitle,
@@ -265,23 +266,25 @@ export const PopoverCreateEvent: FC<Props> = ({
         >
           {translate(isOpeningEditor ? "Processing..." : "More details…")}
         </MoreDetailsButton>
-        <button
-          type="button"
-          className={clsx("btn submit", isFetching && "disabled")}
-          disabled={!draft.title || !calendarId || isFetching}
-          onClick={() => createEvent(draft, calendarId, details)}
-        >
-          {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
-        </button>
+        <CreateActionButtons>
+          <button
+            type="button"
+            className={clsx("btn", isFetching && "disabled")}
+            disabled={isFetching}
+            onClick={onCancel}
+          >
+            {translate("Cancel")}
+          </button>
 
-        <button
-          type="button"
-          className={clsx("btn", isFetching && "disabled")}
-          disabled={isFetching}
-          onClick={onCancel}
-        >
-          {translate("Cancel")}
-        </button>
+          <button
+            type="button"
+            className={clsx("btn submit", isFetching && "disabled")}
+            disabled={!draft.title || !calendarId || isFetching}
+            onClick={() => createEvent(draft, calendarId, details)}
+          >
+            {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
+          </button>
+        </CreateActionButtons>
       </CreateActions>
     </PopoverCreateEventWrapper>
   );

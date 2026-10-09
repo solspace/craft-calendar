@@ -65,6 +65,18 @@ export const CreateActions = styled(Flex)`
   align-items: center;
 `;
 
+export const CreateActionButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+
+  .btn + .btn {
+    margin-inline-start: 0;
+  }
+`;
+
 export const MoreDetailsButton = styled.button`
   margin-inline-end: auto;
   padding: 0;
