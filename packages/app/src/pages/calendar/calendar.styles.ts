@@ -353,6 +353,10 @@ export const CalendarBase = styled.div`
     color: #ffffff;
   }
 
+  .fc-color-white .calendar-overlap-flag {
+    color: var(--yellow-200, #fef08a);
+  }
+
   .fc-event-cancelled {
     opacity: 0.6;
   }
