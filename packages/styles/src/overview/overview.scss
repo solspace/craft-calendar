@@ -1,0 +1,12 @@
+// Match Craft 5 disclosure menus for mouse hover and Garnish keyboard selection.
+.menu.calendar-event-action-menu ul li > .menu-item {
+  &:hover,
+  &.hover {
+    background-color: #f3f7fc;
+    color: #3f4d5a;
+
+    &.error {
+      color: var(--error-color, var(--fg-error));
+    }
+  }
+}

@@ -41,7 +41,7 @@ export const PopoverEventMenu: FC<Props> = ({ actions, disabled }) => {
 
     // Garnish moves menus into the document body; keep that DOM outside React's ownership.
     const menu = document.createElement("div");
-    menu.className = "menu";
+    menu.className = "menu menu--disclosure calendar-event-action-menu";
     menu.setAttribute("aria-label", translate("More actions"));
     let list = document.createElement("ul");
     menu.append(list);
