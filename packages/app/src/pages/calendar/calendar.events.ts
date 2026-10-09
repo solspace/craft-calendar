@@ -23,6 +23,7 @@ type ScopedEventMutationArgs = EventMutationArgs & {
 // A drag or resize already shows on the calendar, so it's reverted when saving it fails
 type EventChangeArgs = ScopedEventMutationArgs & {
   revert?: () => void;
+  onHistoryEntry?: (token: string) => void;
 };
 
 type OpenOccurrenceEditorArgs = {
@@ -47,19 +48,22 @@ const toRangeKey = (
   endIso: string,
   siteId?: number,
   calendars?: string,
-): string => `${startIso}|${endIso}|${siteId ?? ""}|${calendars ?? ""}`;
+  search = "",
+): string => JSON.stringify([startIso, endIso, siteId, calendars, search]);
 
 const fetchRange = (
   start: Date,
   end: Date,
   siteId?: number,
   calendars?: string | string[],
+  search = "",
 ): Promise<EventInput[]> => {
   const startIso = utcDateKey(start);
   const endIso = utcDateKey(end);
   const calendarsParam = normalizeCalendarsParam(calendars);
 
-  const key = toRangeKey(startIso, endIso, siteId, calendarsParam);
+  const searchParam = search.trim();
+  const key = toRangeKey(startIso, endIso, siteId, calendarsParam, searchParam);
   const cached = rangeCache.get(key);
 
   if (cached) {
@@ -79,6 +83,9 @@ const fetchRange = (
   }
   if (calendarsParam !== undefined) {
     url.searchParams.set("calendars", calendarsParam);
+  }
+  if (searchParam) {
+    url.searchParams.set("criteria[search]", searchParam);
   }
 
   const request = craftFetch(url)
@@ -160,12 +167,29 @@ const showMutationError = (error: unknown, fallbackMessage: string): void => {
  */
 const mutateEvent = async (
   path: string,
-  { event, siteId, refetchEvents, revert }: EventMutationArgs & { revert?: () => void },
+  {
+    event,
+    siteId,
+    refetchEvents,
+    revert,
+    onHistoryEntry,
+  }: EventMutationArgs & {
+    revert?: () => void;
+    onHistoryEntry?: (token: string) => void;
+  },
   fields: Record<string, unknown>,
   fallbackMessage: string,
 ): Promise<boolean> => {
   try {
-    await requestEventMutation(path, { eventId: getEventId(String(event.id)), siteId, ...fields });
+    const data = await requestEventMutation(path, {
+      eventId: getEventId(String(event.id)),
+      siteId,
+      ...(onHistoryEntry ? { recordHistory: true } : {}),
+      ...fields,
+    });
+    if (onHistoryEntry && typeof data.historyToken === "string") {
+      onHistoryEntry(data.historyToken);
+    }
   } catch (error) {
     revert?.();
     showMutationError(error, fallbackMessage);
@@ -174,6 +198,7 @@ const mutateEvent = async (
   }
 
   clearCalendarEventsCache();
+  if (!onHistoryEntry) window.dispatchEvent(new Event("calendar:schedule-history-reset"));
   refetchEvents();
 
   return true;
@@ -290,6 +315,36 @@ export const editFollowing = async ({
   }
 };
 
+export const replayEventHistory = async (
+  token: string,
+  direction: "undo" | "redo",
+): Promise<boolean> => {
+  try {
+    await requestEventMutation("history", { token, direction });
+    clearCalendarEventsCache();
+    return true;
+  } catch (error) {
+    showMutationError(error, translate("Couldn’t restore the event change."));
+    return false;
+  }
+};
+
+/** Copies the whole event, including its custom fields, recurrence and occurrence overrides. */
+export const duplicateEvent = async (event: EventApi, siteId?: number): Promise<string | null> => {
+  try {
+    const data = await requestEventMutation("duplicate", {
+      eventId: getEventId(String(event.id)),
+      siteId,
+    });
+    if (typeof data.url !== "string") throw new EventMutationError("");
+    clearCalendarEventsCache();
+    return data.url;
+  } catch (error) {
+    showMutationError(error, translate("Couldn’t duplicate event."));
+    return null;
+  }
+};
+
 /**
  * Opens a single occurrence in the occurrence slideout. `eventId` can be a draft's ID,
  * in which case changes are saved into that draft.
@@ -308,6 +363,7 @@ export const openOccurrenceEditor = ({
   const slideout = new Craft.CpScreenSlideout("calendar/occurrences/edit", { params });
   slideout.on("submit", () => {
     clearCalendarEventsCache();
+    window.dispatchEvent(new Event("calendar:schedule-history-reset"));
     onSave();
   });
 };
@@ -321,12 +377,13 @@ export const createCalendarEventsSource = (
   hiddenCalendarIds: Set<number>,
   siteId?: number,
   calendars?: string | string[],
+  search = "",
 ): EventSourceFunc => {
   return (info, success, failure): Promise<EventInput[]> => {
     const start = info.start;
     const end = info.end;
 
-    return fetchRange(start, end, siteId, calendars)
+    return fetchRange(start, end, siteId, calendars, search)
       .then((data) => {
         let events: EventInput[];
 

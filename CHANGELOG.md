@@ -4,6 +4,7 @@
 
 ### Added
 - Added a calendar selector on the event editor with a field-mapping slideout. Similar fields are preselected, unmapped content is flagged, and event and occurrence changes move together within a draft.
+- Added optional **overlap warnings** for scheduling conflicts within a calendar, with live checks in event editors and conflict indicators in control panel calendar views.
 - Added a **Diagnostics** page with system and compatibility checks, timezone details, Calendar configuration and event statistics, and a copyable support report.
 - Added **Tailwind CSS 4** demo templates alongside the upgraded **Bootstrap 5.3** templates, with a framework selector and Light, Dark, and Auto color modes.
 - Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.
@@ -29,6 +30,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed hovering over another event replacing the quick creation form and leaving its unsaved event stuck on the calendar.
 - Fixed control panel date and time formats ignoring the user's formatting locale.
 - Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.
 - Fixed multi-day all-day events showing a day short in the control panel calendar and in ICS exports.

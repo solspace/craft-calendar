@@ -2,6 +2,7 @@
 import { PopoverProvider, usePopover } from "@cal/contexts/popover/popover.context";
 import {
   deleteEvent,
+  duplicateEvent,
   openOccurrenceEditor,
   setOccurrenceCancelled,
 } from "@cal/pages/calendar/calendar.events";
@@ -12,11 +13,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PopoverViewEvent } from "./view-event";
 
 vi.mock("@cal/pages/calendar/context/config.context", () => ({
-  useConfig: () => ({ currentSiteId: 2 }),
+  useConfig: () => ({
+    currentSiteId: 2,
+    eventActionIcons: Object.fromEntries(
+      ["clone-dashed", "pencil", "calendar-pen", "ban", "rotate-left", "trash"].map((name) => [
+        name,
+        `<svg viewBox="0 0 16 16" data-craft-icon="${name}" focusable="false"><path d="M0 0h16v16H0z"/></svg>`,
+      ]),
+    ),
+  }),
 }));
 vi.mock("@cal/pages/calendar/calendar.events", async (original) => ({
   ...(await original<typeof import("@cal/pages/calendar/calendar.events")>()),
   deleteEvent: vi.fn(async () => true),
+  duplicateEvent: vi.fn(async () => null),
   editFollowing: vi.fn(async () => null),
   openOccurrenceEditor: vi.fn(),
   setOccurrenceCancelled: vi.fn(async () => true),
@@ -158,6 +168,25 @@ describe("event popup actions", () => {
     expect(container.querySelector(".event-description")).toBeNull();
   });
 
+  it("shows the disabled notice alongside occurrence status only for disabled events", async () => {
+    await show();
+    expect(container.textContent).not.toContain("This event is disabled.");
+
+    fcEvent.event.extendedProps.enabled = true;
+    await show();
+    expect(container.textContent).not.toContain("This event is disabled.");
+
+    fcEvent.event.extendedProps.enabled = false;
+    fcEvent.event.extendedProps.cancelled = true;
+    await show();
+    expect(container.querySelector(".occurrence-status.is-disabled")?.textContent).toBe(
+      "This event is disabled.",
+    );
+    expect(container.querySelector(".occurrence-status.is-cancelled")?.textContent).toBe(
+      "This occurrence is cancelled.",
+    );
+  });
+
   it("keeps Edit visible and routes occurrence actions from the native menu", async () => {
     await show();
     const edit = container.querySelector<HTMLAnchorElement>("a.submit")!;
@@ -169,6 +198,7 @@ describe("event popup actions", () => {
     expect(
       Array.from(document.querySelectorAll(".menu a")).map((option) => option.textContent),
     ).toEqual([
+      "Duplicate Event",
       "Edit occurrence",
       "Edit this and following occurrences",
       "Cancel occurrence",
@@ -183,6 +213,43 @@ describe("event popup actions", () => {
       }),
     );
     expect(document.querySelector(".menu")).toBeNull();
+  });
+
+  it("uses Craft SVG menu icons with decorative markup and a red delete action", async () => {
+    await show();
+    await openMenu();
+    const options = Array.from(document.querySelectorAll<HTMLAnchorElement>(".menu a"));
+    expect(
+      options.map((option) => option.querySelector("svg")?.getAttribute("data-craft-icon")),
+    ).toEqual(["clone-dashed", "pencil", "calendar-pen", "ban", "trash"]);
+    expect(options.every((option) => option.classList.contains("menu-item"))).toBe(true);
+    expect(
+      options.every(
+        (option) => option.querySelector(".icon")?.getAttribute("aria-hidden") === "true",
+      ),
+    ).toBe(true);
+    expect(options[0].querySelector(".icon")?.classList.contains("fuchsia")).toBe(true);
+    expect(options.at(-1)?.classList.contains("error")).toBe(true);
+    expect(options[0].querySelector(".menu-item-label")?.textContent).toBe("Duplicate Event");
+    await select("Cancel occurrence");
+    expect(setOccurrenceCancelled).toHaveBeenCalledWith(
+      expect.objectContaining({ cancelled: true }),
+    );
+    fcEvent.event.extendedProps.cancelled = true;
+    await show();
+    await openMenu();
+    const restore = Array.from(document.querySelectorAll<HTMLAnchorElement>(".menu a")).find(
+      (option) => option.textContent === "Restore occurrence",
+    )!;
+    expect(restore.querySelector("svg")?.getAttribute("data-craft-icon")).toBe("rotate-left");
+    await act(async () =>
+      restore
+        .querySelector<SVGElement>("svg")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true })),
+    );
+    expect(setOccurrenceCancelled).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cancelled: false }),
+    );
   });
 
   it("keeps a hover popup open while interacting with its detached menu and dismisses in stages", async () => {
@@ -208,6 +275,19 @@ describe("event popup actions", () => {
     expect(container.textContent).not.toContain("Sample event");
   });
 
+  it("duplicates the event from the menu and allows retry after failure", async () => {
+    await show();
+    await openMenu();
+    await select("Duplicate Event");
+    expect(duplicateEvent).toHaveBeenCalledWith(fcEvent.event, 2);
+    expect(
+      container.querySelector<HTMLButtonElement>('[aria-label="More actions"]')?.disabled,
+    ).toBe(false);
+    await openMenu();
+    await select("Duplicate Event");
+    expect(duplicateEvent).toHaveBeenCalledTimes(2);
+  });
+
   it("restores cancelled occurrences and retains the recurring delete scope prompt", async () => {
     fcEvent.event.extendedProps.cancelled = true;
     await show();
@@ -225,7 +305,7 @@ describe("event popup actions", () => {
     expect(document.querySelector(".menu")).toBeNull();
   });
 
-  it("offers only Delete for a single event, keeps its confirmation, and closes from the corner X", async () => {
+  it("offers Duplicate and Delete for a single event, keeps its confirmation, and closes from the corner X", async () => {
     fcEvent.event.extendedProps.rrule = null;
     const confirm = vi
       .spyOn(window, "confirm")
@@ -233,7 +313,7 @@ describe("event popup actions", () => {
       .mockReturnValueOnce(true);
     await show();
     await openMenu();
-    expect(document.querySelectorAll(".menu a")).toHaveLength(1);
+    expect(document.querySelectorAll(".menu a")).toHaveLength(2);
     await select("Delete");
     expect(deleteEvent).not.toHaveBeenCalled();
     await openMenu();

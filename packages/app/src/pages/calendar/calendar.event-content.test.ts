@@ -80,3 +80,10 @@ describe("calendar event content", () => {
     expect(action).toBe("ignore");
   });
 });
+
+describe("overlap flags", () => {
+  it("announces conflicts and omits the badge for conflict-free events", () => {
+    expect(contentFor({ overlaps: { count: 2 } })).toContain('aria-label="Scheduling conflict"');
+    expect(contentFor({ overlaps: { count: 0 } })).not.toContain("calendar-overlap-flag");
+  });
+});

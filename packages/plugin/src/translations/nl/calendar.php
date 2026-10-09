@@ -277,7 +277,6 @@ return [
     'Fri' => 'vr',
     'Friday' => 'Vrijdag',
     'General Settings' => 'Algemene instellingen',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Begin met Calendar in de front end met enkele klikken! <a href="{link}" class="alert-link">Klik hier om de voorbeeldsjablonen te installeren.</a>',
     'Get an Invite' => 'Uitnodiging aanvragen',
     'Get it' => 'Aanschaffen',
     'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!' => 'Haal meer uit Calendar met de Pro-editie! Pro biedt herhalingsregels voor evenementen, ICS-export en abonnementen, dashboardwidgets en de mogelijkheid om de plugin te hernoemen.',
@@ -286,7 +285,6 @@ return [
     'Guest Access' => 'Gasttoegang',
     'Handle' => 'Handle',
     'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!' => 'Heb je vragen of ideeën die je wilt delen? Bezoek onze GitHub Discussions!',
-    'Hide \'Install Demo\' alert message?' => 'Verberg \'Installeer voorbeeld\' bericht?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Verbergt het bericht dat voorstelt om voorbeeldsjablonen te installeren.',
     'How you’ll refer to this calendar in the templates.' => 'Naam van deze kalender in de sjablonen.',
     'ICS Description field' => 'ICS Beschrijvingveld',
@@ -702,8 +700,6 @@ return [
     'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.' => 'Beperk gebruikers zonder beheerdersrechten tot het bewerken of verwijderen van evenementen waarvan zij de auteur zijn. Calendar-rechten blijven van toepassing.',
     'Default Page' => 'Standaardpagina',
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Kies de pagina die wordt geopend wanneer je op Calendar in de navigatie van het controlepaneel klikt.',
-    'Hide Demo Installation Banner' => 'Banner voor demo-installatie verbergen',
-    'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Verberg de banner die je vraagt de demosjablonen van Calendar te installeren.',
 
     // Event settings
     'Default Event Duration (Minutes)' => 'Standaardduur van evenementen (minuten)',
@@ -759,4 +755,71 @@ return [
     'Location' => 'Locatie',
     'Invalid event details.' => 'Ongeldige evenementdetails.',
     'More details…' => 'Meer details…',
+
+    // Calendar search
+    'Couldn’t load events. Use Refresh to try again.' => 'Evenementen konden niet worden geladen. Gebruik Vernieuwen om het opnieuw te proberen.',
+    'Loading events…' => 'Evenementen laden…',
+    'No matching events in this date range.' => 'Geen overeenkomende evenementen in deze periode.',
+    'No events in this date range.' => 'Geen evenementen in deze periode.',
+    'Search events' => 'Evenementen zoeken',
+    'Search events…' => 'Evenementen zoeken…',
+    'Clear search' => 'Zoekopdracht wissen',
+    'Searches events in the displayed date range.' => 'Zoekt evenementen in de weergegeven periode.',
+    'Undo' => 'Ongedaan maken',
+    'Redo' => 'Opnieuw',
+    'Event history' => 'Gebeurtenisgeschiedenis',
+    'Duplicate Event' => 'Gebeurtenis dupliceren',
+    'Duplicating...' => 'Dupliceren...',
+    '{title} (copy)' => '{title} (kopie)',
+    'Couldn’t duplicate event.' => 'De gebeurtenis kon niet worden gedupliceerd.',
+    'Couldn’t restore the event change.' => 'De wijziging van de gebeurtenis kon niet worden hersteld.',
+    'This change is no longer available. Reload the calendar to continue.' => 'Deze wijziging is niet meer beschikbaar. Laad de kalender opnieuw om verder te gaan.',
+    'This event has changed since your last action. Reload the calendar to continue.' => 'Deze gebeurtenis is gewijzigd sinds je laatste actie. Laad de kalender opnieuw om verder te gaan.',
+    'Could not restore the event change.' => 'De wijziging van de gebeurtenis kon niet worden hersteld.',
+    'This event is being changed. Try again.' => 'Deze gebeurtenis wordt gewijzigd. Probeer het opnieuw.',
+
+    // Agenda range
+    'Range' => 'Periode',
+    'Agenda range' => 'Agendaperiode',
+    '3 months' => '3 maanden',
+
+    // Year overview
+    '{count} event' => '{count} evenement',
+    '{count} events' => '{count} evenementen',
+    'Hover a date to preview its events.' => 'Beweeg de muis over een datum om de evenementen te bekijken.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Standaard kalendertabblad',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Kies het tabblad dat op de overzichtspagina wordt geopend. Links naar een specifiek tabblad openen dat tabblad.',
+    'Show Overlap Warnings' => 'Overlapwaarschuwingen tonen',
+    'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Waarschuw als ingeschakelde, niet-geannuleerde evenementen binnen dezelfde kalender en site overlappen. Waarschuwingen verhinderen het opslaan niet.',
+    'Scheduling conflict' => 'Planningsconflict',
+    'Overlaps with other events in this calendar.' => 'Overlapt met andere evenementen in deze kalender.',
+    'Overlaps with other events in this calendar. You can still save.' => 'Overlapt met andere evenementen in deze kalender. Je kunt nog steeds opslaan.',
+    'Checking for overlaps…' => 'Controleren op overlappingen…',
+    'Couldn’t check for overlaps. You can still save.' => 'Overlappingen konden niet worden gecontroleerd. Je kunt nog steeds opslaan.',
+    'Checked up to {count} occurrences within one year, through {date}.' => 'Tot {count} voorkomens binnen één jaar gecontroleerd, tot {date}.',
+    'No overlaps found.' => 'Geen overlappingen gevonden.',
+    'The event schedule could not be checked.' => 'De evenementplanning kon niet worden gecontroleerd.',
+    'And {count} more' => 'En nog {count} meer',
+
+    // Overview settings
+    'Visible Calendar Tabs' => 'Zichtbare kalendertabbladen',
+    'Choose the views available on the Overview page. Select at least one.' => 'Kies de beschikbare weergaven op de overzichtspagina. Selecteer er minstens één.',
+    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Kies welk ingeschakeld tabblad op de overzichtspagina opent. Links naar een verborgen tabblad openen dit tabblad.',
+    'Display disabled events with faded styling in all Overview views.' => 'Toon uitgeschakelde evenementen vervaagd in alle overzichtsweergaven.',
+    'Drag and Drop' => 'Verslepen',
+    'Quick Event Creation' => 'Snel evenementen aanmaken',
+    'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Laat gebruikers met bewerkingsrechten evenementen verplaatsen of de duur aanpassen in de maand-, week- en dagweergave.',
+    'Allow users with permission to create events to add them directly from Month, Week, and Day views.' => 'Laat gebruikers met aanmaakrechten evenementen rechtstreeks toevoegen vanuit de maand-, week- en dagweergave.',
+    'Select at least one calendar tab.' => 'Selecteer minstens één kalendertabblad.',
+    'Select valid calendar tabs.' => 'Selecteer geldige kalendertabbladen.',
+    'Choose a default tab that is enabled.' => 'Kies een ingeschakeld standaardtabblad.',
+    'Couldn’t save settings.' => 'De instellingen konden niet worden opgeslagen.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Geannuleerde evenementen tonen',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Toon geannuleerde gebeurtenissen met hun annuleringsstijl in alle overzichtsweergaven.',
+
+    'This event is disabled.' => 'Dit evenement is uitgeschakeld.',
 ];

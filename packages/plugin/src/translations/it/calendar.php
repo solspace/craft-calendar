@@ -277,7 +277,6 @@ return [
     'Fri' => 'ven',
     'Friday' => 'Venerdì',
     'General Settings' => 'Impostazioni generali',
-    'Get Calendar up and running on the front end with just a couple clicks! <a href="{link}" class="alert-link">Click here to install the Demo templates.</a>' => 'Configura Calendar sul tuo sito in pochi clic! <a href="{link}" class="alert-link">Fai clic qui per installare i template dimostrativi.</a>',
     'Get an Invite' => 'Richiedi un invito',
     'Get it' => 'Ottieni',
     'Get more out of Calendar with the Pro edition! Switch to Pro and get access to Repeating Rules for event, ICS Export and Subscriptions, Dashboard Widgets and ability to rename the plugin!' => 'Ottieni di più da Calendar con l’edizione Pro! Accedi a regole di ripetizione, esportazione ICS e abbonamenti, widget della dashboard e possibilità di rinominare il plugin.',
@@ -286,7 +285,6 @@ return [
     'Guest Access' => 'Accesso ospiti',
     'Handle' => 'Handle',
     'Have any questions? Have any ideas you\'d like to share? Visit our GitHub Discussions area!' => 'Hai domande o idee da condividere? Visita il nostro spazio GitHub Discussions!',
-    'Hide \'Install Demo\' alert message?' => 'Nascondere l’avviso “Installa demo”?',
     'Hides the alert message suggesting to install demo templates when this setting is enabled.' => 'Se attivato, nasconde il messaggio che suggerisce di installare i template dimostrativi.',
     'How you’ll refer to this calendar in the templates.' => 'Come farai riferimento a questo calendario nei template.',
     'ICS Description field' => 'Campo descrizione ICS',
@@ -702,8 +700,6 @@ return [
     'Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply.' => 'Limita gli utenti non amministratori alla modifica o all\'eliminazione degli eventi di cui sono autori. I permessi di Calendar continuano ad applicarsi.',
     'Default Page' => 'Pagina predefinita',
     'Choose the page that opens when you click Calendar in the control panel navigation.' => 'Scegli la pagina che si apre facendo clic su Calendar nella navigazione del pannello di controllo.',
-    'Hide Demo Installation Banner' => 'Nascondere il banner di installazione delle demo',
-    'Hide the banner that prompts you to install Calendar\'s demo templates.' => 'Nascondi il banner che invita a installare i template demo di Calendar.',
 
     // Event settings
     'Default Event Duration (Minutes)' => 'Durata predefinita degli eventi (minuti)',
@@ -759,4 +755,71 @@ return [
     'Location' => 'Luogo',
     'Invalid event details.' => 'Dettagli dell’evento non validi.',
     'More details…' => 'Altri dettagli…',
+
+    // Calendar search
+    'Couldn’t load events. Use Refresh to try again.' => 'Impossibile caricare gli eventi. Usa Aggiorna per riprovare.',
+    'Loading events…' => 'Caricamento degli eventi…',
+    'No matching events in this date range.' => 'Nessun evento corrispondente in questo intervallo.',
+    'No events in this date range.' => 'Nessun evento in questo intervallo.',
+    'Search events' => 'Cerca eventi',
+    'Search events…' => 'Cerca eventi…',
+    'Clear search' => 'Cancella ricerca',
+    'Searches events in the displayed date range.' => 'Cerca gli eventi nell’intervallo di date visualizzato.',
+    'Undo' => 'Annulla',
+    'Redo' => 'Ripeti',
+    'Event history' => 'Cronologia eventi',
+    'Duplicate Event' => 'Duplica evento',
+    'Duplicating...' => 'Duplicazione...',
+    '{title} (copy)' => '{title} (copia)',
+    'Couldn’t duplicate event.' => 'Impossibile duplicare l’evento.',
+    'Couldn’t restore the event change.' => 'Impossibile ripristinare la modifica dell’evento.',
+    'This change is no longer available. Reload the calendar to continue.' => 'Questa modifica non è più disponibile. Ricarica il calendario per continuare.',
+    'This event has changed since your last action. Reload the calendar to continue.' => 'Questo evento è stato modificato dopo la tua ultima azione. Ricarica il calendario per continuare.',
+    'Could not restore the event change.' => 'Impossibile ripristinare la modifica dell’evento.',
+    'This event is being changed. Try again.' => 'Questo evento è in fase di modifica. Riprova.',
+
+    // Agenda range
+    'Range' => 'Intervallo',
+    'Agenda range' => 'Intervallo agenda',
+    '3 months' => '3 mesi',
+
+    // Year overview
+    '{count} event' => '{count} evento',
+    '{count} events' => '{count} eventi',
+    'Hover a date to preview its events.' => 'Passa il mouse su una data per vedere i suoi eventi.',
+
+    // Default calendar tab
+    'Default Calendar Tab' => 'Scheda calendario predefinita',
+    'Choose the tab that opens on the Overview page. Links to a specific tab use that tab instead.' => 'Scegli la scheda da aprire nella pagina Panoramica. I link a una scheda specifica aprono quella scheda.',
+    'Show Overlap Warnings' => 'Mostra avvisi di sovrapposizione',
+    'Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving.' => 'Avvisa quando eventi attivi e non annullati si sovrappongono nello stesso calendario e sito. Gli avvisi non impediscono il salvataggio.',
+    'Scheduling conflict' => 'Conflitto di programmazione',
+    'Overlaps with other events in this calendar.' => 'Si sovrappone ad altri eventi di questo calendario.',
+    'Overlaps with other events in this calendar. You can still save.' => 'Si sovrappone ad altri eventi di questo calendario. Puoi comunque salvare.',
+    'Checking for overlaps…' => 'Verifica delle sovrapposizioni…',
+    'Couldn’t check for overlaps. You can still save.' => 'Impossibile verificare le sovrapposizioni. Puoi comunque salvare.',
+    'Checked up to {count} occurrences within one year, through {date}.' => 'Verificate fino a {count} occorrenze nell’arco di un anno, fino al {date}.',
+    'No overlaps found.' => 'Nessuna sovrapposizione trovata.',
+    'The event schedule could not be checked.' => 'Impossibile verificare il programma dell’evento.',
+    'And {count} more' => 'E ancora {count}',
+
+    // Overview settings
+    'Visible Calendar Tabs' => 'Schede del calendario visibili',
+    'Choose the views available on the Overview page. Select at least one.' => 'Scegli le viste disponibili nella pagina Panoramica. Selezionane almeno una.',
+    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Scegli quale scheda abilitata si apre nella pagina Panoramica. I collegamenti a una scheda nascosta aprono invece questa scheda.',
+    'Display disabled events with faded styling in all Overview views.' => 'Mostra gli eventi disabilitati con uno stile attenuato in tutte le viste della Panoramica.',
+    'Drag and Drop' => 'Trascinamento',
+    'Quick Event Creation' => 'Creazione rapida di eventi',
+    'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Consenti agli utenti autorizzati a modificare gli eventi di spostarli o cambiarne la durata nelle viste Mese, Settimana e Giorno.',
+    'Allow users with permission to create events to add them directly from Month, Week, and Day views.' => 'Consenti agli utenti autorizzati a creare eventi di aggiungerli direttamente dalle viste Mese, Settimana e Giorno.',
+    'Select at least one calendar tab.' => 'Seleziona almeno una scheda del calendario.',
+    'Select valid calendar tabs.' => 'Seleziona schede del calendario valide.',
+    'Choose a default tab that is enabled.' => 'Scegli una scheda predefinita abilitata.',
+    'Couldn’t save settings.' => 'Impossibile salvare le impostazioni.',
+
+    // Cancelled occurrence visibility
+    'Show Cancelled Events' => 'Mostra eventi annullati',
+    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Mostra le occorrenze annullate con il relativo stile di annullamento in tutte le viste della Panoramica.',
+
+    'This event is disabled.' => 'Questo evento è disabilitato.',
 ];

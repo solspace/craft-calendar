@@ -1,21 +1,22 @@
 {
-  "_calendar-preview.operations-DLg5NIyx.js": {
-    "file": "assets/calendar-preview.operations-DLg5NIyx.js",
+  "_calendar-preview.operations-kxAQQpA7.js": {
+    "file": "assets/calendar-preview.operations-kxAQQpA7.js",
     "name": "calendar-preview.operations",
     "imports": [
       "_localization-Dt_HqhpZ.js",
+      "_calendar.events-DxgmBNw7.js",
       "_components-CefPxcP5.js"
     ]
   },
-  "_calendar.events-BsoNrhOC.js": {
-    "file": "assets/calendar.events-BsoNrhOC.js",
+  "_calendar.events-DxgmBNw7.js": {
+    "file": "assets/calendar.events-DxgmBNw7.js",
     "name": "calendar.events",
     "imports": [
       "_localization-Dt_HqhpZ.js"
     ]
   },
-  "_calendar.styles-CJM4dtUD.js": {
-    "file": "assets/calendar.styles-CJM4dtUD.js",
+  "_calendar.styles-ElPcU9rd.js": {
+    "file": "assets/calendar.styles-ElPcU9rd.js",
     "name": "calendar.styles",
     "imports": [
       "_localization-Dt_HqhpZ.js"
@@ -43,11 +44,11 @@
       "_components-CefPxcP5.js"
     ]
   },
-  "_interaction-CRxFL9NJ.js": {
-    "file": "assets/interaction-CRxFL9NJ.js",
+  "_interaction-D2VE812o.js": {
+    "file": "assets/interaction-D2VE812o.js",
     "name": "interaction",
     "imports": [
-      "_calendar.events-BsoNrhOC.js"
+      "_calendar.events-DxgmBNw7.js"
     ]
   },
   "_loader-Cmv0MXol.js": {
@@ -61,11 +62,11 @@
     "file": "assets/localization-Dt_HqhpZ.js",
     "name": "localization"
   },
-  "_timegrid-CUjWu894.js": {
-    "file": "assets/timegrid-CUjWu894.js",
+  "_timegrid-Bwykp3PL.js": {
+    "file": "assets/timegrid-Bwykp3PL.js",
     "name": "timegrid",
     "imports": [
-      "_calendar.events-BsoNrhOC.js"
+      "_calendar.events-DxgmBNw7.js"
     ]
   },
   "_variables-CkfOKRDd.js": {
@@ -77,45 +78,45 @@
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-DFxmwJub.js",
+    "file": "assets/overview-D_JiKR36.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_localization-Dt_HqhpZ.js",
-      "_calendar-preview.operations-DLg5NIyx.js",
-      "_calendar.events-BsoNrhOC.js",
-      "_interaction-CRxFL9NJ.js",
-      "_timegrid-CUjWu894.js",
+      "_calendar-preview.operations-kxAQQpA7.js",
+      "_calendar.events-DxgmBNw7.js",
+      "_interaction-D2VE812o.js",
+      "_timegrid-Bwykp3PL.js",
       "_components-CefPxcP5.js",
-      "_calendar.styles-CJM4dtUD.js",
+      "_calendar.styles-ElPcU9rd.js",
       "_variables-CkfOKRDd.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-D4WelaqN.js",
+    "file": "assets/event-builder-BgTleuEx.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_localization-Dt_HqhpZ.js",
-      "_calendar-preview.operations-DLg5NIyx.js",
-      "_calendar.events-BsoNrhOC.js",
-      "_interaction-CRxFL9NJ.js",
+      "_calendar-preview.operations-kxAQQpA7.js",
+      "_calendar.events-DxgmBNw7.js",
+      "_interaction-D2VE812o.js",
       "_components-CefPxcP5.js",
       "_dropdown-a6jWzpVl.js"
     ]
   },
   "src/standalone/widgets/agenda/index.tsx": {
-    "file": "assets/widget-agenda-Rg1RQHfQ.js",
+    "file": "assets/widget-agenda-BbW40Gei.js",
     "name": "widget-agenda",
     "src": "src/standalone/widgets/agenda/index.tsx",
     "isEntry": true,
     "imports": [
       "_localization-Dt_HqhpZ.js",
-      "_calendar.events-BsoNrhOC.js",
-      "_timegrid-CUjWu894.js",
-      "_calendar.styles-CJM4dtUD.js",
+      "_calendar.events-DxgmBNw7.js",
+      "_timegrid-Bwykp3PL.js",
+      "_calendar.styles-ElPcU9rd.js",
       "_loader-Cmv0MXol.js"
     ]
   },
@@ -133,15 +134,15 @@
     ]
   },
   "src/standalone/widgets/mini/index.tsx": {
-    "file": "assets/widget-mini-CILeCxQy.js",
+    "file": "assets/widget-mini-CEqdAgwI.js",
     "name": "widget-mini",
     "src": "src/standalone/widgets/mini/index.tsx",
     "isEntry": true,
     "imports": [
       "_localization-Dt_HqhpZ.js",
-      "_calendar.events-BsoNrhOC.js",
-      "_interaction-CRxFL9NJ.js",
-      "_calendar.styles-CJM4dtUD.js",
+      "_calendar.events-DxgmBNw7.js",
+      "_interaction-D2VE812o.js",
+      "_calendar.styles-ElPcU9rd.js",
       "_loader-Cmv0MXol.js"
     ]
   }

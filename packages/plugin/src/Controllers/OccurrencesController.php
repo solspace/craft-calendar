@@ -17,6 +17,7 @@ use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Resources\Bundles\OccurrenceEditorBundle;
 use Solspace\Calendar\Services\OccurrencesService;
+use Solspace\Calendar\Services\OverlapService;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -102,6 +103,25 @@ class OccurrencesController extends BaseController
         }
 
         return $this->asSuccess(Calendar::t('Occurrence reset.'));
+    }
+
+    /** Advisory overlap check for the unsaved occurrence slideout. */
+    public function actionCheckOverlaps(): Response
+    {
+        $this->requirePostRequest();
+        [$event, $recurrenceId] = $this->requireOccurrence();
+        if (!$this->getSettingsService()->showOverlapWarnings()) {
+            return $this->asJson(['count' => 0, 'events' => []]);
+        }
+        $override = clone ($this->getOccurrencesService()->getOverride($event, $recurrenceId)
+            ?? $this->getOccurrencesService()->createOverride($event, $recurrenceId));
+        if (!$this->applyTimes($override)) {
+            return $this->asFailure(Calendar::t('The event schedule could not be checked.'));
+        }
+        $override->cancelled = (bool) \Craft::$app->getRequest()->getBodyParam('cancelled');
+        $times = $this->getOccurrencesService()->describeOccurrence($event, $recurrenceId, $override);
+
+        return $this->asJson((new OverlapService())->forOccurrence($event, $recurrenceId, $times));
     }
 
     /**
@@ -257,6 +277,7 @@ class OccurrencesController extends BaseController
             'recurrenceId' => $recurrenceId,
             'tabs' => $tabs,
             'isDraft' => (bool) $event->getIsDraft(),
+            'showOverlapWarnings' => $this->getSettingsService()->showOverlapWarnings(),
             'isOrphaned' => !$this->getOccurrencesService()->hasOccurrence($event, $recurrenceId),
         ]);
     }

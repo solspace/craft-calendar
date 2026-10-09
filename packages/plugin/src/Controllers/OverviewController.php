@@ -88,14 +88,21 @@ class OverviewController extends BaseController
             }
         }
 
+        $actionIcons = ['clone-dashed', 'pencil', 'calendar-pen', 'ban', 'rotate-left', 'trash'];
         $configuration = [
             'calendars' => $calendarOptions,
             'calendarColors' => $calendarColors,
             'quickCreateFields' => $quickCreateFields,
             'quickCreateRequiredFields' => $quickCreateRequiredFields,
+            'eventActionIcons' => array_combine(
+                $actionIcons,
+                array_map(static fn (string $icon) => Cp::iconSvg($icon), $actionIcons),
+            ),
             'formats' => DateFormatHelper::toConfig(),
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),
+            'defaultCalendarView' => $this->getSettingsService()->getSettingsModel()->getDefaultCalendarView(),
+            'enabledCalendarViews' => $this->getSettingsService()->getSettingsModel()->getEnabledCalendarViews(),
             'currentSiteId' => $selectedSiteId,
             'canEditEvents' => $user
                 && (
@@ -107,6 +114,7 @@ class OverviewController extends BaseController
             'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
             'isDragAndDropEnabled' => $this->getSettingsService()->isDragAndDropEnabled(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
+            'showOverlapWarnings' => $this->getSettingsService()->showOverlapWarnings(),
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
             'timeInterval' => $this->getSettingsService()->getTimeInterval(),
             'eventDuration' => $this->getSettingsService()->getEventDuration(),

@@ -1,10 +1,12 @@
 import type { WeekStartDay } from "@cal/types/config";
-import { UTCifyDateOnly, utcDatePath, utcToLocalDisplayDate } from "@cal/utils/date";
+import { UTCifyDateOnly, utcToLocalDisplayDate } from "@cal/utils/date";
 import { getDatePickerTranslations } from "@cal/utils/localization";
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { type FC, type ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import DatePickerControl from "react-datepicker";
-import { useViewSettings, type View } from "./calendar.persistence";
+import type { AgendaRange } from "./calendar.agenda-range";
+import { changeCalendarUrl } from "./calendar.custom-buttons";
+import type { View } from "./calendar.persistence";
 import type { CustomButtonInput, DatePickerPosition } from "./calendar.types";
 import { useConfig } from "./context/config.context";
 
@@ -17,6 +19,7 @@ type UseDateSelectorResult = {
 
 type DateSelectorPopoverProps = {
   view: View;
+  agendaRange: AgendaRange;
   popoverRef: React.RefObject<HTMLDivElement | null>;
   position: DatePickerPosition;
   selectedDate: Date | null;
@@ -24,8 +27,11 @@ type DateSelectorPopoverProps = {
   onDateSelect: (date: Date | null) => void;
 };
 
-export const useDateSelector = (api: CalendarApi): UseDateSelectorResult => {
-  const { view } = useViewSettings();
+export const useDateSelector = (
+  api: CalendarApi,
+  view: View,
+  agendaRange: AgendaRange,
+): UseDateSelectorResult => {
   const { weekStartDay } = useConfig();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -77,9 +83,7 @@ export const useDateSelector = (api: CalendarApi): UseDateSelectorResult => {
       }
 
       const utcDate = UTCifyDateOnly(date);
-      const url = Craft.getCpUrl(`calendar/${utcDatePath(utcDate)}`);
-
-      history.pushState("data", "", url);
+      changeCalendarUrl(utcDate);
       api.gotoDate(utcDate);
 
       setSelectedDate(date);
@@ -106,6 +110,7 @@ export const useDateSelector = (api: CalendarApi): UseDateSelectorResult => {
     isOpen && position ? (
       <DateSelectorPopover
         view={view}
+        agendaRange={agendaRange}
         popoverRef={popoverRef}
         position={position}
         selectedDate={selectedDate}
@@ -126,14 +131,19 @@ export const useDateSelector = (api: CalendarApi): UseDateSelectorResult => {
 
 const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
   view,
+  agendaRange,
   popoverRef,
   position,
   selectedDate,
   weekStartDay,
   onDateSelect,
 }) => {
-  const showWeekPicker = view === "timeGridWeek";
-  const showMonthYearPicker = view === "dayGridMonth";
+  const showWeekPicker =
+    view === "timeGridWeek" || (view === "listMonth" && agendaRange === "week");
+  const showYearPicker =
+    view === "calendarYear" || (view === "listMonth" && agendaRange === "year");
+  const showMonthYearPicker =
+    view === "dayGridMonth" || (view === "listMonth" && !showWeekPicker && !showYearPicker);
 
   return (
     <div
@@ -156,6 +166,7 @@ const DateSelectorPopover: FC<DateSelectorPopoverProps> = ({
         showWeekPicker={showWeekPicker}
         showWeekNumbers={showWeekPicker}
         showMonthYearPicker={showMonthYearPicker}
+        showYearPicker={showYearPicker}
       />
     </div>
   );

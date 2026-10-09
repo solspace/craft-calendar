@@ -1,0 +1,94 @@
+{% extends "calendar/layouts/_settings" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = "Overview"|t('calendar') %}
+{% set calendarTabs = {
+    day: "Day"|t('calendar'),
+    week: "Week"|t('calendar'),
+    month: "Month"|t('calendar'),
+    year: "Year"|t('calendar'),
+    agenda: "Agenda"|t('calendar'),
+} %}
+
+{% block content %}
+    <form action="" method="post" accept-charset="UTF-8">
+        <input type="hidden" name="action" value="calendar/settings/save-settings">
+        {{ redirectInput('calendar/settings/overview') }}
+        {{ csrfInput() }}
+
+        {{ forms.checkboxGroupField({
+            first: true,
+            label: "Visible Calendar Tabs"|t('calendar'),
+            instructions: "Choose the views available on the Overview page. Select at least one."|t('calendar'),
+            id: 'enabledCalendarViews',
+            name: 'settings[enabledCalendarViews]',
+            options: calendarTabs,
+            values: settings.enabledCalendarViews is iterable ? settings.enabledCalendarViews : [],
+            errors: settings.getErrors('enabledCalendarViews'),
+        }) }}
+
+        {{ forms.selectField({
+            label: "Default Calendar Tab"|t('calendar'),
+            instructions: "Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead."|t('calendar'),
+            id: 'defaultCalendarView',
+            name: 'settings[defaultCalendarView]',
+            value: settings.defaultCalendarView,
+            options: calendarTabs,
+            errors: settings.getErrors('defaultCalendarView'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Show Disabled Events"|t('calendar'),
+            instructions: "Display disabled events with faded styling in all Overview views."|t('calendar'),
+            id: 'showDisabledEvents',
+            name: 'settings[showDisabledEvents]',
+            on: settings.showDisabledEvents,
+            errors: settings.getErrors('showDisabledEvents'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Show Cancelled Events"|t('calendar'),
+            instructions: "Display cancelled occurrences with their cancellation styling in all Overview views."|t('calendar'),
+            id: 'showCancelledEvents',
+            name: 'settings[showCancelledEvents]',
+            on: settings.showCancelledEvents,
+            errors: settings.getErrors('showCancelledEvents'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Drag and Drop"|t('calendar'),
+            instructions: "Allow users with permission to edit events to move or resize them in Month, Week, and Day views."|t('calendar'),
+            id: 'isDragAndDropEnabled',
+            name: 'settings[isDragAndDropEnabled]',
+            on: settings.isDragAndDropEnabled,
+            errors: settings.getErrors('isDragAndDropEnabled'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Quick Event Creation"|t('calendar'),
+            instructions: "Allow users with permission to create events to add them directly from Month, Week, and Day views."|t('calendar'),
+            id: 'quickCreateEnabled',
+            name: 'settings[quickCreateEnabled]',
+            on: settings.quickCreateEnabled,
+            errors: settings.getErrors('quickCreateEnabled'),
+        }) }}
+    </form>
+{% endblock %}
+
+{% js %}
+    (() => {
+        const tabs = document.getElementById('enabledCalendarViews');
+        const defaultTab = document.getElementById('defaultCalendarView');
+        const updateDefaultTab = () => {
+            const enabled = Array.from(tabs.querySelectorAll('input[type="checkbox"]:checked'), input => input.value);
+            for (const option of defaultTab.options) {
+                option.disabled = !enabled.includes(option.value);
+            }
+            if (enabled.length && !enabled.includes(defaultTab.value)) {
+                defaultTab.value = enabled.includes('month') ? 'month' : enabled[0];
+            }
+        };
+        tabs.addEventListener('change', updateDefaultTab);
+        updateDefaultTab();
+    })();
+{% endjs %}

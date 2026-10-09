@@ -1,22 +1,21 @@
 import { utcDatePath } from "@cal/utils/date";
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 import { clearCalendarEventsCache } from "./calendar.events";
+import { getUrlView, getViewUrlSuffix, type View } from "./calendar.persistence";
 import type { CustomButtonInput } from "./calendar.types";
 
-export const changeCalendarUrl = (date?: Date) => {
-  let url: string;
-  if (date) {
-    url = Craft.getCpUrl(`calendar/${utcDatePath(date)}`);
-  } else {
-    const currentUrl = new URL(window.location.href);
-    if (/\/(day|week|month)$/.test(currentUrl.pathname)) {
-      currentUrl.pathname = currentUrl.pathname.replace(/\/(day|week|month)$/, "");
-    }
+export const changeCalendarUrl = (date: Date, view?: View) => {
+  const currentView = view ?? getUrlView();
+  const suffix = currentView ? `/${getViewUrlSuffix(currentView)}` : "";
+  const nextUrl = new URL(
+    Craft.getCpUrl(`calendar/${utcDatePath(date)}${suffix}`),
+    window.location.origin,
+  );
+  nextUrl.search = window.location.search;
 
-    url = currentUrl.toString();
+  if (nextUrl.toString() !== window.location.href) {
+    history.pushState("data", "", nextUrl.toString());
   }
-
-  history.pushState("data", "", url);
 };
 
 type Options = {

@@ -2,6 +2,7 @@ import { Control } from "@cal/components/controls/control";
 import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-picker";
 import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { TextInput } from "@cal/components/controls/text-input/text-input";
+import { LiveOverlapWarning } from "@cal/components/overlap-warning/overlap-warning";
 import {
   type CalendarCreateDraft,
   getCreateDraftDisplayEnd,
@@ -22,6 +23,7 @@ import { useCreateEvent } from "./create-event.mutation";
 import {
   AllDayLabel,
   AllDayRow,
+  CreateActionButtons,
   CreateActions,
   Fields,
   FlexTitle,
@@ -45,6 +47,8 @@ export const PopoverCreateEvent: FC<Props> = ({
   onCancel,
 }) => {
   const {
+    currentSiteId,
+    showOverlapWarnings,
     calendars,
     calendarColors,
     quickCreateFields,
@@ -196,6 +200,18 @@ export const PopoverCreateEvent: FC<Props> = ({
           }}
         />
 
+        <LiveOverlapWarning
+          formats={formats}
+          enabled={showOverlapWarnings && !!calendarId}
+          schedule={{
+            start: draft.start,
+            end: draft.allDay ? draft.end - 1 : draft.end,
+            allDay: draft.allDay,
+            calendarId,
+            siteId: currentSiteId,
+          }}
+        />
+
         {(locationHandle || descriptionHandle) && <hr />}
 
         {locationHandle && (
@@ -250,23 +266,25 @@ export const PopoverCreateEvent: FC<Props> = ({
         >
           {translate(isOpeningEditor ? "Processing..." : "More details…")}
         </MoreDetailsButton>
-        <button
-          type="button"
-          className={clsx("btn submit", isFetching && "disabled")}
-          disabled={!draft.title || !calendarId || isFetching}
-          onClick={() => createEvent(draft, calendarId, details)}
-        >
-          {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
-        </button>
+        <CreateActionButtons>
+          <button
+            type="button"
+            className={clsx("btn", isFetching && "disabled")}
+            disabled={isFetching}
+            onClick={onCancel}
+          >
+            {translate("Cancel")}
+          </button>
 
-        <button
-          type="button"
-          className={clsx("btn", isFetching && "disabled")}
-          disabled={isFetching}
-          onClick={onCancel}
-        >
-          {translate("Cancel")}
-        </button>
+          <button
+            type="button"
+            className={clsx("btn submit", isFetching && "disabled")}
+            disabled={!draft.title || !calendarId || isFetching}
+            onClick={() => createEvent(draft, calendarId, details)}
+          >
+            {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
+          </button>
+        </CreateActionButtons>
       </CreateActions>
     </PopoverCreateEventWrapper>
   );

@@ -10,6 +10,7 @@ import { type EditedOccurrence, EditedOccurrences } from "../edited-occurrences/
 import { appSelectors } from "../store/app.slice";
 import type { BuilderContext } from "../types";
 import { CalendarPreview } from "./calendar-preview/calendar-preview";
+import { EditorOverlapWarning } from "./editor.overlaps";
 import {
   DatePickersLightSwitchRepeatRulesWrapper,
   DatePickersLightSwitchWrapper,
@@ -116,6 +117,7 @@ export const Editor: FC<Props> = ({ context, onOccurrenceSaved }) => {
             onClick={(enabled) => dispatch(eventActions.setAllDay({ enabled, eventDuration }))}
           />
         </DatePickersLightSwitchWrapper>
+        <EditorOverlapWarning context={context} refreshKey={occurrencesRevision} />
         <RepeatRules />
         {context?.eventId && (
           <EditedOccurrences

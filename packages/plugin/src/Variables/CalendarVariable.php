@@ -34,15 +34,6 @@ class CalendarVariable
         $this->occurrenceProvider = \Craft::$container->get(OccurrenceProvider::class);
     }
 
-    public function showDemoTemplateBanner(): bool
-    {
-        if (!$this->settings()->isAdminChangesAllowed()) {
-            return false;
-        }
-
-        return !$this->settings()->isDemoBannerDisabled();
-    }
-
     public function canEditEvent(Event|int $event): bool
     {
         return Calendar::getInstance()->events->canEditEvent($event);

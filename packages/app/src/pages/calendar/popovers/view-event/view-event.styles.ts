@@ -47,19 +47,30 @@ export const PopoverWrapper = styled.div`
   }
 
   .occurrence-status {
-    margin: 8px 0 0;
-    color: var(--gray-600);
+    margin: 12px 0 0;
+    padding: 8px 10px;
+    border: 1px solid;
+    border-radius: var(--radius-sm);
     font-size: 13px;
+    line-height: 1.4;
   }
 
   .occurrence-status.is-edited {
-    margin-top: 12px;
-    padding: 8px 10px;
-    border: 1px solid var(--blue-200);
-    border-radius: var(--radius-sm);
+    border-color: var(--blue-200);
     background: var(--blue-050);
     color: var(--blue-800);
-    line-height: 1.4;
+  }
+
+  .occurrence-status.is-cancelled {
+    border-color: var(--amber-200);
+    background: var(--amber-100);
+    color: var(--amber-800);
+  }
+
+  .occurrence-status.is-disabled {
+    border-color: var(--gray-200);
+    background: var(--gray-050);
+    color: var(--gray-700);
   }
 
   .calendar-label-dot {
