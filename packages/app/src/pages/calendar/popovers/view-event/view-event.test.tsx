@@ -168,6 +168,25 @@ describe("event popup actions", () => {
     expect(container.querySelector(".event-description")).toBeNull();
   });
 
+  it("shows the disabled notice alongside occurrence status only for disabled events", async () => {
+    await show();
+    expect(container.textContent).not.toContain("This event is disabled.");
+
+    fcEvent.event.extendedProps.enabled = true;
+    await show();
+    expect(container.textContent).not.toContain("This event is disabled.");
+
+    fcEvent.event.extendedProps.enabled = false;
+    fcEvent.event.extendedProps.cancelled = true;
+    await show();
+    expect(container.querySelector(".occurrence-status.is-disabled")?.textContent).toBe(
+      "This event is disabled.",
+    );
+    expect(container.querySelector(".occurrence-status.is-cancelled")?.textContent).toBe(
+      "This occurrence is cancelled.",
+    );
+  });
+
   it("keeps Edit visible and routes occurrence actions from the native menu", async () => {
     await show();
     const edit = container.querySelector<HTMLAnchorElement>("a.submit")!;

@@ -820,4 +820,6 @@ return [
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Abgesagte Ereignisse anzeigen',
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Zeigen Sie abgesagte Vorkommen mit ihrer Absagemarkierung in allen Übersichtsansichten an.',
+
+    'This event is disabled.' => 'Dieser Termin ist deaktiviert.',
 ];

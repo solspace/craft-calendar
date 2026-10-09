@@ -76,6 +76,7 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
     : null;
   const recurrenceId = getRecurrenceIdFromId(String(event.id));
   const dateFormat = event.allDay ? "PP" : "PPp";
+  const isDisabled = event.extendedProps.enabled === false;
   const isCancelled = Boolean(event.extendedProps.cancelled);
   const isEdited = Boolean(event.extendedProps.isEdited);
   const hasOverride = Boolean(event.extendedProps.hasOverride);
@@ -248,6 +249,10 @@ export const PopoverViewEvent: FC<Props> = ({ fcEvent }) => {
           />
           <span>{calendarName}</span>
         </div>
+      )}
+
+      {isDisabled && (
+        <div className="occurrence-status is-disabled">{translate("This event is disabled.")}</div>
       )}
 
       {(isCancelled || isEdited) && (

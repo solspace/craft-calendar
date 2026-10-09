@@ -820,4 +820,6 @@ return [
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Geannuleerde evenementen tonen',
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Toon geannuleerde gebeurtenissen met hun annuleringsstijl in alle overzichtsweergaven.',
+
+    'This event is disabled.' => 'Dit evenement is uitgeschakeld.',
 ];

@@ -820,4 +820,6 @@ return [
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Afficher les événements annulés',
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Affichez les occurrences annulées avec leur style d’annulation dans toutes les vues de la page Vue d’ensemble.',
+
+    'This event is disabled.' => 'Cet événement est désactivé.',
 ];

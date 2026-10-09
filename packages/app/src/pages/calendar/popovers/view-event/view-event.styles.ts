@@ -67,6 +67,12 @@ export const PopoverWrapper = styled.div`
     color: var(--amber-800);
   }
 
+  .occurrence-status.is-disabled {
+    border-color: var(--gray-200);
+    background: var(--gray-050);
+    color: var(--gray-700);
+  }
+
   .calendar-label-dot {
     display: inline-block;
     width: 10px;

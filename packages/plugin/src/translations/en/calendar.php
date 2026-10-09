@@ -820,4 +820,6 @@ return [
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Show Cancelled Events',
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Display cancelled occurrences with their cancellation styling in all Overview views.',
+
+    'This event is disabled.' => 'This event is disabled.',
 ];
