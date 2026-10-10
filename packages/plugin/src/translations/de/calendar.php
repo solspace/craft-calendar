@@ -838,4 +838,5 @@ return [
     'This draft changes the series from {date} onward.' => 'Dieser Entwurf ändert die Serie ab {date}.',
     'This part of the series starts on {start} and ends before {end}.' => 'Dieser Teil der Serie beginnt am {start} und endet vor {end}.',
     'This part of the series starts on {date}.' => 'Dieser Teil der Serie beginnt am {date}.',
+    'Edited occurrence' => 'Bearbeiteter Termin',
 ];

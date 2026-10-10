@@ -53,7 +53,20 @@ it("updates the parent's recap when unsaved schedule checks orphan or restore an
       ({
         ok: true,
         json: async () =>
-          String(url).endsWith("check-schedule") ? { orphaned } : { occurrences: [edit] },
+          String(url).endsWith("check-schedule")
+            ? {
+                orphaned,
+                occurrences: [
+                  {
+                    recurrenceId: edit.recurrenceId,
+                    scheduleRecurrenceId: "2026-10-14 10:00:00",
+                    start: edit.start + 86400,
+                    end: edit.end + 86400,
+                    allDay: false,
+                  },
+                ],
+              }
+            : { occurrences: [edit] },
       }) as Response,
   );
   const store = createEventBuilderStore({
@@ -79,7 +92,14 @@ it("updates the parent's recap when unsaved schedule checks orphan or restore an
   await act(async () => {
     await vi.advanceTimersByTimeAsync(400);
   });
-  expect(changed).toHaveBeenLastCalledWith([expect.objectContaining({ orphaned: true })]);
+  expect(changed).toHaveBeenLastCalledWith([
+    expect.objectContaining({
+      orphaned: true,
+      start: edit.start + 86400,
+      scheduleRecurrenceId: "2026-10-14 10:00:00",
+      cancelled: true,
+    }),
+  ]);
 
   orphaned = [];
   await act(async () => {

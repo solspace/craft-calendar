@@ -78,7 +78,7 @@ describe("calendar preview rendering", () => {
     await renderEditablePreview(12, true, undefined, [makeCancellation(start)]);
 
     expect(container.querySelectorAll(".fc-cancelled-date")).toHaveLength(1);
-    expect(container.querySelector(".fc-cancelled-date [title]")?.getAttribute("title")).toBe(
+    expect(container.querySelector(".fc-cancelled-date [title]")?.getAttribute("title")).toContain(
       "Cancelled",
     );
     expect(container.querySelector("li.is-cancelled")?.textContent).toContain("Cancelled");
@@ -88,6 +88,62 @@ describe("calendar preview rendering", () => {
 
     expect(container.querySelector(".fc-cancelled-date")).toBeNull();
     expect(container.querySelector("li.is-cancelled")).toBeNull();
+  });
+
+  it("places a moved occurrence on its edited date and opens the original anchor", async () => {
+    const { start } = await renderEditablePreview(12);
+    const moved = {
+      ...makeCancellation(start + 86400),
+      cancelled: false,
+      start: start + 2 * 86400 + 3600,
+      end: start + 2 * 86400 + 7200,
+      title: "Special workshop",
+      changes: ["Title", "Times"],
+    };
+    await renderEditablePreview(12, true, undefined, [moved]);
+    const oldDate = new Date((start + 86400) * 1000).toISOString().slice(0, 10);
+    const newDate = new Date(moved.start * 1000).toISOString().slice(0, 10);
+    expect(container.querySelector(`[data-date="${oldDate}"].fc-has-event`)).toBeNull();
+    expect(
+      container
+        .querySelector(`[data-date="${newDate}"].fc-edited-date [title]`)
+        ?.getAttribute("title"),
+    ).toContain("Special workshop");
+    const row = container.querySelector<HTMLLIElement>("li.is-edited")!;
+    expect(row.title).toContain("Special workshop");
+    expect(row.title).toContain("11:30");
+    vi.mocked(getDraftEventId).mockResolvedValue(34);
+    await act(async () => row.querySelector<HTMLButtonElement>(".occurrence-edit")!.click());
+    expect(openOccurrenceEditor).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recurrenceId: moved.recurrenceId.replace(" ", "T"),
+        eventId: 34,
+      }),
+    );
+  });
+
+  it("removes a moved occurrence from its schedule anchor, leaving the destination's other occurrence", async () => {
+    const { start } = await renderEditablePreview(12);
+    const moved = {
+      ...makeCancellation(start + 86400),
+      cancelled: false,
+      start: start + 2 * 86400,
+      end: start + 2 * 86400 + 3600,
+    };
+    const { store } = await renderEditablePreview(12, true, undefined, [moved]);
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>("li.is-edited .occurrence-remove")!.click(),
+    );
+    const original = new Date((start + 86400) * 1000)
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .slice(0, 15);
+    const destination = new Date(moved.start * 1000)
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .slice(0, 15);
+    expect(store.getState().event.rrule).toContain(`EXDATE:${original}`);
+    expect(store.getState().event.rrule).not.toContain(`EXDATE:${destination}`);
   });
 
   it("does not mark orphaned cancellations or a different scheduled time on the same date", async () => {

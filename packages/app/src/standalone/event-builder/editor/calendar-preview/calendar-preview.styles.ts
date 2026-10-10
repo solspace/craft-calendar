@@ -60,6 +60,10 @@ export const CalendarPreviewWrapper = styled.div`
       white-space: nowrap;
     }
 
+    .fc-edited-date .fc-daygrid-day-number {
+      box-shadow: inset 0 -2px var(--blue-500);
+    }
+
     .fc-scrollgrid,
     th,
     td {
@@ -319,6 +323,19 @@ export const DateItem = styled.li`
     display: flex;
     flex-direction: column;
     line-height: 18px;
+  }
+
+  .occurrence-title {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--gray-600);
+    font-size: 12px;
+  }
+
+  .occurrence-state {
+    color: var(--gray-600);
+    font-size: 11px;
   }
 
   &.is-cancelled {

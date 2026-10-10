@@ -32,6 +32,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed the event editor’s schedule preview showing original dates for moved occurrences. It now shows edited dates, titles, and times while keeping occurrence actions tied to the correct scheduled occurrence.
 - Fixed hovering over another event replacing the quick creation form and leaving its unsaved event stuck on the calendar.
 - Fixed control panel date and time formats ignoring the user's formatting locale.
 - Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.
