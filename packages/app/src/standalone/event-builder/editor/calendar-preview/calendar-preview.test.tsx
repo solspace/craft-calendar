@@ -59,7 +59,7 @@ describe("calendar preview rendering", () => {
       );
     });
 
-    return { start, onOccurrenceSaved };
+    return { start, onOccurrenceSaved, store };
   };
 
   const makeCancellation = (start: number, orphaned = false): EditedOccurrence => ({
@@ -99,6 +99,20 @@ describe("calendar preview rendering", () => {
 
     expect(container.querySelector(".fc-cancelled-date")).toBeNull();
     expect(container.querySelector("li.is-cancelled")).toBeNull();
+  });
+
+  it("updates the schedule recap after an occurrence is cancelled or reset", async () => {
+    const { start } = await renderEditablePreview(12);
+    await renderEditablePreview(12, true, undefined, [makeCancellation(start)]);
+    expect(container.querySelector('ul[aria-label="Schedule changes"]')?.textContent).toBe(
+      "1 cancelled occurrence",
+    );
+    await renderEditablePreview(12, true, undefined, [makeCancellation(start, true)]);
+    expect(container.querySelector('ul[aria-label="Schedule changes"]')?.textContent).toBe(
+      "1 edit off schedule",
+    );
+    await renderEditablePreview(12, true, undefined, []);
+    expect(container.querySelector('ul[aria-label="Schedule changes"]')).toBeNull();
   });
 
   it("uses Craft's year-first formatting pattern for occurrence labels", async () => {

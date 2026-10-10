@@ -100,9 +100,10 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
 
     const data: { occurrences?: EditedOccurrence[] } = await response.json();
     const loaded = data.occurrences ?? [];
+    ++latestScheduleCheck.current;
     setOccurrences(loaded);
-    onOccurrencesChanged?.(loaded);
-  }, [context.siteId, getEventId, onOccurrencesChanged]);
+    setNotOnSchedule(null);
+  }, [context.siteId, getEventId]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reload after a preview occurrence is saved.
   useEffect(() => {
@@ -135,6 +136,7 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
   // Say which edited occurrences a schedule change would leave behind, before it's saved
   // biome-ignore lint/correctness/useExhaustiveDependencies: Rechecked whenever the schedule changes.
   useEffect(() => {
+    ++latestScheduleCheck.current;
     if (occurrences.length === 0) {
       return;
     }
@@ -142,10 +144,19 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
     const timer = setTimeout(() => void checkSchedule(), 400);
 
     return () => clearTimeout(timer);
-  }, [schedule, occurrences.length, checkSchedule]);
+  }, [schedule, occurrences, checkSchedule]);
 
   const isOrphaned = (occurrence: EditedOccurrence): boolean =>
     notOnSchedule ? notOnSchedule.has(occurrence.recurrenceId) : occurrence.orphaned;
+
+  useEffect(() => {
+    onOccurrencesChanged?.(
+      occurrences.map((occurrence) => ({
+        ...occurrence,
+        orphaned: notOnSchedule ? notOnSchedule.has(occurrence.recurrenceId) : occurrence.orphaned,
+      })),
+    );
+  }, [occurrences, notOnSchedule, onOccurrencesChanged]);
 
   // Creating the draft takes a moment, so the buttons stay disabled until the slideout opens
   const edit = async (occurrence: EditedOccurrence) => {

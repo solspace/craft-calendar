@@ -822,4 +822,20 @@ return [
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Toon geannuleerde gebeurtenissen met hun annuleringsstijl in alle overzichtsweergaven.',
 
     'This event is disabled.' => 'Dit evenement is uitgeschakeld.',
+
+    // Schedule summary
+    'Schedule changes' => 'Schemawijzigingen',
+    '{count} additional date' => '{count} extra datum',
+    '{count} additional dates' => '{count} extra datums',
+    '{count} excluded date' => '{count} uitgesloten datum',
+    '{count} excluded dates' => '{count} uitgesloten datums',
+    '{count} edited occurrence' => '{count} bewerkte herhaling',
+    '{count} edited occurrences' => '{count} bewerkte herhalingen',
+    '{count} cancelled occurrence' => '{count} geannuleerde herhaling',
+    '{count} cancelled occurrences' => '{count} geannuleerde herhalingen',
+    '{count} edit off schedule' => '{count} wijziging buiten het schema',
+    '{count} edits off schedule' => '{count} wijzigingen buiten het schema',
+    'This draft changes the series from {date} onward.' => 'Dit concept wijzigt de reeks vanaf {date}.',
+    'This part of the series starts on {start} and ends before {end}.' => 'Dit deel van de reeks begint op {start} en eindigt vóór {end}.',
+    'This part of the series starts on {date}.' => 'Dit deel van de reeks begint op {date}.',
 ];

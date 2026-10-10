@@ -822,4 +822,20 @@ return [
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Display cancelled occurrences with their cancellation styling in all Overview views.',
 
     'This event is disabled.' => 'This event is disabled.',
+
+    // Schedule summary
+    'Schedule changes' => 'Schedule changes',
+    '{count} additional date' => '{count} additional date',
+    '{count} additional dates' => '{count} additional dates',
+    '{count} excluded date' => '{count} excluded date',
+    '{count} excluded dates' => '{count} excluded dates',
+    '{count} edited occurrence' => '{count} edited occurrence',
+    '{count} edited occurrences' => '{count} edited occurrences',
+    '{count} cancelled occurrence' => '{count} cancelled occurrence',
+    '{count} cancelled occurrences' => '{count} cancelled occurrences',
+    '{count} edit off schedule' => '{count} edit off schedule',
+    '{count} edits off schedule' => '{count} edits off schedule',
+    'This draft changes the series from {date} onward.' => 'This draft changes the series from {date} onward.',
+    'This part of the series starts on {start} and ends before {end}.' => 'This part of the series starts on {start} and ends before {end}.',
+    'This part of the series starts on {date}.' => 'This part of the series starts on {date}.',
 ];
