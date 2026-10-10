@@ -822,4 +822,20 @@ return [
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Mostra le occorrenze annullate con il relativo stile di annullamento in tutte le viste della Panoramica.',
 
     'This event is disabled.' => 'Questo evento è disabilitato.',
+
+    // Schedule summary
+    'Schedule changes' => 'Modifiche al programma',
+    '{count} additional date' => '{count} data aggiuntiva',
+    '{count} additional dates' => '{count} date aggiuntive',
+    '{count} excluded date' => '{count} data esclusa',
+    '{count} excluded dates' => '{count} date escluse',
+    '{count} edited occurrence' => '{count} occorrenza modificata',
+    '{count} edited occurrences' => '{count} occorrenze modificate',
+    '{count} cancelled occurrence' => '{count} occorrenza annullata',
+    '{count} cancelled occurrences' => '{count} occorrenze annullate',
+    '{count} edit off schedule' => '{count} modifica fuori programma',
+    '{count} edits off schedule' => '{count} modifiche fuori programma',
+    'This draft changes the series from {date} onward.' => 'Questa bozza modifica la serie a partire da {date}.',
+    'This part of the series starts on {start} and ends before {end}.' => 'Questa parte della serie inizia il {start} e termina prima del {end}.',
+    'This part of the series starts on {date}.' => 'Questa parte della serie inizia il {date}.',
 ];

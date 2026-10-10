@@ -475,12 +475,5 @@ export const describeOccurrenceSummary = (summary: OccurrenceSummary): string =>
           total: summary.total,
         });
 
-  if (summary.excluded === 0) {
-    return base;
-  }
-
-  return translate("{summary} - {excluded} excluded", {
-    summary: base,
-    excluded: summary.excluded,
-  });
+  return base;
 };

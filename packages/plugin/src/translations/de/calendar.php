@@ -822,4 +822,20 @@ return [
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Zeigen Sie abgesagte Vorkommen mit ihrer Absagemarkierung in allen Übersichtsansichten an.',
 
     'This event is disabled.' => 'Dieser Termin ist deaktiviert.',
+
+    // Schedule summary
+    'Schedule changes' => 'Terminänderungen',
+    '{count} additional date' => '{count} zusätzlicher Termin',
+    '{count} additional dates' => '{count} zusätzliche Termine',
+    '{count} excluded date' => '{count} ausgeschlossener Termin',
+    '{count} excluded dates' => '{count} ausgeschlossene Termine',
+    '{count} edited occurrence' => '{count} bearbeiteter Termin',
+    '{count} edited occurrences' => '{count} bearbeitete Termine',
+    '{count} cancelled occurrence' => '{count} abgesagter Termin',
+    '{count} cancelled occurrences' => '{count} abgesagte Termine',
+    '{count} edit off schedule' => '{count} Änderung außerhalb des Terminplans',
+    '{count} edits off schedule' => '{count} Änderungen außerhalb des Terminplans',
+    'This draft changes the series from {date} onward.' => 'Dieser Entwurf ändert die Serie ab {date}.',
+    'This part of the series starts on {start} and ends before {end}.' => 'Dieser Teil der Serie beginnt am {start} und endet vor {end}.',
+    'This part of the series starts on {date}.' => 'Dieser Teil der Serie beginnt am {date}.',
 ];

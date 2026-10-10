@@ -245,7 +245,7 @@ describe("occurrence summary", () => {
     const summary = buildOccurrenceSummary(recurrence, 5);
 
     expect(summary).toEqual({ showing: 5, total: 8, excluded: 2 });
-    expect(describeOccurrenceSummary(summary!)).toBe("Showing 5 of 8 occurrences - 2 excluded");
+    expect(describeOccurrenceSummary(summary!)).toBe("Showing 5 of 8 occurrences");
   });
 
   it("omits the total for open-ended rules", () => {

@@ -39,7 +39,9 @@ import {
   OccurrencePreviewDescription,
   OccurrencePreviewHeading,
   OccurrencePreviewSummary,
+  ScheduleChangeList,
 } from "./calendar-preview.styles";
+import { describeScheduleChanges, describeSeriesRange } from "./schedule-summary.operations";
 
 const MAX_OCCURRENCES = 8;
 
@@ -54,7 +56,9 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
   const [isOpeningOccurrence, setIsOpeningOccurrence] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const weekStartDay = useSelector(appSelectors.weekStartDay);
-  const dateFormat = useSelector(appSelectors.formats)?.date.short.icu ?? "P";
+  const formats = useSelector(appSelectors.formats);
+  const dateFormat = formats?.date.short.icu ?? "P";
+  const datetimeFormat = formats?.datetime?.short.icu ?? "Pp";
   const state = useSelector(eventSelectors.state);
   const { start, rrule } = state;
   const canEditOccurrences = Boolean(context?.eventId && rrule);
@@ -102,6 +106,12 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
 
     return result ? describeOccurrenceSummary(result) : null;
   }, [previewRecurrence, upcomingOccurrences]);
+
+  const scheduleChanges = useMemo(
+    () => describeScheduleChanges(previewRecurrence, editedOccurrences),
+    [previewRecurrence, editedOccurrences],
+  );
+  const seriesRange = describeSeriesRange(context, start, state.allDay, dateFormat, datetimeFormat);
 
   const applyDateMutation = useCallback(
     (type: "rdate" | "exdate", timestamp: number, add: boolean) => {
@@ -185,6 +195,14 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
             </OccurrencePreviewDescription>
           )}
         </Flex>
+        {scheduleChanges.length > 0 && (
+          <ScheduleChangeList aria-label={translate("Schedule changes")}>
+            {scheduleChanges.map((change) => (
+              <li key={change}>{change}</li>
+            ))}
+          </ScheduleChangeList>
+        )}
+        {seriesRange && <OccurrencePreviewDescription>{seriesRange}</OccurrencePreviewDescription>}
         <FullCalendarOccurrencePreviewWrapper>
           <Flex $direction={"column"} $gap={10}>
             <FullCalendar

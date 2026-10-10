@@ -822,4 +822,20 @@ return [
     'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Affichez les occurrences annulées avec leur style d’annulation dans toutes les vues de la page Vue d’ensemble.',
 
     'This event is disabled.' => 'Cet événement est désactivé.',
+
+    // Schedule summary
+    'Schedule changes' => 'Modifications du programme',
+    '{count} additional date' => '{count} date supplémentaire',
+    '{count} additional dates' => '{count} dates supplémentaires',
+    '{count} excluded date' => '{count} date exclue',
+    '{count} excluded dates' => '{count} dates exclues',
+    '{count} edited occurrence' => '{count} occurrence modifiée',
+    '{count} edited occurrences' => '{count} occurrences modifiées',
+    '{count} cancelled occurrence' => '{count} occurrence annulée',
+    '{count} cancelled occurrences' => '{count} occurrences annulées',
+    '{count} edit off schedule' => '{count} modification hors programme',
+    '{count} edits off schedule' => '{count} modifications hors programme',
+    'This draft changes the series from {date} onward.' => 'Ce brouillon modifie la série à partir du {date}.',
+    'This part of the series starts on {start} and ends before {end}.' => 'Cette partie de la série commence le {start} et se termine avant le {end}.',
+    'This part of the series starts on {date}.' => 'Cette partie de la série commence le {date}.',
 ];

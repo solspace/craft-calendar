@@ -335,3 +335,22 @@ export const DateItem = styled.li`
     }
   }
 `;
+
+export const ScheduleChangeList = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 3px 8px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    background: var(--gray-050);
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--gray-700);
+  }
+`;
