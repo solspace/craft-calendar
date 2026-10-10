@@ -375,7 +375,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
       width: 4px;
       height: 4px;
       border-radius: 50%;
-      background-color: var(--gray-600);
+      background-color: var(--blue-600);
       pointer-events: none;
     }
 
@@ -647,7 +647,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background-color: var(--gray-600);
+    background-color: var(--blue-600);
   }
 
   &.is-cancelled {

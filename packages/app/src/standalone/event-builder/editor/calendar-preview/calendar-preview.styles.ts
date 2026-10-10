@@ -70,7 +70,7 @@ export const CalendarPreviewWrapper = styled.div`
       width: 4px;
       height: 4px;
       border-radius: 50%;
-      background-color: var(--gray-600);
+      background-color: var(--blue-600);
       pointer-events: none;
     }
 
@@ -360,7 +360,7 @@ export const DateItem = styled.li`
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background-color: var(--gray-600);
+    background-color: var(--blue-600);
   }
 
   &.is-cancelled {
