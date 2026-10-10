@@ -1,10 +1,11 @@
 {% extends "calendar/layouts/_layoutWithoutSettings" %}
 
 {% set selectedSubnavItem = 'settings' %}
-{% set fullPageForm = true %}
+{% set fullPageForm = fullPageForm ?? true %}
 
 {% set navItems = {
 'general': { title: "General Settings"|t('calendar') },
+'overview': { title: "Overview"|t('calendar') },
 'events': { title: "Event Settings"|t('calendar') },
 'guest-access': { title: "Guest Access"|t('calendar') },
 } %}
@@ -17,6 +18,7 @@
 
 {% set navItems = navItems|merge({
 'demo-templates': {title: 'Demo Templates'|t('calendar')},
+'diagnostics': {title: 'Diagnostics'|t('calendar')},
 }) %}
 
 {% set selectedItem = craft.app.request.getSegment(3)|default %}
@@ -35,10 +37,12 @@
     <nav>
         <ul>
             {% for id, item in navItems %}
-                {% if item.heading is defined %}
-                    <li class="heading"><span>{{ item.heading }}</span></li>
-                {% else %}
-                    <li><a href="{{ url('calendar/settings/'~id) }}"{% if id == selectedItem %} class="sel"{% endif %}>{{ item.title }}</a></li>
+                {% if id == 'diagnostics' or craft.app.config.general.allowAdminChanges %}
+                    {% if item.heading is defined %}
+                        <li class="heading"><span>{{ item.heading }}</span></li>
+                    {% else %}
+                        <li><a href="{{ url('calendar/settings/'~id) }}"{% if id == selectedItem %} class="sel"{% endif %}>{{ item.title }}</a></li>
+                    {% endif %}
                 {% endif %}
             {% endfor %}
         </ul>

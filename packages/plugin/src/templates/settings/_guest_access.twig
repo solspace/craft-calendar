@@ -14,8 +14,8 @@
 
         {{ forms.lightswitchField({
             first: true,
-            label: "Allow Guest Access on Front End?"|t('calendar'),
-            instructions: "Enable this to allow guests to post events to specific calendars on the front end."|t('calendar'),
+            label: "Allow Guest Event Submissions"|t('calendar'),
+            instructions: "Allow visitors who are not signed in to submit events from your website to the calendars selected below."|t('calendar'),
             id: 'guest-access',
             name: 'allowGuestAccess',
             on: settings.guestAccess is not null,
@@ -26,8 +26,8 @@
              style="margin-bottom: 20px;"
              class="{{ settings.guestAccess is null ? 'hidden' }}">
             {{ forms.checkboxSelectField({
-                label: "Allowed Calendars"|t('calendar'),
-                instructions: "Select which calendars Guests should have access to create events for on the front end."|t('calendar'),
+                label: "Guest Submission Calendars"|t('calendar'),
+                instructions: "Select at least one calendar. Guests can submit events only to the selected calendars."|t('calendar'),
                 id: 'calendar-list',
                 name: 'settings[guestAccess]',
                 options: calendars,

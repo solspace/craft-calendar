@@ -5,6 +5,18 @@ export const SidebarWrapper = styled.div`
   padding: 0;
 `;
 
+export const SidebarContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const SidebarDivider = styled.hr`
+  width: 100%;
+  margin: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--gray-200);
+`;
+
 export const CalendarList = styled.ul`
   display: flex;
   flex-direction: column;
@@ -43,7 +55,7 @@ export const CalendarCheckboxInput = styled.input`
   }
 
   &:checked + span {
-    border: 1px solid var(--calendar-color-dark);
+    border: 1px solid var(--calendar-color);
   }
 
   &:checked + span:after {
@@ -58,16 +70,15 @@ export const CalendarCheckbox = styled.span`
   height: 15px;
 
   border: 1px solid var(--calendar-color);
-  border-radius: 4px;
-  background-color: var(--calendar-color-light);
-
+  border-radius: 50%;
+  background-color: var(--calendar-color);
 
   &:after {
     content: "";
 
     position: absolute;
-    top: 2px;
-    left: 4.5px;
+    top: 50%;
+    left: 50%;
 
     width: 4px;
     height: 7px;
@@ -76,7 +87,7 @@ export const CalendarCheckbox = styled.span`
     border-width: 0 2px 2px 0;
 
     opacity: 0;
-    transform: rotate(45deg);
+    transform: translate(-50%, -60%) rotate(45deg);
   }
 `;
 

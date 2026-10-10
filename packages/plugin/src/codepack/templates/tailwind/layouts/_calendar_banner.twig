@@ -1,0 +1,13 @@
+{% if calendarHandle %}
+    {% set calendar = craft.calendar.calendar({handle: calendarHandle}) %}
+    {% if calendar %}
+        <a href="{{ siteUrl }}demo/{{ view }}/{{ date.format(view == 'month' ? 'Y/m' : 'Y/m/d') }}{{ view != 'month' and activeView|default('agenda') == 'agenda' ? '?view=agenda' : '' }}"
+            class="whitespace-nowrap px-2 py-1 leading-none align-middle rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 no-underline font-normal text-base inline-flex items-center gap-1"
+            style="--calendar-color: {{ calendar.color }};"
+            aria-label="Show all calendars instead of {{ calendar.name }}">
+            <span class="fas fa-calendar-alt calendar-color-icon" aria-hidden="true"></span>
+            {{ calendar.name }}
+            <span class="fas fa-times ms-1" aria-hidden="true"></span>
+        </a>
+    {% endif %}
+{% endif %}

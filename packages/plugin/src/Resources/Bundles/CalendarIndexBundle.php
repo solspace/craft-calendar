@@ -8,9 +8,4 @@ class CalendarIndexBundle extends CalendarAssetBundle
     {
         return ['js/scripts/calendars/index.js'];
     }
-
-    public function getStylesheets(): array
-    {
-        return ['css/calendars/index.css'];
-    }
 }

@@ -1,10 +1,12 @@
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import type { CalendarCreateDraft } from "@cal/pages/calendar/calendar.create-session";
 import { craftFetch } from "@cal/utils/http";
+import translate from "@cal/utils/translations";
 import { generateUrl } from "@cal/utils/urls";
 import { useCallback, useState } from "react";
 import { clearCalendarEventsCache } from "../../calendar.events";
 import { useConfig } from "../../context/config.context";
+import { buildCreateEventPayload, type QuickCreateDetails } from "./create-event.operations";
 
 type UseCreateEventOptions = {
   refetchEvents?: () => void;
@@ -14,54 +16,84 @@ type UseCreateEventOptions = {
 export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptions) => {
   const { hidePopover } = usePopover();
   const { currentSiteId } = useConfig();
-  const [isFetching, setIsFetching] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"create" | "prepare" | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const createEvent = useCallback(
-    async (event: CalendarCreateDraft) => {
-      if (!event) {
-        return;
-      }
-
-      setIsFetching(true);
-
-      const { title, start, end, allDay } = event;
+  const saveEvent = useCallback(
+    async (
+      event: CalendarCreateDraft,
+      calendarId: number,
+      details: QuickCreateDetails | undefined,
+      prepare: boolean,
+    ): Promise<string | null> => {
+      setPendingAction(prepare ? "prepare" : "create");
+      setError(null);
 
       try {
-        const response = await craftFetch(generateUrl("/api/events"), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const payload = buildCreateEventPayload(event, calendarId, currentSiteId, details);
+        if (prepare) payload.title = event.title;
+        const response = await craftFetch(
+          generateUrl(prepare ? "/api/events/prepare" : "/api/events"),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
           },
-          body: JSON.stringify({
-            title: title || "New Event",
-            start,
-            end,
-            allDay,
-            siteId: currentSiteId,
-          }),
-        });
+        );
 
         if (!response.ok) {
-          throw new Error("Failed to create event");
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            // The fallback below handles non-JSON error responses.
+          }
+
+          let message = payload?.message || "Failed to create event";
+          if (Array.isArray(payload?.errors)) {
+            message = payload.errors.join(" ");
+          }
+
+          throw new Error(message);
         }
 
-        await response.json();
+        const result = await response.json();
+        if (prepare) {
+          if (typeof result?.url !== "string" || !result.url) {
+            throw new Error(translate("Couldn’t create event."));
+          }
+          return result.url;
+        }
 
         clearCalendarEventsCache();
+        window.dispatchEvent(new Event("calendar:schedule-history-reset"));
         refetchEvents?.();
         onSuccess?.();
         hidePopover();
+        return null;
       } catch (error) {
-        console.error("Error creating event:", error);
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Failed to create event");
+        }
+        return null;
       } finally {
-        setIsFetching(false);
+        setPendingAction(null);
       }
     },
     [hidePopover, onSuccess, refetchEvents, currentSiteId],
   );
 
   return {
-    createEvent,
-    isFetching,
+    createEvent: (event: CalendarCreateDraft, calendarId: number, details?: QuickCreateDetails) =>
+      saveEvent(event, calendarId, details, false),
+    prepareEvent: (event: CalendarCreateDraft, calendarId: number, details?: QuickCreateDetails) =>
+      saveEvent(event, calendarId, details, true),
+    error,
+    isFetching: pendingAction !== null,
+    isOpeningEditor: pendingAction === "prepare",
   };
 };

@@ -47,8 +47,6 @@ export const CalendarSidebar: FC<CalendarSidebarProps> = ({
                 style={
                   {
                     "--calendar-color": calendar.color.base,
-                    "--calendar-color-light": calendar.color.light,
-                    "--calendar-color-dark": calendar.color.dark,
                     "--calendar-color-contrast": calendar.color.contrast,
                   } as CSSProperties
                 }

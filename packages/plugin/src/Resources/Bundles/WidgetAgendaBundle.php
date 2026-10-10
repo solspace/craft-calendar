@@ -2,20 +2,10 @@
 
 namespace Solspace\Calendar\Resources\Bundles;
 
-use craft\helpers\App;
-
 class WidgetAgendaBundle extends CalendarAssetBundle
 {
-    public function getScripts(): array
+    protected function getClientEntry(): ?string
     {
-        $clientPath = App::env('CAL_CLIENT_PATH') ?? null;
-        if ($clientPath) {
-            return [$this->getClientScript($clientPath, 'widget-agenda')];
-        }
-
-        return [
-            'js/app/vendor.js',
-            'js/app/widget-agenda.js',
-        ];
+        return 'widget-agenda';
     }
 }

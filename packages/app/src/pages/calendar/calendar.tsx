@@ -8,17 +8,21 @@ import { useHiddenCalendarSettings } from "./calendar.persistence";
 import { AiCreateContext } from "./context/ai-create.context";
 import { useConfig } from "./context/config.context";
 import { HeaderAiCreate } from "./header-ai";
+import { MiniCalendar } from "./mini-calendar";
 import { CalendarSidebar } from "./sidebar";
+import { SidebarContent, SidebarDivider } from "./sidebar.styles";
 
 export const Calendar: FC = () => {
   const sidebarRoot = document.querySelector<HTMLDivElement>("[data-sidebar-root]");
   const headerAiRoot = document.querySelector<HTMLSpanElement>("[data-ai-create-root]");
-  const { isSolspaceAiConnected, canEditEvents } = useConfig();
+  const { isSolspaceAiConnected, canEditEvents, currentDay } = useConfig();
   const { hiddenCalendarIds, toggleCalendarVisibility } = useHiddenCalendarSettings();
   const aiButtonRef = useRef<HTMLButtonElement>(null);
   const [applyAiDraftHandler, setApplyAiDraftHandler] = useState<
     ((draft: CalendarCreateDraft) => void) | null
   >(null);
+  const [selectedDate, setSelectedDate] = useState(() => new Date(currentDay));
+  const [miniDateSelection, setMiniDateSelection] = useState<Date | null>(null);
 
   const registerApplyAiDraft = useCallback((handler: (draft: CalendarCreateDraft) => void) => {
     setApplyAiDraftHandler(() => handler);
@@ -31,12 +35,21 @@ export const Calendar: FC = () => {
     [applyAiDraftHandler],
   );
 
+  const handleMiniDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setMiniDateSelection(date);
+  };
+
   return (
     <PopoverProvider>
       <AiCreateContext.Provider value={{ applyAiDraft }}>
         <CalendarFullcalendar
           hiddenCalendarIds={hiddenCalendarIds}
           registerApplyAiDraft={registerApplyAiDraft}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          miniDateSelection={miniDateSelection}
+          onMiniDateSelectionHandled={() => setMiniDateSelection(null)}
         />
         {headerAiRoot &&
           createPortal(
@@ -49,10 +62,14 @@ export const Calendar: FC = () => {
           )}
         {sidebarRoot &&
           createPortal(
-            <CalendarSidebar
-              hiddenCalendarIds={hiddenCalendarIds}
-              onToggleCalendar={toggleCalendarVisibility}
-            />,
+            <SidebarContent>
+              <CalendarSidebar
+                hiddenCalendarIds={hiddenCalendarIds}
+                onToggleCalendar={toggleCalendarVisibility}
+              />
+              <SidebarDivider />
+              <MiniCalendar selectedDate={selectedDate} onDateSelect={handleMiniDateSelect} />
+            </SidebarContent>,
             sidebarRoot,
           )}
       </AiCreateContext.Provider>

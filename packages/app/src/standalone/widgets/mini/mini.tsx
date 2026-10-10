@@ -1,16 +1,24 @@
-import { calendarEvents } from "@cal/pages/calendar/calendar.events";
+import { createCalendarEventsSource } from "@cal/pages/calendar/calendar.events";
 import { utcDatePath } from "@cal/utils/date";
+import { getCalendarTranslations } from "@cal/utils/localization";
 import type { DayHeaderContentArg, EventInput } from "@fullcalendar/core/index.js";
 import dayGrid from "@fullcalendar/daygrid";
 import interaction, { type DateClickArg } from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
-import { type FC, useCallback, useLayoutEffect, useRef } from "react";
+import { type FC, useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import { MiniWidgetWrapper } from "./mini.styles";
 import type { MiniWidgetConfig } from "./mini.types";
+
+const NO_HIDDEN_CALENDARS = new Set<number>();
 
 export const Mini: FC<{ config: MiniWidgetConfig }> = ({ config }) => {
   const calendar = useRef<FullCalendar>(null);
   const wrapper = useRef<HTMLDivElement>(null);
+
+  const fetchEvents = useMemo(
+    () => createCalendarEventsSource(NO_HIDDEN_CALENDARS, config.currentSiteId, config.calendars),
+    [config.currentSiteId, config.calendars],
+  );
 
   useLayoutEffect(() => {
     setTimeout(() => {
@@ -20,13 +28,17 @@ export const Mini: FC<{ config: MiniWidgetConfig }> = ({ config }) => {
     }, 600);
   }, []);
 
-  const renderDayHeaderContent = useCallback((arg: DayHeaderContentArg) => {
-    const weekday = new Intl.DateTimeFormat(undefined, {
-      weekday: "narrow",
-    }).format(arg.date);
+  const renderDayHeaderContent = useCallback(
+    (arg: DayHeaderContentArg) => {
+      const weekday = new Intl.DateTimeFormat(config.language, {
+        weekday: "narrow",
+        timeZone: "UTC",
+      }).format(arg.date);
 
-    return <span className="fc-day-header-label">{weekday}</span>;
-  }, []);
+      return <span className="fc-day-header-label">{weekday}</span>;
+    },
+    [config.language],
+  );
 
   const handleDateClick = useCallback((arg: DateClickArg) => {
     window.location.href = Craft.getCpUrl(`calendar/${utcDatePath(arg.date)}/day`);
@@ -35,6 +47,7 @@ export const Mini: FC<{ config: MiniWidgetConfig }> = ({ config }) => {
   return (
     <MiniWidgetWrapper ref={wrapper}>
       <FullCalendar
+        {...getCalendarTranslations()}
         ref={calendar}
         themeSystem="bootstrap5"
         height={280}
@@ -46,12 +59,12 @@ export const Mini: FC<{ config: MiniWidgetConfig }> = ({ config }) => {
         initialDate={config.currentDay}
         nextDayThreshold={`0${config.overlapThreshold || 0}:00:00`}
         events={async (info, success, failure) => {
-          const events = (await calendarEvents(info, success, failure)) as EventInput[];
+          const events = (await fetchEvents(info, success, failure)) as EventInput[];
 
           events.forEach((event) => {
             const date = event.start.toString().slice(0, 10);
-            const element = wrapper.current.querySelector(`.fc-day[data-date="${date}"]`);
-            element.classList.add("fc-has-event");
+            const element = wrapper.current?.querySelector(`.fc-day[data-date="${date}"]`);
+            element?.classList.add("fc-has-event");
           });
 
           return events;

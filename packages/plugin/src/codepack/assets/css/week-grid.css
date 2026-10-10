@@ -1,0 +1,124 @@
+/* Both demo frameworks share the timed-event layout and color tokens. */
+
+.week-grid-scroll {
+    max-height: min(76vh, 850px);
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.week-grid {
+    display: grid;
+    grid-template-columns: 4rem repeat(7, minmax(8.75rem, 1fr));
+    min-width: 65.25rem;
+    position: relative;
+}
+
+.week-grid--day {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    min-width: 0;
+}
+
+.week-grid-corner,
+.week-grid-heading {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    min-height: 56px;
+}
+
+.week-grid-corner,
+.week-grid-all-day-label,
+.week-grid-hours {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.week-grid-corner { z-index: 4; }
+.week-grid-all-day-label,
+.week-grid-all-day {
+    position: sticky;
+    top: 56px;
+    z-index: 3;
+}
+.week-grid-all-day-label { z-index: 4; }
+.week-grid-all-day-label,
+.week-grid-hours { background-color: var(--bs-body-bg); }
+
+.week-grid-all-day { min-height: 2.5rem; }
+
+.week-grid-all-day-event {
+    position: relative;
+    background-color: color-mix(in srgb, var(--event-color) 16%, var(--bs-body-bg));
+    color: var(--bs-body-color);
+}
+
+.week-grid-all-day-event:hover,
+.week-grid-all-day-event:focus-visible {
+    background-color: color-mix(in srgb, var(--event-color) 27%, var(--bs-body-bg));
+    color: var(--bs-body-color);
+}
+
+.week-grid-hours,
+.week-grid-day {
+    height: 1152px; /* 24 hours at 48px per hour */
+    background-image: repeating-linear-gradient(
+        to bottom,
+        var(--bs-border-color) 0 1px,
+        transparent 1px 24px,
+        var(--bs-border-color-translucent, var(--bs-border-color)) 24px 25px,
+        transparent 25px 48px
+    );
+}
+
+.week-grid-day { position: relative; }
+.week-grid-day { background-color: var(--bs-body-bg); }
+.week-grid-today { background-color: var(--bs-primary-bg-subtle); }
+.week-grid--tailwind .week-grid-today { background-color: #dbeafe; }
+[data-bs-theme="dark"] .week-grid--tailwind .week-grid-today { background-color: #172554; }
+
+.week-grid-hour {
+    position: absolute;
+    top: calc(var(--hour) * 48px + 3px);
+    right: .4rem;
+    font-size: .7rem !important;
+}
+
+.week-grid-event {
+    box-sizing: border-box;
+    position: absolute;
+    left: 3px;
+    width: calc(100% - 6px);
+    min-height: 18px;
+    overflow: hidden;
+    padding: 2px 5px 2px 10px;
+    background-color: color-mix(in srgb, var(--event-color) 20%, var(--bs-body-bg));
+    color: var(--bs-body-color);
+    font-size: .73rem;
+    line-height: 1.15;
+    z-index: 1;
+}
+
+.week-grid-all-day-event::before,
+.week-grid-event::before {
+    position: absolute;
+    top: min(.5rem, 25%);
+    bottom: min(.5rem, 25%);
+    inset-inline-start: 0;
+    width: .2rem;
+    border-radius: var(--bs-border-radius-pill, 999px);
+    background-color: var(--event-color);
+    content: "";
+    pointer-events: none;
+}
+
+.week-grid-event:hover,
+.week-grid-event:focus-visible {
+    z-index: 2;
+    background-color: color-mix(in srgb, var(--event-color) 32%, var(--bs-body-bg));
+    color: var(--bs-body-color);
+    outline: 2px solid var(--event-color);
+    outline-offset: -2px;
+}
+
+.week-grid-event-time { margin-top: 2px; }

@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Library\Helpers;
 
 use Carbon\Carbon;
+use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Exceptions\DateHelperException;
 
@@ -39,6 +40,56 @@ class DateHelper
     public static function toLocalized(Carbon $date): Carbon
     {
         return new Carbon($date->toDateTimeString());
+    }
+
+    /**
+     * A floating date-time as the same wall-clock time in the control panel's timezone, for date inputs and formatting.
+     */
+    public static function floatingToLocal(Carbon $date): \DateTime
+    {
+        return new \DateTime($date->format('Y-m-d H:i:s'), new \DateTimeZone(\Craft::$app->getTimeZone()));
+    }
+
+    /**
+     * A floating date-time formatted for the control panel: the date alone for all-day dates.
+     */
+    public static function formatFloating(Carbon $date, bool $allDay): string
+    {
+        $formatter = \Craft::$app->getFormatter();
+
+        return $allDay
+            ? $formatter->asDate(self::floatingToLocal($date), Locale::LENGTH_MEDIUM)
+            : $formatter->asDatetime(self::floatingToLocal($date), Locale::LENGTH_SHORT);
+    }
+
+    public static function parseFloatingCarbon(mixed $value): Carbon
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return new Carbon($value->format('Y-m-d H:i:s'), self::UTC);
+        }
+
+        if (\is_numeric($value)) {
+            return Carbon::createFromTimestampUTC((int) $value);
+        }
+
+        if (!\is_string($value)) {
+            throw new \InvalidArgumentException(\sprintf(
+                'Invalid floating date value type: %s',
+                \is_object($value) ? $value::class : \gettype($value),
+            ));
+        }
+
+        $value = trim($value);
+        if ('' === $value) {
+            throw new \InvalidArgumentException('Invalid empty floating date value');
+        }
+
+        $floatingDate = self::parseFloatingDateString($value);
+        if ($floatingDate instanceof Carbon) {
+            return $floatingDate;
+        }
+
+        return new Carbon($value, self::UTC);
     }
 
     public static function getCurrentWeekDay(Carbon $date): string
@@ -171,6 +222,48 @@ class DateHelper
         $timeAtZero = '0000' === $date->format('is');
 
         return $hourBelowThreshold || ($hourAtExactThreshold && $timeAtZero);
+    }
+
+    /**
+     * All-day events and occurrences end at the end of their last day, the way the event builder stores them.
+     */
+    public static function allDayEnd(Carbon $lastDay): Carbon
+    {
+        return $lastDay->copy()->setTime(23, 59, 59);
+    }
+
+    /**
+     * All-day ends arrive the way FullCalendar and the CP date pickers send them: as the day after
+     * the last day. They're stored the way the event builder stores them: at the end of the last day.
+     */
+    public static function allDayEndFromExclusive(Carbon $start, Carbon $exclusiveEnd): Carbon
+    {
+        $lastDay = $exclusiveEnd->copy()->startOfDay()->subDay();
+        $firstDay = $start->copy()->startOfDay();
+
+        return self::allDayEnd($lastDay < $firstDay ? $firstDay : $lastDay);
+    }
+
+    /**
+     * The day after an all-day end's last day, which is how FullCalendar expects all-day ends.
+     */
+    public static function allDayExclusiveEnd(Carbon $end): Carbon
+    {
+        return $end->copy()->startOfDay()->addDay();
+    }
+
+    /**
+     * Checks whether $start and $end fall on different days.
+     * Ending on the next day before the overlap threshold doesn't count.
+     */
+    public static function isMultiDay(Carbon $start, Carbon $end, int $overlapThreshold): bool
+    {
+        $diffInDays = self::carbonDiffInDays($start, $end);
+        if ($diffInDays > 1) {
+            return true;
+        }
+
+        return 1 === $diffInDays && !self::isDateBeforeOverlap($end, $overlapThreshold);
     }
 
     /**
@@ -380,9 +473,37 @@ class DateHelper
 
         array_multisort($offsets, $timezoneIds, $timezoneOptions);
 
-        $appended = [self::FLOATING_TIMEZONE => 'Floating Timezone (recommended)'];
+        $appended = [self::FLOATING_TIMEZONE => Calendar::t('Floating (Recommended)')];
 
         return array_merge($appended, $timezoneOptions);
+    }
+
+    private static function parseFloatingDateString(string $value): ?Carbon
+    {
+        if (!preg_match(
+            '/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/',
+            $value,
+            $matches,
+        )) {
+            return null;
+        }
+
+        $dateTime = \sprintf(
+            '%04d-%02d-%02d %02d:%02d:%02d',
+            (int) $matches[1],
+            (int) $matches[2],
+            (int) $matches[3],
+            isset($matches[4]) && '' !== $matches[4] ? (int) $matches[4] : 0,
+            isset($matches[5]) && '' !== $matches[5] ? (int) $matches[5] : 0,
+            isset($matches[6]) && '' !== $matches[6] ? (int) $matches[6] : 0,
+        );
+
+        $date = Carbon::createFromFormat('!Y-m-d H:i:s', $dateTime, self::UTC);
+        if (!$date instanceof Carbon || $date->format('Y-m-d H:i:s') !== $dateTime) {
+            throw new \InvalidArgumentException(\sprintf('Invalid floating date value: %s', $value));
+        }
+
+        return $date;
     }
 
     /**

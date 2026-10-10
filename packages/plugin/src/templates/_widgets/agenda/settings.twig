@@ -15,7 +15,7 @@
     instructions: "Choose which type of calendar view to assign to this widget"|t('calendar'),
     id: 'view',
     name: 'view',
-    options: {month: "Month", week: "Week", day: "Day"},
+    options: {month: "Month"|t("calendar"), week: "Week"|t("calendar"), day: "Day"|t("calendar")},
     value: settings.view,
     errors: settings.getErrors('view')
 }) }}

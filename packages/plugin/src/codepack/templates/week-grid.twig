@@ -1,0 +1,2 @@
+{% set demoFramework = craft.app.request.getQueryParam('framework') == 'bootstrap' ? 'bootstrap' : 'tailwind' %}
+{% include 'demo/' ~ demoFramework ~ '/week-grid' %}

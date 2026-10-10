@@ -3,13 +3,17 @@
 namespace Solspace\Calendar\Elements\Actions;
 
 use craft\base\ElementAction;
+use craft\elements\actions\DeleteActionInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Html;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 
-class DeleteEventAction extends ElementAction
+class DeleteEventAction extends ElementAction implements DeleteActionInterface
 {
+    public bool $hard = false;
+
     /**
      * @var null|string The confirmation message that should be shown before the elements get deleted
      */
@@ -39,12 +43,32 @@ class DeleteEventAction extends ElementAction
             })();
             JS, [static::class]);
 
+        if ($this->hard) {
+            return Html::tag('div', $this->getTriggerLabel(), [
+                'class' => ['btn', 'formsubmit'],
+            ]);
+        }
+
         return null;
     }
 
     public function getTriggerLabel(): string
     {
+        if ($this->hard) {
+            return \Craft::t('app', 'Delete permanently');
+        }
+
         return Calendar::t('Delete');
+    }
+
+    public function canHardDelete(): bool
+    {
+        return true;
+    }
+
+    public function setHardDelete(): void
+    {
+        $this->hard = true;
     }
 
     public static function isDestructive(): bool
@@ -54,6 +78,12 @@ class DeleteEventAction extends ElementAction
 
     public function getConfirmationMessage(): ?string
     {
+        if ($this->hard) {
+            return \Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
+                'type' => Event::pluralLowerDisplayName(),
+            ]);
+        }
+
         if (isset($this->confirmationMessage)) {
             return $this->confirmationMessage;
         }
@@ -71,7 +101,7 @@ class DeleteEventAction extends ElementAction
         /** @var Event $element */
         foreach ($query->all() as $element) {
             if (PermissionHelper::canEditEvent($element)) {
-                Calendar::getInstance()->events->deleteEvent($element);
+                Calendar::getInstance()->events->deleteEvent($element, $this->hard);
             }
         }
 

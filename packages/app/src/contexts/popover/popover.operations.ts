@@ -138,6 +138,22 @@ const clampPlacementToViewport = (
   };
 };
 
+const getAnchorOverlapArea = (
+  placement: CandidatePlacement,
+  popoverRect: Rect,
+  anchorRect: Rect,
+): number => {
+  const left = placement.left;
+  const top = placement.top;
+  const right = left + popoverRect.width;
+  const bottom = top + popoverRect.height;
+
+  const overlapX = Math.max(0, Math.min(right, anchorRect.right) - Math.max(left, anchorRect.left));
+  const overlapY = Math.max(0, Math.min(bottom, anchorRect.bottom) - Math.max(top, anchorRect.top));
+
+  return overlapX * overlapY;
+};
+
 export const normalizePopoverOptions = (options?: ShowPopoverOptions): NormalizedPopoverOptions => {
   if (!options) {
     return DEFAULT_OPTIONS;
@@ -177,13 +193,29 @@ export const resolvePopoverPlacement = ({
     return firstInBounds;
   }
 
-  return clampPlacementToViewport(
-    candidates[0],
-    popoverRect,
-    viewportWidth,
-    viewportHeight,
-    options.padding,
+  const clampedCandidates = candidates.map((candidate) =>
+    clampPlacementToViewport(
+      candidate,
+      popoverRect,
+      viewportWidth,
+      viewportHeight,
+      options.padding,
+    ),
   );
+
+  let best = clampedCandidates[0];
+  let bestOverlap = getAnchorOverlapArea(best, popoverRect, anchorRect);
+
+  for (const candidate of clampedCandidates.slice(1)) {
+    const overlap = getAnchorOverlapArea(candidate, popoverRect, anchorRect);
+
+    if (overlap < bestOverlap) {
+      best = candidate;
+      bestOverlap = overlap;
+    }
+  }
+
+  return best;
 };
 
 type ResolveArrowLayoutParams = {

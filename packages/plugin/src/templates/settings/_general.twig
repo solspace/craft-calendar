@@ -16,8 +16,8 @@
             {{ forms.textField({
                 first: true,
                 class: "code",
-                label: "Custom Plugin Name"|t('calendar'),
-                instructions: "Override the plugin name by specifying your own here."|t('calendar'),
+                label: "Plugin Name"|t('calendar'),
+                instructions: "Set Calendar's display name in the control panel. Leave blank to use Calendar."|t('calendar'),
                 placeholder: craft.calendar.name,
                 id: "pluginName",
                 name: "settings[pluginName]",
@@ -29,13 +29,13 @@
 
         {{ forms.selectField({
             first: not craft.calendar.pro,
-            label: "Week Starting Day"|t('calendar'),
-            instructions: "The starting day of the week when viewing front end and control panel Month and Week views as well as datepickers."|t('calendar'),
+            label: "First Day of Week"|t('calendar'),
+            instructions: "Choose the first day of the week for Month and Week views and date pickers. User Preference uses the signed-in user's Craft setting, or Craft's default when no user is signed in."|t('calendar'),
             name: "settings[firstDayOfWeek]",
             value: settings.firstDayOfWeek,
             errors: settings.errors("firstDayOfWeek"),
             options: {
-                "-1": "Current user's Locale"|t('calendar'),
+                "-1": "User Preference"|t('calendar'),
                 0: "Sunday"|t('calendar'),
                 1: "Monday"|t('calendar'),
                 2: "Tuesday"|t('calendar'),
@@ -48,47 +48,29 @@
 
         {{ forms.selectField({
             label: "Time Format"|t('calendar'),
-            instructions: "Time format for dates and date pickers throughout the control panel."|t('calendar'),
+            instructions: "Choose 12-hour or 24-hour time for Calendar's control panel views and time pickers. Locale Default uses the current user's formatting locale."|t('calendar'),
             name: "settings[timeFormat]",
             value: settings.timeFormat,
             errors: settings.errors("timeFormat"),
             options: {
-                "auto": "Current user's Locale"|t('calendar'),
+                "auto": "Locale Default"|t('calendar'),
                 "12-hour": "12-hour format"|t('calendar'),
                 "24-hour": "24-hour format"|t('calendar'),
             },
         }) }}
 
         {{ forms.lightswitchField({
-            label: "Display Mini Calendar & Calendars list in Month/Week/Day views?"|t('calendar'),
-            instructions: "Displays a side menu with mini calendar and list of calendars, allowing you to filter your event results."|t('calendar'),
-            id: 'showMiniCal',
-            name: 'settings[showMiniCal]',
-            on: settings.showMiniCal,
-            errors: settings.getErrors('showMiniCal')
+            label: "Show Overlap Warnings"|t('calendar'),
+            instructions: "Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving."|t('calendar'),
+            id: 'showOverlapWarnings',
+            name: 'settings[showOverlapWarnings]',
+            on: settings.showOverlapWarnings,
+            errors: settings.getErrors('showOverlapWarnings')
         }) }}
 
         {{ forms.lightswitchField({
-            label: "Include Disabled Events in Month/Week/Day views?"|t('calendar'),
-            instructions: "Events that are disabled will be displayed in the views with faded styles."|t('calendar'),
-            id: 'showDisabledEvents',
-            name: 'settings[showDisabledEvents]',
-            on: settings.showDisabledEvents,
-            errors: settings.getErrors('showDisabledEvents')
-        }) }}
-
-        {{ forms.lightswitchField({
-            label: "Allow new events to be created in Month/Week/Day views?"|t('calendar'),
-            instructions: "Allows all users with event creation privileges to use the Quick Create event feature."|t('calendar'),
-            id: 'quickCreateEnabled',
-            name: 'settings[quickCreateEnabled]',
-            on: settings.quickCreateEnabled,
-            errors: settings.getErrors('quickCreateEnabled')
-        }) }}
-
-        {{ forms.lightswitchField({
-            label: "Restrict users to editing their own events only?"|t('calendar'),
-            instructions: "Users (excluding Admins) with event creation privileges will only be able to edit or delete their own events."|t('calendar'),
+            label: "Restrict Editing to Own Events"|t('calendar'),
+            instructions: "Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply."|t('calendar'),
             id: 'authoredEventEditOnly',
             name: 'settings[authoredEventEditOnly]',
             on: settings.authoredEventEditOnly,
@@ -96,28 +78,18 @@
         }) }}
 
         {{ forms.selectField({
-            label: "Default View"|t('calendar'),
-            instructions: "The default page to go to when clicking the Calendar nav item."|t('calendar'),
+            label: "Default Page"|t('calendar'),
+            instructions: "Choose the page that opens when you click Calendar in the control panel navigation."|t('calendar'),
             name: "settings[defaultView]",
             value: settings.defaultView,
             errors: settings.errors("defaultView"),
             options: {
-                month: "Month view",
-                week: "Week view",
-                day: "Day view",
-                events: "Events",
-                calendars: "Calendars",
+                overview: "Overview"|t('calendar'),
+                events: "Events"|t('calendar'),
+                calendars: "Calendars"|t('calendar'),
             },
         }) }}
 
-        {{ forms.lightswitchField({
-            label: "Hide 'Install Demo' alert message?"|t('calendar'),
-            instructions: "Hides the alert message suggesting to install demo templates when this setting is enabled."|t('calendar'),
-            id: 'demoBannerDisabled',
-            name: 'settings[demoBannerDisabled]',
-            on: settings.demoBannerDisabled,
-            errors: settings.getErrors('demoBannerDisabled')
-        }) }}
     </form>
 
 {% endblock %}

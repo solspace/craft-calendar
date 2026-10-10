@@ -8,9 +8,11 @@ import {
   type EventState,
   normalizeDays,
   rebuildRRule,
+  removeRDates,
   resetByRulesForFreq,
 } from "./event.slice.operations";
 import type { RootState } from "./store";
+import { normalizeRepeatCount } from "./store.normalizers";
 
 const defaultState: EventState = {
   start: Math.floor(Date.now() / 1000),
@@ -105,13 +107,19 @@ const eventBuilderSlice = createSlice({
       rebuildRRule(state);
     },
     setRepeatType: (state, action: PayloadAction<RepeatType>) => {
+      if (state.repeatType === "NEVER" && action.payload !== "NEVER") {
+        state.rrule = removeRDates(state.rrule);
+      }
+
       state.repeatType = action.payload;
       rebuildRRule(state);
     },
     setRepeatEndType: (state, action: PayloadAction<RepeatEndType>) => {
       const repeatEndType = action.payload;
       state.repeatEndType = repeatEndType;
-      if (repeatEndType !== "AFTER") {
+      if (repeatEndType === "AFTER") {
+        state.count = normalizeRepeatCount(state.count);
+      } else {
         state.count = null;
       }
 
@@ -123,7 +131,7 @@ const eventBuilderSlice = createSlice({
       rebuildRRule(state);
     },
     setCount: (state, action: PayloadAction<number | null>) => {
-      state.count = action.payload;
+      state.count = normalizeRepeatCount(action.payload);
       rebuildRRule(state);
     },
     setInterval: (state, action: PayloadAction<number>) => {

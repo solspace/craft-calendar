@@ -149,7 +149,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     public function getAllDayOccurrences(): OccurrenceList
     {
         if (null === $this->allDayOccurrences) {
-            $this->allDayOccurrences = $this->occurrences->filter(static fn (OccurrenceModel $occurrence) => $occurrence->event->isAllDay());
+            $this->allDayOccurrences = $this->occurrences->filter(static fn (OccurrenceModel $occurrence) => $occurrence->allDay);
         }
 
         return $this->allDayOccurrences;
@@ -163,7 +163,7 @@ abstract class AbstractEventCollection implements EventCollectionInterface, \Ite
     public function getTimedOccurrences(): OccurrenceList
     {
         if (null === $this->timedOccurrences) {
-            $this->timedOccurrences = $this->occurrences->filter(static fn (OccurrenceModel $occurrence) => !$occurrence->event->isAllDay());
+            $this->timedOccurrences = $this->occurrences->filter(static fn (OccurrenceModel $occurrence) => !$occurrence->allDay);
         }
 
         return $this->timedOccurrences;

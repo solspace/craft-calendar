@@ -1,11 +1,12 @@
 import type { WeekStartDay } from "@cal/types/config";
 import { localDisplayDateToUtcTimestamp } from "@cal/utils/date";
+import { getDatePickerTranslations } from "@cal/utils/localization";
 import translate from "@cal/utils/translations";
 import clsx, { type ClassValue } from "clsx";
 import { startOfDay } from "date-fns";
 import { type FC, forwardRef, useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { useCloseOnOutsideInteraction } from "./date-manager.hooks";
+import { useCloseOnOutsideInteraction, useDatePopoverPosition } from "./date-manager.hooks";
 import {
   ActionButton,
   BadgeWrapper,
@@ -18,11 +19,13 @@ import {
   FixedDatesToolbar,
   PickerButtonWrapper,
   SectionHeading,
+  SectionInstructions,
 } from "./date-manager.styles";
 import type { PickerTriggerProps } from "./repeat-rules.types";
 
 type FixedDateManagerProps = {
   title: string;
+  description?: string;
   actionLabel: string;
   actionClass?: ClassValue;
   popoverTitle: string;
@@ -37,6 +40,7 @@ type FixedDateManagerProps = {
 
 export const DateManager: FC<FixedDateManagerProps> = ({
   title,
+  description,
   actionLabel,
   actionClass,
   popoverTitle,
@@ -49,8 +53,15 @@ export const DateManager: FC<FixedDateManagerProps> = ({
   onRemove,
 }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const badgeRef = useRef(null);
-  const popoverRef = useRef(null);
+  const badgeWrapperRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const popoverPosition = useDatePopoverPosition(
+    isPopoverOpen,
+    badgeRef,
+    popoverRef,
+    badgeWrapperRef,
+  );
 
   useEffect(() => {
     if (dates.length === 0) {
@@ -66,8 +77,10 @@ export const DateManager: FC<FixedDateManagerProps> = ({
     <FixedDatesSection>
       <SectionHeading>{translate(title)}</SectionHeading>
 
+      {description && <SectionInstructions>{translate(description)}</SectionInstructions>}
+
       <FixedDatesToolbar>
-        <BadgeWrapper>
+        <BadgeWrapper ref={badgeWrapperRef}>
           <CountBadge
             ref={badgeRef}
             type="button"
@@ -85,13 +98,24 @@ export const DateManager: FC<FixedDateManagerProps> = ({
           </CountBadge>
 
           {isPopoverOpen && (
-            <DatesPopover ref={popoverRef}>
+            <DatesPopover
+              ref={popoverRef}
+              style={{
+                top: popoverPosition?.top ?? 0,
+                left: popoverPosition?.left ?? 0,
+                visibility: popoverPosition ? "visible" : "hidden",
+              }}
+            >
               <DatesPopoverTitle>{translate(popoverTitle)}</DatesPopoverTitle>
               <DateList>
                 {dates.map((value) => (
                   <DateItem key={value}>
                     <span>{formatDate(value)}</span>
-                    <button type="button" onClick={() => onRemove(value)}>
+                    <button
+                      type="button"
+                      aria-label={translate("Remove date {date}", { date: formatDate(value) })}
+                      onClick={() => onRemove(value)}
+                    >
                       ×
                     </button>
                   </DateItem>
@@ -103,6 +127,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
 
         <PickerButtonWrapper>
           <DatePicker
+            {...getDatePickerTranslations()}
             selected={null}
             onChange={(date: Date | null) => {
               if (!date) {

@@ -1,5 +1,91 @@
 # Solspace Calendar Changelog
 
+## 6.0.0 - Unreleased
+
+### Added
+- Added a calendar selector on the event editor with a field-mapping slideout. Similar fields are preselected, unmapped content is flagged, and event and occurrence changes move together within a draft.
+- Added an optional **Expiry Date** for events, with Live, Pending, and Expired statuses like Craft entries.
+- Added optional **overlap warnings** for scheduling conflicts within a calendar, with live checks in event editors and conflict indicators in control panel calendar views.
+- Added a **Diagnostics** page with system and compatibility checks, timezone details, Calendar configuration and event statistics, and a copyable support report.
+- Added **Tailwind CSS 4** demo templates alongside the upgraded **Bootstrap 5.3** templates, with a framework selector and Light, Dark, and Auto color modes.
+- Added hourly **Grid views** for Week and Day, including side-by-side positioning for overlapping events and an Agenda/Grid switcher. Grid is the default view.
+- Added editing of single occurrences of repeating events: their own title and custom field values, their own times, a custom slug, or cancelling them. Everything an occurrence doesn't change keeps following its event. Edit occurrences from the control panel calendar or from the event editor's **Schedule Preview** and **Edited occurrences** lists.
+- Added **This and following** for changing a repeating event from one occurrence onward. The event is split into a series: the part from that occurrence keeps the event's ID, URL and relations, and the earlier occurrences become a new event with their changes. The parts of a series can't overlap, so a draft started before its event was split can't bring the earlier occurrences back.
+- Added a code and a slug to every occurrence, so single occurrences can be linked to and looked up.
+- Added `occurrence.content`, which returns an occurrence's own title and field values where it changes them and the event's everywhere else, along with `recurrenceId`, `code`, `slug`, `cancelled`, `isEdited` and `duration` on occurrences.
+- Added the `recurrenceId`, `code`, `slug`, `cancelled`, `search` and `relatedTo` parameters to occurrence queries, and the `seriesId` parameter and `event.series` to events.
+- Added edited occurrences and series to GraphQL.
+- Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
+
+### Changed
+- Expanded the event schedule preview with counts of additional and excluded dates, edited and cancelled occurrences, edits off schedule, and split-series date ranges.
+- Made the publishing calendar clearer on the create/edit event page with a color indicator beside its name and a calendar breadcrumb linking to its events.
+- Clarified labels and descriptions in **General Settings**, **Event Settings**, **Guest Access**, and calendar creation and editing, including site settings, event titles, and ICS exports.
+- Refreshed the Month, Week, Day, Upcoming Events, Calendars, and event detail demos with more consistent navigation, responsive layouts, calendar color accents, and expandable sidebars.
+- Improved the Create Event demo with clearer date, time, and recurrence controls.
+- Updated the custom **FullCalendar** integration demo with refined event styling and dialogs, plus links to FullCalendar and its v6 documentation.
+- Moving, resizing, cancelling or deleting one occurrence in the control panel calendar now changes that occurrence instead of adding excluded and additional dates to its event.
+- Changing an event's schedule now keeps edited occurrences with their dates. When every occurrence moves the same distance, the changes move with them. Otherwise, changes to a date the schedule no longer has are kept but hidden, and the event editor shows which dates are affected before the change is saved.
+- ICS exports now include edited and cancelled occurrences, write additional dates as `RDATE` lines instead of separate events, and write excluded dates and end dates in the same time format as the event's start.
+- The demo templates now show each occurrence's own title and fields, link to occurrences by slug, and show cancelled occurrences.
+- Repeating events without an end now list their occurrences up to ten years ahead.
+- Occurrence queries can only be ordered by occurrence columns and field handles.
+
+### Fixed
+- Fixed hovering over another event replacing the quick creation form and leaving its unsaved event stuck on the calendar.
+- Fixed control panel date and time formats ignoring the user's formatting locale.
+- Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.
+- Fixed multi-day all-day events showing a day short in the control panel calendar and in ICS exports.
+- Fixed dragging a repeating event in the control panel calendar on multi-site installs moving the whole event to the dropped date.
+- Fixed all-day events created in the control panel calendar ending a day late.
+- Fixed resizing a repeating event from its start leaving its excluded and additional dates where they were.
+
+## 5.0.31 - 2026-08-31
+
+### Fixed
+- Fixed an issue when adding additional events in the CP Month, Week, and Day views.
+
+## 5.0.30 - 2026-08-27
+
+### Changed
+- Added deprecation messages for upcoming GraphQL query changes.
+
+### Fixed
+- Fixed an issue where GraphQL event queries could truncate results before applying non-date `orderBy` criteria.
+- Fixed handling of multiple `orderBy` criteria when using Carbon date values.
+
+## 5.0.29 - 2026-07-03
+
+### Added
+- Added the ability to disable drag-and-drop event editing in the control panel Month/Week/Day views.
+
+### Fixed
+- Fixed an issue where the field mapping source for the Freeform element integration was stored as a numeric ID instead of the field handle.
+- Fixed a tooltip positioning issue in the control panel Month/Week/Day views.
+
+## 5.0.28 - 2026-05-08
+
+### Changed
+- Migrated event popups in the CP Month/Week/Day views from **qTip JS** to **Tippy JS** to address some display issues.
+
+### Fixed
+- Fixed an issue where event content could fail to migrate correctly when multiple calendars used different field layouts while running the `calendar/events/fix-titles` and `calendar/events/fix-contents` console commands.
+- Fixed a `TypeError` in `EventQuery::setAllDay()` by allowing `null` values.
+- Fixed an issue where recurring events could be missing from the search index due to a six-month end date limit.
+- Fixed formatting of **Start Date** and **End Date** columns in the CP Events list view for timed vs. all-day events.
+- Fixed an issue where control panel-specific CSS was being registered on non-CP requests.
+
+## 5.0.27 - 2026-03-19
+
+### Changed
+- Replaced the **Title** column in the **Events** control panel page with a new **Event** column that displays the event title and properly respects **Manage Events** permissions.
+
+### Fixed
+- Fixed an issue where sorting by date columns such as _Date Created_ and _Date Updated_ in the **Events** control panel page was not always accurate.
+- Fixed an issue where **Manage Events** permissions did not display event titles correctly in the **Events** control panel page.
+- Fixed an issue where **Start Date** and **End Date** values were not localized correctly in the **Events** control panel page.
+- Fixed styling issues in the Calendar event date picker.
+
 ## 5.0.26 - 2026-01-14
 
 ### Added

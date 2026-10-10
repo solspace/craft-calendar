@@ -8,5 +8,5 @@ export type MiniWidgetConfig = {
   currentSiteId: number;
   currentDay: Date;
 
-  calendars: string[];
+  calendars: string | string[];
 };

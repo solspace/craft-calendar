@@ -45,6 +45,21 @@ class OccurrenceInterface extends AbstractInterface
                         'type' => Type::string(),
                         'description' => 'The occurrence UID',
                     ],
+                    'recurrenceId' => [
+                        'name' => 'recurrenceId',
+                        'type' => DateTime::getType(),
+                        'description' => "The start the event's schedule gives this occurrence. It stays the same when the occurrence is moved.",
+                    ],
+                    'code' => [
+                        'name' => 'code',
+                        'type' => Type::string(),
+                        'description' => 'Short code that identifies the occurrence among all events',
+                    ],
+                    'slug' => [
+                        'name' => 'slug',
+                        'type' => Type::string(),
+                        'description' => "The occurrence's custom slug, or its date followed by its code",
+                    ],
                     'startDate' => [
                         'name' => 'startDate',
                         'type' => DateTime::getType(),
@@ -69,6 +84,26 @@ class OccurrenceInterface extends AbstractInterface
                         'name' => 'allDay',
                         'type' => Type::boolean(),
                         'description' => 'Whether the occurrence is all day',
+                    ],
+                    'multiDay' => [
+                        'name' => 'multiDay',
+                        'type' => Type::boolean(),
+                        'description' => 'Whether the occurrence spans more than one day',
+                    ],
+                    'cancelled' => [
+                        'name' => 'cancelled',
+                        'type' => Type::boolean(),
+                        'description' => 'Whether the occurrence is cancelled',
+                    ],
+                    'isEdited' => [
+                        'name' => 'isEdited',
+                        'type' => Type::boolean(),
+                        'description' => 'Whether the occurrence has its own times or content, or is cancelled',
+                    ],
+                    'content' => [
+                        'name' => 'content',
+                        'type' => OccurrenceContentInterface::getType(),
+                        'description' => "The occurrence's title and custom fields, with its own values where it overrides the event's",
                     ],
                     'event' => [
                         'name' => 'event',

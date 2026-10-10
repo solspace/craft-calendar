@@ -2,6 +2,7 @@ import { Control } from "@cal/components/controls/control";
 import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdown";
 import { Flex } from "@cal/styles/components";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import clsx from "clsx";
@@ -9,7 +10,6 @@ import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MatrixButton, MonthMatrixWrapper } from "./custom.styles";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
-import { Interval } from "./interval";
 import { DayMatrix } from "./matrix.days";
 
 const modeOptions: Option<string>[] = [
@@ -26,18 +26,18 @@ const positionOptions: Option<number>[] = [
 ];
 
 const monthOptions: Option<number>[] = [
-  { value: 1, label: "January" },
-  { value: 2, label: "February" },
-  { value: 3, label: "March" },
-  { value: 4, label: "April" },
+  { value: 1, label: "Jan" },
+  { value: 2, label: "Feb" },
+  { value: 3, label: "Mar" },
+  { value: 4, label: "Apr" },
   { value: 5, label: "May" },
-  { value: 6, label: "June" },
-  { value: 7, label: "July" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "October" },
-  { value: 11, label: "November" },
-  { value: 12, label: "December" },
+  { value: 6, label: "Jun" },
+  { value: 7, label: "Jul" },
+  { value: 8, label: "Aug" },
+  { value: 9, label: "Sep" },
+  { value: 10, label: "Oct" },
+  { value: 11, label: "Nov" },
+  { value: 12, label: "Dec" },
 ];
 
 export const ByYear: FC = () => {
@@ -78,9 +78,7 @@ export const ByYear: FC = () => {
   };
 
   return (
-    <div>
-      <Interval noun="year" />
-
+    <Flex $direction={"column"} style={{ margin: "20px 0 0", width: "100%" }}>
       <Control label="Month">
         <MonthMatrixWrapper>
           {monthOptions.map((month) => {
@@ -109,39 +107,39 @@ export const ByYear: FC = () => {
                   }
                 }}
               >
-                {month.label}
+                {translate(month.label)}
               </MatrixButton>
             );
           })}
         </MonthMatrixWrapper>
       </Control>
 
-      <div className="field">
-        <Dropdown
-          label="Repeat On"
-          value={mode}
-          options={modeOptions}
-          onChange={(value) => {
-            if (value === "WEEKDAY") {
-              setWeekdayMode(selectedMonths, selectedWeekday, selectedPosition);
-            } else {
-              setMonthDayMode(selectedMonths, selectedMonthDays);
-            }
-          }}
-        />
-      </div>
+      <Dropdown
+        translateOptions
+        label="Repeat on"
+        value={mode}
+        options={modeOptions}
+        onChange={(value) => {
+          if (value === "WEEKDAY") {
+            setWeekdayMode(selectedMonths, selectedWeekday, selectedPosition);
+          } else {
+            setMonthDayMode(selectedMonths, selectedMonthDays);
+          }
+        }}
+      />
 
       {mode === "MONTHDAY" && (
         <DayMatrix
-          label="Days of month"
+          label="Days of Month"
           values={selectedMonthDays}
           onChange={(values) => setMonthDayMode(selectedMonths, values)}
         />
       )}
 
       {mode === "WEEKDAY" && (
-        <Flex className="field">
+        <Flex>
           <Dropdown
+            translateOptions
             label="Position"
             value={selectedPosition}
             options={positionOptions}
@@ -150,6 +148,7 @@ export const ByYear: FC = () => {
             }
           />
           <Dropdown
+            translateOptions
             label="Day"
             value={selectedWeekday}
             options={weekdayChoices.map((choice) => ({
@@ -160,6 +159,6 @@ export const ByYear: FC = () => {
           />
         </Flex>
       )}
-    </div>
+    </Flex>
   );
 };

@@ -1,0 +1,31 @@
+{% for occurrence in occurrences %}
+    {% set event = occurrence.event %}
+    {% set content = occurrence.content %}
+
+    <li class="d-flex align-items-start gap-3 py-3{{ not loop.first ? ' border-top' }}">
+        <time class="calendar-upcoming-date flex-shrink-0 rounded-3 bg-body-secondary text-center py-1"
+            datetime="{{ occurrence.startDate.format('Y-m-d') }}">
+            <span class="d-block small text-body-secondary">{{ occurrence.startDate.format('M') }}</span>
+            <span class="d-block fs-5 fw-semibold lh-1">{{ occurrence.startDate.format('j') }}</span>
+            <span class="d-block small text-body-secondary">{{ occurrence.startDate.format('Y') }}</span>
+        </time>
+        <div class="calendar-upcoming-info pt-1">
+            <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
+                class="fw-semibold link-body-emphasis link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+                {% include "demo/bootstrap/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled, badge: true} only %}
+            </a>
+            <div class="small text-body-secondary mt-1">
+                <span class="far fa-clock" aria-hidden="true"></span>
+                {% if occurrence.allDay %}
+                    All day
+                {% elseif occurrence.multiDay %}
+                    {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('M j, g:ia') }}
+                {% else %}
+                    {{ occurrence.startDate.format('g:ia') }} – {{ occurrence.endDate.format('g:ia') }}
+                {% endif %}
+            </div>
+        </div>
+    </li>
+{% else %}
+    <li class="py-3 text-body-secondary">No upcoming events in the next six months.</li>
+{% endfor %}

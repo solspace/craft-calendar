@@ -1,6 +1,6 @@
 {% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
 {% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
-{% set dateTimeFormat = dateFormat ~ " \\a\\t " ~ timeFormat %}
+{% set dateTimeFormat = craft.app.locale.getDateTimeFormat("short", "php") %}
 
 {% set occurrences = craft.calendar.occurrences({
     rangeStart: now,

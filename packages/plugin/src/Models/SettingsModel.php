@@ -11,9 +11,11 @@ class SettingsModel extends Model
     public const DEFAULT_TIME_INTERVAL = 30;
     public const DEFAULT_DURATION = 60;
     public const DEFAULT_ALL_DAY = false;
-    public const DEFAULT_SHOW_MINI_CAL = true;
     public const DEFAULT_SHOW_DISABLED_EVENTS = true;
-    public const DEFAULT_VIEW = Calendar::VIEW_DASHBOARD;
+    public const DEFAULT_VIEW = Calendar::VIEW_OVERVIEW;
+    public const DEFAULT_CALENDAR_VIEW = 'month';
+    public const CALENDAR_VIEWS = ['day', 'week', 'month', 'year', 'agenda'];
+    public const DEFAULT_IS_DRAG_AND_DROP_ENABLED = true;
     public const DEFAULT_ALLOW_QUICK_CREATE = true;
     public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
     public const DEFAULT_FIRST_DAY_OF_WEEK = -1;
@@ -30,15 +32,20 @@ class SettingsModel extends Model
 
     public ?bool $allDay = null;
 
-    public ?bool $demoBannerDisabled = null;
-
-    public array|bool|null $showMiniCal = null;
+    public bool $showOverlapWarnings = false;
 
     public array|bool|null $showDisabledEvents = null;
 
+    public bool $showCancelledEvents = true;
+
     public array|bool|null $quickCreateEnabled = null;
+    public array|bool|null $isDragAndDropEnabled = null;
 
     public ?string $defaultView = null;
+
+    public string $defaultCalendarView = self::DEFAULT_CALENDAR_VIEW;
+
+    public array|string $enabledCalendarViews = self::CALENDAR_VIEWS;
 
     public array|bool|null $guestAccess = null;
 
@@ -98,11 +105,10 @@ class SettingsModel extends Model
         $this->timeInterval = self::DEFAULT_TIME_INTERVAL;
         $this->eventDuration = self::DEFAULT_DURATION;
         $this->allDay = self::DEFAULT_ALL_DAY;
-        $this->demoBannerDisabled = null;
-        $this->showMiniCal = self::DEFAULT_SHOW_MINI_CAL;
         $this->defaultView = self::DEFAULT_VIEW;
         $this->guestAccess = null;
         $this->quickCreateEnabled = self::DEFAULT_ALLOW_QUICK_CREATE;
+        $this->isDragAndDropEnabled = self::DEFAULT_IS_DRAG_AND_DROP_ENABLED;
         $this->showDisabledEvents = self::DEFAULT_SHOW_DISABLED_EVENTS;
         $this->authoredEventEditOnly = self::DEFAULT_AUTHORED_EVENT_EDIT_ONLY;
         $this->firstDayOfWeek = self::DEFAULT_FIRST_DAY_OF_WEEK;
@@ -124,18 +130,63 @@ class SettingsModel extends Model
         return self::$eventDurations;
     }
 
-    public function isDemoBannerDisabled(): bool
-    {
-        return (bool) $this->demoBannerDisabled;
-    }
-
-    public function isMiniCalEnabled(): string
-    {
-        return (bool) $this->showMiniCal;
-    }
-
     public function getFirstDayOfWeek(): int
     {
         return (int) $this->firstDayOfWeek;
+    }
+
+    public function getDefaultCalendarView(): string
+    {
+        $enabled = $this->getEnabledCalendarViews();
+
+        if (\in_array($this->defaultCalendarView, $enabled, true)) {
+            return $this->defaultCalendarView;
+        }
+
+        return \in_array(self::DEFAULT_CALENDAR_VIEW, $enabled, true)
+            ? self::DEFAULT_CALENDAR_VIEW
+            : $enabled[0];
+    }
+
+    public function getEnabledCalendarViews(): array
+    {
+        $enabled = \is_array($this->enabledCalendarViews)
+            ? array_values(array_filter(self::CALENDAR_VIEWS, fn (string $view) => \in_array($view, $this->enabledCalendarViews, true)))
+            : [];
+
+        return $enabled ?: self::CALENDAR_VIEWS;
+    }
+
+    public function validateEnabledCalendarViews(string $attribute): void
+    {
+        if (!\is_array($this->enabledCalendarViews) || !$this->enabledCalendarViews) {
+            $this->addError($attribute, Calendar::t('Select at least one calendar tab.'));
+
+            return;
+        }
+
+        foreach ($this->enabledCalendarViews as $view) {
+            if (!\in_array($view, self::CALENDAR_VIEWS, true)) {
+                $this->addError($attribute, Calendar::t('Select valid calendar tabs.'));
+
+                return;
+            }
+        }
+    }
+
+    public function validateDefaultCalendarView(string $attribute): void
+    {
+        if (!\in_array($this->defaultCalendarView, $this->getEnabledCalendarViews(), true)) {
+            $this->addError($attribute, Calendar::t('Choose a default tab that is enabled.'));
+        }
+    }
+
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            [['defaultCalendarView'], 'in', 'range' => self::CALENDAR_VIEWS, 'skipOnEmpty' => false],
+            [['enabledCalendarViews'], 'validateEnabledCalendarViews', 'skipOnEmpty' => false],
+            [['defaultCalendarView'], 'validateDefaultCalendarView', 'skipOnEmpty' => false],
+        ]);
     }
 }

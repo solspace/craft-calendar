@@ -4,7 +4,7 @@ import {
   UTCifyDateOnly,
   utcTimestampToLocalDisplayDate,
 } from "@cal/utils/date";
-import { normalizeRfcLine } from "@cal/utils/rrule";
+import { getRRuleSetFromString, normalizeRfcLine } from "@cal/utils/rrule";
 import { Frequency, type Options, RRule, RRuleSet } from "rrule";
 import type { Event } from "../types";
 
@@ -61,7 +61,7 @@ export const resetByRulesForFreq = (state: EventState, freq: Frequency) => {
 
 export const rebuildRRule = (state: EventState) => {
   const baseRRule = buildBaseRRule(state);
-  const fixedDateLines = extractFixedDateLines(state.rrule, state.allDay);
+  const fixedDateLines = extractFixedDateLines(state.rrule, state);
 
   if (!baseRRule && fixedDateLines.length === 0) {
     state.rrule = undefined;
@@ -77,6 +77,15 @@ export const rebuildRRule = (state: EventState) => {
 
   state.rrule = [...buildBaseLines(state, baseRRule), ...fixedDateLines].join("\n");
 };
+
+export const removeRDates = (rruleString?: string): string | undefined => {
+  const lines = rruleString?.split(/\r?\n/).filter((line) => !line.trim().startsWith("RDATE"));
+
+  return lines?.length ? lines.join("\n") : undefined;
+};
+
+export const removeMatchingDate = (dates: Date[], timestamp: number): Date[] =>
+  dates.filter((date) => date.getTime() !== timestamp);
 
 const buildBaseRRule = (state: EventState): RRule | null => {
   const { repeatEndType, allDay, interval, count } = state;
@@ -220,7 +229,22 @@ const buildBaseLines = (
   return serializeRfcString(startSet.toString(), state.allDay).split("\n");
 };
 
-const extractFixedDateLines = (rruleString: string | undefined, allDay: boolean): string[] => {
+const normalizeFixedDateLine = (line: string, state: EventState): string => {
+  const source = getRRuleSetFromString(line);
+  const fixedDates = new RRuleSet();
+
+  // Fixed dates follow the event's wall time, including when returning from all-day mode.
+  source?.rdates().forEach((date) => {
+    fixedDates.rdate(buildOccurrenceDateForState(state, date.getTime() / 1000));
+  });
+  source?.exdates().forEach((date) => {
+    fixedDates.exdate(buildOccurrenceDateForState(state, date.getTime() / 1000));
+  });
+
+  return serializeRfcString(fixedDates.toString(), state.allDay);
+};
+
+const extractFixedDateLines = (rruleString: string | undefined, state: EventState): string[] => {
   if (!rruleString) {
     return [];
   }
@@ -234,7 +258,7 @@ const extractFixedDateLines = (rruleString: string | undefined, allDay: boolean)
   if (hasBaseRule) {
     return lines
       .filter((line) => line.startsWith("RDATE") || line.startsWith("EXDATE"))
-      .map((line) => normalizeRfcLine(line, allDay));
+      .map((line) => normalizeFixedDateLine(line, state));
   }
 
   const dtstartLine = lines.find((line) => line.startsWith("DTSTART"));
@@ -246,7 +270,7 @@ const extractFixedDateLines = (rruleString: string | undefined, allDay: boolean)
     }
 
     if (!dtstartValue || !line.startsWith("RDATE")) {
-      return [normalizeRfcLine(line, allDay)];
+      return [normalizeFixedDateLine(line, state)];
     }
 
     const [property, rawValue = ""] = line.split(":", 2);
@@ -260,7 +284,7 @@ const extractFixedDateLines = (rruleString: string | undefined, allDay: boolean)
       return [];
     }
 
-    return [normalizeRfcLine(`${property}:${values.join(",")}`, allDay)];
+    return [normalizeFixedDateLine(`${property}:${values.join(",")}`, state)];
   });
 };
 

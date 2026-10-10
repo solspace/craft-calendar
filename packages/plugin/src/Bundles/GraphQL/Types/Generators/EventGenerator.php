@@ -33,6 +33,29 @@ class EventGenerator extends AbstractGenerator
         return 'The Calendar Event entity';
     }
 
+    public static function getMutationContentFields(CalendarModel $context): array
+    {
+        $fieldLayout = $context->getFieldLayout();
+        if (!$fieldLayout) {
+            return [];
+        }
+
+        try {
+            $schema = \Craft::$app->getGql()->getActiveSchema();
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $contentFields = [];
+        foreach ($fieldLayout->getCustomFields() as $contentField) {
+            if ($contentField->includeInGqlSchema($schema)) {
+                $contentFields[] = $contentField;
+            }
+        }
+
+        return $contentFields;
+    }
+
     public static function generateTypes(mixed $context = null): array
     {
         $calendars = Calendar::getInstance()->calendars->getAllCalendars();

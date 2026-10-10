@@ -1,10 +1,12 @@
 import { localDisplayDateToUtcTimestamp, utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { getDatePickerTranslations } from "@cal/utils/localization";
 import { type FC, useEffect, useState } from "react";
 import DatePickerControl, { type DatePickerProps } from "react-datepicker";
 import styled from "styled-components";
 import { Control, type ControlProps } from "../control";
 
-import CalendarIcon from "./calendar.icon.svg";
+import { CalendarIcon } from "./calendar.icon";
+import { datePickerTheme } from "./date-picker.theme";
 import "react-datepicker/dist/react-datepicker.css";
 
 export { CalendarIcon as Icon };
@@ -15,7 +17,14 @@ type Props = {
   datePickerProps?: Omit<DatePickerProps, "onChange">;
 } & ControlProps;
 
-export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerProps }) => {
+export const DatePicker: FC<Props> = ({
+  value,
+  onChange,
+  label,
+  id,
+  required,
+  datePickerProps,
+}) => {
   const [date, setDate] = useState<Date | null>(
     value !== null ? utcTimestampToLocalDisplayDate(value) : null,
   );
@@ -25,11 +34,14 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
   }, [value]);
 
   return (
-    <Control label={label} id={id}>
+    <Control label={label} id={id} required={required} style={{ margin: 0 }}>
       <DatePickerWrapper>
         {/* @ts-ignore cannot get the types to work well when passing props */}
         <DatePickerControl
+          {...getDatePickerTranslations()}
           {...datePickerProps}
+          id={id ?? datePickerProps?.id}
+          ariaRequired={required ? "true" : undefined}
           wrapperClassName="fullwidth"
           className="text fullwidth"
           selected={date}
@@ -46,14 +58,25 @@ export const DatePicker: FC<Props> = ({ value, onChange, label, id, datePickerPr
 };
 
 const DatePickerWrapper = styled.div`
+  ${datePickerTheme}
+
   .react-datepicker {
     &-popper {
+      z-index: 13;
       width: 327px;
+
+      &:has(.react-datepicker__time-container) {
+        width: 380px;
+      }
     }
 
     &__header {
       border-top-right-radius: 0.3rem;
       border-top-left-radius: 0.3rem;
+    }
+
+    &__current-month {
+      display: none;
     }
 
     &__today-button, &__time {

@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Models;
 use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -162,6 +163,45 @@ class CalendarModel extends Model implements \JsonSerializable
     }
 
     /**
+     * Shared ICS mappings that can be edited as text in the quick-create popup.
+     * Other field types remain available for ICS exports.
+     *
+     * @return array<string, string>
+     */
+    public function getQuickCreateFieldHandles(): array
+    {
+        $handles = [];
+        $layout = $this->getFieldLayout();
+        foreach (['location' => $this->locationFieldHandle, 'description' => $this->descriptionFieldHandle] as $key => $handle) {
+            if ($handle && $layout?->getFieldByHandle($handle) instanceof PlainText) {
+                $handles[$key] = $handle;
+            }
+        }
+
+        return $handles;
+    }
+
+    /**
+     * Required flags belong to field layout elements, not the shared Craft field.
+     *
+     * @return array<string, bool>
+     */
+    public function getQuickCreateRequiredFields(): array
+    {
+        $handles = $this->getQuickCreateFieldHandles();
+        $required = array_fill_keys(array_keys($handles), false);
+        foreach ($this->getFieldLayout()?->getCustomFieldElements() ?? [] as $element) {
+            foreach ($handles as $key => $handle) {
+                if ($element->getField()->handle === $handle) {
+                    $required[$key] = (bool) $element->required;
+                }
+            }
+        }
+
+        return $required;
+    }
+
+    /**
      * Returns the owner's field layout.
      */
     public function getFieldLayout(): ?FieldLayout
@@ -245,6 +285,16 @@ class CalendarModel extends Model implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return $this->getConfig();
+    }
+
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'name' => Calendar::t('Name'),
+            'handle' => Calendar::t('Handle'),
+            'titleFormat' => \Craft::t('app', 'Title Format'),
+            'titleLabel' => \Craft::t('app', 'Title Field Label'),
+        ]);
     }
 
     public function rules(): array

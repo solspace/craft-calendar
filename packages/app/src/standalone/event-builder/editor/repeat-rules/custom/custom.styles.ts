@@ -6,15 +6,16 @@ const ButtonBase = styled.button`
   width: 100%;
   padding: 0.5rem;
 
-  background-color: var(--gray-100);
-  border-right: 1px solid var(--gray-300);
-  border-bottom: 1px solid var(--gray-300);
+  background-color: var(--gray-150);
+  border-right: 1px solid var(--gray-050);
+  border-bottom: 1px solid var(--gray-050);
   border-left: none;
   border-top: none;
 `;
 
 export const MatrixButton = styled(ButtonBase)`
   cursor: pointer;
+  width: 100%;
 
   &:hover {
     background: var(--gray-200);
@@ -22,7 +23,7 @@ export const MatrixButton = styled(ButtonBase)`
 
   &.active {
     color: white;
-    background: var(--teal-600);
+    background: var(--gray-600);
   }
 `;
 
@@ -38,9 +39,9 @@ const MatrixWrapper = styled.div`
   gap: 0;
   padding: 0;
 
-  background: var(--gray-300);
-  border: 1px solid var(--gray-300);
-  border-radius: ${RADIUS};
+  background: var(--button-bg);
+  border: 1px solid var(--gray-050);
+  border-radius: var(--button-border-radius);
 
   &, &:after, &:before {
     box-sizing: initial !important;
@@ -52,19 +53,19 @@ export const DayMatrixWrapper = styled(MatrixWrapper)`
 
   ${ButtonBase} {
     &:first-child {
-      border-top-left-radius: ${RADIUS};
+      border-top-left-radius: var(--button-border-radius);
     }
 
     &:nth-child(7) {
-      border-top-right-radius: ${RADIUS};
+      border-top-right-radius: var(--button-border-radius);
     }
 
     &:last-child {
-      border-bottom-right-radius: ${RADIUS};
+      border-bottom-right-radius: var(--button-border-radius);
     }
 
     &:nth-child(29) {
-      border-bottom-left-radius: ${RADIUS};
+      border-bottom-left-radius: var(--button-border-radius);
     }
 
     &:nth-child(7n) {
@@ -78,6 +79,7 @@ export const DayMatrixWrapper = styled(MatrixWrapper)`
 `;
 
 export const WeekMatrixWrapper = styled(MatrixWrapper)`
+  display: grid;
   grid-template-columns: repeat(7, 1fr);
 
   ${ButtonBase} {

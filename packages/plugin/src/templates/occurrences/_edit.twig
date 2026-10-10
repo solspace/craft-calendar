@@ -1,0 +1,57 @@
+{# The occurrence slideout: the event's field layout, where each field has an Override toggle #}
+{% import '_includes/forms' as forms %}
+
+<div id="{{ id }}" class="calendar-occurrence-editor" data-event-id="{{ event.id }}" data-site-id="{{ event.siteId }}" data-recurrence-id="{{ recurrenceId }}">
+    {{ hiddenInput('eventId', event.id) }}
+    {{ hiddenInput('siteId', event.siteId) }}
+    {{ hiddenInput('recurrenceId', recurrenceId) }}
+
+    {% if isDraft %}
+        <p class="notice has-icon">
+            <span class="icon" aria-hidden="true"></span>
+            <span>{{ 'Changes are saved into the event’s draft, and go live when the draft is applied.'|t('calendar') }}</span>
+        </p>
+    {% endif %}
+
+    {% if isOrphaned %}
+        <p class="warning has-icon">
+            <span class="icon" aria-hidden="true"></span>
+            <span>{{ 'The event’s schedule no longer includes this date, so this occurrence isn’t shown anywhere.'|t('calendar') }}</span>
+        </p>
+    {% endif %}
+
+    {% include 'calendar/occurrences/_meta' with meta only %}
+
+    {% if showOverlapWarnings %}
+        <div data-overlap-warning role="status" aria-live="polite"></div>
+    {% endif %}
+
+    {% for tab in tabs %}
+        <div id="{{ tab.id }}" class="flex-fields{{ not loop.first ? ' hidden' }}" data-layout-tab="{{ tab.uid }}">
+            {% for row in tab.rows %}
+                {% if row.html is defined %}
+                    {{ row.html|raw }}
+                {% else %}
+                    <div class="calendar-occurrence-field" data-calendar-occurrence-field="{{ row.key }}"{{ row.copiedOnSave ? ' data-calendar-copied-on-save' }}>
+                        <div class="calendar-occurrence-field-toggle">
+                            {{ forms.lightswitch({
+                                id: "#{id}-override-#{row.key}",
+                                labelId: "#{id}-override-label-#{row.key}",
+                                name: "overrides[#{row.key}]",
+                                on: row.overridden,
+                                small: true,
+                            }) }}
+                            <label id="{{ id }}-override-label-{{ row.key }}" for="{{ id }}-override-{{ row.key }}">{{ 'Override'|t('calendar') }}</label>
+                        </div>
+                        <fieldset class="calendar-occurrence-field-own{{ not row.overridden ? ' hidden' }}"{{ not row.overridden ? ' disabled' }}>
+                            {{ row.ownHtml|raw }}
+                        </fieldset>
+                        <div class="calendar-occurrence-field-inherited{{ row.overridden ? ' hidden' }}">
+                            {{ row.inheritedHtml|raw }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>

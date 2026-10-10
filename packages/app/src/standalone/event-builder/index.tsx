@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 
+import { mountCalendarTransferMapping, mountCalendarTransferSelect } from "./calendar-transfer";
 import { EventBuilder } from "./event-builder";
 import { persistStateToInputs } from "./event-builder.persistence";
 import { createEventBuilderStore } from "./store/store";
@@ -31,12 +32,18 @@ const mountEventBuilder = (container: HTMLElement): void => {
 
   root.render(
     <Provider store={store}>
-      <EventBuilder />
+      <EventBuilder context={config.context} />
     </Provider>,
   );
 };
 
 const scanForBuilders = (root: ParentNode = document): void => {
+  root
+    .querySelectorAll<HTMLElement>("[data-calendar-transfer-select]")
+    .forEach(mountCalendarTransferSelect);
+  root
+    .querySelectorAll<HTMLElement>("[data-calendar-transfer]")
+    .forEach(mountCalendarTransferMapping);
   root
     .querySelectorAll<HTMLElement>("[data-event-builder]:not([data-event-builder-mounted])")
     .forEach(mountEventBuilder);
@@ -52,6 +59,8 @@ const startObserver = (): void => {
           return;
         }
 
+        if (node.matches("[data-calendar-transfer-select]")) mountCalendarTransferSelect(node);
+        if (node.matches("[data-calendar-transfer]")) mountCalendarTransferMapping(node);
         if (node.matches("[data-event-builder]")) {
           mountEventBuilder(node);
         }

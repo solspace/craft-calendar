@@ -6,7 +6,6 @@ import type { AppDispatch } from "@event-builder/store/store";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getWeekdayChoiceValue, getWeekdaysForChoice, weekdayChoices } from "./custom.utils";
-import { Interval } from "./interval";
 import { DayMatrix } from "./matrix.days";
 
 const modeOptions: Option<string>[] = [
@@ -56,40 +55,40 @@ export const ByMonth: FC = () => {
   };
 
   return (
-    <div>
-      <Interval noun="month" />
-      <div className="field">
-        <Dropdown
-          label="Repeat On"
-          value={mode}
-          options={modeOptions}
-          onChange={(value) => {
-            if (value === "WEEKDAY") {
-              setWeekdayMode(selectedWeekday, selectedPosition);
-            } else {
-              setMonthDayMode(selectedMonthDays);
-            }
-          }}
-        />
-      </div>
+    <Flex $direction={"column"} style={{ margin: "20px 0 0", width: "100%" }}>
+      <Dropdown
+        translateOptions
+        label="Repeat on"
+        value={mode}
+        options={modeOptions}
+        onChange={(value) => {
+          if (value === "WEEKDAY") {
+            setWeekdayMode(selectedWeekday, selectedPosition);
+          } else {
+            setMonthDayMode(selectedMonthDays);
+          }
+        }}
+      />
 
       {mode === "MONTHDAY" && (
         <DayMatrix
-          label={"Days of month"}
+          label={"Days of Month"}
           values={selectedMonthDays}
           onChange={(values) => setMonthDayMode(values)}
         />
       )}
 
       {mode === "WEEKDAY" && (
-        <Flex className="field">
+        <Flex>
           <Dropdown
+            translateOptions
             label="Position"
             value={selectedPosition}
             options={positionOptions}
             onChange={(value) => setWeekdayMode(selectedWeekday, Number.parseInt(value, 10))}
           />
           <Dropdown
+            translateOptions
             label="Day"
             value={selectedWeekday}
             options={weekdayChoices.map((choice) => ({
@@ -100,6 +99,6 @@ export const ByMonth: FC = () => {
           />
         </Flex>
       )}
-    </div>
+    </Flex>
   );
 };

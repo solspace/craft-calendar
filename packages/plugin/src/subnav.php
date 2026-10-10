@@ -5,10 +5,10 @@ use Solspace\Calendar\Library\Helpers\PermissionHelper;
 
 $subnav['overview'] = [
     'label' => Calendar::t('Overview'),
-    'url' => 'calendar',
+    'url' => 'calendar/overview',
 ];
 
-if (PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true)) {
+if (PermissionHelper::canAccessEvents()) {
     $subnav['events'] = [
         'label' => Calendar::t('Events'),
         'url' => 'calendar/events',
@@ -20,7 +20,7 @@ if (version_compare(Craft::$app->getVersion(), '3.1', '>=')) {
     $isAllowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 }
 
-if (PermissionHelper::checkPermission(Calendar::PERMISSION_CALENDARS) && $isAllowAdminChanges) {
+if (PermissionHelper::canAccessCalendars() && $isAllowAdminChanges) {
     $subnav['calendars'] = [
         'label' => Calendar::t('Calendars'),
         'url' => 'calendar/calendars',
@@ -31,6 +31,13 @@ if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS) && $isAllow
     $subnav['settings'] = [
         'label' => Calendar::t('Settings'),
         'url' => 'calendar/settings',
+    ];
+}
+
+if (PermissionHelper::checkPermission(Calendar::PERMISSION_SETTINGS) && !$isAllowAdminChanges) {
+    $subnav['settings'] = [
+        'label' => Calendar::t('Diagnostics'),
+        'url' => 'calendar/settings/diagnostics',
     ];
 }
 

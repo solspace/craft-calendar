@@ -1,0 +1,7 @@
+.menu.calendar-event-action-menu ul li > .menu-item:hover, .menu.calendar-event-action-menu ul li > .menu-item.hover {
+  background-color: #f3f7fc;
+  color: #3f4d5a;
+}
+.menu.calendar-event-action-menu ul li > .menu-item:hover.error, .menu.calendar-event-action-menu ul li > .menu-item.hover.error {
+  color: var(--error-color, var(--fg-error));
+}

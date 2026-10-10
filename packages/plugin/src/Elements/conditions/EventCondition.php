@@ -10,6 +10,7 @@ class EventCondition extends ElementCondition
     protected function conditionRuleTypes(): array
     {
         $conditions = parent::conditionRuleTypes();
+        $conditions[] = ExpiryDateConditionRule::class;
 
         // Hide Author Conditions from Craft Solo
         if (\Craft::Solo === \Craft::$app->getEdition()) {
@@ -25,6 +26,7 @@ class EventCondition extends ElementCondition
     protected function selectableConditionRules(): array
     {
         $conditions = parent::selectableConditionRules();
+        $conditions[] = ExpiryDateConditionRule::class;
 
         // Hide Author Conditions from Craft Solo
         if (\Craft::Solo === \Craft::$app->getEdition()) {

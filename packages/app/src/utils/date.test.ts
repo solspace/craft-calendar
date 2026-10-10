@@ -4,6 +4,7 @@ import {
   shiftUtcDateByDays,
   UTCify,
   utcDateKey,
+  utcDateTimeString,
   utcTimestampToLocalDisplayDate,
   utcToLocalDisplayDate,
 } from "./date";
@@ -57,6 +58,15 @@ describe("date utils", () => {
       expect(date.getDate()).toBe(20);
       expect(date.getHours()).toBe(6);
     });
+
+    it("should create local display dates from offset strings without shifting floating wall time", () => {
+      const date = utcToLocalDisplayDate("2024-01-20T06:00:00+02:00");
+
+      expect(date.getFullYear()).toBe(2024);
+      expect(date.getMonth()).toBe(0);
+      expect(date.getDate()).toBe(20);
+      expect(date.getHours()).toBe(6);
+    });
   });
 
   describe("utcDateKey", () => {
@@ -64,6 +74,12 @@ describe("date utils", () => {
       expect(utcDateKey(new Date("2024-01-20T06:00:00Z"))).toBe("2024-01-20");
       expect(utcDateKey(new Date("2024-01-20T23:59:59Z"))).toBe("2024-01-20");
       expect(utcDateKey(new Date("2024-01-21T00:00:00+02:00"))).toBe("2024-01-20");
+    });
+  });
+
+  describe("utcDateTimeString", () => {
+    it("should serialize UTC-carrier dates as offset-free floating date times", () => {
+      expect(utcDateTimeString(new Date("2024-01-20T06:30:15Z"))).toBe("2024-01-20T06:30:15");
     });
   });
 

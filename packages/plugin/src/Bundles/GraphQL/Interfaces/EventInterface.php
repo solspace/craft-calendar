@@ -9,6 +9,8 @@ use Solspace\Calendar\Bundles\GraphQL\Types\Generators\EventGenerator;
 
 class EventInterface extends AbstractInterface
 {
+    public const RRULE_DESCRIPTION = "The event's RFC 5545 recurrence rule. Include a DTSTART line and one or more recurrence lines. Example: `DTSTART:20260714T090000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=6`. All-day example: `DTSTART;VALUE=DATE:20260714\nRRULE:FREQ=DAILY;COUNT=3`. You can also include `RDATE` and `EXDATE` lines.";
+
     public static function getName(): string
     {
         return 'CalendarEventInterface';
@@ -46,6 +48,11 @@ class EventInterface extends AbstractInterface
                         'type' => Type::string(),
                         'description' => "The event's UUID",
                     ],
+                    'draftId' => [
+                        'name' => 'draftId',
+                        'type' => Type::int(),
+                        'description' => 'The draft ID from the drafts table.',
+                    ],
                     'typeHandle' => [
                         'name' => 'typeHandle',
                         'type' => Type::string(),
@@ -55,6 +62,11 @@ class EventInterface extends AbstractInterface
                         'name' => 'postDate',
                         'type' => Type::string(),
                         'description' => "The event's Post Date",
+                    ],
+                    'expiryDate' => [
+                        'name' => 'expiryDate',
+                        'type' => DateTime::getType(),
+                        'description' => 'When the event expires. Null if it does not expire.',
                     ],
                     'siteId' => [
                         'name' => 'siteId',
@@ -70,6 +82,16 @@ class EventInterface extends AbstractInterface
                         'name' => 'calendar',
                         'type' => CalendarInterface::getType(),
                         'description' => "The event's Calendar",
+                    ],
+                    'seriesId' => [
+                        'name' => 'seriesId',
+                        'type' => Type::int(),
+                        'description' => 'Shared by the events that changing an event from one occurrence onward split it into. Null for an event that was never split.',
+                    ],
+                    'series' => [
+                        'name' => 'series',
+                        'type' => Type::listOf(self::getType()),
+                        'description' => "Every event in the event's series, in order of their start. An event that was never split is a series of one.",
                     ],
                     'title' => [
                         'name' => 'title',
@@ -144,7 +166,7 @@ class EventInterface extends AbstractInterface
                     'rrule' => [
                         'name' => 'rrule',
                         'type' => Type::string(),
-                        'description' => "The event's RRule",
+                        'description' => self::RRULE_DESCRIPTION,
                     ],
                     'freq' => [
                         'name' => 'freq',

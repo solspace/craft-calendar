@@ -1,14 +1,22 @@
-import { calendarEvents } from "@cal/pages/calendar/calendar.events";
+import { createCalendarEventsSource } from "@cal/pages/calendar/calendar.events";
+import { getCalendarTranslations } from "@cal/utils/localization";
 import dayGrid from "@fullcalendar/daygrid";
 import FullCalendar from "@fullcalendar/react";
 import timeGrid from "@fullcalendar/timegrid";
 import { AgendaWidgetWrapper } from "@widgets/agenda/agenda.styles";
-import { type FC, useLayoutEffect, useRef } from "react";
+import { type FC, useLayoutEffect, useMemo, useRef } from "react";
 import type { AgendaWidgetConfig } from "./agenda.types";
+
+const NO_HIDDEN_CALENDARS = new Set<number>();
 
 export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => {
   const calendar = useRef<FullCalendar>(null);
-  const { formats, view } = config;
+  const { formats, view, currentSiteId, calendars } = config;
+
+  const events = useMemo(
+    () => createCalendarEventsSource(NO_HIDDEN_CALENDARS, currentSiteId, calendars),
+    [currentSiteId, calendars],
+  );
 
   let initialView: string;
   switch (view) {
@@ -34,6 +42,7 @@ export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => 
   return (
     <AgendaWidgetWrapper>
       <FullCalendar
+        {...getCalendarTranslations()}
         ref={calendar}
         themeSystem="bootstrap5"
         plugins={[dayGrid, timeGrid]}
@@ -46,7 +55,7 @@ export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => 
         fixedWeekCount
         dayMaxEventRows
         height={500}
-        events={calendarEvents}
+        events={events}
         eventTimeFormat={formats.time.short.js}
         headerToolbar={{
           start: "title",

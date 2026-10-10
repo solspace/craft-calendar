@@ -65,6 +65,71 @@ class DateHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider allDayEndDataProvider
+     */
+    public function testAllDayEndFromExclusive(string $start, string $exclusiveEnd, string $expected): void
+    {
+        $end = DateHelper::allDayEndFromExclusive(new Carbon($start, 'UTC'), new Carbon($exclusiveEnd, 'UTC'));
+
+        self::assertSame($expected, $end->toDateTimeString());
+    }
+
+    public function allDayEndDataProvider(): array
+    {
+        return [
+            'one day' => ['2026-06-12 00:00:00', '2026-06-13 00:00:00', '2026-06-12 23:59:59'],
+            'two days' => ['2026-06-12 00:00:00', '2026-06-14 00:00:00', '2026-06-13 23:59:59'],
+            'no end after the start' => ['2026-06-12 00:00:00', '2026-06-12 00:00:00', '2026-06-12 23:59:59'],
+        ];
+    }
+
+    public function testAllDayExclusiveEndIsTheDayAfterTheLastDay(): void
+    {
+        self::assertSame('2026-06-14 00:00:00', DateHelper::allDayExclusiveEnd(new Carbon('2026-06-13 23:59:59', 'UTC'))->toDateTimeString());
+        self::assertSame('2026-06-14 00:00:00', DateHelper::allDayExclusiveEnd(new Carbon('2026-06-13 00:00:00', 'UTC'))->toDateTimeString());
+    }
+
+    /**
+     * @dataProvider multiDayDataProvider
+     */
+    public function testIsMultiDay(string $start, string $end, bool $expected): void
+    {
+        self::assertSame($expected, DateHelper::isMultiDay(new Carbon($start, 'UTC'), new Carbon($end, 'UTC'), 2));
+    }
+
+    public function multiDayDataProvider(): array
+    {
+        return [
+            'same day' => ['2026-11-09 10:00:00', '2026-11-09 23:00:00', false],
+            'ends before the overlap threshold' => ['2026-11-09 22:00:00', '2026-11-10 01:30:00', false],
+            'ends at the overlap threshold' => ['2026-11-09 22:00:00', '2026-11-10 02:00:00', false],
+            'ends after the overlap threshold' => ['2026-11-09 22:00:00', '2026-11-10 02:30:00', true],
+            'spans more than a day' => ['2026-11-09 22:00:00', '2026-11-11 01:00:00', true],
+        ];
+    }
+
+    /**
+     * @dataProvider floatingCarbonDataProvider
+     */
+    public function testParseFloatingCarbonPreservesWallTime(mixed $input, string $expected): void
+    {
+        self::assertSame($expected, DateHelper::parseFloatingCarbon($input)->toDateTimeString());
+    }
+
+    public function floatingCarbonDataProvider(): array
+    {
+        return [
+            ['2024-01-20', '2024-01-20 00:00:00'],
+            ['2024-01-20T06:30:15', '2024-01-20 06:30:15'],
+            ['2024-01-20T06:30:15Z', '2024-01-20 06:30:15'],
+            ['2024-01-20T06:30:15+02:00', '2024-01-20 06:30:15'],
+            ['2024-01-20 06:30:15-0500', '2024-01-20 06:30:15'],
+            [1705732215, '2024-01-20 06:30:15'],
+            [new \DateTime('2024-01-20 06:30:15', new \DateTimeZone('Europe/Riga')), '2024-01-20 06:30:15'],
+        ];
+    }
+
+    /**
      * @dataProvider diffInMonthsDataProvider
      */
     public function testDiffInMonths(string $dateStringA, string $dateStringB, int $expectedResult): void

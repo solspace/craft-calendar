@@ -2,6 +2,9 @@
 
 namespace Solspace\Tests\Unit\Calendar\Library;
 
+use craft\i18n\Formatter;
+use craft\i18n\Locale;
+use craft\web\Application;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 
@@ -12,6 +15,41 @@ use Solspace\Calendar\Library\Helpers\DateFormatHelper;
  */
 class DateFormatHelperTest extends TestCase
 {
+    public function testDateFormatsUseTheFormattingLocaleInsteadOfTheInterfaceLanguage(): void
+    {
+        $previousApp = \Craft::$app;
+        $dateFormat = 'd/M/yy';
+
+        $formatter = $this->getMockBuilder(Formatter::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+        $formatter->dateFormat = 'short';
+        $formatter->timeFormat = 'short';
+        $formatter->dateTimeFormats = [
+            'short' => [
+                'date' => $dateFormat,
+                'time' => 'h:mm a',
+                'datetime' => 'd/M/yy, h:mm a',
+            ],
+        ];
+
+        $locale = $this->createMock(Locale::class);
+        $locale->method('getFormatter')->willReturn($formatter);
+        $locale->method('getDateFormat')->with('short')->willReturn($dateFormat);
+
+        $app = $this->createMock(Application::class);
+        $app->expects(self::once())->method('getFormattingLocale')->willReturn($locale);
+        $app->expects(self::never())->method('getLocale');
+        \Craft::$app = $app;
+
+        try {
+            self::assertSame($dateFormat, DateFormatHelper::get(length: 'short'));
+        } finally {
+            \Craft::$app = $previousApp;
+        }
+    }
+
     /**
      * @dataProvider jsDateFormatDataProvider
      */

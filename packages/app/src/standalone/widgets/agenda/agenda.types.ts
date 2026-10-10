@@ -9,6 +9,6 @@ export type AgendaWidgetConfig = {
   currentDay: Date;
   isMultiSite: boolean;
 
-  calendars: string[];
+  calendars: string | string[];
   view: "month" | "week" | "day";
 };

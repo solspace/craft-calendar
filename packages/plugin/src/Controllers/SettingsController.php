@@ -35,21 +35,21 @@ class SettingsController extends BaseController
     {
         $defaultView = $this->getSettingsService()->getSettingsModel()->defaultView;
 
-        $canAccessCalendars = PermissionHelper::checkPermission(Calendar::PERMISSION_CALENDARS);
-        $canAccessEvents = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS);
-
-        $isEventsView = Calendar::VIEW_EVENTS === $defaultView;
-        $isCalendarsView = Calendar::VIEW_CALENDARS === $defaultView;
-
-        if ($isEventsView && $canAccessEvents) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/events'));
+        // Preserve the CP's selected site (if any) across the redirect.
+        $siteParams = [];
+        if ($site = \Craft::$app->request->getQueryParam('site')) {
+            $siteParams['site'] = $site;
         }
 
-        if ($isCalendarsView && $canAccessCalendars) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/calendars'));
+        if (Calendar::VIEW_EVENTS === $defaultView && PermissionHelper::canAccessEvents()) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/events', $siteParams));
         }
 
-        return $this->redirect(UrlHelper::cpUrl('calendar'));
+        if (Calendar::VIEW_CALENDARS === $defaultView && PermissionHelper::canAccessCalendars()) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/calendars', $siteParams));
+        }
+
+        return $this->redirect(UrlHelper::cpUrl('calendar/overview', $siteParams));
     }
 
     /**
@@ -58,6 +58,11 @@ class SettingsController extends BaseController
     public function actionGeneral(): Response
     {
         return $this->provideTemplate('general', ['label' => 'General Settings']);
+    }
+
+    public function actionOverview(): Response
+    {
+        return $this->provideTemplate('overview', ['label' => 'Overview']);
     }
 
     /**
@@ -208,7 +213,7 @@ class SettingsController extends BaseController
     /**
      * Handles layout saving and ICS field special treatment if necessery.
      */
-    public function actionSaveSettings(): Response
+    public function actionSaveSettings(): ?Response
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
 
@@ -228,7 +233,12 @@ class SettingsController extends BaseController
 
         $allSettings = $plugin->getSettings()->toArray();
 
-        \Craft::$app->plugins->savePluginSettings($plugin, $allSettings);
+        if (!\Craft::$app->plugins->savePluginSettings($plugin, $allSettings)) {
+            return $this->asFailure(
+                Calendar::t('Couldn’t save settings.'),
+                routeParams: ['settings' => $plugin->getSettings()],
+            );
+        }
         \Craft::$app->session->setNotice(Calendar::t('Settings saved successfully.'));
 
         return $this->redirectToPostedUrl();
@@ -246,7 +256,7 @@ class SettingsController extends BaseController
             version_compare(\Craft::$app->getVersion(), '3.1', '>=')
             && !\Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
-            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+            throw new ForbiddenHttpException(Calendar::t('Administrative changes are disallowed in this environment.'));
         }
 
         $label = !empty($variables['label']) ? $variables['label'] : ucwords($template);

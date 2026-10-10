@@ -1,0 +1,60 @@
+<div class="week-grid-scroll border border-neutral-200 dark:border-neutral-700 rounded-xl" data-week-grid-scroll role="region" aria-label="Hourly calendar, scroll for more hours and days" tabindex="0">
+    <div class="week-grid week-grid--tailwind{{ gridMode == 'day' ? ' week-grid--day' }}">
+        <div class="week-grid-corner bg-neutral-50 dark:bg-neutral-800 border-r border-b border-neutral-200 dark:border-neutral-700" aria-hidden="true"></div>
+        {% for day in gridDays %}
+            <div class="week-grid-heading text-center border-r border-b border-neutral-200 dark:border-neutral-700 px-1 py-2{{ day.dateLocalized.isToday ? ' bg-blue-100 dark:bg-blue-950/70' : ' bg-neutral-50 dark:bg-neutral-800' }}">
+                <a href="{{ siteUrl }}demo/day?framework=tailwind&amp;date={{ day.date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"
+                    class="font-semibold text-neutral-900 dark:text-neutral-100 no-underline hover:underline"
+                    aria-label="{{ day.dateLocalized.isToday ? 'Today, ' }}{{ day.date.format('l, F j, Y') }}">
+                    <span class="block text-xs text-neutral-500 dark:text-neutral-400">{{ day.date.format('D') }}</span>
+                    <span class="text-xl">{{ day.date.format('j') }}</span>
+                    {% if day.dateLocalized.isToday %}<span class="sr-only"> Today</span>{% endif %}
+                </a>
+            </div>
+        {% endfor %}
+
+        <div class="week-grid-all-day-label text-sm text-neutral-500 dark:text-neutral-400 border-r border-b border-neutral-200 dark:border-neutral-700 p-2">All day</div>
+        {% for day in gridDays %}
+            <div class="week-grid-all-day border-r border-b border-neutral-200 dark:border-neutral-700 p-1{{ day.dateLocalized.isToday ? ' bg-blue-100 dark:bg-blue-950/70' : ' bg-white dark:bg-neutral-900/50' }}">
+                {% for occurrence in day.allDayOccurrences %}
+                    {% set event = occurrence.event %}
+                    {% set content = occurrence.content %}
+                    <a class="week-grid-all-day-event block rounded-md pl-3 pr-2 py-1 mb-1 text-sm font-semibold no-underline truncate"
+                        href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
+                        style="--event-color: {{ event.calendar.color }};"
+                        title="{{ content.title }}"
+                        aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}. All day on {{ day.date.format('l, F j, Y') }}">{% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}</a>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="week-grid-hours border-r border-neutral-200 dark:border-neutral-700" aria-hidden="true">
+            {% for hour in 0..23 %}
+                <span class="week-grid-hour text-neutral-500 dark:text-neutral-400 text-xs" style="--hour: {{ hour }};">{{ hour == 0 ? '12 AM' : (hour < 12 ? hour ~ ' AM' : (hour == 12 ? '12 PM' : (hour - 12) ~ ' PM')) }}</span>
+            {% endfor %}
+        </div>
+        {% for day in gridDays %}
+            <div class="week-grid-day border-r border-neutral-200 dark:border-neutral-700{{ day.dateLocalized.isToday ? ' week-grid-today' }}"
+                role="group" aria-label="{{ day.date.format('l, F j, Y') }}" data-week-grid-day>
+                {% for occurrence in day.timedOccurrences %}
+                    {% set event = occurrence.event %}
+                    {% set content = occurrence.content %}
+                    {% set startsToday = occurrence.startDate.format('Y-m-d') == day.date.format('Y-m-d') %}
+                    {% set endsToday = occurrence.endDate.format('Y-m-d') == day.date.format('Y-m-d') %}
+                    {% set startMinute = startsToday ? occurrence.startDate.format('G') * 60 + occurrence.startDate.format('i') : 0 %}
+                    {% set endMinute = endsToday ? occurrence.endDate.format('G') * 60 + occurrence.endDate.format('i') : 1440 %}
+                    {% if endMinute > startMinute %}
+                        <a class="week-grid-event rounded-md no-underline"
+                            href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
+                            style="--event-color: {{ event.calendar.color }}; top: {{ startMinute * 0.8 }}px; height: {{ (endMinute - startMinute) * 0.8 - 2 }}px;"
+                            data-start="{{ startMinute }}" data-end="{{ endMinute }}"
+                            aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}. {{ occurrence.startDate.format('l, F j, g:ia') }} to {{ occurrence.endDate.format('l, F j, g:ia') }}">
+                            <span class="week-grid-event-title block font-semibold truncate">{% include "demo/tailwind/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}</span>
+                            <span class="week-grid-event-time block truncate">{{ startsToday ? occurrence.startDate.format('g:ia') : 'Continues' }}{% if endsToday %} – {{ occurrence.endDate.format('g:ia') }}{% endif %}</span>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</div>

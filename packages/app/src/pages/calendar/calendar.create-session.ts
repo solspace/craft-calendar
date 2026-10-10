@@ -1,3 +1,4 @@
+import translate from "@cal/utils/translations";
 import type { DateSelectArg, EventApi, EventInput } from "@fullcalendar/core/index.js";
 
 const DAY_IN_SECONDS = 24 * 60 * 60;
@@ -11,6 +12,7 @@ export type CalendarCreateDraft = {
   allDay: boolean;
   start: number;
   end: number;
+  preserveDuration?: boolean;
 };
 
 export type CalendarCreateDraftSettings = {
@@ -35,7 +37,10 @@ const getEventDurationSeconds = (
 const getTimedDuration = (
   draft: CalendarCreateDraft,
   settings: Pick<CalendarCreateDraftSettings, "eventDuration">,
-): number => Math.max(getEventDurationSeconds(settings), draft.end - draft.start);
+): number =>
+  draft.preserveDuration
+    ? Math.max(60, draft.end - draft.start)
+    : getEventDurationSeconds(settings);
 
 const getAllDayDurationDays = (draft: CalendarCreateDraft): number =>
   Math.max(1, Math.round((draft.end - draft.start) / DAY_IN_SECONDS));
@@ -48,20 +53,39 @@ const hasClosest = (
 export const buildCreateDraftFromSelection = (
   selection: Pick<DateSelectArg, "start" | "end" | "allDay">,
   settings: CalendarCreateDraftSettings,
-): CalendarCreateDraft => ({
-  id: DEFAULT_CREATE_DRAFT_ID,
-  title: DEFAULT_CREATE_DRAFT_TITLE,
-  allDay: selection.allDay || settings.allDayDefault,
-  start:
-    selection.allDay || settings.allDayDefault
-      ? toUtcDayStartTimestamp(toTimestamp(selection.start))
-      : toTimestamp(selection.start),
-  end: selection.allDay
-    ? toTimestamp(selection.end)
-    : settings.allDayDefault
-      ? addDays(toUtcDayStartTimestamp(toTimestamp(selection.start)), 1)
-      : toTimestamp(selection.start) + getEventDurationSeconds(settings),
-});
+): CalendarCreateDraft => {
+  const selectedStart = toTimestamp(selection.start);
+  const selectedEnd = toTimestamp(selection.end);
+  // FullCalendar supplies an exclusive end for date cells and all-day rows.
+  const multiDay = selection.allDay
+    ? selectedEnd - selectedStart > DAY_IN_SECONDS
+    : toUtcDayStartTimestamp(selectedEnd - 1) > toUtcDayStartTimestamp(selectedStart);
+  const allDay = selection.allDay ? multiDay : settings.allDayDefault;
+  const preserveDuration =
+    multiDay || (!allDay && !selection.allDay && selectedEnd > selectedStart);
+  // Date cells have no chosen hour; use the current local hour as a floating wall time.
+  const start = allDay
+    ? toUtcDayStartTimestamp(selectedStart)
+    : selection.allDay
+      ? toUtcDayStartTimestamp(selectedStart) + new Date().getHours() * 60 * 60
+      : selectedStart;
+  const end = allDay
+    ? multiDay
+      ? addDays(toUtcDayStartTimestamp(selectedEnd - 1), 1)
+      : addDays(start, 1)
+    : preserveDuration
+      ? selectedEnd
+      : start + getEventDurationSeconds(settings);
+
+  return {
+    id: DEFAULT_CREATE_DRAFT_ID,
+    title: translate(DEFAULT_CREATE_DRAFT_TITLE),
+    allDay,
+    start,
+    end,
+    preserveDuration,
+  };
+};
 
 export const buildCreateDraftEventInput = (draft: CalendarCreateDraft): EventInput => ({
   id: draft.id,
@@ -112,7 +136,10 @@ export const setCreateDraftAllDay = (
   return {
     ...draft,
     allDay: false,
-    end: Math.max(draft.end, draft.start + getEventDurationSeconds(settings)),
+    end:
+      draft.start +
+      (draft.preserveDuration ? (getAllDayDurationDays(draft) - 1) * DAY_IN_SECONDS : 0) +
+      getEventDurationSeconds(settings),
   };
 };
 
@@ -155,7 +182,10 @@ export const setCreateDraftEnd = (
 
   return {
     ...draft,
-    end: Math.max(end, draft.start + getEventDurationSeconds(settings)),
+    end: Math.max(
+      end,
+      draft.start + (draft.preserveDuration ? 60 : getEventDurationSeconds(settings)),
+    ),
   };
 };
 

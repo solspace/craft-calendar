@@ -22,7 +22,6 @@ use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
-use Solspace\Calendar\Resources\Bundles\CalendarEditBundle;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -39,13 +38,15 @@ class CalendarsController extends BaseController
      */
     public function init(): void
     {
-        PermissionHelper::requirePermission(Calendar::PERMISSION_CALENDARS);
+        if (!PermissionHelper::canAccessCalendars()) {
+            PermissionHelper::requirePermission(Calendar::PERMISSION_CALENDARS);
+        }
 
         if (
             version_compare(\Craft::$app->getVersion(), '3.1', '>=')
             && !\Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
-            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+            throw new ForbiddenHttpException(Calendar::t('Administrative changes are disallowed in this environment.'));
         }
 
         $this->isCraft5 = version_compare(\Craft::$app->getVersion(), '5.0.0', '>=');
@@ -108,7 +109,7 @@ class CalendarsController extends BaseController
             );
         }
 
-        PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
+        PermissionHelper::requireCalendarEditPermissions($calendar);
 
         return $this->renderEditTemplate($calendar, $calendar->name);
     }
@@ -123,6 +124,9 @@ class CalendarsController extends BaseController
         if (!$calendar) {
             return $this->asFailure('Could not find calendar');
         }
+
+        PermissionHelper::requirePermission(Calendar::PERMISSION_CREATE_CALENDARS);
+        PermissionHelper::requireCalendarEditPermissions($calendar);
 
         $data = $calendar->toArray();
         unset($data['id'], $data['uid'], $data['icsHash']);
@@ -213,12 +217,17 @@ class CalendarsController extends BaseController
 
         $postedCalendarId = $request->post('calendarId');
         if ($postedCalendarId) {
-            PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
+            $postedCalendar = $this->getCalendarService()->getCalendarById($postedCalendarId);
+            if ($postedCalendar) {
+                PermissionHelper::requireCalendarEditPermissions($postedCalendar);
+            } else {
+                PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
+            }
         } else {
             PermissionHelper::requirePermission(Calendar::PERMISSION_CREATE_CALENDARS);
         }
 
-        $calendar = $this->getCalendarService()->getCalendarById($postedCalendarId);
+        $calendar = $postedCalendar ?? $this->getCalendarService()->getCalendarById($postedCalendarId);
         if (!$calendar) {
             $calendar = new CalendarModel();
             $calendar->uid = CraftStringHelper::UUID();
@@ -336,7 +345,6 @@ class CalendarsController extends BaseController
      */
     public function actionEnableIcsSharing(): Response
     {
-        PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
         Calendar::getInstance()->requirePro();
 
         $this->requirePostRequest();
@@ -348,6 +356,8 @@ class CalendarsController extends BaseController
         if (!$calendar) {
             return $this->asFailure(Calendar::t('No calendar exists with the ID "{id}"', ['id' => $calendarId]));
         }
+
+        PermissionHelper::requireCalendarEditPermissions($calendar);
 
         $icsHash = $calendar->regenerateIcsHash();
         $this->getCalendarService()->saveCalendar($calendar);
@@ -365,7 +375,6 @@ class CalendarsController extends BaseController
      */
     public function actionDisableIcsSharing(): Response
     {
-        PermissionHelper::requirePermission(Calendar::PERMISSION_EDIT_CALENDARS);
         Calendar::getInstance()->requirePro();
 
         $this->requirePostRequest();
@@ -377,6 +386,8 @@ class CalendarsController extends BaseController
         if (!$calendar) {
             return $this->asFailure(Calendar::t('No calendar exists with the ID "{id}"', ['id' => $calendarId]));
         }
+
+        PermissionHelper::requireCalendarEditPermissions($calendar);
 
         $calendar->icsHash = null;
         $this->getCalendarService()->saveCalendar($calendar);
@@ -393,9 +404,15 @@ class CalendarsController extends BaseController
     {
         $this->requirePostRequest();
 
-        PermissionHelper::requirePermission(Calendar::PERMISSION_DELETE_CALENDARS);
-
         $calendarId = \Craft::$app->request->post('id');
+        $calendar = $this->getCalendarService()->getCalendarById($calendarId);
+
+        if (!$calendar) {
+            return $this->asJson(['success' => false]);
+        }
+
+        PermissionHelper::requirePermission(Calendar::PERMISSION_DELETE_CALENDARS);
+        PermissionHelper::requireCalendarEditPermissions($calendar);
 
         if ($this->getCalendarService()->deleteCalendarById($calendarId)) {
             return $this->asJson(['success' => true]);
@@ -430,8 +447,6 @@ class CalendarsController extends BaseController
                 'name' => $field->name,
             ];
         }
-
-        \Craft::$app->view->registerAssetBundle(CalendarEditBundle::class);
 
         $site = SitesHelper::getCurrentCpSite();
         $sites = SitesHelper::getEditableSites();

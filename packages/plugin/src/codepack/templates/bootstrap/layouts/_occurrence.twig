@@ -1,0 +1,33 @@
+{% set event = occurrence.event %}
+{% set content = occurrence.content %}
+{% set classes = "" %}
+{% set classes = classes ~ (occurrence.allDay ? " all_day") %}
+{% if occurrence.multiDay %}
+    {% set classes = classes ~ " multi_day" %}
+    {% set classes = classes ~ (day.containsDate(occurrence.startDate) ? " first_day") %}
+    {% set classes = classes ~ (day.containsDate(occurrence.endDate) ? " last_day") %}
+{% endif %}
+
+<div class="event tips{{ occurrence.multiDay ? '' : ' calendar-agenda-event' }}{{ classes }}"
+    style="--calendar-color: {{ event.calendar.color }}; --calendar-surface: {{ event.calendar.lighterColor }}; --calendar-contrast: {{ event.calendar.contrastColor }};">
+    {% if occurrence.multiDay %}
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
+            data-calendar-popover data-calendar-color="{{ event.calendar.color }}" aria-label="{{ content.title }}{{ occurrence.cancelled ? ', cancelled' }}">
+            {% if day.containsDate(occurrence.startDate) %}
+                {% include "demo/bootstrap/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}
+            {% else %}
+                &nbsp;
+            {% endif %}
+        </a>
+    {% else %}
+        <a href="{{ siteUrl }}demo/event/{{ event.id }}{% if event.repeats() or event.rrule is not empty %}/{{ occurrence.slug }}{% endif %}"
+            data-calendar-popover data-calendar-color="{{ event.calendar.color }}">
+            {% include "demo/bootstrap/layouts/_occurrence_title" with {title: content.title, cancelled: occurrence.cancelled} only %}
+        </a>
+        {% if not occurrence.allDay %}
+            <span class="event-time">{{ occurrence.startDate.format('g:ia') }}</span>
+        {% endif %}
+    {% endif %}
+
+    {% include "demo/bootstrap/layouts/_event_popover" %}
+</div>

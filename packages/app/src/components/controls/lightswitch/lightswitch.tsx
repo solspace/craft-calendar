@@ -1,7 +1,6 @@
 import cslx from "clsx";
 import type { FC } from "react";
 import { Control, type ControlProps } from "../control";
-import { LightSwitchHandle, LightSwitchWrapper } from "./lightswitch.styles";
 
 type Props = {
   enabled?: boolean;
@@ -9,15 +8,21 @@ type Props = {
   onClick?: (enabled: boolean) => void;
 } & ControlProps;
 
+// Renders the native lightswitch markup so we pull in Craft's own styling
 export const LightSwitch: FC<Props> = ({ enabled, errors, onClick, ...controlProps }) => {
   return (
     <Control {...controlProps}>
-      <LightSwitchWrapper
-        className={cslx(enabled && "on", errors && "error")}
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled ?? false}
+        className={cslx("lightswitch", enabled && "on", errors && "error")}
         onClick={() => onClick?.(!enabled)}
       >
-        <LightSwitchHandle />
-      </LightSwitchWrapper>
+        <div className="lightswitch-container">
+          <div className="handle" />
+        </div>
+      </button>
     </Control>
   );
 };

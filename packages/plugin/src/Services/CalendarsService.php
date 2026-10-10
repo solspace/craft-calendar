@@ -71,7 +71,9 @@ class CalendarsService extends Component
     public function getAllAllowedCalendars(): array
     {
         $isAdmin = PermissionHelper::isAdmin();
-        $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
+        $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS)
+            || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_READ)
+            || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
 
         /** @var SettingsService $settings */
         $settings = Calendar::getInstance()->settings;
@@ -82,12 +84,24 @@ class CalendarsService extends Component
         }
 
         if (null === $this->allowedCalendarCache) {
-            $allowedUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
-            $allowedCalendarIds = array_map(static function ($uid) {
-                return Db::idByUid(CalendarRecord::TABLE, $uid);
-            }, $allowedUids);
+            $readUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_READ_INDIVIDUAL);
+            $manageUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
+            $allowedUids = [];
+            if (\is_array($readUids)) {
+                $allowedUids = array_merge($allowedUids, $readUids);
+            }
+            if (\is_array($manageUids)) {
+                $allowedUids = array_merge($allowedUids, $manageUids);
+            }
+            $allowedUids = array_values(array_unique($allowedUids));
+            $allowedCalendarIds = [];
+            if (\is_array($allowedUids)) {
+                $allowedCalendarIds = array_map(static function ($uid) {
+                    return Db::idByUid(CalendarRecord::TABLE, $uid);
+                }, $allowedUids);
+            }
 
-            if (\is_array($publicCalendarIds) && \is_array($allowedCalendarIds)) {
+            if (\is_array($publicCalendarIds)) {
                 $publicCalendarIds = array_map('intval', $publicCalendarIds);
                 $allowedCalendarIds = array_merge($allowedCalendarIds, $publicCalendarIds);
             }
@@ -147,12 +161,16 @@ class CalendarsService extends Component
     /**
      * Returns an array of calendar titles indexed by calendar ID.
      */
-    public function getAllAllowedCalendarTitles(): array
+    public function getAllAllowedCalendarTitles(?int $siteId = null): array
     {
         $titleArray = [];
         $calendars = $this->getAllAllowedCalendars();
 
         foreach ($calendars as $calendar) {
+            if ($siteId && !$calendar->getSiteSettingsForSite($siteId)) {
+                continue;
+            }
+
             $titleArray[$calendar->id] = $calendar->name;
         }
 

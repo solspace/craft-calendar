@@ -1,0 +1,4 @@
+<nav class="btn-group btn-group-sm" aria-label="{{ viewType|capitalize }} view">
+    <a class="btn {{ activeView == 'agenda' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ siteUrl }}demo/{{ viewType }}?framework=bootstrap&amp;view=agenda&amp;date={{ date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"{% if activeView == 'agenda' %} aria-current="page"{% endif %}>Agenda view</a>
+    <a class="btn {{ activeView == 'grid' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ siteUrl }}demo/{{ viewType }}?framework=bootstrap&amp;date={{ date.format('Y-m-d') }}{% if calendarHandle %}&amp;calendar={{ calendarHandle|url_encode }}{% endif %}"{% if activeView == 'grid' %} aria-current="page"{% endif %}>Grid view</a>
+</nav>

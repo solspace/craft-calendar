@@ -10,7 +10,7 @@ export const AgendaWidgetWrapper = styled(CalendarWrapper)`
     &-cushion {
       overflow: hidden;
       white-space: nowrap;
-      font-size: 12px;
+      font-size: 11px;
     }
   }
 

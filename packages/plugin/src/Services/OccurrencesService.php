@@ -1,0 +1,399 @@
+<?php
+
+namespace Solspace\Calendar\Services;
+
+use Carbon\Carbon;
+use craft\base\Component;
+use craft\base\Element;
+use craft\db\Query;
+use craft\db\Table;
+use craft\errors\InvalidElementException;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceCodes;
+use Solspace\Calendar\Bundles\Occurrences\OccurrenceMaterializer;
+use Solspace\Calendar\Bundles\Occurrences\OverrideReconciler;
+use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
+use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Event;
+use Solspace\Calendar\Elements\OccurrenceOverride;
+use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
+use Solspace\Calendar\Records\OccurrenceOverrideRecord;
+use yii\base\InvalidArgumentException;
+
+/**
+ * Edits single occurrences of an event.
+ *
+ * Every method takes the event an occurrence is being edited for. Pass a draft to make the
+ * change inside that draft; it reaches the live event when the draft is published.
+ */
+class OccurrencesService extends Component
+{
+    private OccurrenceCodes $codes;
+
+    private OccurrenceMaterializer $materializer;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->codes = new OccurrenceCodes();
+        $this->materializer = new OccurrenceMaterializer($this->codes);
+    }
+
+    /**
+     * Every override of an event, orphaned ones included, in the order of their recurrence IDs.
+     *
+     * @return OccurrenceOverride[]
+     */
+    public function getOverrides(Event $event, ?int $siteId = null): array
+    {
+        return OccurrenceOverride::find()
+            ->ownerId($event->id)
+            ->siteId($siteId ?? $event->siteId)
+            ->status(null)
+            ->orderBy([OccurrenceOverrideRecord::TABLE_STD.'.recurrenceId' => \SORT_ASC])
+            ->all()
+        ;
+    }
+
+    /**
+     * Whether the event's schedule produces an occurrence with this recurrence ID.
+     */
+    public function hasOccurrence(Event $event, mixed $recurrenceId): bool
+    {
+        return $this->materializer->producesRecurrenceId($event, RecurrenceId::toCarbon($this->normalizeRecurrenceId($recurrenceId)));
+    }
+
+    /**
+     * The occurrence's code, if it has been given one. Drafts share their event's codes.
+     */
+    public function getCode(Event $event, mixed $recurrenceId): ?string
+    {
+        return $this->codes->find((int) $event->getCanonicalId(), $this->normalizeRecurrenceId($recurrenceId));
+    }
+
+    /**
+     * When an occurrence takes place and whether it's cancelled, with its override applied.
+     *
+     * @return array{startDate: Carbon, endDate: Carbon, allDay: bool, cancelled: bool}
+     */
+    public function describeOccurrence(Event $event, mixed $recurrenceId, ?OccurrenceOverride $override = null): array
+    {
+        return $this->materializer->describeOccurrence(
+            $event,
+            RecurrenceId::toCarbon($this->normalizeRecurrenceId($recurrenceId)),
+            $override,
+        );
+    }
+
+    public function getOverride(Event $event, mixed $recurrenceId, ?int $siteId = null): ?OccurrenceOverride
+    {
+        return OccurrenceOverride::find()
+            ->ownerId($event->id)
+            ->siteId($siteId ?? $event->siteId)
+            ->recurrenceId($this->normalizeRecurrenceId($recurrenceId))
+            ->one()
+        ;
+    }
+
+    /**
+     * Returns the override to edit for an occurrence, creating a new one if it has none.
+     * Inside a draft, an override shared with the live event is copied first, so the
+     * live event doesn't change until the draft is published.
+     */
+    public function getOrCreateOverride(Event $event, mixed $recurrenceId, ?int $siteId = null): OccurrenceOverride
+    {
+        $key = $this->normalizeRecurrenceId($recurrenceId);
+
+        $override = $this->getOverride($event, $key, $siteId);
+        if ($override) {
+            return $this->forOwner($override, $event);
+        }
+
+        if (!$this->materializer->producesRecurrenceId($event, RecurrenceId::toCarbon($key))) {
+            throw new InvalidArgumentException("Event {$event->id} has no occurrence at {$key}.");
+        }
+
+        return $this->createOverride($event, $key, $siteId);
+    }
+
+    /**
+     * A new, unsaved override for an occurrence, without checking that the event has it.
+     */
+    public function createOverride(Event $event, mixed $recurrenceId, ?int $siteId = null): OccurrenceOverride
+    {
+        $override = new OccurrenceOverride();
+        $override->siteId = $siteId ?? $event->siteId;
+        $override->recurrenceId = RecurrenceId::toCarbon($this->normalizeRecurrenceId($recurrenceId));
+        $override->fieldLayoutId = $event->getFieldLayout()?->id;
+        $override->setPrimaryOwner($event);
+        $override->setOwner($event);
+
+        return $override;
+    }
+
+    public function saveOverride(OccurrenceOverride $override, bool $runValidation = true): bool
+    {
+        $event = $this->requireEvent($override);
+
+        // Like the control panel does for live content, so required fields it overrides can't be left empty
+        if (Element::SCENARIO_DEFAULT === $override->getScenario() && $event->enabled && $event->getEnabledForSite()) {
+            $override->setScenario(Element::SCENARIO_LIVE);
+        }
+
+        if (!\Craft::$app->getElements()->saveElement($override, $runValidation)) {
+            return false;
+        }
+
+        $this->afterOccurrenceChanged($event, $override->recurrenceId);
+
+        return true;
+    }
+
+    /**
+     * Gives an occurrence its own times. Moving and resizing it are both done this way.
+     */
+    public function reschedule(Event $event, mixed $recurrenceId, Carbon $startDate, Carbon $endDate, bool $allDay): OccurrenceOverride
+    {
+        $override = $this->getOrCreateOverride($event, $recurrenceId);
+        $override->reschedule($startDate, $endDate, $allDay);
+        $this->saveOrFail($override);
+
+        return $override;
+    }
+
+    public function cancel(Event $event, mixed $recurrenceId): OccurrenceOverride
+    {
+        return $this->setCancelled($event, $recurrenceId, true);
+    }
+
+    /**
+     * Returns null when the occurrence had no other changes, so its override was removed.
+     */
+    public function uncancel(Event $event, mixed $recurrenceId): ?OccurrenceOverride
+    {
+        return $this->setCancelled($event, $recurrenceId, false);
+    }
+
+    /**
+     * Removes everything an occurrence changed, so it follows the event again.
+     */
+    public function resetOverride(Event $event, mixed $recurrenceId): bool
+    {
+        $override = $this->getOverride($event, $recurrenceId);
+        if (!$override) {
+            return true;
+        }
+
+        if ($override->getPrimaryOwnerId() !== $event->id) {
+            // The draft only shares this override with the live event, so it just stops using it
+            Db::delete(Table::ELEMENTS_OWNERS, ['elementId' => $override->id, 'ownerId' => $event->id]);
+
+            return true;
+        }
+
+        if (!\Craft::$app->getElements()->deleteElement($override, true)) {
+            return false;
+        }
+
+        $this->afterOccurrenceChanged($event, $override->recurrenceId);
+
+        return true;
+    }
+
+    /**
+     * Removes an occurrence from the event's schedule, along with anything it changed.
+     */
+    public function deleteOccurrence(Event $event, mixed $recurrenceId): bool
+    {
+        $key = $this->normalizeRecurrenceId($recurrenceId);
+        $transaction = \Craft::$app->getDb()->beginTransaction();
+
+        try {
+            if (!$this->resetOverride($event, $key)) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            (new RecurringEventMutationHelper())->deleteOccurrence($event, RecurrenceId::toCarbon($key));
+
+            if (!Calendar::getInstance()->events->saveEvent($event)) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $exception) {
+            $transaction->rollBack();
+
+            throw $exception;
+        }
+
+        return true;
+    }
+
+    /**
+     * What saving a changed schedule would do to the event's edited occurrences: how far they'd all move,
+     * and the recurrence IDs of the ones the schedule would no longer have.
+     *
+     * @param Event $changed the event (or its draft) with the changed schedule, unsaved
+     *
+     * @return array{shift: ?int, orphaned: string[]}
+     */
+    public function previewSchedule(Event $changed): array
+    {
+        $overrides = array_map(
+            static fn (OccurrenceOverride $override) => [
+                'recurrenceId' => $override->recurrenceId->format(RecurrenceId::FORMAT),
+                'orphaned' => $override->orphaned,
+            ],
+            $this->getOverrides($changed),
+        );
+
+        return (new OverrideReconciler($this->materializer, $this->codes))
+            ->preview($changed, (int) $changed->getCanonicalId(), $overrides)
+        ;
+    }
+
+    /**
+     * Before a draft is applied, gives it the live event's overrides made since the draft was created. Applying a
+     * draft deletes the live overrides it doesn't have, and it only got the ones that existed when it was created.
+     * An occurrence the draft changed too keeps the draft's changes.
+     *
+     * @internal
+     */
+    public function adoptNewerLiveOverrides(Event $draft): void
+    {
+        $canonicalId = (int) $draft->getCanonicalId();
+        if (!$draft->getIsDraft() || $draft->getIsUnpublishedDraft()) {
+            return;
+        }
+
+        $owned = (new Query())
+            ->select(['overrides.recurrenceId'])
+            ->from(['overrides' => OccurrenceOverrideRecord::TABLE])
+            ->innerJoin(['owners' => Table::ELEMENTS_OWNERS], '[[owners.elementId]] = [[overrides.id]]')
+            ->where(['owners.ownerId' => $draft->id])
+            ->column()
+        ;
+
+        $newer = OccurrenceOverrideRecord::findForEvent($canonicalId)
+            ->select(['overrides.id', 'overrides.recurrenceId', 'owners.sortOrder'])
+            ->innerJoin(['owners' => Table::ELEMENTS_OWNERS], '[[owners.elementId]] = [[overrides.id]] AND [[owners.ownerId]] = :canonicalId', [
+                'canonicalId' => $canonicalId,
+            ])
+            // Element IDs only ever grow, unlike creation dates, which can share a second with the draft's
+            ->andWhere(['>', 'overrides.id', $draft->id])
+            ->andWhere(['not', ['overrides.recurrenceId' => $owned]])
+            ->all()
+        ;
+
+        // The occurrences before a split go to the earlier part
+        $splitAt = Calendar::getInstance()->series->getSplitAt($draft)?->format(RecurrenceId::FORMAT);
+
+        $rows = [];
+        foreach ($newer as $override) {
+            if (null === $splitAt || $override['recurrenceId'] >= $splitAt) {
+                $rows[] = [(int) $override['id'], (int) $draft->id, (int) $override['sortOrder']];
+            }
+        }
+
+        if ($rows) {
+            if ($draft->calendarId !== $draft->getCanonical()->calendarId) {
+                // New live overrides still use the old layout, and were not part of the reviewed mapping.
+                $draft->addError('calendarId', Calendar::t('New occurrence changes were added to the live event after this draft changed calendar. Start a fresh draft to include and map those changes.'));
+
+                throw new InvalidElementException($draft);
+            }
+            Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $rows);
+        }
+    }
+
+    /**
+     * Copy-on-write: a draft editing an override it shares with the live event gets its own copy.
+     */
+    public function forOwner(OccurrenceOverride $override, Event $event): OccurrenceOverride
+    {
+        if ($override->getPrimaryOwnerId() === $event->id) {
+            return $override;
+        }
+
+        /** @var OccurrenceOverride $copy */
+        $copy = \Craft::$app->getElements()->duplicateElement($override, [
+            'canonicalId' => $override->id,
+            'primaryOwner' => $event,
+            'owner' => $event,
+        ]);
+
+        Db::delete(Table::ELEMENTS_OWNERS, ['elementId' => $override->id, 'ownerId' => $event->id]);
+
+        return $copy;
+    }
+
+    /**
+     * Saves an override, or removes it once nothing about its occurrence differs from the event anymore.
+     *
+     * @return null|OccurrenceOverride the override, or null when it was removed
+     *
+     * @throws InvalidElementException when it can't be saved or removed
+     */
+    public function saveOrRemoveOverride(OccurrenceOverride $override): ?OccurrenceOverride
+    {
+        if ($override->hasChanges()) {
+            $this->saveOrFail($override);
+
+            return $override;
+        }
+
+        if ($override->id && !$this->resetOverride($this->requireEvent($override), $override->recurrenceId)) {
+            throw new InvalidElementException($override, 'Couldn’t remove the occurrence override.');
+        }
+
+        return null;
+    }
+
+    private function setCancelled(Event $event, mixed $recurrenceId, bool $cancelled): ?OccurrenceOverride
+    {
+        $override = $this->getOrCreateOverride($event, $recurrenceId);
+        $override->cancelled = $cancelled;
+
+        return $this->saveOrRemoveOverride($override);
+    }
+
+    private function saveOrFail(OccurrenceOverride $override): void
+    {
+        if (!$this->saveOverride($override)) {
+            throw new InvalidElementException($override, implode(' ', $override->getErrorSummary(true)));
+        }
+    }
+
+    /**
+     * Drafts have no occurrence rows; the live event's are refreshed when a draft is published.
+     */
+    private function afterOccurrenceChanged(Event $event, Carbon $recurrenceId): void
+    {
+        if (ElementHelper::isDraftOrRevision($event)) {
+            return;
+        }
+
+        $this->materializer->refreshOccurrence($event, $recurrenceId);
+
+        // Cached event lists key on the latest event change
+        Db::update(Event::TABLE, ['dateUpdated' => Db::prepareDateForDb(new \DateTime())], ['id' => $event->id], [], false);
+        \Craft::$app->getElements()->invalidateCachesForElement($event);
+    }
+
+    private function requireEvent(OccurrenceOverride $override): Event
+    {
+        return $override->getEvent() ?? throw new InvalidArgumentException('The occurrence override has no event.');
+    }
+
+    private function normalizeRecurrenceId(mixed $recurrenceId): string
+    {
+        return RecurrenceId::normalize($recurrenceId)
+            ?? throw new InvalidArgumentException('Invalid recurrence ID: '.(\is_scalar($recurrenceId) ? $recurrenceId : get_debug_type($recurrenceId)));
+    }
+}

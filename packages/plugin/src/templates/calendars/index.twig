@@ -92,6 +92,6 @@
     noObjectsSelector: '#nocalendars',
     newObjectBtnSelector: '#newcalendarcontainer',
     deleteAction: 'calendar/calendars/delete',
-    confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its events?"|t('calendar') }}'
+    confirmDeleteMessage: {{ "Are you sure you want to delete “{name}” and all its events?"|t('calendar')|json_encode|raw }}
     });
 {% endjs %}

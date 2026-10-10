@@ -14,8 +14,7 @@
 
 {%- set events = craft.calendar.events(options|merge({
     rangeStart: "1 year ago",
-    rangeEnd: "5 years",
-    loadOccurrences: false
+    rangeEnd: "5 years"
 })) -%}
 
 {% header "Content-Type: application/octet-stream" %}

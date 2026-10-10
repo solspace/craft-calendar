@@ -29,6 +29,35 @@ declare namespace Craft {
 
   function getCpUrl(path: string): string;
 
+  function getActionUrl(action: string): string;
+
+  type CpScreenSlideoutSettings = {
+    params?: Record<string, string | number>;
+  };
+
+  class CpScreenSlideout {
+    constructor(action: string, settings?: CpScreenSlideoutSettings);
+    on(
+      event: "submit" | "close",
+      handler: (event?: { response?: { data?: { url?: string } } }) => void,
+    ): void;
+  }
+
+  type ElementEditorSettings = {
+    elementId: number;
+    canonicalId: number;
+    draftId: number | null;
+    siteId: number;
+  };
+
+  class ElementEditor {
+    settings: ElementEditorSettings;
+    pause(): void;
+    resume(): void;
+    ensureIsDraftOrRevision(onlyIfChanged?: boolean): Promise<void>;
+    checkForm(force?: boolean, saveDraft?: boolean | null): Promise<void>;
+  }
+
   const cp: {
     displaySuccess(message: string, options?: ToastOptions): void;
     displayNotice(message: string, options?: ToastOptions): void;
@@ -47,6 +76,10 @@ declare namespace Garnish {
   class MenuBtn {
     constructor(target: Element, options?: MenuBtnOptions);
     showMenu(): void;
+    hideMenu(): void;
+    destroy(): void;
+    showingMenu: boolean;
+    menu: { on(event: "show", handler: () => void): void };
   }
 }
 

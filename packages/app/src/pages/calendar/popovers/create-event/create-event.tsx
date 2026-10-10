@@ -1,6 +1,8 @@
+import { Control } from "@cal/components/controls/control";
 import { DatePicker, Icon } from "@cal/components/controls/date-picker/date-picker";
 import { LightSwitch } from "@cal/components/controls/lightswitch/lightswitch";
 import { TextInput } from "@cal/components/controls/text-input/text-input";
+import { LiveOverlapWarning } from "@cal/components/overlap-warning/overlap-warning";
 import {
   type CalendarCreateDraft,
   getCreateDraftDisplayEnd,
@@ -9,16 +11,25 @@ import {
   setCreateDraftStart,
   setCreateDraftTitle,
 } from "@cal/pages/calendar/calendar.create-session";
-import { Flex } from "@cal/styles/components";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import clsx from "clsx";
 import type { FC } from "react";
-import { useMemo } from "react";
+import { useId, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { useConfig } from "../../context/config.context";
+import { CalendarDropdown } from "./create-event.calendar-dropdown";
 import { useCreateEvent } from "./create-event.mutation";
-import { FlexTitle, PopoverCreateEventWrapper } from "./create-event.styles";
+import {
+  AllDayLabel,
+  AllDayRow,
+  CreateActionButtons,
+  CreateActions,
+  Fields,
+  FlexTitle,
+  MoreDetailsButton,
+  PopoverCreateEventWrapper,
+} from "./create-event.styles";
 
 type Props = {
   draft: CalendarCreateDraft;
@@ -35,8 +46,49 @@ export const PopoverCreateEvent: FC<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const { formats, weekStartDay, eventDuration, timeInterval } = useConfig();
-  const { createEvent, isFetching } = useCreateEvent({
+  const {
+    currentSiteId,
+    showOverlapWarnings,
+    calendars,
+    calendarColors,
+    quickCreateFields,
+    quickCreateRequiredFields,
+    formats,
+    weekStartDay,
+    eventDuration,
+    timeInterval,
+  } = useConfig();
+  const id = useId();
+  const calendarOptions = useMemo(
+    () =>
+      Object.entries(calendars).map(([value, label]) => ({
+        value: Number(value),
+        label,
+        color: calendarColors?.[Number(value)],
+      })),
+    [calendars, calendarColors],
+  );
+  const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
+  const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>({});
+  const mappedFields = quickCreateFields?.[calendarId];
+  const locationHandle = mappedFields?.location;
+  const descriptionHandle = mappedFields?.description;
+  const requiredFields = quickCreateRequiredFields?.[calendarId];
+  const values = fieldValues[calendarId] ?? {};
+  const details =
+    locationHandle || descriptionHandle
+      ? {
+          ...(locationHandle && { location: values[locationHandle] ?? "" }),
+          ...(descriptionHandle && { description: values[descriptionHandle] ?? "" }),
+        }
+      : undefined;
+  const setFieldValue = (handle: string, value: string) => {
+    setFieldValues((current) => ({
+      ...current,
+      [calendarId]: { ...current[calendarId], [handle]: value },
+    }));
+  };
+  const { createEvent, prepareEvent, error, isFetching, isOpeningEditor } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
   });
@@ -52,7 +104,7 @@ export const PopoverCreateEvent: FC<Props> = ({
   const displayEnd = useMemo(() => getCreateDraftDisplayEnd(draft), [draft]);
 
   useEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
+    if (event.key === "Escape" && !isFetching) {
       onCancel();
     }
   });
@@ -61,26 +113,44 @@ export const PopoverCreateEvent: FC<Props> = ({
     <PopoverCreateEventWrapper>
       <FlexTitle>
         <TextInput
+          label={translate("Title")}
+          id={`${id}-title`}
+          required
           autofocus
           value={draft.title}
           placeholder={translate("Event Title")}
           onChange={(value) => onChange(setCreateDraftTitle(draft, value))}
         />
-        <LightSwitch
-          enabled={draft.allDay}
-          onClick={(value) => onChange(setCreateDraftAllDay(draft, value, { eventDuration }))}
-        />
       </FlexTitle>
 
-      <div>
+      <Fields>
+        <CalendarDropdown value={calendarId} options={calendarOptions} onChange={setCalendarId} />
+
+        <hr />
+
+        <AllDayRow>
+          <LightSwitch
+            enabled={draft.allDay}
+            onClick={(value) => onChange(setCreateDraftAllDay(draft, value, { eventDuration }))}
+          />
+          <AllDayLabel
+            onClick={() => onChange(setCreateDraftAllDay(draft, !draft.allDay, { eventDuration }))}
+          >
+            {translate("All Day")}
+          </AllDayLabel>
+        </AllDayRow>
+
         <DatePicker
-          label={translate("Start Date")}
+          id={`${id}-start`}
+          required
+          label={translate("Starts")}
           value={draft.start}
           datePickerProps={{
             showIcon: true,
             icon: <Icon />,
             toggleCalendarOnIconClick: true,
             dateFormat: format,
+            timeFormat: formats.time.short.icu,
             showTimeSelect: !draft.allDay,
             showMonthDropdown: true,
             showYearDropdown: true,
@@ -95,7 +165,9 @@ export const PopoverCreateEvent: FC<Props> = ({
           }}
         />
         <DatePicker
-          label={translate("End Date")}
+          id={`${id}-end`}
+          required
+          label={translate("Ends")}
           value={displayEnd}
           datePickerProps={{
             showIcon: true,
@@ -103,6 +175,7 @@ export const PopoverCreateEvent: FC<Props> = ({
             toggleCalendarOnIconClick: true,
             minDate: utcTimestampToLocalDisplayDate(draft.start),
             dateFormat: format,
+            timeFormat: formats.time.short.icu,
             showTimeSelect: !draft.allDay,
             showMonthDropdown: true,
             showYearDropdown: true,
@@ -126,29 +199,93 @@ export const PopoverCreateEvent: FC<Props> = ({
             }
           }}
         />
-      </div>
+
+        <LiveOverlapWarning
+          formats={formats}
+          enabled={showOverlapWarnings && !!calendarId}
+          schedule={{
+            start: draft.start,
+            end: draft.allDay ? draft.end - 1 : draft.end,
+            allDay: draft.allDay,
+            calendarId,
+            siteId: currentSiteId,
+          }}
+        />
+
+        {(locationHandle || descriptionHandle) && <hr />}
+
+        {locationHandle && (
+          <Control
+            label={translate("Location")}
+            id={`${id}-location`}
+            required={requiredFields?.location}
+          >
+            <input
+              id={`${id}-location`}
+              type="text"
+              className="text fullwidth"
+              disabled={isFetching}
+              aria-required={requiredFields?.location || undefined}
+              value={values[locationHandle] ?? ""}
+              onChange={(event) => setFieldValue(locationHandle, event.target.value)}
+            />
+          </Control>
+        )}
+
+        {descriptionHandle && (
+          <Control
+            label={translate("Description")}
+            id={`${id}-description`}
+            required={requiredFields?.description}
+          >
+            <textarea
+              id={`${id}-description`}
+              className="text fullwidth"
+              rows={3}
+              disabled={isFetching}
+              aria-required={requiredFields?.description || undefined}
+              value={values[descriptionHandle] ?? ""}
+              onChange={(event) => setFieldValue(descriptionHandle, event.target.value)}
+            />
+          </Control>
+        )}
+      </Fields>
 
       <hr />
 
-      <Flex>
-        <button
-          type="button"
-          className={clsx("btn small submit", isFetching && "disabled")}
-          disabled={!draft.title || isFetching}
-          onClick={() => createEvent(draft)}
-        >
-          {translate(isFetching ? "Creating Event..." : "Create Event")}
-        </button>
+      {error && <p className="error">{error}</p>}
 
-        <button
+      <CreateActions $justifyContent="flex-end" $gap={8}>
+        <MoreDetailsButton
           type="button"
-          className={clsx("btn small", isFetching && "disabled")}
-          disabled={isFetching}
-          onClick={onCancel}
+          disabled={!calendarId || isFetching}
+          onClick={async () => {
+            const url = await prepareEvent(draft, calendarId, details);
+            if (url) window.location.href = url;
+          }}
         >
-          {translate("Cancel")}
-        </button>
-      </Flex>
+          {translate(isOpeningEditor ? "Processing..." : "More details…")}
+        </MoreDetailsButton>
+        <CreateActionButtons>
+          <button
+            type="button"
+            className={clsx("btn", isFetching && "disabled")}
+            disabled={isFetching}
+            onClick={onCancel}
+          >
+            {translate("Cancel")}
+          </button>
+
+          <button
+            type="button"
+            className={clsx("btn submit", isFetching && "disabled")}
+            disabled={!draft.title || !calendarId || isFetching}
+            onClick={() => createEvent(draft, calendarId, details)}
+          >
+            {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
+          </button>
+        </CreateActionButtons>
+      </CreateActions>
     </PopoverCreateEventWrapper>
   );
 };

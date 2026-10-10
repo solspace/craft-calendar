@@ -1,18 +1,33 @@
+import { datePickerTheme } from "@cal/components/controls/date-picker/date-picker.theme";
 import styled from "styled-components";
 
 export const FixedDatesSection = styled.div`
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid var(--gray-200);
+  padding-top: 16px;
+  width: 100%;
 `;
 
 export const SectionHeading = styled.div`
-  margin-bottom: 10px;
-  color: var(--gray-700);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  && {
+    margin: 0 0 3px;
+    padding: 0;
+    color: var(--gray-700);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 18px;
+  }
+`;
+
+export const SectionInstructions = styled.p`
+  && {
+    margin: 0 0 8px;
+    padding: 0;
+    color: var(--gray-600);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+  }
 `;
 
 export const FixedDatesToolbar = styled.div`
@@ -31,6 +46,12 @@ export const PickerButtonWrapper = styled.div`
 
   .react-datepicker-popper {
     z-index: 20;
+  }
+
+  ${datePickerTheme}
+
+  .react-datepicker__current-month {
+    display: none;
   }
 `;
 
@@ -74,24 +95,26 @@ export const CountBadge = styled.button`
   }
 
   &.active {
-    color: white;
-    background: var(--teal-600);
-    border-color: var(--teal-600);
+    color: var(--white);
+    background: var(--gray-600);
+    border-color: var(--gray-600);
 
     &:hover:not(:disabled) {
-      background: var(--teal-700);
+      background: var(--gray-700);
+      border-color: var(--gray-700);
     }
   }
 `;
 
 export const DatesPopover = styled.div`
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
   z-index: 20;
 
-  width: min(350px, 80vw);
+  box-sizing: border-box;
+  width: min(350px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
   padding: 14px;
+  overflow-y: auto;
 
   background: white;
   border: 1px solid var(--gray-250, var(--gray-200));

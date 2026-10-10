@@ -1,0 +1,133 @@
+{% extends 'calendar/layouts/_settings' %}
+
+{% set fullPageForm = false %}
+
+{% macro status(status, label) %}
+    {% if status != 'none' %}
+        {% set colors = {pass: 'green', disabled: 'disabled', error: 'red', warning: 'yellow'} %}
+        <span class="status {{ colors[status] }} calendar-diag-dot" role="img" aria-label="{{ label|e('html_attr') }}" title="{{ label|e('html_attr') }}"></span>
+    {% endif %}
+{% endmacro %}
+
+{% block actionButton %}
+    <button type="button" class="btn" id="calendar-copy-diagnostics">{{ 'Copy Support Report'|t('calendar') }}</button>
+{% endblock %}
+
+{% block content %}
+    <div id="calendar-diagnostics" data-sampled-at="{{ sampledAt|e('html_attr') }}">
+        <div class="pane calendar-diag-banner {{ errorCount ? 'is-error' : (advisoryCount ? 'is-warning' : 'is-success') }}" role="status">
+            <p>
+                <span class="{{ errorCount or advisoryCount ? 'alert-icon' : 'checkmark-icon' }}" aria-hidden="true"></span>
+                {% if errorCount %}
+                    <span>{{ 'Potential issues: {count}'|t('calendar', {count: errorCount}) }}</span>
+                {% elseif advisoryCount %}
+                    <span>{{ 'Advisories: {count}'|t('calendar', {count: advisoryCount}) }}</span>
+                {% else %}
+                    <strong>{{ 'No diagnostic warnings'|t('calendar') }}</strong>
+                {% endif %}
+                {% if errorCount and advisoryCount %}<span>{{ 'Advisories: {count}'|t('calendar', {count: advisoryCount}) }}</span>{% endif %}
+            </p>
+        </div>
+        <div class="calendar-diag-legend">
+            {% for status, label in {
+                pass: 'Enabled / Valid'|t('calendar'),
+                disabled: 'Disabled'|t('calendar'),
+                warning: 'Advisory'|t('calendar'),
+                error: 'Potential issue'|t('calendar')
+            } %}
+                <span>{{ _self.status(status, label) }}{{ label }}</span>
+            {% endfor %}
+        </div>
+        <div class="calendar-diag-grid">
+            {% for column in columns %}
+                <div>
+                    {% for section in column %}
+                        {% if section.rows %}
+                            <section class="calendar-diag-section">
+                                <h2>{{ section.title }}</h2>
+                                <dl>
+                                    {% for item in section.rows %}
+                                        <div class="calendar-diag-row is-{{ item.status }}{{ item.isProduct ? ' is-product' }}">
+                                            <dt>{{ _self.status(item.status, item.statusLabel) }}<span>{% if item.labelCode is defined %}{{ item.labelParts[0] }}<code>{{ item.labelCode }}</code>{{ item.labelParts[1] ?? '' }}{% else %}{{ item.label }}{% endif %}</span></dt>
+                                            <dd{% if item.isBoolean %} class="visually-hidden"{% endif %}>{% if item.isProduct %}<strong>{{ item.value }}</strong>{% elseif item.isCode %}<code>{{ item.value }}</code>{% else %}{{ item.value }}{% endif %}</dd>
+                                            {% if item.note %}<dd class="calendar-diag-note">{{ item.note }}{% if item.noteUrl is defined %} <a href="{{ item.noteUrl }}">{{ item.noteLinkLabel }}</a>{% endif %}</dd>{% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </dl>
+                            </section>
+                        {% endif %}
+                    {% endfor %}
+                    {% if loop.index == 2 %}
+                        <section class="calendar-diag-section" id="calendar-browser-diagnostics">
+                            <h2>{{ 'User / Browser'|t('calendar') }}</h2>
+                            <p class="light">{{ 'The user timezone is detected from this browser. Craft uses its application timezone separately.'|t('calendar') }}</p>
+                            <dl>
+                                {% for id, label in {
+                                    'timezone': 'User Browser Timezone'|t('calendar'),
+                                    'offset': 'Browser UTC Offset'|t('calendar'),
+                                    'clock': 'Browser Local Time'|t('calendar'),
+                                    'language': 'Browser Language'|t('calendar'),
+                                    'dst': 'Browser Seasonal Offsets'|t('calendar')
+                                } %}
+                                    <div class="calendar-diag-row">
+                                        <dt>{{ label }}</dt>
+                                        <dd>{% if id == 'language' %}<code data-browser-value="{{ id }}">{{ 'Unavailable'|t('calendar') }}</code>{% else %}<span data-browser-value="{{ id }}">{{ 'Unavailable'|t('calendar') }}</span>{% endif %}</dd>
+                                    </div>
+                                {% endfor %}
+                            </dl>
+                            <noscript><p>{{ 'Enable JavaScript to collect browser diagnostics.'|t('calendar') }}</p></noscript>
+                        </section>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        {% if calendars %}
+            <details class="calendar-diag-calendars calendar-diag-disclosure">
+                <summary>
+                    {{ 'Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}
+                    {% if calendarWarningCount %}
+                        <span class="calendar-diag-issue-count">{{ 'Potential issues: {count}'|t('calendar', {count: calendarWarningCount}) }}</span>
+                    {% endif %}
+                </summary>
+                <div class="calendar-diag-calendar-table">
+                    <table class="data fullwidth">
+                        <caption class="visually-hidden">{{ 'Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{{ 'Calendar'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Handle'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Events'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Repeating Allowed'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Supported Sites'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Guest Access'|t('calendar') }}</th>
+                                <th scope="col">{{ 'ICS Timezone'|t('calendar') }}</th>
+                                <th scope="col">{{ 'ICS Sharing'|t('calendar') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for calendar in calendars %}
+                                <tr class="{{ calendar.timezoneValid ? 'is-pass' : 'is-error' }}">
+                                    <th scope="row"><strong>{{ calendar.title }}</strong></th>
+                                    <td class="calendar-diag-handle">{{ calendar.handle }}</td>
+                                    <td>{{ calendar.eventCount ?? 'Unavailable'|t('calendar') }}</td>
+                                    <td>{{ _self.status(calendar.repeatingEnabled ? 'pass' : 'disabled', calendar.repeating) }}</td>
+                                    <td title="{{ calendar.siteNames|e('html_attr') }}">{{ calendar.siteCount }}{% if calendar.siteNames %}<span class="visually-hidden"> — {{ calendar.siteNames }}</span>{% endif %}</td>
+                                    <td>{{ _self.status(calendar.guestAccessEnabled ? 'pass' : 'disabled', calendar.guestAccessLabel) }}</td>
+                                    <td>{{ calendar.timezone }}{% if not calendar.timezoneValid %} <span class="calendar-diag-issue-count" title="{{ 'This timezone identifier is invalid.'|t('calendar')|e('html_attr') }}">{{ 'Potential issue'|t('calendar') }}</span>{% endif %}</td>
+                                    <td>{{ _self.status(calendar.icsSharingEnabled ? 'pass' : 'disabled', calendar.icsSharingLabel) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        {% endif %}
+        <details class="calendar-diag-report calendar-diag-disclosure">
+            <summary>{{ 'Support Report'|t('calendar') }}</summary>
+            <p class="light">{{ 'Copy this report when contacting Solspace support.'|t('calendar') }}</p>
+            <label class="visually-hidden" for="calendar-diagnostic-report">{{ 'Calendar Diagnostics'|t('calendar') }}</label>
+            <textarea id="calendar-diagnostic-report" class="text fullwidth" readonly rows="16">{{ report }}</textarea>
+        </details>
+        <p id="calendar-diagnostic-copy-status" role="status" aria-live="polite"></p>
+    </div>
+{% endblock %}

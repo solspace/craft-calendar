@@ -18,7 +18,7 @@ class DateFormatHelper
         string $format = Locale::FORMAT_ICU,
         ?string $length = null,
     ): string {
-        $locale = \Craft::$app->locale;
+        $locale = \Craft::$app->getFormattingLocale();
         $formatter = $locale->getFormatter();
         $length ??= self::TYPE_TIME === $type ? $formatter->timeFormat : $formatter->dateFormat;
 
@@ -203,7 +203,7 @@ class DateFormatHelper
                 'long' => 'HH:mm:ss z',
                 'full' => 'HH:mm:ss zzzz',
             },
-            default => \Craft::$app->locale->getFormatter()->dateTimeFormats[$length]['time'],
+            default => \Craft::$app->getFormattingLocale()->getFormatter()->dateTimeFormats[$length]['time'],
         };
     }
 

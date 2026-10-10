@@ -23,7 +23,9 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteElementEvent;
 use Solspace\Calendar\Events\SaveElementEvent;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Models\CalendarModel;
 use yii\base\Exception;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 
 class EventsService extends Component
@@ -131,13 +133,13 @@ class EventsService extends Component
             $transaction = \Craft::$app->db->beginTransaction();
 
             try {
-                $isSaved = \Craft::$app->elements->saveElement($event, $validateContent);
-                if (!$isSaved) {
-                    return false;
-                }
+                $isSaved = \Craft::$app->elements->saveElement($event, $validateContent)
+                    && $this->_respectNonTranslatableFields($event);
 
-                $isSaved = $this->_respectNonTranslatableFields($event);
                 if (!$isSaved) {
+                    // Left open, the transaction would hold on to everything else the request writes
+                    $transaction?->rollBack();
+
                     return false;
                 }
 
@@ -150,7 +152,7 @@ class EventsService extends Component
                 $this->trigger(self::EVENT_AFTER_SAVE, new SaveElementEvent($event, $isNewEvent));
 
                 return true;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 if (null !== $transaction) {
                     $transaction->rollBack();
                 }
@@ -165,7 +167,7 @@ class EventsService extends Component
     /**
      * @throws \Throwable
      */
-    public function deleteEventById(int $eventId): bool
+    public function deleteEventById(int $eventId, bool $hardDelete = false): bool
     {
         $event = $this->getEventById($eventId, null, true);
 
@@ -173,13 +175,13 @@ class EventsService extends Component
             return false;
         }
 
-        return $this->deleteEvent($event);
+        return $this->deleteEvent($event, $hardDelete);
     }
 
     /**
      * @throws \Throwable
      */
-    public function deleteEvent(Event $event): bool
+    public function deleteEvent(Event $event, bool $hardDelete = false): bool
     {
         $deleteEvent = new DeleteElementEvent($event);
         $this->trigger(self::EVENT_BEFORE_DELETE, $deleteEvent);
@@ -190,7 +192,7 @@ class EventsService extends Component
             $transaction = \Craft::$app->db->beginTransaction();
 
             try {
-                $isDeleted = \Craft::$app->elements->deleteElementById($event->id, Event::class);
+                $isDeleted = \Craft::$app->elements->deleteElement($event, $hardDelete);
 
                 if ($isDeleted) {
                     if (null !== $transaction) {
@@ -300,23 +302,48 @@ class EventsService extends Component
 
     public function canEditEvent(Event|int $event): bool
     {
-        /** @var SettingsService $settings */
-        $settings = Calendar::getInstance()->settings;
-        $settingsModel = $settings->getSettingsModel();
-        $guestAccess = $settingsModel->guestAccess;
-
-        $eventModel = null;
         if ($event instanceof Event) {
             $eventModel = $event;
-        } elseif (is_numeric($event)) {
-            $eventModel = $this->getEventById($event);
+        } else {
+            $eventModel = $this->getEventById($event, null, true);
         }
 
-        if ((null === $eventModel || !$eventModel->id) && null !== $guestAccess) {
-            return true;
+        if (!$eventModel) {
+            return false;
         }
 
-        return PermissionHelper::canEditEvent($event);
+        if (!$eventModel->id) {
+            $calendar = Calendar::getInstance()->calendars->getCalendarById($eventModel->calendarId);
+
+            return $calendar && $this->canCreateEvent($calendar);
+        }
+
+        if (!\Craft::$app->request->getIsConsoleRequest() && !\Craft::$app->getUser()->getId()) {
+            return false;
+        }
+
+        return PermissionHelper::canEditEvent($eventModel);
+    }
+
+    public function canCreateEvent(CalendarModel|int $calendar): bool
+    {
+        if (\is_int($calendar)) {
+            $calendar = Calendar::getInstance()->calendars->getCalendarById($calendar);
+        }
+
+        if (!$calendar) {
+            return false;
+        }
+
+        return PermissionHelper::canEditCalendar($calendar)
+            || Calendar::getInstance()->calendars->isCalendarPublic($calendar);
+    }
+
+    public function requireEventCreatePermissions(CalendarModel|int $calendar): void
+    {
+        if (!$this->canCreateEvent($calendar)) {
+            throw new ForbiddenHttpException('User is not permitted to create events in this calendar');
+        }
     }
 
     /**

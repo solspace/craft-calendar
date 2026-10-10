@@ -1,11 +1,11 @@
 <?php
 
 return [
-    // App
-    'calendar' => 'calendar/app',
-    'calendar/<view:day|week|month>' => 'calendar/app',
-    'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/app',
-    'calendar/<year:\d+>/<month:\d+>/<day:\d+>/<view:day|week|month>' => 'calendar/app',
+    // Overview
+    'calendar' => 'calendar/settings/default-view',
+    'calendar/overview' => 'calendar/overview',
+    'calendar/<year:\d+>/<month:\d+>/<day:\d+>' => 'calendar/overview',
+    'calendar/<year:\d+>/<month:\d+>/<day:\d+>/<view:day|week|month|agenda|year>' => 'calendar/overview',
 
     // Calendars
     'calendar/calendars' => 'calendar/calendars/calendars-index',
@@ -25,9 +25,16 @@ return [
     'GET calendar/api/calendars' => 'calendar/api/calendars',
     'GET calendar/api/events' => 'calendar/api/events',
     'POST calendar/api/events' => 'calendar/api/create-event',
+    'POST calendar/api/events/overlaps' => 'calendar/overlaps/preview',
+    'POST calendar/api/events/prepare' => 'calendar/api/prepare-event',
+    'POST calendar/api/events/save' => 'calendar/events-api/save',
     'POST calendar/api/events/delete' => 'calendar/events-api/delete',
     'POST calendar/api/events/move' => 'calendar/events-api/move',
     'POST calendar/api/events/resize' => 'calendar/events-api/resize',
+    'POST calendar/api/events/history' => 'calendar/events-api/history',
+    'POST calendar/api/events/duplicate' => 'calendar/events-api/duplicate',
+    'POST calendar/api/events/cancel' => 'calendar/events-api/cancel',
+    'POST calendar/api/events/edit-following' => 'calendar/events-api/edit-following',
 
     'POST calendar/api/ai/generate-event' => 'calendar/solspace-ai/generate-event',
 
@@ -37,8 +44,10 @@ return [
     'calendar/events/api/custom-fields' => 'calendar/events-api/custom-fields',
 
     // Settings
+    'calendar/settings/diagnostics' => 'calendar/diagnostics/index',
     'calendar/settings/license' => 'calendar/settings/license',
     'calendar/settings/general' => 'calendar/settings/general',
+    'calendar/settings/overview' => 'calendar/settings/overview',
     'calendar/settings/events' => 'calendar/settings/events',
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
     'calendar/settings/ics' => 'calendar/settings/ics',

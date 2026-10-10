@@ -1,23 +1,21 @@
+import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-import DownIcon from "./icon.down.svg";
-import UpIcon from "./icon.up.svg";
+import { DownIcon } from "./icon.down";
+import { UpIcon } from "./icon.up";
 
-type Props = {
-  noun?: string;
-};
-
-export const Interval: FC<Props> = ({ noun = "day" }) => {
+export const Interval: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { interval } = useSelector(eventSelectors.state);
 
   return (
     <Wrapper>
-      <span>Every</span>
+      <span>{translate("Every")}</span>
       <Input
+        aria-label={translate("Repeat interval")}
         type="text"
         className="text"
         value={interval}
@@ -27,17 +25,21 @@ export const Interval: FC<Props> = ({ noun = "day" }) => {
         }}
       />
       <BtnGroup>
-        <Btn type="button" onClick={() => dispatch(eventActions.setInterval(interval + 1))}>
+        <Btn
+          type="button"
+          aria-label={translate("Increase interval")}
+          onClick={() => dispatch(eventActions.setInterval(interval + 1))}
+        >
           <UpIcon />
         </Btn>
-        <Btn type="button" onClick={() => dispatch(eventActions.setInterval(interval - 1))}>
+        <Btn
+          type="button"
+          aria-label={translate("Decrease interval")}
+          onClick={() => dispatch(eventActions.setInterval(interval - 1))}
+        >
           <DownIcon />
         </Btn>
       </BtnGroup>
-      <span>
-        {noun}
-        {interval > 1 ? "s" : ""}
-      </span>
     </Wrapper>
   );
 };
@@ -54,34 +56,59 @@ const Input = styled.input`
 `;
 
 const BtnGroup = styled.div`
-  display: flex;
+  display: inline-flex;
+  flex: 0 0 auto;
   flex-direction: column;
+  width: 26px;
 `;
 
 const Btn = styled.button`
-  cursor: pointer;
-  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  border: 1px solid var(--gray-200);
-  background: var(--gray-100);
+  width: 26px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+
+  color: var(--gray-800);
+  cursor: pointer;
+  appearance: none;
+
+  border: 1px solid var(--gray-050);
+  background: var(--gray-200);
 
   svg {
+    display: block;
     width: 12px;
     height: 12px;
   }
 
   &:first-child {
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-radius: 5px 5px 0 0;
   }
 
   &:last-child {
-    border-bottom-right-radius: 4px;
-    border-bottom-left-radius: 4px;
+    margin-top: -1px;
+    border-radius: 0 0 5px 5px;
   }
 
   &:hover {
-    background: var(--gray-200);
-    border: 1px solid var(--gray-300);
+    position: relative;
+    z-index: 1;
+    color: var(--gray-800);
+    background: var(--button-bg--hover);
+  }
+
+  &:focus-visible {
+    position: relative;
+    z-index: 2;
+    outline: 2px solid var(--blue-500);
+    outline-offset: 1px;
+  }
+
+  &:active {
+    background: var(--button-bg--active);
   }
 `;

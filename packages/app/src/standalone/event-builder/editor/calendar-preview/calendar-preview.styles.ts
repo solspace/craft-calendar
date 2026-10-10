@@ -1,18 +1,32 @@
 import styled from "styled-components";
 
 export const CalendarPreviewWrapper = styled.div`
-  flex: 2;
+  container-type: inline-size;
 
   display: flex;
-  justify-content: end;
-  gap: 18px;
+  flex-direction: row;
+  gap: 20px;
 
-  @container (max-width: 1084px) {
-    justify-content: start;
+  padding: 20px;
+  width: 100%;
+  flex: 0 0 495px;
+  box-sizing: border-box;
+    
+  @container (min-width: 1024px) {
+    width: 495px;
   }
 
   > .field {
     margin: 0;
+    width: 100%;
+
+    .input {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      width: 100%;
+    }
   }
 
   table:not(.data) {
@@ -30,17 +44,97 @@ export const CalendarPreviewWrapper = styled.div`
   }
 
   .fc {
-    width: 260px;
+    --fc-border-color: var(--gray-200);
+
+    min-width: 260px;
+    max-width: 260px;
+    color: var(--gray-600);
+
+    .cancelled-date-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .fc-scrollgrid,
+    th,
+    td {
+      border-color: var(--fc-border-color);
+    }
+
+    .fc-col-header-cell {
+      background-color: var(--gray-100);
+      color: var(--gray-600);
+      text-align: center;
+    }
+
+    .fc-col-header-cell-cushion {
+      padding: 5px 0;
+      font-weight: 700;
+    }
 
     .fc-header-toolbar {
-        margin-bottom: 1em;
+      margin-bottom: 10px;
 
       .fc-toolbar-title {
-        font-size: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+      }
+        
+      .fc-button-group {
+        display: flex;
+        flex-direction: row;
+        gap: 3px;
       }
 
       .fc-button {
-        font-size: 8px;
+        font-size: 10px;
+      }
+
+      .fc-today-button {
+        display: none;
+      }
+
+      .fc-prev-button,
+      .fc-next-button {
+        padding: 0.3em 0;
+        outline: none !important;
+        box-shadow: none !important;
+        border: 0 !important;
+        color: var(--gray-700);
+        border-radius: var(--radius-lg);
+        background-color: var(--gray-200);
+
+        &:hover {
+          background-color: var(--gray-150);
+        }
+
+        &:active,
+        &:focus,
+        &:focus-visible {
+          outline: none !important;
+          box-shadow: none !important;
+          border: 0 !important;
+        }
+
+        &:active {
+          background-color: var(--gray-150);
+        }
+      }
+
+      .fc-prev-button {
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+      }
+
+      .fc-next-button {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
       }
     }
 
@@ -48,7 +142,7 @@ export const CalendarPreviewWrapper = styled.div`
       user-select: none;
 
       > thead {
-        font-size: 10px;
+        font-size: 13px;
       }
 
       >tbody {
@@ -57,17 +151,39 @@ export const CalendarPreviewWrapper = styled.div`
           padding-inline-start: 0;
           padding-inline-end: 0;
           cursor: pointer;
+          background-color: var(--gray-050);
 
-          &.fc-has-event {
-            background: var(--gray-100);
+          box-sizing: border-box;
+          height: 32px;
+          padding: 0;
+          line-height: 1;
+          vertical-align: middle;
 
-            &.fc-day-today {
-              background: var(--custom-bg-color, var(--gray-200));
+          .fc-daygrid-day-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            line-height: 1;
+            border: 2px solid transparent;
+            border-radius: 50%;
+          }
+
+          &.fc-day-today {
+            .fc-daygrid-day-number {
+              border-color: var(--gray-200);
             }
           }
 
+          &.fc-has-event {
+            background-color: var(--gray-150);
+          }
+
           &.fc-extra-date {
-            background: color-mix(in srgb, var(--green-100) 72%, white);
+            background-color: var(--gray-150);
           }
 
           &.fc-excluded-date {
@@ -75,11 +191,30 @@ export const CalendarPreviewWrapper = styled.div`
             color: var(--gray-600);
           }
 
+          &.fc-cancelled-date {
+            background-color: var(--yellow-050);
+
+            .fc-daygrid-day-number {
+              color: var(--yellow-700);
+              text-decoration: line-through;
+            }
+          }
+
           div.fc-daygrid-day-frame {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            height: 31px;
+            min-height: 31px;
+
             .fc-daygrid-day-top {
-              font-size: 10px;
-              flex-direction: row;
+              display: flex;
+              align-items: center;
               justify-content: center;
+              flex-direction: row;
+              font-size: 13px;
+              width: 100%;
             }
 
             .fc-daygrid-day-events {
@@ -92,9 +227,43 @@ export const CalendarPreviewWrapper = styled.div`
   }
 `;
 
-export const OccurrencePreview = styled.div`
-  min-width: 120px;
-  max-width: 120px;
+export const FullCalendarOccurrencePreviewWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+
+  margin-top: 10px;
+  width: 455px;
+  max-width: 100%;
+  box-sizing: border-box;
+`;
+
+export const OccurrencePreviewHeading = styled.h4`
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+`;
+
+export const OccurrencePreviewDescription = styled.p`
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--gray-600);
+`;
+
+export const OccurrencePreviewSummary = styled.p`
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--gray-600);
+`;
+
+export const OccurrencePreviewDateList = styled.div`
+  min-width: max-content;
+  flex: 1;
   height: 100%;
 
   p {
@@ -111,20 +280,77 @@ export const DateList = styled.ul<DateListProps>`
   display: flex;
   flex-direction: column;
   justify-content: ${(props) => (props.$count > 7 ? "space-between" : "start")};
-  gap: 4px;
+  gap: 5px;
 
-  height: 215px;
-  margin-top: 57px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 `;
 
 export const DateItem = styled.li`
-  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 6px;
 
   font-size: 13px;
-  line-height: 13px;
-  font-family: monospace;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 
-  background-color: var(--gray-100);
+  background-color: var(--gray-050);
   border: 1px solid var(--gray-200);
-  border-left: 5px solid var(--gray-200);
+  border-radius: var(--small-border-radius, 3px);
+
+  > span {
+    flex: 1;
+  }
+
+  .occurrence-actions {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 0;
+  }
+
+  .occurrence-date {
+    display: flex;
+    flex-direction: column;
+    line-height: 18px;
+  }
+
+  &.is-cancelled {
+    background-color: var(--yellow-050);
+
+    .occurrence-date > span:first-child {
+      color: var(--gray-600);
+      text-decoration: line-through;
+    }
+
+    .occurrence-state {
+      color: var(--yellow-700);
+      font-size: 11px;
+    }
+  }
+`;
+
+export const ScheduleChangeList = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 3px 8px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    background: var(--gray-050);
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--gray-700);
+  }
 `;

@@ -1,50 +1,52 @@
-import { useEffect, useState } from "react";
+import type { CalendarTab } from "@cal/types/config";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
-const KEY = "solspace-calendar-view";
 const HIDDEN_CALENDARS_KEY = "solspace-calendar-hidden-calendars";
 
-export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay";
-type ViewSettings = {
-  view: View;
-};
-
-const defaultState: ViewSettings = {
-  view: "dayGridMonth",
-};
-
-const viewByUrlSuffix: Record<string, View> = {
-  month: "dayGridMonth",
-  week: "timeGridWeek",
+export type View = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listMonth" | "calendarYear";
+const viewByUrlSuffix: Record<CalendarTab, View> = {
   day: "timeGridDay",
+  week: "timeGridWeek",
+  month: "dayGridMonth",
+  year: "calendarYear",
+  agenda: "listMonth",
 };
 
-const getUrlView = (): View | null => {
+export const getUrlView = (): View | null => {
   const suffix = window.location.pathname.split("/").filter(Boolean).at(-1);
 
-  return suffix ? viewByUrlSuffix[suffix] || null : null;
+  return suffix ? viewByUrlSuffix[suffix as CalendarTab] || null : null;
 };
 
-export const useViewSettings = () => {
-  const [value, setValue] = useLocalStorage<ViewSettings>(KEY, defaultState);
-  const [view, setViewState] = useState<View>(value.view);
+export const getViewUrlSuffix = (view: View): string =>
+  Object.entries(viewByUrlSuffix).find(([, value]) => value === view)?.[0] ?? "month";
+
+export const useViewSettings = (defaultTab: CalendarTab = "month", enabledTabs?: CalendarTab[]) => {
+  const enabledViews = useMemo(() => {
+    const tabs = Object.keys(viewByUrlSuffix) as CalendarTab[];
+    const enabled = tabs.filter((tab) => !enabledTabs || enabledTabs.includes(tab));
+    return (enabled.length ? enabled : tabs).map((tab) => viewByUrlSuffix[tab]);
+  }, [enabledTabs]);
+  const resolveView = useCallback(
+    (preferred: View): View => {
+      if (enabledViews.includes(preferred)) return preferred;
+      if (enabledViews.includes(viewByUrlSuffix[defaultTab])) return viewByUrlSuffix[defaultTab];
+      return enabledViews.includes("dayGridMonth") ? "dayGridMonth" : enabledViews[0];
+    },
+    [defaultTab, enabledViews],
+  );
+  const [view, setViewState] = useState<View>(() =>
+    resolveView(getUrlView() || viewByUrlSuffix[defaultTab] || "dayGridMonth"),
+  );
   const [isReady, setIsReady] = useState(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: we only want to run this on mount
   useEffect(() => {
-    const urlView = getUrlView();
-    const initialView = urlView || value.view;
-
-    if (urlView) {
-      setViewState(initialView);
-    }
-
     setIsReady(true);
   }, []);
 
   const setView = (view: View) => {
-    setViewState(view);
-    setValue({ view });
+    setViewState(resolveView(view));
     setIsReady(true);
   };
 
@@ -52,6 +54,8 @@ export const useViewSettings = () => {
     view,
     setView,
     isReady,
+    enabledViews,
+    resolveView,
   };
 };
 

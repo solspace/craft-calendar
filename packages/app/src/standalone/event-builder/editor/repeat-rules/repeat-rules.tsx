@@ -3,6 +3,7 @@ import { Dropdown, type Option } from "@cal/components/controls/dropdown/dropdow
 import { NumberInput } from "@cal/components/controls/number-input/number-input";
 import { Flex } from "@cal/styles/components";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { getDateLocale } from "@cal/utils/localization";
 import { appSelectors } from "@event-builder/store/app.slice";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
@@ -12,6 +13,7 @@ import { type FC, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Frequency } from "rrule";
 import { CustomRules } from "./custom/custom-rules";
+import { Interval } from "./custom/interval";
 import { DateManager } from "./date-manager";
 import { RepeatRulesWrapper } from "./repeat-rules.styles";
 import { useRRuleUpdates } from "./use-rrule";
@@ -31,18 +33,21 @@ const endOptions: Option<RepeatEndType>[] = [
   { value: "ON_DATE", label: "On Date..." },
 ];
 
-const freqOptions: Option<Frequency>[] = [
-  { value: Frequency.DAILY, label: "Daily" },
-  { value: Frequency.WEEKLY, label: "Weekly" },
-  { value: Frequency.MONTHLY, label: "Monthly" },
-  { value: Frequency.YEARLY, label: "Yearly" },
+const freqOptions = (plural: boolean): Option<Frequency>[] => [
+  { value: Frequency.DAILY, label: plural ? "Days" : "Day" },
+  { value: Frequency.WEEKLY, label: plural ? "Weeks" : "Week" },
+  { value: Frequency.MONTHLY, label: plural ? "Months" : "Month" },
+  { value: Frequency.YEARLY, label: plural ? "Years" : "Year" },
 ];
+
+const repeatCountDebounceMs = 300;
 
 export const RepeatRules: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const state = useSelector(eventSelectors.state);
   const weekStartDay = useSelector(appSelectors.weekStartDay);
-  const { repeatType, repeatEndType, count, until, freq, start } = state;
+  const dateFormat = useSelector(appSelectors.formats)?.date.short.icu ?? "P";
+  const { repeatType, repeatEndType, count, until, freq, start, interval } = state;
   const showExclusions = repeatType !== "NEVER";
 
   const {
@@ -56,40 +61,43 @@ export const RepeatRules: FC = () => {
 
   const pickerStartDate = useMemo(() => utcTimestampToLocalDisplayDate(start), [start]);
 
-  const formatDate = (value: number) => format(utcTimestampToLocalDisplayDate(value), "yyyy-MM-dd");
+  const formatDate = (value: number) =>
+    format(utcTimestampToLocalDisplayDate(value), dateFormat, { locale: getDateLocale() });
 
   return (
     <RepeatRulesWrapper>
-      <Flex>
+      <Flex $alignItems="end" style={{ width: "100%" }}>
         <Dropdown
-          label="Repeat"
+          translateOptions
+          label="Repeats"
           value={repeatType}
           options={options}
           onChange={(value) => dispatch(eventActions.setRepeatType(value as RepeatType))}
         />
 
         {repeatType === "CUSTOM" && (
-          <Dropdown
-            label=""
-            value={freq}
-            options={freqOptions}
-            onChange={(value) =>
-              dispatch(eventActions.setFreq(Number.parseInt(value, 10) as Frequency))
-            }
-          />
+          <>
+            <Interval />
+            <Dropdown
+              translateOptions
+              label=""
+              value={freq}
+              options={freqOptions(interval > 1)}
+              onChange={(value) =>
+                dispatch(eventActions.setFreq(Number.parseInt(value, 10) as Frequency))
+              }
+            />
+          </>
         )}
       </Flex>
 
-      {repeatType === "CUSTOM" && (
-        <div className="field">
-          <CustomRules />
-        </div>
-      )}
+      {repeatType === "CUSTOM" && <CustomRules />}
 
       {repeatType !== "NEVER" && (
-        <Flex className="field">
+        <Flex style={{ margin: "20px 0 0", width: "100%" }}>
           <Dropdown
-            label="Repeat End"
+            translateOptions
+            label="Ends"
             options={endOptions}
             value={repeatEndType}
             onChange={(value) => dispatch(eventActions.setRepeatEndType(value as RepeatEndType))}
@@ -99,6 +107,8 @@ export const RepeatRules: FC = () => {
             <NumberInput
               label="Times"
               value={count}
+              min={1}
+              debounceMs={repeatCountDebounceMs}
               onChange={(value) => dispatch(eventActions.setCount(value))}
             />
           )}
@@ -108,43 +118,52 @@ export const RepeatRules: FC = () => {
               value={until || null}
               onChange={(value) => dispatch(eventActions.setUntil(value))}
               datePickerProps={{
+                dateFormat,
                 showTimeInput: false,
+                showMonthDropdown: true,
+                showYearDropdown: true,
+                dropdownMode: "select",
                 calendarStartDay: weekStartDay,
+                minDate: pickerStartDate,
               }}
             />
           )}
         </Flex>
       )}
 
-      <DateManager
-        title="Custom Occurrences"
-        actionLabel="Add Occurrence"
-        actionClass="icon add dashed"
-        popoverTitle="Added Occurrences"
-        dates={addedDates}
-        openToDate={pickerStartDate}
-        formatDate={formatDate}
-        filterDate={canAddOccurrence}
-        weekStartDay={weekStartDay}
-        onAdd={(value) => addFixedDate("rdate", value)}
-        onRemove={(value) => removeFixedDate("rdate", value)}
-      />
-
-      {showExclusions && (
+      <Flex style={{ margin: "20px 0 0", borderTop: "1px solid var(--gray-200)", width: "100%" }}>
         <DateManager
-          title="Exceptions"
-          actionLabel="Exclude Occurrence"
-          actionClass="icon dashed minus"
-          popoverTitle="Excluded Occurrences"
-          dates={excludedDates}
+          title="Additional Dates"
+          description="Add dates outside the recurring pattern."
+          actionLabel="Add Dates"
+          actionClass="icon add dashed"
+          popoverTitle="Additional Dates"
+          dates={addedDates}
           openToDate={pickerStartDate}
           formatDate={formatDate}
-          filterDate={canExcludeOccurrence}
+          filterDate={canAddOccurrence}
           weekStartDay={weekStartDay}
-          onAdd={(value) => addFixedDate("exdate", value)}
-          onRemove={(value) => removeFixedDate("exdate", value)}
+          onAdd={(value) => addFixedDate("rdate", value)}
+          onRemove={(value) => removeFixedDate("rdate", value)}
         />
-      )}
+
+        {showExclusions && (
+          <DateManager
+            title="Excluded Dates"
+            description="Remove dates generated by the recurring pattern."
+            actionLabel="Remove Dates"
+            actionClass="icon dashed minus"
+            popoverTitle="Excluded Dates"
+            dates={excludedDates}
+            openToDate={pickerStartDate}
+            formatDate={formatDate}
+            filterDate={canExcludeOccurrence}
+            weekStartDay={weekStartDay}
+            onAdd={(value) => addFixedDate("exdate", value)}
+            onRemove={(value) => removeFixedDate("exdate", value)}
+          />
+        )}
+      </Flex>
     </RepeatRulesWrapper>
   );
 };

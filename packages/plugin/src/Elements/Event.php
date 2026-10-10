@@ -4,19 +4,28 @@ namespace Solspace\Calendar\Elements;
 
 use Carbon\Carbon;
 use craft\base\Element;
+use craft\base\ExpirableElementInterface;
 use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
+use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\PropagationMethod;
 use craft\errors\SiteNotFoundException;
 use craft\events\RegisterElementActionsEvent;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
+use craft\validators\DateCompareValidator;
+use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
 use Illuminate\Support\Collection;
 use RRule\RRule;
@@ -27,22 +36,30 @@ use Solspace\Calendar\Elements\Actions\DeleteEventAction;
 use Solspace\Calendar\Elements\Actions\SetStatusAction;
 use Solspace\Calendar\Elements\conditions\EventCondition;
 use Solspace\Calendar\Elements\Db\EventQuery;
+use Solspace\Calendar\Elements\Db\OccurrenceOverrideQuery;
 use Solspace\Calendar\Events\JsonValueTransformerEvent;
 use Solspace\Calendar\Library\Duration\EventDuration;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\RRule\EventRecurrenceValidator;
+use Solspace\Calendar\Library\RRule\RRuleParser;
 use Solspace\Calendar\Library\RRule\RRuleStringNormalizer;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Resources\Bundles\EventEditBundle;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use yii\base\Event as BaseEvent;
 use yii\base\Exception;
 use yii\web\Response;
 
-class Event extends Element implements \JsonSerializable
+class Event extends Element implements ExpirableElementInterface, \JsonSerializable
 {
     public const TABLE = '{{%calendar_events}}';
     public const TABLE_STD = 'calendar_events';
+
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
     public const REPEAT_NEVER = 'NEVER';
     public const REPEAT_DAILY = 'DAILY';
@@ -50,6 +67,10 @@ class Event extends Element implements \JsonSerializable
     public const REPEAT_MONTHLY = 'MONTHLY';
     public const REPEAT_YEARLY = 'YEARLY';
     public const REPEAT_CUSTOM = 'CUSTOM';
+
+    public const REPEAT_END_NEVER = 'NEVER';
+    public const REPEAT_END_AFTER = 'AFTER';
+    public const REPEAT_END_ON_DATE = 'ON_DATE';
 
     public const SPAN_LIMIT_DAYS = 365;
 
@@ -63,12 +84,35 @@ class Event extends Element implements \JsonSerializable
         'until',
     ];
 
+    /**
+     * What the event builder posts for the schedule. `startDate` and `endDate` are older names for `start` and `end`.
+     */
+    private const SCHEDULE_PARAMS = [
+        'start',
+        'startDate',
+        'end',
+        'endDate',
+        'until',
+        'timezone',
+        'allDay',
+        'repeatType',
+        'repeatEndType',
+        'rrule',
+    ];
+
     public ?int $calendarId = null;
+
+    /**
+     * Shared by the parts of a split event, so each part can find the others. Null for an event that was never split.
+     * Only splitting sets it: saving an event doesn't write it, so drafts and copies of an event can't change it.
+     */
+    public ?int $seriesId = null;
     public ?int $authorId = null;
     public ?string $username = null;
     public ?string $name = null;
 
     public ?Carbon $postDate = null;
+    public ?\DateTime $expiryDate = null;
     public ?Carbon $startDate = null;
     public ?Carbon $startDateLocalized = null;
     public ?Carbon $endDate = null;
@@ -77,20 +121,48 @@ class Event extends Element implements \JsonSerializable
     public ?string $timezone = null;
 
     public ?string $rrule = null;
-    public ?string $repeatType = null;
-    public ?string $repeatEndType = null;
+    public ?string $repeatType = self::REPEAT_NEVER;
+    public ?string $repeatEndType = self::REPEAT_END_NEVER;
     public ?bool $allDay = null;
     public ?string $freq = null;
     public ?int $interval = null;
     public ?int $count = null;
 
-    private bool $syncFromRequestOnSave = true;
+    private ?int $scheduleShift = null;
+
+    private ?NestedElementManager $occurrenceOverrideManager = null;
+
+    /**
+     * @var null|ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery
+     */
+    private ElementCollection|OccurrenceOverrideQuery|null $occurrenceOverrides = null;
+
+    private ?int $persistedCalendarId = null;
+
+    private ?string $persistedRRule = null;
+
+    private ?string $persistedRepeatType = null;
+
+    private ?string $persistedRepeatEndType = null;
 
     public function __construct($config = [])
     {
+        if (\is_array($config) && !empty($config['id'])) {
+            if (isset($config['calendarId'])) {
+                $this->persistedCalendarId = (int) $config['calendarId'];
+            }
+
+            $this->persistedRRule = self::normalizeRRule(
+                $config['rrule'] ?? null,
+                (bool) ($config['allDay'] ?? false),
+            );
+            $this->persistedRepeatType = $config['repeatType'] ?? null;
+            $this->persistedRepeatEndType = $config['repeatEndType'] ?? null;
+        }
+
         foreach (self::CARBON_PROPERTIES as $property) {
             if (isset($config[$property]) && \is_string($config[$property])) {
-                $config[$property] = new Carbon($config[$property]);
+                $config[$property] = new Carbon($config[$property], DateHelper::UTC);
             }
         }
 
@@ -109,6 +181,14 @@ class Event extends Element implements \JsonSerializable
         if ($this->endDate) {
             $this->endDateLocalized = new Carbon($this->endDate->toDateTimeString());
         }
+    }
+
+    public function __clone()
+    {
+        parent::__clone();
+
+        $this->occurrenceOverrideManager = null;
+        $this->occurrenceOverrides = null;
     }
 
     public function canCreateDrafts(User $user): bool
@@ -147,6 +227,11 @@ class Event extends Element implements \JsonSerializable
     }
 
     public static function hasDrafts(): bool
+    {
+        return true;
+    }
+
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -231,7 +316,9 @@ class Event extends Element implements \JsonSerializable
     public static function statuses(): array
     {
         return [
-            self::STATUS_ENABLED => \Craft::t('app', 'Enabled'),
+            self::STATUS_LIVE => \Craft::t('app', 'Live'),
+            self::STATUS_PENDING => \Craft::t('app', 'Pending'),
+            self::STATUS_EXPIRED => \Craft::t('app', 'Expired'),
             self::STATUS_DISABLED => \Craft::t('app', 'Disabled'),
         ];
     }
@@ -342,6 +429,16 @@ class Event extends Element implements \JsonSerializable
         return parent::gqlTypeNameByContext($context);
     }
 
+    public static function gqlMutationNameByContext(mixed $context): string
+    {
+        return 'save_'.self::gqlTypeNameByContext($context);
+    }
+
+    public static function gqlDraftMutationNameByContext(mixed $context): string
+    {
+        return 'save_'.$context->handle.'_Draft';
+    }
+
     public function getGqlTypeName(): string
     {
         return static::gqlTypeNameByContext($this->getCalendar());
@@ -378,18 +475,7 @@ class Event extends Element implements \JsonSerializable
 
     public function isMultiDay(): bool
     {
-        $startDate = $this->getStartDate();
-        $endDate = $this->getEndDate();
-
-        $diffInDays = DateHelper::carbonDiffInDays($startDate, $endDate);
-        if ($diffInDays > 1) {
-            return true;
-        }
-
-        $threshold = $this->getOverlapThreshold();
-        $dateBeforeOverlap = DateHelper::isDateBeforeOverlap($this->getEndDate(), $threshold);
-
-        return $diffInDays === 1 && !$dateBeforeOverlap;
+        return DateHelper::isMultiDay($this->getStartDate(), $this->getEndDate(), $this->getOverlapThreshold());
     }
 
     public function isCurrentlyHappening(): bool
@@ -433,13 +519,16 @@ class Event extends Element implements \JsonSerializable
     {
         $rrule = $this->getRRuleObject();
 
-        return $rrule?->getOccurrencesBetween($rangeStart, $rangeEnd, self::MAX_OCCURRENCES) ?? [];
+        return $rrule?->getOccurrencesBetween(
+            $rangeStart ? DateHelper::parseFloatingCarbon($rangeStart) : null,
+            $rangeEnd ? DateHelper::parseFloatingCarbon($rangeEnd) : null,
+            self::MAX_OCCURRENCES,
+        ) ?? [];
     }
 
     public function happensOn(\DateTime $date): bool
     {
-        $date = Carbon::createFromInterface($date);
-        $date->setTime(0, 0);
+        $date = DateHelper::parseFloatingCarbon($date)->setTime(0, 0);
 
         $rrule = $this->getRRuleObject();
         if (null !== $rrule) {
@@ -538,6 +627,34 @@ class Event extends Element implements \JsonSerializable
         return $this->postDate;
     }
 
+    public function getExpiryDate(): ?\DateTime
+    {
+        return $this->expiryDate;
+    }
+
+    public function getStatus(): ?string
+    {
+        $status = parent::getStatus();
+        if (self::STATUS_ENABLED !== $status) {
+            return $status;
+        }
+
+        $now = DateTimeHelper::now();
+
+        return match (true) {
+            !$this->postDate || $this->postDate > $now => self::STATUS_PENDING,
+            $this->expiryDate && $this->expiryDate <= $now => self::STATUS_EXPIRED,
+            default => self::STATUS_LIVE,
+        };
+    }
+
+    public function beforeValidate(): bool
+    {
+        $this->setDefaultPostDate();
+
+        return parent::beforeValidate();
+    }
+
     public function getDuration(): EventDuration
     {
         $startDate = $this->getStartDate();
@@ -571,7 +688,7 @@ class Event extends Element implements \JsonSerializable
             return null;
         }
 
-        return RRule::createFromRfcString($this->rrule, true);
+        return RRuleParser::parse($this->rrule);
     }
 
     public function getReadableRepeatRule(): ?string
@@ -608,55 +725,76 @@ class Event extends Element implements \JsonSerializable
             return false;
         }
 
+        $this->setDefaultPostDate();
         $this->updateTitle();
 
-        if (!$this->syncFromRequestOnSave) {
-            if (!$this->timezone || '' === trim((string) $this->timezone)) {
-                $this->timezone = \Craft::$app->getTimeZone();
-            }
-
-            return true;
+        // A draft made with "Edit this and following" splits its event as it's applied
+        if ($this->updatingFromDerivative && !$this->propagating && $this->duplicateOf instanceof self) {
+            Calendar::getInstance()->series->splitForDraft($this, $this->duplicateOf);
         }
 
-        $request = \Craft::$app->getRequest();
-
-        $timezone = $request->getBodyParam('timezone', $this->timezone);
-        if (!\is_string($timezone) || '' === trim($timezone)) {
-            $timezone = \Craft::$app->getTimeZone();
+        if (!$this->timezone || '' === trim((string) $this->timezone)) {
+            $this->timezone = \Craft::$app->getTimeZone();
         }
-        $timezone = trim((string) $timezone);
-
-        $start = $this->bodyParamToCarbon('start', $this->startDate, 'startDate', $timezone);
-        $end = $this->bodyParamToCarbon('end', $this->endDate, 'endDate', $timezone);
-        $until = $this->bodyParamToCarbon('until', $this->until, null, $timezone);
-
-        $allDay = (bool) $request->getBodyParam('allDay', $this->allDay);
-
-        $repeatType = $request->getBodyParam('repeatType', $this->repeatType);
-        $repeatEndType = $request->getBodyParam('repeatEndType', $this->repeatEndType);
-        $rrule = $request->getBodyParam('rrule', $this->rrule);
-        if ($allDay && \is_string($rrule)) {
-            $rrule = RRuleStringNormalizer::normalizeAllDayRRule($rrule);
-        }
-
-        $this->startDate = $start;
-        $this->endDate = $end;
-        $this->until = $until;
-        $this->timezone = '' !== $timezone ? $timezone : null;
-        $this->allDay = $allDay;
-
-        $this->repeatType = $repeatType;
-        $this->repeatEndType = $repeatEndType;
-        $this->rrule = $rrule;
 
         return true;
     }
 
-    public function disableRequestSyncOnSave(): self
+    /**
+     * Craft passes the editor's posted values here when it saves the event, saves a draft of it or applies one.
+     * Saves made any other way, like moving an occurrence in the calendar, never read the schedule from the request.
+     */
+    public function setAttributesFromRequest(array $values): void
     {
-        $this->syncFromRequestOnSave = false;
+        $schedule = array_intersect_key($values, array_flip(self::SCHEDULE_PARAMS));
 
-        return $this;
+        // Craft's date/time inputs post a localized date, time, and timezone array.
+        // postDate uses Carbon, which Craft's native DateTime typecasting does not normalize.
+        if (\array_key_exists('postDate', $values)) {
+            $date = DateTimeHelper::toDateTime($values['postDate']);
+            $values['postDate'] = $date ? Carbon::instance($date) : null;
+        }
+
+        parent::setAttributesFromRequest(array_diff_key($values, $schedule));
+        $this->setScheduleFromRequest($schedule);
+    }
+
+    /**
+     * Sets the schedule from what the event builder posts: `start`, `end`, `until`, `timezone`, `allDay`,
+     * `repeatType`, `repeatEndType` and `rrule`. Anything not posted keeps its current value.
+     */
+    public function setScheduleFromRequest(array $values): void
+    {
+        if (!$values) {
+            return;
+        }
+
+        $timezone = $values['timezone'] ?? $this->timezone;
+        $this->timezone = \is_string($timezone) && '' !== trim($timezone) ? trim($timezone) : \Craft::$app->getTimeZone();
+
+        $this->startDate = self::parseScheduleDate($values['start'] ?? null) ?? self::parseScheduleDate($values['startDate'] ?? null) ?? $this->startDate;
+        $this->endDate = self::parseScheduleDate($values['end'] ?? null) ?? self::parseScheduleDate($values['endDate'] ?? null) ?? $this->endDate;
+        $this->until = '' === ($values['until'] ?? null) ? null : self::parseScheduleDate($values['until'] ?? null) ?? $this->until;
+        $this->allDay = (bool) ($values['allDay'] ?? $this->allDay);
+        $this->repeatType = $values['repeatType'] ?? $this->repeatType;
+        $this->repeatEndType = $values['repeatEndType'] ?? $this->repeatEndType;
+
+        $rrule = $values['rrule'] ?? $this->rrule;
+        $this->rrule = \is_string($rrule) ? self::normalizeRRule($rrule, $this->allDay) : $rrule;
+    }
+
+    /**
+     * Marks the whole schedule as moved by a known distance, like dragging the series in the calendar does.
+     * Saving then moves the edited occurrences and occurrence codes along, instead of comparing schedules.
+     */
+    public function setScheduleShift(?int $seconds): void
+    {
+        $this->scheduleShift = $seconds;
+    }
+
+    public function getScheduleShift(): ?int
+    {
+        return $this->scheduleShift;
     }
 
     public function afterSave(bool $isNew): void
@@ -673,6 +811,7 @@ class Event extends Element implements \JsonSerializable
             'repeatType' => $this->repeatType,
             'repeatEndType' => $this->repeatEndType,
             'postDate' => $this->postDate,
+            'expiryDate' => Db::prepareDateForDb($this->expiryDate),
         ];
 
         $db = \Craft::$app->db;
@@ -690,12 +829,96 @@ class Event extends Element implements \JsonSerializable
             ;
         }
 
+        // A copy of a draft made with "Edit this and following" still splits the event when it's applied
+        if ($isNew && !$this->propagating && $this->duplicateOf instanceof self && $this->getIsDraft()) {
+            Calendar::getInstance()->series->copySplitAt($this->duplicateOf, $this);
+        }
+
         parent::afterSave($isNew);
+
+        $this->persistedCalendarId = $this->calendarId;
+        $this->persistedRRule = self::normalizeRRule($this->rrule, $this->isAllDay());
+        $this->persistedRepeatType = $this->repeatType;
+        $this->persistedRepeatEndType = $this->repeatEndType;
     }
 
     public function getFieldLayout(): ?FieldLayout
     {
         return $this->getCalendar()->getFieldLayout();
+    }
+
+    /**
+     * Overrides of single occurrences belong to their event, so Craft carries them through
+     * drafts, duplication, deletion and restoring along with it.
+     */
+    public function getOccurrenceOverrideManager(): NestedElementManager
+    {
+        return $this->occurrenceOverrideManager ??= new NestedElementManager(
+            OccurrenceOverride::class,
+            static fn (self $owner) => $owner->createOccurrenceOverrideQuery(),
+            [
+                'attribute' => 'occurrenceOverrides',
+                'propagationMethod' => PropagationMethod::All,
+                'valueGetter' => static fn (self $owner) => $owner->getOccurrenceOverrides(),
+                'valueSetter' => static function (ElementCollection|OccurrenceOverrideQuery $value, self $owner): void {
+                    $owner->occurrenceOverrides = $value;
+                },
+            ],
+        );
+    }
+
+    /**
+     * @return ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery
+     */
+    public function getOccurrenceOverrides(): ElementCollection|OccurrenceOverrideQuery
+    {
+        return $this->occurrenceOverrides ??= $this->createOccurrenceOverrideQuery();
+    }
+
+    /**
+     * Sets the overrides that duplicating this event copies. Null loads them from the database again.
+     *
+     * @param null|ElementCollection<int, OccurrenceOverride>|OccurrenceOverrideQuery $value
+     */
+    public function setOccurrenceOverrides(ElementCollection|OccurrenceOverrideQuery|null $value): void
+    {
+        $this->occurrenceOverrides = $value;
+    }
+
+    /**
+     * Every event in this event's series, in order. An event that was never split is a series of one.
+     *
+     * @return self[]
+     */
+    public function getSeries(): array
+    {
+        return Calendar::getInstance()->series->findParts($this)?->all() ?? [$this];
+    }
+
+    public function afterPropagate(bool $isNew): void
+    {
+        $this->getOccurrenceOverrideManager()->maintainNestedElements($this, $isNew);
+
+        parent::afterPropagate($isNew);
+    }
+
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Before the event is gone, because its ownership rows go with it
+        $this->getOccurrenceOverrideManager()->deleteNestedElements($this, $this->hardDelete);
+
+        return true;
+    }
+
+    public function afterRestore(): void
+    {
+        $this->getOccurrenceOverrideManager()->restoreNestedElements($this);
+
+        parent::afterRestore();
     }
 
     public function builderConfig(): array
@@ -710,6 +933,7 @@ class Event extends Element implements \JsonSerializable
                 'timeInterval' => $plugin->settings->getTimeInterval(),
                 'eventDuration' => $plugin->settings->getEventDuration(),
                 'allDayDefault' => $plugin->settings->isAllDayDefault(),
+                'showOverlapWarnings' => $plugin->settings->showOverlapWarnings(),
                 'overlapThreshold' => $plugin->settings->getOverlapThreshold(),
             ],
             'event' => [
@@ -722,6 +946,20 @@ class Event extends Element implements \JsonSerializable
                 'repeatType' => $this->repeatType,
                 'repeatEndType' => $this->repeatEndType,
                 'rrule' => $this->rrule,
+            ],
+            // Lists the event's edited occurrences; the editor may move on to a draft's ID later
+            'context' => [
+                'eventId' => $this->id,
+                'calendarId' => (int) $this->calendarId,
+                'siteId' => $this->siteId,
+                'splitAt' => $plugin->series->getSplitAt($this)?->timestamp,
+                'series' => array_map(
+                    static fn (?self $part) => $part ? [
+                        'url' => $part->getCpEditUrl(),
+                        'start' => $part->startDate->timestamp,
+                    ] : null,
+                    $plugin->series->getNeighbours($this),
+                ),
             ],
         ];
     }
@@ -747,7 +985,9 @@ class Event extends Element implements \JsonSerializable
                 'handle' => $this->getSite()->handle,
                 'language' => $this->getSite()->language,
             ],
-            'editable' => $this->isEditable(),
+            'canEdit' => $this->isEditable(),
+            'startEditable' => $this->isEditable() && Calendar::getInstance()->settings->isDragAndDropEnabled(),
+            'durationEditable' => $this->isEditable() && Calendar::getInstance()->settings->isDragAndDropEnabled(),
             'enabled' => (bool) $this->enabled,
             'backgroundColor' => $this->getCalendar()->color,
             'borderColor' => $this->getCalendar()->getDarkerColor(),
@@ -775,13 +1015,79 @@ class Event extends Element implements \JsonSerializable
         return array_merge($object, $fieldValues);
     }
 
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'startDate' => Calendar::t('Start Date'),
+            'endDate' => Calendar::t('End Date'),
+            'rrule' => Calendar::t('Repeats'),
+            'postDate' => \Craft::t('app', 'Post Date'),
+            'expiryDate' => \Craft::t('app', 'Expiry Date'),
+        ]);
+    }
+
     public function rules(): array
     {
         $rules = parent::rules();
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+        $rules[] = [
+            ['postDate'],
+            DateCompareValidator::class,
+            'operator' => '<',
+            'compareAttribute' => 'expiryDate',
+            'when' => fn () => $this->postDate && $this->expiryDate,
+            'on' => self::SCENARIO_LIVE,
+        ];
         $rules[] = [['startDate'], 'validateDates'];
         $rules[] = [['startDate', 'endDate'], 'required'];
+        $rules[] = [['rrule'], 'validateRecurrence', 'skipOnEmpty' => false];
+        $rules[] = [['startDate'], 'validateSeriesOverlap', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
 
         return $rules;
+    }
+
+    /**
+     * Each part of a series covers its own stretch of time. A draft started before the event was split
+     * would otherwise bring back occurrences the earlier part has now.
+     */
+    public function validateSeriesOverlap(): void
+    {
+        $part = Calendar::getInstance()->series->findOverlappingPart($this);
+        if ($part) {
+            $this->addError('startDate', Calendar::t('The schedule overlaps “{title}”, another part of this event’s series.', [
+                'title' => $part->title,
+            ]));
+        }
+    }
+
+    public function validateRecurrence(): void
+    {
+        if (!$this->hasRecurrenceChanged()) {
+            return;
+        }
+
+        $validator = new EventRecurrenceValidator();
+        $errors = $validator->validate($this->repeatType, $this->repeatEndType, $this->rrule);
+
+        foreach ($errors as $attribute => $messages) {
+            foreach ($messages as $message) {
+                $this->addError($attribute, Calendar::t($message));
+            }
+        }
+
+        if ($errors || !$this->rrule) {
+            return;
+        }
+
+        $plugin = Calendar::getInstance();
+        if (!$plugin->isPro()) {
+            $this->addError('rrule', Calendar::t('Repeating events require Calendar Pro.'));
+        }
+
+        $calendar = $plugin->calendars->getCalendarById($this->calendarId);
+        if ($calendar && !$calendar->allowRepeatingEvents) {
+            $this->addError('rrule', Calendar::t('Repeating events are not allowed in the selected calendar.'));
+        }
     }
 
     public function validateDates(): void
@@ -800,13 +1106,47 @@ class Event extends Element implements \JsonSerializable
         $fields = [];
         $view = \Craft::$app->getView();
 
-        $fields[] = (function () {
-            return Cp::textFieldHtml([
+        $fields[] = (function () use ($static, $view) {
+            $calendar = $this->getCalendar();
+            $calendars = array_filter(Calendar::getInstance()->calendars->getAllAllowedCalendars(), fn (CalendarModel $candidate) => PermissionHelper::canEditCalendar($candidate) && $candidate->getSiteSettingsForSite($this->siteId));
+            if (!$static && $this->isEditable() && \count($calendars) > 1) {
+                $view->registerAssetBundle(EventEditBundle::class);
+                $view->registerTranslations('calendar', ['Couldn’t open the calendar mapping.']);
+
+                return Cp::customSelectFieldHtml([
+                    'label' => \Craft::t('app', 'Calendar'),
+                    'id' => 'calendar-transfer-select',
+                    'value' => $this->calendarId,
+                    // The slideout changes the draft after the mapping is reviewed. No calendarId input here.
+                    'attributes' => ['data-calendar-transfer-select' => true, 'data-calendar-id' => $this->calendarId, 'data-site-id' => $this->siteId],
+                    'options' => array_map(static fn (CalendarModel $candidate) => [
+                        'value' => $candidate->id,
+                        'label' => $candidate->name,
+                        'icon' => Html::tag('svg', Html::tag('circle', '', ['cx' => 8, 'cy' => 8, 'r' => 5, 'style' => ['fill' => $candidate->color]]), ['xmlns' => 'http://www.w3.org/2000/svg', 'viewBox' => '0 0 16 16']),
+                    ], array_values($calendars)),
+                ]);
+            }
+            $color = Html::tag('span', '', [
+                'aria-hidden' => 'true',
+                'style' => [
+                    'display' => 'inline-block',
+                    'width' => '12px',
+                    'height' => '12px',
+                    'border-radius' => '50%',
+                    'flex-shrink' => '0',
+                    'background-color' => $calendar->color,
+                    'box-shadow' => 'inset 0 0 1px rgba(0, 0, 0, 0.6)',
+                ],
+            ]);
+            $value = Html::tag('div', $color.Html::tag('span', Html::encode($calendar->name)), [
+                'id' => 'calendar',
+                'class' => 'flex flex-nowrap',
+                'aria-labelledby' => 'calendar-label',
+            ]);
+
+            return Cp::fieldHtml($value, [
                 'label' => \Craft::t('app', 'Calendar'),
                 'id' => 'calendar',
-                'name' => 'calendar',
-                'value' => $this->getCalendar()->name,
-                'readonly' => true,
             ]);
         })();
 
@@ -835,15 +1175,27 @@ class Event extends Element implements \JsonSerializable
         $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
         $view->setIsDeltaRegistrationActive(true);
         $view->registerDeltaName('postDate');
+        $view->registerDeltaName('expiryDate');
         $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
         // Post Date
         $fields[] = Cp::dateTimeFieldHtml([
+            'status' => $this->getAttributeStatus('postDate'),
             'label' => \Craft::t('app', 'Post Date'),
             'id' => 'postDate',
             'name' => 'postDate',
             'value' => $this->getPostDate(),
             'errors' => $this->getErrors('postDate'),
+            'disabled' => $static,
+        ]);
+
+        $fields[] = Cp::dateTimeFieldHtml([
+            'status' => $this->getAttributeStatus('expiryDate'),
+            'label' => \Craft::t('app', 'Expiry Date'),
+            'id' => 'expiryDate',
+            'name' => 'expiryDate',
+            'value' => $this->expiryDate,
+            'errors' => $this->getErrors('expiryDate'),
             'disabled' => $static,
         ]);
 
@@ -861,6 +1213,8 @@ class Event extends Element implements \JsonSerializable
         }
 
         $screen->selectedSubnavItem('events');
+        $calendar = $this->getCalendar();
+        $existingCrumbs = \is_array($screen->crumbs) ? $screen->crumbs : [];
         $screen->crumbs([
             [
                 'label' => Calendar::t('Calendar'),
@@ -870,6 +1224,14 @@ class Event extends Element implements \JsonSerializable
                 'label' => Calendar::t('Events'),
                 'url' => UrlHelper::cpUrl('calendar/events'),
             ],
+            [
+                'label' => $calendar->name,
+                'url' => UrlHelper::cpUrl('calendar/events', [
+                    'source' => 'calendar:'.$calendar->id,
+                    'site' => $this->getSite()->handle,
+                ]),
+            ],
+            ...$existingCrumbs,
         ]);
     }
 
@@ -979,6 +1341,7 @@ class Event extends Element implements \JsonSerializable
             'authorId' => ['label' => Calendar::t('Author ID')],
             'author' => ['label' => Calendar::t('Author')],
             'postDate' => ['label' => Calendar::t('Post Date')],
+            'expiryDate' => ['label' => \Craft::t('app', 'Expiry Date')],
             'link' => ['label' => Calendar::t('Link'), 'icon' => 'world'],
         ];
 
@@ -1002,6 +1365,7 @@ class Event extends Element implements \JsonSerializable
             'dateUpdated' => Calendar::t('Date Updated'),
             'allDay' => Calendar::t('All Day'),
             'postDate' => Calendar::t('Post Date'),
+            'expiryDate' => \Craft::t('app', 'Expiry Date'),
         ];
 
         // Hide Author from Craft Solo
@@ -1133,7 +1497,7 @@ class Event extends Element implements \JsonSerializable
 
     protected function route(): array|string|null
     {
-        if (!$this->enabled) {
+        if (!$this->previewing && self::STATUS_LIVE !== $this->getStatus()) {
             return null;
         }
 
@@ -1223,50 +1587,45 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function bodyParamToCarbon(
-        string $name,
-        ?Carbon $fallback = null,
-        ?string $fallbackName = null,
-        ?string $timezone = null,
-    ): ?Carbon {
-        $request = \Craft::$app->getRequest();
-        $value = $request->getBodyParam($name);
+    private function setDefaultPostDate(): void
+    {
+        if ($this->postDate || !$this->enabled || $this->resaving || $this->getIsRevision()
+            || !\in_array($this->getScenario(), [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE], true)) {
+            return;
+        }
 
-        if ((null === $value || '' === $value) && null !== $fallbackName) {
-            $value = $request->getBodyParam($fallbackName);
+        $this->postDate = Carbon::instance(DateTimeHelper::now())->startOfMinute();
+        if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+            $this->postDate = Carbon::instance($this->expiryDate)->subDay();
+        }
+    }
+
+    /**
+     * Dates are posted as strings or as Craft's `date`/`time` pairs. Returns null for anything else.
+     */
+    private static function parseScheduleDate(mixed $value): ?Carbon
+    {
+        if (\is_array($value)) {
+            $value = trim(($value['date'] ?? '').' '.($value['time'] ?? ''));
         }
 
         if (null === $value || '' === $value) {
-            return $fallback;
+            return null;
         }
 
-        if ($value instanceof \DateTimeInterface) {
-            return new Carbon($value->format('Y-m-d H:i:s'), DateHelper::UTC);
+        try {
+            return DateHelper::parseFloatingCarbon($value);
+        } catch (\Throwable) {
+            return null;
         }
+    }
 
-        if (\is_array($value)) {
-            $date = (string) ($value['date'] ?? '');
-            $time = (string) ($value['time'] ?? '');
-            $value = trim($date.' '.$time);
-
-            if ('' === $value) {
-                return $fallback;
-            }
-        }
-
-        if (\is_numeric($value)) {
-            return Carbon::createFromTimestampUTC((int) $value);
-        }
-
-        if (\is_string($value)) {
-            try {
-                return new Carbon($value, DateHelper::UTC);
-            } catch (\Throwable) {
-                return $fallback;
-            }
-        }
-
-        return $fallback;
+    private function createOccurrenceOverrideQuery(): OccurrenceOverrideQuery
+    {
+        return OccurrenceOverride::find()
+            ->owner($this)
+            ->orderBy(['calendar_occurrence_overrides.recurrenceId' => \SORT_ASC])
+        ;
     }
 
     private function getOverlapThreshold(): int
@@ -1277,6 +1636,36 @@ class Event extends Element implements \JsonSerializable
         }
 
         return $overlapThreshold;
+    }
+
+    private function hasRecurrenceChanged(): bool
+    {
+        if (!$this->id) {
+            return true;
+        }
+
+        return $this->persistedCalendarId !== $this->calendarId
+            || $this->persistedRRule !== self::normalizeRRule($this->rrule, $this->isAllDay())
+            || $this->persistedRepeatType !== $this->repeatType
+            || $this->persistedRepeatEndType !== $this->repeatEndType;
+    }
+
+    private static function normalizeRRule(?string $rrule, bool $allDay): ?string
+    {
+        if (!$rrule) {
+            return null;
+        }
+
+        $rrule = str_replace(["\r\n", "\r"], "\n", trim($rrule));
+        if (!$rrule) {
+            return null;
+        }
+
+        if ($allDay) {
+            return RRuleStringNormalizer::normalizeAllDayRRule($rrule);
+        }
+
+        return $rrule;
     }
 
     /**

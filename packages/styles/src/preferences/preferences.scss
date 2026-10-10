@@ -18,16 +18,3 @@
     }
   }
 }
-
-.btn.install-demo-templates {
-  position: absolute;
-  top: -75px;
-  right: 60px;
-  z-index: 1000;
-
-  background-image: linear-gradient(#8f98a3, #878f99);
-
-  &:hover {
-    background-image: linear-gradient(#8f98a3, #878f99) !important;
-  }
-}

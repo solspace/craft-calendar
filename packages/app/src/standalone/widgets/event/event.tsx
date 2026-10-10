@@ -50,14 +50,19 @@ export const EventWidget: FC<{ config: EventWidgetConfig }> = ({ config }) => {
           allDay: allDay.value,
           start: start.value,
           end: end.value,
-          calendar: calendars.value,
+          calendarId: calendars.value,
           siteId: currentSiteId,
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        setErrors(error.errors || error.message);
+        let messages = [error.message || translate("Could not save event")];
+        if (Array.isArray(error.errors)) {
+          messages = error.errors;
+        }
+
+        setErrors(messages);
         return;
       }
 
