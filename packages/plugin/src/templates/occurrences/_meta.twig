@@ -34,45 +34,44 @@
         } only %}
     </section>
 
-    <div class="calendar-occurrence-status">
-        {{ forms.lightswitchField({
-            label: 'Cancel Occurrence'|t('calendar'),
-            id: 'cancelled',
-            name: 'cancelled',
-            on: cancelled,
-            instructions: 'Mark this occurrence as cancelled without deleting it.'|t('calendar'),
-            instructionsPosition: 'after',
-            fieldClass: 'calendar-occurrence-cancelled',
-        }) }}
-    </div>
-
-    <div class="calendar-occurrence-meta-row calendar-occurrence-identity">
-        {# The ID isn't `slug`, which the title field's slug generator would fill in #}
-        {{ forms.textField({
-            label: 'Slug'|t('app'),
-            id: 'occurrenceSlug',
-            name: 'slug',
-            value: slug,
-            placeholder: generatedSlug,
-            instructions: 'Leave blank to use the automatically generated slug.'|t('calendar'),
-            instructionsPosition: 'after',
-            data: {'error-key': 'slug'},
-        }) }}
-
-        {% if code %}
-            <div class="field calendar-occurrence-code">
-                <div class="heading">
-                    <label>{{ 'Occurrence Code'|t('calendar') }}</label>
-                </div>
-                <div class="input ltr"><code>{{ code }}</code></div>
-            </div>
-        {% endif %}
-    </div>
-
-    {% if canReset %}
-        <div class="calendar-occurrence-reset">
-            <button type="button" class="btn calendar-occurrence-reset-btn">{{ 'Reset Occurrence'|t('calendar') }}</button>
-            <span class="light">{{ 'Remove all customizations and restore the event’s values.'|t('calendar') }}</span>
-        </div>
+    {% if showOverlapWarnings %}
+        <div class="calendar-occurrence-overlaps" data-overlap-warning role="status" aria-live="polite"></div>
     {% endif %}
+
+    <div class="calendar-occurrence-details">
+        <div class="calendar-occurrence-status">
+            {{ forms.lightswitchField({
+                label: 'Cancel Occurrence'|t('calendar'),
+                id: 'cancelled',
+                name: 'cancelled',
+                on: cancelled,
+                instructions: 'Mark this occurrence as cancelled without deleting it.'|t('calendar'),
+                instructionsPosition: 'after',
+                fieldClass: 'calendar-occurrence-cancelled',
+            }) }}
+        </div>
+
+        <div class="calendar-occurrence-meta-row calendar-occurrence-identity">
+            {# The ID isn't `slug`, which the title field's slug generator would fill in #}
+            {{ forms.textField({
+                label: 'Slug'|t('app'),
+                id: 'occurrenceSlug',
+                name: 'slug',
+                value: slug,
+                placeholder: generatedSlug,
+                instructions: 'Leave blank to use the automatically generated slug.'|t('calendar'),
+                instructionsPosition: 'after',
+                data: {'error-key': 'slug'},
+            }) }}
+
+            {% if code %}
+                <div class="field calendar-occurrence-code">
+                    <div class="heading">
+                        <label>{{ 'Occurrence Code'|t('calendar') }}</label>
+                    </div>
+                    <div class="input ltr"><code>{{ code }}</code></div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>

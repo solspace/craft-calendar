@@ -18,6 +18,8 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Refined the occurrence editor with clearer headings, compact scheduling controls, consistent conflict warnings, and a separate reset area.
+- Simplified Schedule Preview rows with date-only labels and hover details, subtle markers for edited occurrences, and a wider preview column.
 - Expanded the event schedule preview with counts of additional and excluded dates, edited and cancelled occurrences, edits off schedule, and split-series date ranges.
 - Made the publishing calendar clearer on the create/edit event page with a color indicator beside its name and a calendar breadcrumb linking to its events.
 - Clarified labels and descriptions in **General Settings**, **Event Settings**, **Guest Access**, and calendar creation and editing, including site settings, event titles, and ICS exports.
@@ -32,6 +34,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed the event editor’s schedule preview showing original dates for moved occurrences. It now shows edited dates, titles, and times while keeping occurrence actions tied to the correct scheduled occurrence.
 - Fixed hovering over another event replacing the quick creation form and leaving its unsaved event stuck on the calendar.
 - Fixed control panel date and time formats ignoring the user's formatting locale.
 - Improved demo accessibility and navigation consistency, including event labels, dropdown controls, focus states, recurring event links, and calendar filters in the mini calendar.

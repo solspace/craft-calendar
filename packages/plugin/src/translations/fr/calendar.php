@@ -838,4 +838,5 @@ return [
     'This draft changes the series from {date} onward.' => 'Ce brouillon modifie la série à partir du {date}.',
     'This part of the series starts on {start} and ends before {end}.' => 'Cette partie de la série commence le {start} et se termine avant le {end}.',
     'This part of the series starts on {date}.' => 'Cette partie de la série commence le {date}.',
+    'Edited occurrence' => 'Occurrence modifiée',
 ];
