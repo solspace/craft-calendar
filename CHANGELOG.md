@@ -18,6 +18,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Refined the occurrence editor with clearer headings, compact scheduling controls, consistent conflict warnings, and a separate reset area.
 - Simplified Schedule Preview rows with date-only labels and hover details, subtle markers for edited occurrences, and a wider preview column.
 - Expanded the event schedule preview with counts of additional and excluded dates, edited and cancelled occurrences, edits off schedule, and split-series date ranges.
 - Made the publishing calendar clearer on the create/edit event page with a color indicator beside its name and a calendar breadcrumb linking to its events.
