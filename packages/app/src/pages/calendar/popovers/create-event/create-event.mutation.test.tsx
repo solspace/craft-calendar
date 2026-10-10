@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+
+import type { CalendarCreateDraft } from "@cal/pages/calendar/calendar.create-session";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -117,5 +119,27 @@ describe("quick-create full editor handoff", () => {
     expect(refetchEvents).toHaveBeenCalledOnce();
     expect(clearCache).toHaveBeenCalledOnce();
     expect(hide).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    "createEvent",
+    "prepareEvent",
+  ] as const)("sends the same weekday recurrence metadata through %s", async (action) => {
+    fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 42, url: "/admin/calendar/events/42?draftId=9" }),
+    });
+    const repeating: CalendarCreateDraft = {
+      ...event,
+      recurrence: { type: "WEEKDAYS", endType: "AFTER", count: 4 },
+    };
+    await act(async () => {
+      await operations[action](repeating, 12);
+    });
+    const payload = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(payload).toMatchObject({ repeatType: "CUSTOM", repeatEndType: "AFTER" });
+    expect(payload.rrule).toContain("BYDAY=MO,TU,WE,TH,FR");
+    expect(payload.rrule).toContain("COUNT=4");
+    expect(payload).not.toHaveProperty("recurrence");
   });
 });

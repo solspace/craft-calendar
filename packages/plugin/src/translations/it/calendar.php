@@ -2,6 +2,17 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Does not repeat' => 'Non si ripete',
+    'Weekdays (Monday–Friday)' => 'Giorni feriali (lunedì–venerdì)',
+    'Weekly on {weekday}' => 'Ogni settimana di {weekday}',
+    'Monthly on day {day}' => 'Ogni mese il giorno {day}',
+    'Yearly on {date}' => 'Ogni anno il {date}',
+    'Repeat' => 'Ripetizione',
+    'Repeat ends' => 'La ripetizione termina',
+    'Occurrences' => 'Ripetizioni',
+    'Last date' => 'Ultima data',
+    'On a date' => 'In una data',
+    'Invalid repeating event settings.' => 'Impostazioni di ripetizione dell’evento non valide.',
     '"{name}" calendar' => 'Calendario “{name}”',
     '+{count} more' => '+{count} altri',
     '12-hour format' => 'Formato a 12 ore',

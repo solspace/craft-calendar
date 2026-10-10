@@ -55,6 +55,32 @@ export const AllDayRow = styled.div`
   gap: 8px;
 `;
 
+export const RepeatControls = styled.div`
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 5px;
+  background: var(--gray-50);
+`;
+
+export const RepeatEndFields = styled.div`
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  > .field { flex: 1 1 140px; min-width: 0; }
+  input { width: 100%; }
+`;
+
+export const RepeatSummary = styled.p`
+  && { margin: 0; }
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--light-text-color);
+`;
+
 export const AllDayLabel = styled.label`
   font-weight: 600;
   cursor: pointer;

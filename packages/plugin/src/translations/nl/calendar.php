@@ -2,6 +2,17 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Does not repeat' => 'Wordt niet herhaald',
+    'Weekdays (Monday–Friday)' => 'Werkdagen (maandag–vrijdag)',
+    'Weekly on {weekday}' => 'Wekelijks op {weekday}',
+    'Monthly on day {day}' => 'Maandelijks op dag {day}',
+    'Yearly on {date}' => 'Jaarlijks op {date}',
+    'Repeat' => 'Herhalen',
+    'Repeat ends' => 'Herhaling eindigt',
+    'Occurrences' => 'Herhalingen',
+    'Last date' => 'Laatste datum',
+    'On a date' => 'Op een datum',
+    'Invalid repeating event settings.' => 'Ongeldige instellingen voor herhalende evenementen.',
     '"{name}" calendar' => '"{name}" kalender',
     '+{count} more' => '+{count} meer',
     '12-hour format' => '12-uursnotatie',

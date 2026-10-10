@@ -30,6 +30,7 @@ export type CalendarConfig = {
   eventActionIcons?: Partial<Record<EventActionIcon, string>>;
   calendars: Record<number, string>;
   calendarColors?: Record<number, string | null>;
+  calendarAllowRepeating?: Record<number, boolean>;
   quickCreateFields?: Record<number, { location?: string; description?: string }>;
   quickCreateRequiredFields?: Record<number, { location?: boolean; description?: boolean }>;
   formats: DateFormats;

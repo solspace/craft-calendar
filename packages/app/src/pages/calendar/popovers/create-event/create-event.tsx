@@ -21,6 +21,11 @@ import { useConfig } from "../../context/config.context";
 import { CalendarDropdown } from "./create-event.calendar-dropdown";
 import { useCreateEvent } from "./create-event.mutation";
 import {
+  buildQuickCreateRecurrence,
+  isQuickCreateRecurrenceValid,
+} from "./create-event.recurrence";
+import { QuickCreateRepeatControls } from "./create-event.repeat-controls";
+import {
   AllDayLabel,
   AllDayRow,
   CreateActionButtons,
@@ -51,6 +56,7 @@ export const PopoverCreateEvent: FC<Props> = ({
     showOverlapWarnings,
     calendars,
     calendarColors,
+    calendarAllowRepeating,
     quickCreateFields,
     quickCreateRequiredFields,
     formats,
@@ -69,6 +75,11 @@ export const PopoverCreateEvent: FC<Props> = ({
     [calendars, calendarColors],
   );
   const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
+  const allowRepeating = calendarAllowRepeating?.[calendarId] ?? false;
+  const effectiveDraft =
+    allowRepeating || !draft.recurrence ? draft : { ...draft, recurrence: undefined };
+  const validRecurrence = isQuickCreateRecurrenceValid(effectiveDraft);
+  const recurrenceSchedule = buildQuickCreateRecurrence(effectiveDraft);
   const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>({});
   const mappedFields = quickCreateFields?.[calendarId];
   const locationHandle = mappedFields?.location;
@@ -124,7 +135,15 @@ export const PopoverCreateEvent: FC<Props> = ({
       </FlexTitle>
 
       <Fields>
-        <CalendarDropdown value={calendarId} options={calendarOptions} onChange={setCalendarId} />
+        <CalendarDropdown
+          value={calendarId}
+          options={calendarOptions}
+          onChange={(value) => {
+            setCalendarId(value);
+            if (!calendarAllowRepeating?.[value] && draft.recurrence)
+              onChange({ ...draft, recurrence: undefined });
+          }}
+        />
 
         <hr />
 
@@ -200,15 +219,26 @@ export const PopoverCreateEvent: FC<Props> = ({
           }}
         />
 
+        {allowRepeating && (
+          <QuickCreateRepeatControls
+            draft={draft}
+            onChange={onChange}
+            formats={formats}
+            weekStartDay={weekStartDay}
+            disabled={isFetching}
+          />
+        )}
+
         <LiveOverlapWarning
           formats={formats}
-          enabled={showOverlapWarnings && !!calendarId}
+          enabled={showOverlapWarnings && !!calendarId && validRecurrence}
           schedule={{
             start: draft.start,
             end: draft.allDay ? draft.end - 1 : draft.end,
             allDay: draft.allDay,
             calendarId,
             siteId: currentSiteId,
+            ...recurrenceSchedule,
           }}
         />
 
@@ -258,9 +288,9 @@ export const PopoverCreateEvent: FC<Props> = ({
       <CreateActions $justifyContent="flex-end" $gap={8}>
         <MoreDetailsButton
           type="button"
-          disabled={!calendarId || isFetching}
+          disabled={!calendarId || isFetching || !validRecurrence}
           onClick={async () => {
-            const url = await prepareEvent(draft, calendarId, details);
+            const url = await prepareEvent(effectiveDraft, calendarId, details);
             if (url) window.location.href = url;
           }}
         >
@@ -279,8 +309,8 @@ export const PopoverCreateEvent: FC<Props> = ({
           <button
             type="button"
             className={clsx("btn submit", isFetching && "disabled")}
-            disabled={!draft.title || !calendarId || isFetching}
-            onClick={() => createEvent(draft, calendarId, details)}
+            disabled={!draft.title || !calendarId || isFetching || !validRecurrence}
+            onClick={() => createEvent(effectiveDraft, calendarId, details)}
           >
             {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
           </button>

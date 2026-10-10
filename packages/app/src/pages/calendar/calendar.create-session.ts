@@ -1,10 +1,25 @@
 import translate from "@cal/utils/translations";
+import type { RepeatEndType } from "@event-builder/types";
 import type { DateSelectArg, EventApi, EventInput } from "@fullcalendar/core/index.js";
 
 const DAY_IN_SECONDS = 24 * 60 * 60;
 
 export const DEFAULT_CREATE_DRAFT_ID = "draft-create-event";
 export const DEFAULT_CREATE_DRAFT_TITLE = "New Event";
+
+export type QuickCreateRepeatType =
+  | "NEVER"
+  | "DAILY"
+  | "WEEKDAYS"
+  | "WEEKLY"
+  | "MONTHLY"
+  | "YEARLY";
+export type QuickCreateRecurrence = {
+  type: QuickCreateRepeatType;
+  endType: RepeatEndType;
+  count?: number;
+  until?: number;
+};
 
 export type CalendarCreateDraft = {
   id: string;
@@ -13,6 +28,7 @@ export type CalendarCreateDraft = {
   start: number;
   end: number;
   preserveDuration?: boolean;
+  recurrence?: QuickCreateRecurrence;
 };
 
 export type CalendarCreateDraftSettings = {

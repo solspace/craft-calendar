@@ -2,6 +2,17 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Does not repeat' => 'Wiederholt sich nicht',
+    'Weekdays (Monday–Friday)' => 'Wochentags (Montag–Freitag)',
+    'Weekly on {weekday}' => 'Wöchentlich am {weekday}',
+    'Monthly on day {day}' => 'Monatlich am Tag {day}',
+    'Yearly on {date}' => 'Jährlich am {date}',
+    'Repeat' => 'Wiederholung',
+    'Repeat ends' => 'Wiederholung endet',
+    'Occurrences' => 'Wiederholungen',
+    'Last date' => 'Letztes Datum',
+    'On a date' => 'An einem Datum',
+    'Invalid repeating event settings.' => 'Ungültige Einstellungen für wiederkehrende Ereignisse.',
     '"{name}" calendar' => '"{name}" Kalender',
     '+{count} more' => '+{count} weitere',
     '12-hour format' => '12-Stunden-Format',
