@@ -22,7 +22,13 @@ export const EditorOverlapWarning = ({
   );
   if (!context?.calendarId) return null;
   return (
-    <div ref={ref} style={{ padding: showOverlapWarnings ? "0 20px 20px" : "0 20px" }}>
+    <div
+      ref={ref}
+      style={{
+        padding: showOverlapWarnings ? "0 20px 12px" : "0 20px",
+        marginTop: showOverlapWarnings ? -8 : 0,
+      }}
+    >
       <LiveOverlapWarning
         formats={formats}
         enabled={showOverlapWarnings}
