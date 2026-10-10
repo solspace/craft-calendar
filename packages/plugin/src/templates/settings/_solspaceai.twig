@@ -1,0 +1,177 @@
+{% extends "calendar/layouts/_settings" %}
+
+{% import "_includes/forms" as forms %}
+
+{% set title = "SolspaceAI"|t("calendar") %}
+{% set enabled = settings.solspaceAiEnabled %}
+{% set authState = connected ? 'authorized' : (enabled ? 'unauthorized' : 'pending') %}
+
+{# Enable / Authorize / Update handle saving — no top Save button. #}
+{% block actionButton %}{% endblock %}
+
+{% block content %}
+
+    {% if not craft.calendar.pro %}
+        <div class="pane">
+            <p>{{ "SolspaceAI requires Calendar Pro."|t('calendar') }}</p>
+        </div>
+    {% else %}
+
+        {# Uses Craft's full-page #main-form — do not nest another <form>. #}
+        <div
+            id="solspaceai-settings"
+            data-solspaceai-settings
+            data-enabled="{{ enabled ? '1' : '0' }}"
+            data-connected="{{ connected ? '1' : '0' }}"
+            data-initial-email="{{ contactEmail|e('html_attr') }}"
+            data-initial-site-url="{{ siteUrl|e('html_attr') }}"
+        >
+            {{ actionInput('calendar/settings/save-solspaceai') }}
+            {{ redirectInput('calendar/settings/solspaceai') }}
+            <input type="hidden" name="solspaceAiEnabled" id="solspaceAiEnabled" value="{{ enabled ? '1' : '' }}">
+            <input type="hidden" name="solspaceAiToggle" id="solspaceAiToggle" value="">
+            <input type="hidden" name="solspaceAiAuthorize" id="solspaceAiAuthorize" value="">
+            <input type="hidden" name="solspaceAiForceReconnect" id="solspaceAiForceReconnect" value="">
+
+            <div class="solspaceai-auth-bar">
+                <div class="solspaceai-auth-title">
+                    <span class="solspaceai-auth-name">{{ "SolspaceAI"|t('calendar') }}</span>
+                    <span class="solspaceai-auth-badge solspaceai-auth-badge--{{ authState }}">
+                        <span class="solspaceai-auth-dot"></span>
+                        {% if authState == 'authorized' %}
+                            {{ "Authorized"|t('calendar') }}
+                        {% elseif authState == 'unauthorized' %}
+                            {{ "Unauthorized"|t('calendar') }}
+                        {% else %}
+                            {{ "Not enabled"|t('calendar') }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="solspaceai-auth-actions">
+                    {% if enabled %}
+                        <button type="button" class="btn caution" data-solspaceai-action="disable">
+                            {{ "Disable"|t('calendar') }}
+                        </button>
+                        {% if connected %}
+                            <button type="button" class="btn" data-solspaceai-action="reconnect">
+                                {{ "Reconnect"|t('calendar') }}
+                            </button>
+                        {% endif %}
+                        <button type="button" class="btn submit" data-solspaceai-action="authorize">
+                            {{ "Authorize"|t('calendar') }}
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn submit" data-solspaceai-action="enable">
+                            {{ "Enable"|t('calendar') }}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if connected %}
+                <div id="solspaceai-root" class="solspaceai-dash">
+                    <div id="solspaceai-loading" class="solspaceai-loading">
+                        <div class="solspaceai-skel">
+                            <div class="solspaceai-skel-card"></div>
+                            <div class="solspaceai-skel-card"></div>
+                            <div class="solspaceai-skel-card"></div>
+                        </div>
+                        <div class="solspaceai-skel-chart"></div>
+                    </div>
+
+                    <div id="solspaceai-error" class="solspaceai-hidden pane error">
+                        <p id="solspaceai-error-msg"></p>
+                    </div>
+
+                    <div id="solspaceai-main" class="solspaceai-hidden">
+                        <div class="solspaceai-cards-grid" id="solspaceai-cards"></div>
+
+                        <div class="solspaceai-section solspaceai-hidden" id="solspaceai-chart-section">
+                            <h2>{{ "Recent AI Usage"|t('calendar') }}</h2>
+                            <p class="solspaceai-section-desc">{{ "Daily credits and total AI time for the last 30 days."|t('calendar') }}</p>
+                            <div id="solspaceai-chart" class="solspaceai-chart-box"></div>
+                        </div>
+
+                        <div class="solspaceai-section solspaceai-hidden" id="solspaceai-logs-section">
+                            <h2>{{ "Request Log"|t('calendar') }}</h2>
+                            <p class="solspaceai-section-desc">{{ "A list of recent AI requests and their credit usage."|t('calendar') }}</p>
+                            <div id="solspaceai-logs"></div>
+                        </div>
+
+                        <div id="solspaceai-empty" class="solspaceai-empty solspaceai-hidden">
+                            <h3>{{ "No usage data yet"|t('calendar') }}</h3>
+                            <p>{{ "Usage will appear here once you start using SolspaceAI."|t('calendar') }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <details class="solspaceai-settings-panel" id="solspaceai-settings-panel"{% if not connected %} open{% endif %}>
+                <summary class="solspaceai-settings-summary">
+                    <span class="solspaceai-settings-summary-title">
+                        {{ connected ? "Connection settings"|t('calendar') : "Setup & connection"|t('calendar') }}
+                    </span>
+                    <span class="solspaceai-settings-summary-hint">
+                        {% if connected %}
+                            {{ "Update contact email or site URL if they change"|t('calendar') }}
+                        {% elseif enabled %}
+                            {{ "Confirm details, then authorize your site"|t('calendar') }}
+                        {% else %}
+                            {{ "Enter contact email and site URL, then enable"|t('calendar') }}
+                        {% endif %}
+                    </span>
+                </summary>
+
+                <div class="solspaceai-settings-body">
+                    {% if not enabled %}
+                        <p class="solspaceai-intro">
+                            {{ "Turn on SolspaceAI to generate events and use AI features in Calendar. Every Calendar Pro license includes 1,000 free credits to get started."|t('calendar') }}
+                        </p>
+                    {% endif %}
+
+                    {{ forms.textField({
+                        first: true,
+                        label: "Contact Email"|t('calendar'),
+                        instructions: "The email address for your SolspaceAI account."|t('calendar'),
+                        id: 'solspaceAiContactEmail',
+                        name: 'solspaceAiContactEmail',
+                        value: contactEmail,
+                        placeholder: 'you@example.com',
+                        required: not enabled,
+                    }) }}
+
+                    {{ forms.textField({
+                        label: "Site URL"|t('calendar'),
+                        instructions: "The public URL of your site (e.g. `https://yoursite.com`)."|t('calendar'),
+                        id: 'solspaceAiSiteUrl',
+                        name: 'solspaceAiSiteUrl',
+                        value: siteUrl,
+                        placeholder: 'https://yoursite.com',
+                        required: not enabled,
+                    }) }}
+
+                    {% if enabled %}
+                        <div class="solspaceai-settings-actions solspaceai-hidden" id="solspaceai-update-actions">
+                            <p class="solspaceai-update-hint" id="solspaceai-update-hint"></p>
+                            <button type="button" class="btn submit" data-solspaceai-action="update" id="solspaceai-btn-update">
+                                {{ "Update"|t('calendar') }}
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="solspaceai-setup-steps">
+                            <h3>{{ "Setup"|t('calendar') }}</h3>
+                            <ol>
+                                <li>{{ "Enter your contact email and site URL, then click Enable."|t('calendar') }}</li>
+                                <li>{{ "Enable also authorizes SolspaceAI automatically."|t('calendar') }}</li>
+                                <li>{{ "Once authorized, use Create with AI on the calendar, and view usage or buy credits above."|t('calendar') }}</li>
+                            </ol>
+                        </div>
+                    {% endif %}
+                </div>
+            </details>
+        </div>
+
+    {% endif %}
+
+{% endblock %}

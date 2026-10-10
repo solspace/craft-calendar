@@ -71,6 +71,7 @@ export default defineConfig(({ command, mode }) => {
           "widget-agenda": path.resolve(__dirname, "./src/standalone/widgets/agenda/index.tsx"),
           "widget-event": path.resolve(__dirname, "./src/standalone/widgets/event/index.tsx"),
           "widget-mini": path.resolve(__dirname, "./src/standalone/widgets/mini/index.tsx"),
+          solspaceai: path.resolve(__dirname, "./src/standalone/solspaceai/index.js"),
         },
       },
     },

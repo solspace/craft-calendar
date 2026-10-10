@@ -5,6 +5,8 @@ namespace Solspace\Calendar\Controllers;
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Resources\Bundles\SolspaceAiAssetBundle;
+use Solspace\Calendar\Services\SolspaceAi\SolspaceAiService;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
@@ -88,7 +90,7 @@ class SettingsController extends BaseController
     }
 
     /**
-     * Renders the General settings page template.
+     * Renders the Guest Access settings page template.
      */
     public function actionGuestAccess(): Response
     {
@@ -110,6 +112,102 @@ class SettingsController extends BaseController
                 'calendars' => $calendarOptions,
             ]
         );
+    }
+
+    /**
+     * Renders the SolspaceAI integration settings page.
+     */
+    public function actionSolspaceai(): Response
+    {
+        Calendar::getInstance()->requirePro();
+
+        $settings = $this->getSettingsService()->getSettingsModel();
+        $solspaceAi = Calendar::getInstance()->solspaceAi;
+        $connected = $solspaceAi->isConnected();
+
+        \Craft::$app->getView()->registerAssetBundle(SolspaceAiAssetBundle::class);
+
+        return $this->provideTemplate(
+            'solspaceai',
+            [
+                'label' => 'SolspaceAI',
+                'connected' => $connected,
+                'contactEmail' => $settings->solspaceAiContactEmail ?: $solspaceAi->getDefaultContactEmail(),
+                'siteUrl' => $settings->solspaceAiSiteUrl ?: $solspaceAi->getDefaultSiteUrl(),
+            ]
+        );
+    }
+
+    /**
+     * Saves SolspaceAI integration settings; Authorize / Reconnect triggers connect.
+     */
+    public function actionSaveSolspaceai(): Response
+    {
+        Calendar::getInstance()->requirePro();
+        PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
+
+        $this->requirePostRequest();
+
+        $request = \Craft::$app->getRequest();
+        $plugin = Calendar::getInstance();
+        $existing = $plugin->getSettings();
+
+        $toggle = (string) $request->getBodyParam('solspaceAiToggle', '');
+        if ('enable' === $toggle) {
+            $enabled = true;
+        } elseif ('disable' === $toggle) {
+            $enabled = false;
+        } else {
+            $enabled = (bool) $request->getBodyParam('solspaceAiEnabled');
+        }
+
+        $contactEmail = trim((string) $request->getBodyParam('solspaceAiContactEmail'));
+        $siteUrl = trim((string) $request->getBodyParam('solspaceAiSiteUrl'));
+        $authorize = (bool) $request->getBodyParam('solspaceAiAuthorize');
+        $forceReconnect = (bool) $request->getBodyParam('solspaceAiForceReconnect');
+
+        $settings = $existing->toArray();
+        $settings['solspaceAiEnabled'] = $enabled;
+        $settings['solspaceAiContactEmail'] = $contactEmail;
+        $settings['solspaceAiSiteUrl'] = $siteUrl;
+        $settings['solspaceAiApiBaseUrl'] = SolspaceAiService::DEFAULT_API_BASE_URL;
+
+        if (!$enabled) {
+            $settings['solspaceAiApiKey'] = '';
+        } elseif ('' === trim((string) ($existing->solspaceAiApiKey ?? ''))) {
+            $settings['solspaceAiApiKey'] = '';
+        } else {
+            $settings['solspaceAiApiKey'] = $existing->solspaceAiApiKey;
+        }
+
+        \Craft::$app->plugins->savePluginSettings($plugin, $settings);
+
+        if (!$enabled) {
+            \Craft::$app->session->setNotice(Calendar::t('SolspaceAI settings saved.'));
+
+            return $this->redirect('calendar/settings/solspaceai');
+        }
+
+        if ($authorize || $forceReconnect) {
+            $connect = Calendar::getInstance()->solspaceAi->connect($forceReconnect);
+            if (!$connect['success']) {
+                \Craft::$app->session->setError($connect['message']);
+
+                return $this->redirect('calendar/settings/solspaceai');
+            }
+
+            \Craft::$app->session->setNotice(
+                $forceReconnect && !$authorize
+                    ? Calendar::t('Connection settings updated and SolspaceAI reconnected.')
+                    : $connect['message']
+            );
+
+            return $this->redirect('calendar/settings/solspaceai');
+        }
+
+        \Craft::$app->session->setNotice(Calendar::t('Connection settings updated.'));
+
+        return $this->redirect('calendar/settings/solspaceai');
     }
 
     /**

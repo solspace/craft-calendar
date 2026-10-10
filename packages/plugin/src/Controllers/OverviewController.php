@@ -113,6 +113,8 @@ class OverviewController extends BaseController
             'isMultiSite' => \Craft::$app->getIsMultiSite(),
             'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
             'isDragAndDropEnabled' => $this->getSettingsService()->isDragAndDropEnabled(),
+            'isSolspaceAiConnected' => Calendar::getInstance()->isPro()
+                && Calendar::getInstance()->solspaceAi->isConnected(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
             'showOverlapWarnings' => $this->getSettingsService()->showOverlapWarnings(),
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),

@@ -71,6 +71,7 @@ import { PopoverViewEvent } from "./popovers/view-event/view-event";
 
 type CalendarFullcalendarProps = {
   hiddenCalendarIds: number[];
+  registerApplyAiDraft: (handler: (draft: CalendarCreateDraft) => void) => void;
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   miniDateSelection: Date | null;
@@ -125,6 +126,7 @@ const isRecurringEvent = (event: EventApi) =>
 
 export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   hiddenCalendarIds,
+  registerApplyAiDraft,
   selectedDate,
   onDateChange,
   miniDateSelection,
@@ -322,6 +324,18 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
     clearDraft();
     hidePopover();
   }, [clearDraft, hidePopover]);
+
+  const applyAiDraft = useCallback((nextDraft: CalendarCreateDraft) => {
+    setDraft(nextDraft);
+    const anchor =
+      calendarWrapper.current?.querySelector<HTMLElement>(".fc-toolbar-title") ??
+      calendarWrapper.current;
+    setDraftAnchorEl(anchor ?? null);
+  }, []);
+
+  useEffect(() => {
+    registerApplyAiDraft(applyAiDraft);
+  }, [applyAiDraft, registerApplyAiDraft]);
 
   const handleSearchChange = useCallback(
     (value: string) => {

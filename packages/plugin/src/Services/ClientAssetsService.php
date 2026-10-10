@@ -27,6 +27,7 @@ class ClientAssetsService extends Component
         'widget-agenda' => 'src/standalone/widgets/agenda/index.tsx',
         'widget-event' => 'src/standalone/widgets/event/index.tsx',
         'widget-mini' => 'src/standalone/widgets/mini/index.tsx',
+        'solspaceai' => 'src/standalone/solspaceai/index.js',
     ];
 
     private ?array $manifest = null;

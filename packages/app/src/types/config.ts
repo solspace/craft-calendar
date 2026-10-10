@@ -44,6 +44,7 @@ export type CalendarConfig = {
   currentDay: Date;
   isDragAndDropEnabled: boolean;
   isQuickCreateEnabled: boolean;
+  isSolspaceAiConnected: boolean;
   isMultiSite: boolean;
   canEditEvents: boolean;
 };
