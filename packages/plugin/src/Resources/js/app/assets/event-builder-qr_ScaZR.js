@@ -314,11 +314,13 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
 
   padding: 20px;
   width: 100%;
-  flex: 0 0 495px;
+  flex: 0 0 auto;
+  min-width: 0;
   box-sizing: border-box;
     
   @container (min-width: 1024px) {
-    width: 495px;
+    width: 535px;
+    flex-basis: 535px;
   }
 
   > .field {
@@ -365,8 +367,16 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
       white-space: nowrap;
     }
 
-    .fc-edited-date .fc-daygrid-day-number {
-      box-shadow: inset 0 -2px var(--blue-500);
+    .fc-edited-date .fc-daygrid-day-frame::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      inset-inline-end: 4px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: var(--gray-600);
+      pointer-events: none;
     }
 
     .fc-scrollgrid,
@@ -535,15 +545,18 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     }
   }
 `,Gr=r.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
 
   margin-top: 10px;
-  width: 455px;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
+
+  @container (max-width: 449px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `,Kr=r.h4`
   margin: 0;
   padding: 0;
@@ -561,9 +574,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
   font-size: 13px;
   color: var(--gray-600);
 `,Yr=r.div`
-  min-width: max-content;
-  flex: 1;
-  height: 100%;
+  min-width: 0;
 
   p {
     padding-top: 57px;
@@ -597,6 +608,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
 
   > span {
     flex: 1;
+    min-width: 0;
   }
 
   .occurrence-actions {
@@ -608,21 +620,34 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
 
   .occurrence-date {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 6px;
     line-height: 18px;
+
+    > span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .occurrence-state {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
-  .occurrence-title {
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--gray-600);
-    font-size: 12px;
-  }
-
-  .occurrence-state {
-    color: var(--gray-600);
-    font-size: 11px;
+  &.is-edited .occurrence-date::after {
+    content: "";
+    flex: 0 0 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--gray-600);
   }
 
   &.is-cancelled {
@@ -631,11 +656,6 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     .occurrence-date > span:first-child {
       color: var(--gray-600);
       text-decoration: line-through;
-    }
-
-    .occurrence-state {
-      color: var(--yellow-700);
-      font-size: 11px;
     }
   }
 `,Qr=r.ul`
@@ -656,7 +676,7 @@ import{A as e,C as t,D as n,E as r,M as i,O as a,S as o,_ as s,g as c,i as l,j a
     color: var(--gray-700);
   }
 `,$r=e=>new Date(`${e.replace(` `,`T`)}Z`),ei=(e,t,n,r=[],i,a)=>{if(!n)return[];let o=new Date(`${_(n)}T00:00:00Z`),s=i??new Date(Date.UTC(o.getUTCFullYear()+100,0,1)),c=r.filter(t=>{if(t.orphaned)return!1;let n=$r(t.scheduleRecurrenceId??t.recurrenceId);return e.recurrenceSet?.between(n,n,!0).length===1}),l=new Map(c.map(e=>[e.scheduleRecurrenceId?.replace(` `,`T`)??e.recurrenceId.replace(` `,`T`),e])),u=t.end-t.start,d=(e.recurrenceSet?e.recurrenceSet.between(i?new Date(o.getTime()-Math.max(0,u)*1e3):o,s,!0,a===void 0?void 0:(e,t)=>t<a+c.length):[new Date(t.start*1e3)]).filter(e=>!l.has(g(e))).map(e=>{let n=e.getTime()/1e3,r=t.allDay&&t.end%86400==0?u-1:u;return{recurrenceId:g(e),scheduleRecurrenceId:g(e),start:n,end:n+r,allDay:t.allDay,title:null,edited:!1,cancelled:!1}});for(let e of c)d.push({...e,scheduleRecurrenceId:e.scheduleRecurrenceId??e.recurrenceId,edited:!0});let f=d.filter(e=>i?e.start<s.getTime()/1e3&&e.end>=o.getTime()/1e3:e.start>=o.getTime()/1e3).sort((e,t)=>e.start-t.start||e.recurrenceId.localeCompare(t.recurrenceId));return a===void 0?f:f.slice(0,a)},ti=(e,t)=>{let n=_(t),r=e.allDay?e.end:Math.max(e.start,e.end-1);return _(new Date(e.start*1e3))<=n&&_(new Date(r*1e3))>=n},ni=(e,t=[])=>{let n=[],r=(e,t,r)=>{e>0&&n.push(l(e===1?t:r,{count:e}))},i=(e.recurrenceSet?.rdates()??[]).filter(t=>{let n=ce(e,t);return n.full&&!n.base&&n.timestamp!==e.startTimestamp}).length,a=(e.recurrenceSet?.exdates()??[]).filter(t=>ce(e,t).excluded).length,o=t.filter(e=>!e.orphaned);return r(i,`{count} additional date`,`{count} additional dates`),r(a,`{count} excluded date`,`{count} excluded dates`),r(o.filter(e=>!e.cancelled).length,`{count} edited occurrence`,`{count} edited occurrences`),r(o.filter(e=>e.cancelled).length,`{count} cancelled occurrence`,`{count} cancelled occurrences`),r(t.filter(e=>e.orphaned).length,`{count} edit off schedule`,`{count} edits off schedule`),n},ri=(e,t,n,r=`PP`,i=`PPp`)=>{let a=e=>k(o(e),n?r:i,{locale:d()});return e?.splitAt?l(`This draft changes the series from {date} onward.`,{date:a(e.splitAt)}):e?.series?.later?l(`This part of the series starts on {start} and ends before {end}.`,{start:a(t),end:a(e.series.later.start)}):e?.series?.earlier?l(`This part of the series starts on {date}.`,{date:a(t)}):null},ii=8,ai=({context:e,onOccurrenceSaved:n,editedOccurrences:r})=>{let i=(0,N.useRef)(null),[a,o]=(0,N.useState)(!1),s=F(),c=I(X.weekStartDay),u=I(X.formats),f=u?.date.short.icu??`P`,p=u?.datetime?.short.icu??`Pp`,h=I(Y.state),{start:g,rrule:v}=h,y=!!(e?.eventId&&v),[b,S]=(0,N.useState)(null),C=(0,N.useMemo)(()=>se(v,g),[v,g]),ee=(0,N.useMemo)(()=>ei(C,h,b?.start??null,r,b?.end),[C,h,b,r]),w=(0,N.useMemo)(()=>ee.map(e=>({id:e.recurrenceId,start:_(new Date(e.start*1e3)),allDay:!0})),[ee]),T=(0,N.useMemo)(()=>ei(C,h,b?.start??null,r,void 0,ii),[C,h,b,r]),te=e=>ee.filter(t=>ti(t,e)),re=e=>[e.title,fe(e,u),e.cancelled?l(`Cancelled`):e.edited?l(`Edited occurrence`):null].filter(Boolean).join(` · `),ie=(0,N.useMemo)(()=>x(C,f),[C,f]),E=(0,N.useMemo)(()=>{let e=ae(C,T.length);return e?ne(e):null},[C,T]),ue=(0,N.useMemo)(()=>ni(C,r),[C,r]),de=ri(e,g,h.allDay,f,p),pe=(0,N.useCallback)((e,t,n)=>{s(J.setRRule(le(h,C,e,t,n)))},[s,C,h]),D=(0,N.useCallback)(e=>{let t=oe(C,e);if(t){let{timestamp:n}=ce(C,e);pe(t,n,t===`exdate`)}},[pe,C]),_e=e=>{let t=te(e).find(e=>e.edited),n=r?.find(t=>!t.orphaned&&_($r(t.scheduleRecurrenceId??t.recurrenceId))===_(e));if(y&&(t||n)){be((t??n).scheduleRecurrenceId??(t??n).recurrenceId);return}let i=ce(C,e);if(i.base&&i.excluded){pe(`exdate`,i.timestamp,!1);return}if(i.full){D(e);return}i.full||pe(`rdate`,i.timestamp,!0)},ye=(0,N.useCallback)(e=>ce(C,e),[C]),be=async t=>{if(!(!e||a)){o(!0);try{he({eventId:await nt(i.current),recurrenceId:t.replace(` `,`T`),siteId:e.siteId,onSave:()=>n?.()})}catch{Craft.cp.displayError(l(`Couldn’t open the occurrence for editing.`))}finally{o(!1)}}};return(0,Z.jsx)(Wr,{ref:i,children:(0,Z.jsxs)(De,{children:[(0,Z.jsxs)(A,{$direction:`column`,$gap:10,children:[(0,Z.jsx)(Kr,{children:l(`Schedule Preview`)}),ie&&(0,Z.jsx)(qr,{children:ie})]}),ue.length>0&&(0,Z.jsx)(Qr,{"aria-label":l(`Schedule changes`),children:ue.map(e=>(0,Z.jsx)(`li`,{children:e},e))}),de&&(0,Z.jsx)(qr,{children:de}),(0,Z.jsxs)(Gr,{children:[(0,Z.jsxs)(A,{$direction:`column`,$gap:10,children:[(0,Z.jsx)(ge,{...m(),height:`auto`,expandRows:!1,themeSystem:`bootstrap5`,plugins:[me,ve],initialView:`dayGridMonth`,dayHeaderFormat:{weekday:`narrow`},dayHeaderDidMount:e=>e.el.setAttribute(`aria-label`,new Intl.DateTimeFormat(d().code,{weekday:`long`,timeZone:`UTC`}).format(e.date)),firstDay:c,timeZone:`UTC`,eventDisplay:`none`,events:w,headerToolbar:{start:`title`,end:`prev,today,next`},datesSet:e=>S({start:e.start,end:e.end,currentStart:e.view.currentStart}),dayCellClassNames:e=>{let t=ye(e.date),n=te(e.date);return[n.length>0?`fc-has-event`:``,n.length>0&&t.rdate?`fc-extra-date`:``,n.length===0&&t.excluded?`fc-excluded-date`:``,n.some(e=>e.cancelled)?`fc-cancelled-date`:``,n.some(e=>e.edited)?`fc-edited-date`:``].filter(Boolean)},dayCellContent:e=>{let t=te(e.date).map(re),n=t.length?t.join(`
-`):void 0;return(0,Z.jsxs)(`span`,{title:n,children:[e.dayNumberText,n&&(0,Z.jsxs)(`span`,{className:`cancelled-date-label`,children:[`, `,n]})]})},dateClick:e=>_e(e.date)}),E&&(0,Z.jsx)(Jr,{children:E})]}),(0,Z.jsx)(Yr,{children:T.length===0?(0,Z.jsxs)(`p`,{children:[l(`No occurrences starting from`),(0,Z.jsx)(`br`,{}),k(t(b?.currentStart??new Date),`PP`,{locale:d()})]}):(0,Z.jsx)(Xr,{$count:T.length,children:T.map(e=>{let n=new Date(e.start*1e3),r=e.cancelled,i=$r(e.scheduleRecurrenceId),o=k(t(n),f,{locale:d()}),s=oe(C,i),c=y?e.scheduleRecurrenceId:null,u=l(s===`rdate`?`Remove additional date {date}`:`Exclude occurrence on {date}`,{date:o});return(0,Z.jsxs)(Zr,{title:re(e),className:[r?`is-cancelled`:``,e.edited?`is-edited`:``].filter(Boolean).join(` `),children:[(0,Z.jsxs)(`span`,{className:`occurrence-date`,children:[(0,Z.jsx)(`span`,{children:o}),e.edited&&e.title&&(0,Z.jsx)(`span`,{className:`occurrence-title`,children:e.title}),e.edited&&!r&&(0,Z.jsx)(`span`,{className:`occurrence-state`,children:l(`Edited occurrence`)}),r&&(0,Z.jsx)(`span`,{className:`occurrence-state`,children:l(`Cancelled`)})]}),(0,Z.jsxs)(`div`,{className:`occurrence-actions`,children:[c&&(0,Z.jsx)(Pr,{type:`button`,className:`icon occurrence-edit`,"data-icon":`edit`,"aria-label":l(`Edit occurrence on {date}`,{date:o}),title:l(`Edit occurrence`),disabled:a,onClick:()=>void be(c)}),s&&(0,Z.jsx)(Pr,{type:`button`,className:`icon occurrence-remove`,"data-icon":`remove`,disabled:a,"aria-label":u,title:u,onClick:()=>D(i)})]})]},e.recurrenceId)})})})]})]})})},oi=({context:e,refreshKey:t})=>{let n=I(Y.state),{showOverlapWarnings:r,formats:i}=I(X.config),a=(0,N.useRef)(null),o=(0,N.useCallback)(()=>tt(a.current)?.settings.elementId??e?.eventId,[e?.eventId]);return e?.calendarId?(0,Z.jsx)(`div`,{ref:a,style:{padding:r?`0 20px 12px`:`0 20px`,marginTop:r?-8:0},children:(0,Z.jsx)(pe,{formats:i,enabled:r,schedule:{...n,rrule:n.rrule??``,calendarId:e.calendarId,siteId:e.siteId},resolveEventId:o,refreshKey:t})}):null},si=r.div`
+`):void 0;return(0,Z.jsxs)(`span`,{title:n,children:[e.dayNumberText,n&&(0,Z.jsxs)(`span`,{className:`cancelled-date-label`,children:[`, `,n]})]})},dateClick:e=>_e(e.date)}),E&&(0,Z.jsx)(Jr,{children:E})]}),(0,Z.jsx)(Yr,{children:T.length===0?(0,Z.jsxs)(`p`,{children:[l(`No occurrences starting from`),(0,Z.jsx)(`br`,{}),k(t(b?.currentStart??new Date),`PP`,{locale:d()})]}):(0,Z.jsx)(Xr,{$count:T.length,children:T.map(e=>{let n=new Date(e.start*1e3),r=e.cancelled,i=$r(e.scheduleRecurrenceId),o=k(t(n),f,{locale:d()}),s=oe(C,i),c=y?e.scheduleRecurrenceId:null,u=l(s===`rdate`?`Remove additional date {date}`:`Exclude occurrence on {date}`,{date:o});return(0,Z.jsxs)(Zr,{title:re(e),className:[r?`is-cancelled`:``,e.edited?`is-edited`:``].filter(Boolean).join(` `),children:[(0,Z.jsxs)(`span`,{className:`occurrence-date`,children:[(0,Z.jsx)(`span`,{children:o}),e.edited&&!r&&(0,Z.jsx)(`span`,{className:`occurrence-state`,children:l(`Edited occurrence`)}),r&&(0,Z.jsx)(`span`,{className:`occurrence-state`,children:l(`Cancelled`)})]}),(0,Z.jsxs)(`div`,{className:`occurrence-actions`,children:[c&&(0,Z.jsx)(Pr,{type:`button`,className:`icon occurrence-edit`,"data-icon":`edit`,"aria-label":l(`Edit occurrence on {date}`,{date:o}),title:l(`Edit occurrence`),disabled:a,onClick:()=>void be(c)}),s&&(0,Z.jsx)(Pr,{type:`button`,className:`icon occurrence-remove`,"data-icon":`remove`,disabled:a,"aria-label":u,title:u,onClick:()=>D(i)})]})]},e.recurrenceId)})})})]})]})})},oi=({context:e,refreshKey:t})=>{let n=I(Y.state),{showOverlapWarnings:r,formats:i}=I(X.config),a=(0,N.useRef)(null),o=(0,N.useCallback)(()=>tt(a.current)?.settings.elementId??e?.eventId,[e?.eventId]);return e?.calendarId?(0,Z.jsx)(`div`,{ref:a,style:{padding:r?`0 20px 12px`:`0 20px`,marginTop:r?-8:0},children:(0,Z.jsx)(pe,{formats:i,enabled:r,schedule:{...n,rrule:n.rrule??``,calendarId:e.calendarId,siteId:e.siteId},resolveEventId:o,refreshKey:t})}):null},si=r.div`
   container-type: inline-size;
 
   display: flex;

@@ -112,6 +112,8 @@ describe("calendar preview rendering", () => {
     const row = container.querySelector<HTMLLIElement>("li.is-edited")!;
     expect(row.title).toContain("Special workshop");
     expect(row.title).toContain("11:30");
+    expect(row.textContent).not.toContain("Special workshop");
+    expect(row.querySelector(".occurrence-state")?.textContent).toBe("Edited occurrence");
     vi.mocked(getDraftEventId).mockResolvedValue(34);
     await act(async () => row.querySelector<HTMLButtonElement>(".occurrence-edit")!.click());
     expect(openOccurrenceEditor).toHaveBeenCalledWith(

@@ -9,11 +9,13 @@ export const CalendarPreviewWrapper = styled.div`
 
   padding: 20px;
   width: 100%;
-  flex: 0 0 495px;
+  flex: 0 0 auto;
+  min-width: 0;
   box-sizing: border-box;
     
   @container (min-width: 1024px) {
-    width: 495px;
+    width: 535px;
+    flex-basis: 535px;
   }
 
   > .field {
@@ -60,8 +62,16 @@ export const CalendarPreviewWrapper = styled.div`
       white-space: nowrap;
     }
 
-    .fc-edited-date .fc-daygrid-day-number {
-      box-shadow: inset 0 -2px var(--blue-500);
+    .fc-edited-date .fc-daygrid-day-frame::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      inset-inline-end: 4px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: var(--gray-600);
+      pointer-events: none;
     }
 
     .fc-scrollgrid,
@@ -232,15 +242,18 @@ export const CalendarPreviewWrapper = styled.div`
 `;
 
 export const FullCalendarOccurrencePreviewWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
 
   margin-top: 10px;
-  width: 455px;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
+
+  @container (max-width: 449px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 
 export const OccurrencePreviewHeading = styled.h4`
@@ -266,9 +279,7 @@ export const OccurrencePreviewSummary = styled.p`
 `;
 
 export const OccurrencePreviewDateList = styled.div`
-  min-width: max-content;
-  flex: 1;
-  height: 100%;
+  min-width: 0;
 
   p {
     padding-top: 57px;
@@ -310,6 +321,7 @@ export const DateItem = styled.li`
 
   > span {
     flex: 1;
+    min-width: 0;
   }
 
   .occurrence-actions {
@@ -321,21 +333,34 @@ export const DateItem = styled.li`
 
   .occurrence-date {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 6px;
     line-height: 18px;
+
+    > span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .occurrence-state {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
-  .occurrence-title {
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--gray-600);
-    font-size: 12px;
-  }
-
-  .occurrence-state {
-    color: var(--gray-600);
-    font-size: 11px;
+  &.is-edited .occurrence-date::after {
+    content: "";
+    flex: 0 0 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--gray-600);
   }
 
   &.is-cancelled {
@@ -344,11 +369,6 @@ export const DateItem = styled.li`
     .occurrence-date > span:first-child {
       color: var(--gray-600);
       text-decoration: line-through;
-    }
-
-    .occurrence-state {
-      color: var(--yellow-700);
-      font-size: 11px;
     }
   }
 `;

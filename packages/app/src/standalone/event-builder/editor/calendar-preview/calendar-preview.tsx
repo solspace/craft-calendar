@@ -341,9 +341,6 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
                     >
                       <span className="occurrence-date">
                         <span>{date}</span>
-                        {occurrence.edited && occurrence.title && (
-                          <span className="occurrence-title">{occurrence.title}</span>
-                        )}
                         {occurrence.edited && !cancelled && (
                           <span className="occurrence-state">{translate("Edited occurrence")}</span>
                         )}
