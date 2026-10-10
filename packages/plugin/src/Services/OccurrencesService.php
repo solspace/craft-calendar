@@ -241,21 +241,35 @@ class OccurrencesService extends Component
      *
      * @param Event $changed the event (or its draft) with the changed schedule, unsaved
      *
-     * @return array{shift: ?int, orphaned: string[]}
+     * @return array{shift: ?int, orphaned: string[], recurrenceIds: array<string, string>, occurrences: array}
      */
     public function previewSchedule(Event $changed): array
     {
-        $overrides = array_map(
-            static fn (OccurrenceOverride $override) => [
+        $overrides = $this->getOverrides($changed);
+        $preview = (new OverrideReconciler($this->materializer, $this->codes))->preview(
+            $changed,
+            (int) $changed->getCanonicalId(),
+            array_map(static fn (OccurrenceOverride $override) => [
                 'recurrenceId' => $override->recurrenceId->format(RecurrenceId::FORMAT),
                 'orphaned' => $override->orphaned,
-            ],
-            $this->getOverrides($changed),
+            ], $overrides),
         );
+        $preview['occurrences'] = [];
 
-        return (new OverrideReconciler($this->materializer, $this->codes))
-            ->preview($changed, (int) $changed->getCanonicalId(), $overrides)
-        ;
+        foreach ($overrides as $override) {
+            $originalId = $override->recurrenceId->format(RecurrenceId::FORMAT);
+            $scheduledId = $preview['recurrenceIds'][$originalId];
+            $times = $this->describeOccurrence($changed, $scheduledId, $override);
+            $preview['occurrences'][] = [
+                'recurrenceId' => $originalId,
+                'scheduleRecurrenceId' => $scheduledId,
+                'start' => $times['startDate']->timestamp,
+                'end' => $times['endDate']->timestamp,
+                'allDay' => $times['allDay'],
+            ];
+        }
+
+        return $preview;
     }
 
     /**

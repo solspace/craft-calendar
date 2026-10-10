@@ -19,6 +19,8 @@ import { formatOccurrenceRange } from "./edited-occurrences.utilities";
 
 export type EditedOccurrence = {
   recurrenceId: string;
+  // The projected schedule anchor to use after pending changes are saved into the draft.
+  scheduleRecurrenceId?: string;
   start: number;
   end: number;
   allDay: boolean;
@@ -72,10 +74,11 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
   const [notOnSchedule, setNotOnSchedule] = useState<Set<string> | null>(null);
   // Checks can answer out of order, so only the latest one counts
   const latestScheduleCheck = useRef(0);
+  const [projected, setProjected] = useState<Map<string, Partial<EditedOccurrence>>>(new Map());
   const schedule = useSelector(eventSelectors.state);
   const formats = useSelector(appSelectors.formats);
   const formatOccurrenceDate = (occurrence: EditedOccurrence): string =>
-    formatOccurrenceRange(occurrence, formats);
+    formatOccurrenceRange({ ...occurrence, ...projected.get(occurrence.recurrenceId) }, formats);
 
   // The editor moves on to a draft as soon as there are changes, so its ID wins over the one the page loaded with
   const getEventId = useCallback(
@@ -103,6 +106,7 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
     ++latestScheduleCheck.current;
     setOccurrences(loaded);
     setNotOnSchedule(null);
+    setProjected(new Map());
   }, [context.siteId, getEventId]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reload after a preview occurrence is saved.
@@ -127,9 +131,18 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
       return;
     }
 
-    const data: { orphaned?: string[] } = await response.json();
+    const data: {
+      orphaned?: string[];
+      occurrences?: Pick<
+        EditedOccurrence,
+        "recurrenceId" | "scheduleRecurrenceId" | "start" | "end" | "allDay"
+      >[];
+    } = await response.json();
     if (check === latestScheduleCheck.current) {
       setNotOnSchedule(new Set(data.orphaned ?? []));
+      setProjected(
+        new Map(data.occurrences?.map((occurrence) => [occurrence.recurrenceId, occurrence]) ?? []),
+      );
     }
   }, [context.siteId, getEventId]);
 
@@ -153,10 +166,11 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
     onOccurrencesChanged?.(
       occurrences.map((occurrence) => ({
         ...occurrence,
+        ...projected.get(occurrence.recurrenceId),
         orphaned: notOnSchedule ? notOnSchedule.has(occurrence.recurrenceId) : occurrence.orphaned,
       })),
     );
-  }, [occurrences, notOnSchedule, onOccurrencesChanged]);
+  }, [occurrences, notOnSchedule, projected, onOccurrencesChanged]);
 
   // Creating the draft takes a moment, so the buttons stay disabled until the slideout opens
   const edit = async (occurrence: EditedOccurrence) => {
@@ -170,7 +184,8 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
 
       openOccurrenceEditor({
         eventId,
-        recurrenceId: occurrence.recurrenceId,
+        recurrenceId:
+          projected.get(occurrence.recurrenceId)?.scheduleRecurrenceId ?? occurrence.recurrenceId,
         siteId: context.siteId,
         onSave: () => void load(),
       });
@@ -200,7 +215,8 @@ export const EditedOccurrences: FC<Props> = ({ context, refreshKey, onOccurrence
         body: JSON.stringify({
           eventId,
           siteId: context.siteId,
-          recurrenceId: occurrence.recurrenceId,
+          recurrenceId:
+            projected.get(occurrence.recurrenceId)?.scheduleRecurrenceId ?? occurrence.recurrenceId,
         }),
       });
 

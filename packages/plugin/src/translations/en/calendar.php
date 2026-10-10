@@ -849,4 +849,5 @@ return [
     'This draft changes the series from {date} onward.' => 'This draft changes the series from {date} onward.',
     'This part of the series starts on {start} and ends before {end}.' => 'This part of the series starts on {start} and ends before {end}.',
     'This part of the series starts on {date}.' => 'This part of the series starts on {date}.',
+    'Edited occurrence' => 'Edited occurrence',
 ];

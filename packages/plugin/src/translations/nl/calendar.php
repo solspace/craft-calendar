@@ -849,4 +849,5 @@ return [
     'This draft changes the series from {date} onward.' => 'Dit concept wijzigt de reeks vanaf {date}.',
     'This part of the series starts on {start} and ends before {end}.' => 'Dit deel van de reeks begint op {start} en eindigt vóór {end}.',
     'This part of the series starts on {date}.' => 'Dit deel van de reeks begint op {date}.',
+    'Edited occurrence' => 'Bewerkte herhaling',
 ];

@@ -274,6 +274,8 @@ class OccurrencesController extends BaseController
             'id' => 'calendar-occurrence-editor',
             'meta' => $meta,
             'event' => $event,
+            'occurrenceTitle' => $override->isFieldOverridden(OccurrenceOverride::TITLE) ? $override->title : $event->title,
+            'occurrenceDate' => DateHelper::formatFloating($occurrence['startDate'], $occurrence['allDay']),
             'recurrenceId' => $recurrenceId,
             'tabs' => $tabs,
             'isDraft' => (bool) $event->getIsDraft(),

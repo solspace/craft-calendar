@@ -15,18 +15,16 @@ import type { FC } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { EditedOccurrence } from "../../edited-occurrences/edited-occurrences";
+import { formatOccurrenceRange } from "../../edited-occurrences/edited-occurrences.utilities";
 import { OccurrenceActionButton } from "../../occurrence-action.styles";
 import { getDraftEventId } from "../../occurrence-editor";
 import type { BuilderContext } from "../../types";
 import {
   buildNextRRuleForDateMutation,
   buildOccurrenceSummary,
-  buildPreviewEvents,
   buildPreviewRecurrence,
-  buildUpcomingOccurrences,
   describeOccurrenceSummary,
   describeRecurrence,
-  getOccurrenceRecurrenceId,
   getOccurrenceRemovalType,
   getOccurrenceStatus,
 } from "./calendar-preview.operations";
@@ -41,6 +39,12 @@ import {
   OccurrencePreviewSummary,
   ScheduleChangeList,
 } from "./calendar-preview.styles";
+import {
+  buildEditedPreview,
+  coversPreviewDate,
+  type PreviewOccurrence,
+  recurrenceDate,
+} from "./edited-preview.operations";
 import { describeScheduleChanges, describeSeriesRange } from "./schedule-summary.operations";
 
 const MAX_OCCURRENCES = 8;
@@ -70,31 +74,52 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
 
   const previewRecurrence = useMemo(() => buildPreviewRecurrence(rrule, start), [rrule, start]);
 
-  const cancelledRecurrenceIds = useMemo(
+  const calendarOccurrences = useMemo(
     () =>
-      new Set(
-        editedOccurrences
-          ?.filter((occurrence) => occurrence.cancelled && !occurrence.orphaned)
-          .map((occurrence) => occurrence.recurrenceId.replace(" ", "T")),
+      buildEditedPreview(
+        previewRecurrence,
+        state,
+        viewRange?.start ?? null,
+        editedOccurrences,
+        viewRange?.end,
       ),
-    [editedOccurrences],
+    [previewRecurrence, state, viewRange, editedOccurrences],
   );
-
-  const isCancelledDate = (date: Date): boolean => {
-    const recurrenceId = getOccurrenceRecurrenceId(previewRecurrence, date);
-
-    return recurrenceId !== null && cancelledRecurrenceIds.has(recurrenceId);
-  };
-
   const events = useMemo(
-    () => buildPreviewEvents(previewRecurrence, viewRange),
-    [previewRecurrence, viewRange],
+    () =>
+      calendarOccurrences.map((occurrence) => ({
+        id: occurrence.recurrenceId,
+        start: utcDateKey(new Date(occurrence.start * 1000)),
+        allDay: true,
+      })),
+    [calendarOccurrences],
   );
-
   const upcomingOccurrences = useMemo(
-    () => buildUpcomingOccurrences(previewRecurrence, viewRange?.start ?? null, MAX_OCCURRENCES),
-    [previewRecurrence, viewRange],
+    () =>
+      buildEditedPreview(
+        previewRecurrence,
+        state,
+        viewRange?.start ?? null,
+        editedOccurrences,
+        undefined,
+        MAX_OCCURRENCES,
+      ),
+    [previewRecurrence, state, viewRange, editedOccurrences],
   );
+  const occurrencesOnDate = (date: Date) =>
+    calendarOccurrences.filter((occurrence) => coversPreviewDate(occurrence, date));
+  const describeOccurrence = (occurrence: PreviewOccurrence): string =>
+    [
+      occurrence.title,
+      formatOccurrenceRange(occurrence, formats),
+      occurrence.cancelled
+        ? translate("Cancelled")
+        : occurrence.edited
+          ? translate("Edited occurrence")
+          : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
   const occurrencePreviewDescription = useMemo(
     () => describeRecurrence(previewRecurrence, dateFormat),
@@ -136,26 +161,38 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
     [applyDateMutation, previewRecurrence],
   );
 
-  const handleDateClick = useCallback(
-    (date: Date) => {
-      const status = getOccurrenceStatus(previewRecurrence, date);
+  const handleDateClick = (date: Date) => {
+    // A displayed edit may belong to a different schedule date. Open its own editor rather than
+    // adding/excluding another occurrence on the date it moved to.
+    const edited = occurrencesOnDate(date).find((occurrence) => occurrence.edited);
+    const movedFrom = editedOccurrences?.find(
+      (occurrence) =>
+        !occurrence.orphaned &&
+        utcDateKey(recurrenceDate(occurrence.scheduleRecurrenceId ?? occurrence.recurrenceId)) ===
+          utcDateKey(date),
+    );
+    if (canEditOccurrences && (edited || movedFrom)) {
+      void editOccurrence(
+        (edited ?? movedFrom)!.scheduleRecurrenceId ?? (edited ?? movedFrom)!.recurrenceId,
+      );
+      return;
+    }
+    const status = getOccurrenceStatus(previewRecurrence, date);
 
-      if (status.base && status.excluded) {
-        applyDateMutation("exdate", status.timestamp, false);
-        return;
-      }
+    if (status.base && status.excluded) {
+      applyDateMutation("exdate", status.timestamp, false);
+      return;
+    }
 
-      if (status.full) {
-        removeOccurrence(date);
-        return;
-      }
+    if (status.full) {
+      removeOccurrence(date);
+      return;
+    }
 
-      if (!status.full) {
-        applyDateMutation("rdate", status.timestamp, true);
-      }
-    },
-    [applyDateMutation, previewRecurrence, removeOccurrence],
-  );
+    if (!status.full) {
+      applyDateMutation("rdate", status.timestamp, true);
+    }
+  };
 
   const getStatus = useCallback(
     (date: Date) => getOccurrenceStatus(previewRecurrence, date),
@@ -173,7 +210,7 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
       const eventId = await getDraftEventId(ref.current);
       openOccurrenceEditor({
         eventId,
-        recurrenceId,
+        recurrenceId: recurrenceId.replace(" ", "T"),
         siteId: context.siteId,
         onSave: () => onOccurrenceSaved?.(),
       });
@@ -239,22 +276,22 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
               }
               dayCellClassNames={(info) => {
                 const status = getStatus(info.date);
-
+                const occurrences = occurrencesOnDate(info.date);
                 return [
-                  status.full ? "fc-has-event" : "",
-                  status.rdate ? "fc-extra-date" : "",
-                  status.excluded ? "fc-excluded-date" : "",
-                  isCancelledDate(info.date) ? "fc-cancelled-date" : "",
+                  occurrences.length > 0 ? "fc-has-event" : "",
+                  occurrences.length > 0 && status.rdate ? "fc-extra-date" : "",
+                  occurrences.length === 0 && status.excluded ? "fc-excluded-date" : "",
+                  occurrences.some((occurrence) => occurrence.cancelled) ? "fc-cancelled-date" : "",
+                  occurrences.some((occurrence) => occurrence.edited) ? "fc-edited-date" : "",
                 ].filter(Boolean);
               }}
               dayCellContent={(info) => {
-                const cancelled = isCancelledDate(info.date);
-                const label = cancelled ? translate("Cancelled") : undefined;
-
+                const descriptions = occurrencesOnDate(info.date).map(describeOccurrence);
+                const label = descriptions.length ? descriptions.join("\n") : undefined;
                 return (
                   <span title={label}>
                     {info.dayNumberText}
-                    {cancelled && <span className="cancelled-date-label">, {label}</span>}
+                    {label && <span className="cancelled-date-label">, {label}</span>}
                   </span>
                 );
               }}
@@ -275,16 +312,15 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
               </p>
             ) : (
               <DateList $count={upcomingOccurrences.length}>
-                {upcomingOccurrences.map((timestamp) => {
-                  const occurrenceDate = new Date(timestamp * 1000);
-                  const cancelled = isCancelledDate(occurrenceDate);
+                {upcomingOccurrences.map((occurrence) => {
+                  const occurrenceDate = new Date(occurrence.start * 1000);
+                  const cancelled = occurrence.cancelled;
+                  const scheduledDate = recurrenceDate(occurrence.scheduleRecurrenceId);
                   const date = format(utcToLocalDisplayDate(occurrenceDate), dateFormat, {
                     locale: getDateLocale(),
                   });
-                  const removalType = getOccurrenceRemovalType(previewRecurrence, occurrenceDate);
-                  const recurrenceId = canEditOccurrences
-                    ? getOccurrenceRecurrenceId(previewRecurrence, occurrenceDate)
-                    : null;
+                  const removalType = getOccurrenceRemovalType(previewRecurrence, scheduledDate);
+                  const recurrenceId = canEditOccurrences ? occurrence.scheduleRecurrenceId : null;
                   const removalLabel = translate(
                     removalType === "rdate"
                       ? "Remove additional date {date}"
@@ -294,11 +330,20 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
 
                   return (
                     <DateItem
-                      key={utcDateKey(occurrenceDate)}
-                      className={cancelled ? "is-cancelled" : undefined}
+                      key={occurrence.recurrenceId}
+                      title={describeOccurrence(occurrence)}
+                      className={[
+                        cancelled ? "is-cancelled" : "",
+                        occurrence.edited ? "is-edited" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                     >
                       <span className="occurrence-date">
                         <span>{date}</span>
+                        {occurrence.edited && !cancelled && (
+                          <span className="occurrence-state">{translate("Edited occurrence")}</span>
+                        )}
                         {cancelled && (
                           <span className="occurrence-state">{translate("Cancelled")}</span>
                         )}
@@ -323,7 +368,7 @@ export const CalendarPreview: FC<Props> = ({ context, onOccurrenceSaved, editedO
                             disabled={isOpeningOccurrence}
                             aria-label={removalLabel}
                             title={removalLabel}
-                            onClick={() => removeOccurrence(occurrenceDate)}
+                            onClick={() => removeOccurrence(scheduledDate)}
                           />
                         )}
                       </div>
