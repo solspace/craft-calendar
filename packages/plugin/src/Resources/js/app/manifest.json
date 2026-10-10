@@ -1,6 +1,6 @@
 {
-  "_calendar-preview.operations-kxAQQpA7.js": {
-    "file": "assets/calendar-preview.operations-kxAQQpA7.js",
+  "_calendar-preview.operations-DQ-9r6OG.js": {
+    "file": "assets/calendar-preview.operations-DQ-9r6OG.js",
     "name": "calendar-preview.operations",
     "imports": [
       "_localization-Dt_HqhpZ.js",
@@ -78,13 +78,13 @@
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-BBDm8bdS.js",
+    "file": "assets/overview-lBVOst6G.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_localization-Dt_HqhpZ.js",
-      "_calendar-preview.operations-kxAQQpA7.js",
+      "_calendar-preview.operations-DQ-9r6OG.js",
       "_calendar.events-DxgmBNw7.js",
       "_interaction-D2VE812o.js",
       "_timegrid-Bwykp3PL.js",
@@ -94,13 +94,13 @@
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-DN5FPMxM.js",
+    "file": "assets/event-builder-CjEEP6nV.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_localization-Dt_HqhpZ.js",
-      "_calendar-preview.operations-kxAQQpA7.js",
+      "_calendar-preview.operations-DQ-9r6OG.js",
       "_calendar.events-DxgmBNw7.js",
       "_interaction-D2VE812o.js",
       "_components-CefPxcP5.js",

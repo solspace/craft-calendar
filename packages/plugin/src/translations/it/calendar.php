@@ -799,7 +799,7 @@ return [
     'Checking for overlaps…' => 'Verifica delle sovrapposizioni…',
     'Couldn’t check for overlaps. You can still save.' => 'Impossibile verificare le sovrapposizioni. Puoi comunque salvare.',
     'Checked up to {count} occurrences within one year, through {date}.' => 'Verificate fino a {count} occorrenze nell’arco di un anno, fino al {date}.',
-    'No overlaps found.' => 'Nessuna sovrapposizione trovata.',
+    'No schedule conflicts found.' => 'Nessun conflitto di programmazione trovato.',
     'The event schedule could not be checked.' => 'Impossibile verificare il programma dell’evento.',
     'And {count} more' => 'E ancora {count}',
 

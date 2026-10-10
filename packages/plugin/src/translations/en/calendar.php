@@ -799,7 +799,7 @@ return [
     'Checking for overlaps…' => 'Checking for overlaps…',
     'Couldn’t check for overlaps. You can still save.' => 'Couldn’t check for overlaps. You can still save.',
     'Checked up to {count} occurrences within one year, through {date}.' => 'Checked up to {count} occurrences within one year, through {date}.',
-    'No overlaps found.' => 'No overlaps found.',
+    'No schedule conflicts found.' => 'No schedule conflicts found.',
     'The event schedule could not be checked.' => 'The event schedule could not be checked.',
     'And {count} more' => 'And {count} more',
 

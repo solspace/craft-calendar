@@ -799,7 +799,7 @@ return [
     'Checking for overlaps…' => 'Überschneidungen werden geprüft…',
     'Couldn’t check for overlaps. You can still save.' => 'Überschneidungen konnten nicht geprüft werden. Sie können trotzdem speichern.',
     'Checked up to {count} occurrences within one year, through {date}.' => 'Bis zu {count} Vorkommen innerhalb eines Jahres bis zum {date} geprüft.',
-    'No overlaps found.' => 'Keine Überschneidungen gefunden.',
+    'No schedule conflicts found.' => 'Keine Terminkonflikte gefunden.',
     'The event schedule could not be checked.' => 'Der Terminplan konnte nicht geprüft werden.',
     'And {count} more' => 'Und {count} weitere',
 

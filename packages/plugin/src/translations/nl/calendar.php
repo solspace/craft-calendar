@@ -799,7 +799,7 @@ return [
     'Checking for overlaps…' => 'Controleren op overlappingen…',
     'Couldn’t check for overlaps. You can still save.' => 'Overlappingen konden niet worden gecontroleerd. Je kunt nog steeds opslaan.',
     'Checked up to {count} occurrences within one year, through {date}.' => 'Tot {count} voorkomens binnen één jaar gecontroleerd, tot {date}.',
-    'No overlaps found.' => 'Geen overlappingen gevonden.',
+    'No schedule conflicts found.' => 'Geen planningsconflicten gevonden.',
     'The event schedule could not be checked.' => 'De evenementplanning kon niet worden gecontroleerd.',
     'And {count} more' => 'En nog {count} meer',
 

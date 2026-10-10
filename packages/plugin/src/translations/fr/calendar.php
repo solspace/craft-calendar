@@ -799,7 +799,7 @@ return [
     'Checking for overlaps…' => 'Recherche de chevauchements…',
     'Couldn’t check for overlaps. You can still save.' => 'Impossible de vérifier les chevauchements. Vous pouvez toujours enregistrer.',
     'Checked up to {count} occurrences within one year, through {date}.' => 'Jusqu’à {count} occurrences vérifiées sur un an, jusqu’au {date}.',
-    'No overlaps found.' => 'Aucun chevauchement trouvé.',
+    'No schedule conflicts found.' => 'Aucun conflit de planification trouvé.',
     'The event schedule could not be checked.' => 'Impossible de vérifier le programme de l’événement.',
     'And {count} more' => 'Et {count} de plus',
 
