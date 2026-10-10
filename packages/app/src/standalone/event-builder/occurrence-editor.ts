@@ -4,7 +4,10 @@ export const findElementEditor = (node: HTMLElement | null): Craft.ElementEditor
     return undefined;
   }
 
-  return jQuery(node).closest("form").data("elementEditor");
+  return (
+    jQuery(node).closest("[data-element-editor]").data("elementEditor") ??
+    jQuery(node).closest("form").data("elementEditor")
+  );
 };
 
 /** Save pending schedule changes into the draft before editing any of its occurrences. */

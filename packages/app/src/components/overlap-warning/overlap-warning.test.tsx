@@ -117,7 +117,10 @@ describe("live overlap warnings", () => {
     await render(true, schedule.start + 60);
     await flush();
     await act(async () => resolveOld(response(conflict)));
-    expect(container.textContent).toContain("No overlaps found.");
+    expect(container.textContent).toContain("No schedule conflicts found.");
+    expect(container.querySelector(".overlap-clear")?.textContent).toBe(
+      "No schedule conflicts found.",
+    );
     expect(container.textContent).not.toContain("Scheduling conflict");
   });
   it("uses the editor's date and time formats without a blank trailing status", async () => {

@@ -101,6 +101,10 @@ const LiveWarning = styled.div`
     line-height: 1.5;
     text-align: start;
   }
+
+  && > .overlap-clear {
+    color: var(--enabled-color, #008539);
+  }
 `;
 
 const Flag = styled.span`
@@ -246,13 +250,21 @@ export const LiveOverlapWarning = ({
               date: result.through ?? "",
             })
           : !result?.count
-            ? translate("No overlaps found.")
+            ? translate("No schedule conflicts found.")
             : null;
   return (
     <LiveWarning>
       <OverlapWarning result={result} formats={formats} isEditing />
       {statusText && (
-        <p className="light" role="status" aria-live="polite">
+        <p
+          className={
+            status === "done" && result?.count === 0 && !result.recurring
+              ? "overlap-clear"
+              : "light"
+          }
+          role="status"
+          aria-live="polite"
+        >
           {statusText}
         </p>
       )}

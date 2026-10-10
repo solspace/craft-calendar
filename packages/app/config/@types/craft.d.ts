@@ -37,7 +37,10 @@ declare namespace Craft {
 
   class CpScreenSlideout {
     constructor(action: string, settings?: CpScreenSlideoutSettings);
-    on(event: "submit" | "close", handler: () => void): void;
+    on(
+      event: "submit" | "close",
+      handler: (event?: { response?: { data?: { url?: string } } }) => void,
+    ): void;
   }
 
   type ElementEditorSettings = {
@@ -49,6 +52,8 @@ declare namespace Craft {
 
   class ElementEditor {
     settings: ElementEditorSettings;
+    pause(): void;
+    resume(): void;
     ensureIsDraftOrRevision(onlyIfChanged?: boolean): Promise<void>;
     checkForm(force?: boolean, saveDraft?: boolean | null): Promise<void>;
   }
