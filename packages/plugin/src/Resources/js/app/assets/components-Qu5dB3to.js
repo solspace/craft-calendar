@@ -116,12 +116,12 @@ import{A as e,C as t,D as n,E as r,M as i,N as a,a as o,c as s,d as c,f as l,g a
   .react-datepicker__navigation:hover *::before {
     border-color: var(--gray-700);
   }
-`,Mp=({value:e,onChange:n,label:r,id:i,required:a,datePickerProps:o})=>{let[s,c]=(0,z.useState)(e===null?null:t(e));return(0,z.useEffect)(()=>{c(e===null?null:t(e))},[e]),(0,V.jsx)(kp,{label:r,id:i,required:a,style:{margin:0},children:(0,V.jsx)(Np,{children:(0,V.jsx)(Ep,{...f(),...o,id:i??o?.id,ariaRequired:a?`true`:void 0,wrapperClassName:`fullwidth`,className:`text fullwidth`,selected:s,onChange:e=>{let t=e?x(e):null;n&&n(t)}})})})},Np=n.div`
+`,Mp=({value:e,onChange:n,label:r,id:i,required:a,datePickerProps:o,portal:s=!1})=>{let[c,l]=(0,z.useState)(e===null?null:t(e));return(0,z.useEffect)(()=>{l(e===null?null:t(e))},[e]),(0,V.jsx)(kp,{label:r,id:i,required:a,style:{margin:0},children:(0,V.jsx)(Pp,{children:(0,V.jsx)(Ep,{...f(),...o,portalId:s?void 0:o?.portalId,popperContainer:s?Np:o?.popperContainer,id:i??o?.id,ariaRequired:a?`true`:void 0,wrapperClassName:`fullwidth`,className:`text fullwidth`,selected:c,onChange:e=>{let t=e?x(e):null;n&&n(t)}})})})},Np=({children:e})=>e?(0,ri.createPortal)((0,V.jsx)(Pp,{$portal:!0,children:e}),document.body):null,Pp=n.div`
   ${jp}
 
   .react-datepicker {
     &-popper {
-      z-index: 13;
+      z-index: ${({$portal:e})=>e?100:13};
       width: 327px;
 
       &:has(.react-datepicker__time-container) {
@@ -164,7 +164,7 @@ import{A as e,C as t,D as n,E as r,M as i,N as a,a as o,c as s,d as c,f as l,g a
       }
     }
   }
-`,Pp=({enabled:e,errors:t,onClick:n,...r})=>(0,V.jsx)(kp,{...r,children:(0,V.jsx)(`button`,{type:`button`,role:`switch`,"aria-checked":e??!1,className:B(`lightswitch`,e&&`on`,t&&`error`),onClick:()=>n?.(!e),children:(0,V.jsx)(`div`,{className:`lightswitch-container`,children:(0,V.jsx)(`div`,{className:`handle`})})})}),Fp=({className:e,$direction:t=`row`,$gap:n=16,$justifyContent:r=`start`,$alignItems:i=`start`,style:a,children:o})=>(0,V.jsx)(Ip,{className:e,$direction:t,$gap:n,$justifyContent:r,$alignItems:i,style:a,children:o}),Ip=n.div`
+`,Fp=({enabled:e,errors:t,onClick:n,...r})=>(0,V.jsx)(kp,{...r,children:(0,V.jsx)(`button`,{type:`button`,role:`switch`,"aria-checked":e??!1,className:B(`lightswitch`,e&&`on`,t&&`error`),onClick:()=>n?.(!e),children:(0,V.jsx)(`div`,{className:`lightswitch-container`,children:(0,V.jsx)(`div`,{className:`handle`})})})}),Ip=({className:e,$direction:t=`row`,$gap:n=16,$justifyContent:r=`start`,$alignItems:i=`start`,style:a,children:o})=>(0,V.jsx)(Lp,{className:e,$direction:t,$gap:n,$justifyContent:r,$alignItems:i,style:a,children:o}),Lp=n.div`
   display: flex;
   flex-direction: ${e=>e.$direction};
   justify-content: ${e=>e.$justifyContent};
@@ -174,4 +174,4 @@ import{A as e,C as t,D as n,E as r,M as i,N as a,a as o,c as s,d as c,f as l,g a
   .field {
     margin-block: 0;
   }
-`;export{k as _,Ap as a,S as b,B as c,Kn as d,wn as f,le as g,ve as h,jp as i,Yn as l,A as m,Pp as n,kp as o,Ze as p,Mp as r,Ep as s,Fp as t,qn as u,D as v,C as y};
+`;export{k as _,Ap as a,S as b,B as c,Kn as d,wn as f,le as g,ve as h,jp as i,Yn as l,A as m,Fp as n,kp as o,Ze as p,Mp as r,Ep as s,Ip as t,qn as u,D as v,C as y};

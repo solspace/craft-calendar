@@ -140,6 +140,7 @@ export const QuickCreateRepeatControls = ({
             )}
             {recurrence.endType === "ON_DATE" && (
               <DatePicker
+                portal
                 id={`${id}-until`}
                 label={translate("Last date")}
                 value={getQuickCreateUntil(draft)}

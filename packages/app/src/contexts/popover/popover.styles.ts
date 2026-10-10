@@ -5,7 +5,8 @@ export const PopoverBridge = styled.div`
   position: relative;
 `;
 
-export const PopoverContainer = styled.div`
+export const PopoverContainer = styled.div<{ $maxHeight?: number }>`
+  --calendar-popover-max-height: ${({ $maxHeight }) => ($maxHeight === undefined ? "calc(100dvh - 32px)" : `${$maxHeight}px`)};
   position: absolute;
   top: 0;
   left: 0;

@@ -4,8 +4,10 @@ import styled from "styled-components";
 export const PopoverCreateEventWrapper = styled.div`
   width: 440px;
   max-width: calc(100vw - 32px);
+  max-height: var(--calendar-popover-max-height, calc(100dvh - 32px));
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
-  padding: 15px;
 
   label.required::after {
     font-size: 10px;
@@ -14,6 +16,14 @@ export const PopoverCreateEventWrapper = styled.div`
   hr {
     margin: 15px 0;
   }
+`;
+
+export const CreateFormBody = styled.div`
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 15px;
 `;
 
 export const FlexTitle = styled(Flex)`
@@ -87,8 +97,15 @@ export const AllDayLabel = styled.label`
 `;
 
 export const CreateActions = styled(Flex)`
+  flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
+  border-top: 1px solid var(--gray-200);
+  padding: 12px 15px;
+
+  @media (max-height: 600px) {
+    padding-block: 10px;
+  }
 `;
 
 export const CreateActionButtons = styled.div`
