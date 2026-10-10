@@ -141,7 +141,7 @@ import{E as e}from"./localization-Dt_HqhpZ.js";var t=`data:image/svg+xml;base64,
     .fc-daygrid-day {
       background: #ffffff;
     }
-
+    
     .fc-daygrid-day.fc-day-sat:not(.fc-day-other):not(.fc-day-today),
     .fc-daygrid-day.fc-day-sun:not(.fc-day-other):not(.fc-day-today) {
       background-color: #fcfdff;

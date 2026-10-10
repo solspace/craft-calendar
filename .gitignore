@@ -5,6 +5,7 @@
 
 vendor/
 node_modules/
+.pnpm-store/
 
 yarn-error.log
 lerna-debug.log

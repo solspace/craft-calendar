@@ -163,6 +163,7 @@ describe("control panel Agenda", () => {
     const calendar = (
       <CalendarFullcalendar
         hiddenCalendarIds={[]}
+        registerApplyAiDraft={vi.fn()}
         selectedDate={new Date("2026-10-09T00:00:00Z")}
         onDateChange={vi.fn()}
         miniDateSelection={null}
@@ -517,6 +518,7 @@ describe("control panel Agenda", () => {
         <PopoverProvider>
           <CalendarFullcalendar
             hiddenCalendarIds={[1]}
+            registerApplyAiDraft={vi.fn()}
             selectedDate={new Date("2026-10-09T00:00:00Z")}
             onDateChange={vi.fn()}
             miniDateSelection={null}
