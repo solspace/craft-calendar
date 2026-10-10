@@ -50,6 +50,7 @@ import { PopoverViewEvent } from "./popovers/view-event/view-event";
 
 type CalendarFullcalendarProps = {
   hiddenCalendarIds: number[];
+  registerApplyAiDraft: (handler: (draft: CalendarCreateDraft) => void) => void;
 };
 
 const weekHeaderWeekdayFormatter = new Intl.DateTimeFormat(undefined, {
@@ -68,7 +69,10 @@ const formatDuration = (minutes: number): string => {
   return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(2, "0")}:00`;
 };
 
-export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCalendarIds }) => {
+export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
+  hiddenCalendarIds,
+  registerApplyAiDraft,
+}) => {
   const { hidePopover, showPopover } = usePopover();
   const { view, setView, isReady } = useViewSettings();
   const {
@@ -83,6 +87,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
   } = useConfig();
 
   const calendar = useRef<FullCalendar>(null);
+  const calendarRootRef = useRef<HTMLDivElement>(null);
   const calendarFilterKey = hiddenCalendarIds.join(",");
   const lastCalendarFilterKey = useRef<string | null>(null);
   const [draft, setDraft] = useState<CalendarCreateDraft | null>(null);
@@ -158,6 +163,18 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
     clearDraft();
     hidePopover();
   }, [clearDraft, hidePopover]);
+
+  const applyAiDraft = useCallback((draft: CalendarCreateDraft) => {
+    setDraft(draft);
+    const anchor =
+      calendarRootRef.current?.querySelector<HTMLElement>(".fc-toolbar-title") ??
+      calendarRootRef.current;
+    setDraftAnchorEl(anchor ?? null);
+  }, []);
+
+  useEffect(() => {
+    registerApplyAiDraft(applyAiDraft);
+  }, [applyAiDraft, registerApplyAiDraft]);
 
   useEffect(() => {
     const calendarApi = calendar.current?.getApi();
@@ -322,7 +339,10 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({ hiddenCale
   }
 
   return (
-    <CalendarWrapper className={isFetchingEvents ? "is-fetching-events" : undefined}>
+    <CalendarWrapper
+      ref={calendarRootRef}
+      className={isFetchingEvents ? "is-fetching-events" : undefined}
+    >
       <FullCalendar
         ref={calendar}
         themeSystem="bootstrap5"

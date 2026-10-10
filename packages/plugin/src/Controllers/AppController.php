@@ -63,6 +63,8 @@ class AppController extends BaseController
             'canEditEvents' => $user && $user->can('calendar-manageEvents') && !empty($calendarOptions),
             'isMultiSite' => \Craft::$app->getIsMultiSite(),
             'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
+            'isSolspaceAiConnected' => Calendar::getInstance()->isPro()
+                && Calendar::getInstance()->solspaceAi->isConnected(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),
             'timeInterval' => $this->getSettingsService()->getTimeInterval(),

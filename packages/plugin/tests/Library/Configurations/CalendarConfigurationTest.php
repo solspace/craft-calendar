@@ -21,7 +21,7 @@ class CalendarConfigurationTest extends TestCase
      * @throws \ReflectionException
      * @throws ConfigurationException
      */
-    public function testCastToCarbon(Carbon|\DateTime|string|null $input, ?Carbon $expectedOutput)
+    public function testCastToCarbon(Carbon|\DateTime|string|null $input, ?Carbon $expectedOutput): void
     {
         $config = new TestConfig(['carbon' => $input]);
         $this->assertEquals($expectedOutput, $config->getCarbon());

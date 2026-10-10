@@ -7,8 +7,17 @@
 'general': { title: "General Settings"|t('calendar') },
 'events': { title: "Event Settings"|t('calendar') },
 'guest-access': { title: "Guest Access"|t('calendar') },
-'demo-templates': {title: 'Demo Templates'|t('calendar')},
 } %}
+
+{% if craft.calendar.pro %}
+    {% set navItems = navItems|merge({
+        'solspaceai': { title: "SolspaceAI"|t('calendar') },
+    }) %}
+{% endif %}
+
+{% set navItems = navItems|merge({
+'demo-templates': {title: 'Demo Templates'|t('calendar')},
+}) %}
 
 {% set selectedItem = craft.app.request.getSegment(3)|default %}
 

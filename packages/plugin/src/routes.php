@@ -29,6 +29,8 @@ return [
     'POST calendar/api/events/move' => 'calendar/events-api/move',
     'POST calendar/api/events/resize' => 'calendar/events-api/resize',
 
+    'POST calendar/api/ai/generate-event' => 'calendar/solspace-ai/generate-event',
+
     'calendar/events/api/first-occurrence-date' => 'calendar/events-api/first-occurrence-date',
     'calendar/events/api/create' => 'calendar/events-api/create',
     'calendar/events/api/attributes' => 'calendar/events-api/attributes',
@@ -40,5 +42,12 @@ return [
     'calendar/settings/events' => 'calendar/settings/events',
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
     'calendar/settings/ics' => 'calendar/settings/ics',
+    'GET calendar/settings/solspaceai/usage' => 'calendar/solspace-ai/usage',
+    'GET calendar/settings/solspaceai/plans' => 'calendar/solspace-ai/plans',
+    'POST calendar/settings/solspaceai/create-checkout-session' => 'calendar/solspace-ai/create-checkout-session',
+    'calendar/settings/solspaceai' => 'calendar/settings/solspaceai',
     'calendar/settings/demo-templates' => 'calendar/code-pack/list-contents',
+
+    // Legacy redirect
+    'calendar/solspace-ai' => 'calendar/settings/solspaceai',
 ];

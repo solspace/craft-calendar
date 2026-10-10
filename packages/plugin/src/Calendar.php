@@ -33,6 +33,8 @@ use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\ExceptionsService;
 use Solspace\Calendar\Services\SelectDatesService;
 use Solspace\Calendar\Services\SettingsService;
+use Solspace\Calendar\Services\SolspaceAi\EventGenerationService;
+use Solspace\Calendar\Services\SolspaceAi\SolspaceAiService;
 use Solspace\Calendar\Services\ViewDataService;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Solspace\Calendar\Twig\Extensions\CalendarTwigExtension;
@@ -47,13 +49,15 @@ use yii\web\ForbiddenHttpException;
 /**
  * Class Calendar.
  *
- * @property CalendarsService     $calendars
- * @property CalendarSitesService $calendarSites
- * @property EventsService        $events
- * @property ExceptionsService    $exceptions
- * @property SelectDatesService   $selectDates
- * @property SettingsService      $settings
- * @property ViewDataService      $viewData
+ * @property CalendarsService                  $calendars
+ * @property CalendarSitesService              $calendarSites
+ * @property EventsService                     $events
+ * @property ExceptionsService                 $exceptions
+ * @property SelectDatesService                $selectDates
+ * @property SettingsService                   $settings
+ * @property ViewDataService                   $viewData
+ * @property SolspaceAi\SolspaceAiService      $solspaceAi
+ * @property SolspaceAi\EventGenerationService $eventGeneration
  */
 class Calendar extends Plugin
 {
@@ -302,6 +306,8 @@ class Calendar extends Plugin
                 'selectDates' => SelectDatesService::class,
                 'settings' => SettingsService::class,
                 'viewData' => ViewDataService::class,
+                'solspaceAi' => SolspaceAiService::class,
+                'eventGeneration' => EventGenerationService::class,
             ]
         );
     }

@@ -28,6 +28,7 @@ export type CalendarConfig = {
   currentDay: Date;
   siteMap: SiteMap;
   isQuickCreateEnabled: boolean;
+  isSolspaceAiConnected: boolean;
   isMultiSite: boolean;
   canEditEvents: boolean;
 };

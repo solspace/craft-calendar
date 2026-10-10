@@ -19,7 +19,7 @@ class ProjectConfigBundle implements BundleInterface
         Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, [$this, 'rebuildConfig']);
     }
 
-    public function rebuildConfig(RebuildConfigEvent $event)
+    public function rebuildConfig(RebuildConfigEvent $event): void
     {
         if (isset($event->config['solspace'])) {
             $event->config['solspace'] = ['calendar' => []];

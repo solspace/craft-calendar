@@ -54,6 +54,16 @@ class SettingsModel extends Model
 
     public int|string|null $timeFormat = null;
 
+    public ?bool $solspaceAiEnabled = null;
+
+    public ?string $solspaceAiApiKey = null;
+
+    public ?string $solspaceAiApiBaseUrl = null;
+
+    public ?string $solspaceAiContactEmail = null;
+
+    public ?string $solspaceAiSiteUrl = null;
+
     private static array $overlapThresholds = [
         0 => 0,
         1 => 1,
