@@ -78,11 +78,13 @@ class OverviewController extends BaseController
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
         $calendarColors = [];
+        $calendarAllowRepeating = [];
         $quickCreateFields = [];
         $quickCreateRequiredFields = [];
         foreach ($this->getCalendarService()->getAllAllowedCalendars() as $calendar) {
             if (isset($calendarOptions[$calendar->id])) {
                 $calendarColors[$calendar->id] = $calendar->color;
+                $calendarAllowRepeating[$calendar->id] = Calendar::getInstance()->isPro() && (bool) $calendar->allowRepeatingEvents;
                 $quickCreateFields[$calendar->id] = $calendar->getQuickCreateFieldHandles();
                 $quickCreateRequiredFields[$calendar->id] = $calendar->getQuickCreateRequiredFields();
             }
@@ -92,6 +94,7 @@ class OverviewController extends BaseController
         $configuration = [
             'calendars' => $calendarOptions,
             'calendarColors' => $calendarColors,
+            'calendarAllowRepeating' => $calendarAllowRepeating,
             'quickCreateFields' => $quickCreateFields,
             'quickCreateRequiredFields' => $quickCreateRequiredFields,
             'eventActionIcons' => array_combine(

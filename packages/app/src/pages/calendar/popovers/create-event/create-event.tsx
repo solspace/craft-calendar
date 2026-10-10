@@ -21,10 +21,16 @@ import { useConfig } from "../../context/config.context";
 import { CalendarDropdown } from "./create-event.calendar-dropdown";
 import { useCreateEvent } from "./create-event.mutation";
 import {
+  buildQuickCreateRecurrence,
+  isQuickCreateRecurrenceValid,
+} from "./create-event.recurrence";
+import { QuickCreateRepeatControls } from "./create-event.repeat-controls";
+import {
   AllDayLabel,
   AllDayRow,
   CreateActionButtons,
   CreateActions,
+  CreateFormBody,
   Fields,
   FlexTitle,
   MoreDetailsButton,
@@ -51,6 +57,7 @@ export const PopoverCreateEvent: FC<Props> = ({
     showOverlapWarnings,
     calendars,
     calendarColors,
+    calendarAllowRepeating,
     quickCreateFields,
     quickCreateRequiredFields,
     formats,
@@ -69,6 +76,11 @@ export const PopoverCreateEvent: FC<Props> = ({
     [calendars, calendarColors],
   );
   const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
+  const allowRepeating = calendarAllowRepeating?.[calendarId] ?? false;
+  const effectiveDraft =
+    allowRepeating || !draft.recurrence ? draft : { ...draft, recurrence: undefined };
+  const validRecurrence = isQuickCreateRecurrenceValid(effectiveDraft);
+  const recurrenceSchedule = buildQuickCreateRecurrence(effectiveDraft);
   const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>({});
   const mappedFields = quickCreateFields?.[calendarId];
   const locationHandle = mappedFields?.location;
@@ -111,156 +123,179 @@ export const PopoverCreateEvent: FC<Props> = ({
 
   return (
     <PopoverCreateEventWrapper>
-      <FlexTitle>
-        <TextInput
-          label={translate("Title")}
-          id={`${id}-title`}
-          required
-          autofocus
-          value={draft.title}
-          placeholder={translate("Event Title")}
-          onChange={(value) => onChange(setCreateDraftTitle(draft, value))}
-        />
-      </FlexTitle>
-
-      <Fields>
-        <CalendarDropdown value={calendarId} options={calendarOptions} onChange={setCalendarId} />
-
-        <hr />
-
-        <AllDayRow>
-          <LightSwitch
-            enabled={draft.allDay}
-            onClick={(value) => onChange(setCreateDraftAllDay(draft, value, { eventDuration }))}
+      <CreateFormBody>
+        <FlexTitle>
+          <TextInput
+            label={translate("Title")}
+            id={`${id}-title`}
+            required
+            autofocus
+            value={draft.title}
+            placeholder={translate("Event Title")}
+            onChange={(value) => onChange(setCreateDraftTitle(draft, value))}
           />
-          <AllDayLabel
-            onClick={() => onChange(setCreateDraftAllDay(draft, !draft.allDay, { eventDuration }))}
-          >
-            {translate("All Day")}
-          </AllDayLabel>
-        </AllDayRow>
+        </FlexTitle>
 
-        <DatePicker
-          id={`${id}-start`}
-          required
-          label={translate("Starts")}
-          value={draft.start}
-          datePickerProps={{
-            showIcon: true,
-            icon: <Icon />,
-            toggleCalendarOnIconClick: true,
-            dateFormat: format,
-            timeFormat: formats.time.short.icu,
-            showTimeSelect: !draft.allDay,
-            showMonthDropdown: true,
-            showYearDropdown: true,
-            dropdownMode: "select",
-            calendarStartDay: weekStartDay,
-            timeIntervals: timeInterval,
-          }}
-          onChange={(value) => {
-            if (value !== null) {
-              onChange(setCreateDraftStart(draft, value, { eventDuration }));
-            }
-          }}
-        />
-        <DatePicker
-          id={`${id}-end`}
-          required
-          label={translate("Ends")}
-          value={displayEnd}
-          datePickerProps={{
-            showIcon: true,
-            icon: <Icon />,
-            toggleCalendarOnIconClick: true,
-            minDate: utcTimestampToLocalDisplayDate(draft.start),
-            dateFormat: format,
-            timeFormat: formats.time.short.icu,
-            showTimeSelect: !draft.allDay,
-            showMonthDropdown: true,
-            showYearDropdown: true,
-            dropdownMode: "select",
-            calendarStartDay: weekStartDay,
-            timeIntervals: timeInterval,
-            filterTime: (time) => {
-              if (!draft.start) {
-                return true;
+        <Fields>
+          <CalendarDropdown
+            value={calendarId}
+            options={calendarOptions}
+            onChange={(value) => {
+              setCalendarId(value);
+              if (!calendarAllowRepeating?.[value] && draft.recurrence)
+                onChange({ ...draft, recurrence: undefined });
+            }}
+          />
+
+          <hr />
+
+          <AllDayRow>
+            <LightSwitch
+              enabled={draft.allDay}
+              onClick={(value) => onChange(setCreateDraftAllDay(draft, value, { eventDuration }))}
+            />
+            <AllDayLabel
+              onClick={() =>
+                onChange(setCreateDraftAllDay(draft, !draft.allDay, { eventDuration }))
               }
+            >
+              {translate("All Day")}
+            </AllDayLabel>
+          </AllDayRow>
 
-              const startDate = utcTimestampToLocalDisplayDate(draft.start);
-              const selectedDate = new Date(time);
+          <DatePicker
+            portal
+            id={`${id}-start`}
+            required
+            label={translate("Starts")}
+            value={draft.start}
+            datePickerProps={{
+              showIcon: true,
+              icon: <Icon />,
+              toggleCalendarOnIconClick: true,
+              dateFormat: format,
+              timeFormat: formats.time.short.icu,
+              showTimeSelect: !draft.allDay,
+              showMonthDropdown: true,
+              showYearDropdown: true,
+              dropdownMode: "select",
+              calendarStartDay: weekStartDay,
+              timeIntervals: timeInterval,
+            }}
+            onChange={(value) => {
+              if (value !== null) {
+                onChange(setCreateDraftStart(draft, value, { eventDuration }));
+              }
+            }}
+          />
+          <DatePicker
+            portal
+            id={`${id}-end`}
+            required
+            label={translate("Ends")}
+            value={displayEnd}
+            datePickerProps={{
+              showIcon: true,
+              icon: <Icon />,
+              toggleCalendarOnIconClick: true,
+              minDate: utcTimestampToLocalDisplayDate(draft.start),
+              dateFormat: format,
+              timeFormat: formats.time.short.icu,
+              showTimeSelect: !draft.allDay,
+              showMonthDropdown: true,
+              showYearDropdown: true,
+              dropdownMode: "select",
+              calendarStartDay: weekStartDay,
+              timeIntervals: timeInterval,
+              filterTime: (time) => {
+                if (!draft.start) {
+                  return true;
+                }
 
-              return startDate.getTime() < selectedDate.getTime();
-            },
-          }}
-          onChange={(value) => {
-            if (value !== null) {
-              onChange(setCreateDraftEnd(draft, value, { eventDuration }));
-            }
-          }}
-        />
+                const startDate = utcTimestampToLocalDisplayDate(draft.start);
+                const selectedDate = new Date(time);
 
-        <LiveOverlapWarning
-          formats={formats}
-          enabled={showOverlapWarnings && !!calendarId}
-          schedule={{
-            start: draft.start,
-            end: draft.allDay ? draft.end - 1 : draft.end,
-            allDay: draft.allDay,
-            calendarId,
-            siteId: currentSiteId,
-          }}
-        />
+                return startDate.getTime() < selectedDate.getTime();
+              },
+            }}
+            onChange={(value) => {
+              if (value !== null) {
+                onChange(setCreateDraftEnd(draft, value, { eventDuration }));
+              }
+            }}
+          />
 
-        {(locationHandle || descriptionHandle) && <hr />}
+          {allowRepeating && (
+            <QuickCreateRepeatControls
+              draft={draft}
+              onChange={onChange}
+              formats={formats}
+              weekStartDay={weekStartDay}
+              disabled={isFetching}
+            />
+          )}
 
-        {locationHandle && (
-          <Control
-            label={translate("Location")}
-            id={`${id}-location`}
-            required={requiredFields?.location}
-          >
-            <input
+          <LiveOverlapWarning
+            formats={formats}
+            enabled={showOverlapWarnings && !!calendarId && validRecurrence}
+            schedule={{
+              start: draft.start,
+              end: draft.allDay ? draft.end - 1 : draft.end,
+              allDay: draft.allDay,
+              calendarId,
+              siteId: currentSiteId,
+              ...recurrenceSchedule,
+            }}
+          />
+
+          {(locationHandle || descriptionHandle) && <hr />}
+
+          {locationHandle && (
+            <Control
+              label={translate("Location")}
               id={`${id}-location`}
-              type="text"
-              className="text fullwidth"
-              disabled={isFetching}
-              aria-required={requiredFields?.location || undefined}
-              value={values[locationHandle] ?? ""}
-              onChange={(event) => setFieldValue(locationHandle, event.target.value)}
-            />
-          </Control>
-        )}
+              required={requiredFields?.location}
+            >
+              <input
+                id={`${id}-location`}
+                type="text"
+                className="text fullwidth"
+                disabled={isFetching}
+                aria-required={requiredFields?.location || undefined}
+                value={values[locationHandle] ?? ""}
+                onChange={(event) => setFieldValue(locationHandle, event.target.value)}
+              />
+            </Control>
+          )}
 
-        {descriptionHandle && (
-          <Control
-            label={translate("Description")}
-            id={`${id}-description`}
-            required={requiredFields?.description}
-          >
-            <textarea
+          {descriptionHandle && (
+            <Control
+              label={translate("Description")}
               id={`${id}-description`}
-              className="text fullwidth"
-              rows={3}
-              disabled={isFetching}
-              aria-required={requiredFields?.description || undefined}
-              value={values[descriptionHandle] ?? ""}
-              onChange={(event) => setFieldValue(descriptionHandle, event.target.value)}
-            />
-          </Control>
-        )}
-      </Fields>
+              required={requiredFields?.description}
+            >
+              <textarea
+                id={`${id}-description`}
+                className="text fullwidth"
+                rows={3}
+                disabled={isFetching}
+                aria-required={requiredFields?.description || undefined}
+                value={values[descriptionHandle] ?? ""}
+                onChange={(event) => setFieldValue(descriptionHandle, event.target.value)}
+              />
+            </Control>
+          )}
+        </Fields>
 
-      <hr />
-
-      {error && <p className="error">{error}</p>}
+        {error && <p className="error">{error}</p>}
+      </CreateFormBody>
 
       <CreateActions $justifyContent="flex-end" $gap={8}>
         <MoreDetailsButton
           type="button"
-          disabled={!calendarId || isFetching}
+          disabled={!calendarId || isFetching || !validRecurrence}
           onClick={async () => {
-            const url = await prepareEvent(draft, calendarId, details);
+            const url = await prepareEvent(effectiveDraft, calendarId, details);
             if (url) window.location.href = url;
           }}
         >
@@ -279,8 +314,8 @@ export const PopoverCreateEvent: FC<Props> = ({
           <button
             type="button"
             className={clsx("btn submit", isFetching && "disabled")}
-            disabled={!draft.title || !calendarId || isFetching}
-            onClick={() => createEvent(draft, calendarId, details)}
+            disabled={!draft.title || !calendarId || isFetching || !validRecurrence}
+            onClick={() => createEvent(effectiveDraft, calendarId, details)}
           >
             {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
           </button>

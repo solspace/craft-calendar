@@ -95,6 +95,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const PopoverElement = state?.content && (
     <PopoverContainer
+      $maxHeight={layout?.maxHeight}
       ref={popoverRef}
       onMouseEnter={cancelClose}
       onMouseLeave={scheduleClose}

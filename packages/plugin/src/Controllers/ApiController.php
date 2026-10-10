@@ -204,6 +204,8 @@ class ApiController extends BaseController
             $event->endDate = DateHelper::allDayEndFromExclusive($event->startDate, $event->endDate);
         }
 
+        $this->applyQuickCreateRecurrence($event, $request->getBodyParams());
+
         $details = $request->post('details');
         $validDetails = true;
         if (null !== $details) {
@@ -231,7 +233,9 @@ class ApiController extends BaseController
             }
         }
 
-        $success = $validDetails && ($asDraft
+        // Draft handoff must enforce the same recurrence and calendar restrictions as creation.
+        $validRecurrence = $event->validate(['rrule'], false);
+        $success = $validDetails && $validRecurrence && ($asDraft
             ? \Craft::$app->getDrafts()->saveElementAsDraft(
                 $event,
                 \Craft::$app->getUser()->getIdentity()->id,
@@ -255,5 +259,21 @@ class ApiController extends BaseController
         $transformer = new FullCalTransformer();
 
         return $this->asJson($transformer->fromElement($event));
+    }
+
+    private function applyQuickCreateRecurrence(Event $event, array $values): void
+    {
+        $schedule = array_intersect_key($values, array_flip(['repeatType', 'repeatEndType', 'rrule', 'until']));
+        foreach (['repeatType', 'repeatEndType', 'rrule'] as $key) {
+            if (\array_key_exists($key, $schedule) && !\is_string($schedule[$key])) {
+                throw new BadRequestHttpException(Calendar::t('Invalid repeating event settings.'));
+            }
+        }
+
+        if (isset($schedule['until']) && !is_numeric($schedule['until'])) {
+            throw new BadRequestHttpException(Calendar::t('Invalid repeating event settings.'));
+        }
+
+        $event->setScheduleFromRequest($schedule);
     }
 }

@@ -68,20 +68,33 @@ export const usePopoverPosition = ({
     const anchorRect = getAnchorRect(state.anchor);
     const popoverRect = popover.getBoundingClientRect();
     const bridgeRect = bridge.getBoundingClientRect();
+    // Craft's content pane can clip anything positioned behind the page header.
+    const contentRect = bridge.closest("#content")?.getBoundingClientRect();
+    const viewportTop = Math.max(0, contentRect?.top ?? 0);
+    const viewportBottom = Math.min(window.innerHeight, contentRect?.bottom ?? window.innerHeight);
+    const viewportHeight = Math.max(0, viewportBottom - viewportTop);
 
     const popoverLayout = resolvePopoverLayout({
-      anchorRect,
+      anchorRect: {
+        left: anchorRect.left,
+        right: anchorRect.right,
+        width: anchorRect.width,
+        height: anchorRect.height,
+        top: anchorRect.top - viewportTop,
+        bottom: anchorRect.bottom - viewportTop,
+      },
       popoverRect,
       viewportWidth: window.innerWidth,
-      viewportHeight: window.innerHeight,
+      viewportHeight,
       options: normalizedOptions,
       arrowPadding: ARROW_PADDING,
     });
 
     setLayout({
       ...popoverLayout,
-      top: popoverLayout.top - bridgeRect.top,
+      top: popoverLayout.top + viewportTop - bridgeRect.top,
       left: popoverLayout.left - bridgeRect.left,
+      maxHeight: Math.max(0, viewportHeight - normalizedOptions.padding * 2 - 2),
     });
   }, [state, normalizedOptions, bridgeRef, popoverRef]);
 
@@ -95,6 +108,9 @@ export const usePopoverPosition = ({
     }
 
     const onUpdate = () => calculate();
+    const observer =
+      typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(onUpdate);
+    if (popoverRef.current) observer?.observe(popoverRef.current);
 
     window.addEventListener("resize", onUpdate);
     window.addEventListener("scroll", onUpdate, true);
@@ -102,8 +118,9 @@ export const usePopoverPosition = ({
     return () => {
       window.removeEventListener("resize", onUpdate);
       window.removeEventListener("scroll", onUpdate, true);
+      observer?.disconnect();
     };
-  }, [state, calculate]);
+  }, [state, calculate, popoverRef]);
 
   return layout;
 };

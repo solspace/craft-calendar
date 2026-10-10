@@ -1,5 +1,6 @@
 import type { CalendarCreateDraft } from "@cal/pages/calendar/calendar.create-session";
 import translate from "@cal/utils/translations";
+import { buildQuickCreateRecurrence } from "./create-event.recurrence";
 
 export type QuickCreateDetails = {
   location?: string;
@@ -18,5 +19,6 @@ export const buildCreateEventPayload = (
   allDay: event.allDay,
   calendarId,
   siteId,
+  ...buildQuickCreateRecurrence(event),
   ...(details && { details }),
 });

@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added repeating event presets to quick creation in the control panel calendar, with weekday repeats, end dates or occurrence limits, and a summary. Repeat settings carry through to the full event editor.
 - Added a calendar selector on the event editor with a field-mapping slideout. Similar fields are preselected, unmapped content is flagged, and event and occurrence changes move together within a draft.
 - Added an optional **Expiry Date** for events, with Live, Pending, and Expired statuses like Craft entries.
 - Added optional **overlap warnings** for scheduling conflicts within a calendar, with live checks in event editors and conflict indicators in control panel calendar views.
