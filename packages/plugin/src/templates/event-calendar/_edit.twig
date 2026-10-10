@@ -12,8 +12,8 @@
             <strong><span class="calendar-transfer-dot" style="background-color: {{ event.calendar.color }}" aria-hidden="true"></span>{{ event.calendar.name }}</strong>
         </div>
         <span class="calendar-transfer-arrow" aria-hidden="true">→</span>
-        <div class="calendar-transfer-calendar">
-            <span class="light">{{ 'New calendar'|t('calendar') }}</span>
+        <div class="calendar-transfer-calendar calendar-transfer-calendar--destination">
+            <span class="light">{{ 'Move to calendar'|t('calendar') }}</span>
             <strong><span class="calendar-transfer-dot" style="background-color: {{ target.color }}" aria-hidden="true"></span>{{ target.name }}</strong>
         </div>
     </div>
@@ -76,12 +76,15 @@
 {% css %}
 .calendar-transfer { display: grid; gap: 24px; container-type: inline-size; }
 .calendar-transfer p, .calendar-transfer h2 { margin: 0; }
-.calendar-transfer-route { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 16px; }
+.calendar-transfer-route { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 16px; }
 .calendar-transfer-calendar { display: grid; gap: 10px; padding: 18px 20px; border: 1px solid var(--hairline-color); border-radius: var(--radius-lg, 8px); background: var(--gray-050); min-width: 0; }
 .calendar-transfer-calendar > .light { font-size: 12px; }
 .calendar-transfer-calendar strong { display: flex; align-items: center; gap: 10px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+.calendar-transfer-calendar--destination { background: var(--blue-050); border-color: var(--blue-300); border-inline-start-width: 3px; }
+.calendar-transfer-calendar--destination > .light { color: var(--blue-700); font-weight: 600; }
+.calendar-transfer-calendar--destination strong { color: var(--gray-900); }
 .calendar-transfer-dot { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; }
-.calendar-transfer-arrow { display: grid; place-items: center; width: 32px; height: 32px; color: var(--gray-500); font-size: 20px; }
+.calendar-transfer-arrow { display: grid; place-items: center; align-self: center; width: 44px; height: 44px; border: 1px solid var(--blue-200); border-radius: 50%; background: var(--blue-050); color: var(--blue-700); font-size: 24px; }
 .calendar-transfer-notice { display: grid; gap: 4px; padding: 14px 18px; border-radius: var(--radius-lg, 8px); background: var(--blue-050); color: var(--blue-700); border-inline-start: 3px solid var(--blue-300); }
 .calendar-transfer-mapping { display: grid; gap: 16px; }
 .calendar-transfer-section-heading { display: grid; gap: 6px; }
@@ -114,6 +117,7 @@
     .calendar-transfer-route { gap: 8px; }
     .calendar-transfer-calendar { padding: 12px; }
     .calendar-transfer-calendar strong { font-size: 15px; }
+    .calendar-transfer-arrow { width: 32px; height: 32px; font-size: 20px; }
     .calendar-transfer table.calendar-transfer-fields th, .calendar-transfer table.calendar-transfer-fields td { padding: 12px; }
     .calendar-transfer table.calendar-transfer-fields .calendar-transfer-direction { width: 32px; padding-inline: 4px; }
 }
