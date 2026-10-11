@@ -13,7 +13,7 @@
                 {% for option in group.options %}
                     <a class="booking-choice" href="{{ cpUrl('calendar/bookings/new', {calendarId: option.calendar.id, start: option.start}) }}">
                         <span class="color small" aria-hidden="true"><span class="color-preview" style="background-color:{{ option.calendar.color }}"></span></span>
-                        <span><strong>{{ option.calendar.name }}</strong><span class="light">{{ option.label }} · {{ option.start|date('T', displayTimezone) }}</span></span>
+                        <span><strong>{{ option.calendar.name }}</strong><span class="light" title="{{ displayTimezone }}">{{ option.label }} · {{ option.start|calendarTimezoneAbbreviation(displayTimezone) }}</span></span>
                     </a>
                 {% endfor %}
             </template>

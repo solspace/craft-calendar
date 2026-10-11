@@ -147,6 +147,9 @@ class SchedulingTemplateTest extends TestCase
         }
         $columns[0]['slots'][600] = [['start' => '2026-10-12T10:00:00+00:00', 'length' => 60, 'label' => '10am - 11am']];
         $twig = new Environment(new ArrayLoader(['day' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_combined-day.twig')]), ['strict_variables' => true]);
+        foreach ((new CalendarGlobalExtension())->getFilters() as $filter) {
+            $twig->addFilter($filter);
+        }
         $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => str_replace('{count}', $params['count'] ?? '', $message)));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
         $output = $twig->render('day', [

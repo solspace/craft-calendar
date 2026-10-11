@@ -2,8 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Times shown in {timezone}.' => 'Tijden worden weergegeven in {timezone}.',
     'The requested time is no longer available.' => 'Het aangevraagde tijdstip is niet meer beschikbaar.',
-    'Requested time: {date}, {time} ({timezone})' => 'Aangevraagd tijdstip: {date}, {time} ({timezone})',
+    'Requested time: {date}, {time} {timezone}' => 'Aangevraagd tijdstip: {date}, {time} {timezone}',
     'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.' => 'Kies een ander beschikbaar tijdstip en neem contact op met de klant om het alternatief te bevestigen, of wijs het verzoek af of annuleer het.',
     'Combined' => 'Gecombineerd',
     'By Calendar' => 'Per kalender',

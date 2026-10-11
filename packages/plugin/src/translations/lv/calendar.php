@@ -2,8 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Times shown in {timezone}.' => 'Laiki tiek rādīti laika joslā {timezone}.',
     'The requested time is no longer available.' => 'Pieprasītais laiks vairs nav pieejams.',
-    'Requested time: {date}, {time} ({timezone})' => 'Pieprasītais laiks: {date}, {time} ({timezone})',
+    'Requested time: {date}, {time} {timezone}' => 'Pieprasītais laiks: {date}, {time} {timezone}',
     'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.' => 'Izvēlieties citu pieejamu laiku un sazinieties ar klientu, lai apstiprinātu alternatīvu, vai noraidiet vai atceliet pieprasījumu.',
     'Combined' => 'Apvienots',
     'By Calendar' => 'Pēc kalendāra',

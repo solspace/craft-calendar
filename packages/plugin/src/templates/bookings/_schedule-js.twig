@@ -87,6 +87,7 @@ async function filterBookingSchedule(url) {
         setBookingFilters(bookingFilterValues);
         bookingToolbar.querySelector('.booking-toolbar-navigation').innerHTML = toolbar.querySelector('.booking-toolbar-navigation').innerHTML;
         bookingToolbar.querySelector('.booking-toolbar-timezone').textContent = toolbar.querySelector('.booking-toolbar-timezone').textContent;
+        bookingToolbar.querySelector('.booking-toolbar-timezone').title = toolbar.querySelector('.booking-toolbar-timezone').title;
         document.querySelector('[data-booking-new]').href = newBooking.href;
         document.querySelector('[data-booking-instructions]').textContent = doc.querySelector('[data-booking-instructions]').textContent;
         history.replaceState(null, '', url);

@@ -7,7 +7,7 @@
         <div class="booking-form-eyebrow">{{ 'Book a time'|t('calendar') }}</div>
         <h2>{{ calendar.name }}</h2>
         {% if calendar.description %}<p>{{ calendar.description }}</p>{% endif %}
-        <div class="booking-form-meta"><span>{{ '{duration} minutes'|t('calendar', {duration: settings.duration}) }}</span><span>{{ 'Times shown in {timezone}.'|t('calendar', {timezone: settings.timezone}) }}</span></div>
+        <div class="booking-form-meta"><span>{{ '{duration} minutes'|t('calendar', {duration: settings.duration}) }}</span><span title="{{ settings.timezone }}">{{ 'Times shown in {timezone}.'|t('calendar', {timezone: settings.timezone|calendarTimezoneName}) }}</span></div>
     </header>
     <div class="booking-form-message{{ booking.hasErrors ? ' error' }}" role="status" aria-live="polite" tabindex="-1" {{ not booking.hasErrors ? 'hidden' }}>{% if booking.hasErrors %}{{ booking.getErrorSummary(true)|join(' ') }}{% endif %}</div>
     <fieldset class="booking-form-inputs">

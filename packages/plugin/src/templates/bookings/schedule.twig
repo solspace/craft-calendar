@@ -26,7 +26,7 @@
         <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: next}) }}">{{ 'Next'|t('app') }}</a>
     </div>
     <span class="spinner hidden" aria-hidden="true"></span>
-    <span class="light booking-toolbar-timezone">{{ displayTimezone }}</span>
+    <span class="light booking-toolbar-timezone" title="{{ displayTimezone }}">{{ displayTimezone|calendarTimezoneName }}</span>
 </form>
 <p class="light">{{ 'Confirmed bookings reserve time. Requested bookings are shown for review.'|t('calendar') }}</p>
 <p class="light booking-grid-instructions" data-booking-instructions>{{ (scheduleLayout == 'combined' and calendarIds|length > 1 ? 'Click an available time to choose a calendar. Shaded times are unavailable for all selected calendars.' : 'Click an available time to add a booking. Shaded times are unavailable for that calendar.')|t('calendar') }}</p>
@@ -46,7 +46,7 @@
 {% for minute, slots in column.slots %}
 {% for slot in slots %}
 {% set slotLabel = 'New booking: {time}'|t('calendar', {time: slot.label}) %}
-<a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId: resource.id, start: slot.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ slot.length / 60 * 48 }}px;height:{{ min(resource.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ resource.name }} · {{ day.date|date('Y-m-d', displayTimezone) }} · {{ slotLabel }} · {{ slot.start|date('T', displayTimezone) }}" title="{{ resource.name }} · {{ slotLabel }} · {{ slot.start|date('T', displayTimezone) }}"><span>{{ slotLabel }}</span></a>
+<a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId: resource.id, start: slot.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ slot.length / 60 * 48 }}px;height:{{ min(resource.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ resource.name }} · {{ day.date|date('Y-m-d', displayTimezone) }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}" title="{{ resource.name }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}"><span>{{ slotLabel }}</span></a>
 {% endfor %}
 {% endfor %}
 {% for item in column.bookings %}<a draggable="true" data-booking-id="{{ item.booking.id }}" data-calendar-id="{{ resource.id }}" data-increment="{{ resource.schedulingSettings.increment }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ resource.color }};left:calc({{ item.lane / column.lanes * 100 }}% + 3px);width:calc({{ 100 / column.lanes }}% - 6px)" title="{{ resource.name }} · {{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong>{{ item.booking.customerName }}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}

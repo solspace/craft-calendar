@@ -2,8 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Times shown in {timezone}.' => 'Les horaires sont affichés en {timezone}.',
     'The requested time is no longer available.' => 'Le créneau demandé n’est plus disponible.',
-    'Requested time: {date}, {time} ({timezone})' => 'Créneau demandé : {date}, {time} ({timezone})',
+    'Requested time: {date}, {time} {timezone}' => 'Créneau demandé : {date}, {time} {timezone}',
     'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.' => 'Choisissez un autre créneau disponible et contactez le client pour confirmer cette alternative, ou refusez ou annulez la demande.',
     'Combined' => 'Combiné',
     'By Calendar' => 'Par calendrier',

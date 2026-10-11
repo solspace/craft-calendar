@@ -43,6 +43,8 @@ If a request’s original time is no longer available, the editor shows an amber
 
 Displayed dates and times follow the user's Craft formatting locale and Calendar's Auto/12-hour/24-hour time setting. Public slot labels use the current site's locale. Editor and public booking times remain in the scheduling calendar's timezone, including daylight saving offsets. Multi-calendar schedules use the shared display timezone shown in their toolbar.
 
+Timezone captions use friendly, localized names such as Central Time. Hover over a caption to see the precise identifier, such as `America/Winnipeg`. Requested-time warnings and schedule calendar choices show the abbreviation or UTC offset for the booking’s date, so summer and winter bookings are labeled correctly. Settings continue to use the timezone identifier.
+
 The booking status shows a compact relative timestamp beside the selector (such as `3h 12m ago`), which refreshes every minute while the editor is open. It also shows who last changed it and when, with a link to their Craft account and a timestamp such as `on 2026-10-11 at 1:56 am` in the control panel’s timezone. Customer requests and automatic confirmations are identified separately. Saving other booking details does not replace the status attribution. Existing bookings show no attribution until their next status change.
 
 Requests do not reserve a time. Confirmation checks availability again. Turning off Require Approval confirms guest bookings immediately. Confirmed saves serialize on the calendar row inside Craft's element transaction and recheck conflicts. The same validation applies to direct element saves. Ordinary event creation is not available for Scheduling calendars. Booking contact details are not exported through event queries or ICS.

@@ -15,7 +15,9 @@
     <span data-icon="alert" aria-hidden="true"></span>
     <div>
         <strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong>
-        <p>{{ 'Requested time: {date}, {time} ({timezone})'|t('calendar', {date: booking.startDate|date('medium', timezone), time: booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel ~ ' - ' ~ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel, timezone}) }}</p>
+        {% set startTimezone = booking.startDate|calendarTimezoneAbbreviation(timezone) %}
+        {% set endTimezone = booking.endDate|calendarTimezoneAbbreviation(timezone) %}
+        <p title="{{ timezone }}">{{ 'Requested time: {date}, {time} {timezone}'|t('calendar', {date: booking.startDate|date('medium', timezone), time: booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel ~ ' - ' ~ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel, timezone: startTimezone == endTimezone ? startTimezone : startTimezone ~ ' → ' ~ endTimezone}) }}</p>
         <p>{{ 'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.'|t('calendar') }}</p>
     </div>
 </section>
@@ -24,7 +26,7 @@
 <div class="booking-calendar-control">
 {% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
 {{ forms.selectField({label: 'Calendar'|t('calendar'), name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
-<p class="light" id="booking-timezone">{{ 'Times use {timezone}.'|t('calendar', {timezone}) }}</p>
+<p class="light" id="booking-timezone" title="{{ timezone }}">{{ 'Times shown in {timezone}.'|t('calendar', {timezone: timezone|calendarTimezoneName}) }}</p>
 </div>
 <div class="booking-date-control">
 {{ forms.textField({label: 'Date'|t('app'), name: 'bookingDate', id: 'booking-date', type: 'date', value: booking.startDate ? booking.startDate|date('Y-m-d', timezone) : now|date('Y-m-d', timezone), required: true}) }}
@@ -69,6 +71,7 @@ if (deleteBooking) deleteBooking.addEventListener('click', async () => {
     }
 });
 const bookingTimezones = {{ calendars|map(calendar => calendar.schedulingSettings.timezone)|json_encode|raw }};
+const bookingTimezoneNames = {{ calendars|map(calendar => calendar.schedulingSettings.timezone|calendarTimezoneName)|json_encode|raw }};
 const bookingCalendar = document.getElementById('booking-calendar');
 const bookingDate = document.getElementById('booking-date');
 const bookingSlots = document.getElementById('booking-slots');
@@ -119,7 +122,9 @@ async function loadBookingSlots(resetSelection = false) {
         bookingEnd.value = '';
     }
     const selectedTime = {start: bookingStart.value, end: bookingEnd.value};
-    document.getElementById('booking-timezone').textContent = Craft.t('calendar', 'Times use {timezone}.', {timezone: bookingTimezones[bookingCalendar.value]});
+    const timezoneCaption = document.getElementById('booking-timezone');
+    timezoneCaption.textContent = Craft.t('calendar', 'Times shown in {timezone}.', {timezone: bookingTimezoneNames[bookingCalendar.value]});
+    timezoneCaption.title = bookingTimezones[bookingCalendar.value];
     if (!bookingDate.value) {
         bookingSlotsLoading = false;
         bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose a date to see available times.');

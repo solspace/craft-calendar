@@ -41,6 +41,7 @@
 ### Changed
 
 - Changed new-booking hover and keyboard-focus previews to Craft’s blue selection colors.
+- Display friendly, localized timezone names in booking editors, schedules, and public forms, with date-specific abbreviations and precise timezone tooltips.
 - Warn when a booking request’s original time is no longer available, requiring staff to select an available alternative before saving or confirming it.
 
 - Removed plus signs from available schedule times, retaining the booking preview on hover and keyboard focus.
