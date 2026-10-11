@@ -213,10 +213,11 @@ loadBookingSlots();
 .booking-editor .heading { margin-bottom:6px; }
 .booking-unavailable-request { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; margin-bottom:24px; border:1px solid #ebd6a0; border-left:4px solid var(--warning-color,#b45309); border-radius:6px; background:#fffbef; color:#76531b; }
 .booking-unavailable-request[hidden] { display:none !important; }
-.booking-unavailable-request > [data-icon] { --icon-color:var(--warning-color,#b45309); color:var(--warning-color,#b45309); flex-shrink:0; margin-top:2px; }
+.booking-unavailable-request > [data-icon] { --icon-color:var(--warning-color,#b45309); display:flex; align-items:center; justify-content:center; color:var(--warning-color,#b45309); flex:0 0 20px; width:20px; height:20px; margin:0; font-size:16px; line-height:1; }
 .booking-unavailable-request > div { min-width:0; overflow-wrap:anywhere; }
+.booking-unavailable-request strong { display:block; line-height:20px; }
 .booking-unavailable-request p { margin:6px 0 0; font-size:12px; line-height:1.5; }
-.booking-status-card { --status-color:var(--warning-color,#b45309); --status-background:#fffbef; --status-border:#ebd6a0; --status-icon-background:#faedc5; border:1px solid var(--status-border); border-left:4px solid var(--status-color); border-radius:6px; background:var(--status-background); padding:14px 16px; margin-bottom:24px; }
+.booking-status-card { --status-color:#966000; --status-background:#fffbef; --status-border:#ebd6a0; --status-icon-background:#faedc5; border:1px solid var(--status-border); border-left:4px solid var(--status-color); border-radius:6px; background:var(--status-background); padding:14px 16px; margin-bottom:24px; }
 .booking-status-card.confirmed { --status-color:var(--enabled-color,#008a5b); --status-background:#f2faf6; --status-border:#b3dcc6; --status-icon-background:#dcefe4; }
 .booking-status-card.declined { --status-color:var(--error-color,#cf1124); --status-background:#fff6f6; --status-border:#edc0c5; --status-icon-background:#f9e1e4; }
 .booking-status-card.cancelled { --status-color:#5c697a; --status-background:#f6f7f9; --status-border:#d6dce4; --status-icon-background:#e7ebf0; }
