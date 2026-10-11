@@ -1009,4 +1009,6 @@ return [
     'Bookings Label' => 'Label voor boekingen',
     'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Stel het label voor de boekingenpagina en de navigatie in het configuratiescherm in. Laat leeg om Boekingen te gebruiken.',
     'Bookings' => 'Boekingen',
+    'Default Bookings Subpage' => 'Standaardsubpagina voor boekingen',
+    'Choose the page that opens when you click {label} in the control-panel navigation.' => 'Kies de pagina die wordt geopend wanneer je op {label} in de navigatie van het controlepaneel klikt.',
 ];

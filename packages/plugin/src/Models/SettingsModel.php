@@ -86,6 +86,8 @@ class SettingsModel extends Model
 
     public ?string $bookingPageLabel = null;
 
+    public string $defaultBookingView = 'bookings';
+
     public ?int $firstDayOfWeek = null;
 
     public int|string|null $timeFormat = null;
@@ -139,6 +141,11 @@ class SettingsModel extends Model
         $label = trim($this->bookingPageLabel ?? '');
 
         return '' !== $label ? $label : Calendar::t('Bookings');
+    }
+
+    public function getBookingDefaultPath(): string
+    {
+        return 'schedule' === $this->defaultBookingView ? 'calendar/bookings/schedule' : 'calendar/bookings';
     }
 
     public static function getOverlapThresholds(): array
@@ -287,6 +294,7 @@ class SettingsModel extends Model
     {
         return array_merge(parent::defineRules(), [
             [['bookingPageLabel'], 'string', 'max' => 100],
+            [['defaultBookingView'], 'in', 'range' => ['bookings', 'schedule'], 'skipOnEmpty' => false],
             [['bookingDefaults'], 'validateBookingDefaults', 'skipOnEmpty' => false],
             [['captchaProvider', 'bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha', 'recaptcha-v3'], 'skipOnEmpty' => false, 'when' => static fn ($model, $attribute) => null !== $model->{$attribute}],
             [['captchaSiteKey', 'captchaSecretKey', 'bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],

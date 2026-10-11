@@ -18,6 +18,24 @@ class SettingsModelTest extends TestCase
         self::assertFalse((new SettingsModel(['showCancelledEvents' => false]))->showCancelledEvents);
     }
 
+    public function testBookingSubpageDefaultsAndValidation(): void
+    {
+        $settings = new SettingsModel();
+        self::assertSame('bookings', $settings->defaultBookingView);
+        self::assertSame('calendar/bookings', $settings->getBookingDefaultPath());
+        self::assertTrue($settings->validate(['defaultBookingView']));
+        $settings->setAttributes(['defaultBookingView' => 'schedule']);
+        self::assertSame('schedule', $settings->toArray()['defaultBookingView']);
+        self::assertSame('calendar/bookings/schedule', $settings->getBookingDefaultPath());
+        self::assertTrue($settings->validate(['defaultBookingView']));
+        foreach (['invalid', ''] as $value) {
+            $settings->defaultBookingView = $value;
+            self::assertFalse($settings->validate(['defaultBookingView']));
+            self::assertTrue($settings->hasErrors('defaultBookingView'));
+            self::assertSame('calendar/bookings', $settings->getBookingDefaultPath());
+        }
+    }
+
     public function testOverviewDefaultsToMonth(): void
     {
         $settings = new SettingsModel();

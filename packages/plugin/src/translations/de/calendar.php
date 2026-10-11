@@ -1009,4 +1009,6 @@ return [
     'Bookings Label' => 'Buchungsbereich-Bezeichnung',
     'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Legen Sie die Bezeichnung für die Buchungsseite und die Navigation im Kontrollzentrum fest. Lassen Sie das Feld leer, um Buchungen zu verwenden.',
     'Bookings' => 'Buchungen',
+    'Default Bookings Subpage' => 'Standard-Unterseite für Buchungen',
+    'Choose the page that opens when you click {label} in the control-panel navigation.' => 'Wählen Sie die Seite, die beim Klicken auf {label} in der Control-Panel-Navigation geöffnet wird.',
 ];

@@ -40,6 +40,16 @@
         }) }}
 
         {{ forms.selectField({
+            label: "Default Bookings Subpage"|t('calendar'),
+            instructions: "Choose the page that opens when you click {label} in the control-panel navigation."|t('calendar', {label: settings.bookingLabel}),
+            id: 'defaultBookingView',
+            name: 'settings[defaultBookingView]',
+            value: settings.defaultBookingView,
+            options: {bookings: settings.bookingLabel, schedule: 'Schedule'|t('calendar')},
+            errors: settings.getErrors('defaultBookingView'),
+        }) }}
+
+        {{ forms.selectField({
             label: "First Day of Week"|t('calendar'),
             instructions: "Choose the first day of the week for Month and Week views and date pickers. User Preference uses the signed-in user's Craft setting, or Craft's default when no user is signed in."|t('calendar'),
             name: "settings[firstDayOfWeek]",

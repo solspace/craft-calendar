@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added a General setting to open either the Bookings list or Schedule from the Bookings navigation item.
 - Added an All Calendars checkbox picker to booking schedules, with separate resource columns and availability shading in Day and Week views.
 - Added an All, Events, and Scheduling type filter to the Calendars list, defaulting to All.
 - Added a Bookings Label setting to customize the booking list title, navigation, breadcrumbs, and Default Page option.

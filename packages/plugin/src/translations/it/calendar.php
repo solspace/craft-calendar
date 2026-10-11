@@ -1009,4 +1009,6 @@ return [
     'Bookings Label' => 'Etichetta delle prenotazioni',
     'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Imposta l’etichetta della pagina delle prenotazioni e della navigazione del pannello di controllo. Lascia vuoto per utilizzare Prenotazioni.',
     'Bookings' => 'Prenotazioni',
+    'Default Bookings Subpage' => 'Sottopagina predefinita delle prenotazioni',
+    'Choose the page that opens when you click {label} in the control-panel navigation.' => 'Scegli la pagina che si apre quando fai clic su {label} nella navigazione del pannello di controllo.',
 ];

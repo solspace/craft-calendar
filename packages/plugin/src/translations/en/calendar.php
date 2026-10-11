@@ -1131,4 +1131,6 @@ return [
     'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Click an available time to add a booking. Shaded times are unavailable for that calendar.',
     'Bookings Label' => 'Bookings Label',
     'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.',
+    'Default Bookings Subpage' => 'Default Bookings Subpage',
+    'Choose the page that opens when you click {label} in the control-panel navigation.' => 'Choose the page that opens when you click {label} in the control-panel navigation.',
 ];

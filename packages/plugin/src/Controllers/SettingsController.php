@@ -34,7 +34,8 @@ class SettingsController extends BaseController
      */
     public function actionDefaultView(): Response
     {
-        $defaultView = $this->getSettingsService()->getSettingsModel()->defaultView;
+        $settings = $this->getSettingsService()->getSettingsModel();
+        $defaultView = $settings->defaultView;
 
         // Preserve the CP's selected site (if any) across the redirect.
         $siteParams = [];
@@ -43,7 +44,7 @@ class SettingsController extends BaseController
         }
 
         if (Calendar::VIEW_BOOKINGS === $defaultView && Calendar::getInstance()->bookings->getManageableCalendars()) {
-            return $this->redirect(UrlHelper::cpUrl('calendar/bookings', $siteParams));
+            return $this->redirect(UrlHelper::cpUrl($settings->getBookingDefaultPath(), $siteParams));
         }
 
         if (Calendar::VIEW_EVENTS === $defaultView && PermissionHelper::canAccessEvents()) {

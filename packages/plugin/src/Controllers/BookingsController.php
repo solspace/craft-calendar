@@ -507,7 +507,7 @@ class BookingsController extends BaseController
 
     private function variables(): array
     {
-        return ['calendars' => $this->manageableCalendars(), 'statusOptions' => Booking::statusOptions(), 'bookingTimeFormat' => 'icu:'.DateFormatHelper::get(DateFormatHelper::TYPE_TIME, length: 'short'), 'crumbs' => [['label' => Calendar::getInstance()->name, 'url' => UrlHelper::cpUrl('calendar')], ['label' => Calendar::getInstance()->settings->getSettingsModel()->getBookingLabel(), 'url' => UrlHelper::cpUrl('calendar/bookings')]]];
+        return ['calendars' => $this->manageableCalendars(), 'statusOptions' => Booking::statusOptions(), 'bookingTimeFormat' => 'icu:'.DateFormatHelper::get(DateFormatHelper::TYPE_TIME, length: 'short'), 'crumbs' => [['label' => Calendar::getInstance()->name, 'url' => UrlHelper::cpUrl('calendar')], ['label' => Calendar::getInstance()->settings->getSettingsModel()->getBookingLabel(), 'url' => UrlHelper::cpUrl(Calendar::getInstance()->settings->getSettingsModel()->getBookingDefaultPath())]]];
     }
 
     private function lifecycleBooking(bool $trashed): Booking

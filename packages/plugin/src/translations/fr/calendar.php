@@ -1009,4 +1009,6 @@ return [
     'Bookings Label' => 'Libellé des réservations',
     'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Définissez le libellé de la page des réservations et de la navigation du panneau de contrôle. Laissez vide pour utiliser Réservations.',
     'Bookings' => 'Réservations',
+    'Default Bookings Subpage' => 'Sous-page par défaut des réservations',
+    'Choose the page that opens when you click {label} in the control-panel navigation.' => 'Choisissez la page qui s’ouvre lorsque vous cliquez sur {label} dans la navigation du panneau de contrôle.',
 ];
