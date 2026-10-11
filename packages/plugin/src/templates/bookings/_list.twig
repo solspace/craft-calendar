@@ -3,9 +3,15 @@
 {% set rowStatusOptions = [] %}
 {% for value, label in statusOptions %}{% set rowStatusOptions = rowStatusOptions|merge([{value, label, data: {status: statusColors[value]}}]) %}{% endfor %}
 {% if trashed %}<p class="light booking-trash-note">{{ 'Trashed bookings do not reserve time. They can be restored until Craft permanently deletes them.'|t('calendar') }}</p>{% endif %}
+<div class="booking-bulk-actions hidden" role="group" aria-label="{{ 'Selected bookings'|t('calendar') }}">
+    <span data-booking-selection-count role="status" aria-live="polite"></span>
+    <button type="button" class="btn small{{ trashed ? '' : ' delete' }}" data-booking-bulk-action="{{ trashed ? 'restore' : 'delete' }}">{{ trashed ? 'Restore'|t('app') : 'Move to Trash'|t('calendar') }}</button>
+    <button type="button" class="btn small" data-booking-deselect>{{ 'Deselect all'|t('app') }}</button>
+</div>
 <div class="booking-table-scroll">
     <table class="data fullwidth booking-table">
         <thead><tr>
+            <th scope="col" class="booking-selection-cell">{{ forms.checkbox({id: 'booking-select-all', disabled: bookings is empty, inputAttributes: {data: {'booking-select-all': true}, aria: {label: 'Select all bookings on this page'|t('calendar')}}}) }}</th>
             {% for field, label in {customer: 'Customer', calendar: 'Calendar', date: 'Booking Time', submitted: 'Submitted', updated: 'Last Updated', status: 'Status'} %}
                 {% set active = sort starts with field ~ '-' %}
                 {% set ascending = sort == field ~ '-asc' %}
@@ -22,7 +28,8 @@
         {% for booking in bookings %}
             {% set calendar = calendars[booking.calendarId] %}
             {% set timezone = calendar.schedulingSettings.timezone %}
-            <tr>
+            <tr data-booking-row="{{ booking.id }}">
+                <td class="booking-selection-cell">{{ forms.checkbox({id: 'booking-select-' ~ booking.id, value: booking.id, inputAttributes: {data: {'booking-select': true}, aria: {label: 'Select booking for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}</td>
                 <td class="booking-customer">{% if trashed %}<strong>{{ booking.customerName }}</strong>{% else %}<a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a>{% endif %}<div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
                 <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
                 <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
@@ -47,7 +54,7 @@
                 <td class="booking-actions-cell"><button type="button" class="btn small{{ trashed ? '' : ' delete icon' }}" data-booking-action="{{ trashed ? 'restore' : 'delete' }}" data-booking-id="{{ booking.id }}" data-customer="{{ booking.customerName }}" aria-label="{{ (trashed ? 'Restore booking for {customer}' : 'Delete booking for {customer}')|t('calendar', {customer: booking.customerName}) }}">{{ trashed ? 'Restore'|t('app') }}</button></td>
             </tr>
         {% else %}
-            <tr><td colspan="7" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
+            <tr><td colspan="8" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
         {% endfor %}
         </tbody>
     </table>

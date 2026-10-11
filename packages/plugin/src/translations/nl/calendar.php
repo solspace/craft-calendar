@@ -2,6 +2,14 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Selected bookings' => 'Geselecteerde boekingen',
+    'Select all bookings on this page' => 'Alle boekingen op deze pagina selecteren',
+    'Select booking for {customer}' => 'Boeking voor {customer} selecteren',
+    '{count, plural, =1{1 booking selected} other{# bookings selected}}' => '{count, plural, =1{1 boeking geselecteerd} other{# boekingen geselecteerd}}',
+    '{count, plural, =1{Move 1 selected booking to Trash?} other{Move # selected bookings to Trash?}}' => '{count, plural, =1{1 geselecteerde boeking naar de prullenbak verplaatsen?} other{# geselecteerde boekingen naar de prullenbak verplaatsen?}}',
+    '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}' => '{count, plural, =1{1 boeking naar de prullenbak verplaatst.} other{# boekingen naar de prullenbak verplaatst.}}',
+    '{count, plural, =1{1 booking restored.} other{# bookings restored.}}' => '{count, plural, =1{1 boeking hersteld.} other{# boekingen hersteld.}}',
+    '{customer}: {message}' => '{customer}: {message}',
     'Does not repeat' => 'Wordt niet herhaald',
     'Weekdays (Monday–Friday)' => 'Werkdagen (maandag–vrijdag)',
     'Weekly on {weekday}' => 'Wekelijks op {weekday}',

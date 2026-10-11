@@ -204,6 +204,161 @@ class BookingLifecycleTest extends TestCase
         $this->controller->actionRestore();
     }
 
+    public function testBulkDeletionSoftDeletesEachUniqueBooking(): void
+    {
+        $other = $this->additionalBooking(13);
+        $this->prepareSelection(['12', 13, 12], false, [$this->booking, $other]);
+        $deleted = [];
+        $this->elements->expects(self::exactly(2))->method('deleteElement')->willReturnCallback(static function (Booking $booking, bool $hardDelete) use (&$deleted) {
+            self::assertFalse($hardDelete);
+            $deleted[] = $booking->id;
+
+            return true;
+        });
+        self::assertSame(['success' => true, 'completedIds' => [12, 13], 'errors' => []], $this->controller->actionDeleteSelected()->data);
+        self::assertSame([12, 13], $deleted);
+    }
+
+    public function testBulkRestoreKeepsConflictingBookingsInTrashAndContinues(): void
+    {
+        $other = $this->additionalBooking(13);
+        $this->prepareSelection([12, 13], true, [$this->booking, $other]);
+        $this->elements->expects(self::exactly(2))->method('restoreElement')->willReturnCallback(static function (Booking $booking) {
+            if (12 === $booking->id) {
+                throw new BookingConflictException('This time is unavailable.');
+            }
+
+            return true;
+        });
+        self::assertSame([
+            'success' => false, 'completedIds' => [13],
+            'errors' => [['bookingId' => 12, 'customer' => 'Customer', 'message' => 'This time is unavailable.']],
+        ], $this->controller->actionRestoreSelected()->data);
+    }
+
+    public function testBulkDeletionReportsNativeVeto(): void
+    {
+        $this->prepareSelection([12], false, [$this->booking]);
+        $this->elements->method('deleteElement')->willReturn(false);
+        self::assertSame([
+            'success' => false, 'completedIds' => [],
+            'errors' => [['bookingId' => 12, 'customer' => 'Customer', 'message' => 'Could not delete booking.']],
+        ], $this->controller->actionDeleteSelected()->data);
+    }
+
+    public function testBulkRestoreReportsNativeValidationError(): void
+    {
+        $this->prepareSelection([12], true, [$this->booking]);
+        $this->booking->addError('calendarId', 'Calendar is unavailable.');
+        $this->elements->method('restoreElement')->willReturn(false);
+        self::assertSame('Calendar is unavailable.', $this->controller->actionRestoreSelected()->data['errors'][0]['message']);
+    }
+
+    public function testBulkDeletionAuthorizesTheEntireSelectionBeforeDeleting(): void
+    {
+        $other = $this->additionalBooking(13);
+        $this->prepareSelection([12, 13], false, [$this->booking, $other], false);
+        $this->service->method('canManage')->willReturnOnConsecutiveCalls(true, false);
+        $this->elements->expects(self::never())->method('deleteElement');
+        $this->expectException(ForbiddenHttpException::class);
+        $this->controller->actionDeleteSelected();
+    }
+
+    public function testBulkRestoreRejectsMissingElementsBeforeRestoring(): void
+    {
+        $this->prepareSelection([12, 99], true, [$this->booking]);
+        $this->elements->expects(self::never())->method('restoreElement');
+        $this->expectException(ForbiddenHttpException::class);
+        $this->controller->actionRestoreSelected();
+    }
+
+    public function testBulkDeletionRejectsEmptySelection(): void
+    {
+        $this->prepareInvalidSelection([]);
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionDeleteSelected();
+    }
+
+    public function testBulkDeletionRejectsNonArraySelection(): void
+    {
+        $this->prepareInvalidSelection('12,13');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionDeleteSelected();
+    }
+
+    public function testBulkRestoreRejectsInvalidIdBeforeAnyLookups(): void
+    {
+        $this->prepareInvalidSelection([12, '13oops']);
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionRestoreSelected();
+    }
+
+    public function testBulkDeletionRejectsMoreThanOnePage(): void
+    {
+        $this->prepareInvalidSelection(range(1, 51));
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionDeleteSelected();
+    }
+
+    public function testBulkDeletionRejectsSiteRequests(): void
+    {
+        $this->request->method('getIsCpRequest')->willReturn(false);
+        $this->elements->expects(self::never())->method('deleteElement');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionDeleteSelected();
+    }
+
+    public function testBulkRestoreRequiresPost(): void
+    {
+        $this->request->method('getIsCpRequest')->willReturn(true);
+        $this->request->method('getIsPost')->willReturn(false);
+        $this->elements->expects(self::never())->method('restoreElement');
+        $this->expectException(MethodNotAllowedHttpException::class);
+        $this->controller->actionRestoreSelected();
+    }
+
+    private function additionalBooking(int $id): Booking
+    {
+        $booking = $this->getMockBuilder(Booking::class)->disableOriginalConstructor()->onlyMethods(['getCalendar'])->getMock();
+        $booking->id = $id;
+        $booking->customerName = 'Another customer';
+        $booking->method('getCalendar')->willReturn($this->booking->getCalendar());
+
+        return $booking;
+    }
+
+    private function prepareInvalidSelection(mixed $ids): void
+    {
+        $this->request->method('getIsCpRequest')->willReturn(true);
+        $this->request->method('getIsPost')->willReturn(true);
+        $this->request->method('getRequiredBodyParam')->with('bookingIds')->willReturn($ids);
+        $this->elements->expects(self::never())->method('getElementById');
+        $this->elements->expects(self::never())->method('deleteElement');
+        $this->elements->expects(self::never())->method('restoreElement');
+    }
+
+    private function prepareSelection(array $ids, bool $trashed, array $bookings, bool $allowed = true): void
+    {
+        $this->request->method('getIsCpRequest')->willReturn(true);
+        $this->request->method('getIsPost')->willReturn(true);
+        $this->request->method('getRequiredBodyParam')->with('bookingIds')->willReturn($ids);
+        $this->elements->method('getElementById')->willReturnCallback(static function ($id, $type, $siteId, $criteria) use ($bookings, $trashed) {
+            self::assertSame(Booking::class, $type);
+            self::assertSame(1, $siteId);
+            self::assertSame(['trashed' => $trashed], $criteria);
+            foreach ($bookings as $booking) {
+                if ($booking->id === $id) {
+                    return $booking;
+                }
+            }
+
+            return null;
+        });
+        if ($allowed) {
+            $this->service->method('canManage')->willReturn(true);
+        }
+    }
+
     private function prepare(bool $trashed, bool $allowed = true): void
     {
         $this->request->method('getIsCpRequest')->willReturn(true);

@@ -2,6 +2,14 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Selected bookings' => 'Atlasītās rezervācijas',
+    'Select all bookings on this page' => 'Atlasīt visas rezervācijas šajā lapā',
+    'Select booking for {customer}' => 'Atlasīt rezervāciju klientam {customer}',
+    '{count, plural, =1{1 booking selected} other{# bookings selected}}' => '{count, plural, =1{Atlasīta 1 rezervācija} zero{Atlasītas # rezervācijas} one{Atlasīta # rezervācija} other{Atlasītas # rezervācijas}}',
+    '{count, plural, =1{Move 1 selected booking to Trash?} other{Move # selected bookings to Trash?}}' => '{count, plural, =1{Pārvietot 1 atlasīto rezervāciju uz atkritni?} zero{Pārvietot # atlasītās rezervācijas uz atkritni?} one{Pārvietot # atlasīto rezervāciju uz atkritni?} other{Pārvietot # atlasītās rezervācijas uz atkritni?}}',
+    '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}' => '{count, plural, =1{1 rezervācija pārvietota uz atkritni.} zero{# rezervācijas pārvietotas uz atkritni.} one{# rezervācija pārvietota uz atkritni.} other{# rezervācijas pārvietotas uz atkritni.}}',
+    '{count, plural, =1{1 booking restored.} other{# bookings restored.}}' => '{count, plural, =1{1 rezervācija atjaunota.} zero{# rezervācijas atjaunotas.} one{# rezervācija atjaunota.} other{# rezervācijas atjaunotas.}}',
+    '{customer}: {message}' => '{customer}: {message}',
     'Does not repeat' => 'Neatkārtojas',
     'Weekdays (Monday–Friday)' => 'Darbdienās (pirmdiena–piektdiena)',
     'Weekly on {weekday}' => 'Katru nedēļu: {weekday}',

@@ -2,6 +2,14 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Selected bookings' => 'Selected bookings',
+    'Select all bookings on this page' => 'Select all bookings on this page',
+    'Select booking for {customer}' => 'Select booking for {customer}',
+    '{count, plural, =1{1 booking selected} other{# bookings selected}}' => '{count, plural, =1{1 booking selected} other{# bookings selected}}',
+    '{count, plural, =1{Move 1 selected booking to Trash?} other{Move # selected bookings to Trash?}}' => '{count, plural, =1{Move 1 selected booking to Trash?} other{Move # selected bookings to Trash?}}',
+    '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}' => '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}',
+    '{count, plural, =1{1 booking restored.} other{# bookings restored.}}' => '{count, plural, =1{1 booking restored.} other{# bookings restored.}}',
+    '{customer}: {message}' => '{customer}: {message}',
     'Available Times' => 'Available Times',
     'Try again' => 'Try again',
     'Choose a date to see available times.' => 'Choose a date to see available times.',

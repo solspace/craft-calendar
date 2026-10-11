@@ -15,7 +15,7 @@
     {% set filterStatusOptions = filterStatusOptions|merge([option]) %}
 {% endfor %}
 <form method="get" class="booking-filters">
-    {{ forms.selectize({id: 'booking-list-view', name: 'view', value: bookingListView, options: [{value: 'active', label: 'Active bookings'|t('calendar')}, {value: 'trash', label: 'Trash'|t('app')}], selectizeOptions: {searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Booking list view'|t('calendar')}}}) }}
+    {{ forms.selectize({id: 'booking-list-view', class: 'booking-view-picker', name: 'view', value: bookingListView, options: [{value: 'active', label: 'Active bookings'|t('calendar'), icon: 'calendar'}, {value: 'trash', label: 'Trash'|t('app'), icon: 'trash'}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Booking list view'|t('calendar')}}}) }}
     {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, extraPlugins: false, placeholder: 'All calendars'|t('calendar')}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
     {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, searchField: [], extraPlugins: false, placeholder: 'All statuses'|t('calendar')}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
     <div class="booking-search texticon">
@@ -36,6 +36,7 @@
 {% include 'calendar/bookings/_confirm-delete-css' %}
 .booking-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px; padding:12px; background:var(--gray-050,#f3f6fa); border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; }
 .booking-filters > .select.selectize { width:180px; flex-shrink:0; }
+.booking-filters > .booking-view-picker.select.selectize { width:155px; }
 .booking-search { flex:1; min-width:200px; }
 .booking-sort { display:flex; align-items:center; gap:8px; }
 .booking-sort label { white-space:nowrap; font-size:12px; color:var(--light-text-color,#596673); }
@@ -58,6 +59,11 @@
 .booking-timestamp { min-width:135px; white-space:nowrap; }
 .booking-timestamp-time { display:block; }
 .booking-actions-cell { width:44px; white-space:nowrap; }
+.booking-selection-cell { width:24px; padding-inline-end:8px !important; }
+.booking-table tr.booking-selected { background:var(--gray-050,#f3f6fa); }
+.booking-bulk-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px; padding:10px 12px; border:1px solid var(--hairline-color,#e4e9ef); border-radius:5px; background:var(--gray-050,#f3f6fa); }
+.booking-bulk-actions.hidden { display:none; }
+.booking-bulk-actions [data-booking-selection-count] { font-weight:600; }
 .booking-trash-note { margin-bottom:16px; }
 .booking-status-cell { width:180px; }
 .booking-status-control { display:flex; align-items:center; gap:8px; }

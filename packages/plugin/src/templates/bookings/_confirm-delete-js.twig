@@ -1,4 +1,4 @@
-function confirmBookingDeletion(customer, triggerElement) {
+function confirmBookingDeletion(customer, triggerElement, count = null) {
     return new Promise(resolve => {
         let confirmed = false;
         const id = 'booking-delete-' + Craft.randomString(10);
@@ -14,7 +14,9 @@ function confirmBookingDeletion(customer, triggerElement) {
         }).appendTo($body);
         $('<p/>', {
             id: id + '-message',
-            text: Craft.t('calendar', 'Move the booking for {customer} to Trash?', {customer}),
+            text: count === null
+                ? Craft.t('calendar', 'Move the booking for {customer} to Trash?', {customer})
+                : Craft.t('calendar', '{count, plural, =1{Move 1 selected booking to Trash?} other{Move # selected bookings to Trash?}}', {count}),
         }).appendTo($body);
         $('<p/>', {
             id: id + '-note',

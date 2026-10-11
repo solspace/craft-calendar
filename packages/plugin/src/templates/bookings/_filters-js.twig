@@ -11,8 +11,9 @@
     let revision = 0;
     let request;
     let rendering = Promise.resolve();
-    let statusSaves = 0;
+    let writesInProgress = 0;
     let pendingUrl;
+    let retrySelection;
 
     function filterUrl() {
         const url = new URL(location.href);
@@ -31,7 +32,7 @@
         clearTimeout(timer);
         const current = ++revision;
         request?.abort();
-        if (statusSaves) { pendingUrl = url; return; }
+        if (writesInProgress) { pendingUrl = url; return; }
         pendingUrl = null;
         request = new AbortController();
         results.setAttribute('aria-busy', 'true');
@@ -53,6 +54,13 @@
                 results.innerHTML = response.data.html;
                 await Craft.appendBodyHtml(response.data.bodyHtml || '');
                 Craft.initUiElements(results);
+                if (retrySelection?.url === url.href) {
+                    results.querySelectorAll('[data-booking-select]').forEach(checkbox => {
+                        checkbox.checked = retrySelection.ids.includes(checkbox.value);
+                    });
+                }
+                retrySelection = null;
+                updateSelection();
                 if (current === revision) history.replaceState(null, '', url);
             });
             await rendering;
@@ -68,6 +76,75 @@
         }
     }
 
+    function selectedBookings() {
+        return [...results.querySelectorAll('[data-booking-select]:checked')];
+    }
+
+    function updateSelection() {
+        const checkboxes = [...results.querySelectorAll('[data-booking-select]')];
+        const count = selectedBookings().length;
+        const all = results.querySelector('[data-booking-select-all]');
+        if (all) {
+            all.checked = count > 0 && count === checkboxes.length;
+            all.indeterminate = count > 0 && count < checkboxes.length;
+        }
+        checkboxes.forEach(checkbox => checkbox.closest('tr').classList.toggle('booking-selected', checkbox.checked));
+        const toolbar = results.querySelector('.booking-bulk-actions');
+        toolbar?.classList.toggle('hidden', count === 0);
+        const label = results.querySelector('[data-booking-selection-count]');
+        if (label) label.textContent = Craft.t('calendar', {{ '{count, plural, =1{1 booking selected} other{# bookings selected}}'|json_encode|raw }}, {count});
+        const action = results.querySelector('[data-booking-bulk-action]');
+        if (action) action.disabled = !count || writesInProgress > 0;
+    }
+
+    results.addEventListener('change', event => {
+        if (event.target.matches('[data-booking-select-all]')) {
+            results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = event.target.checked; });
+        } else if (!event.target.matches('[data-booking-select]')) return;
+        updateSelection();
+    });
+    results.addEventListener('click', event => {
+        if (!event.target.closest('[data-booking-deselect]')) return;
+        results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = false; });
+        updateSelection();
+    });
+    results.addEventListener('click', async event => {
+        const button = event.target.closest('[data-booking-bulk-action]');
+        if (!button || button.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
+        const ids = selectedBookings().map(checkbox => checkbox.value);
+        if (!ids.length) return;
+        const action = button.dataset.bookingBulkAction;
+        const selectionUrl = filterUrl().href;
+        writesInProgress++;
+        results.setAttribute('aria-busy', 'true');
+        updateSelection();
+        let submitted = false;
+        try {
+            if (action === 'delete' && !await confirmBookingDeletion(null, button, ids.length)) return;
+            submitted = true;
+            retrySelection = {url: selectionUrl, ids};
+            const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action + '-selected', {data: {bookingIds: ids}});
+            const completed = response.data.completedIds || [];
+            retrySelection.ids = ids.filter(id => !completed.map(String).includes(id));
+            if (completed.length) Craft.cp.displayNotice(Craft.t('calendar', action === 'delete'
+                ? {{ '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}'|json_encode|raw }}
+                : {{ '{count, plural, =1{1 booking restored.} other{# bookings restored.}}'|json_encode|raw }}, {count: completed.length}));
+            if (response.data.errors?.length) {
+                Craft.cp.displayError(response.data.errors.map(error => Craft.t('calendar', '{customer}: {message}', error)).join(' '));
+            } else if (!response.data.success) throw new Error(response.data.message);
+        } catch (error) {
+            Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
+        } finally {
+            results.removeAttribute('aria-busy');
+            writesInProgress--;
+            updateSelection();
+            // Reconcile even an interrupted request: some elements may already have changed.
+            if (submitted && !pendingUrl) pendingUrl = filterUrl();
+            if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
+        }
+    });
+    updateSelection();
+
     // Selectize detaches and reinserts its selects, clearing directly bound jQuery handlers.
     $(form).on('change', '#booking-filter-calendar, #booking-filter-status, #booking-sort, #booking-list-view', () => filterBookings());
     results.addEventListener('click', event => {
@@ -80,9 +157,10 @@
     });
     results.addEventListener('click', async event => {
         const button = event.target.closest('[data-booking-action]');
-        if (!button || button.disabled || results.getAttribute('aria-busy') === 'true' || statusSaves) return;
+        if (!button || button.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
         const action = button.dataset.bookingAction;
-        statusSaves++;
+        writesInProgress++;
+        updateSelection();
         button.disabled = true;
         const row = button.closest('tr');
         row.setAttribute('aria-busy', 'true');
@@ -99,8 +177,9 @@
             button.disabled = false;
             row.removeAttribute('aria-busy');
             row.querySelectorAll('select').forEach(select => select.selectize?.enable());
-            statusSaves--;
-            if (!statusSaves && pendingUrl) filterBookings(pendingUrl);
+            writesInProgress--;
+            updateSelection();
+            if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
         }
     });
     function searchBookings() {
@@ -123,7 +202,8 @@
         filterBookings();
     });
     results.addEventListener('booking-status-save', event => {
-        statusSaves = Math.max(0, statusSaves + event.detail);
-        if (!statusSaves && pendingUrl) filterBookings(pendingUrl);
+        writesInProgress = Math.max(0, writesInProgress + event.detail);
+        updateSelection();
+        if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
     });
 })();

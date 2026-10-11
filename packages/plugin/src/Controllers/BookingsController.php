@@ -238,6 +238,16 @@ class BookingsController extends BaseController
         return $this->asJson(['success' => true]);
     }
 
+    public function actionDeleteSelected(): Response
+    {
+        return $this->changeSelectedBookings(false);
+    }
+
+    public function actionRestoreSelected(): Response
+    {
+        return $this->changeSelectedBookings(true);
+    }
+
     public function actionMove(): Response
     {
         $this->requireCpRequest();
@@ -488,12 +498,57 @@ class BookingsController extends BaseController
         if (false === $id) {
             throw new BadRequestHttpException();
         }
+
+        return $this->findLifecycleBooking($id, $trashed);
+    }
+
+    private function findLifecycleBooking(int $id, bool $trashed): Booking
+    {
         $booking = \Craft::$app->getElements()->getElementById($id, Booking::class, \Craft::$app->getSites()->getPrimarySite()->id, ['trashed' => $trashed]);
         if (!$booking instanceof Booking || !Calendar::getInstance()->bookings->canManage($booking->getCalendar())) {
             throw new ForbiddenHttpException();
         }
 
         return $booking;
+    }
+
+    private function changeSelectedBookings(bool $restore): Response
+    {
+        $this->requireCpRequest();
+        $this->requirePostRequest();
+        $ids = \Craft::$app->request->getRequiredBodyParam('bookingIds');
+        if (!\is_array($ids) || !$ids || \count($ids) > 50) {
+            throw new BadRequestHttpException();
+        }
+        $validatedIds = [];
+        foreach ($ids as $id) {
+            $id = filter_var($id, \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if (false === $id) {
+                throw new BadRequestHttpException();
+            }
+            $validatedIds[$id] = $id;
+        }
+        // Authorize the entire selection before changing any elements.
+        $bookings = array_map(fn (int $id) => $this->findLifecycleBooking($id, $restore), array_values($validatedIds));
+        $elements = \Craft::$app->getElements();
+        $completedIds = [];
+        $errors = [];
+        foreach ($bookings as $booking) {
+            try {
+                $success = $restore ? $elements->restoreElement($booking) : $elements->deleteElement($booking, false);
+                $message = $success ? '' : (implode(' ', $booking->getErrorSummary(true)) ?: Calendar::t($restore ? 'Could not restore booking.' : 'Could not delete booking.'));
+            } catch (BookingConflictException $exception) {
+                $success = false;
+                $message = $exception->getMessage();
+            }
+            if ($success) {
+                $completedIds[] = $booking->id;
+            } else {
+                $errors[] = ['bookingId' => $booking->id, 'customer' => $booking->customerName, 'message' => $message];
+            }
+        }
+
+        return $this->asJson(['success' => !$errors, 'completedIds' => $completedIds, 'errors' => $errors]);
     }
 
     private function manageableCalendars(): array

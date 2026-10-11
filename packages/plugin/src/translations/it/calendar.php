@@ -2,6 +2,14 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Selected bookings' => 'Prenotazioni selezionate',
+    'Select all bookings on this page' => 'Seleziona tutte le prenotazioni in questa pagina',
+    'Select booking for {customer}' => 'Seleziona la prenotazione di {customer}',
+    '{count, plural, =1{1 booking selected} other{# bookings selected}}' => '{count, plural, =1{1 prenotazione selezionata} other{# prenotazioni selezionate}}',
+    '{count, plural, =1{Move 1 selected booking to Trash?} other{Move # selected bookings to Trash?}}' => '{count, plural, =1{Spostare 1 prenotazione selezionata nel cestino?} other{Spostare # prenotazioni selezionate nel cestino?}}',
+    '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}' => '{count, plural, =1{1 prenotazione spostata nel cestino.} other{# prenotazioni spostate nel cestino.}}',
+    '{count, plural, =1{1 booking restored.} other{# bookings restored.}}' => '{count, plural, =1{1 prenotazione ripristinata.} other{# prenotazioni ripristinate.}}',
+    '{customer}: {message}' => '{customer}: {message}',
     'Does not repeat' => 'Non si ripete',
     'Weekdays (Monday–Friday)' => 'Giorni feriali (lunedì–venerdì)',
     'Weekly on {weekday}' => 'Ogni settimana di {weekday}',
