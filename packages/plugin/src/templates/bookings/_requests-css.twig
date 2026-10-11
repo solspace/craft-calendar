@@ -17,7 +17,10 @@
 .request-unavailable td { background:#fffbef; }
 .request-actions { flex-wrap:wrap; }
 .request-empty { text-align:center; padding-block:40px !important; }
-.request-history { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.request-history { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; padding:12px 14px; background:var(--sky-050,#f0f9ff); color:var(--fg-notice,#0369a1); border:1px solid var(--sky-200,#bae6fd); border-radius:var(--radius-lg,5px); }
+.request-history > [data-icon] { display:inline-flex; align-items:center; justify-content:center; flex:0 0 16px; font-size:16px; line-height:1; }
+.request-history > [data-request-history-message] { flex:1; min-width:160px; line-height:1.5; }
+.request-history > .btn { flex-shrink:0; }
 .request-history.hidden { display:none; }
 #request-results[aria-busy="true"] { opacity:.65; pointer-events:none; }
 
