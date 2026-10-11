@@ -3,10 +3,11 @@
 <section class="booking-status booking-status-card {{ booking.bookingStatus }}" id="booking-status-card" aria-labelledby="booking-status-heading">
     <div class="booking-status-header">
         <span class="booking-status-icon" aria-hidden="true">{{ statusIcons[booking.bookingStatus] ?? '…' }}</span>
-        <strong id="booking-status-heading" aria-live="polite">{{ statusOptions[booking.bookingStatus] ?? 'Requested'|t('calendar') }}</strong>
+        <label id="booking-status-heading" for="booking-status">{{ 'Booking Status'|t('calendar') }}</label>
+        {{ forms.select({name: 'bookingStatus', id: 'booking-status', options: statusOptions, value: booking.bookingStatus, inputAttributes: {aria: {invalid: booking.hasErrors('bookingStatus') ? 'true' : null, describedby: booking.hasErrors('bookingStatus') ? 'booking-status-errors' : null}}}) }}
     </div>
     <div class="booking-status-body">
-        {{ forms.selectField({label: 'Booking Status'|t('calendar'), name: 'bookingStatus', id: 'booking-status', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
+        {% if booking.hasErrors('bookingStatus') %}<div id="booking-status-errors">{{ forms.errorList(booking.getErrors('bookingStatus')) }}</div>{% endif %}
         {% include 'calendar/bookings/_status-meta' %}
     </div>
 </section>

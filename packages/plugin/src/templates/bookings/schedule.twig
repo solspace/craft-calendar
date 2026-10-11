@@ -1,4 +1,5 @@
 {% extends 'calendar/layouts/_bookings' %}
+{% import '_includes/forms' as forms %}
 {% set title = 'Booking Schedule'|t('calendar') %}
 {% set selectedSubnavItem = 'bookings' %}
 {% set bookingView = 'schedule' %}
@@ -15,14 +16,18 @@
 </div>
 {% endblock %}
 {% block content %}
+{% set calendarOptions = [] %}
+{% for item in calendars %}{% set calendarOptions = calendarOptions|merge([{value: item.id, label: item.name, data: {color: item.color}}]) %}{% endfor %}
 <form method="get" class="booking-toolbar">
-<select name="calendarId" aria-label="{{ 'Calendar'|t('calendar') }}">{% for item in calendars %}<option value="{{ item.id }}" {{ item.id == calendarId ? 'selected' }}>{{ item.name }}</option>{% endfor %}</select>
-<input type="date" name="date" value="{{ date }}" aria-label="{{ 'Date'|t('app') }}">
-<select name="view" aria-label="{{ 'View'|t('app') }}"><option value="day" {{ scheduleView == 'day' ? 'selected' }}>{{ 'Day'|t('calendar') }}</option><option value="week" {{ scheduleView == 'week' ? 'selected' }}>{{ 'Week'|t('calendar') }}</option></select>
-<button class="btn" type="submit">{{ 'Show'|t('app') }}</button>
-<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
-<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: next}) }}">{{ 'Next'|t('app') }}</a>
-<span class="light">{{ calendar.schedulingSettings.timezone }}</span>
+    {{ forms.selectize({id: 'booking-schedule-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {extraPlugins: false}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
+    <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
+    {{ forms.selectize({id: 'booking-schedule-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {searchField: [], extraPlugins: false}, containerAttributes: {class: 'booking-toolbar-view'}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
+    <button class="btn" type="submit">{{ 'Show'|t('app') }}</button>
+    <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: next}) }}">{{ 'Next'|t('app') }}</a>
+    </div>
+    <span class="light booking-toolbar-timezone">{{ calendar.schedulingSettings.timezone }}</span>
 </form>
 <p class="light">{{ 'Confirmed bookings reserve time. Requested bookings are shown for review.'|t('calendar') }}</p>
 <p class="light booking-grid-instructions">{{ 'Click an available time to add a booking. Shaded times are unavailable.'|t('calendar') }}</p>
@@ -49,8 +54,14 @@
 .booking-history-controls button:active:not(:disabled) { background:#a6b4c9; }
 .booking-history-controls button:focus-visible { outline:2px solid currentColor; outline-offset:-2px; }
 .booking-history-controls button:disabled { background:#d5dfeb; color:#a0aab4; cursor:default; }
-.booking-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:20px 0; }
-.booking-toolbar select, .booking-toolbar input { padding:8px; border:1px solid var(--hairline-color,#d8dee5); border-radius:5px; }
+.booking-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:0 0 20px; padding:12px; background:var(--gray-050,#f3f6fa); border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; }
+.booking-toolbar > .select { width:180px; flex-shrink:0; }
+.booking-toolbar > .booking-toolbar-view { width:110px; }
+.booking-toolbar-date { width:160px; }
+.booking-toolbar .selectize-input, .booking-toolbar .text, .booking-toolbar .btn { min-height:34px; box-sizing:border-box; }
+.booking-toolbar-date .text { width:100%; }
+.booking-toolbar-navigation { display:flex; margin:0; }
+.booking-toolbar-timezone { margin-inline-start:auto; font-size:12px; white-space:nowrap; }
 .booking-grid-scroll { max-height:65vh; overflow:auto; border:1px solid var(--hairline-color,#d8dee5); border-radius:8px; }
 .booking-grid { display:grid; grid-template-columns:80px repeat(var(--days),minmax(115px,1fr)); min-width:calc(var(--days) * 115px + 80px); }
 .booking-day { border-left:1px solid var(--hairline-color,#d8dee5); }

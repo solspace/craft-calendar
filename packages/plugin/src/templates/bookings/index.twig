@@ -17,8 +17,8 @@
     {% set rowStatusOptions = rowStatusOptions|merge([option]) %}
 {% endfor %}
 <form method="get" class="booking-filters">
-    {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {allowEmptyOption: true, extraPlugins: false}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
-    {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {allowEmptyOption: true, searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
+    {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {allowEmptyOption: true, extraPlugins: false, placeholder: 'All calendars'|t('calendar')}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
+    {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {allowEmptyOption: true, searchField: [], extraPlugins: false, placeholder: 'All statuses'|t('calendar')}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
     <div class="booking-search texticon">
         <span class="texticon-icon search icon" aria-hidden="true"></span>
         {{ forms.text({type: 'search', id: 'booking-filter-search', name: 'search', value: search, placeholder: 'Search name or email'|t('calendar'), inputAttributes: {aria: {label: 'Search name or email'|t('calendar')}}}) }}
