@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'No calendars match this type.' => 'Aucun calendrier ne correspond à ce type.',
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Statut enregistré pour 1 réservation.} other{Statut enregistré pour # réservations.}}',
     'Booking Defaults' => 'Paramètres de réservation par défaut',
     'Choose the initial booking rules and availability for new booking calendars. Each calendar can be customized separately. Changes here do not affect existing calendars.' => 'Choisissez les règles de réservation et les disponibilités initiales des nouveaux calendriers de réservation. Chaque calendrier peut être personnalisé séparément. Les modifications ici ne concernent pas les calendriers existants.',

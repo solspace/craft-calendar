@@ -60,6 +60,15 @@ class CalendarsController extends BaseController
     {
         \Craft::$app->view->registerAssetBundle(CalendarIndexBundle::class);
 
+        $calendarType = \Craft::$app->request->getQueryParam('type', 'all');
+        if (!\in_array($calendarType, ['all', CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING], true)) {
+            $calendarType = 'all';
+        }
+        $calendars = $this->getCalendarService()->getAllCalendars();
+        if ('all' !== $calendarType) {
+            $calendars = array_filter($calendars, static fn (CalendarModel $calendar) => $calendar->type === $calendarType);
+        }
+
         $crumbs = [
             [
                 'label' => Calendar::t(Calendar::getInstance()->name),
@@ -77,7 +86,8 @@ class CalendarsController extends BaseController
             [
                 'isCraft5' => $this->isCraft5,
                 'crumbs' => $crumbs,
-                'calendars' => $this->getCalendarService()->getAllCalendars(),
+                'calendars' => $calendars,
+                'calendarType' => $calendarType,
             ]
         );
     }

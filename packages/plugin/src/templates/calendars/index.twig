@@ -1,11 +1,26 @@
 {% extends "calendar/layouts/_calendarsLayout" %}
+{% import "_includes/forms" as forms %}
 
 {% set selectedSubnavItem = "calendars" %}
 {% set title = "Calendars"|t('calendar') %}
 
 {% set content %}
+    <form class="calendar-index-toolbar" method="get" action="{{ url('calendar/calendars') }}">
+        <label for="calendar-type-filter">{{ 'Calendar Type'|t('calendar') }}</label>
+        {{ forms.select({
+            id: 'calendar-type-filter',
+            name: 'type',
+            value: calendarType,
+            options: [
+                {value: 'all', label: 'All'|t('app')},
+                {value: 'events', label: 'Events'|t('calendar')},
+                {value: 'scheduling', label: 'Scheduling'|t('calendar')},
+            ],
+        }) }}
+        <noscript><button type="submit" class="btn">{{ 'Apply'|t('app') }}</button></noscript>
+    </form>
     <div id="nocalendars"{% if calendars %} class="hidden"{% endif %}>
-        <p>{{ "No calendars exist yet."|t('calendar') }}</p>
+        <p>{{ (calendarType == 'all' ? 'No calendars exist yet.' : 'No calendars match this type.')|t('calendar') }}</p>
     </div>
 
     {% if calendars|length %}
@@ -96,6 +111,9 @@
 
 {% css %}
     #content { padding: 0; }
+    .calendar-index-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:14px; border-bottom:1px solid var(--hairline-color, #edf0f4); }
+    .calendar-index-toolbar label { color:var(--medium-text-color, #596778); }
+    #nocalendars { padding:14px; }
     #calendars th, #calendars td { vertical-align:middle; }
     #calendars tbody th, #calendars tbody td { padding-top:12px; padding-bottom:12px; }
     #calendars tbody tr + tr { border-top:1px solid var(--hairline-color, #edf0f4); }
@@ -123,6 +141,9 @@
 {% endcss %}
 
 {% js %}
+    document.getElementById('calendar-type-filter').addEventListener('change', function() {
+        this.form.requestSubmit();
+    });
     document.querySelectorAll('#calendars .calendar-row-actions .clone').forEach(action => {
         action.addEventListener('keydown', event => {
             if (event.key === 'Enter' || event.key === ' ') {

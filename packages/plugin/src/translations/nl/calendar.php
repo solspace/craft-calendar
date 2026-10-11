@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'No calendars match this type.' => 'Geen kalenders komen overeen met dit type.',
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Status opgeslagen voor 1 boeking.} other{Status opgeslagen voor # boekingen.}}',
     'Booking Defaults' => 'Boekingsstandaarden',
     'Choose the initial booking rules and availability for new booking calendars. Each calendar can be customized separately. Changes here do not affect existing calendars.' => 'Kies de aanvankelijke boekingsregels en beschikbaarheid voor nieuwe boekingskalenders. Elke kalender kan afzonderlijk worden aangepast. Wijzigingen hier hebben geen invloed op bestaande kalenders.',

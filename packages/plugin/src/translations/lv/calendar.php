@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'No calendars match this type.' => 'Nav šī veida kalendāru.',
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Statuss saglabāts 1 rezervācijai.} zero{Statuss saglabāts # rezervācijām.} one{Statuss saglabāts # rezervācijai.} other{Statuss saglabāts # rezervācijām.}}',
     'Booking Defaults' => 'Rezervāciju noklusējuma iestatījumi',
     'Choose the initial booking rules and availability for new booking calendars. Each calendar can be customized separately. Changes here do not affect existing calendars.' => 'Izvēlieties sākotnējos rezervāciju noteikumus un pieejamību jauniem rezervāciju kalendāriem. Katru kalendāru var pielāgot atsevišķi. Šeit veiktās izmaiņas neietekmē esošos kalendārus.',
