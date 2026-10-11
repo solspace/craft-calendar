@@ -43,6 +43,7 @@
 .calendar-booking-form input:not([type=checkbox]):not([type=radio]):not([type=hidden]), .calendar-booking-form textarea, .calendar-booking-form select {
     display:block; width:100%; min-height:44px; padding:10px 12px; font:inherit; font-size:.95rem; line-height:1.4; border:1px solid var(--booking-border); border-radius:8px; background-color:var(--booking-input); color:var(--booking-text);
 }
+.calendar-booking-form input[type=date] { cursor:pointer; }
 .calendar-booking-form textarea { resize:vertical; }
 .calendar-booking-form input:focus-visible, .calendar-booking-form textarea:focus-visible, .calendar-booking-form select:focus-visible, .calendar-booking-form button:focus-visible { outline:2px solid var(--booking-accent); outline-offset:2px; }
 .calendar-booking-form input[aria-invalid=true], .calendar-booking-form textarea[aria-invalid=true], .calendar-booking-form select[aria-invalid=true] { border-color:var(--booking-error); }

@@ -69,6 +69,14 @@
             if (current === latest) times.removeAttribute('aria-busy');
         }
     }
+    date.addEventListener('click', () => {
+        if (submitting || date.matches(':disabled') || typeof date.showPicker !== 'function') return;
+        try {
+            date.showPicker();
+        } catch (_) {
+            // Keep native date entry available when the browser restricts opening the picker.
+        }
+    });
     date.addEventListener('change', () => loadSlots());
     date.addEventListener('input', () => {
         // Clear the old selection immediately; a typed date refreshes after a short pause.
