@@ -103,6 +103,7 @@
             const unavailable = new Set(response.data.unavailableRequestIds.map(String));
             results.querySelectorAll('[data-booking-request-warning]').forEach(warning => {
                 warning.hidden = !unavailable.has(warning.dataset.bookingRequestWarning);
+                warning.closest('[data-booking-row]')?.classList.toggle('booking-request-unavailable', !warning.hidden);
             });
             warningsDirty = false;
         } catch (_) {

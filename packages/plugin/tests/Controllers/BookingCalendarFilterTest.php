@@ -175,7 +175,10 @@ class BookingCalendarFilterTest extends TestCase
             $xpath = new \DOMXPath($dom);
             $warnings = $xpath->query('//a[@data-booking-request-warning][not(@hidden)]');
             self::assertSame($trashed ? 0 : 1, $warnings->length);
+            self::assertSame($trashed ? 0 : 1, $xpath->query('//tr[contains(@class, "booking-request-unavailable")]')->length);
             if (!$trashed) {
+                self::assertSame('1', $xpath->query('//tr[contains(@class, "booking-request-unavailable")]')->item(0)->getAttribute('data-booking-row'));
+                self::assertSame(1, $xpath->query('//span[@class="booking-date-heading"]/a[@data-booking-request-warning][not(@hidden)]')->length);
                 self::assertSame('calendar/bookings/1', $warnings->item(0)->getAttribute('href'));
                 self::assertSame('The requested time is no longer available.', $warnings->item(0)->getAttribute('title'));
                 self::assertSame(2, $xpath->query('//a[@data-booking-request-warning][@hidden]')->length);

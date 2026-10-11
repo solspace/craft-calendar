@@ -24,11 +24,11 @@
             {% set timezone = calendar.schedulingSettings.timezone %}
             {% set startTimezoneLabel = booking.startDate|calendarTimezoneAbbreviation(timezone) %}
             {% set endTimezoneLabel = booking.endDate|calendarTimezoneAbbreviation(timezone) %}
-            <tr data-booking-row="{{ booking.id }}">
+            <tr data-booking-row="{{ booking.id }}" class="{{ not trashed and (unavailableRequestIds[booking.id] ?? false) ? 'booking-request-unavailable' }}">
                 <td class="checkbox-cell">{{ forms.checkbox({id: 'booking-select-' ~ booking.id, value: booking.id, inputAttributes: {data: {'booking-select': true}, aria: {label: 'Select booking for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}</td>
                 <td class="booking-customer">{% if trashed %}<strong>{{ booking.customerName }}</strong>{% else %}<a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a>{% endif %}<div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
                 <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
-                <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}{% if not trashed %}{% include 'calendar/bookings/_request-warning' with {warningLink: true} %}{% endif %}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span class="light booking-timezone" title="{{ timezone|calendarTimezoneName }} ({{ timezone }})">{{ startTimezoneLabel }}{{ startTimezoneLabel != endTimezoneLabel ? ' → ' ~ endTimezoneLabel }}</span></div></td>
+                <td class="booking-datetime"><span class="booking-date-heading">{{ booking.startDate|date('medium', timezone) }}{% if not trashed %}{% include 'calendar/bookings/_request-warning' with {warningLink: true} %}{% endif %}</span><div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span class="light booking-timezone" title="{{ timezone|calendarTimezoneName }} ({{ timezone }})">{{ startTimezoneLabel }}{{ startTimezoneLabel != endTimezoneLabel ? ' → ' ~ endTimezoneLabel }}</span></div></td>
                 {% for field, timestamp in {submitted: booking.dateCreated, updated: booking.dateUpdated} %}
                     <td class="booking-timestamp"{{ field == 'updated' ? ' data-booking-updated' }}>
                         {% if timestamp %}

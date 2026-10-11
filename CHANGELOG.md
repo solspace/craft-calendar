@@ -43,6 +43,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Refined booking warning icon spacing, highlighted unavailable requests in the Bookings list, and matched warning colors across booking views.
 - Ordered booking opening-hour defaults, saved schedules, and weekday menus from Sunday through Saturday.
 - Shortened booking list timezones to date-aware abbreviations beside the time range, and adopted Craft's native sortable table headings.
 - Aligned the Bookings list with Craft's native index layout, with filters and New booking in the page toolbar and a single table pane.
