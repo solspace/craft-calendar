@@ -1,4 +1,5 @@
 (() => {
+    {% include 'calendar/bookings/_confirm-delete-js' %}
     const form = document.querySelector('.booking-filters');
     const results = document.getElementById('booking-results');
     const search = document.getElementById('booking-filter-search');
@@ -81,13 +82,13 @@
         const button = event.target.closest('[data-booking-action]');
         if (!button || button.disabled || results.getAttribute('aria-busy') === 'true' || statusSaves) return;
         const action = button.dataset.bookingAction;
-        if (action === 'delete' && !confirm(Craft.t('calendar', 'Move the booking for {customer} to Trash?', {customer: button.dataset.customer}))) return;
         statusSaves++;
         button.disabled = true;
         const row = button.closest('tr');
         row.setAttribute('aria-busy', 'true');
         row.querySelectorAll('select').forEach(select => select.selectize?.disable());
         try {
+            if (action === 'delete' && !await confirmBookingDeletion(button.dataset.customer, button)) return;
             const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action, {data: {bookingId: button.dataset.bookingId}});
             if (!response.data.success) throw new Error(response.data.message);
             Craft.cp.displayNotice(Craft.t('calendar', action === 'delete' ? 'Booking moved to Trash.' : 'Booking restored.'));

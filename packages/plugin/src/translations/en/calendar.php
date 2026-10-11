@@ -1080,4 +1080,6 @@ return [
     'Could not restore booking.' => 'Could not restore booking.',
     'The calendar type is locked because events or bookings exist, including items in Trash. Create a new calendar to use a different type.' => 'The calendar type is locked because events or bookings exist, including items in Trash. Create a new calendar to use a different type.',
     'You can change the type while this calendar is empty. Review any templates or integrations that use it before switching.' => 'You can change the type while this calendar is empty. Review any templates or integrations that use it before switching.',
+    'Move to Trash' => 'Move to Trash',
+    'This will release the reserved time. You can restore the booking from Trash.' => 'This will release the reserved time. You can restore the booking from Trash.',
 ];

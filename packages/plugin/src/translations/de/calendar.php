@@ -957,4 +957,6 @@ return [
     'Could not restore booking.' => 'Buchung konnte nicht wiederhergestellt werden.',
     'The calendar type is locked because events or bookings exist, including items in Trash. Create a new calendar to use a different type.' => 'Der Kalendertyp ist gesperrt, weil Ereignisse oder Buchungen vorhanden sind, einschließlich Einträgen im Papierkorb. Erstellen Sie einen neuen Kalender, um einen anderen Typ zu verwenden.',
     'You can change the type while this calendar is empty. Review any templates or integrations that use it before switching.' => 'Sie können den Typ ändern, solange dieser Kalender leer ist. Prüfen Sie vor dem Wechsel alle Vorlagen oder Integrationen, die ihn verwenden.',
+    'Move to Trash' => 'In den Papierkorb verschieben',
+    'This will release the reserved time. You can restore the booking from Trash.' => 'Dadurch wird die reservierte Zeit freigegeben. Sie können die Buchung aus dem Papierkorb wiederherstellen.',
 ];

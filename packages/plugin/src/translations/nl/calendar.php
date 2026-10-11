@@ -957,4 +957,6 @@ return [
     'Could not restore booking.' => 'Boeking kon niet worden hersteld.',
     'The calendar type is locked because events or bookings exist, including items in Trash. Create a new calendar to use a different type.' => 'Het kalendertype is vergrendeld omdat er evenementen of boekingen bestaan, inclusief items in de prullenbak. Maak een nieuwe kalender om een ander type te gebruiken.',
     'You can change the type while this calendar is empty. Review any templates or integrations that use it before switching.' => 'Je kunt het type wijzigen zolang deze kalender leeg is. Controleer eerst alle templates of integraties die deze kalender gebruiken.',
+    'Move to Trash' => 'Naar de prullenbak verplaatsen',
+    'This will release the reserved time. You can restore the booking from Trash.' => 'Dit geeft de gereserveerde tijd vrij. Je kunt de boeking vanuit de prullenbak herstellen.',
 ];

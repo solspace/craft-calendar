@@ -41,17 +41,20 @@
 </div>
 {% endblock %}
 {% js %}
+{% include 'calendar/bookings/_confirm-delete-js' %}
 const deleteBooking = document.getElementById('booking-delete');
 if (deleteBooking) deleteBooking.addEventListener('click', async () => {
-    if (!confirm(Craft.t('calendar', 'Move the booking for {customer} to Trash?', {customer: {{ booking.customerName|json_encode(15)|raw }}}))) return;
+    if (deleteBooking.disabled) return;
     deleteBooking.disabled = true;
     try {
+        if (!await confirmBookingDeletion({{ booking.customerName|json_encode(15)|raw }}, deleteBooking)) return;
         const response = await Craft.sendActionRequest('POST', 'calendar/bookings/delete', {data: {bookingId: {{ booking.id ?: 'null' }}}});
         if (!response.data.success) throw new Error(response.data.message);
         Craft.cp.removeListener(Garnish.$win, 'beforeunload');
         window.location.href = {{ cpUrl('calendar/bookings')|json_encode|raw }};
     } catch (error) {
         Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
+    } finally {
         deleteBooking.disabled = false;
     }
 });
@@ -160,6 +163,7 @@ bookingDate.form.addEventListener('submit', event => {
 loadBookingSlots();
 {% endjs %}
 {% css %}
+{% include 'calendar/bookings/_confirm-delete-css' %}
 .booking-editor { max-width:960px; }
 .booking-editor .field { margin:0 0 22px; }
 .booking-editor .heading { margin-bottom:6px; }

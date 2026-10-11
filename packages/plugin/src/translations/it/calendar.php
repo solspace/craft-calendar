@@ -957,4 +957,6 @@ return [
     'Could not restore booking.' => 'Impossibile ripristinare la prenotazione.',
     'The calendar type is locked because events or bookings exist, including items in Trash. Create a new calendar to use a different type.' => 'Il tipo di calendario è bloccato perché esistono eventi o prenotazioni, inclusi gli elementi nel cestino. Crea un nuovo calendario per utilizzare un tipo diverso.',
     'You can change the type while this calendar is empty. Review any templates or integrations that use it before switching.' => 'Puoi cambiare il tipo finché questo calendario è vuoto. Prima di cambiarlo, verifica i template o le integrazioni che lo utilizzano.',
+    'Move to Trash' => 'Sposta nel cestino',
+    'This will release the reserved time. You can restore the booking from Trash.' => 'L’orario riservato verrà liberato. Puoi ripristinare la prenotazione dal cestino.',
 ];

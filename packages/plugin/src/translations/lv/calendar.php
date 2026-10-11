@@ -917,4 +917,6 @@ return [
     'Could not restore booking.' => 'Neizdevās atjaunot rezervāciju.',
     'The calendar type is locked because events or bookings exist, including items in Trash. Create a new calendar to use a different type.' => 'Kalendāra veids ir bloķēts, jo pastāv notikumi vai rezervācijas, tostarp vienumi atkritnē. Izveidojiet jaunu kalendāru, lai izmantotu citu veidu.',
     'You can change the type while this calendar is empty. Review any templates or integrations that use it before switching.' => 'Varat mainīt veidu, kamēr šis kalendārs ir tukšs. Pirms maiņas pārskatiet veidnes vai integrācijas, kas to izmanto.',
+    'Move to Trash' => 'Pārvietot uz atkritni',
+    'This will release the reserved time. You can restore the booking from Trash.' => 'Rezervētais laiks tiks atbrīvots. Rezervāciju var atjaunot no atkritnes.',
 ];
