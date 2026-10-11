@@ -21,7 +21,7 @@
 <form method="get" class="booking-toolbar">
     {{ forms.selectize({id: 'booking-schedule-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', extraPlugins: false}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
     <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
-    {{ forms.selectize({id: 'booking-schedule-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, containerAttributes: {class: 'booking-toolbar-view'}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
+    {{ forms.selectize({id: 'booking-schedule-view', class: 'booking-toolbar-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
     <button class="btn" type="submit">{{ 'Show'|t('app') }}</button>
     <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
         <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: previous}) }}">{{ 'Previous'|t('app') }}</a>

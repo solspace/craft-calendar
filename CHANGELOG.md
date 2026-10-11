@@ -44,6 +44,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed Craft's paragraph styles overriding the booking status details spacing and restored native styling on the schedule view dropdown.
 - Fixed booking status autosave failing when Craft initialized its dropdowns after the page's status handler.
 - Fixed booking notification failures hiding the underlying mail transport error in Queue Manager.
 - Fixed missing control panel translations and completed Latvian translation and date-picker coverage.
