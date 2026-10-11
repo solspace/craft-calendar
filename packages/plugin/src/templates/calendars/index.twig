@@ -7,7 +7,7 @@
 {% block toolbar %}
     <form id="calendar-index-filters" class="calendar-index-toolbar" method="get" action="{{ cpUrl('calendar/calendars') }}">
         <input type="hidden" name="sort" value="{{ sort }}">
-        <label for="calendar-type-filter">{{ 'Calendar Type'|t('calendar') }}</label>
+        <label for="calendar-type-filter">{{ 'Type'|t('calendar') }}</label>
         {{ forms.selectize({
             id: 'calendar-type-filter',
             name: 'type',
