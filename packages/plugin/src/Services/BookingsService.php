@@ -18,6 +18,7 @@ use craft\models\FieldLayout;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Jobs\SendBookingNotification;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Models\CalendarModel;
@@ -111,7 +112,13 @@ class BookingsService extends Component
             $settings['duration'] = $duration;
         }
 
-        return Availability::slots($settings, $date, $this->busy($calendar->id, $public ? null : $except, false, $date, $settings['timezone']), null, $public);
+        $slots = Availability::slots($settings, $date, $this->busy($calendar->id, $public ? null : $except, false, $date, $settings['timezone']), null, $public);
+        foreach ($slots as &$slot) {
+            $slot['label'] = DateFormatHelper::formatTimeRange(new \DateTimeImmutable($slot['start']), new \DateTimeImmutable($slot['end']), $settings['timezone']);
+        }
+        unset($slot);
+
+        return $slots;
     }
 
     public function nextAvailableSlot(CalendarModel $calendar, ?\DateTimeImmutable $now = null): ?array

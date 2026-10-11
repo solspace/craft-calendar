@@ -27,6 +27,7 @@ class SchedulingTemplateTest extends TestCase
             'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",
         ]), ['strict_variables' => true]);
         $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+        $twig->addFilter(new TwigFilter('time', static fn ($date) => (new \DateTimeImmutable($date))->format('H:i')));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
         $view = new class {
             public function getIsDeltaRegistrationActive(): bool
@@ -39,6 +40,7 @@ class SchedulingTemplateTest extends TestCase
             $output = $twig->render('schedule', [
                 'view' => $view,
                 'scheduleView' => $scheduleView,
+                'bookingTimeFormat' => 'short',
                 'calendar' => ['schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15]],
                 'calendarId' => 7,
                 'calendars' => [['id' => 7, 'name' => 'Meeting room']],

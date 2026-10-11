@@ -3,6 +3,7 @@
 {% set title = (booking.id ? 'Edit Booking' : 'New Booking')|t('calendar') %}
 {% set selectedSubnavItem = 'bookings' %}
 {% set fullPageForm = true %}
+{% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
 {% block actionButton %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
 {% block content %}
 {{ actionInput('calendar/bookings/save') }}{{ csrfInput() }}{{ redirectInput('calendar/bookings') }}
@@ -12,7 +13,6 @@
 <div class="booking-calendar-control">
 {% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
 {{ forms.selectField({label: 'Calendar'|t('calendar'), name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
-{% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
 <p class="light" id="booking-timezone">{{ 'Times use {timezone}.'|t('calendar', {timezone}) }}</p>
 </div>
 <div class="booking-date-control">
@@ -48,7 +48,7 @@ const bookingSlotsMessage = document.getElementById('booking-slots-message');
 const bookingSlotsRetry = document.getElementById('booking-slots-retry');
 const bookingStart = document.querySelector('[name="startDate"]');
 const bookingEnd = document.querySelector('[name="endDate"]');
-const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingStart.value, end: bookingEnd.value};
+const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingStart.value, end: bookingEnd.value, label: {{ (booking.startDate and booking.endDate ? (booking.startDate|time(bookingTimeFormat, timezone) ~ '–' ~ booking.endDate|time(bookingTimeFormat, timezone)) : '')|json_encode|raw }}};
 let bookingSlotsRequest = 0;
 let bookingSlotsLoading = false;
 function chooseBookingSlot(slot, button) {
@@ -82,7 +82,7 @@ async function loadBookingSlots() {
         const original = originalBookingTime.calendarId === bookingCalendar.value && originalBookingTime.start.slice(0, 10) === bookingDate.value ? originalBookingTime : null;
         {% if booking.id %}
         if (original && !slots.some(slot => Date.parse(slot.start) === Date.parse(original.start))) {
-            slots.unshift({start: original.start, end: original.end, label: Craft.t('calendar', 'Current booking time: {time}', {time: original.start.slice(11, 16) + '–' + original.end.slice(11, 16)})});
+            slots.unshift({start: original.start, end: original.end, label: Craft.t('calendar', 'Current booking time: {time}', {time: original.label})});
         }
         {% endif %}
         bookingSlotsMessage.textContent = slots.length ? Craft.t('calendar', 'Choose an available time.') : Craft.t('calendar', 'No times are available on this date.');
@@ -106,6 +106,13 @@ async function loadBookingSlots() {
     }
 }
 bookingCalendar.addEventListener('change', loadBookingSlots);
+bookingDate.addEventListener('click', event => {
+    if (typeof bookingDate.showPicker !== 'function') return;
+    try {
+        bookingDate.showPicker();
+        event.preventDefault();
+    } catch (_) { /* Keep the browser's normal date input behavior when unavailable. */ }
+});
 bookingDate.addEventListener('change', loadBookingSlots);
 bookingSlotsRetry.addEventListener('click', loadBookingSlots);
 bookingDate.form.addEventListener('submit', event => {
@@ -129,7 +136,7 @@ loadBookingSlots();
 .booking-picker-controls input { width:100%; box-sizing:border-box; }
 #booking-timezone { margin:8px 0 0; font-size:12px; line-height:1.5; }
 #booking-slots-message { margin:6px 0 12px; font-size:12px; line-height:1.5; }
-#booking-slots { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; }
+#booking-slots { display:grid; grid-template-columns:repeat(auto-fill, minmax(148px, 1fr)); gap:8px; }
 #booking-slots .booking-slot { min-width:0; width:100%; min-height:34px; padding:7px 10px; box-sizing:border-box; justify-content:center; font-size:12px; font-variant-numeric:tabular-nums; }
 #booking-slots .booking-slot.active { background:var(--enabled-color,#008a5b); color:#fff; }
 #booking-slots .booking-slot:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
@@ -138,6 +145,6 @@ loadBookingSlots();
 .booking-editor hr { margin:26px 0; }
 @media (max-width:600px) {
     .booking-picker-controls, .booking-contact-grid { grid-template-columns:minmax(0, 1fr); gap:18px; }
-    #booking-slots { grid-template-columns:repeat(auto-fill, minmax(108px, 1fr)); }
+    #booking-slots { grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); }
 }
 {% endcss %}

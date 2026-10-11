@@ -8,6 +8,7 @@ use craft\helpers\UrlHelper;
 use Solspace\Calendar\Bundles\ProjectConfig\BookingFieldLayoutProjectConfig;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Models\CalendarModel;
 use yii\web\BadRequestHttpException;
@@ -308,7 +309,7 @@ class BookingsController extends BaseController
                 if ($localStart->format('Y-m-d') === $day->format('Y-m-d')) {
                     $minute = (int) $localStart->format('G') * 60 + (int) $localStart->format('i');
                     $finish = $localEnd->format('Y-m-d') === $day->format('Y-m-d') ? (int) $localEnd->format('G') * 60 + (int) $localEnd->format('i') : 1440;
-                    $dayBookings[] = ['booking' => $booking, 'minute' => $minute, 'length' => max(15, $finish - $minute), 'label' => $localStart->format('H:i').'–'.$localEnd->format('H:i')];
+                    $dayBookings[] = ['booking' => $booking, 'minute' => $minute, 'length' => max(15, $finish - $minute), 'label' => DateFormatHelper::formatTimeRange($localStart, $localEnd, $zone->getName())];
                 }
             }
             $lanes = [];
@@ -337,7 +338,7 @@ class BookingsController extends BaseController
 
     private function variables(): array
     {
-        return ['calendars' => $this->manageableCalendars(), 'statusOptions' => Booking::statusOptions(), 'crumbs' => [['label' => Calendar::getInstance()->name, 'url' => UrlHelper::cpUrl('calendar')], ['label' => Calendar::t('Bookings'), 'url' => UrlHelper::cpUrl('calendar/bookings')]]];
+        return ['calendars' => $this->manageableCalendars(), 'statusOptions' => Booking::statusOptions(), 'bookingTimeFormat' => 'icu:'.DateFormatHelper::get(DateFormatHelper::TYPE_TIME, length: 'short'), 'crumbs' => [['label' => Calendar::getInstance()->name, 'url' => UrlHelper::cpUrl('calendar')], ['label' => Calendar::t('Bookings'), 'url' => UrlHelper::cpUrl('calendar/bookings')]]];
     }
 
     private function manageableCalendars(): array

@@ -13,6 +13,15 @@ class DateFormatHelper
     public const TYPE_TIME = 'time';
     public const TYPE_DATETIME = 'datetime';
 
+    public static function formatTimeRange(\DateTimeInterface $start, \DateTimeInterface $end, string $timezone): string
+    {
+        $formatter = clone \Craft::$app->getFormattingLocale()->getFormatter();
+        $formatter->timeZone = $timezone;
+        $format = self::get(self::TYPE_TIME, Locale::FORMAT_ICU, 'short');
+
+        return $formatter->asTime($start, $format).'–'.$formatter->asTime($end, $format);
+    }
+
     public static function get(
         string $type = self::TYPE_DATE,
         string $format = Locale::FORMAT_ICU,
