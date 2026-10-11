@@ -56,6 +56,7 @@ class SchedulingTemplateTest extends TestCase
             '_includes/forms' => <<<'TWIG'
                 {% macro selectize(config) %}<select id="{{ config.id }}">{% for option in config.options %}<option value="{{ option.value }}"{% if option.value == config.value %} selected{% endif %}>{{ option.label }}</option>{% endfor %}</select>{% endmacro %}
                 {% macro text(config) %}<input type="{{ config.type }}" value="{{ config.value }}">{% endmacro %}
+                {% macro checkbox(config) %}<input id="{{ config.id }}" type="checkbox"{% if config.checked %} checked{% endif %}{% for name, value in config.inputAttributes.data %} data-{{ name }}="{{ value }}"{% endfor %}><label for="{{ config.id }}">{{ config.label }}</label>{% endmacro %}
                 TWIG,
             'calendar/bookings/_schedule-js' => file_get_contents($root.'bookings/_schedule-js.twig'),
             'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
@@ -96,6 +97,7 @@ class SchedulingTemplateTest extends TestCase
                     'previous' => '2026-10-05',
                     'next' => '2026-10-19',
                     'currentUser' => ['admin' => false, 'id' => 7],
+                    'craft' => ['calendar' => ['bookingLabel' => 'Bookings']],
                 ]);
 
                 self::assertStringContainsString('delta-active', $output);

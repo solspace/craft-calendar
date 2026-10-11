@@ -36,6 +36,7 @@
 
 ### Changed
 - Arranged scheduling availability, booking rules, and booking requests in responsive columns, including Booking Defaults settings.
+- Refined the booking schedule calendar picker with native Craft checkbox and color controls, aligned rows, and full-row hover targets.
 - Set fresh-install booking defaults to 60-minute bookings and start increments, no gap, 24 hours’ notice, and a 60-day booking window, with overlaps disabled.
 - Renamed Overview to Events and the element listing to Event List throughout control-panel navigation, page titles, breadcrumbs, and settings.
 - Matched booking row selection and the footer action menu to native Craft element lists.
