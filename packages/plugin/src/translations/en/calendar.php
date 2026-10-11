@@ -916,6 +916,7 @@ return [
     'Available times' => 'Available times',
     'Block time' => 'Block time',
     'Book a time' => 'Book a time',
+    'Book a Time' => 'Book a Time',
     'Booking' => 'Booking',
     'Booking Duration' => 'Booking Duration',
     'Booking Fields' => 'Booking Fields',
