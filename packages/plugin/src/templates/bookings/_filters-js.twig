@@ -14,6 +14,7 @@
     let writesInProgress = 0;
     let pendingUrl;
     let retrySelection;
+    let actionsMenu;
 
     function filterUrl() {
         const url = new URL(location.href);
@@ -50,10 +51,12 @@
                 if (current !== revision) return;
                 await Craft.appendHeadHtml(response.data.headHtml || '');
                 if (current !== revision) return;
+                destroyActionsMenu();
                 results.querySelectorAll('select').forEach(select => select.selectize?.destroy());
                 results.innerHTML = response.data.html;
                 await Craft.appendBodyHtml(response.data.bodyHtml || '');
                 Craft.initUiElements(results);
+                initActionsMenu();
                 if (retrySelection?.url === url.href) {
                     results.querySelectorAll('[data-booking-select]').forEach(checkbox => {
                         checkbox.checked = retrySelection.ids.includes(checkbox.value);
@@ -88,13 +91,13 @@
             all.checked = count > 0 && count === checkboxes.length;
             all.indeterminate = count > 0 && count < checkboxes.length;
         }
-        checkboxes.forEach(checkbox => checkbox.closest('tr').classList.toggle('booking-selected', checkbox.checked));
+        checkboxes.forEach(checkbox => checkbox.closest('tr').classList.toggle('sel', checkbox.checked));
         const toolbar = results.querySelector('.booking-bulk-actions');
         toolbar?.classList.toggle('hidden', count === 0);
         const label = results.querySelector('[data-booking-selection-count]');
         if (label) label.textContent = Craft.t('calendar', {{ '{count, plural, =1{1 booking selected} other{# bookings selected}}'|json_encode|raw }}, {count});
-        const action = results.querySelector('[data-booking-bulk-action]');
-        if (action) action.disabled = !count || writesInProgress > 0;
+        const trigger = results.querySelector('[data-booking-actions-trigger]');
+        if (trigger) trigger.disabled = !count || writesInProgress > 0;
     }
 
     results.addEventListener('change', event => {
@@ -103,14 +106,32 @@
         } else if (!event.target.matches('[data-booking-select]')) return;
         updateSelection();
     });
-    results.addEventListener('click', event => {
-        if (!event.target.closest('[data-booking-deselect]')) return;
-        results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = false; });
-        updateSelection();
-    });
-    results.addEventListener('click', async event => {
-        const button = event.target.closest('[data-booking-bulk-action]');
-        if (!button || button.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
+    function destroyActionsMenu() {
+        if (!actionsMenu) return;
+        const container = actionsMenu.menu.$container;
+        actionsMenu.destroy();
+        container.remove();
+        actionsMenu = null;
+    }
+
+    function initActionsMenu() {
+        const trigger = results.querySelector('[data-booking-actions-trigger]');
+        if (!trigger) return;
+        actionsMenu = $(trigger).data('menubtn') || new Garnish.MenuBtn(trigger);
+        actionsMenu.on('optionSelect', event => {
+            if (trigger.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
+            const option = event.option;
+            if (option.hasAttribute('data-booking-deselect')) {
+                results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = false; });
+                updateSelection();
+            } else if (option.hasAttribute('data-booking-bulk-action')) {
+                changeSelectedBookings(option, trigger);
+            }
+        });
+    }
+
+    async function changeSelectedBookings(button, trigger) {
+        if (trigger.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
         const ids = selectedBookings().map(checkbox => checkbox.value);
         if (!ids.length) return;
         const action = button.dataset.bookingBulkAction;
@@ -120,7 +141,7 @@
         updateSelection();
         let submitted = false;
         try {
-            if (action === 'delete' && !await confirmBookingDeletion(null, button, ids.length)) return;
+            if (action === 'delete' && !await confirmBookingDeletion(null, trigger, ids.length)) return;
             submitted = true;
             retrySelection = {url: selectionUrl, ids};
             const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action + '-selected', {data: {bookingIds: ids}});
@@ -142,7 +163,8 @@
             if (submitted && !pendingUrl) pendingUrl = filterUrl();
             if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
         }
-    });
+    }
+    initActionsMenu();
     updateSelection();
 
     // Selectize detaches and reinserts its selects, clearing directly bound jQuery handlers.

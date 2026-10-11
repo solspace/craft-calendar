@@ -3,15 +3,11 @@
 {% set rowStatusOptions = [] %}
 {% for value, label in statusOptions %}{% set rowStatusOptions = rowStatusOptions|merge([{value, label, data: {status: statusColors[value]}}]) %}{% endfor %}
 {% if trashed %}<p class="light booking-trash-note">{{ 'Trashed bookings do not reserve time. They can be restored until Craft permanently deletes them.'|t('calendar') }}</p>{% endif %}
-<div class="booking-bulk-actions hidden" role="group" aria-label="{{ 'Selected bookings'|t('calendar') }}">
-    <span data-booking-selection-count role="status" aria-live="polite"></span>
-    <button type="button" class="btn small{{ trashed ? '' : ' delete' }}" data-booking-bulk-action="{{ trashed ? 'restore' : 'delete' }}">{{ trashed ? 'Restore'|t('app') : 'Move to Trash'|t('calendar') }}</button>
-    <button type="button" class="btn small" data-booking-deselect>{{ 'Deselect all'|t('app') }}</button>
-</div>
+<div class="booking-list-pane">
 <div class="booking-table-scroll">
-    <table class="data fullwidth booking-table">
+    <table class="data fullwidth big booking-table">
         <thead><tr>
-            <th scope="col" class="booking-selection-cell">{{ forms.checkbox({id: 'booking-select-all', disabled: bookings is empty, inputAttributes: {data: {'booking-select-all': true}, aria: {label: 'Select all bookings on this page'|t('calendar')}}}) }}</th>
+            <th scope="col" class="checkbox-cell">{{ forms.checkbox({id: 'booking-select-all', disabled: bookings is empty, inputAttributes: {data: {'booking-select-all': true}, aria: {label: 'Select all bookings on this page'|t('calendar')}}}) }}</th>
             {% for field, label in {customer: 'Customer', calendar: 'Calendar', date: 'Booking Time', submitted: 'Submitted', updated: 'Last Updated', status: 'Status'} %}
                 {% set active = sort starts with field ~ '-' %}
                 {% set ascending = sort == field ~ '-asc' %}
@@ -29,7 +25,7 @@
             {% set calendar = calendars[booking.calendarId] %}
             {% set timezone = calendar.schedulingSettings.timezone %}
             <tr data-booking-row="{{ booking.id }}">
-                <td class="booking-selection-cell">{{ forms.checkbox({id: 'booking-select-' ~ booking.id, value: booking.id, inputAttributes: {data: {'booking-select': true}, aria: {label: 'Select booking for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}</td>
+                <td class="checkbox-cell">{{ forms.checkbox({id: 'booking-select-' ~ booking.id, value: booking.id, inputAttributes: {data: {'booking-select': true}, aria: {label: 'Select booking for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}</td>
                 <td class="booking-customer">{% if trashed %}<strong>{{ booking.customerName }}</strong>{% else %}<a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a>{% endif %}<div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
                 <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
                 <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
@@ -59,12 +55,25 @@
         </tbody>
     </table>
 </div>
-<div class="booking-footer">
-    <span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
-    <div class="buttons">
-        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
-        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
+<div class="booking-footer footer">
+    <div class="booking-footer-count flex pagination">
+        <nav class="flex flex-nowrap" aria-label="{{ '{element} pagination'|t('app', {element: 'Bookings'|t('calendar')}) }}">
+            {% if page > 1 %}<a class="page-link prev-page" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page - 1}) }}" title="{{ 'Previous Page'|t('app') }}" aria-label="{{ 'Previous Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link prev-page disabled" disabled aria-label="{{ 'Previous Page'|t('app') }}"></button>{% endif %}
+            {% if page * 50 < total %}<a class="page-link next-page" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page + 1}) }}" title="{{ 'Next Page'|t('app') }}" aria-label="{{ 'Next Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link next-page disabled" disabled aria-label="{{ 'Next Page'|t('app') }}"></button>{% endif %}
+        </nav>
+        <span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
+        <span class="visually-hidden" data-booking-selection-count role="status" aria-live="polite"></span>
     </div>
+    <div class="booking-bulk-actions hidden" role="group" aria-label="{{ 'Selected bookings'|t('calendar') }}">
+        <button type="button" class="btn secondary menubtn" data-booking-actions-trigger data-icon="settings" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
+        <div class="menu">
+            <ul>
+                <li><a{{ trashed ? '' : ' class="error"' }} data-booking-bulk-action="{{ trashed ? 'restore' : 'delete' }}">{{ trashed ? 'Restore'|t('app') : 'Move to Trash'|t('calendar') }}</a></li>
+                <li><a data-booking-deselect>{{ 'Deselect all'|t('app') }}</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
 </div>
 {% js %}
 (() => {
