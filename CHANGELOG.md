@@ -3,9 +3,10 @@
 ## 6.0.0 - Unreleased
 
 ### Added
-- Added a General setting for the default booking Schedule layout, with Combined selected for fresh installs and By Calendar available.
+- Added a Bookings settings page for the booking label, default subpage, and default Schedule layout.
+- Added a setting for the default booking Schedule layout, with Combined selected for fresh installs and By Calendar available.
 - Added per-audience From Email, From Name, Reply-To Email, CC, and BCC settings for booking notifications.
-- Added a General setting to open either the Bookings list or Schedule from the Bookings navigation item.
+- Added a setting to open either the Bookings list or Schedule from the Bookings navigation item.
 - Added an All Calendars checkbox picker to the Bookings list, with multiple calendar selections preserved through sorting and pagination.
 - Added separate Admin and Requester booking notification templates with editable Twig subjects, HTML email bodies, and sample previews.
 - Added an All Calendars checkbox picker to booking schedules, with separate resource columns and availability shading in Day and Week views.

@@ -95,6 +95,11 @@ class SettingsController extends BaseController
         return $this->provideTemplate('field_layout');
     }
 
+    public function actionBookings(): Response
+    {
+        return $this->provideTemplate('bookings', ['label' => 'Bookings']);
+    }
+
     /**
      * Renders the Booking Defaults settings page template.
      */
