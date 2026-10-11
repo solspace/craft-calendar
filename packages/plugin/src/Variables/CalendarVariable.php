@@ -19,6 +19,7 @@ use Solspace\Calendar\Library\Exceptions\AttributeException;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
+use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
@@ -88,13 +89,26 @@ class CalendarVariable
             return new Markup('', 'UTF-8');
         }
         $booking = $options['booking'] ?? new Booking();
+        $settings = $model->getSchedulingSettings();
+        $today = new \DateTimeImmutable('now', new \DateTimeZone($settings->timezone));
+        $minDate = $today->format('Y-m-d');
+        $maxDate = $today->modify('+'.$settings->maximumAdvance.' days')->format('Y-m-d');
+        $date = $options['date'] ?? $booking->startDate?->setTimezone($today->getTimezone())->format('Y-m-d') ?? $minDate;
+        if (!\is_string($date) || !Availability::validDate($date) || $date < $minDate || $date > $maxDate) {
+            $date = $minDate;
+        }
+        $framework = $options['framework'] ?? 'default';
+        $theme = $options['theme'] ?? 'auto';
+        if (!\in_array($framework, ['default', 'bootstrap', 'tailwind'], true) || !\in_array($theme, ['auto', 'light', 'dark'], true)) {
+            throw new \InvalidArgumentException('Choose a supported booking form framework (default, bootstrap, tailwind) and theme (auto, light, dark).');
+        }
         $html = \Craft::$app->view->renderTemplate('calendar/bookings/_form', [
-            'calendar' => $model, 'settings' => $model->getSchedulingSettings(),
+            'calendar' => $model, 'settings' => $settings,
             'formId' => 'calendar-booking-'.StringHelper::randomString(12),
-            'booking' => $options['booking'] ?? new Booking(),
+            'booking' => $booking,
             'publicFields' => $service->getPublicFormFields($booking),
-            'minDate' => (new \DateTimeImmutable('now', new \DateTimeZone($model->getSchedulingSettings()->timezone)))->format('Y-m-d'),
-            'maxDate' => (new \DateTimeImmutable('now', new \DateTimeZone($model->getSchedulingSettings()->timezone)))->modify('+'.$model->getSchedulingSettings()->maximumAdvance.' days')->format('Y-m-d'),
+            'minDate' => $minDate, 'maxDate' => $maxDate, 'date' => $date,
+            'framework' => $framework, 'theme' => $theme,
         ], View::TEMPLATE_MODE_CP);
 
         return new Markup($html, 'UTF-8');

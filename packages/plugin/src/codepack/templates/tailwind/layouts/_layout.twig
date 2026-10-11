@@ -10,7 +10,7 @@
     <script src="{{ siteUrl }}assets/demo/js/theme.js?v=2"></script>
     <script src="{{ siteUrl }}assets/demo/js/framework.js"></script>
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css?v=19">
+    <link rel="stylesheet" href="{{ siteUrl }}assets/demo/css/tailwind.css?v=20">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ siteUrl }}assets/demo/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/x-icon" href="{{ siteUrl }}assets/demo/favicon/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ siteUrl }}assets/demo/favicon/favicon-32x32.png">
@@ -61,6 +61,9 @@
                 </li>
                 <li>
                     <a class="demo-nav-link px-2 rounded-md{{ page == 'calendars' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/calendars"{% if page == 'calendars' %} aria-current="page"{% endif %}>Calendars</a>
+                </li>
+                <li>
+                    <a class="demo-nav-link px-2 rounded-md{{ page == 'bookings' ? ' active bg-white/10' }}" href="{{ siteUrl }}demo/bookings"{% if page == 'bookings' %} aria-current="page"{% endif %}>{{ 'Book a time'|t('calendar') }}</a>
                 </li>
                 <li class="hidden xl:flex items-center px-2" aria-hidden="true"><span class="h-5 border-l border-neutral-600"></span></li>
                 <li>

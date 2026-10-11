@@ -36,6 +36,24 @@ Enable Allow Guest Booking Requests on the scheduling calendar. Guest access is 
 {{ craft.calendar.bookingForm('meetingRoom') }}
 ```
 
+The helper includes a responsive date/time picker, contact details, any configured public Booking Fields, validation messages, and a confirmation or request receipt. It loads available times for today automatically, keeps contact details after an error, and refreshes availability if someone else reserves the selected time. Each form has its own controls and scripts, so several forms can appear on one page.
+
+Use a calendar handle or ID. The default style works without a CSS framework. Bootstrap and Tailwind options use their form classes alongside scoped booking styles:
+
+```twig
+{{ craft.calendar.bookingForm('meetingRoom', {
+    framework: 'bootstrap',
+    theme: 'auto',
+    date: '2026-10-12'
+}) }}
+
+{{ craft.calendar.bookingForm('consultations', {framework: 'tailwind', theme: 'dark'}) }}
+```
+
+`framework` accepts `default`, `bootstrap`, or `tailwind`. `theme` accepts `auto`, `light`, or `dark`. Auto inherits an ancestor's `data-bs-theme` setting or Tailwind's `.dark` class, and otherwise follows the visitor's system appearance. An optional `date` starts the picker on that day; dates outside the calendar's advance window fall back to today. An optional `booking` restores submitted contact and custom field values. Unavailable or private calendars return an empty string. All form styles are scoped to `.calendar-booking-form`; override the `--booking-*` CSS variables to match your own site. The built-in JavaScript uses native browser APIs and does not require Bootstrap JavaScript or Tailwind.
+
+Successful submissions dispatch a bubbling `calendar:booking-success` browser event on the form. `event.detail.confirmed` indicates whether the booking was confirmed immediately or received for review. A received request does not reserve the time.
+
 For custom interfaces:
 
 ```twig
@@ -45,7 +63,9 @@ For custom interfaces:
 
 Each slot has `start`, `end` (ISO 8601 with timezone offsets) and a display `label`. Submit a CSRF-protected POST to `calendar/bookings/request` with `calendarId`, `start`, `customerName`, `customerEmail`, optional `notes`, and selected custom values under `fields`. Clients cannot set status, duration, or private field values. JSON responses distinguish a received request from confirmation. The included form requires JavaScript, retains input after errors, and uses a honeypot and per-IP submission throttle.
 
-The demo installer includes `bookings.twig`. Customer and optional staff notifications use Craft's mail settings and queue. Run the queue normally to deliver them. Notification failure does not release a confirmed booking.
+The demo installer includes a **Book a time** page in both Bootstrap and Tailwind navigation, with a resource chooser and the reusable booking form. Its URL is `<demo-prefix>/bookings`; the existing framework and Light/Dark/Auto controls apply to this page too. Updating Calendar does not overwrite installed demos: reinstall the codepack to a temporary prefix and merge the new `bookings.twig`, both framework booking pages/layouts, and updated Tailwind CSS. Enable **Allow Guest Booking Requests** and the appropriate site on a Scheduling calendar to list it publicly.
+
+Customer and optional staff notifications use Craft's mail settings and queue. Run the queue normally to deliver them. Notification failure does not release a confirmed booking.
 
 If a notification job fails, check its error in Queue Manager. Transport failures include the underlying mail error when Craft exposes it. Test delivery from **Settings → Email** and check `storage/logs` for further details. Local development requires a working mail transport, such as a running local mail catcher or configured SMTP service. After correcting the mail configuration, retry the failed jobs; restart long-running workers after updating Calendar's code.
 
