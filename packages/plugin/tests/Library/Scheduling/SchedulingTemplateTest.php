@@ -24,6 +24,7 @@ class SchedulingTemplateTest extends TestCase
         );
         $twig = new Environment(new ArrayLoader([
             'schedule' => $source,
+            'calendar/bookings/_schedule-js' => file_get_contents($root.'bookings/_schedule-js.twig'),
             'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
             'calendar/layouts/_bookings' => file_get_contents($root.'layouts/_bookings.twig'),
             'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block sidebar %}{% endblock %}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",
@@ -49,11 +50,11 @@ class SchedulingTemplateTest extends TestCase
                 'calendar' => ['schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15]],
                 'calendarId' => 7,
                 'calendars' => [['id' => 7, 'name' => 'Meeting room']],
-                'days' => [['date' => new \DateTimeImmutable('2026-10-12'), 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am']]]]],
+                'days' => [['date' => new \DateTimeImmutable('2026-10-12'), 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]]],
                 'date' => '2026-10-12',
                 'previous' => '2026-10-05',
                 'next' => '2026-10-19',
-                'currentUser' => ['admin' => false],
+                'currentUser' => ['admin' => false, 'id' => 7],
             ]);
 
             self::assertStringContainsString('delta-active', $output);
@@ -61,9 +62,12 @@ class SchedulingTemplateTest extends TestCase
             self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-05', $output);
             self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-19', $output);
             self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
-            self::assertStringContainsString('top:384px;height:12px;', $output);
+            self::assertStringContainsString('top:384px;--slot-height:24px;height:12px;', $output);
             self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
             self::assertStringNotContainsString('start=2026-10-12T07', $output);
+            self::assertStringContainsString('data-booking-history="undo" disabled', $output);
+            self::assertStringContainsString('data-booking-history="redo" disabled', $output);
+            self::assertStringContainsString('M37 1 1 30l36 29V41', $output);
         }
     }
 

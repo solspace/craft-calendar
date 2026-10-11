@@ -1,0 +1,112 @@
+const bookingGridScroll = document.querySelector('.booking-grid-scroll');
+bookingGridScroll.scrollTop = 7 * 48;
+const bookingHistoryButtons = document.querySelectorAll('[data-booking-history]');
+const bookingHistoryKey = 'calendar-booking-history:{{ currentUser.id }}:{{ calendarId }}:' + {{ cpUrl('calendar/bookings/schedule')|json_encode|raw }};
+let bookingPast = [];
+let bookingFuture = [];
+let bookingBusy = false;
+let draggedBooking = null;
+try {
+    const stored = JSON.parse(sessionStorage.getItem(bookingHistoryKey));
+    if (stored && stored.expires > Date.now() && Array.isArray(stored.past) && Array.isArray(stored.future)) {
+        bookingPast = stored.past.filter(token => typeof token === 'string').slice(-50);
+        bookingFuture = stored.future.filter(token => typeof token === 'string').slice(-50);
+    }
+} catch (_) { /* History remains available in memory when storage is unavailable. */ }
+function updateBookingHistory() {
+    bookingHistoryButtons.forEach(button => {
+        button.disabled = bookingBusy || !(button.dataset.bookingHistory === 'undo' ? bookingPast.length : bookingFuture.length);
+    });
+    bookingGridScroll.querySelectorAll('.booking-block').forEach(block => block.draggable = !bookingBusy);
+}
+function retainBookingHistory() {
+    try {
+        sessionStorage.setItem(bookingHistoryKey, JSON.stringify({past: bookingPast, future: bookingFuture, expires: Date.now() + 7200000}));
+    } catch (_) { /* Keep the current page's history even without session storage. */ }
+    updateBookingHistory();
+}
+async function refreshBookingSchedule() {
+    try {
+        const response = await fetch(location.href, {credentials: 'same-origin', cache: 'no-store'});
+        if (!response.ok) throw new Error();
+        const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const grid = doc.querySelector('.booking-grid');
+        if (!grid) throw new Error();
+        bookingGridScroll.replaceChildren(document.importNode(grid, true));
+    } catch (_) {
+        Craft.cp.displayError(Craft.t('calendar', 'The booking was saved, but the schedule could not refresh. Reload this page.'));
+    }
+}
+async function replayBookingHistory(direction) {
+    if (bookingBusy) return;
+    const entries = direction === 'undo' ? bookingPast : bookingFuture;
+    const token = entries.at(-1);
+    if (!token) return;
+    bookingBusy = true;
+    updateBookingHistory();
+    try {
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/history', {data: {token, direction}});
+        if (!response.data.success) {
+            Craft.cp.displayError(response.data.message);
+            return;
+        }
+        entries.pop();
+        (direction === 'undo' ? bookingFuture : bookingPast).push(token);
+        retainBookingHistory();
+        await refreshBookingSchedule();
+    } catch (_) {
+        Craft.cp.displayError(Craft.t('calendar', 'Could not restore the booking change.'));
+    } finally {
+        bookingBusy = false;
+        updateBookingHistory();
+    }
+}
+bookingHistoryButtons.forEach(button => button.addEventListener('click', () => replayBookingHistory(button.dataset.bookingHistory)));
+bookingGridScroll.addEventListener('dragstart', event => {
+    const block = event.target.closest('.booking-block');
+    if (!block || bookingBusy) { event.preventDefault(); return; }
+    draggedBooking = block.dataset.bookingId;
+    event.dataTransfer.setData('text/plain', draggedBooking);
+});
+bookingGridScroll.addEventListener('dragover', event => {
+    if (draggedBooking && !bookingBusy && event.target.closest('.booking-day-body')) event.preventDefault();
+});
+bookingGridScroll.addEventListener('drop', async event => {
+    const day = event.target.closest('.booking-day-body');
+    if (!day || !draggedBooking || bookingBusy) return;
+    event.preventDefault();
+    const bookingId = draggedBooking;
+    draggedBooking = null;
+    const minute = Math.max(0, Math.min(1439, Math.round((event.clientY - day.getBoundingClientRect().top) / 48 * 60)));
+    const increment = {{ calendar.schedulingSettings.increment }};
+    const snapped = Math.floor(minute / increment) * increment;
+    bookingBusy = true;
+    updateBookingHistory();
+    try {
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/move', {data: {bookingId, date: day.dataset.date, minute: snapped}});
+        if (!response.data.success) { Craft.cp.displayError(response.data.message); return; }
+        if (typeof response.data.historyToken === 'string') {
+            bookingPast = [...bookingPast, response.data.historyToken].slice(-50);
+            bookingFuture = [];
+            retainBookingHistory();
+        }
+        await refreshBookingSchedule();
+    } catch (_) {
+        Craft.cp.displayError(Craft.t('calendar', 'Could not move booking.'));
+    } finally {
+        bookingBusy = false;
+        updateBookingHistory();
+    }
+});
+document.addEventListener('dragend', () => draggedBooking = null);
+document.addEventListener('keydown', event => {
+    if (bookingBusy || event.defaultPrevented || event.altKey || !(event.metaKey || event.ctrlKey)) return;
+    if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]:not([contenteditable=false]), [role=textbox]')) return;
+    if (document.querySelector('.modal:not(.hidden), .cp-screen-slideout:not(.hidden)')) return;
+    const key = event.key.toLowerCase();
+    const direction = key === 'z' ? (event.shiftKey ? 'redo' : 'undo') : (key === 'y' && event.ctrlKey ? 'redo' : null);
+    if (!direction || !(direction === 'undo' ? bookingPast.length : bookingFuture.length)) return;
+    event.preventDefault();
+    replayBookingHistory(direction);
+});
+updateBookingHistory();

@@ -1028,4 +1028,9 @@ return [
     'Booking status saved.' => 'Booking status saved.',
     'Could not save booking status.' => 'Could not save booking status.',
     '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 booking} other{# bookings}}',
+    'Booking history' => 'Booking history',
+    'This booking has changed since your last action. Reload the schedule to continue.' => 'This booking has changed since your last action. Reload the schedule to continue.',
+    'Could not retain the booking change for Undo.' => 'Could not retain the booking change for Undo.',
+    'Could not restore the booking change.' => 'Could not restore the booking change.',
+    'The booking was saved, but the schedule could not refresh. Reload this page.' => 'The booking was saved, but the schedule could not refresh. Reload this page.',
 ];

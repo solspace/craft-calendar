@@ -24,6 +24,7 @@
     <p class="light" id="booking-slots-message" role="status" aria-live="polite"></p>
     <button type="button" class="btn" id="booking-slots-retry" hidden>{{ 'Try again'|t('calendar') }}</button>
     <div id="booking-slots" role="group" aria-labelledby="booking-slots-label"></div>
+    <p class="light booking-confirmation-note">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
     {{ forms.errorList(booking.getErrors('startDate')) }}
     {{ forms.errorList(booking.getErrors('endDate')) }}
 </div>
@@ -144,11 +145,17 @@ loadBookingSlots();
 .booking-status-card.confirmed { --status-color:var(--enabled-color,#008a5b); --status-background:#eaf8f1; --status-border:#70bf9a; }
 .booking-status-card.declined { --status-color:var(--error-color,#cf1124); --status-background:#fff0f1; --status-border:#e6939b; }
 .booking-status-card.cancelled { --status-color:#5c697a; --status-background:#f0f3f7; --status-border:#a8b2c0; }
-.booking-status-header { display:flex; align-items:center; gap:10px; padding:14px 18px; background:var(--status-color); color:#fff; }
-.booking-status-header strong { font-size:18px; line-height:1.4; }
-.booking-status-icon { display:flex; align-items:center; justify-content:center; width:28px; height:28px; flex-shrink:0; border:2px solid currentColor; border-radius:50%; font-size:21px; font-weight:700; line-height:1; }
-.booking-status-body { padding:16px 18px; }
+.booking-status-header { display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--status-color); color:#fff; }
+.booking-status-header strong { font-size:14px; font-weight:600; line-height:1.4; }
+.booking-status-icon { display:flex; align-items:center; justify-content:center; width:20px; height:20px; flex-shrink:0; border:1.5px solid currentColor; border-radius:50%; font-size:16px; font-weight:600; line-height:1; }
+.booking-status-body { padding:14px 16px; }
+.booking-status-body .field { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0; }
+.booking-status-body .field > .heading { margin:0; }
+.booking-status-body .heading label { font-weight:500; }
+.booking-status-body .field > .input { flex:0 0 auto; width:auto; margin:0; }
+.booking-status-body .field > .errors:not(.input) { flex-basis:100%; }
 .booking-status-body .booking-status-meta { padding-top:10px; margin-top:12px; border-top:1px solid var(--status-border); color:var(--text-color,#3f4d5c); }
+.booking-confirmation-note { margin:10px 0 0; font-size:12px; line-height:1.5; }
 .booking-picker-controls, .booking-contact-grid { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; }
 .booking-picker-controls { margin-bottom:24px; max-width:720px; }
 .booking-picker-controls .field { margin-bottom:0; }

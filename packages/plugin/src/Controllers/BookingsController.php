@@ -10,6 +10,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
+use Solspace\Calendar\Library\Scheduling\BookingHistory;
 use Solspace\Calendar\Models\CalendarModel;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -178,11 +179,26 @@ class BookingsController extends BaseController
         if ($start->format('Y-m-d H:i') !== $value) {
             throw new BadRequestHttpException();
         }
-        $duration = $booking->endDate->getTimestamp() - $booking->startDate->getTimestamp();
-        $booking->startDate = $start;
-        $booking->endDate = $start->setTimestamp($start->getTimestamp() + $duration);
-        if (!Calendar::getInstance()->bookings->save($booking)) {
-            return $this->asJson(['success' => false, 'message' => implode(' ', $booking->getErrorSummary(true))]);
+
+        try {
+            $token = (new BookingHistory(Calendar::getInstance()->bookings))->move((int) $booking->id, $start);
+        } catch (\RuntimeException $exception) {
+            return $this->asJson(['success' => false, 'message' => $exception->getMessage()]);
+        }
+
+        return $this->asJson(['success' => true, 'historyToken' => $token]);
+    }
+
+    public function actionHistory(): Response
+    {
+        $this->requireCpRequest();
+        $this->requirePostRequest();
+        $request = \Craft::$app->request;
+
+        try {
+            (new BookingHistory(Calendar::getInstance()->bookings))->replay((string) $request->getRequiredBodyParam('token'), (string) $request->getRequiredBodyParam('direction'));
+        } catch (\RuntimeException $exception) {
+            return $this->asJson(['success' => false, 'message' => $exception->getMessage()]);
         }
 
         return $this->asJson(['success' => true]);
@@ -355,6 +371,9 @@ class BookingsController extends BaseController
                 $localStart = (new \DateTimeImmutable($slot['start']))->setTimezone($zone);
                 $minute = (int) $localStart->format('G') * 60 + (int) $localStart->format('i');
                 // Repeated times during the autumn DST transition remain separate links.
+                $localEnd = (new \DateTimeImmutable($slot['end']))->setTimezone($zone);
+                $finish = $localEnd->format('Y-m-d') === $day->format('Y-m-d') ? (int) $localEnd->format('G') * 60 + (int) $localEnd->format('i') : 1440;
+                $slot['length'] = min(1440 - $minute, $finish > $minute ? $finish - $minute : $calendar->getSchedulingSettings()->duration);
                 $slotGroups[$minute][] = $slot;
             }
             $days[] = ['date' => $day, 'bookings' => $dayBookings, 'lanes' => max(1, \count($lanes)), 'slots' => $slotGroups];

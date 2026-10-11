@@ -906,4 +906,9 @@ return [
     'Booking status saved.' => 'Boekingsstatus opgeslagen.',
     'Could not save booking status.' => 'De boekingsstatus kon niet worden opgeslagen.',
     '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 boeking} other{# boekingen}}',
+    'Booking history' => 'Boekingsgeschiedenis',
+    'This booking has changed since your last action. Reload the schedule to continue.' => 'Deze boeking is gewijzigd sinds je laatste actie. Herlaad het schema om door te gaan.',
+    'Could not retain the booking change for Undo.' => 'De boekingswijziging kon niet worden bewaard om ongedaan te maken.',
+    'Could not restore the booking change.' => 'De boekingswijziging kon niet worden hersteld.',
+    'The booking was saved, but the schedule could not refresh. Reload this page.' => 'De boeking is opgeslagen, maar het schema kon niet worden vernieuwd. Herlaad deze pagina.',
 ];

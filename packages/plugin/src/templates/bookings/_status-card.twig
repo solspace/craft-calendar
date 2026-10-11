@@ -6,7 +6,7 @@
         <strong id="booking-status-heading" aria-live="polite">{{ statusOptions[booking.bookingStatus] ?? 'Requested'|t('calendar') }}</strong>
     </div>
     <div class="booking-status-body">
-        {{ forms.selectField({label: 'Booking Status'|t('calendar'), instructions: 'Requested times are reserved only after confirmation.'|t('calendar'), name: 'bookingStatus', id: 'booking-status', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
+        {{ forms.selectField({label: 'Booking Status'|t('calendar'), name: 'bookingStatus', id: 'booking-status', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
         {% include 'calendar/bookings/_status-meta' %}
     </div>
 </section>

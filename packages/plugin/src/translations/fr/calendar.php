@@ -906,4 +906,9 @@ return [
     'Booking status saved.' => 'Statut de la réservation enregistré.',
     'Could not save booking status.' => 'Impossible d’enregistrer le statut de la réservation.',
     '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 réservation} other{# réservations}}',
+    'Booking history' => 'Historique des réservations',
+    'This booking has changed since your last action. Reload the schedule to continue.' => 'Cette réservation a été modifiée depuis votre dernière action. Rechargez le planning pour continuer.',
+    'Could not retain the booking change for Undo.' => 'La modification de la réservation n’a pas pu être conservée pour l’annulation.',
+    'Could not restore the booking change.' => 'La modification de la réservation n’a pas pu être rétablie.',
+    'The booking was saved, but the schedule could not refresh. Reload this page.' => 'La réservation a été enregistrée, mais le planning n’a pas pu être actualisé. Rechargez cette page.',
 ];

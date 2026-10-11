@@ -906,4 +906,9 @@ return [
     'Booking status saved.' => 'Buchungsstatus gespeichert.',
     'Could not save booking status.' => 'Buchungsstatus konnte nicht gespeichert werden.',
     '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 Buchung} other{# Buchungen}}',
+    'Booking history' => 'Buchungsverlauf',
+    'This booking has changed since your last action. Reload the schedule to continue.' => 'Diese Buchung wurde seit Ihrer letzten Aktion geändert. Laden Sie den Zeitplan neu, um fortzufahren.',
+    'Could not retain the booking change for Undo.' => 'Die Buchungsänderung konnte nicht für das Rückgängigmachen gespeichert werden.',
+    'Could not restore the booking change.' => 'Die Buchungsänderung konnte nicht wiederhergestellt werden.',
+    'The booking was saved, but the schedule could not refresh. Reload this page.' => 'Die Buchung wurde gespeichert, aber der Zeitplan konnte nicht aktualisiert werden. Laden Sie diese Seite neu.',
 ];
