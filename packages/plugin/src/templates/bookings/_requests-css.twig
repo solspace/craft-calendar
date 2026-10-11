@@ -20,3 +20,11 @@
 .request-history { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
 .request-history.hidden { display:none; }
 #request-results[aria-busy="true"] { opacity:.65; pointer-events:none; }
+
+/* Keep positive and destructive moderation actions visually distinct. */
+.booking-confirm-btn { background:var(--link-color,#2563eb); color:#fff; box-shadow:none; }
+.booking-confirm-btn:hover { background:color-mix(in srgb,var(--link-color,#2563eb) 85%,#000); color:#fff; }
+.booking-confirm-btn:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
+.booking-decline-btn { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 5%,#fff); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--error-color,#cf1124) 35%,transparent); }
+.booking-decline-btn:hover { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 10%,#fff); }
+.booking-decline-btn:focus-visible { outline:2px solid var(--error-color,#cf1124); outline-offset:2px; }
