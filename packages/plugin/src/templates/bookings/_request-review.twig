@@ -129,9 +129,6 @@
 .booking-decline-btn { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 5%,#fff); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--error-color,#cf1124) 35%,transparent); }
 .booking-decline-btn:hover { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 10%,#fff); }
 .booking-decline-btn:focus-visible { outline:2px solid var(--error-color,#cf1124); outline-offset:2px; }
-.request-confirm-btn { background:var(--blue-500,#2563eb) !important; color:#fff !important; box-shadow:none !important; }
-.request-confirm-btn:hover { background:var(--blue-600,#1d4ed8) !important; }
-.request-confirm-btn:focus-visible { outline:2px solid var(--blue-600,#1d4ed8); outline-offset:2px; }
 .request-review-actions { display:flex; align-items:center; gap:var(--s,8px); }
 @media (max-width:600px) {
     .request-review-header { gap:10px; flex-wrap:wrap; }
@@ -151,17 +148,17 @@
     const form = document.getElementById({{ containerId|json_encode|raw }});
     const screen = $(form).data('cpScreen');
     const actions = form.querySelector('.request-review-actions');
-    // The CP screen footer lives outside the slideout content. Apply the primary
-    // treatment directly to its button rather than relying on content-scoped CSS.
-    screen.$saveBtn.addClass('request-confirm-btn');
-    screen.$saveBtn.add(screen.$saveBtn.find('button')).each(function () {
-        this.style.setProperty('background', 'var(--blue-500, #2563eb)', 'important');
-        this.style.setProperty('background-color', 'var(--blue-500, #2563eb)', 'important');
-        this.style.setProperty('color', '#fff', 'important');
-        this.style.setProperty('box-shadow', 'none', 'important');
-    });
-    screen.$footer.children('.request-review-actions').remove();
-    screen.$footer.children('.flex-grow').before(actions);
+    // Move actions into the actual CP screen footer, not its content area.
+    // Craft's primary footer button is already marked as .submit.
+    screen.$saveBtn.removeClass('request-confirm-btn');
+    const footer = screen.$footer[0];
+    footer.querySelectorAll('.request-review-actions').forEach(node => node.remove());
+    const flexGrow = footer.querySelector('.flex-grow');
+    if (flexGrow) flexGrow.before(actions);
+    else footer.prepend(actions);
+    // Craft uses .submit for primary actions; remove any destructive treatment.
+    screen.$saveBtn.removeClass('error destructive danger').addClass('submit');
+    screen.$saveBtn.find('button').removeClass('error destructive danger').addClass('submit');
     const decision = form.querySelector('[data-request-decision]');
     const start = form.querySelector('[data-request-start]');
     const picker = form.querySelector('[data-request-time-picker]');
