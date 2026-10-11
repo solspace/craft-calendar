@@ -7,11 +7,18 @@
 {% block content %}
 {{ actionInput('calendar/bookings/save') }}{{ csrfInput() }}{{ redirectInput('calendar/bookings') }}
 {% if booking.id %}{{ hiddenInput('bookingId', booking.id) }}{% endif %}
+<div class="booking-editor">
+<div class="booking-picker-controls">
+<div class="booking-calendar-control">
 {% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
 {{ forms.selectField({label: 'Calendar'|t('calendar'), name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
 {% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
 <p class="light" id="booking-timezone">{{ 'Times use {timezone}.'|t('calendar', {timezone}) }}</p>
+</div>
+<div class="booking-date-control">
 {{ forms.textField({label: 'Date'|t('app'), name: 'bookingDate', id: 'booking-date', type: 'date', value: booking.startDate ? booking.startDate|date('Y-m-d', timezone) : now|date('Y-m-d', timezone), required: true}) }}
+</div>
+</div>
 <div class="field" id="booking-slots-field">
     <div class="heading"><label id="booking-slots-label">{{ 'Available Times'|t('calendar') }} <span class="required" aria-hidden="true"></span></label></div>
     <p class="light" id="booking-slots-message" role="status" aria-live="polite"></p>
@@ -24,10 +31,13 @@
 {{ hiddenInput('endDate', booking.endDate ? booking.endDate|date('c', timezone) : '') }}
 {{ forms.selectField({label: 'Booking Status'|t('calendar'), instructions: 'Requested times are reserved only after confirmation.'|t('calendar'), name: 'bookingStatus', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
 <hr>
+<div class="booking-contact-grid">
 {{ forms.textField({label: 'Customer Name'|t('calendar'), name: 'customerName', value: booking.customerName, required: true, errors: booking.getErrors('customerName')}) }}
 {{ forms.textField({label: 'Customer Email'|t('calendar'), name: 'customerEmail', type: 'email', value: booking.customerEmail, required: true, errors: booking.getErrors('customerEmail')}) }}
+</div>
 {{ forms.textareaField({label: 'Notes'|t('calendar'), name: 'notes', value: booking.notes, errors: booking.getErrors('notes')}) }}
 {% for tab in fieldLayout.tabs %}<h2>{{ tab.name }}</h2>{% for field in tab.elements %}{{ field.formHtml(booking, false)|raw }}{% endfor %}{% endfor %}
+</div>
 {% endblock %}
 {% js %}
 const bookingTimezones = {{ calendars|map(calendar => calendar.schedulingSettings.timezone)|json_encode|raw }};
@@ -108,7 +118,26 @@ bookingDate.form.addEventListener('submit', event => {
 loadBookingSlots();
 {% endjs %}
 {% css %}
-#booking-slots { display:flex; flex-wrap:wrap; gap:8px; max-width:760px; }
-#booking-slots .booking-slot { min-width:112px; justify-content:center; }
+.booking-editor { max-width:960px; }
+.booking-editor .field { margin:0 0 22px; }
+.booking-editor .heading { margin-bottom:6px; }
+.booking-picker-controls, .booking-contact-grid { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; }
+.booking-picker-controls { margin-bottom:24px; max-width:720px; }
+.booking-picker-controls .field { margin-bottom:0; }
+.booking-contact-grid { margin-bottom:22px; }
+.booking-contact-grid > .field { margin-bottom:0; }
+.booking-picker-controls input { width:100%; box-sizing:border-box; }
+#booking-timezone { margin:8px 0 0; font-size:12px; line-height:1.5; }
+#booking-slots-message { margin:6px 0 12px; font-size:12px; line-height:1.5; }
+#booking-slots { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; }
+#booking-slots .booking-slot { min-width:0; width:100%; min-height:34px; padding:7px 10px; box-sizing:border-box; justify-content:center; font-size:12px; font-variant-numeric:tabular-nums; }
 #booking-slots .booking-slot.active { background:var(--enabled-color,#008a5b); color:#fff; }
+#booking-slots .booking-slot:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
+#booking-slots-retry { margin-bottom:12px; }
+#booking-slots-retry[hidden] { display:none !important; }
+.booking-editor hr { margin:26px 0; }
+@media (max-width:600px) {
+    .booking-picker-controls, .booking-contact-grid { grid-template-columns:minmax(0, 1fr); gap:18px; }
+    #booking-slots { grid-template-columns:repeat(auto-fill, minmax(108px, 1fr)); }
+}
 {% endcss %}
