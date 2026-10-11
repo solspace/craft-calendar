@@ -101,9 +101,12 @@ class CalendarModel extends Model implements \JsonSerializable
         }
     }
 
-    public static function create(): self
+    public static function create(?SchedulingSettings $bookingDefaults = null): self
     {
         $model = new self();
+        if ($bookingDefaults) {
+            $model->scheduling = $bookingDefaults->toArray();
+        }
         $model->color = ColorHelper::randomColor();
         $model->titleLabel = 'Title';
         $model->hasTitleField = true;

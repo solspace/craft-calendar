@@ -52,6 +52,7 @@ return [
     'calendar/settings/general' => 'calendar/settings/general',
     'calendar/settings/overview' => 'calendar/settings/overview',
     'calendar/settings/events' => 'calendar/settings/events',
+    'calendar/settings/booking-defaults' => 'calendar/settings/booking-defaults',
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
     'calendar/settings/spam-protection' => 'calendar/settings/spam-protection',
     'calendar/settings/ics' => 'calendar/settings/ics',

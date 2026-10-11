@@ -21,6 +21,11 @@ class SettingsModel extends Model
     public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
     public const DEFAULT_FIRST_DAY_OF_WEEK = -1;
 
+    public const BOOKING_DEFAULT_ATTRIBUTES = [
+        'duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance',
+        'allowOverlap', 'requireApproval', 'notificationEmail', 'hours',
+    ];
+
     public const TIME_FORMAT_AUTO = 'auto';
     public const TIME_FORMAT_12_HOUR = '12-hour';
     public const TIME_FORMAT_24_HOUR = '24-hour';
@@ -49,6 +54,8 @@ class SettingsModel extends Model
     public array|string $enabledCalendarViews = self::CALENDAR_VIEWS;
 
     public array|bool|null $guestAccess = null;
+
+    public array $bookingDefaults = [];
 
     // Legacy booking-only settings remain readable for existing project config.
     public ?string $captchaProvider = null;
@@ -184,6 +191,44 @@ class SettingsModel extends Model
         }
     }
 
+    public function getBookingDefaults(): SchedulingSettings
+    {
+        $attributes = array_intersect_key($this->bookingDefaults, array_flip(self::BOOKING_DEFAULT_ATTRIBUTES));
+        $attributes['timezone'] = \Craft::$app?->getTimeZone() ?? 'UTC';
+
+        return new SchedulingSettings($attributes);
+    }
+
+    public function validateBookingDefaults(): void
+    {
+        foreach (['duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance'] as $attribute) {
+            if (\array_key_exists($attribute, $this->bookingDefaults) && false === filter_var($this->bookingDefaults[$attribute], \FILTER_VALIDATE_INT)) {
+                $message = Calendar::t('Booking rules must use whole numbers.');
+                $this->addError('bookingDefaults', $message);
+                $this->addError('bookingDefaults.'.$attribute, $message);
+            }
+        }
+        if ($this->hasErrors('bookingDefaults')) {
+            return;
+        }
+
+        try {
+            $defaults = $this->getBookingDefaults();
+        } catch (\TypeError) {
+            $this->addError('bookingDefaults', Calendar::t('Enter valid booking defaults.'));
+
+            return;
+        }
+        if (!$defaults->validate()) {
+            foreach ($defaults->getErrors() as $attribute => $messages) {
+                foreach ($messages as $message) {
+                    $this->addError('bookingDefaults', $message);
+                    $this->addError('bookingDefaults.'.$attribute, $message);
+                }
+            }
+        }
+    }
+
     public function getBookingCaptchaSiteKey(): string
     {
         return $this->getCaptchaSiteKey();
@@ -225,6 +270,7 @@ class SettingsModel extends Model
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
+            [['bookingDefaults'], 'validateBookingDefaults', 'skipOnEmpty' => false],
             [['captchaProvider', 'bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha', 'recaptcha-v3'], 'skipOnEmpty' => false, 'when' => static fn ($model, $attribute) => null !== $model->{$attribute}],
             [['captchaSiteKey', 'captchaSecretKey', 'bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],
             [['captchaProvider', 'bookingCaptchaProvider'], 'validateCaptchaKeys', 'skipOnEmpty' => false],

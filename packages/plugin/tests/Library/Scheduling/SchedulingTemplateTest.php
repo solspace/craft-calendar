@@ -132,6 +132,8 @@ class SchedulingTemplateTest extends TestCase
         $source = file_get_contents(__DIR__.'/../../../src/templates/calendars/_scheduling.twig');
         $twig = new Environment(new ArrayLoader([
             'scheduling' => $source,
+            'calendar/calendars/_weekly-hours' => file_get_contents(__DIR__.'/../../../src/templates/calendars/_weekly-hours.twig'),
+            'calendar/calendars/_booking-rules' => file_get_contents(__DIR__.'/../../../src/templates/calendars/_booking-rules.twig'),
             '_includes/forms' => <<<'TWIG'
                 {% macro selectField(config) %}<timezone>{{ config.options|json_encode|raw }}</timezone>{% endmacro %}
                 {% macro errorList(errors) %}{% endmacro %}

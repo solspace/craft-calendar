@@ -3,6 +3,9 @@
 // Keep these message keys in sync across the supported control-panel languages.
 return [
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Statut enregistré pour 1 réservation.} other{Statut enregistré pour # réservations.}}',
+    'Booking Defaults' => 'Paramètres de réservation par défaut',
+    'Choose the initial booking rules and availability for new booking calendars. Each calendar can be customized separately. Changes here do not affect existing calendars.' => 'Choisissez les règles de réservation et les disponibilités initiales des nouveaux calendriers de réservation. Chaque calendrier peut être personnalisé séparément. Les modifications ici ne concernent pas les calendriers existants.',
+    'Enter valid booking defaults.' => 'Saisissez des paramètres de réservation par défaut valides.',
     'Selected bookings' => 'Réservations sélectionnées',
     'Select all bookings on this page' => 'Sélectionner toutes les réservations de cette page',
     'Select booking for {customer}' => 'Sélectionner la réservation de {customer}',

@@ -9,6 +9,12 @@ Defaults: Active, no seasonal limits, 8am–9pm each day, 30-minute bookings, 15
 
 Use **Active** to stop new bookings for a resource. **Available From** and **Available Until** optionally limit bookable dates; both are inclusive and use the scheduling timezone. Visitors can book dates within a future season ahead of time, subject to the advance window and minimum notice. Inactive resources and resources whose final date has passed disappear from the public chooser. Existing bookings are retained: staff can review them, edit their details, decline, cancel, or delete them. Moving, confirming, or restoring a reservation must respect the active state and season. Changing these settings does not automatically cancel or notify existing customers.
 
+## Booking defaults
+
+Open **Settings → Booking Defaults** to set the initial duration, start increments, gap, minimum notice, advance window, overlap permission, approval requirement, staff notification email, and weekly opening hours for new scheduling calendars. The settings use the same validation as individual calendars, including split opening periods and all days closed.
+
+New calendars receive a copy of these values and use Craft’s system timezone initially. Every value can be customized on the calendar. Saving new defaults does not change existing calendars or bookings; duplicating a calendar preserves the source calendar’s configuration. Active status, seasonal dates, holiday exceptions, timezone, and guest access remain specific to each calendar. CAPTCHA settings stay under **Settings → Spam Protection**.
+
 ## Control panel
 
 Select **Bookings** under **Settings → General Settings → Default Page** to open the booking list when clicking Calendar in the control-panel navigation. Users without a manageable scheduling calendar fall back to Overview.

@@ -23,7 +23,6 @@ use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
-use Solspace\Calendar\Models\SchedulingSettings;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use yii\base\InvalidConfigException;
@@ -90,7 +89,7 @@ class CalendarsController extends BaseController
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_CREATE_CALENDARS);
 
-        $calendar = CalendarModel::create();
+        $calendar = CalendarModel::create($this->getSettingsService()->getSettingsModel()->getBookingDefaults());
 
         $layout = new FieldLayout();
         $layout->type = Event::class;
@@ -232,7 +231,7 @@ class CalendarsController extends BaseController
 
         $calendar = $postedCalendar ?? $this->getCalendarService()->getCalendarById($postedCalendarId);
         if (!$calendar) {
-            $calendar = new CalendarModel();
+            $calendar = new CalendarModel(['scheduling' => $this->getSettingsService()->getSettingsModel()->getBookingDefaults()->toArray()]);
             $calendar->uid = CraftStringHelper::UUID();
         }
 
@@ -240,8 +239,8 @@ class CalendarsController extends BaseController
         $calendar->type = (string) $request->getBodyParam('type', $calendar->type);
         if ($calendar->getIsScheduling()) {
             $data = (array) $request->getBodyParam('scheduling', []);
-            $settings = new SchedulingSettings();
-            $settings->timezone = (string) ($data['timezone'] ?? \Craft::$app->getTimeZone());
+            $settings = $calendar->getSchedulingSettings();
+            $settings->timezone = (string) ($data['timezone'] ?? $settings->timezone);
             foreach (['duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance'] as $key) {
                 $number = filter_var($data[$key] ?? $settings->{$key}, \FILTER_VALIDATE_INT);
                 if (false === $number) {
@@ -250,7 +249,7 @@ class CalendarsController extends BaseController
                 $settings->{$key} = $number;
             }
             foreach (['allowOverlap', 'allowGuests', 'requireApproval'] as $key) {
-                $settings->{$key} = !empty($data[$key]);
+                $settings->{$key} = \array_key_exists($key, $data) ? !empty($data[$key]) : $settings->{$key};
             }
             $settings->active = \array_key_exists('active', $data) ? !empty($data['active']) : $calendar->getSchedulingSettings()->active;
             foreach (['availableFrom', 'availableUntil'] as $key) {
@@ -268,9 +267,9 @@ class CalendarsController extends BaseController
                 }
                 $settings->{$key} = null === $value || '' === $value ? null : (\is_string($value) ? trim($value) : 'invalid');
             }
-            $settings->notificationEmail = trim((string) ($data['notificationEmail'] ?? ''));
-            $settings->hours = array_values((array) ($data['hours'] ?? []));
-            $settings->exceptions = array_values((array) ($data['exceptions'] ?? []));
+            $settings->notificationEmail = trim((string) ($data['notificationEmail'] ?? $settings->notificationEmail));
+            $settings->hours = array_values((array) (($data['hours'] ?? $settings->hours) ?: []));
+            $settings->exceptions = array_values((array) (($data['exceptions'] ?? $settings->exceptions) ?: []));
             foreach (['hours', 'exceptions'] as $group) {
                 foreach ($settings->{$group} as &$row) {
                     if (!\is_array($row)) {

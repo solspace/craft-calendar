@@ -3,6 +3,9 @@
 // Keep these message keys in sync across the supported control-panel languages.
 return [
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Stato salvato per 1 prenotazione.} other{Stato salvato per # prenotazioni.}}',
+    'Booking Defaults' => 'Impostazioni predefinite delle prenotazioni',
+    'Choose the initial booking rules and availability for new booking calendars. Each calendar can be customized separately. Changes here do not affect existing calendars.' => 'Scegli le regole di prenotazione e la disponibilità iniziali per i nuovi calendari di prenotazione. Ogni calendario può essere personalizzato separatamente. Le modifiche qui non influiscono sui calendari esistenti.',
+    'Enter valid booking defaults.' => 'Inserisci impostazioni predefinite delle prenotazioni valide.',
     'Selected bookings' => 'Prenotazioni selezionate',
     'Select all bookings on this page' => 'Seleziona tutte le prenotazioni in questa pagina',
     'Select booking for {customer}' => 'Seleziona la prenotazione di {customer}',
