@@ -40,6 +40,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Aligned the Bookings list with Craft's native index layout, with filters and New booking in the page toolbar and a single table pane.
 
 - Changed new-booking hover and keyboard-focus previews to Craft’s blue selection colors.
 - Display friendly, localized timezone names in booking editors, schedules, and public forms, with date-specific abbreviations and precise timezone tooltips.

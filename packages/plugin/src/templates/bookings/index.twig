@@ -4,9 +4,7 @@
 {% set selectedSubnavItem = 'bookings' %}
 {% set statusColors = {requested: 'orange', confirmed: 'green', declined: 'red', cancelled: 'disabled'} %}
 
-{% block actionButton %}<a href="{{ cpUrl('calendar/bookings/new') }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>{% endblock %}
-
-{% block content %}
+{% block toolbar %}
 {% set filterStatusOptions = [{value: '', label: 'All statuses'|t('calendar')}] %}
 {% for value, label in statusOptions %}
     {% set option = {value, label, data: {status: statusColors[value]}} %}
@@ -26,14 +24,25 @@
     </div>
     <span class="spinner hidden" aria-hidden="true"></span>
     <a class="btn{{ calendarSelection != 'all' or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings', {view: bookingListView, sort}) }}">{{ 'Clear'|t('app') }}</a>
+    <a href="{{ cpUrl('calendar/bookings/new') }}" class="btn submit add icon booking-new-button">{{ 'New booking'|t('calendar') }}</a>
 </form>
+{% endblock %}
+
+{% block main %}
+    <div class="content-grid__main">
+        <div id="content">{{ block('content') }}</div>
+    </div>
+{% endblock %}
+
+{% block content %}
 <div id="booking-results">{% include 'calendar/bookings/_list' %}</div>
 {% endblock %}
 
 {% css %}
 {% include 'calendar/bookings/_confirm-delete-css' %}
 {% include 'calendar/bookings/_calendar-picker-css' %}
-.booking-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+.booking-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; width:100%; margin:0; }
+.booking-new-button { margin-inline-start:auto; flex-shrink:0; white-space:nowrap; }
 .booking-filters > .select.selectize { width:180px; flex-shrink:0; }
 .booking-filters > .booking-view-picker.select.selectize { width:155px; }
 .booking-search { flex:1; min-width:200px; }
@@ -58,7 +67,7 @@
 .booking-timestamp { min-width:135px; white-space:nowrap; }
 .booking-timestamp-time { display:block; }
 .booking-actions-cell { width:44px; white-space:nowrap; }
-.booking-list-pane { border:1px solid var(--border-hairline,var(--hairline-color,#e4e9ef)); border-radius:var(--radius-sm,5px); overflow:hidden; }
+.booking-list-pane { background:var(--pane-bg,var(--white,#fff)); box-shadow:var(--pane-shadow); border-radius:var(--radius-lg,5px); overflow:hidden; }
 .booking-table .sel .booking-status-control .selectize-input { --text-color:var(--gray-900); --ui-control-color:var(--gray-600); color:var(--gray-900); }
 .booking-table .sel .booking-actions-cell .btn { --text-color:var(--gray-900); --icon-color:var(--gray-600) !important; }
 .booking-bulk-actions { display:flex; justify-content:center; gap:8px; }
