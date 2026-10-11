@@ -48,6 +48,7 @@ if (deleteBooking) deleteBooking.addEventListener('click', async () => {
     try {
         const response = await Craft.sendActionRequest('POST', 'calendar/bookings/delete', {data: {bookingId: {{ booking.id ?: 'null' }}}});
         if (!response.data.success) throw new Error(response.data.message);
+        Craft.cp.removeListener(Garnish.$win, 'beforeunload');
         window.location.href = {{ cpUrl('calendar/bookings')|json_encode|raw }};
     } catch (error) {
         Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
@@ -75,7 +76,13 @@ const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingSt
 {% include 'calendar/bookings/_status-relative-js' %}
 let bookingSlotsRequest = 0;
 let bookingSlotsLoading = false;
+function bookingTimesMatch(first, second) {
+    return Date.parse(first.start) === Date.parse(second.start) && Date.parse(first.end) === Date.parse(second.end);
+}
 function chooseBookingSlot(slot, button) {
+    // Equivalent API timestamps may use another offset. Keep the form's original
+    // strings so initializing the picker doesn't count as an unsaved edit.
+    if (bookingCalendar.value === originalBookingTime.calendarId && bookingTimesMatch(slot, originalBookingTime)) slot = originalBookingTime;
     bookingStart.value = slot.start;
     bookingEnd.value = slot.end;
     bookingStart.dispatchEvent(new Event('change', {bubbles: true}));
@@ -85,13 +92,16 @@ function chooseBookingSlot(slot, button) {
         item.setAttribute('aria-pressed', item === button ? 'true' : 'false');
     });
 }
-async function loadBookingSlots() {
+async function loadBookingSlots(resetSelection = false) {
     const request = ++bookingSlotsRequest;
     bookingSlotsLoading = true;
     bookingSlotsRetry.hidden = true;
     bookingSlots.replaceChildren();
-    bookingStart.value = '';
-    bookingEnd.value = '';
+    if (resetSelection) {
+        bookingStart.value = '';
+        bookingEnd.value = '';
+    }
+    const selectedTime = {start: bookingStart.value, end: bookingEnd.value};
     document.getElementById('booking-timezone').textContent = Craft.t('calendar', 'Times use {timezone}.', {timezone: bookingTimezones[bookingCalendar.value]});
     if (!bookingDate.value) {
         bookingSlotsLoading = false;
@@ -105,7 +115,7 @@ async function loadBookingSlots() {
         const slots = response.data.slots;
         const original = originalBookingTime.calendarId === bookingCalendar.value && originalBookingTime.start.slice(0, 10) === bookingDate.value ? originalBookingTime : null;
         {% if booking.id %}
-        if (original && !slots.some(slot => Date.parse(slot.start) === Date.parse(original.start))) {
+        if (original && !slots.some(slot => bookingTimesMatch(slot, original))) {
             slots.unshift({start: original.start, end: original.end, label: Craft.t('calendar', 'Current booking time: {time}', {time: original.label})});
         }
         {% endif %}
@@ -118,7 +128,7 @@ async function loadBookingSlots() {
             button.setAttribute('aria-pressed', 'false');
             button.addEventListener('click', () => chooseBookingSlot(slot, button));
             bookingSlots.append(button);
-            if (original && Date.parse(slot.start) === Date.parse(original.start)) chooseBookingSlot(slot, button);
+            if (bookingTimesMatch(slot, selectedTime)) chooseBookingSlot(slot, button);
         });
     } catch (_) {
         if (request === bookingSlotsRequest) {
@@ -129,7 +139,7 @@ async function loadBookingSlots() {
         if (request === bookingSlotsRequest) bookingSlotsLoading = false;
     }
 }
-bookingCalendar.addEventListener('change', loadBookingSlots);
+bookingCalendar.addEventListener('change', () => loadBookingSlots(true));
 bookingDate.addEventListener('click', event => {
     if (typeof bookingDate.showPicker !== 'function') return;
     try {
@@ -137,11 +147,12 @@ bookingDate.addEventListener('click', event => {
         event.preventDefault();
     } catch (_) { /* Keep the browser's normal date input behavior when unavailable. */ }
 });
-bookingDate.addEventListener('change', loadBookingSlots);
-bookingSlotsRetry.addEventListener('click', loadBookingSlots);
+bookingDate.addEventListener('change', () => loadBookingSlots(true));
+bookingSlotsRetry.addEventListener('click', () => loadBookingSlots());
 bookingDate.form.addEventListener('submit', event => {
     if (bookingSlotsLoading || !bookingStart.value || !bookingEnd.value) {
         event.preventDefault();
+        event.stopImmediatePropagation();
         bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose an available time.');
         bookingDate.focus();
     }
