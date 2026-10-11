@@ -966,4 +966,7 @@ return [
     'All Calendars' => 'Visi kalendāri',
     '{count} Calendars' => '{count} kalendāri',
     'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Noklikšķiniet uz pieejama laika, lai pievienotu rezervāciju. Iekrāsotie laiki šim kalendāram nav pieejami.',
+    'Bookings Label' => 'Rezervāciju nosaukums',
+    'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Iestatiet rezervāciju lapas un vadības paneļa navigācijas nosaukumu. Atstājiet tukšu, lai izmantotu Rezervācijas.',
+    'Bookings' => 'Rezervācijas',
 ];

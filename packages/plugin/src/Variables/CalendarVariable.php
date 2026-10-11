@@ -60,6 +60,11 @@ class CalendarVariable
         return Calendar::getInstance()->name;
     }
 
+    public function getBookingLabel(): string
+    {
+        return $this->settings()->getSettingsModel()->getBookingLabel();
+    }
+
     public function events(?array $attributes = null): ElementQueryInterface
     {
         return Event::buildQuery($attributes);

@@ -1129,4 +1129,6 @@ return [
     'All Calendars' => 'All Calendars',
     '{count} Calendars' => '{count} Calendars',
     'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Click an available time to add a booking. Shaded times are unavailable for that calendar.',
+    'Bookings Label' => 'Bookings Label',
+    'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.',
 ];

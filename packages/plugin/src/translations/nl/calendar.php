@@ -1006,4 +1006,7 @@ return [
     'All Calendars' => 'Alle agenda’s',
     '{count} Calendars' => '{count} agenda’s',
     'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Klik op een beschikbare tijd om een boeking toe te voegen. Gearceerde tijden zijn niet beschikbaar voor die agenda.',
+    'Bookings Label' => 'Label voor boekingen',
+    'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Stel het label voor de boekingenpagina en de navigatie in het configuratiescherm in. Laat leeg om Boekingen te gebruiken.',
+    'Bookings' => 'Boekingen',
 ];

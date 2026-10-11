@@ -27,8 +27,19 @@
 
         {% endif %}
 
-        {{ forms.selectField({
+        {{ forms.textField({
             first: not craft.calendar.pro,
+            label: "Bookings Label"|t('calendar'),
+            instructions: "Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings."|t('calendar'),
+            placeholder: "Bookings"|t('calendar'),
+            id: 'bookingPageLabel',
+            name: 'settings[bookingPageLabel]',
+            value: settings.bookingPageLabel,
+            maxlength: 100,
+            errors: settings.getErrors('bookingPageLabel'),
+        }) }}
+
+        {{ forms.selectField({
             label: "First Day of Week"|t('calendar'),
             instructions: "Choose the first day of the week for Month and Week views and date pickers. User Preference uses the signed-in user's Craft setting, or Craft's default when no user is signed in."|t('calendar'),
             name: "settings[firstDayOfWeek]",
@@ -86,7 +97,7 @@
             options: {
                 overview: "Events"|t('calendar'),
                 events: "Event List"|t('calendar'),
-                bookings: "Bookings"|t('calendar'),
+                bookings: settings.bookingLabel,
                 calendars: "Calendars"|t('calendar'),
             },
         }) }}

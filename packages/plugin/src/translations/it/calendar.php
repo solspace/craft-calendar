@@ -1006,4 +1006,7 @@ return [
     'All Calendars' => 'Tutti i calendari',
     '{count} Calendars' => '{count} calendari',
     'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Fai clic su un orario disponibile per aggiungere una prenotazione. Gli orari ombreggiati non sono disponibili per quel calendario.',
+    'Bookings Label' => 'Etichetta delle prenotazioni',
+    'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Imposta l’etichetta della pagina delle prenotazioni e della navigazione del pannello di controllo. Lascia vuoto per utilizzare Prenotazioni.',
+    'Bookings' => 'Prenotazioni',
 ];

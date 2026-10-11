@@ -1006,4 +1006,7 @@ return [
     'All Calendars' => 'Tous les calendriers',
     '{count} Calendars' => '{count} calendriers',
     'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Cliquez sur un créneau disponible pour ajouter une réservation. Les créneaux grisés sont indisponibles pour ce calendrier.',
+    'Bookings Label' => 'Libellé des réservations',
+    'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Définissez le libellé de la page des réservations et de la navigation du panneau de contrôle. Laissez vide pour utiliser Réservations.',
+    'Bookings' => 'Réservations',
 ];

@@ -1006,4 +1006,7 @@ return [
     'All Calendars' => 'Alle Kalender',
     '{count} Calendars' => '{count} Kalender',
     'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Klicken Sie auf eine verfügbare Zeit, um eine Buchung hinzuzufügen. Schattierte Zeiten sind für diesen Kalender nicht verfügbar.',
+    'Bookings Label' => 'Buchungsbereich-Bezeichnung',
+    'Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings.' => 'Legen Sie die Bezeichnung für die Buchungsseite und die Navigation im Kontrollzentrum fest. Lassen Sie das Feld leer, um Buchungen zu verwenden.',
+    'Bookings' => 'Buchungen',
 ];

@@ -16,7 +16,7 @@ if (PermissionHelper::canAccessEvents()) {
 }
 
 if (Calendar::getInstance()->bookings->getManageableCalendars()) {
-    $subnav['bookings'] = ['label' => Calendar::t('Bookings'), 'url' => 'calendar/bookings'];
+    $subnav['bookings'] = ['label' => Calendar::getInstance()->settings->getSettingsModel()->getBookingLabel(), 'url' => 'calendar/bookings'];
 }
 
 $isAllowAdminChanges = true;

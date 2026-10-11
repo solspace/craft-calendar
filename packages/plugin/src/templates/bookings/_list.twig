@@ -57,7 +57,7 @@
 </div>
 <div class="booking-footer footer">
     <div class="booking-footer-count flex pagination">
-        <nav class="flex flex-nowrap" aria-label="{{ '{element} pagination'|t('app', {element: 'Bookings'|t('calendar')}) }}">
+        <nav class="flex flex-nowrap" aria-label="{{ '{element} pagination'|t('app', {element: craft.calendar.bookingLabel}) }}">
             {% if page > 1 %}<a class="page-link prev-page" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page - 1}) }}" title="{{ 'Previous Page'|t('app') }}" aria-label="{{ 'Previous Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link prev-page disabled" disabled aria-label="{{ 'Previous Page'|t('app') }}"></button>{% endif %}
             {% if page * 50 < total %}<a class="page-link next-page" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page + 1}) }}" title="{{ 'Next Page'|t('app') }}" aria-label="{{ 'Next Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link next-page disabled" disabled aria-label="{{ 'Next Page'|t('app') }}"></button>{% endif %}
         </nav>
