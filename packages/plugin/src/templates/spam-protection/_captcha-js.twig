@@ -1,0 +1,138 @@
+    const captchaConfig = {{ (captcha ?? null)|json_encode(15)|raw }};
+    const captchaLabels = {{ {check: 'Please complete the spam protection check and try again.'|t('calendar'), unavailable: 'Spam protection could not load. Please refresh the page and try again.'|t('calendar')}|json_encode|raw }};
+    const captchaRoot = form.querySelector('[data-calendar-captcha]');
+    const captchaToken = captchaRoot?.querySelector('input[type="hidden"]');
+    const captchaMessage = captchaRoot?.querySelector('.calendar-captcha-message');
+    let captchaApi;
+    let captchaWidget;
+    let captchaTheme;
+    let captchaGeneration = 0;
+
+    function captchaReady() {
+        return !captchaConfig || (captchaConfig.provider === 'recaptcha-v3' ? !!captchaApi : !!captchaToken?.value);
+    }
+    function captchaState(token, error = '') {
+        captchaToken.value = token;
+        captchaMessage.textContent = error;
+        captchaMessage.hidden = !error;
+        captchaMessage.classList.toggle('error', !!error);
+        updateSelection();
+    }
+    function resetCaptcha() {
+        if (!captchaConfig) return;
+        captchaState('');
+        if (captchaWidget !== undefined) {
+            try { captchaApi.reset(captchaWidget); }
+            catch (_) { captchaState('', captchaLabels.unavailable); }
+        }
+    }
+    async function prepareCaptcha() {
+        if (!captchaConfig) return true;
+        if (!captchaReady()) { captchaState('', captchaLabels.check); return false; }
+        if (captchaConfig.provider !== 'recaptcha-v3') return true;
+        let timeout;
+        try {
+            // v3 tokens expire quickly and are single-use: execute for each submission.
+            const token = await Promise.race([
+                captchaApi.execute(captchaConfig.siteKey, {action: captchaConfig.action}),
+                new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error()), 20000); }),
+            ]);
+            if (typeof token !== 'string' || !token) throw new Error();
+            captchaState(token);
+            return true;
+        } catch (_) { captchaState('', captchaLabels.unavailable); return false; }
+        finally { clearTimeout(timeout); }
+    }
+    if (captchaRoot) captchaRoot.calendarCaptcha = {prepare: prepareCaptcha, reset: resetCaptcha};
+    async function initCaptcha() {
+        if (!captchaConfig) return;
+        const provider = captchaConfig.provider;
+        const providers = {
+            turnstile: {global: 'turnstile', url: 'https://challenges.cloudflare.com/turnstile/v0/api.js'},
+            hcaptcha: {global: 'hcaptcha', url: 'https://js.hcaptcha.com/1/api.js', extra: '&recaptchacompat=off'},
+            recaptcha: {global: 'grecaptcha', url: 'https://www.google.com/recaptcha/api.js'},
+            'recaptcha-v3': {global: 'grecaptcha', url: 'https://www.google.com/recaptcha/api.js'},
+        };
+        const config = providers[provider];
+        try {
+            if (!config || !captchaConfig.siteKey) throw new Error();
+            // Share one provider script across booking and event forms.
+            const loaders = window.CalendarCaptchaLoaders ||= {};
+            loaders[provider] ||= new Promise((resolve, reject) => {
+                if (window[config.global]?.[provider === 'recaptcha-v3' ? 'execute' : 'render']) { resolve(window[config.global]); return; }
+                const callback = 'calendarCaptchaReady_' + provider.replace(/-/g, '_');
+                const timeout = setTimeout(() => reject(new Error()), 20000);
+                window[callback] = () => {
+                    clearTimeout(timeout);
+                    resolve(window[config.global]);
+                    delete window[callback];
+                };
+                const script = document.createElement('script');
+                script.src = config.url + '?render=' + (provider === 'recaptcha-v3' ? encodeURIComponent(captchaConfig.siteKey) : 'explicit') + '&onload=' + callback + (config.extra || '');
+                script.async = true;
+                script.onerror = () => { clearTimeout(timeout); reject(new Error()); };
+                document.head.append(script);
+            });
+            captchaApi = await loaders[provider];
+            if (provider === 'recaptcha-v3') {
+                await new Promise(resolve => captchaApi.ready(resolve));
+                captchaState('');
+                return;
+            }
+            renderCaptcha();
+            // Follow Bootstrap/Tailwind theme switches without observing the whole page subtree.
+            const observer = new MutationObserver(updateCaptchaTheme);
+            observer.observe(captchaRoot, {attributes: true, attributeFilter: ['data-captcha-theme']});
+            for (let ancestor = form; ancestor; ancestor = ancestor.parentElement) {
+                observer.observe(ancestor, {attributes: true, attributeFilter: ['class', 'data-bs-theme', 'data-booking-theme', 'data-captcha-theme']});
+            }
+            const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+            media?.addEventListener('change', updateCaptchaTheme);
+            window.addEventListener('pagehide', () => { observer.disconnect(); media?.removeEventListener('change', updateCaptchaTheme); }, {once: true});
+        } catch (_) { captchaState('', captchaLabels.unavailable); }
+    }
+    function currentCaptchaTheme() {
+        const explicit = captchaRoot.dataset.captchaTheme;
+        if (explicit === 'light' || explicit === 'dark') return explicit;
+        const bookingTheme = form.dataset.bookingTheme;
+        if (bookingTheme === 'light' || bookingTheme === 'dark') return bookingTheme;
+        if (form.closest('.dark')) return 'dark';
+        const bootstrapTheme = form.closest('[data-bs-theme]')?.dataset.bsTheme;
+        if (bootstrapTheme === 'light' || bootstrapTheme === 'dark') return bootstrapTheme;
+        return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function renderCaptcha() {
+        const container = captchaRoot.querySelector('.calendar-captcha-widget');
+        const generation = ++captchaGeneration;
+        captchaTheme = currentCaptchaTheme();
+        const settings = {
+            sitekey: captchaConfig.siteKey,
+            theme: captchaTheme,
+            size: container.getBoundingClientRect().width < 304 ? 'compact' : 'normal',
+            callback: token => { if (generation === captchaGeneration) captchaState(token); },
+            'expired-callback': () => { if (generation === captchaGeneration) captchaState('', captchaLabels.check); },
+            'error-callback': () => { if (generation === captchaGeneration) captchaState('', captchaLabels.unavailable); return true; },
+        };
+        if (captchaConfig.provider === 'turnstile') {
+            settings.action = captchaConfig.action;
+            settings.size = settings.size === 'compact' ? 'compact' : 'flexible';
+            settings['response-field'] = false;
+        }
+        captchaWidget = captchaApi.render(container, settings);
+    }
+    function updateCaptchaTheme() {
+        if (submitting || !form.isConnected || inputs.hidden || !captchaApi) return;
+        const theme = currentCaptchaTheme();
+        if (theme === captchaTheme) return;
+        try {
+            ++captchaGeneration;
+            if (typeof captchaApi.remove === 'function') captchaApi.remove(captchaWidget);
+            else captchaApi.reset(captchaWidget);
+            // reCAPTCHA remembers rendered elements even after reset; give it a fresh node.
+            const container = captchaRoot.querySelector('.calendar-captcha-widget');
+            container.replaceWith(container.cloneNode(false));
+            captchaState('');
+            renderCaptcha();
+        } catch (_) { captchaState('', captchaLabels.unavailable); }
+    }
+    initCaptcha();

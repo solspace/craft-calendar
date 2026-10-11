@@ -94,7 +94,7 @@ class BookingCaptchaTest extends TestCase
             $settings->bookingCaptchaSiteKey = '$CALENDAR_CAPTCHA_TEST_SITE';
             $settings->bookingCaptchaSecretKey = '$CALENDAR_CAPTCHA_TEST_SECRET';
             self::assertSame('env-secret', $settings->getBookingCaptchaSecretKey());
-            self::assertSame(['provider' => 'recaptcha', 'siteKey' => 'env-site', 'responseField' => 'g-recaptcha-response'], (new BookingCaptcha())->getClientConfig($settings));
+            self::assertSame(['provider' => 'recaptcha', 'siteKey' => 'env-site', 'responseField' => 'g-recaptcha-response', 'action' => 'calendar-booking'], (new BookingCaptcha())->getClientConfig($settings));
         } finally {
             putenv('CALENDAR_CAPTCHA_TEST_SITE');
             putenv('CALENDAR_CAPTCHA_TEST_SECRET');
@@ -115,6 +115,61 @@ class BookingCaptchaTest extends TestCase
         self::assertTrue($settings->validate($attributes));
         $settings->bookingCaptchaProvider = 'unrecognized';
         self::assertFalse($settings->validate($attributes));
+    }
+
+    public function testSharedSettingsPreserveLegacyConfigAndCanOverrideIt(): void
+    {
+        $settings = $this->settings('turnstile');
+        self::assertSame('turnstile', $settings->getCaptchaProvider());
+        $settings->captchaProvider = 'hcaptcha';
+        $settings->captchaSiteKey = 'new-public';
+        $settings->captchaSecretKey = 'new-private';
+        self::assertSame('hcaptcha', $settings->getCaptchaProvider());
+        self::assertSame('new-public', $settings->getCaptchaSiteKey());
+        self::assertSame('new-private', $settings->getBookingCaptchaSecretKey());
+        $settings->captchaProvider = 'none';
+        self::assertTrue((new BookingCaptcha())->verify($settings, null));
+    }
+
+    public function testBookingAndEventProtectionAreIndependent(): void
+    {
+        $settings = $this->settings('turnstile');
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects(self::never())->method('request');
+        $captcha = new BookingCaptcha($client);
+        self::assertNull($captcha->getClientConfig($settings, 'event'));
+        self::assertTrue($captcha->verify($settings, null, null, 'event'));
+        $settings->captchaProtectEvents = true;
+        $settings->captchaProtectBookings = false;
+        self::assertNull($captcha->getClientConfig($settings, 'booking'));
+        self::assertTrue($captcha->verify($settings, null));
+        self::assertSame('calendar-event', $captcha->getClientConfig($settings, 'event')['action']);
+        self::assertFalse($captcha->verify($settings, null, null, 'event'));
+    }
+
+    public function testV3ChecksScoresAndPurposeOnTheServer(): void
+    {
+        $settings = $this->settings('recaptcha-v3');
+        $settings->captchaProtectEvents = true;
+        foreach ([
+            [true, 0.5, 'calendar_booking', 'booking', true],
+            [true, 0.9, 'calendar_event', 'event', true],
+            [true, 0.49, 'calendar_booking', 'booking', false],
+            [true, 0.9, 'calendar_booking', 'event', false],
+            [true, null, 'calendar_event', 'event', false],
+            [true, '0.9', 'calendar_event', 'event', false],
+            [true, 1.1, 'calendar_event', 'event', false],
+            [false, 0.9, 'calendar_event', 'event', false],
+        ] as [$success, $score, $action, $purpose, $expected]) {
+            $client = $this->createMock(ClientInterface::class);
+            $client->method('request')->willReturn(new Response(200, [], json_encode(compact('success', 'score', 'action'))));
+            self::assertSame($expected, (new BookingCaptcha($client))->verify($settings, 'token', null, $purpose));
+        }
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects(self::never())->method('request');
+        $settings->recaptchaMinimumScore = 'invalid';
+        self::assertFalse((new BookingCaptcha($client))->verify($settings, 'token'));
+        self::assertFalse($settings->validate(['recaptchaMinimumScore']));
     }
 
     private function settings(string $provider): SettingsModel

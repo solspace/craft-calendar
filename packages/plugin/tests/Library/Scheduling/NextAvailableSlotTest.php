@@ -74,6 +74,19 @@ class NextAvailableSlotTest extends TestCase
         self::assertSame('2026-10-12T08:15:00-05:00', $slot['start']);
     }
 
+    public function testInactiveResourcesSkipReadsAndFutureSeasonsStartAtTheFirstBookableDate(): void
+    {
+        $service = $this->service();
+        $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['active' => false]]);
+        self::assertNull($service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-11T00:00:00Z')));
+        self::assertSame([], $service->reads);
+        self::assertSame([], $service->availableSlots($calendar, '2026-10-12', false));
+        self::assertSame([], $service->reads);
+        $calendar->scheduling = ['availableFrom' => '2026-11-01', 'availableUntil' => '2026-11-01'];
+        self::assertSame('2026-11-01T08:00:00+00:00', $service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-11T00:00:00Z'))['start']);
+        self::assertSame([['2026-11-01', '2026-11-01']], $service->reads);
+    }
+
     private function service(): BookingsService
     {
         return new class extends BookingsService {

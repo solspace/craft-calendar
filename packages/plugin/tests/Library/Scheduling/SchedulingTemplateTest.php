@@ -138,6 +138,7 @@ class SchedulingTemplateTest extends TestCase
                 {% macro editableTableField(config) %}{% endmacro %}
                 {% macro textField(config) %}{% endmacro %}
                 {% macro lightswitchField(config) %}{% endmacro %}
+                {% macro dateField(config) %}{% endmacro %}
                 TWIG,
         ]), ['strict_variables' => true]);
         $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
@@ -147,6 +148,7 @@ class SchedulingTemplateTest extends TestCase
             $output = $twig->render('scheduling', [
                 'calendar' => $calendar,
                 'scheduling' => $calendar->getSchedulingSettings(),
+                'schedulingDates' => ['availableFrom' => null, 'availableUntil' => null],
                 'schedulingHours' => [],
                 'schedulingExceptions' => [],
                 'timezoneOptions' => $options,

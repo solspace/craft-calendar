@@ -20,6 +20,7 @@ use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\Helpers\SitesHelper;
 use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
+use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SchedulingSettings;
@@ -250,6 +251,22 @@ class CalendarsController extends BaseController
             }
             foreach (['allowOverlap', 'allowGuests', 'requireApproval'] as $key) {
                 $settings->{$key} = !empty($data[$key]);
+            }
+            $settings->active = \array_key_exists('active', $data) ? !empty($data['active']) : $calendar->getSchedulingSettings()->active;
+            foreach (['availableFrom', 'availableUntil'] as $key) {
+                $value = $data[$key] ?? null;
+                if (\is_array($value)) {
+                    if (empty($value['date'])) {
+                        $value = null;
+                    } else {
+                        try {
+                            $value = DateTimeHelper::toDateTime($value, true)?->format('Y-m-d') ?? 'invalid';
+                        } catch (\Throwable) {
+                            $value = 'invalid';
+                        }
+                    }
+                }
+                $settings->{$key} = null === $value || '' === $value ? null : (\is_string($value) ? trim($value) : 'invalid');
             }
             $settings->notificationEmail = trim((string) ($data['notificationEmail'] ?? ''));
             $settings->hours = array_values((array) ($data['hours'] ?? []));
@@ -540,6 +557,10 @@ class CalendarsController extends BaseController
         }
 
         $scheduling = $calendar->getSchedulingSettings();
+        $schedulingDates = [];
+        foreach (['availableFrom', 'availableUntil'] as $key) {
+            $schedulingDates[$key] = Availability::validDate($scheduling->{$key}) ? new \DateTimeImmutable($scheduling->{$key}, new \DateTimeZone($scheduling->timezone)) : null;
+        }
         $hours = $scheduling->hours;
         $exceptions = $scheduling->exceptions;
         $zone = new \DateTimeZone(\Craft::$app->getTimeZone());
@@ -571,6 +592,7 @@ class CalendarsController extends BaseController
                 'calendar' => $calendar,
                 'calendarTypeLocked' => $calendarTypeLocked,
                 'scheduling' => $scheduling,
+                'schedulingDates' => $schedulingDates,
                 'schedulingHours' => $hours,
                 'schedulingExceptions' => $exceptions,
                 'continueEditingUrl' => 'calendar/calendars/{handle}',

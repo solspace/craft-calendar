@@ -7,6 +7,9 @@ use Solspace\Calendar\Library\Scheduling\Availability;
 
 class SchedulingSettings extends Model
 {
+    public bool $active = true;
+    public ?string $availableFrom = null;
+    public ?string $availableUntil = null;
     public string $timezone = 'UTC';
     public int $duration = 30;
     public int $increment = 15;

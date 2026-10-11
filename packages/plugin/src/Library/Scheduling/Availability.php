@@ -8,6 +8,14 @@ class Availability
     public static function configurationErrors(array $settings): array
     {
         $errors = [];
+        foreach (['availableFrom', 'availableUntil'] as $attribute) {
+            if (null !== ($settings[$attribute] ?? null) && '' !== $settings[$attribute] && !self::validDate($settings[$attribute])) {
+                $errors[$attribute][] = 'Availability dates must use a valid date (YYYY-MM-DD).';
+            }
+        }
+        if (!empty($settings['availableFrom']) && !empty($settings['availableUntil']) && $settings['availableUntil'] < $settings['availableFrom']) {
+            $errors['availableUntil'][] = 'Available Until must be on or after Available From.';
+        }
         foreach ($settings['hours'] ?? [] as $row) {
             if (!\is_array($row) || false === filter_var($row['day'] ?? null, \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 7]]) || !self::validPeriod($row)) {
                 $errors['hours'][] = 'Opening hours need a weekday and valid start and end times (HH:MM).';
@@ -32,7 +40,7 @@ class Availability
     /** @return array<array{start: string, end: string, label: string}> */
     public static function slots(array $settings, string $date, array $busy = [], ?\DateTimeImmutable $now = null, bool $public = true, bool $firstOnly = false, ?\DateTimeImmutable $notBefore = null): array
     {
-        if (!self::validDate($date) || self::configurationErrors($settings)) {
+        if (!self::dateIsAvailable($settings, $date) || self::configurationErrors($settings)) {
             return [];
         }
         $zone = new \DateTimeZone($settings['timezone']);
@@ -94,6 +102,14 @@ class Availability
         ksort($slots);
 
         return array_values($firstOnly ? \array_slice($slots, 0, 1, true) : $slots);
+    }
+
+    /** Both seasonal bounds are inclusive, in the scheduling calendar's timezone. */
+    public static function dateIsAvailable(array $settings, string $date): bool
+    {
+        return ($settings['active'] ?? true) && self::validDate($date)
+            && (null === ($settings['availableFrom'] ?? null) || '' === $settings['availableFrom'] || self::validDate($settings['availableFrom']) && $date >= $settings['availableFrom'])
+            && (null === ($settings['availableUntil'] ?? null) || '' === $settings['availableUntil'] || self::validDate($settings['availableUntil']) && $date <= $settings['availableUntil']);
     }
 
     public static function validDate(mixed $date): bool

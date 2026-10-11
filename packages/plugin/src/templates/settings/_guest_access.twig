@@ -27,7 +27,7 @@
              class="{{ settings.guestAccess is null ? 'hidden' }}">
             {{ forms.checkboxSelectField({
                 label: "Guest Submission Calendars"|t('calendar'),
-                instructions: "Select at least one calendar. Guests can submit events only to the selected calendars."|t('calendar'),
+                instructions: "Select at least one event calendar. Guest booking requests are controlled separately in each scheduling calendar."|t('calendar'),
                 id: 'calendar-list',
                 name: 'settings[guestAccess]',
                 options: calendars,
@@ -35,48 +35,6 @@
                 errors: settings.getErrors('guestAccess'),
             }) }}
         </div>
-        <hr>
-        <h2>{{ 'Booking Spam Protection'|t('calendar') }}</h2>
-        <p>{{ 'Protect public booking forms with an optional CAPTCHA. The honeypot and request rate limit always remain active. These settings do not affect guest event submissions or staff bookings in the control panel.'|t('calendar') }}</p>
-        {{ forms.selectField({
-            label: 'CAPTCHA Provider'|t('calendar'),
-            id: 'booking-captcha-provider',
-            name: 'settings[bookingCaptchaProvider]',
-            value: settings.bookingCaptchaProvider,
-            options: [
-                {value: 'none', label: 'None'|t('calendar')},
-                {value: 'turnstile', label: 'Cloudflare Turnstile'},
-                {value: 'hcaptcha', label: 'hCaptcha'},
-                {value: 'recaptcha', label: 'reCAPTCHA v2 (Checkbox)'|t('calendar')},
-            ],
-            errors: settings.getErrors('bookingCaptchaProvider'),
-        }) }}
-        <div id="booking-captcha-keys"{{ settings.bookingCaptchaProvider == 'none' ? ' hidden' }}>
-            {{ forms.autosuggestField({
-                label: 'Site Key'|t('calendar'),
-                instructions: 'The public site key for the selected provider. Environment variables are supported.'|t('calendar'),
-                id: 'booking-captcha-site-key',
-                name: 'settings[bookingCaptchaSiteKey]',
-                value: settings.bookingCaptchaSiteKey,
-                suggestEnvVars: true,
-                errors: settings.getErrors('bookingCaptchaSiteKey'),
-            }) }}
-            {{ forms.autosuggestField({
-                label: 'Secret Key'|t('calendar'),
-                instructions: 'The private secret key for the selected provider. Use an environment variable to keep the secret out of project config.'|t('calendar'),
-                id: 'booking-captcha-secret-key',
-                name: 'settings[bookingCaptchaSecretKey]',
-                value: settings.bookingCaptchaSecretKey,
-                suggestEnvVars: true,
-                errors: settings.getErrors('bookingCaptchaSecretKey'),
-            }) }}
-        </div>
     </form>
 
 {% endblock %}
-
-{% js %}
-    $(document).on('change', '#booking-captcha-provider', function() {
-        document.getElementById('booking-captcha-keys').hidden = this.value === 'none';
-    });
-{% endjs %}

@@ -161,7 +161,7 @@ class Booking extends Element
     public function afterRestore(): void
     {
         // Craft restores elements without calling afterSave(), inside its restore transaction.
-        Calendar::getInstance()->bookings->assertSaveAllowed($this);
+        Calendar::getInstance()->bookings->assertSaveAllowed($this, true);
         Db::update(self::TABLE, ['buffer' => $this->buffer], ['id' => $this->id]);
         parent::afterRestore();
         Calendar::getInstance()->bookings->scheduleNotification($this, null);

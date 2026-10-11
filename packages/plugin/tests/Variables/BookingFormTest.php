@@ -114,13 +114,47 @@ class BookingFormTest extends TestCase
         $this->variable->bookingForm(7, ['theme' => 'unexpected', 'booking' => (new \ReflectionClass(Booking::class))->newInstanceWithoutConstructor()]);
     }
 
+    public function testSeasonalBoundsClampTheDatePickerAndFallbackDate(): void
+    {
+        $today = new \DateTimeImmutable('now', new \DateTimeZone('America/Winnipeg'));
+        $from = $today->modify('+3 days')->format('Y-m-d');
+        $until = $today->modify('+10 days')->format('Y-m-d');
+        $this->calendar->scheduling += ['availableFrom' => $from, 'availableUntil' => $until];
+        $this->bookings->method('getPublicCalendars')->willReturn([7 => $this->calendar]);
+        $this->bookings->method('getPublicFormFields')->willReturn([]);
+        $this->view->expects(self::once())->method('renderTemplate')->willReturnCallback(static function ($template, $variables) use ($from, $until) {
+            self::assertSame($from, $variables['minDate']);
+            self::assertSame($from, $variables['date']);
+            self::assertSame($until, $variables['maxDate']);
+
+            return '';
+        });
+        $this->variable->bookingForm(7, ['booking' => (new \ReflectionClass(Booking::class))->newInstanceWithoutConstructor()]);
+    }
+
+    public function testEventCaptchaHelperRespectsItsToggleAndReturnsOnlyPublicConfig(): void
+    {
+        self::assertSame('', (string) $this->variable->captcha());
+        Calendar::getInstance()->setSettings(['captchaProvider' => 'recaptcha-v3', 'captchaSiteKey' => 'site-key', 'captchaSecretKey' => 'private-key', 'captchaProtectEvents' => true]);
+        $this->view->expects(self::once())->method('renderTemplate')->willReturnCallback(static function ($template, $variables, $mode) {
+            self::assertSame('calendar/spam-protection/_widget', $template);
+            self::assertSame(View::TEMPLATE_MODE_CP, $mode);
+            self::assertSame('calendar_event', $variables['captcha']['action']);
+            self::assertSame('dark', $variables['theme']);
+            self::assertStringNotContainsString('private-key', json_encode($variables));
+
+            return '<div>captcha</div>';
+        });
+        self::assertSame('<div>captcha</div>', (string) $this->variable->captcha('event', ['theme' => 'dark']));
+    }
+
     public function testCaptchaConfigurationReachesPublicFormsWithoutThePrivateKey(): void
     {
         Calendar::getInstance()->setSettings(['bookingCaptchaProvider' => 'hcaptcha', 'bookingCaptchaSiteKey' => 'site-key', 'bookingCaptchaSecretKey' => 'private-key']);
         $this->bookings->method('getPublicCalendars')->willReturn([7 => $this->calendar]);
         $this->bookings->method('getPublicFormFields')->willReturn([]);
         $this->view->expects(self::once())->method('renderTemplate')->willReturnCallback(static function ($template, $variables) {
-            self::assertSame(['provider' => 'hcaptcha', 'siteKey' => 'site-key', 'responseField' => 'h-captcha-response'], $variables['captcha']);
+            self::assertSame(['provider' => 'hcaptcha', 'siteKey' => 'site-key', 'responseField' => 'h-captcha-response', 'action' => 'calendar-booking'], $variables['captcha']);
             self::assertStringNotContainsString('private-key', json_encode($variables['captcha']));
 
             return '';

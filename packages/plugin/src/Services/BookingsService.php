@@ -45,7 +45,18 @@ class BookingsService extends Component
     {
         $siteId = \Craft::$app->sites->getCurrentSite()->id;
 
-        return array_filter(Calendar::getInstance()->calendars->getAllCalendars(), static fn ($calendar) => $calendar->getIsScheduling() && $calendar->getSchedulingSettings()->allowGuests && $calendar->getSiteSettingsForSite($siteId));
+        return array_filter(Calendar::getInstance()->calendars->getAllCalendars(), static function ($calendar) use ($siteId) {
+            if (!$calendar->getIsScheduling() || !$calendar->getSiteSettingsForSite($siteId)) {
+                return false;
+            }
+            $settings = $calendar->getSchedulingSettings();
+            if (!$settings->active || !$settings->allowGuests || Availability::configurationErrors($settings->toArray())) {
+                return false;
+            }
+            $today = (new \DateTimeImmutable('now', new \DateTimeZone($settings->timezone)))->format('Y-m-d');
+
+            return !$settings->availableUntil || $settings->availableUntil >= $today;
+        });
     }
 
     public function getFieldLayout(): FieldLayout
@@ -113,6 +124,10 @@ class BookingsService extends Component
             $settings['duration'] = $duration;
         }
 
+        if (!Availability::slots($settings, $date, [], null, $public, true)) {
+            return [];
+        }
+
         $slots = Availability::slots($settings, $date, $this->busy($calendar->id, $public ? null : $except, false, $date, $settings['timezone']), null, $public);
         foreach ($slots as &$slot) {
             $slot['label'] = DateFormatHelper::formatTimeRange(new \DateTimeImmutable($slot['start']), new \DateTimeImmutable($slot['end']), $settings['timezone']);
@@ -128,13 +143,22 @@ class BookingsService extends Component
             return null;
         }
         $settings = $calendar->getSchedulingSettings();
+        if (!$settings->active || Availability::configurationErrors($settings->toArray())) {
+            return null;
+        }
         $zone = new \DateTimeZone($settings->timezone);
         $now = ($now ?? new \DateTimeImmutable('now', $zone))->setTimezone($zone);
         $day = $now->setTime(0, 0);
         $lastDay = $day->modify('+'.$settings->maximumAdvance.' days');
+        if ($settings->availableFrom) {
+            $day = max($day, new \DateTimeImmutable($settings->availableFrom, $zone));
+        }
+        if ($settings->availableUntil) {
+            $lastDay = min($lastDay, new \DateTimeImmutable($settings->availableUntil, $zone));
+        }
         $loadedThrough = null;
         $busy = [];
-        for ($offset = 0; $offset <= $settings->maximumAdvance; ++$offset) {
+        while ($day <= $lastDay) {
             $date = $day->format('Y-m-d');
             // Skip closed days without a database read or building every possible slot.
             if (Availability::slots($settings->toArray(), $date, [], $now, false, true, $now)) {
@@ -157,7 +181,7 @@ class BookingsService extends Component
     }
 
     /** Every element save, including native saves, must pass this inside its transaction. */
-    public function assertSaveAllowed(Booking $booking): void
+    public function assertSaveAllowed(Booking $booking, bool $restoring = false): void
     {
         $db = \Craft::$app->getDb();
         // Serialize writers and read the current resource settings, including under
@@ -174,18 +198,30 @@ class BookingsService extends Component
         if (!\in_array($booking->bookingStatus, array_keys(Booking::statusOptions()), true)) {
             throw new BookingConflictException(Calendar::t('Choose a valid booking status.'));
         }
-        if (\in_array($booking->bookingStatus, [Booking::DECLINED, Booking::CANCELLED], true)) {
+        $settings = (new SchedulingSettings(Json::decodeIfJson($record['scheduling']) ?: []))->toArray();
+        $zone = new \DateTimeZone($settings['timezone']);
+        $date = $booking->startDate->setTimezone($zone)->format('Y-m-d');
+        $released = \in_array($booking->bookingStatus, [Booking::DECLINED, Booking::CANCELLED], true);
+        if (!Availability::dateIsAvailable($settings, $date)) {
+            // Permit unchanged bookings and cancellations without reopening a disabled resource.
+            $previous = $booking->id ? (new Query())->select(['calendarId', 'startDate', 'endDate', 'bookingStatus'])->from(Booking::TABLE)->where(['id' => $booking->id])->one() : null;
+            $current = array_intersect_key($booking->getRecordData(), array_flip(['calendarId', 'startDate', 'endDate', 'bookingStatus']));
+            $comparison = $released ? array_intersect_key($current, array_flip(['calendarId', 'startDate', 'endDate'])) : $current;
+            if (!$previous || array_diff_assoc($comparison, $previous) || (!$released && $restoring)) {
+                throw new BookingConflictException(Calendar::t('This calendar is inactive or the booking falls outside its available dates.'));
+            }
+            $settings['active'] = true;
+            $settings['availableFrom'] = $settings['availableUntil'] = null;
+        }
+        if ($released) {
             return;
         }
-        $settings = (new SchedulingSettings(Json::decodeIfJson($record['scheduling']) ?: []))->toArray();
         $seconds = $booking->endDate->getTimestamp() - $booking->startDate->getTimestamp();
         if ($seconds % 60 || $seconds > 86400) {
             throw new BookingConflictException(Calendar::t('Bookings must use whole minutes and last no longer than one day.'));
         }
         $settings['duration'] = (int) ($seconds / 60);
         $booking->buffer = $settings['buffer'];
-        $zone = new \DateTimeZone($settings['timezone']);
-        $date = $booking->startDate->setTimezone($zone)->format('Y-m-d');
         $slots = Availability::slots($settings, $date, $this->busy($booking->calendarId, $booking->id, true, $date, $settings['timezone']), null, false);
         foreach ($slots as $slot) {
             if ((new \DateTimeImmutable($slot['start']))->getTimestamp() === $booking->startDate->getTimestamp()) {

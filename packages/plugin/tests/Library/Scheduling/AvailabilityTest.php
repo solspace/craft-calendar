@@ -9,6 +9,25 @@ use Solspace\Calendar\Models\SchedulingSettings;
 /** @coversNothing */
 class AvailabilityTest extends TestCase
 {
+    public function testActiveStateAndInclusiveSeasonApplyToStaffAndPublicSlots(): void
+    {
+        $settings = (new SchedulingSettings(['timezone' => 'America/Winnipeg', 'availableFrom' => '2026-10-12', 'availableUntil' => '2026-10-13']))->toArray();
+        $now = new \DateTimeImmutable('2026-10-11T10:00:00Z');
+        foreach ([true, false] as $public) {
+            self::assertNotEmpty(Availability::slots($settings, '2026-10-12', [], $now, $public));
+            self::assertNotEmpty(Availability::slots($settings, '2026-10-13', [], $now, $public));
+            self::assertSame([], Availability::slots($settings, '2026-10-11', [], $now, $public));
+            self::assertSame([], Availability::slots($settings, '2026-10-14', [], $now, $public));
+            self::assertSame([], Availability::slots(array_replace($settings, ['active' => false]), '2026-10-12', [], $now, $public));
+        }
+        self::assertTrue((new SchedulingSettings())->active);
+        foreach ([['availableFrom' => '0'], ['availableFrom' => '2026-02-30'], ['availableUntil' => 'invalid'], ['availableFrom' => '2026-10-13', 'availableUntil' => '2026-10-12']] as $invalid) {
+            $model = new SchedulingSettings($invalid);
+            self::assertFalse($model->validate());
+            self::assertSame([], Availability::slots($model->toArray(), '2026-10-12', [], $now, false));
+        }
+    }
+
     public function testSeparateDurationAndIncrements(): void
     {
         $slots = $this->slots(['hours' => [['day' => 1, 'start' => '08:00', 'end' => '09:00']]]);

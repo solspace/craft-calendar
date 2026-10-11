@@ -16,7 +16,7 @@
     let slotRequest;
     let submitting = false;
     let dateTimer;
-    {% include 'calendar/bookings/_captcha-js' %}
+    {% include 'calendar/spam-protection/_captcha-js' %}
 
     function showError(text) {
         message.textContent = text;
@@ -105,6 +105,10 @@
         message.hidden = true;
         form.querySelectorAll('[aria-invalid]').forEach(input => input.removeAttribute('aria-invalid'));
         try {
+            if (captchaConfig) {
+                if (!await prepareCaptcha()) { showError(captchaLabels.unavailable); return; }
+                body.set('bookingCaptchaToken', captchaToken.value);
+            }
             const response = await fetch({{ actionUrl('calendar/bookings/request')|json_encode|raw }}, {method: 'POST', body, credentials: 'same-origin', headers: {Accept: 'application/json'}});
             const data = await response.json();
             if (!response.ok || data.success === false) {

@@ -1,0 +1,57 @@
+{% extends "calendar/layouts/_settings" %}
+{% import "_includes/forms" as forms %}
+{% set title = "Spam Protection"|t("calendar") %}
+{% block content %}
+    <form action="" method="post" accept-charset="UTF-8">
+        {{ actionInput('calendar/settings/save-settings') }}
+        {{ redirectInput('calendar/settings/spam-protection') }}
+        {{ csrfInput() }}
+        <h2>{{ 'Spam Protection'|t('calendar') }}</h2>
+        <p>{{ 'Choose optional CAPTCHA protection for public booking requests and event creation forms. Control-panel submissions are unaffected. Booking forms always retain their honeypot and request rate limit.'|t('calendar') }}</p>
+        {{ forms.selectField({
+            label: 'CAPTCHA Provider'|t('calendar'),
+            id: 'calendar-captcha-provider',
+            name: 'settings[captchaProvider]',
+            value: settings.getCaptchaProvider(),
+            options: [
+                {value: 'none', label: 'None'|t('calendar')},
+                {value: 'turnstile', label: 'Cloudflare Turnstile'},
+                {value: 'hcaptcha', label: 'hCaptcha'},
+                {value: 'recaptcha', label: 'reCAPTCHA v2 (Checkbox)'|t('calendar')},
+                {value: 'recaptcha-v3', label: 'reCAPTCHA v3 (Score)'|t('calendar')},
+            ],
+            errors: settings.getErrors('captchaProvider'),
+        }) }}
+        <div id="calendar-captcha-keys"{{ settings.getCaptchaProvider() == 'none' ? ' hidden' }}>
+            {{ forms.autosuggestField({
+                label: 'Site Key'|t('calendar'),
+                instructions: 'The public site key for the selected provider. Environment variables are supported.'|t('calendar'),
+                id: 'calendar-captcha-site-key',
+                name: 'settings[captchaSiteKey]',
+                value: settings.captchaSiteKey ?? settings.bookingCaptchaSiteKey,
+                suggestEnvVars: true,
+                errors: settings.getErrors('captchaSiteKey'),
+            }) }}
+            {{ forms.autosuggestField({
+                label: 'Secret Key'|t('calendar'),
+                instructions: 'The private secret key for the selected provider. Use an environment variable to keep the secret out of project config.'|t('calendar'),
+                id: 'calendar-captcha-secret-key',
+                name: 'settings[captchaSecretKey]',
+                value: settings.captchaSecretKey ?? settings.bookingCaptchaSecretKey,
+                suggestEnvVars: true,
+                errors: settings.getErrors('captchaSecretKey'),
+            }) }}
+        </div>
+        {{ forms.lightswitchField({label: 'Protect Booking Requests'|t('calendar'), name: 'settings[captchaProtectBookings]', on: settings.captchaProtectBookings}) }}
+        {{ forms.lightswitchField({label: 'Protect Event Creation'|t('calendar'), instructions: 'Protect new events submitted from your website, including submissions by signed-in visitors. Add the CAPTCHA template helper to custom event forms.'|t('calendar'), name: 'settings[captchaProtectEvents]', on: settings.captchaProtectEvents}) }}
+        <div id="calendar-captcha-score"{{ settings.getCaptchaProvider() != 'recaptcha-v3' ? ' hidden' }}>
+            {{ forms.textField({label: 'Minimum reCAPTCHA Score'|t('calendar'), instructions: 'Accept scores at or above this value (0–1). Start with 0.5 and adjust after reviewing traffic in the reCAPTCHA console. Use keys registered for reCAPTCHA v3.'|t('calendar'), name: 'settings[recaptchaMinimumScore]', type: 'number', min: 0, max: 1, step: 0.01, value: settings.recaptchaMinimumScore, errors: settings.getErrors('recaptchaMinimumScore')}) }}
+        </div>
+    </form>
+{% endblock %}
+{% js %}
+    $(document).on('change', '#calendar-captcha-provider', function() {
+        document.getElementById('calendar-captcha-keys').hidden = this.value === 'none';
+        document.getElementById('calendar-captcha-score').hidden = this.value !== 'recaptcha-v3';
+    });
+{% endjs %}

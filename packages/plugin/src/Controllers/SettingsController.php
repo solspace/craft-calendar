@@ -90,6 +90,11 @@ class SettingsController extends BaseController
     /**
      * Renders the General settings page template.
      */
+    public function actionSpamProtection(): Response
+    {
+        return $this->provideTemplate('spam_protection', ['label' => 'Spam Protection']);
+    }
+
     public function actionGuestAccess(): Response
     {
         $settings = $this->getSettingsService()->getSettingsModel();
@@ -99,7 +104,9 @@ class SettingsController extends BaseController
 
         $calendarOptions = [];
         foreach ($calendars as $calendar) {
-            $calendarOptions[$calendar->id] = $calendar->name;
+            if (!$calendar->getIsScheduling()) {
+                $calendarOptions[$calendar->id] = $calendar->name;
+            }
         }
 
         return $this->provideTemplate(
@@ -128,6 +135,12 @@ class SettingsController extends BaseController
 
         if (isset($postData['guestAccess']) && !$postData['guestAccess']) {
             $postData['guestAccess'] = null;
+        }
+
+        if (isset($postData['captchaProvider'], $postData['captchaSiteKey'], $postData['captchaSecretKey'])) {
+            // Retire legacy raw keys once the shared settings have been explicitly saved.
+            $postData['bookingCaptchaProvider'] = 'none';
+            $postData['bookingCaptchaSiteKey'] = $postData['bookingCaptchaSecretKey'] = '';
         }
 
         $plugin = Calendar::getInstance();

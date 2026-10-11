@@ -11,10 +11,10 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
-use Solspace\Calendar\Library\Scheduling\BookingCaptcha;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
+use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\web\BadRequestHttpException;
@@ -352,10 +352,10 @@ class BookingsController extends BaseController
         foreach (['customerName', 'customerEmail', 'notes'] as $key) {
             $booking->{$key} = trim((string) $request->getBodyParam($key, ''));
         }
-        $captcha = new BookingCaptcha();
+        $captcha = new Captcha();
         $spamSettings = Calendar::getInstance()->settings->getSettingsModel();
         $captchaConfig = $captcha->getClientConfig($spamSettings);
-        $token = $request->getBodyParam('bookingCaptchaToken', $captchaConfig ? $request->getBodyParam($captchaConfig['responseField']) : null);
+        $token = $request->getBodyParam('captchaToken', $request->getBodyParam('bookingCaptchaToken', $captchaConfig ? $request->getBodyParam($captchaConfig['responseField']) : null));
         if (!$captcha->verify($spamSettings, $token, $request->getUserIP())) {
             $booking->addError('bookingCaptchaToken', Calendar::t('Please complete the spam protection check and try again.'));
         }

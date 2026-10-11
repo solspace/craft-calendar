@@ -50,6 +50,14 @@ class SettingsModel extends Model
 
     public array|bool|null $guestAccess = null;
 
+    // Legacy booking-only settings remain readable for existing project config.
+    public ?string $captchaProvider = null;
+    public ?string $captchaSiteKey = null;
+    public ?string $captchaSecretKey = null;
+    public bool $captchaProtectBookings = true;
+    public bool $captchaProtectEvents = false;
+    public float|string $recaptchaMinimumScore = 0.5;
+
     public string $bookingCaptchaProvider = 'none';
     public string $bookingCaptchaSiteKey = '';
     public string $bookingCaptchaSecretKey = '';
@@ -178,20 +186,50 @@ class SettingsModel extends Model
 
     public function getBookingCaptchaSiteKey(): string
     {
-        return trim((string) App::parseEnv($this->bookingCaptchaSiteKey));
+        return $this->getCaptchaSiteKey();
     }
 
     public function getBookingCaptchaSecretKey(): string
     {
-        return trim((string) App::parseEnv($this->bookingCaptchaSecretKey));
+        return $this->getCaptchaSecretKey();
+    }
+
+    public function getCaptchaProvider(): string
+    {
+        return $this->captchaProvider ?? $this->bookingCaptchaProvider;
+    }
+
+    public function getCaptchaSiteKey(): string
+    {
+        return trim((string) App::parseEnv($this->captchaSiteKey ?? $this->bookingCaptchaSiteKey));
+    }
+
+    public function getCaptchaSecretKey(): string
+    {
+        return trim((string) App::parseEnv($this->captchaSecretKey ?? $this->bookingCaptchaSecretKey));
+    }
+
+    public function validateCaptchaKeys(): void
+    {
+        if ('none' === $this->getCaptchaProvider() || (!$this->captchaProtectBookings && !$this->captchaProtectEvents)) {
+            return;
+        }
+        foreach (['SiteKey', 'SecretKey'] as $key) {
+            $attribute = null !== $this->{'captcha'.$key} ? 'captcha'.$key : 'bookingCaptcha'.$key;
+            if ('' === trim($this->{$attribute}) && !$this->hasErrors($attribute)) {
+                $this->addError($attribute, Calendar::t('Enter both site and secret keys for the selected CAPTCHA provider.'));
+            }
+        }
     }
 
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha'], 'skipOnEmpty' => false],
-            [['bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],
-            [['bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'required', 'when' => fn () => 'none' !== $this->bookingCaptchaProvider],
+            [['captchaProvider', 'bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha', 'recaptcha-v3'], 'skipOnEmpty' => false, 'when' => static fn ($model, $attribute) => null !== $model->{$attribute}],
+            [['captchaSiteKey', 'captchaSecretKey', 'bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],
+            [['captchaProvider', 'bookingCaptchaProvider'], 'validateCaptchaKeys', 'skipOnEmpty' => false],
+            [['captchaProtectBookings', 'captchaProtectEvents'], 'boolean'],
+            [['recaptchaMinimumScore'], 'number', 'min' => 0, 'max' => 1, 'skipOnEmpty' => false],
             [['defaultCalendarView'], 'in', 'range' => self::CALENDAR_VIEWS, 'skipOnEmpty' => false],
             [['enabledCalendarViews'], 'validateEnabledCalendarViews', 'skipOnEmpty' => false],
             [['defaultCalendarView'], 'validateDefaultCalendarView', 'skipOnEmpty' => false],

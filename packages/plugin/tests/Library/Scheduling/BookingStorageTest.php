@@ -15,6 +15,7 @@ use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
 use Solspace\Calendar\migrations\m261011_020000_HardenBookings;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SchedulingSettings;
 use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Services\BookingsService;
 use Solspace\Calendar\Services\CalendarsService;
@@ -135,6 +136,45 @@ class BookingStorageTest extends TestCase
             self::assertFalse($service->saveCalendar($calendar, false));
             self::assertTrue($calendar->hasErrors('type'));
             self::assertSame('scheduling', $this->db->createCommand('SELECT type FROM calendar_calendars WHERE id=1')->queryScalar());
+        }
+    }
+
+    public function testInactiveAndSeasonalRulesBlockNewBookingsAndMovesButAllowExistingMetadataAndCancellation(): void
+    {
+        foreach ([['active' => false], ['availableFrom' => '2026-10-13'], ['availableUntil' => '2026-10-11']] as $rules) {
+            $settings = (new SchedulingSettings($rules))->toArray();
+            $this->db->createCommand()->update('calendar_calendars', ['scheduling' => json_encode($settings)], ['id' => 1])->execute();
+            $existing = $this->booking(1);
+            $existing->notes = 'Updated notes';
+            $this->service->assertSaveAllowed($existing);
+            self::assertSame('Updated notes', $existing->notes);
+            foreach (['create', 'create_cancelled', 'move', 'confirm', 'restore'] as $change) {
+                $booking = $this->booking(1);
+                if (str_starts_with($change, 'create')) {
+                    $booking->id = 99;
+                }
+                if ('create_cancelled' === $change) {
+                    $booking->bookingStatus = Booking::CANCELLED;
+                }
+                if ('move' === $change) {
+                    $booking->startDate = $booking->startDate->modify('+15 minutes');
+                    $booking->endDate = $booking->endDate->modify('+15 minutes');
+                }
+                if ('confirm' === $change) {
+                    $booking->bookingStatus = Booking::CONFIRMED;
+                }
+
+                try {
+                    $this->service->assertSaveAllowed($booking, 'restore' === $change);
+                    self::fail('Unavailable calendar accepted '.$change);
+                } catch (BookingConflictException) {
+                    self::assertTrue(true);
+                }
+            }
+            $cancelled = $this->booking(1);
+            $cancelled->bookingStatus = Booking::CANCELLED;
+            $this->service->assertSaveAllowed($cancelled);
+            self::assertSame(Booking::CANCELLED, $cancelled->bookingStatus);
         }
     }
 

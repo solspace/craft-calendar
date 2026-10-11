@@ -4,7 +4,10 @@ Choose **Events** or **Scheduling** at the top of New Calendar. Existing calenda
 
 Scheduling calendars have weekly opening periods, date exceptions (closed, replacement hours, or blocked times), duration, start increments, a gap after bookings, notice, and an advance booking window. A closed date wins over replacement hours. Multiple periods support lunch breaks. Empty weekly hours keep all weekdays closed; replacement hours can still open a particular date.
 
-Defaults: 8am–9pm each day, 30-minute bookings, 15-minute start increments, no buffer or minimum notice, a 90-day booking window, no overlaps, guest requests disabled, and approval required. The scheduling timezone handles daylight saving changes; bookings are stored in UTC. The appointment and its buffer must fit inside the opening period. Overlap permission applies to bookings, not holiday closures or blocked periods, and has no capacity limit.
+Defaults: Active, no seasonal limits, 8am–9pm each day, 30-minute bookings, 15-minute start increments, no buffer or minimum notice, a 90-day booking window, no overlaps, guest requests disabled, and approval required. The scheduling timezone handles daylight saving changes; bookings are stored in UTC. The appointment and its buffer must fit inside the opening period. Overlap permission applies to bookings, not holiday closures or blocked periods, and has no capacity limit.
+
+
+Use **Active** to stop new bookings for a resource. **Available From** and **Available Until** optionally limit bookable dates; both are inclusive and use the scheduling timezone. Visitors can book dates within a future season ahead of time, subject to the advance window and minimum notice. Inactive resources and resources whose final date has passed disappear from the public chooser. Existing bookings are retained: staff can review them, edit their details, decline, cancel, or delete them. Moving, confirming, or restoring a reservation must respect the active state and season. Changing these settings does not automatically cancel or notify existing customers.
 
 ## Control panel
 
@@ -34,28 +37,45 @@ Requests do not reserve a time. Confirmation checks availability again. Turning 
 
 ### Spam protection
 
-Public booking requests always use CSRF protection, a hidden honeypot, and an atomic per-IP rate limit. To add a CAPTCHA, open **Settings → Guest Access → Booking Spam Protection**, choose **Cloudflare Turnstile**, **hCaptcha**, or **reCAPTCHA v2 (Checkbox)**, and enter the matching site and secret keys. Configure the provider to allow your website's hostnames. Use reCAPTCHA v2 checkbox keys; reCAPTCHA v3 and Enterprise assessments are not supported by this adapter.
+Public booking requests always use CSRF protection, a hidden honeypot, and an atomic per-IP rate limit. Open **Settings → Spam Protection** to add **Cloudflare Turnstile**, **hCaptcha**, **reCAPTCHA v2 (Checkbox)**, or **reCAPTCHA v3 (Score)**. Enter matching site and secret keys and configure your website's hostnames with the provider. Choose whether to **Protect Booking Requests**, **Protect Event Creation**, or both. The provider defaults to **None**; when a provider is selected, booking protection defaults on and event protection defaults off.
 
-The provider is optional and defaults to **None**. When enabled, it applies to all public booking requests, including direct POSTs and requests from signed-in visitors. Staff creating or editing bookings in the control panel do not need to complete it. This setting is independent of guest event submissions. Calendar handles verification itself and does not require Freeform to be installed.
+Protection covers direct public POSTs and submissions from signed-in visitors. Event protection applies to new events submitted to `calendar/events-api/save`; existing event edits are unaffected. Control-panel entry requires control-panel access and does not require CAPTCHA. Calendar verifies tokens itself and does not require Freeform.
 
-Both keys support Craft environment variables. Prefer storing the secret in an environment variable so it stays out of project config:
+Both keys support Craft environment variables. Prefer keeping secrets out of project config:
 
 ```php
 // config/calendar.php
 return [
-    'bookingCaptchaProvider' => 'turnstile',
-    'bookingCaptchaSiteKey' => '$BOOKING_CAPTCHA_SITE_KEY',
-    'bookingCaptchaSecretKey' => '$BOOKING_CAPTCHA_SECRET_KEY',
+    'captchaProvider' => 'turnstile',
+    'captchaSiteKey' => '$CALENDAR_CAPTCHA_SITE_KEY',
+    'captchaSecretKey' => '$CALENDAR_CAPTCHA_SECRET_KEY',
+    'captchaProtectBookings' => true,
+    'captchaProtectEvents' => false,
+    'recaptchaMinimumScore' => 0.5,
 ];
 ```
 
-`bookingForm()` and both booking demos render the selected provider automatically. Widgets follow the form's light/dark theme, including theme switches, and use a compact layout when needed. Multiple forms have independent tokens and share one provider script. Failed submissions preserve entered details and reset used tokens for another attempt. Missing, expired, invalid, or unverifiable tokens reject the request without creating a booking or queuing notifications; provider outages and missing configuration do not bypass protection. Only the public site key reaches the browser.
+Existing `bookingCaptchaProvider`, `bookingCaptchaSiteKey`, and `bookingCaptchaSecretKey` settings remain readable. Saving the shared settings replaces those legacy values.
 
-For a custom booking form, `craft.calendar.bookingCaptcha()` returns `null` when disabled, or `{provider, siteKey, responseField}` when enabled. Render the chosen provider's widget and submit its token under its standard `responseField` (`cf-turnstile-response`, `h-captcha-response`, or `g-recaptcha-response`), or under `bookingCaptchaToken`. Turnstile widgets must use `action: 'calendar-booking'`. Reset the widget after a rejected submission because tokens are single-use. Allow the provider's documented script, frame, and connection origins if your website uses a Content Security Policy.
+For **reCAPTCHA v3**, use v3 keys. The browser executes on submission, with a fresh token for each attempt. The server checks success, the exact action (`calendar_booking` or `calendar_event`), and a numeric score at or above **Minimum reCAPTCHA Score** (default 0.5). Review scores in the provider console before changing the threshold. Enterprise assessments are not supported by this adapter.
+
+`bookingForm()` renders the provider automatically. Both new-event demos include the helper. For your own regular HTML event form, place this inside the form alongside your existing CSRF and action inputs:
+
+```twig
+{{ craft.calendar.captcha('event', {theme: 'auto'}) }}
+```
+
+The helper returns an empty string when that form type is not protected. Use it once per form. It supports `auto`, `light`, and `dark` themes and resumes native submission only after verification, preserving native validation and the submit button. When updating installed demos, merge the helper into both framework `edit.twig` templates.
+
+For AJAX forms, use `{autoSubmit: false}` and await `form.querySelector('[data-calendar-captcha]').calendarCaptcha.prepare()` inside your submit handler before constructing `FormData`. Proceed only if it returns true, retain a duplicate-submit guard, and call `.reset()` after a failed request. The hidden `captchaToken` input is included in `FormData`.
+
+Checkbox widgets follow light/dark theme switches and fit narrow forms. Multiple forms have independent tokens and share one provider script. Booking retries preserve entered details and reset used tokens. Missing, expired, invalid, or unverifiable tokens reject the request without creating a record or queuing booking notifications; outages and missing configuration do not bypass protection. Only public configuration reaches the browser. v3 retains Google's visible badge.
+
+For manually rendered widgets, `craft.calendar.spamProtection('booking')` or `craft.calendar.spamProtection('event')` returns `null` when disabled, or `{provider, siteKey, responseField, action}`. Submit a token under `captchaToken` or the standard provider `responseField`. Booking requests also accept the legacy `bookingCaptchaToken`. Set Turnstile's `action` to the returned action (`calendar-booking` or `calendar-event`). v3 must execute with the returned underscore action at submission time. `craft.calendar.bookingCaptcha()` remains an alias for booking configuration. Allow the provider's documented script, frame, and connection origins when using a Content Security Policy.
 
 ### Rendering a booking form
 
-Enable Allow Guest Booking Requests on the scheduling calendar. Guest access is independent of Calendar's existing event guest-posting settings. Only scheduling calendars enabled on the current site are offered. Bookings share one resource's availability across sites and are stored on the primary site.
+Enable Allow Guest Booking Requests on the scheduling calendar. **Guest Submission Calendars** lists event calendars only. Scheduling calendars use their own **Allow Guest Booking Requests** switch; membership in the guest event list is not required. Only active scheduling calendars enabled on the current site and within their final available date are offered. Bookings share one resource's availability across sites and are stored on the primary site.
 
 ```twig
 {{ craft.calendar.bookingForm('meetingRoom') }}
@@ -75,7 +95,7 @@ Use a calendar handle or ID. The default style works without a CSS framework. Bo
 {{ craft.calendar.bookingForm('consultations', {framework: 'tailwind', theme: 'dark'}) }}
 ```
 
-`framework` accepts `default`, `bootstrap`, or `tailwind`. `theme` accepts `auto`, `light`, or `dark`. Auto inherits an ancestor's `data-bs-theme` setting or Tailwind's `.dark` class, and otherwise follows the visitor's system appearance. An optional `date` starts the picker on that day; dates outside the calendar's advance window fall back to today. An optional `booking` restores submitted contact and custom field values. Unavailable or private calendars return an empty string. All form styles are scoped to `.calendar-booking-form`; override the `--booking-*` CSS variables to match your own site. The built-in JavaScript uses native browser APIs and does not require Bootstrap JavaScript or Tailwind.
+`framework` accepts `default`, `bootstrap`, or `tailwind`. `theme` accepts `auto`, `light`, or `dark`. Auto inherits an ancestor's `data-bs-theme` setting or Tailwind's `.dark` class, and otherwise follows the visitor's system appearance. An optional `date` starts the picker on that day; dates outside the advance or seasonal window fall back to the first bookable date. The picker is restricted to the intersection of these windows. An optional `booking` restores submitted contact and custom field values. Unavailable or private calendars return an empty string. All form styles are scoped to `.calendar-booking-form`; override the `--booking-*` CSS variables to match your own site. The built-in JavaScript uses native browser APIs and does not require Bootstrap JavaScript or Tailwind.
 
 Successful submissions dispatch a bubbling `calendar:booking-success` browser event on the form. `event.detail.confirmed` indicates whether the booking was confirmed immediately or received for review. A received request does not reserve the time.
 

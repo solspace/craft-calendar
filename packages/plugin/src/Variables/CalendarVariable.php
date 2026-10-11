@@ -20,7 +20,7 @@ use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
-use Solspace\Calendar\Library\Scheduling\BookingCaptcha;
+use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
@@ -92,8 +92,14 @@ class CalendarVariable
         $booking = $options['booking'] ?? new Booking();
         $settings = $model->getSchedulingSettings();
         $today = new \DateTimeImmutable('now', new \DateTimeZone($settings->timezone));
-        $minDate = $today->format('Y-m-d');
+        $minDate = max($today->format('Y-m-d'), $settings->availableFrom ?? '');
         $maxDate = $today->modify('+'.$settings->maximumAdvance.' days')->format('Y-m-d');
+        if ($settings->availableUntil) {
+            $maxDate = min($maxDate, $settings->availableUntil);
+        }
+        if ($minDate > $maxDate) {
+            return new Markup(\Craft::t('calendar', 'No booking dates are currently available.'), 'UTF-8');
+        }
         $date = $options['date'] ?? $booking->startDate?->setTimezone($today->getTimezone())->format('Y-m-d') ?? $minDate;
         if (!\is_string($date) || !Availability::validDate($date) || $date < $minDate || $date > $maxDate) {
             $date = $minDate;
@@ -118,7 +124,31 @@ class CalendarVariable
 
     public function bookingCaptcha(): ?array
     {
-        return (new BookingCaptcha())->getClientConfig(Calendar::getInstance()->getSettings());
+        return $this->spamProtection('booking');
+    }
+
+    public function spamProtection(string $purpose = 'event'): ?array
+    {
+        return (new Captcha())->getClientConfig(Calendar::getInstance()->getSettings(), $purpose);
+    }
+
+    /** Place inside a public event-creation form. Booking forms include this automatically. */
+    public function captcha(string $purpose = 'event', array $options = []): Markup
+    {
+        $config = $this->spamProtection($purpose);
+        if (!$config) {
+            return new Markup('', 'UTF-8');
+        }
+        $theme = $options['theme'] ?? 'auto';
+        if (!\in_array($theme, ['auto', 'light', 'dark'], true)) {
+            throw new \InvalidArgumentException('Choose auto, light, or dark CAPTCHA theme.');
+        }
+        $html = \Craft::$app->view->renderTemplate('calendar/spam-protection/_widget', [
+            'widgetId' => 'calendar-captcha-'.StringHelper::randomString(12),
+            'captcha' => $config, 'theme' => $theme, 'autoSubmit' => $options['autoSubmit'] ?? true,
+        ], View::TEMPLATE_MODE_CP);
+
+        return new Markup($html, 'UTF-8');
     }
 
     public function formats(): FormatsService

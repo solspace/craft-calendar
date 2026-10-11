@@ -53,6 +53,7 @@ return [
     'calendar/settings/overview' => 'calendar/settings/overview',
     'calendar/settings/events' => 'calendar/settings/events',
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
+    'calendar/settings/spam-protection' => 'calendar/settings/spam-protection',
     'calendar/settings/ics' => 'calendar/settings/ics',
     'calendar/settings/demo-templates' => 'calendar/code-pack/list-contents',
 ];
