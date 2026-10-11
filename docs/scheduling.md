@@ -12,6 +12,8 @@ Defaults: 8am–9pm each day, 30-minute bookings, 15-minute start increments, no
 
 Bookings are separate Craft elements and have one shared custom field layout, configured under **Bookings → Booking fields**. Name, email, times, status, and notes are built in. Guest-visible fields are explicitly selected from simple text, number, dropdown, radio, and checkbox fields; other custom fields remain private. Save new layout fields before selecting them for guest use.
 
+The booking editor offers a date picker and available time slots instead of free-form start/end inputs. New bookings default to the next available slot within the booking window. Editing preserves the booking’s existing duration and excludes its own reservation when calculating availability. Staff can select historical dates; guest notice and advance limits apply to the public form. Availability is checked again when saving.
+
 Requests do not reserve a time. Confirmation checks availability again. Turning off Require Approval confirms guest bookings immediately. Confirmed saves serialize on the calendar row inside Craft's element transaction and recheck conflicts. The same validation applies to direct element saves. Ordinary event creation is not available for Scheduling calendars. Booking contact details are not exported through event queries or ICS.
 
 ## Front end

@@ -100,13 +100,36 @@ class BookingsService extends Component
         return $fields;
     }
 
-    public function availableSlots(CalendarModel $calendar, string $date, bool $public = true): array
+    public function availableSlots(CalendarModel $calendar, string $date, bool $public = true, ?int $except = null, ?int $duration = null): array
     {
         if (!$calendar->getIsScheduling() || ($public && !isset($this->getPublicCalendars()[$calendar->id]))) {
             return [];
         }
 
-        return Availability::slots($calendar->getSchedulingSettings()->toArray(), $date, $this->busy($calendar->id, null, false, $date, $calendar->getSchedulingSettings()->timezone), null, $public);
+        $settings = $calendar->getSchedulingSettings()->toArray();
+        if (!$public && null !== $duration) {
+            $settings['duration'] = $duration;
+        }
+
+        return Availability::slots($settings, $date, $this->busy($calendar->id, $public ? null : $except, false, $date, $settings['timezone']), null, $public);
+    }
+
+    public function nextAvailableSlot(CalendarModel $calendar, ?\DateTimeImmutable $now = null): ?array
+    {
+        $settings = $calendar->getSchedulingSettings();
+        $zone = new \DateTimeZone($settings->timezone);
+        $now = ($now ?? new \DateTimeImmutable('now', $zone))->setTimezone($zone);
+        $day = $now->setTime(0, 0);
+        for ($offset = 0; $offset <= $settings->maximumAdvance; ++$offset) {
+            foreach ($this->availableSlots($calendar, $day->format('Y-m-d'), false) as $slot) {
+                if ((new \DateTimeImmutable($slot['start'])) >= $now) {
+                    return $slot;
+                }
+            }
+            $day = $day->modify('+1 day');
+        }
+
+        return null;
     }
 
     /** Every element save, including native saves, must pass this inside its transaction. */

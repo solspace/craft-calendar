@@ -2,6 +2,11 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Available Times' => 'Available Times',
+    'Try again' => 'Try again',
+    'Choose a date to see available times.' => 'Choose a date to see available times.',
+    'Current booking time: {time}' => 'Current booking time: {time}',
+    'No available booking times were found within this calendar’s booking window. Check its opening hours, exceptions, and existing bookings.' => 'No available booking times were found within this calendar’s booking window. Check its opening hours, exceptions, and existing bookings.',
     'Does not repeat' => 'Does not repeat',
     'Weekdays (Monday–Friday)' => 'Weekdays (Monday–Friday)',
     'Weekly on {weekday}' => 'Weekly on {weekday}',

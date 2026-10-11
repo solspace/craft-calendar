@@ -11,8 +11,17 @@
 {{ forms.selectField({label: 'Calendar'|t('calendar'), name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
 {% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
 <p class="light" id="booking-timezone">{{ 'Times use {timezone}.'|t('calendar', {timezone}) }}</p>
-{{ forms.textField({label: 'Starts'|t('calendar'), name: 'startDate', type: 'datetime-local', value: booking.startDate|date('Y-m-d\\TH:i', timezone), required: true, errors: booking.getErrors('startDate')}) }}
-{{ forms.textField({label: 'Ends'|t('calendar'), name: 'endDate', type: 'datetime-local', value: booking.endDate|date('Y-m-d\\TH:i', timezone), required: true, errors: booking.getErrors('endDate')}) }}
+{{ forms.textField({label: 'Date'|t('app'), name: 'bookingDate', id: 'booking-date', type: 'date', value: booking.startDate ? booking.startDate|date('Y-m-d', timezone) : now|date('Y-m-d', timezone), required: true}) }}
+<div class="field" id="booking-slots-field">
+    <div class="heading"><label id="booking-slots-label">{{ 'Available Times'|t('calendar') }} <span class="required" aria-hidden="true"></span></label></div>
+    <p class="light" id="booking-slots-message" role="status" aria-live="polite"></p>
+    <button type="button" class="btn" id="booking-slots-retry" hidden>{{ 'Try again'|t('calendar') }}</button>
+    <div id="booking-slots" role="group" aria-labelledby="booking-slots-label"></div>
+    {{ forms.errorList(booking.getErrors('startDate')) }}
+    {{ forms.errorList(booking.getErrors('endDate')) }}
+</div>
+{{ hiddenInput('startDate', booking.startDate ? booking.startDate|date('c', timezone) : '') }}
+{{ hiddenInput('endDate', booking.endDate ? booking.endDate|date('c', timezone) : '') }}
 {{ forms.selectField({label: 'Booking Status'|t('calendar'), instructions: 'Requested times are reserved only after confirmation.'|t('calendar'), name: 'bookingStatus', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
 <hr>
 {{ forms.textField({label: 'Customer Name'|t('calendar'), name: 'customerName', value: booking.customerName, required: true, errors: booking.getErrors('customerName')}) }}
@@ -22,7 +31,84 @@
 {% endblock %}
 {% js %}
 const bookingTimezones = {{ calendars|map(calendar => calendar.schedulingSettings.timezone)|json_encode|raw }};
-document.getElementById('booking-calendar').addEventListener('change', (event) => {
-    document.getElementById('booking-timezone').textContent = Craft.t('calendar', 'Times use {timezone}.', { timezone: bookingTimezones[event.target.value] });
+const bookingCalendar = document.getElementById('booking-calendar');
+const bookingDate = document.getElementById('booking-date');
+const bookingSlots = document.getElementById('booking-slots');
+const bookingSlotsMessage = document.getElementById('booking-slots-message');
+const bookingSlotsRetry = document.getElementById('booking-slots-retry');
+const bookingStart = document.querySelector('[name="startDate"]');
+const bookingEnd = document.querySelector('[name="endDate"]');
+const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingStart.value, end: bookingEnd.value};
+let bookingSlotsRequest = 0;
+let bookingSlotsLoading = false;
+function chooseBookingSlot(slot, button) {
+    bookingStart.value = slot.start;
+    bookingEnd.value = slot.end;
+    bookingStart.dispatchEvent(new Event('change', {bubbles: true}));
+    bookingEnd.dispatchEvent(new Event('change', {bubbles: true}));
+    bookingSlots.querySelectorAll('button').forEach(item => {
+        item.classList.toggle('active', item === button);
+        item.setAttribute('aria-pressed', item === button ? 'true' : 'false');
+    });
+}
+async function loadBookingSlots() {
+    const request = ++bookingSlotsRequest;
+    bookingSlotsLoading = true;
+    bookingSlotsRetry.hidden = true;
+    bookingSlots.replaceChildren();
+    bookingStart.value = '';
+    bookingEnd.value = '';
+    document.getElementById('booking-timezone').textContent = Craft.t('calendar', 'Times use {timezone}.', {timezone: bookingTimezones[bookingCalendar.value]});
+    if (!bookingDate.value) {
+        bookingSlotsLoading = false;
+        bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose a date to see available times.');
+        return;
+    }
+    bookingSlotsMessage.textContent = Craft.t('calendar', 'Loading available times…');
+    try {
+        const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: bookingCalendar.value, date: bookingDate.value, bookingId: {{ booking.id ?? 0 }}}});
+        if (request !== bookingSlotsRequest) return;
+        const slots = response.data.slots;
+        const original = originalBookingTime.calendarId === bookingCalendar.value && originalBookingTime.start.slice(0, 10) === bookingDate.value ? originalBookingTime : null;
+        {% if booking.id %}
+        if (original && !slots.some(slot => Date.parse(slot.start) === Date.parse(original.start))) {
+            slots.unshift({start: original.start, end: original.end, label: Craft.t('calendar', 'Current booking time: {time}', {time: original.start.slice(11, 16) + '–' + original.end.slice(11, 16)})});
+        }
+        {% endif %}
+        bookingSlotsMessage.textContent = slots.length ? Craft.t('calendar', 'Choose an available time.') : Craft.t('calendar', 'No times are available on this date.');
+        slots.forEach(slot => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn booking-slot';
+            button.textContent = slot.label;
+            button.setAttribute('aria-pressed', 'false');
+            button.addEventListener('click', () => chooseBookingSlot(slot, button));
+            bookingSlots.append(button);
+            if (original && Date.parse(slot.start) === Date.parse(original.start)) chooseBookingSlot(slot, button);
+        });
+    } catch (_) {
+        if (request === bookingSlotsRequest) {
+            bookingSlotsMessage.textContent = Craft.t('calendar', 'Could not load available times. Please try again.');
+            bookingSlotsRetry.hidden = false;
+        }
+    } finally {
+        if (request === bookingSlotsRequest) bookingSlotsLoading = false;
+    }
+}
+bookingCalendar.addEventListener('change', loadBookingSlots);
+bookingDate.addEventListener('change', loadBookingSlots);
+bookingSlotsRetry.addEventListener('click', loadBookingSlots);
+bookingDate.form.addEventListener('submit', event => {
+    if (bookingSlotsLoading || !bookingStart.value || !bookingEnd.value) {
+        event.preventDefault();
+        bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose an available time.');
+        bookingDate.focus();
+    }
 });
+loadBookingSlots();
 {% endjs %}
+{% css %}
+#booking-slots { display:flex; flex-wrap:wrap; gap:8px; max-width:760px; }
+#booking-slots .booking-slot { min-width:112px; justify-content:center; }
+#booking-slots .booking-slot.active { background:var(--enabled-color,#008a5b); color:#fff; }
+{% endcss %}

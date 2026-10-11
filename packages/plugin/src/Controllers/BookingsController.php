@@ -67,19 +67,19 @@ class BookingsController extends BaseController
             $booking->calendarId = $calendarId;
             $settings = $calendars[$calendarId]->getSchedulingSettings();
             $start = \Craft::$app->request->getQueryParam('start');
-            $booking->startDate = $start ? $this->parseStart($start) : new \DateTimeImmutable('now', new \DateTimeZone($settings->timezone));
-            $booking->startDate = $booking->startDate->setTimestamp($booking->startDate->getTimestamp() - (int) $booking->startDate->format('s'));
-            if (!$start) {
-                foreach (Calendar::getInstance()->bookings->availableSlots($calendars[$calendarId], $booking->startDate->format('Y-m-d'), false) as $slot) {
-                    $candidate = new \DateTimeImmutable($slot['start']);
-                    if ($candidate >= $booking->startDate) {
-                        $booking->startDate = $candidate;
-
-                        break;
-                    }
+            if ($start) {
+                $booking->startDate = $this->parseStart($start);
+                $booking->startDate = $booking->startDate->setTimestamp($booking->startDate->getTimestamp() - (int) $booking->startDate->format('s'));
+                $booking->endDate = $booking->startDate->setTimestamp($booking->startDate->getTimestamp() + $settings->duration * 60);
+            } else {
+                $slot = Calendar::getInstance()->bookings->nextAvailableSlot($calendars[$calendarId]);
+                if ($slot) {
+                    $booking->startDate = new \DateTimeImmutable($slot['start']);
+                    $booking->endDate = new \DateTimeImmutable($slot['end']);
+                } else {
+                    $booking->addError('startDate', Calendar::t('No available booking times were found within this calendar’s booking window. Check its opening hours, exceptions, and existing bookings.'));
                 }
             }
-            $booking->endDate = $booking->startDate->setTimestamp($booking->startDate->getTimestamp() + $settings->duration * 60);
         }
 
         return $this->renderEdit($booking);
@@ -104,9 +104,13 @@ class BookingsController extends BaseController
         $zone = new \DateTimeZone($calendars[$calendarId]->getSchedulingSettings()->timezone);
         foreach (['startDate', 'endDate'] as $key) {
             $value = (string) $request->getRequiredBodyParam($key);
-            $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d\TH:i', $value, $zone);
-            if (!$parsed || $parsed->format('Y-m-d\TH:i') !== $value) {
-                throw new BadRequestHttpException(Calendar::t('Choose valid booking dates and times.'));
+            if (preg_match('/(?:Z|[+-]\d{2}:\d{2})$/D', $value)) {
+                $parsed = $this->parseStart($value);
+            } else {
+                $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d\TH:i', $value, $zone);
+                if (!$parsed || $parsed->format('Y-m-d\TH:i') !== $value) {
+                    throw new BadRequestHttpException(Calendar::t('Choose valid booking dates and times.'));
+                }
             }
             $booking->{$key} = $parsed;
         }
@@ -165,6 +169,35 @@ class BookingsController extends BaseController
         \Craft::$app->response->headers->set('Cache-Control', 'no-store');
 
         return $this->asJson(['slots' => Calendar::getInstance()->bookings->availableSlots($calendar, $date), 'timezone' => $calendar->getSchedulingSettings()->timezone]);
+    }
+
+    public function actionAvailableSlots(): Response
+    {
+        $calendars = $this->manageableCalendars();
+        $request = \Craft::$app->request;
+        $calendarId = (int) $request->getRequiredQueryParam('calendarId');
+        if (!isset($calendars[$calendarId])) {
+            throw new ForbiddenHttpException();
+        }
+        $date = (string) $request->getRequiredQueryParam('date');
+        if (!Availability::validDate($date)) {
+            throw new BadRequestHttpException();
+        }
+        $bookingId = (int) $request->getQueryParam('bookingId');
+        $duration = null;
+        if ($bookingId) {
+            $booking = Booking::find()->id($bookingId)->one();
+            if (!$booking || !isset($calendars[$booking->calendarId])) {
+                throw new ForbiddenHttpException();
+            }
+            $duration = (int) (($booking->endDate->getTimestamp() - $booking->startDate->getTimestamp()) / 60);
+        }
+        \Craft::$app->response->headers->set('Cache-Control', 'no-store');
+
+        return $this->asJson([
+            'slots' => Calendar::getInstance()->bookings->availableSlots($calendars[$calendarId], $date, false, $bookingId ?: null, $duration),
+            'timezone' => $calendars[$calendarId]->getSchedulingSettings()->timezone,
+        ]);
     }
 
     public function actionRequest(): ?Response
