@@ -118,6 +118,9 @@
 .booking-decline-btn { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 5%,#fff); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--error-color,#cf1124) 35%,transparent); }
 .booking-decline-btn:hover { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 10%,#fff); }
 .booking-decline-btn:focus-visible { outline:2px solid var(--error-color,#cf1124); outline-offset:2px; }
+.request-confirm-btn { background:var(--blue-500,#2563eb) !important; color:#fff !important; box-shadow:none !important; }
+.request-confirm-btn:hover { background:var(--blue-600,#1d4ed8) !important; }
+.request-confirm-btn:focus-visible { outline:2px solid var(--blue-600,#1d4ed8); outline-offset:2px; }
 .request-review-actions { display:flex; align-items:center; gap:var(--s,8px); }
 @media (max-width:600px) {
     .request-review-header { gap:10px; flex-wrap:wrap; }
@@ -137,6 +140,7 @@
     const form = document.getElementById({{ containerId|json_encode|raw }});
     const screen = $(form).data('cpScreen');
     const actions = form.querySelector('.request-review-actions');
+    screen.$saveBtn.addClass('request-confirm-btn');
     screen.$footer.children('.request-review-actions').remove();
     screen.$footer.children('.flex-grow').before(actions);
     const decision = form.querySelector('[data-request-decision]');
