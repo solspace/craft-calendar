@@ -11,6 +11,8 @@ Use **Active** to stop new bookings for a resource. **Available From** and **Ava
 
 ## Control panel
 
+Select **Bookings** under **Settings → General Settings → Default Page** to open the booking list when clicking Calendar in the control-panel navigation. Users without a manageable scheduling calendar fall back to Overview.
+
 **Bookings** appears when the current user can manage at least one Scheduling calendar. Booking permissions are independent of event permissions and can be granted globally or per calendar. The list supports customer search, calendar/status filters, and pagination. Use **Sort by** or click a column heading to sort by customer, calendar, booking time, submitted date, last updated date, or status. **Booking Time** is the requested or confirmed appointment time in the calendar’s timezone. **Submitted** is when the booking was created; **Last Updated** is when it was most recently saved, including status changes. These two audit timestamps use the control-panel timezone. Click the same heading again to reverse the order. Sorting applies to all matching bookings and stays selected through filtering and pagination. The Schedule view provides Day/Week views and dragging to reschedule, without FullCalendar Scheduler. Clicking a booking opens its editor. Decline or cancel from the status selector.
 
 Staff with booking management permission can change status directly in the list; changes save automatically with a saving indicator and confirmation. Failed changes restore the previous selection and show the error. Inline changes use the same availability checks, status attribution, and notifications as the booking editor.
@@ -107,6 +109,8 @@ For custom interfaces:
 ```
 
 Each slot has `start`, `end` (ISO 8601 with timezone offsets) and a display `label`. Submit a CSRF-protected POST to `calendar/bookings/request` with `calendarId`, `start`, `customerName`, `customerEmail`, optional `notes`, and selected custom values under `fields`. Clients cannot set status, duration, or private field values. JSON responses distinguish a received request from confirmation. The included form requires JavaScript, retains input after errors, and uses a honeypot and per-IP submission throttle.
+
+The demo event directory, sidebar calendar filters, and selected-calendar banners explicitly query `type: 'events'`. Scheduling calendars appear in the booking resource chooser. Event creation and FullCalendar selectors already use the event-only allowed-calendar list. For installed demos, merge the updated `calendars.twig`, `layouts/_sidebar.twig`, and `layouts/_calendar_banner.twig` in both Bootstrap and Tailwind. Custom templates can use `craft.calendar.calendars({type: 'events'})` to list event calendars only.
 
 The demo installer includes a **Book a time** page in both Bootstrap and Tailwind navigation, with a resource chooser and the reusable booking form. Its URL is `<demo-prefix>/bookings`; the existing framework and Light/Dark/Auto controls apply to this page too. Updating Calendar does not overwrite installed demos: reinstall the codepack to a temporary prefix and merge the new `bookings.twig`, both framework booking pages/layouts, and updated Tailwind CSS. Enable **Allow Guest Booking Requests** and the appropriate site on a Scheduling calendar to list it publicly.
 

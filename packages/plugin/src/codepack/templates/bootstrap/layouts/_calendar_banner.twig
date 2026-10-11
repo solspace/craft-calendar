@@ -1,5 +1,5 @@
 {% if calendarHandle %}
-    {% set calendar = craft.calendar.calendar({handle: calendarHandle}) %}
+    {% set calendar = craft.calendar.calendar({handle: calendarHandle, type: 'events'}) %}
     {% if calendar %}
         <a href="{{ siteUrl }}demo/{{ view }}/{{ date.format(view == 'month' ? 'Y/m' : 'Y/m/d') }}{{ view != 'month' and activeView|default('agenda') == 'agenda' ? '?view=agenda' : '' }}"
             class="badge rounded-pill bg-body-tertiary border text-body-secondary text-decoration-none fw-normal fs-6 d-inline-flex align-items-center gap-1"

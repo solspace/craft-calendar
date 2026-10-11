@@ -77,6 +77,7 @@ class Calendar extends Plugin
     public const VIEW_OVERVIEW = 'overview';
     public const VIEW_EVENTS = 'events';
     public const VIEW_CALENDARS = 'calendars';
+    public const VIEW_BOOKINGS = 'bookings';
     public const VIEW_RESOURCES = 'resources';
 
     public const PERMISSION_CALENDARS_ACCESS = 'calendar-calendarsAccess';

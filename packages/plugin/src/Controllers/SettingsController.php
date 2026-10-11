@@ -39,6 +39,10 @@ class SettingsController extends BaseController
             $siteParams['site'] = $site;
         }
 
+        if (Calendar::VIEW_BOOKINGS === $defaultView && Calendar::getInstance()->bookings->getManageableCalendars()) {
+            return $this->redirect(UrlHelper::cpUrl('calendar/bookings', $siteParams));
+        }
+
         if (Calendar::VIEW_EVENTS === $defaultView && PermissionHelper::canAccessEvents()) {
             return $this->redirect(UrlHelper::cpUrl('calendar/events', $siteParams));
         }

@@ -4,6 +4,7 @@
         {% set isCalendarView = viewType in ["month", "week", "day"] %}
         {% set selectedHandle = isCalendarView ? (calendarHandle|default(null) ?: (segment3 == "calendar" ? segment4 : null)) : (segment2 == "calendars" ? segment3 : null) %}
         {% set calendars = craft.calendar.calendars({
+            type: 'events',
             order: "name",
             sort: "asc"
         }) %}
