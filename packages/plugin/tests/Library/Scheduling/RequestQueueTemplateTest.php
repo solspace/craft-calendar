@@ -59,6 +59,17 @@ class RequestQueueTemplateTest extends TestCase
             self::assertSame($unavailable, str_contains($output, 'Choose another available time or decline this request.'));
             self::assertStringContainsString('name="originalEndDate" value="2026-10-12T14:30:00+00:00"', $output);
             self::assertStringContainsString('document.getElementById("cp-screen-demo")', $output);
+            $dom = new \DOMDocument();
+            @$dom->loadHTML($output);
+            $xpath = new \DOMXPath($dom);
+            self::assertSame(3, $xpath->query('//dl[@class="request-summary"]/div')->length);
+            self::assertSame('<script>Customer</script>', $xpath->query('//*[@class="request-review-customer"]/h2')->item(0)->textContent);
+            self::assertSame(1, $xpath->query('//section[contains(@class, "request-review-notes")]')->length);
+            self::assertSame(2, $xpath->query('//section[contains(@class, "request-review-fields")]//div[@class="flex-fields"]')->length);
+            $alternative = $xpath->query('//button[@data-request-alternative]')->item(0);
+            self::assertSame('cp-screen-demo-time-picker', $alternative->getAttribute('aria-controls'));
+            self::assertSame($unavailable ? 'true' : 'false', $alternative->getAttribute('aria-expanded'));
+            self::assertSame($unavailable ? '' : 'hidden', $xpath->query('//*[@data-request-time-picker]')->item(0)->getAttribute('class'));
         }
     }
 

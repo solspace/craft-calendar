@@ -45,6 +45,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Refined request review slide-outs with a compact customer header, request summary cards, and clearer notes, fields, and availability sections.
 - Added animated booking drop previews, faded original positions, and a confirmation modal before rescheduling from the Schedule view.
 - Removed the redundant Bookings sort dropdown and aligned the Calendars list with Craft's native toolbar, table headings, and column sorting.
 - Restored the Requested status banner's original colors and aligned the separate availability warning icon with its heading.

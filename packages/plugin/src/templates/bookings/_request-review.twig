@@ -8,32 +8,127 @@
 <input type="hidden" name="originalEndDate" value="{{ booking.endDate|atom }}">
 <input type="hidden" name="start" value="" data-request-start>
 <div class="request-review-content">
-<h2>{{ booking.customerName }}</h2><p><a href="mailto:{{ booking.customerEmail }}">{{ booking.customerEmail }}</a></p>
-<dl class="request-summary"><dt>{{ 'Calendar'|t('calendar') }}</dt><dd>{{ calendar.name }}</dd><dt>{{ 'Requested Time'|t('calendar') }}</dt><dd>{{ booking.startDate|date('medium', timezone) }}<br>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} – {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span title="{{ timezone }}">{{ booking.startDate|calendarTimezoneAbbreviation(timezone) }}</span></dd><dt>{{ 'Submitted'|t('calendar') }}</dt><dd>{{ booking.dateCreated|date('medium') }} {{ booking.dateCreated|time(bookingTimeFormat)|calendarTimeLabel }}</dd></dl>
-{% if unavailable %}<div class="request-review-warning"><span data-icon="alert" aria-hidden="true"></span><div><strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong><p>{{ 'Choose another available time or decline this request.'|t('calendar') }}</p></div></div>{% endif %}
-{% if booking.notes %}<div class="field"><div class="heading"><h2>{{ 'Notes'|t('calendar') }}</h2></div><div class="request-notes">{{ booking.notes }}</div></div>{% endif %}
-{% if booking.fieldLayout %}{% set fieldForm = booking.fieldLayout.createForm(booking, true) %}{% for tab in fieldForm.tabs %}{% if fieldForm.tabs|length > 1 %}<h3>{{ tab.name }}</h3>{% endif %}<div class="flex-fields">{{ tab.content|raw }}</div>{% endfor %}{% endif %}
-<hr>
-<button type="button" class="btn" data-request-alternative>{{ 'Choose another time'|t('calendar') }}</button>
-<div data-request-time-picker class="{{ not unavailable ? 'hidden' }}">
-    <p class="light">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
-    {{ forms.textField({label: 'Date'|t('calendar'), type: 'date', value: booking.startDate|date('Y-m-d', timezone), inputAttributes: {data: {'request-date': true}}}) }}
-    {% if not unavailable %}<button type="button" class="btn small" data-request-original>{{ 'Keep requested time'|t('calendar') }}</button>{% endif %}
-    <div role="status" aria-live="polite" data-request-slot-message></div>
-    <div class="request-review-slots" data-request-slots></div>
-</div>
-<div class="request-review-actions"><button type="button" class="btn" data-request-decline>{{ 'Decline Request'|t('calendar') }}</button><a class="btn" href="{{ booking.cpEditUrl }}">{{ 'Edit booking'|t('calendar') }}</a></div>
+    <div class="request-review-header">
+        <div class="request-review-avatar" aria-hidden="true">{{ booking.customerName|trim|slice(0, 1)|upper }}</div>
+        <div class="request-review-customer">
+            <h2>{{ booking.customerName }}</h2>
+            <a href="mailto:{{ booking.customerEmail }}">{{ booking.customerEmail }}</a>
+        </div>
+        <span class="request-review-status"><span class="status orange" aria-hidden="true"></span>{{ 'Requested'|t('calendar') }}</span>
+    </div>
+    <dl class="request-summary">
+        <div class="request-summary-time">
+            <dt><span data-icon="calendar" aria-hidden="true"></span>{{ 'Requested Time'|t('calendar') }}</dt>
+            <dd><span class="request-summary-date">{{ booking.startDate|date('medium', timezone) }}</span><strong>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} – {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</strong><span class="light request-summary-timezone" title="{{ timezone }}">{{ booking.startDate|calendarTimezoneAbbreviation(timezone) }}</span></dd>
+        </div>
+        <div>
+            <dt>{{ 'Calendar'|t('calendar') }}</dt>
+            <dd class="request-summary-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span><strong>{{ calendar.name }}</strong></dd>
+        </div>
+        <div>
+            <dt>{{ 'Submitted'|t('calendar') }}</dt>
+            <dd><span class="request-summary-date">{{ booking.dateCreated|date('medium') }}</span><span class="light">{{ booking.dateCreated|time(bookingTimeFormat)|calendarTimeLabel }}</span></dd>
+        </div>
+    </dl>
+    {% if unavailable %}
+        <div class="request-review-warning"><span data-icon="alert" aria-hidden="true"></span><div><strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong><p>{{ 'Choose another available time or decline this request.'|t('calendar') }}</p></div></div>
+    {% endif %}
+    {% if booking.notes %}
+        <section class="request-review-section request-review-notes">
+            <h3>{{ 'Notes'|t('calendar') }}</h3>
+            <div class="request-notes">{{ booking.notes }}</div>
+        </section>
+    {% endif %}
+    {% if booking.fieldLayout %}
+        {% set fieldForm = booking.fieldLayout.createForm(booking, true) %}
+        {% if fieldForm.tabs|length %}
+            <section class="request-review-section request-review-fields">
+                <h3>{{ 'Fields'|t('calendar') }}</h3>
+                {% for tab in fieldForm.tabs %}
+                    {% if fieldForm.tabs|length > 1 %}<h4 class="request-review-tab">{{ tab.name }}</h4>{% endif %}
+                    <div class="flex-fields">{{ tab.content|raw }}</div>
+                {% endfor %}
+            </section>
+        {% endif %}
+    {% endif %}
+    <section class="request-review-section request-review-reschedule">
+        <div class="request-review-section-heading">
+            <h3>{{ 'Availability'|t('calendar') }}</h3>
+            <button type="button" class="btn small" data-request-alternative aria-expanded="{{ unavailable ? 'true' : 'false' }}" aria-controls="{{ containerId }}-time-picker">{{ 'Choose another time'|t('calendar') }}</button>
+        </div>
+        <p class="light request-review-help">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
+        <div id="{{ containerId }}-time-picker" data-request-time-picker class="{{ not unavailable ? 'hidden' }}">
+            <div class="request-review-date-controls">
+                {{ forms.textField({id: containerId ~ '-date', label: 'Date'|t('calendar'), type: 'date', value: booking.startDate|date('Y-m-d', timezone), inputAttributes: {data: {'request-date': true}}}) }}
+                {% if not unavailable %}<button type="button" class="btn small" data-request-original>{{ 'Keep requested time'|t('calendar') }}</button>{% endif %}
+            </div>
+            <div class="light request-review-slot-message" role="status" aria-live="polite" data-request-slot-message></div>
+            <div class="request-review-slots" data-request-slots></div>
+        </div>
+    </section>
+    <div class="request-review-actions">
+        <button type="button" class="btn" data-request-decline>{{ 'Decline Request'|t('calendar') }}</button>
+        <a class="btn" href="{{ booking.cpEditUrl }}">{{ 'Edit booking'|t('calendar') }}</a>
+    </div>
 </div>
 {% css %}
-.request-summary { display:grid; grid-template-columns:110px 1fr; gap:12px; margin-block:20px; }
-.request-summary dt { color:var(--light-text-color); }
-.request-summary dd { margin:0; }
-.request-review-warning { display:flex; align-items:flex-start; gap:10px; padding:16px; background:#fffbef; color:var(--warning-color,#b45309); border-radius:5px; margin-block:20px; }
-.request-review-warning [data-icon] { flex:0 0 20px; text-align:center; }
-.request-review-warning p { margin-bottom:0; }
-.request-notes { white-space:pre-wrap; }
-.request-review-slots, .request-review-actions { display:flex; flex-wrap:wrap; gap:8px; margin-block:16px; }
-.request-review-slots .btn[aria-pressed="true"] { background:var(--selection-bg-color,#dbeafe); color:var(--link-color); }
+.request-review-content { max-width:960px; margin-inline:auto; padding-block:4px 12px; container-type:inline-size; container-name:request-review; }
+.request-review-header { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+.request-review-avatar { display:flex; align-items:center; justify-content:center; flex:0 0 48px; height:48px; border-radius:50%; background:var(--gray-100,#e7edf5); color:var(--medium-text-color,#596673); font-size:22px; font-weight:600; }
+.request-review-customer { min-width:0; flex:1; }
+.request-review-customer h2 { margin:0 0 4px; font-size:22px; line-height:1.3; overflow-wrap:anywhere; }
+.request-review-customer a { font-size:13px; overflow-wrap:anywhere; }
+.request-review-status { display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:5px; background:#fff3da; color:#76531b; font-size:12px; white-space:nowrap; }
+.request-review-status .status { margin:0; }
+.request-summary { display:grid; grid-template-columns:minmax(0,1.25fr) repeat(2,minmax(0,1fr)); gap:12px; margin:0 0 24px; }
+.request-summary > div { padding:16px; border:1px solid var(--hairline-color,#d8dee5); border-radius:6px; }
+.request-summary dt { display:flex; align-items:center; gap:6px; margin-bottom:10px; color:var(--light-text-color,#596673); font-size:12px; font-weight:500; }
+.request-summary dt [data-icon] { display:inline-flex; align-items:center; line-height:1; font-size:12px; }
+.request-summary dd { margin:0; overflow-wrap:anywhere; }
+.request-summary .request-summary-time { background:var(--gray-050,#f4f6f9); }
+.request-summary-date { display:block; margin-bottom:4px; }
+.request-summary-time strong { font-size:17px; line-height:1.4; }
+.request-summary-timezone { display:inline-block; margin-inline-start:5px; font-size:12px; }
+.request-summary-calendar { display:flex; align-items:baseline; gap:8px; }
+.request-summary-calendar .color-indicator { flex-shrink:0; margin:0; }
+.request-review-section { margin-block:20px; }
+.request-review-section > h3, .request-review-section-heading > h3 { margin:0 0 12px; font-size:14px; font-weight:600; }
+.request-review-notes { padding:16px 20px; background:var(--gray-050,#f4f6f9); border-inline-start:3px solid var(--gray-200,#d8dee5); border-radius:5px; }
+.request-notes { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.6; }
+.request-review-fields { padding:20px; border:1px solid var(--hairline-color,#d8dee5); border-radius:6px; }
+.request-review-fields > h3 { padding-bottom:14px; border-bottom:1px solid var(--hairline-color,#d8dee5); margin-bottom:20px; }
+.request-review-fields .request-review-tab { margin:20px 0 12px; font-size:12px; font-weight:600; color:var(--light-text-color,#596673); }
+.request-review-fields > .flex-fields:last-child .field:last-child { margin-bottom:0; }
+.request-review-warning { display:flex; align-items:flex-start; gap:12px; padding:16px; background:#fffbef; color:var(--warning-color,#b45309); border:1px solid #f2ddb3; border-radius:6px; margin-block:20px; }
+.request-review-warning > [data-icon] { display:inline-flex; align-items:center; justify-content:center; flex:0 0 18px; font-size:16px; line-height:1; margin-top:2px; }
+.request-review-warning p { margin:5px 0 0; font-size:13px; line-height:1.5; }
+.request-review-reschedule { padding:18px 20px; border:1px solid var(--hairline-color,#d8dee5); border-radius:6px; }
+.request-review-section-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.request-review-section-heading h3 { margin:0; }
+.request-review-help { margin:8px 0 0; font-size:12px; line-height:1.5; }
+.request-review-date-controls { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; margin-top:18px; }
+.request-review-date-controls > .field { margin:0; }
+.request-review-date-controls > .btn { margin-bottom:1px; }
+.request-review-slot-message { margin-top:14px; font-size:13px; }
+.request-review-slot-message:empty { display:none; }
+.request-review-slots { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+.request-review-slots:empty { display:none; }
+.request-review-slots .btn { font-size:12px; }
+.request-review-slots .btn[aria-pressed="true"] { background:var(--bg-selection-dark,#a6b4c9); color:var(--text-color,#263344); box-shadow:inset 0 0 0 2px var(--blue-600,#2563eb); }
+.request-review-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding-top:18px; margin-top:24px; border-top:1px solid var(--hairline-color,#d8dee5); }
+.request-review-actions > a { margin-inline-start:auto; }
+@media (max-width:600px) {
+    .request-review-header { gap:10px; flex-wrap:wrap; }
+    .request-review-customer h2 { font-size:20px; }
+    .request-summary { grid-template-columns:minmax(0,1fr); }
+    .request-review-fields, .request-review-reschedule { padding:16px; }
+}
+@container request-review (max-width:600px) {
+    .request-review-header { gap:10px; flex-wrap:wrap; }
+    .request-review-customer h2 { font-size:20px; }
+    .request-summary { grid-template-columns:minmax(0,1fr); }
+    .request-review-fields, .request-review-reschedule { padding:16px; }
+}
 {% endcss %}
 {% js %}
 (() => {
@@ -47,7 +142,10 @@
     const message = form.querySelector('[data-request-slot-message]');
     let revision = 0, controller = null;
     const unavailable = {{ unavailable ? 'true' : 'false' }};
-    function sync() { screen.$saveBtn.prop('disabled', (unavailable || !picker.classList.contains('hidden')) && !start.value); }
+    function sync() {
+        screen.$saveBtn.prop('disabled', (unavailable || !picker.classList.contains('hidden')) && !start.value);
+        form.querySelector('[data-request-alternative]').setAttribute('aria-expanded', String(!picker.classList.contains('hidden')));
+    }
     async function loadSlots() {
         controller?.abort(); controller = new AbortController();
         const signal = controller.signal, current = ++revision;
