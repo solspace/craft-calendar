@@ -151,7 +151,15 @@
     const form = document.getElementById({{ containerId|json_encode|raw }});
     const screen = $(form).data('cpScreen');
     const actions = form.querySelector('.request-review-actions');
+    // The CP screen footer lives outside the slideout content. Apply the primary
+    // treatment directly to its button rather than relying on content-scoped CSS.
     screen.$saveBtn.addClass('request-confirm-btn');
+    screen.$saveBtn.add(screen.$saveBtn.find('button')).each(function () {
+        this.style.setProperty('background', 'var(--blue-500, #2563eb)', 'important');
+        this.style.setProperty('background-color', 'var(--blue-500, #2563eb)', 'important');
+        this.style.setProperty('color', '#fff', 'important');
+        this.style.setProperty('box-shadow', 'none', 'important');
+    });
     screen.$footer.children('.request-review-actions').remove();
     screen.$footer.children('.flex-grow').before(actions);
     const decision = form.querySelector('[data-request-decision]');
