@@ -36,6 +36,38 @@ class SettingsModelTest extends TestCase
         }
     }
 
+    public function testBookingScheduleLayoutDefaultsAndConfigurationRoundTrip(): void
+    {
+        $settings = new SettingsModel();
+        self::assertSame('combined', $settings->defaultBookingScheduleLayout);
+        self::assertSame('combined', $settings->getBookingScheduleLayout());
+        self::assertTrue($settings->validate(['defaultBookingScheduleLayout']));
+        $settings->setAttributes(['defaultBookingScheduleLayout' => 'calendars']);
+        self::assertSame('calendars', $settings->toArray()['defaultBookingScheduleLayout']);
+        $loaded = new SettingsModel($settings->toArray());
+        self::assertSame('calendars', $loaded->getBookingScheduleLayout());
+        self::assertTrue($loaded->validate(['defaultBookingScheduleLayout']));
+        foreach (['invalid', ''] as $value) {
+            $loaded->defaultBookingScheduleLayout = $value;
+            self::assertFalse($loaded->validate(['defaultBookingScheduleLayout']));
+            self::assertTrue($loaded->hasErrors('defaultBookingScheduleLayout'));
+            self::assertSame('combined', $loaded->getBookingScheduleLayout());
+        }
+    }
+
+    public function testExplicitScheduleLayoutsOverrideTheDefaultAndInvalidSelectionsFallBack(): void
+    {
+        foreach (['combined', 'calendars'] as $default) {
+            $settings = new SettingsModel(['defaultBookingScheduleLayout' => $default]);
+            foreach (['combined', 'calendars'] as $selection) {
+                self::assertSame($selection, $settings->getBookingScheduleLayout($selection));
+            }
+            foreach ([null, '', 'invalid', ['calendars']] as $selection) {
+                self::assertSame($default, $settings->getBookingScheduleLayout($selection));
+            }
+        }
+    }
+
     public function testOverviewDefaultsToMonth(): void
     {
         $settings = new SettingsModel();

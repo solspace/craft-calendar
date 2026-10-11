@@ -1021,4 +1021,6 @@ return [
     'Enter valid email addresses, separated by commas or new lines.' => 'Ievadiet derīgas e-pasta adreses, atdalot tās ar komatiem vai jaunām rindām.',
     'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Atstājiet tukšu, lai izmantotu Craft sūtītāja un atbildes iestatījumus. Vārdus un adreses ievadiet kā vienkāršu tekstu.',
     'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Atdaliet vairākas adreses ar komatiem vai jaunām rindām. BCC saņēmēji ir paslēpti no citiem saņēmējiem.',
+    'Default Schedule Layout' => 'Grafika noklusējuma izkārtojums',
+    'Choose the layout used when opening the booking schedule. Staff can switch layouts on the Schedule page.' => 'Izvēlieties izkārtojumu, kas tiek izmantots, atverot rezervāciju grafiku. Darbinieki var mainīt izkārtojumu grafika lapā.',
 ];

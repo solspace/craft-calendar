@@ -88,6 +88,8 @@ class SettingsModel extends Model
 
     public string $defaultBookingView = 'bookings';
 
+    public string $defaultBookingScheduleLayout = 'combined';
+
     public ?int $firstDayOfWeek = null;
 
     public int|string|null $timeFormat = null;
@@ -146,6 +148,15 @@ class SettingsModel extends Model
     public function getBookingDefaultPath(): string
     {
         return 'schedule' === $this->defaultBookingView ? 'calendar/bookings/schedule' : 'calendar/bookings';
+    }
+
+    public function getBookingScheduleLayout(mixed $requestedLayout = null): string
+    {
+        if (\in_array($requestedLayout, ['combined', 'calendars'], true)) {
+            return $requestedLayout;
+        }
+
+        return 'calendars' === $this->defaultBookingScheduleLayout ? 'calendars' : 'combined';
     }
 
     public static function getOverlapThresholds(): array
@@ -295,6 +306,7 @@ class SettingsModel extends Model
         return array_merge(parent::defineRules(), [
             [['bookingPageLabel'], 'string', 'max' => 100],
             [['defaultBookingView'], 'in', 'range' => ['bookings', 'schedule'], 'skipOnEmpty' => false],
+            [['defaultBookingScheduleLayout'], 'in', 'range' => ['combined', 'calendars'], 'skipOnEmpty' => false],
             [['bookingDefaults'], 'validateBookingDefaults', 'skipOnEmpty' => false],
             [['captchaProvider', 'bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha', 'recaptcha-v3'], 'skipOnEmpty' => false, 'when' => static fn ($model, $attribute) => null !== $model->{$attribute}],
             [['captchaSiteKey', 'captchaSecretKey', 'bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],

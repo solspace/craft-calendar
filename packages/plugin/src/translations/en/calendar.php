@@ -1181,4 +1181,6 @@ return [
     'Enter valid email addresses, separated by commas or new lines.' => 'Enter valid email addresses, separated by commas or new lines.',
     'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.',
     'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.',
+    'Default Schedule Layout' => 'Default Schedule Layout',
+    'Choose the layout used when opening the booking schedule. Staff can switch layouts on the Schedule page.' => 'Choose the layout used when opening the booking schedule. Staff can switch layouts on the Schedule page.',
 ];

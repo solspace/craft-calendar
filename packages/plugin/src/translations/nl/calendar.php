@@ -1061,4 +1061,6 @@ return [
     'Enter valid email addresses, separated by commas or new lines.' => 'Voer geldige e-mailadressen in, gescheiden door komma’s of nieuwe regels.',
     'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Laat leeg om de afzender- en antwoordinstellingen van Craft te gebruiken. Gebruik gewone tekst voor namen en adressen.',
     'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Scheid meerdere adressen met komma’s of nieuwe regels. BCC-ontvangers zijn verborgen voor andere ontvangers.',
+    'Default Schedule Layout' => 'Standaardindeling van het schema',
+    'Choose the layout used when opening the booking schedule. Staff can switch layouts on the Schedule page.' => 'Kies de indeling die wordt gebruikt bij het openen van het boekingsschema. Medewerkers kunnen de indeling wijzigen op de pagina Schema.',
 ];

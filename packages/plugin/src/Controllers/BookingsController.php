@@ -533,7 +533,7 @@ class BookingsController extends BaseController
             throw new BadRequestHttpException();
         }
         $scheduleView = 'day' === \Craft::$app->request->getQueryParam('view') ? 'day' : 'week';
-        $scheduleLayout = 'calendars' === $request->getQueryParam('layout') ? 'calendars' : 'combined';
+        $scheduleLayout = Calendar::getInstance()->settings->getSettingsModel()->getBookingScheduleLayout($request->getQueryParam('layout'));
         $start = new \DateTimeImmutable($date, $zone);
         if ('week' === $scheduleView) {
             $start = Schedule::weekStart($start, Calendar::getInstance()->settings->getFirstDayOfWeek());

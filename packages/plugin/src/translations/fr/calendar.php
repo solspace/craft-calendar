@@ -1061,4 +1061,6 @@ return [
     'Enter valid email addresses, separated by commas or new lines.' => 'Saisissez des adresses e-mail valides, séparées par des virgules ou des retours à la ligne.',
     'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Laissez vide pour utiliser les paramètres d’expéditeur et de réponse de Craft. Saisissez les noms et adresses en texte brut.',
     'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Séparez les adresses par des virgules ou des retours à la ligne. Les destinataires CCI sont masqués aux autres destinataires.',
+    'Default Schedule Layout' => 'Disposition par défaut du planning',
+    'Choose the layout used when opening the booking schedule. Staff can switch layouts on the Schedule page.' => 'Choisissez la disposition à utiliser à l’ouverture du planning des réservations. Le personnel peut la changer sur la page Planning.',
 ];
