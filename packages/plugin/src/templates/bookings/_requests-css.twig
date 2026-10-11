@@ -11,9 +11,9 @@
 .request-calendar, .request-availability, .request-actions { display:flex; align-items:center; gap:8px; }
 .request-calendar .color-indicator { margin:0; flex-shrink:0; }
 .request-time { line-height:1.5; white-space:nowrap; }
-.request-availability { color:var(--success-color,#27833e); white-space:nowrap; }
+.request-availability { gap:6px; color:var(--success-color,#27833e); white-space:nowrap; }
 .request-warning { color:var(--warning-color,#b45309); }
-.request-availability [data-icon] { width:20px; flex:0 0 20px; text-align:center; }
+.request-availability [data-icon] { display:inline-flex; align-items:center; justify-content:center; width:16px; flex:0 0 16px; font-size:14px; line-height:1; }
 .request-unavailable td { background:#fffbef; }
 .request-actions { flex-wrap:wrap; }
 .request-empty { text-align:center; padding-block:40px !important; }
