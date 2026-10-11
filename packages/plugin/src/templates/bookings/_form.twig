@@ -35,6 +35,13 @@
                     {% endif %}
                 </div>{% endfor %}
                 <div class="booking-honeypot" aria-hidden="true"><label>{{ 'Website'|t('calendar') }}<input name="bookingWebsite" tabindex="-1" autocomplete="off"></label></div>
+                {% if captcha %}
+                    <div class="booking-captcha">
+                        <div class="booking-captcha-widget"></div>
+                        <input type="hidden" name="bookingCaptchaToken" value="">
+                        <p class="booking-captcha-message" role="status" aria-live="polite">{{ 'Loading spam protection…'|t('calendar') }}</p>
+                    </div>
+                {% endif %}
                 <button class="booking-form-submit {{ buttonClass }}" type="submit" disabled><span>{{ (settings.requireApproval ? 'Request booking' : 'Book this time')|t('calendar') }}</span><span class="booking-form-spinner" hidden aria-hidden="true"></span></button>
             </section>
         </div>

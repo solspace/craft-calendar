@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added optional Cloudflare Turnstile, hCaptcha, and reCAPTCHA v2 spam protection for public booking forms, with environment-variable keys and server-side verification.
 - Added booking deletion through Craft’s element lifecycle, a Trash view with restoration, and availability checks when restoring bookings.
 - Added separate Booking Time, Submitted, and Last Updated columns to the Bookings list, with sorting for each timestamp.
 - Added a sort dropdown and clickable column headings to the Bookings list, with sorting preserved through filters and pagination.

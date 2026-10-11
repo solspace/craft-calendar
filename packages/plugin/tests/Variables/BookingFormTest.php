@@ -113,4 +113,18 @@ class BookingFormTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->variable->bookingForm(7, ['theme' => 'unexpected', 'booking' => (new \ReflectionClass(Booking::class))->newInstanceWithoutConstructor()]);
     }
+
+    public function testCaptchaConfigurationReachesPublicFormsWithoutThePrivateKey(): void
+    {
+        Calendar::getInstance()->setSettings(['bookingCaptchaProvider' => 'hcaptcha', 'bookingCaptchaSiteKey' => 'site-key', 'bookingCaptchaSecretKey' => 'private-key']);
+        $this->bookings->method('getPublicCalendars')->willReturn([7 => $this->calendar]);
+        $this->bookings->method('getPublicFormFields')->willReturn([]);
+        $this->view->expects(self::once())->method('renderTemplate')->willReturnCallback(static function ($template, $variables) {
+            self::assertSame(['provider' => 'hcaptcha', 'siteKey' => 'site-key', 'responseField' => 'h-captcha-response'], $variables['captcha']);
+            self::assertStringNotContainsString('private-key', json_encode($variables['captcha']));
+
+            return '';
+        });
+        $this->variable->bookingForm(7, ['booking' => (new \ReflectionClass(Booking::class))->newInstanceWithoutConstructor()]);
+    }
 }

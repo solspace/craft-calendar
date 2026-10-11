@@ -1,0 +1,100 @@
+    const captchaConfig = {{ (captcha ?? null)|json_encode(15)|raw }};
+    const captchaLabels = {{ {check: 'Please complete the spam protection check and try again.'|t('calendar'), unavailable: 'Spam protection could not load. Please refresh the page and try again.'|t('calendar')}|json_encode|raw }};
+    const captchaToken = form.querySelector('[name="bookingCaptchaToken"]');
+    const captchaMessage = form.querySelector('.booking-captcha-message');
+    let captchaApi;
+    let captchaWidget;
+    let captchaTheme;
+    let captchaGeneration = 0;
+
+    function captchaReady() {
+        return !captchaConfig || !!captchaToken?.value;
+    }
+    function captchaState(token, error = '') {
+        captchaToken.value = token;
+        captchaMessage.textContent = error;
+        captchaMessage.hidden = !error;
+        captchaMessage.classList.toggle('error', !!error);
+        updateSelection();
+    }
+    function resetCaptcha() {
+        if (!captchaConfig) return;
+        captchaState('');
+        if (captchaWidget !== undefined) {
+            try { captchaApi.reset(captchaWidget); }
+            catch (_) { captchaState('', captchaLabels.unavailable); }
+        }
+    }
+    async function initCaptcha() {
+        if (!captchaConfig) return;
+        const provider = captchaConfig.provider;
+        const providers = {
+            turnstile: {global: 'turnstile', url: 'https://challenges.cloudflare.com/turnstile/v0/api.js'},
+            hcaptcha: {global: 'hcaptcha', url: 'https://js.hcaptcha.com/1/api.js', extra: '&recaptchacompat=off'},
+            recaptcha: {global: 'grecaptcha', url: 'https://www.google.com/recaptcha/api.js'},
+        };
+        const config = providers[provider];
+        try {
+            if (!config || !captchaConfig.siteKey) throw new Error();
+            // Each provider is loaded once, even when several booking forms share a page.
+            const loaders = window.CalendarBookingCaptchaLoaders ||= {};
+            loaders[provider] ||= new Promise((resolve, reject) => {
+                if (window[config.global]?.render) { resolve(window[config.global]); return; }
+                const callback = 'calendarBookingCaptchaReady_' + provider;
+                const timeout = setTimeout(() => reject(new Error()), 20000);
+                window[callback] = () => {
+                    clearTimeout(timeout);
+                    resolve(window[config.global]);
+                    delete window[callback];
+                };
+                const script = document.createElement('script');
+                script.src = config.url + '?render=explicit&onload=' + callback + (config.extra || '');
+                script.async = true;
+                script.onerror = () => { clearTimeout(timeout); reject(new Error()); };
+                document.head.append(script);
+            });
+            captchaApi = await loaders[provider];
+            renderCaptcha();
+            // Follow Bootstrap/Tailwind theme switches without observing the whole page subtree.
+            const observer = new MutationObserver(updateCaptchaTheme);
+            for (let ancestor = form; ancestor; ancestor = ancestor.parentElement) {
+                observer.observe(ancestor, {attributes: true, attributeFilter: ['class', 'data-bs-theme', 'data-booking-theme']});
+            }
+            const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+            media?.addEventListener('change', updateCaptchaTheme);
+            window.addEventListener('pagehide', () => { observer.disconnect(); media?.removeEventListener('change', updateCaptchaTheme); }, {once: true});
+        } catch (_) { captchaState('', captchaLabels.unavailable); }
+    }
+    function renderCaptcha() {
+        const container = form.querySelector('.booking-captcha-widget');
+        const generation = ++captchaGeneration;
+        captchaTheme = getComputedStyle(form).colorScheme.includes('dark') ? 'dark' : 'light';
+        const settings = {
+            sitekey: captchaConfig.siteKey,
+            theme: captchaTheme,
+            size: container.getBoundingClientRect().width < 304 ? 'compact' : 'normal',
+            callback: token => { if (generation === captchaGeneration) captchaState(token); },
+            'expired-callback': () => { if (generation === captchaGeneration) captchaState('', captchaLabels.check); },
+            'error-callback': () => { if (generation === captchaGeneration) captchaState('', captchaLabels.unavailable); return true; },
+        };
+        if (captchaConfig.provider === 'turnstile') {
+            settings.action = 'calendar-booking';
+            settings.size = settings.size === 'compact' ? 'compact' : 'flexible';
+            settings['response-field'] = false;
+        }
+        captchaWidget = captchaApi.render(container, settings);
+    }
+    function updateCaptchaTheme() {
+        if (submitting || !form.isConnected || inputs.hidden || !captchaApi) return;
+        const theme = getComputedStyle(form).colorScheme.includes('dark') ? 'dark' : 'light';
+        if (theme === captchaTheme) return;
+        try {
+            ++captchaGeneration;
+            if (typeof captchaApi.remove === 'function') captchaApi.remove(captchaWidget);
+            else captchaApi.reset(captchaWidget);
+            form.querySelector('.booking-captcha-widget').replaceChildren();
+            captchaState('');
+            renderCaptcha();
+        } catch (_) { captchaState('', captchaLabels.unavailable); }
+    }
+    initCaptcha();

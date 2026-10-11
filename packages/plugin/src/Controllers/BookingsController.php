@@ -11,6 +11,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
+use Solspace\Calendar\Library\Scheduling\BookingCaptcha;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
@@ -224,6 +225,7 @@ class BookingsController extends BaseController
     public function actionRestore(): Response
     {
         $booking = $this->lifecycleBooking(true);
+
         try {
             $success = \Craft::$app->getElements()->restoreElement($booking);
         } catch (BookingConflictException $exception) {
@@ -340,6 +342,13 @@ class BookingsController extends BaseController
         foreach (['customerName', 'customerEmail', 'notes'] as $key) {
             $booking->{$key} = trim((string) $request->getBodyParam($key, ''));
         }
+        $captcha = new BookingCaptcha();
+        $spamSettings = Calendar::getInstance()->settings->getSettingsModel();
+        $captchaConfig = $captcha->getClientConfig($spamSettings);
+        $token = $request->getBodyParam('bookingCaptchaToken', $captchaConfig ? $request->getBodyParam($captchaConfig['responseField']) : null);
+        if (!$captcha->verify($spamSettings, $token, $request->getUserIP())) {
+            $booking->addError('bookingCaptchaToken', Calendar::t('Please complete the spam protection check and try again.'));
+        }
         $postedFields = (array) $request->getBodyParam('fields', []);
         foreach (Calendar::getInstance()->bookings->getPublicFields() as $element) {
             $handle = $element->getField()->handle;
@@ -347,6 +356,9 @@ class BookingsController extends BaseController
             if ($element->required && $element->getField()->isValueEmpty($booking->getFieldValue($handle), $booking)) {
                 $booking->addError('field:'.$handle, Calendar::t('{field} is required.', ['field' => $element->getField()->name]));
             }
+        }
+        if ($booking->hasErrors('bookingCaptchaToken')) {
+            return $this->asFailure(Calendar::t('Could not submit booking.'), ['errors' => $booking->getErrors()], ['booking' => $booking]);
         }
         $date = $booking->startDate->setTimezone(new \DateTimeZone($settings->timezone))->format('Y-m-d');
         $available = false;

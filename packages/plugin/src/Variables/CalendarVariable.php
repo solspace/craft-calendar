@@ -20,6 +20,7 @@ use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
+use Solspace\Calendar\Library\Scheduling\BookingCaptcha;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
@@ -109,9 +110,15 @@ class CalendarVariable
             'publicFields' => $service->getPublicFormFields($booking),
             'minDate' => $minDate, 'maxDate' => $maxDate, 'date' => $date,
             'framework' => $framework, 'theme' => $theme,
+            'captcha' => $this->bookingCaptcha(),
         ], View::TEMPLATE_MODE_CP);
 
         return new Markup($html, 'UTF-8');
+    }
+
+    public function bookingCaptcha(): ?array
+    {
+        return (new BookingCaptcha())->getClientConfig(Calendar::getInstance()->getSettings());
     }
 
     public function formats(): FormatsService

@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Models;
 
 use craft\base\Model;
+use craft\helpers\App;
 use Solspace\Calendar\Calendar;
 
 class SettingsModel extends Model
@@ -48,6 +49,10 @@ class SettingsModel extends Model
     public array|string $enabledCalendarViews = self::CALENDAR_VIEWS;
 
     public array|bool|null $guestAccess = null;
+
+    public string $bookingCaptchaProvider = 'none';
+    public string $bookingCaptchaSiteKey = '';
+    public string $bookingCaptchaSecretKey = '';
 
     public ?string $descriptionFieldHandle = null;
 
@@ -171,9 +176,22 @@ class SettingsModel extends Model
         }
     }
 
+    public function getBookingCaptchaSiteKey(): string
+    {
+        return trim((string) App::parseEnv($this->bookingCaptchaSiteKey));
+    }
+
+    public function getBookingCaptchaSecretKey(): string
+    {
+        return trim((string) App::parseEnv($this->bookingCaptchaSecretKey));
+    }
+
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
+            [['bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha'], 'skipOnEmpty' => false],
+            [['bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],
+            [['bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'required', 'when' => fn () => 'none' !== $this->bookingCaptchaProvider],
             [['defaultCalendarView'], 'in', 'range' => self::CALENDAR_VIEWS, 'skipOnEmpty' => false],
             [['enabledCalendarViews'], 'validateEnabledCalendarViews', 'skipOnEmpty' => false],
             [['defaultCalendarView'], 'validateDefaultCalendarView', 'skipOnEmpty' => false],

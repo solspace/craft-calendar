@@ -16,6 +16,7 @@
     let slotRequest;
     let submitting = false;
     let dateTimer;
+    {% include 'calendar/bookings/_captcha-js' %}
 
     function showError(text) {
         message.textContent = text;
@@ -25,7 +26,7 @@
     }
     function updateSelection() {
         const selected = form.querySelector('[name="start"]:checked');
-        submit.disabled = submitting || !selected;
+        submit.disabled = submitting || !selected || !captchaReady();
         summary.hidden = !selected;
         summary.textContent = selected ? date.value + ' · ' + selected.closest('label').textContent : '';
     }
@@ -93,6 +94,7 @@
         event.preventDefault();
         if (submitting) return;
         if (!form.querySelector('[name="start"]:checked')) { showError(labels.choose); return; }
+        if (!captchaReady()) { showError(captchaLabels.check); return; }
         if (!form.reportValidity()) return;
         const body = new FormData(form);
         submitting = true;
@@ -132,6 +134,7 @@
         finally {
             submitting = false;
             inputs.disabled = false;
+            if (success.hidden) resetCaptcha();
             spinner.hidden = true;
             form.removeAttribute('aria-busy');
             updateSelection();
@@ -142,6 +145,7 @@
         success.hidden = true;
         inputs.hidden = false;
         message.hidden = true;
+        resetCaptcha();
         date.focus();
         loadSlots();
     });

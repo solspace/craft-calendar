@@ -5,15 +5,20 @@ namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
+use craft\web\Request;
+use craft\web\Response;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Controllers\BookingsController;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
 use Solspace\Calendar\migrations\m261011_020000_HardenBookings;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Services\BookingsService;
 use Solspace\Calendar\Services\CalendarsService;
+use Solspace\Calendar\Services\SettingsService;
 
 /**
  * Uses SQLite by default. Set CALENDAR_TEST_DSN (and optional CALENDAR_TEST_USER/
@@ -131,6 +136,37 @@ class BookingStorageTest extends TestCase
             self::assertTrue($calendar->hasErrors('type'));
             self::assertSame('scheduling', $this->db->createCommand('SELECT type FROM calendar_calendars WHERE id=1')->queryScalar());
         }
+    }
+
+    public function testPublicRequestsCannotSaveOrNotifyWithoutCaptchaVerification(): void
+    {
+        $request = $this->createMock(Request::class);
+        $body = ['calendarId' => 1, 'start' => '2026-10-12T09:00:00Z', 'customerName' => 'Visitor', 'customerEmail' => 'visitor@example.test'];
+        $request->method('getRequiredBodyParam')->willReturnCallback(static fn ($name) => $body[$name]);
+        $request->method('getBodyParam')->willReturnCallback(static fn ($name, $default = null) => $body[$name] ?? $default);
+        $request->method('getUserIP')->willReturn('192.0.2.99');
+        \Craft::$app->request = $request;
+        $settings = $this->createMock(SettingsService::class);
+        $settings->method('getSettingsModel')->willReturn(new SettingsModel(['bookingCaptchaProvider' => 'turnstile', 'bookingCaptchaSiteKey' => 'public-key', 'bookingCaptchaSecretKey' => 'private-key']));
+        $bookings = $this->createMock(BookingsService::class);
+        $bookings->method('getPublicCalendars')->willReturn([1 => new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['timezone' => 'UTC']])]);
+        $bookings->method('getPublicFields')->willReturn([]);
+        $bookings->expects(self::never())->method('availableSlots');
+        $bookings->expects(self::never())->method('save');
+        Calendar::getInstance()->setComponents(['bookings' => $bookings, 'settings' => $settings]);
+        $controller = $this->getMockBuilder(BookingsController::class)->disableOriginalConstructor()->onlyMethods(['requireSiteRequest', 'requirePostRequest', 'asFailure'])->getMock();
+        $controller->expects(self::once())->method('asFailure')->willReturnCallback(static function ($message, $data, $routeParams) {
+            self::assertArrayHasKey('bookingCaptchaToken', $data['errors']);
+            self::assertSame('Visitor', $routeParams['booking']->customerName);
+            self::assertSame('visitor@example.test', $routeParams['booking']->customerEmail);
+            $response = (new \ReflectionClass(Response::class))->newInstanceWithoutConstructor();
+            $response->data = $data;
+
+            return $response;
+        });
+        $controller->actionRequest();
+        self::assertSame(2, (int) $this->db->createCommand('SELECT COUNT(*) FROM calendar_bookings')->queryScalar());
+        self::assertSame([], $this->queue->jobs);
     }
 
     public function testRestoreRejectsAnOccupiedSlotAndRollsBackItsElementRestoration(): void
@@ -266,6 +302,7 @@ class BookingStorageTest extends TestCase
         \Craft::$app = new class($this->db, $this->queue) {
             public string $language = 'en-US';
             public array $loadedModules = [];
+            public ?Request $request = null;
 
             public function __construct(public $db, private $queue) {}
 
@@ -300,6 +337,16 @@ class BookingStorageTest extends TestCase
                     public function getIsConsoleRequest()
                     {
                         return true;
+                    }
+                };
+            }
+
+            public function getSites()
+            {
+                return new class {
+                    public function getPrimarySite()
+                    {
+                        return (object) ['id' => 1];
                     }
                 };
             }

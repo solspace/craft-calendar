@@ -32,6 +32,29 @@ Requests do not reserve a time. Confirmation checks availability again. Turning 
 
 ## Front end
 
+### Spam protection
+
+Public booking requests always use CSRF protection, a hidden honeypot, and an atomic per-IP rate limit. To add a CAPTCHA, open **Settings → Guest Access → Booking Spam Protection**, choose **Cloudflare Turnstile**, **hCaptcha**, or **reCAPTCHA v2 (Checkbox)**, and enter the matching site and secret keys. Configure the provider to allow your website's hostnames. Use reCAPTCHA v2 checkbox keys; reCAPTCHA v3 and Enterprise assessments are not supported by this adapter.
+
+The provider is optional and defaults to **None**. When enabled, it applies to all public booking requests, including direct POSTs and requests from signed-in visitors. Staff creating or editing bookings in the control panel do not need to complete it. This setting is independent of guest event submissions. Calendar handles verification itself and does not require Freeform to be installed.
+
+Both keys support Craft environment variables. Prefer storing the secret in an environment variable so it stays out of project config:
+
+```php
+// config/calendar.php
+return [
+    'bookingCaptchaProvider' => 'turnstile',
+    'bookingCaptchaSiteKey' => '$BOOKING_CAPTCHA_SITE_KEY',
+    'bookingCaptchaSecretKey' => '$BOOKING_CAPTCHA_SECRET_KEY',
+];
+```
+
+`bookingForm()` and both booking demos render the selected provider automatically. Widgets follow the form's light/dark theme, including theme switches, and use a compact layout when needed. Multiple forms have independent tokens and share one provider script. Failed submissions preserve entered details and reset used tokens for another attempt. Missing, expired, invalid, or unverifiable tokens reject the request without creating a booking or queuing notifications; provider outages and missing configuration do not bypass protection. Only the public site key reaches the browser.
+
+For a custom booking form, `craft.calendar.bookingCaptcha()` returns `null` when disabled, or `{provider, siteKey, responseField}` when enabled. Render the chosen provider's widget and submit its token under its standard `responseField` (`cf-turnstile-response`, `h-captcha-response`, or `g-recaptcha-response`), or under `bookingCaptchaToken`. Turnstile widgets must use `action: 'calendar-booking'`. Reset the widget after a rejected submission because tokens are single-use. Allow the provider's documented script, frame, and connection origins if your website uses a Content Security Policy.
+
+### Rendering a booking form
+
 Enable Allow Guest Booking Requests on the scheduling calendar. Guest access is independent of Calendar's existing event guest-posting settings. Only scheduling calendars enabled on the current site are offered. Bookings share one resource's availability across sites and are stored on the primary site.
 
 ```twig
