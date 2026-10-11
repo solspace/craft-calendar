@@ -12,6 +12,7 @@
         <table id="calendars" class="data fullwidth collapsible">
             <thead>
             <th scope="col">{{ "Name"|t('calendar') }}</th>
+            <th scope="col">{{ "Type"|t('calendar') }}</th>
             <th scope="col">{{ "Handle"|t('calendar') }}</th>
             <th scope="col">{{ "Description"|t('calendar') }}</th>
             {% if craft.calendar.pro %}
@@ -32,6 +33,7 @@
                             {{ calendar.name }}
                         {% endif %}
                     </th>
+                    <td><span class="status-label">{{ calendar.typeOptions()[calendar.type] }}</span></td>
                     <td data-title="{{ 'Handle'|t('calendar') }}">
                         <code>
                             {{ calendar.handle }}
@@ -42,7 +44,9 @@
                     </td>
                     {% if craft.calendar.pro %}
                         <td style="width: 200px;">
-                            {% if calendar.icsHash %}
+                            {% if calendar.isScheduling %}
+                                <span class="light">—</span>
+                            {% elseif calendar.icsHash %}
                                 <a href="javascript:;"
                                    data-link="{{ calendar.icsUrl }}"
                                    class="copy-ics-link btn small"
@@ -92,6 +96,6 @@
     noObjectsSelector: '#nocalendars',
     newObjectBtnSelector: '#newcalendarcontainer',
     deleteAction: 'calendar/calendars/delete',
-    confirmDeleteMessage: {{ "Are you sure you want to delete “{name}” and all its events?"|t('calendar')|json_encode|raw }}
+    confirmDeleteMessage: {{ "Are you sure you want to delete “{name}” and all its events and bookings?"|t('calendar')|json_encode|raw }}
     });
 {% endjs %}

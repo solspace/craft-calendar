@@ -1,0 +1,30 @@
+{% extends 'calendar/layouts/_layoutWithoutSettings' %}
+{% import '_includes/forms' as forms %}
+{% set title = 'Bookings'|t('calendar') %}
+{% set selectedSubnavItem = 'bookings' %}
+{% block actionButton %}<a href="{{ cpUrl('calendar/bookings/new') }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>{% endblock %}
+{% block content %}
+{% include 'calendar/bookings/_nav' with {bookingView: 'list'} %}
+<form method="get" class="booking-filters">
+    <label>{{ 'Calendar'|t('calendar') }}<select name="calendarId"><option value="">{{ 'All calendars'|t('calendar') }}</option>{% for calendar in calendars %}<option value="{{ calendar.id }}" {{ calendarId == calendar.id ? 'selected' }}>{{ calendar.name }}</option>{% endfor %}</select></label>
+    <label>{{ 'Status'|t('calendar') }}<select name="bookingStatus"><option value="">{{ 'All statuses'|t('calendar') }}</option>{% for value, label in statusOptions %}<option value="{{ value }}" {{ bookingStatus == value ? 'selected' }}>{{ label }}</option>{% endfor %}</select></label>
+    <input type="search" class="text" name="search" value="{{ search }}" placeholder="{{ 'Search name or email'|t('calendar') }}" aria-label="{{ 'Search name or email'|t('calendar') }}">
+    <button type="submit" class="btn">{{ 'Filter'|t('calendar') }}</button>
+</form>
+<table class="data fullwidth">
+<thead><tr><th>{{ 'Customer'|t('calendar') }}</th><th>{{ 'Calendar'|t('calendar') }}</th><th>{{ 'Date and Time'|t('calendar') }}</th><th>{{ 'Status'|t('calendar') }}</th></tr></thead>
+<tbody>{% for booking in bookings %}
+{% set calendar = calendars[booking.calendarId] %}{% set timezone = calendar.schedulingSettings.timezone %}
+<tr><th><a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a><div class="light">{{ booking.customerEmail }}</div></th><td><span class="color-indicator" style="background:{{ calendar.color }}"></span>{{ calendar.name }}</td><td>{{ booking.startDate|date('M j, Y · H:i', timezone) }}–{{ booking.endDate|date('H:i', timezone) }}<div class="light">{{ timezone }}</div></td><td><span class="booking-status {{ booking.bookingStatus }}">{{ statusOptions[booking.bookingStatus] }}</span></td></tr>
+{% else %}<tr><td colspan="4"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>{% endfor %}</tbody>
+</table>
+<div class="buttons"><span class="light">{{ total }} {{ 'bookings'|t('calendar') }}</span>{% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}{% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}</div>
+{% endblock %}
+{% css %}
+.booking-filters { display:flex; align-items:end; flex-wrap:wrap; gap:12px; margin:20px 0; }
+.booking-filters label { display:grid; gap:6px; font-size:12px; }
+.booking-filters select { min-width:140px; padding:7px; }
+.booking-status { padding:4px 8px; border-radius:5px; background:#f1f3f5; }
+.booking-status.requested { background:#fff2d2; color:#805600; }
+.booking-status.confirmed { background:#e3f3e9; color:#24623e; }
+{% endcss %}

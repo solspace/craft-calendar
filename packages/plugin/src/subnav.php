@@ -15,6 +15,10 @@ if (PermissionHelper::canAccessEvents()) {
     ];
 }
 
+if (Calendar::getInstance()->bookings->getManageableCalendars()) {
+    $subnav['bookings'] = ['label' => Calendar::t('Bookings'), 'url' => 'calendar/bookings'];
+}
+
 $isAllowAdminChanges = true;
 if (version_compare(Craft::$app->getVersion(), '3.1', '>=')) {
     $isAllowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;

@@ -1,0 +1,5 @@
+<div class="buttons">
+    <a class="btn {{ bookingView == 'list' ? 'active' }}" href="{{ cpUrl('calendar/bookings') }}">{{ 'Bookings'|t('calendar') }}</a>
+    <a class="btn {{ bookingView == 'schedule' ? 'active' }}" href="{{ cpUrl('calendar/bookings/schedule') }}">{{ 'Schedule'|t('calendar') }}</a>
+    {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}<a class="btn" href="{{ cpUrl('calendar/bookings/fields') }}">{{ 'Booking fields'|t('calendar') }}</a>{% endif %}
+</div>

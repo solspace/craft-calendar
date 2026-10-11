@@ -650,6 +650,12 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
     public function beforeValidate(): bool
     {
+        if ($this->getCalendar()?->getIsScheduling()) {
+            $this->addError('calendarId', Calendar::t('Use Bookings to manage scheduling calendars.'));
+
+            return false;
+        }
+
         $this->setDefaultPostDate();
 
         return parent::beforeValidate();
@@ -721,6 +727,12 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
      */
     public function beforeSave(bool $isNew): bool
     {
+        if ($this->getCalendar()?->getIsScheduling()) {
+            $this->addError('calendarId', Calendar::t('Use Bookings to manage scheduling calendars.'));
+
+            return false;
+        }
+
         if (!parent::beforeSave($isNew)) {
             return false;
         }

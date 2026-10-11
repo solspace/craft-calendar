@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper as CraftStringHelper;
@@ -21,6 +22,7 @@ use Solspace\Calendar\Library\Helpers\SitesHelper;
 use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
+use Solspace\Calendar\Models\SchedulingSettings;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Resources\Bundles\CalendarIndexBundle;
 use yii\base\InvalidConfigException;
@@ -234,6 +236,45 @@ class CalendarsController extends BaseController
         }
 
         $calendar->name = $request->post('name');
+        $calendar->type = (string) $request->getBodyParam('type', $calendar->type);
+        if ($calendar->getIsScheduling()) {
+            $data = (array) $request->getBodyParam('scheduling', []);
+            $settings = new SchedulingSettings();
+            $settings->timezone = (string) ($data['timezone'] ?? \Craft::$app->getTimeZone());
+            foreach (['duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance'] as $key) {
+                $number = filter_var($data[$key] ?? $settings->{$key}, \FILTER_VALIDATE_INT);
+                if (false === $number) {
+                    throw new BadRequestHttpException(Calendar::t('Booking rules must use whole numbers.'));
+                }
+                $settings->{$key} = $number;
+            }
+            foreach (['allowOverlap', 'allowGuests', 'requireApproval'] as $key) {
+                $settings->{$key} = !empty($data[$key]);
+            }
+            $settings->notificationEmail = trim((string) ($data['notificationEmail'] ?? ''));
+            $settings->hours = array_values((array) ($data['hours'] ?? []));
+            $settings->exceptions = array_values((array) ($data['exceptions'] ?? []));
+            foreach (['hours', 'exceptions'] as $group) {
+                foreach ($settings->{$group} as &$row) {
+                    if (!\is_array($row)) {
+                        continue;
+                    }
+                    foreach (['start' => 'H:i', 'end' => 'H:i', 'dateFrom' => 'Y-m-d', 'dateTo' => 'Y-m-d'] as $key => $format) {
+                        if (isset($row[$key]) && \is_array($row[$key])) {
+                            try {
+                                $parsed = DateTimeHelper::toDateTime($row[$key], true);
+                                $row[$key] = $parsed ? $parsed->format($format) : '';
+                            } catch (\Throwable) {
+                                $row[$key] = '';
+                            }
+                        }
+                    }
+                }
+                unset($row);
+            }
+
+            $calendar->scheduling = $settings->toArray();
+        }
         $calendar->handle = $request->post('handle');
         $calendar->description = $request->post('description');
         $calendar->color = $request->post('color');
@@ -242,11 +283,14 @@ class CalendarsController extends BaseController
         $calendar->locationFieldHandle = $request->post('locationFieldHandle');
         $calendar->titleFormat = $request->post('titleFormat');
         $calendar->titleLabel = $request->post('titleLabel');
-        $calendar->hasTitleField = (bool) $request->post('hasTitleField');
+        if ($calendar->getIsScheduling() && !$calendar->titleLabel) {
+            $calendar->titleLabel = 'Title';
+        }
+        $calendar->hasTitleField = $calendar->getIsScheduling() || (bool) $request->post('hasTitleField');
         $calendar->titleTranslationMethod = $request->post('titleTranslationMethod');
         $calendar->titleTranslationKeyFormat = $request->post('titleTranslationKeyFormat');
         $calendar->icsTimezone = $request->post('icsTimezone');
-        $calendar->allowRepeatingEvents = (bool) $request->post('allowRepeatingEvents');
+        $calendar->allowRepeatingEvents = !$calendar->getIsScheduling() && (bool) $request->post('allowRepeatingEvents');
 
         // Set the field layout
         $fieldLayout = \Craft::$app->getFields()->assembleLayoutFromPost();
@@ -489,6 +533,29 @@ class CalendarsController extends BaseController
             ];
         }
 
+        $scheduling = $calendar->getSchedulingSettings();
+        $hours = $scheduling->hours;
+        $exceptions = $scheduling->exceptions;
+        $zone = new \DateTimeZone(\Craft::$app->getTimeZone());
+        foreach ([&$hours, &$exceptions] as &$rows) {
+            foreach ($rows as &$row) {
+                if (!\is_array($row)) {
+                    continue;
+                }
+                foreach (['start', 'end', 'dateFrom', 'dateTo'] as $key) {
+                    if (!empty($row[$key]) && \is_string($row[$key])) {
+                        try {
+                            $row[$key] = new \DateTimeImmutable($row[$key], $zone);
+                        } catch (\Throwable) {
+                            $row[$key] = null;
+                        }
+                    }
+                }
+            }
+            unset($row);
+        }
+        unset($rows);
+
         return $this->renderTemplate(
             'calendar/calendars/_edit',
             [
@@ -496,6 +563,9 @@ class CalendarsController extends BaseController
                 'crumbs' => $crumbs,
                 'title' => $title,
                 'calendar' => $calendar,
+                'scheduling' => $scheduling,
+                'schedulingHours' => $hours,
+                'schedulingExceptions' => $exceptions,
                 'continueEditingUrl' => 'calendar/calendars/{handle}',
                 'customFields' => $customFieldData,
                 'timezoneOptions' => DateHelper::getTimezoneOptions(),

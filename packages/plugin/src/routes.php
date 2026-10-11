@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'calendar/bookings' => 'calendar/bookings/index',
+    'calendar/bookings/schedule' => 'calendar/bookings/schedule',
+    'calendar/bookings/fields' => 'calendar/bookings/fields',
+    'calendar/bookings/new' => 'calendar/bookings/edit',
+    'calendar/bookings/<bookingId:\d+>' => 'calendar/bookings/edit',
     // Overview
     'calendar' => 'calendar/settings/default-view',
     'calendar/overview' => 'calendar/overview',

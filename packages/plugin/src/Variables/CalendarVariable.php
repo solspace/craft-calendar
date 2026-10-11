@@ -3,8 +3,11 @@
 namespace Solspace\Calendar\Variables;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\StringHelper;
+use craft\web\View;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
@@ -21,6 +24,7 @@ use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
 use Solspace\Calendar\Services\SettingsService;
 use Solspace\Calendar\Services\ViewDataService;
+use Twig\Markup;
 use yii\base\Exception;
 
 class CalendarVariable
@@ -62,6 +66,38 @@ class CalendarVariable
     public function occurrences(array $criteria = []): OccurrenceQuery
     {
         return $this->occurrenceProvider->createQuery($criteria);
+    }
+
+    public function schedulingCalendars(): array
+    {
+        return Calendar::getInstance()->bookings->getPublicCalendars();
+    }
+
+    public function availableSlots(int|string $calendar, string $date): array
+    {
+        $model = is_numeric($calendar) ? Calendar::getInstance()->calendars->getCalendarById((int) $calendar) : Calendar::getInstance()->calendars->getCalendarByHandle($calendar);
+
+        return $model ? Calendar::getInstance()->bookings->availableSlots($model, $date) : [];
+    }
+
+    public function bookingForm(int|string $calendar, array $options = []): Markup
+    {
+        $service = Calendar::getInstance()->bookings;
+        $model = is_numeric($calendar) ? Calendar::getInstance()->calendars->getCalendarById((int) $calendar) : Calendar::getInstance()->calendars->getCalendarByHandle($calendar);
+        if (!$model || !isset($service->getPublicCalendars()[$model->id])) {
+            return new Markup('', 'UTF-8');
+        }
+        $booking = $options['booking'] ?? new Booking();
+        $html = \Craft::$app->view->renderTemplate('calendar/bookings/_form', [
+            'calendar' => $model, 'settings' => $model->getSchedulingSettings(),
+            'formId' => 'calendar-booking-'.StringHelper::randomString(12),
+            'booking' => $options['booking'] ?? new Booking(),
+            'publicFields' => $service->getPublicFormFields($booking),
+            'minDate' => (new \DateTimeImmutable('now', new \DateTimeZone($model->getSchedulingSettings()->timezone)))->format('Y-m-d'),
+            'maxDate' => (new \DateTimeImmutable('now', new \DateTimeZone($model->getSchedulingSettings()->timezone)))->modify('+'.$model->getSchedulingSettings()->maximumAdvance.' days')->format('Y-m-d'),
+        ], View::TEMPLATE_MODE_CP);
+
+        return new Markup($html, 'UTF-8');
     }
 
     public function formats(): FormatsService

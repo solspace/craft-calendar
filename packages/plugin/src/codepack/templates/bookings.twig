@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="{{ craft.app.language }}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ 'Book a time'|t('calendar') }}</title>
+<style>body{font-family:system-ui,sans-serif;background:#f4f7fb;margin:0;color:#273549}main{max-width:760px;margin:48px auto;padding:0 20px}h1{font-size:32px;margin-bottom:8px}header p{color:#607085;margin-bottom:28px}.booking-resource-list{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}.booking-resource-list a{padding:10px 14px;border:1px solid #cad4df;border-radius:7px;background:white;color:#2563eb;text-decoration:none}.booking-resource-list a[aria-current=page]{background:#2563eb;color:white}footer{margin:24px 0;color:#607085;font-size:13px}</style></head>
+<body><main><header><h1>{{ 'Book a time'|t('calendar') }}</h1><p>{{ 'Choose a resource and an available time.'|t('calendar') }}</p></header>
+{% set calendars = craft.calendar.schedulingCalendars() %}
+{% set selectedId = craft.app.request.getQueryParam('calendarId') ?? calendars|keys|first %}
+{% if calendars %}<nav class="booking-resource-list" aria-label="{{ 'Scheduling calendars'|t('calendar') }}">{% for calendar in calendars %}<a href="{{ url(craft.app.request.pathInfo, {calendarId: calendar.id}) }}" {{ selectedId == calendar.id ? 'aria-current="page"' }}>{{ calendar.name }}</a>{% endfor %}</nav>
+{% if calendars[selectedId] is defined %}{{ craft.calendar.bookingForm(selectedId, {booking: booking ?? null}) }}{% endif %}
+{% else %}<p>{{ 'No scheduling calendars are accepting guest bookings yet.'|t('calendar') }}</p>{% endif %}
+<footer>{{ 'Powered by Solspace Calendar'|t('calendar') }}</footer></main></body></html>

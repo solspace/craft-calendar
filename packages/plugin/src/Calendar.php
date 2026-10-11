@@ -19,6 +19,7 @@ use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\FieldTypes\CalendarFieldType;
@@ -29,6 +30,7 @@ use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Resources\Bundles\MainAssetBundle;
+use Solspace\Calendar\Services\BookingsService;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\CalendarsService;
 use Solspace\Calendar\Services\ClientAssetsService;
@@ -54,6 +56,7 @@ use yii\web\ForbiddenHttpException;
  * Class Calendar.
  *
  * @property CalendarsService     $calendars
+ * @property BookingsService      $bookings
  * @property CalendarSitesService $calendarSites
  * @property ClientAssetsService  $clientAssets
  * @property DiagnosticsService   $diagnostics
@@ -104,6 +107,9 @@ class Calendar extends Plugin
     public const LEGACY_PERMISSION_EVENTS_READ_INDIVIDUAL = 'calendar-readEventsIndividual';
     public const LEGACY_PERMISSION_EVENTS_FOR = 'calendar-manageEventsFor';
     public const LEGACY_PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
+    public const PERMISSION_BOOKINGS = 'calendar-bookingsManage';
+    public const PERMISSION_BOOKINGS_INDIVIDUAL = 'calendar-bookingsManageIndividual';
+
     public const PERMISSION_SETTINGS = 'calendar-settings';
     public const PERMISSION_RESOURCES = 'calendar-resources';
 
@@ -283,6 +289,7 @@ class Calendar extends Plugin
     {
         \Craft::$app->projectConfig->remove(self::CONFIG_PATH_ROOT);
         \Craft::$app->fields->deleteLayoutsByType(CalendarEvent::class);
+        \Craft::$app->fields->deleteLayoutsByType(Booking::class);
     }
 
     protected function createSettingsModel(): ?Model
@@ -332,6 +339,7 @@ class Calendar extends Plugin
         $this->setComponents(
             [
                 'calendars' => CalendarsService::class,
+                'bookings' => BookingsService::class,
                 'calendarSites' => CalendarSitesService::class,
                 'clientAssets' => ClientAssetsService::class,
                 'diagnostics' => DiagnosticsService::class,
@@ -406,6 +414,7 @@ class Calendar extends Plugin
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             static function (RegisterComponentTypesEvent $event) {
                 $event->types[] = CalendarEvent::class;
+                $event->types[] = Booking::class;
                 $event->types[] = OccurrenceOverride::class;
             }
         );
@@ -428,10 +437,14 @@ class Calendar extends Plugin
                     $calendars = $this->calendars->getAllCalendars();
 
                     $calendarPermissions = [];
+                    $bookingPermissions = [];
                     $readEventsPermissions = [];
                     $editEventsPermissions = [];
                     foreach ($calendars as $calendar) {
                         $suffix = ':'.$calendar->uid;
+                        if ($calendar->getIsScheduling()) {
+                            $bookingPermissions[self::PERMISSION_BOOKINGS_INDIVIDUAL.$suffix] = ['label' => $calendar->name];
+                        }
 
                         $calendarPermissions[self::PERMISSION_EDIT_CALENDARS_INDIVIDUAL.$suffix] = [
                             'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
@@ -445,6 +458,8 @@ class Calendar extends Plugin
                     }
 
                     $permissions = [
+                        self::PERMISSION_BOOKINGS => ['label' => self::t('Manage All Bookings')],
+                        self::PERMISSION_BOOKINGS_INDIVIDUAL => ['label' => self::t('Manage Bookings by Calendar'), 'nested' => $bookingPermissions],
                         self::PERMISSION_CALENDARS => [
                             'label' => self::t('Access Calendars'),
                             'nested' => [

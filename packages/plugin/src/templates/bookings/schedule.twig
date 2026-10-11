@@ -1,0 +1,65 @@
+{% extends 'calendar/layouts/_layoutWithoutSettings' %}
+{% set title = 'Booking Schedule'|t('calendar') %}
+{% set selectedSubnavItem = 'bookings' %}
+{% block actionButton %}<a href="{{ cpUrl('calendar/bookings/new', {calendarId}) }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>{% endblock %}
+{% block content %}
+{% include 'calendar/bookings/_nav' with {bookingView: 'schedule'} %}
+<form method="get" class="booking-toolbar">
+<select name="calendarId" aria-label="{{ 'Calendar'|t('calendar') }}">{% for item in calendars %}<option value="{{ item.id }}" {{ item.id == calendarId ? 'selected' }}>{{ item.name }}</option>{% endfor %}</select>
+<input type="date" name="date" value="{{ date }}" aria-label="{{ 'Date'|t('app') }}">
+<select name="view" aria-label="{{ 'View'|t('app') }}"><option value="day" {{ view == 'day' ? 'selected' }}>{{ 'Day'|t('calendar') }}</option><option value="week" {{ view == 'week' ? 'selected' }}>{{ 'Week'|t('calendar') }}</option></select>
+<button class="btn" type="submit">{{ 'Show'|t('app') }}</button>
+<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
+<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view, date: next}) }}">{{ 'Next'|t('app') }}</a>
+<span class="light">{{ calendar.schedulingSettings.timezone }}</span>
+</form>
+<p class="light">{{ 'Confirmed bookings reserve time. Requested bookings are shown for review.'|t('calendar') }}</p>
+<div class="booking-grid-scroll"><div class="booking-grid" style="--days:{{ days|length }}">
+<div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ '%02d:00'|format(hour) }}</div>{% endfor %}</div>
+{% for day in days %}<div class="booking-day"><div class="booking-day-heading">{{ day.date|date('D, M j', calendar.schedulingSettings.timezone) }}</div><div class="booking-day-body" data-date="{{ day.date|date('Y-m-d', calendar.schedulingSettings.timezone) }}">
+{% for hour in 0..23 %}<div class="booking-hour"></div>{% endfor %}
+{% for item in day.bookings %}<a draggable="true" data-booking-id="{{ item.booking.id }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ calendar.color }};left:calc({{ item.lane / day.lanes * 100 }}% + 3px);width:calc({{ 100 / day.lanes }}% - 6px)" title="{{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong>{{ item.booking.customerName }}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}
+</div></div>{% endfor %}
+</div></div>
+{% endblock %}
+{% css %}
+.booking-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:20px 0; }
+.booking-toolbar select, .booking-toolbar input { padding:8px; border:1px solid var(--hairline-color,#d8dee5); border-radius:5px; }
+.booking-grid-scroll { max-height:65vh; overflow:auto; border:1px solid var(--hairline-color,#d8dee5); border-radius:8px; }
+.booking-grid { display:grid; grid-template-columns:58px repeat(var(--days),minmax(115px,1fr)); min-width:calc(var(--days) * 115px + 58px); }
+.booking-day { border-left:1px solid var(--hairline-color,#d8dee5); }
+.booking-day-heading { height:42px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--white,#fff); z-index:3; font-weight:600; border-bottom:1px solid var(--hairline-color,#d8dee5); }
+.booking-day-body { position:relative; height:1152px; }
+.booking-hour, .booking-hour-label { height:48px; box-sizing:border-box; border-bottom:1px solid var(--hairline-color,#e7ebef); }
+.booking-hour-label { padding:4px; color:var(--light-text-color,#677586); font-size:11px; text-align:right; }
+.booking-block { position:absolute; left:3px; right:3px; padding:4px 6px; box-sizing:border-box; border-left:3px solid; border-radius:4px; background:#e6f2eb; overflow:hidden; color:#234c36; line-height:1.3; }
+.booking-block.requested { background:#fff3da; color:#76531b; border-style:dashed; }
+.booking-block strong, .booking-block span, .booking-block small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.booking-block strong { font-size:12px; }.booking-block span,.booking-block small { font-size:10px; }
+{% endcss %}
+{% js %}
+const bookingGridScroll = document.querySelector('.booking-grid-scroll');
+bookingGridScroll.scrollTop = 7 * 48;
+let draggedBooking = null;
+document.querySelectorAll('.booking-block').forEach(block => block.addEventListener('dragstart', event => {
+    draggedBooking = block.dataset.bookingId;
+    event.dataTransfer.setData('text/plain', draggedBooking);
+}));
+document.querySelectorAll('.booking-day-body').forEach(day => {
+    day.addEventListener('dragover', event => { if (draggedBooking) event.preventDefault(); });
+    day.addEventListener('drop', async event => {
+        if (!draggedBooking) return;
+        event.preventDefault();
+        const bookingId = draggedBooking; draggedBooking = null;
+        const minute = Math.max(0, Math.min(1439, Math.round((event.clientY - day.getBoundingClientRect().top) / 48 * 60)));
+        const increment = {{ calendar.schedulingSettings.increment }};
+        const snapped = Math.floor(minute / increment) * increment;
+        try {
+            const response = await Craft.sendActionRequest('POST', 'calendar/bookings/move', {data: {bookingId, date: day.dataset.date, minute: snapped}});
+            if (!response.data.success) { Craft.cp.displayError(response.data.message); return; }
+            location.reload();
+        } catch (_) { Craft.cp.displayError(Craft.t('calendar', 'Could not move booking.')); }
+    });
+});
+document.addEventListener('dragend', () => draggedBooking = null);
+{% endjs %}

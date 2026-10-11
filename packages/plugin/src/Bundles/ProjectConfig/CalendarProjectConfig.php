@@ -6,14 +6,19 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\ConfigEvent;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
+use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SchedulingSettings;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\CalendarSiteSettingsRecord;
+use yii\base\InvalidConfigException;
 
 class CalendarProjectConfig implements BundleInterface
 {
@@ -31,6 +36,23 @@ class CalendarProjectConfig implements BundleInterface
         $uid = $event->tokenMatches[0];
         $id = Db::idByUid(CalendarRecord::TABLE, $uid);
 
+        $newType = $event->newValue['type'] ?? CalendarModel::TYPE_EVENTS;
+        if (!\in_array($newType, [CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING], true)) {
+            throw new InvalidConfigException('Unknown calendar type.');
+        }
+        if ($id) {
+            $oldType = (new Query())->select('type')->from(CalendarRecord::TABLE)->where(['id' => $id])->scalar();
+            if ($newType !== $oldType && ((new Query())->from(Event::TABLE)->where(['calendarId' => $id])->exists() || (new Query())->from(Booking::TABLE)->where(['calendarId' => $id])->exists())) {
+                throw new InvalidConfigException('The calendar type cannot be changed while events or bookings exist.');
+            }
+        }
+        if ('scheduling' === $newType) {
+            $settings = new SchedulingSettings($event->newValue['scheduling'] ?? []);
+            if (!$settings->validate()) {
+                throw new InvalidConfigException(implode(' ', $settings->getErrorSummary(true)));
+            }
+        }
+
         ProjectConfigHelper::ensureAllFieldsProcessed();
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         ProjectConfigHelper::ensureAllSitesProcessed();
@@ -38,6 +60,8 @@ class CalendarProjectConfig implements BundleInterface
         $fieldLayoutId = $this->handleFieldLayout($id, $event->newValue['fieldLayout']);
 
         $payload = [
+            'type' => $event->newValue['type'] ?? CalendarModel::TYPE_EVENTS,
+            'scheduling' => Json::encode($event->newValue['scheduling'] ?? []),
             'uid' => $uid,
             'name' => $event->newValue['name'],
             'handle' => $event->newValue['handle'],
@@ -71,6 +95,7 @@ class CalendarProjectConfig implements BundleInterface
         }
 
         $this->changeSiteSettings($id, $event->newValue['siteSettings']);
+        Calendar::getInstance()->calendars->clearCaches();
     }
 
     public function handleRemove(ConfigEvent $event): void
@@ -79,6 +104,10 @@ class CalendarProjectConfig implements BundleInterface
         $id = Db::idByUid(CalendarRecord::TABLE, $uid);
         if (!$id) {
             return;
+        }
+
+        foreach (Booking::find()->calendarId($id)->status(null)->trashed(null)->all() as $booking) {
+            \Craft::$app->elements->deleteElement($booking, true);
         }
 
         $this->removeSiteSettingsFor($id);

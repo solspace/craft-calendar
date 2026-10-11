@@ -6,7 +6,9 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\RebuildConfigEvent;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\services\ProjectConfig;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
 use Solspace\Calendar\Records\CalendarRecord;
 use Solspace\Calendar\Records\CalendarSiteSettingsRecord;
@@ -32,6 +34,8 @@ class ProjectConfigBundle implements BundleInterface
     {
         return [
             'calendars' => $this->buildCalendarConfig(),
+            'bookingFieldLayout' => $this->buildFieldLayoutConfig(\Craft::$app->fields->getLayoutByType(Booking::class, false)?->id),
+            'bookingPublicFields' => \Craft::$app->projectConfig->get('solspace.calendar.bookingPublicFields') ?? [],
         ];
     }
 
@@ -41,6 +45,8 @@ class ProjectConfigBundle implements BundleInterface
             ->select(
                 [
                     'calendar.[[id]]',
+                    'calendar.[[type]]',
+                    'calendar.[[scheduling]]',
                     'calendar.[[uid]]',
                     'calendar.[[name]]',
                     'calendar.[[handle]]',
@@ -68,6 +74,8 @@ class ProjectConfigBundle implements BundleInterface
         foreach ($calendars as $calendar) {
             $config[$calendar['uid']] = [
                 'name' => $calendar['name'],
+                'type' => $calendar['type'],
+                'scheduling' => Json::decodeIfJson($calendar['scheduling']) ?: [],
                 'handle' => $calendar['handle'],
                 'description' => $calendar['description'],
                 'color' => $calendar['color'],

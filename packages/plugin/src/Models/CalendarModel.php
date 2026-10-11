@@ -21,6 +21,11 @@ class CalendarModel extends Model implements \JsonSerializable
 {
     public const COLOR_LIGHTEN_MULTIPLIER = 0.2;
     public const COLOR_DARKEN_MULTIPLIER = -0.2;
+    public const TYPE_EVENTS = 'events';
+    public const TYPE_SCHEDULING = 'scheduling';
+
+    public string $type = self::TYPE_EVENTS;
+    public array $scheduling = [];
 
     public ?int $id = null;
 
@@ -67,6 +72,33 @@ class CalendarModel extends Model implements \JsonSerializable
     public function __toString(): string
     {
         return $this->name;
+    }
+
+    public function getIsScheduling(): bool
+    {
+        return self::TYPE_SCHEDULING === $this->type;
+    }
+
+    public function getSchedulingSettings(): SchedulingSettings
+    {
+        return new SchedulingSettings($this->scheduling);
+    }
+
+    public static function typeOptions(): array
+    {
+        return [self::TYPE_EVENTS => Calendar::t('Events'), self::TYPE_SCHEDULING => Calendar::t('Scheduling')];
+    }
+
+    public function validateScheduling(): void
+    {
+        if ($this->getIsScheduling()) {
+            $settings = $this->getSchedulingSettings();
+            if (!$settings->validate()) {
+                foreach ($settings->getErrorSummary(true) as $message) {
+                    $this->addError('scheduling', $message);
+                }
+            }
+        }
     }
 
     public static function create(): self
@@ -305,6 +337,8 @@ class CalendarModel extends Model implements \JsonSerializable
     public function defineRules(): array
     {
         $rules = parent::defineRules();
+        $rules[] = [['type'], 'in', 'range' => array_keys(self::typeOptions())];
+        $rules[] = [['scheduling'], 'validateScheduling'];
 
         $rules[] = [
             ['name', 'handle'],
@@ -361,6 +395,8 @@ class CalendarModel extends Model implements \JsonSerializable
     public function getConfig(): array
     {
         $config = [
+            'type' => $this->type,
+            'scheduling' => $this->scheduling,
             'id' => $this->id,
             'uid' => $this->uid,
             'name' => $this->name,

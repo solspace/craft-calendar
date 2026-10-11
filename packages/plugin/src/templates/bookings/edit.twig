@@ -1,0 +1,28 @@
+{% extends 'calendar/layouts/_layoutWithoutSettings' %}
+{% import '_includes/forms' as forms %}
+{% set title = (booking.id ? 'Edit Booking' : 'New Booking')|t('calendar') %}
+{% set selectedSubnavItem = 'bookings' %}
+{% set fullPageForm = true %}
+{% block actionButton %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
+{% block content %}
+{{ actionInput('calendar/bookings/save') }}{{ csrfInput() }}{{ redirectInput('calendar/bookings') }}
+{% if booking.id %}{{ hiddenInput('bookingId', booking.id) }}{% endif %}
+{% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
+{{ forms.selectField({label: 'Calendar'|t('calendar'), name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
+{% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
+<p class="light" id="booking-timezone">{{ 'Times use {timezone}.'|t('calendar', {timezone}) }}</p>
+{{ forms.textField({label: 'Starts'|t('calendar'), name: 'startDate', type: 'datetime-local', value: booking.startDate|date('Y-m-d\\TH:i', timezone), required: true, errors: booking.getErrors('startDate')}) }}
+{{ forms.textField({label: 'Ends'|t('calendar'), name: 'endDate', type: 'datetime-local', value: booking.endDate|date('Y-m-d\\TH:i', timezone), required: true, errors: booking.getErrors('endDate')}) }}
+{{ forms.selectField({label: 'Booking Status'|t('calendar'), instructions: 'Requested times are reserved only after confirmation.'|t('calendar'), name: 'bookingStatus', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
+<hr>
+{{ forms.textField({label: 'Customer Name'|t('calendar'), name: 'customerName', value: booking.customerName, required: true, errors: booking.getErrors('customerName')}) }}
+{{ forms.textField({label: 'Customer Email'|t('calendar'), name: 'customerEmail', type: 'email', value: booking.customerEmail, required: true, errors: booking.getErrors('customerEmail')}) }}
+{{ forms.textareaField({label: 'Notes'|t('calendar'), name: 'notes', value: booking.notes, errors: booking.getErrors('notes')}) }}
+{% for tab in fieldLayout.tabs %}<h2>{{ tab.name }}</h2>{% for field in tab.elements %}{{ field.formHtml(booking, false)|raw }}{% endfor %}{% endfor %}
+{% endblock %}
+{% js %}
+const bookingTimezones = {{ calendars|map(calendar => calendar.schedulingSettings.timezone)|json_encode|raw }};
+document.getElementById('booking-calendar').addEventListener('change', (event) => {
+    document.getElementById('booking-timezone').textContent = Craft.t('calendar', 'Times use {timezone}.', { timezone: bookingTimezones[event.target.value] });
+});
+{% endjs %}

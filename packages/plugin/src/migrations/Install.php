@@ -15,6 +15,8 @@ class Install extends StreamlinedInstallMigration
         return [
             (new Table('calendar_calendars'))
                 ->addField('id', $this->primaryKey())
+                ->addField('type', $this->string(32)->notNull()->defaultValue('events'))
+                ->addField('scheduling', $this->text())
                 ->addField('name', $this->string(100)->notNull())
                 ->addField('handle', $this->string(100)->notNull()->unique())
                 ->addField('description', $this->text())
@@ -35,6 +37,20 @@ class Install extends StreamlinedInstallMigration
                 ->addIndex(['name'], true)
                 ->addIndex(['handle'], true)
                 ->addIndex(['icsHash'], true),
+
+            (new Table('calendar_bookings'))
+                ->addField('id', $this->primaryKey())
+                ->addField('calendarId', $this->integer()->notNull())
+                ->addField('startDate', $this->dateTime()->notNull())
+                ->addField('endDate', $this->dateTime()->notNull())
+                ->addField('customerName', $this->string()->notNull())
+                ->addField('customerEmail', $this->string()->notNull())
+                ->addField('notes', $this->text())
+                ->addField('bookingStatus', $this->string(32)->notNull()->defaultValue('requested'))
+                ->addField('buffer', $this->integer()->notNull()->defaultValue(0))
+                ->addForeignKey('id', 'elements', 'id', ForeignKey::CASCADE)
+                ->addForeignKey('calendarId', 'calendar_calendars', 'id', ForeignKey::CASCADE)
+                ->addIndex(['calendarId', 'bookingStatus', 'startDate']),
 
             (new Table('calendar_calendar_sites'))
                 ->addField('id', $this->primaryKey())

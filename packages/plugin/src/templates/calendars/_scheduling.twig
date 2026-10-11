@@ -1,0 +1,45 @@
+{% import '_includes/forms' as forms %}
+<h2>{{ 'Availability'|t('calendar') }}</h2>
+{{ forms.errorList(calendar.getErrors('scheduling')) }}
+{{ forms.selectField({label: 'Scheduling Timezone'|t('calendar'), instructions: 'Opening hours and booking times use this timezone, including daylight saving changes.'|t('calendar'), name: 'scheduling[timezone]', value: calendar.scheduling.timezone ?? craft.app.timeZone, options: timezoneOptions|filter(option => option.value != 'floating'), required: true}) }}
+{{ forms.editableTableField({
+    label: 'Weekly Opening Hours'|t('calendar'),
+    instructions: 'Add an opening period for each available weekday. Add the same weekday twice for a break, or remove it to keep that day closed.'|t('calendar'),
+    id: 'scheduling-hours', name: 'scheduling[hours]',
+    cols: {
+        day: {type: 'select', heading: 'Weekday'|t('calendar'), options: [{value: 1, label: 'Monday'|t('app')}, {value: 2, label: 'Tuesday'|t('app')}, {value: 3, label: 'Wednesday'|t('app')}, {value: 4, label: 'Thursday'|t('app')}, {value: 5, label: 'Friday'|t('app')}, {value: 6, label: 'Saturday'|t('app')}, {value: 7, label: 'Sunday'|t('app')}]},
+        start: {type: 'time', heading: 'Opens'|t('calendar'), placeholder: '08:00'},
+        end: {type: 'time', heading: 'Closes'|t('calendar'), placeholder: '21:00'}
+    }, rows: schedulingHours, allowAdd: true, allowDelete: true, allowReorder: false
+}) }}
+{{ forms.editableTableField({
+    label: 'Availability Exceptions'|t('calendar'),
+    instructions: 'Closed overrides all hours; Custom hours replaces the weekly hours; Block time removes part of a day. For a single day, use the same start and end date.'|t('calendar'),
+    id: 'scheduling-exceptions', name: 'scheduling[exceptions]',
+    cols: {
+        label: {type: 'singleline', heading: 'Reason'|t('calendar'), placeholder: 'Holiday'|t('calendar')},
+        dateFrom: {type: 'date', heading: 'From Date'|t('calendar'), placeholder: '2026-12-25'},
+        dateTo: {type: 'date', heading: 'Through Date'|t('calendar'), placeholder: '2026-12-25'},
+        type: {type: 'select', heading: 'Exception'|t('calendar'), options: [{value: 'closed', label: 'Closed'|t('calendar')}, {value: 'hours', label: 'Custom hours'|t('calendar')}, {value: 'block', label: 'Block time'|t('calendar')}]},
+        start: {type: 'time', heading: 'Starts'|t('calendar'), placeholder: '10:00'},
+        end: {type: 'time', heading: 'Ends'|t('calendar'), placeholder: '14:00'}
+    }, rows: schedulingExceptions, allowAdd: true, allowDelete: true, allowReorder: false
+}) }}
+<hr>
+<h2>{{ 'Booking Rules'|t('calendar') }}</h2>
+{% for key, definition in {
+    duration: ['Booking Duration', 'Length of a guest booking, in minutes.'],
+    increment: ['Start Time Increments', 'Offer starting times this many minutes apart, beginning at each opening period.'],
+    buffer: ['Gap After Bookings', 'Reserve this many extra minutes after a confirmed booking. The booking and gap must fit within opening hours.'],
+    minimumNotice: ['Minimum Notice', 'How many hours in advance guests must book. Use 0 for no minimum.'],
+    maximumAdvance: ['Advance Booking Window', 'How many days ahead guests can book.']
+} %}
+    {{ forms.textField({label: definition[0]|t('calendar'), instructions: definition[1]|t('calendar'), name: 'scheduling['~key~']', type: 'number', min: key in ['buffer', 'minimumNotice'] ? 0 : 1, value: attribute(scheduling, key), required: true, size: 8}) }}
+{% endfor %}
+{{ forms.lightswitchField({label: 'Allow Overlapping Bookings'|t('calendar'), instructions: 'Allow unrestricted overlapping bookings in this calendar. This does not enforce a capacity limit.'|t('calendar'), name: 'scheduling[allowOverlap]', on: scheduling.allowOverlap}) }}
+<hr>
+<h2>{{ 'Booking Requests'|t('calendar') }}</h2>
+{{ forms.lightswitchField({label: 'Allow Guest Booking Requests'|t('calendar'), instructions: 'Allow visitors to view available times and submit the guest booking form without signing in.'|t('calendar'), name: 'scheduling[allowGuests]', on: scheduling.allowGuests}) }}
+{{ forms.lightswitchField({label: 'Require Approval'|t('calendar'), instructions: 'Receive requests for review. Requested times are reserved only after confirmation. Turn this off to confirm available times immediately.'|t('calendar'), name: 'scheduling[requireApproval]', on: scheduling.requireApproval}) }}
+{{ forms.textField({label: 'Staff Notification Email'|t('calendar'), instructions: 'Optional email address for new booking requests and booking updates. Customers also receive a notification.'|t('calendar'), name: 'scheduling[notificationEmail]', type: 'email', value: scheduling.notificationEmail}) }}
+<p class="light">{{ 'All bookings share one custom field layout. Manage it from Bookings → Booking fields.'|t('calendar') }}</p>
