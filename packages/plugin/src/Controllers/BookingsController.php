@@ -255,12 +255,12 @@ class BookingsController extends BaseController
         if (!Availability::validDate($date)) {
             throw new BadRequestHttpException();
         }
-        $view = 'day' === \Craft::$app->request->getQueryParam('view') ? 'day' : 'week';
+        $scheduleView = 'day' === \Craft::$app->request->getQueryParam('view') ? 'day' : 'week';
         $start = new \DateTimeImmutable($date, $zone);
-        if ('week' === $view) {
+        if ('week' === $scheduleView) {
             $start = $start->modify('-'.((int) $start->format('N') - 1).' days');
         }
-        $end = $start->modify('day' === $view ? '+1 day' : '+7 days');
+        $end = $start->modify('day' === $scheduleView ? '+1 day' : '+7 days');
         $bookings = Booking::find()->calendarId($calendarId)->bookingStatus([Booking::REQUESTED, Booking::CONFIRMED])
             ->andWhere(['>=', 'calendar_bookings.startDate', Db::prepareDateForDb($start)])
             ->andWhere(['<', 'calendar_bookings.startDate', Db::prepareDateForDb($end)])
@@ -292,8 +292,8 @@ class BookingsController extends BaseController
         }
 
         return $this->renderTemplate('calendar/bookings/schedule', $this->variables() + [
-            'calendar' => $calendar, 'calendarId' => $calendarId, 'days' => $days, 'date' => $date, 'view' => $view,
-            'previous' => $start->modify('day' === $view ? '-1 day' : '-7 days')->format('Y-m-d'), 'next' => $end->format('Y-m-d'),
+            'calendar' => $calendar, 'calendarId' => $calendarId, 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView,
+            'previous' => $start->modify('day' === $scheduleView ? '-1 day' : '-7 days')->format('Y-m-d'), 'next' => $end->format('Y-m-d'),
         ]);
     }
 

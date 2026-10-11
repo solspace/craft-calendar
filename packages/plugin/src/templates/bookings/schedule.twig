@@ -7,10 +7,10 @@
 <form method="get" class="booking-toolbar">
 <select name="calendarId" aria-label="{{ 'Calendar'|t('calendar') }}">{% for item in calendars %}<option value="{{ item.id }}" {{ item.id == calendarId ? 'selected' }}>{{ item.name }}</option>{% endfor %}</select>
 <input type="date" name="date" value="{{ date }}" aria-label="{{ 'Date'|t('app') }}">
-<select name="view" aria-label="{{ 'View'|t('app') }}"><option value="day" {{ view == 'day' ? 'selected' }}>{{ 'Day'|t('calendar') }}</option><option value="week" {{ view == 'week' ? 'selected' }}>{{ 'Week'|t('calendar') }}</option></select>
+<select name="view" aria-label="{{ 'View'|t('app') }}"><option value="day" {{ scheduleView == 'day' ? 'selected' }}>{{ 'Day'|t('calendar') }}</option><option value="week" {{ scheduleView == 'week' ? 'selected' }}>{{ 'Week'|t('calendar') }}</option></select>
 <button class="btn" type="submit">{{ 'Show'|t('app') }}</button>
-<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
-<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view, date: next}) }}">{{ 'Next'|t('app') }}</a>
+<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
+<a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: next}) }}">{{ 'Next'|t('app') }}</a>
 <span class="light">{{ calendar.schedulingSettings.timezone }}</span>
 </form>
 <p class="light">{{ 'Confirmed bookings reserve time. Requested bookings are shown for review.'|t('calendar') }}</p>

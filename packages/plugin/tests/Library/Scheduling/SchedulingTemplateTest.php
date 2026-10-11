@@ -8,10 +8,54 @@ use Solspace\Calendar\Models\CalendarModel;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 use Twig\TwigFilter;
+use Twig\TwigFunction;
 
 /** @coversNothing */
 class SchedulingTemplateTest extends TestCase
 {
+    public function testDayAndWeekSchedulesPreserveTheControlPanelViewObject(): void
+    {
+        $root = __DIR__.'/../../../src/templates/';
+        $source = str_replace(
+            ['{% js %}', '{% endjs %}', '{% css %}', '{% endcss %}'],
+            ['{% block scripts %}', '{% endblock %}', '{% block styles %}', '{% endblock %}'],
+            file_get_contents($root.'bookings/schedule.twig'),
+        );
+        $twig = new Environment(new ArrayLoader([
+            'schedule' => $source,
+            'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
+            'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",
+        ]), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+        $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
+        $view = new class {
+            public function getIsDeltaRegistrationActive(): bool
+            {
+                return true;
+            }
+        };
+
+        foreach (['day', 'week'] as $scheduleView) {
+            $output = $twig->render('schedule', [
+                'view' => $view,
+                'scheduleView' => $scheduleView,
+                'calendar' => ['schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15]],
+                'calendarId' => 7,
+                'calendars' => [['id' => 7, 'name' => 'Meeting room']],
+                'days' => [['date' => new \DateTimeImmutable('2026-10-12'), 'bookings' => [], 'lanes' => 1]],
+                'date' => '2026-10-12',
+                'previous' => '2026-10-05',
+                'next' => '2026-10-19',
+                'currentUser' => ['admin' => false],
+            ]);
+
+            self::assertStringContainsString('delta-active', $output);
+            self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
+            self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-05', $output);
+            self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-19', $output);
+        }
+    }
+
     public function testTimezoneOptionsRenderForExistingEventAndSchedulingCalendars(): void
     {
         $app = \Craft::$app;
