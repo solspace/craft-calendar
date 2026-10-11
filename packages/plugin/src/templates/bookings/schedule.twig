@@ -12,7 +12,7 @@
             </button>
         {% endfor %}
     </div>
-    <a href="{{ cpUrl('calendar/bookings/new', {calendarId}) }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>
+    <a data-booking-new href="{{ cpUrl('calendar/bookings/new', {calendarId}) }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>
 </div>
 {% endblock %}
 {% block content %}
@@ -20,18 +20,18 @@
 {% for item in calendars %}{% set calendarOptions = calendarOptions|merge([{value: item.id, label: item.name, data: {color: item.color}}]) %}{% endfor %}
 <form method="get" class="booking-toolbar">
     {{ forms.selectize({id: 'booking-schedule-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', extraPlugins: false}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
-    <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
+    <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, required: true, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
     {{ forms.selectize({id: 'booking-schedule-view', class: 'booking-toolbar-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
-    <button class="btn" type="submit">{{ 'Show'|t('app') }}</button>
     <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
         <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
         <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: next}) }}">{{ 'Next'|t('app') }}</a>
     </div>
+    <span class="spinner hidden" aria-hidden="true"></span>
     <span class="light booking-toolbar-timezone">{{ calendar.schedulingSettings.timezone }}</span>
 </form>
 <p class="light">{{ 'Confirmed bookings reserve time. Requested bookings are shown for review.'|t('calendar') }}</p>
 <p class="light booking-grid-instructions">{{ 'Click an available time to add a booking. Shaded times are unavailable.'|t('calendar') }}</p>
-<div class="booking-grid-scroll"><div class="booking-grid" style="--days:{{ days|length }}">
+<div class="booking-grid-scroll"><div class="booking-grid" data-calendar-id="{{ calendarId }}" data-increment="{{ calendar.schedulingSettings.increment }}" style="--days:{{ days|length }}">
 <div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ ('2000-01-01 ' ~ '%02d:00'|format(hour))|time(bookingTimeFormat, calendar.schedulingSettings.timezone)|calendarTimeLabel }}</div>{% endfor %}</div>
 {% for day in days %}<div class="booking-day"><div class="booking-day-heading">{{ day.date|date('icu:EEE', calendar.schedulingSettings.timezone) }} {{ day.date|date('short', calendar.schedulingSettings.timezone) }}</div><div class="booking-day-body" data-date="{{ day.date|date('Y-m-d', calendar.schedulingSettings.timezone) }}">
 {% for hour in 0..23 %}<div class="booking-hour"></div>{% endfor %}
@@ -65,6 +65,7 @@
 .booking-toolbar .selectize-input .item > .flex, .booking-picker-dropdown .option > .flex { gap:8px; }
 .booking-toolbar .selectize-input .color.small, .booking-picker-dropdown .color.small { width:12px; height:12px; flex:0 0 12px; margin:0; }
 .booking-grid-scroll { max-height:65vh; overflow:auto; border:1px solid var(--hairline-color,#d8dee5); border-radius:8px; }
+.booking-grid-scroll[aria-busy="true"] { opacity:.65; pointer-events:none; }
 .booking-grid { display:grid; grid-template-columns:80px repeat(var(--days),minmax(115px,1fr)); min-width:calc(var(--days) * 115px + 80px); }
 .booking-day { border-left:1px solid var(--hairline-color,#d8dee5); }
 .booking-day-heading { height:42px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--white,#fff); z-index:5; font-weight:600; border-bottom:1px solid var(--hairline-color,#d8dee5); }

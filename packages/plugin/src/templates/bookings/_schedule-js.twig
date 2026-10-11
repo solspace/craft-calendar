@@ -1,29 +1,124 @@
 const bookingGridScroll = document.querySelector('.booking-grid-scroll');
 bookingGridScroll.scrollTop = 7 * 48;
 const bookingHistoryButtons = document.querySelectorAll('[data-booking-history]');
-const bookingHistoryKey = 'calendar-booking-history:{{ currentUser.id }}:{{ calendarId }}:' + {{ cpUrl('calendar/bookings/schedule')|json_encode|raw }};
+const bookingToolbar = document.querySelector('.booking-toolbar');
+const bookingSpinner = bookingToolbar.querySelector('.spinner');
+let bookingFilterValues = new FormData(bookingToolbar);
+let bookingScheduleLoading = false;
+let bookingScheduleRevision = 0;
+let bookingScheduleRequest;
+let pendingBookingSchedule;
+let bookingDateTimer;
+function bookingHistoryKey() {
+    return 'calendar-booking-history:{{ currentUser.id }}:' + bookingGridScroll.querySelector('.booking-grid').dataset.calendarId + ':' + {{ cpUrl('calendar/bookings/schedule')|json_encode|raw }};
+}
 let bookingPast = [];
 let bookingFuture = [];
 let bookingBusy = false;
 let draggedBooking = null;
-try {
-    const stored = JSON.parse(sessionStorage.getItem(bookingHistoryKey));
-    if (stored && stored.expires > Date.now() && Array.isArray(stored.past) && Array.isArray(stored.future)) {
-        bookingPast = stored.past.filter(token => typeof token === 'string').slice(-50);
-        bookingFuture = stored.future.filter(token => typeof token === 'string').slice(-50);
-    }
-} catch (_) { /* History remains available in memory when storage is unavailable. */ }
+function loadBookingHistory() {
+    bookingPast = [];
+    bookingFuture = [];
+    try {
+        const stored = JSON.parse(sessionStorage.getItem(bookingHistoryKey()));
+        if (stored && stored.expires > Date.now() && Array.isArray(stored.past) && Array.isArray(stored.future)) {
+            bookingPast = stored.past.filter(token => typeof token === 'string').slice(-50);
+            bookingFuture = stored.future.filter(token => typeof token === 'string').slice(-50);
+        }
+    } catch (_) { /* History remains available in memory when storage is unavailable. */ }
+}
+loadBookingHistory();
 function updateBookingHistory() {
+    const busy = bookingBusy || bookingScheduleLoading;
     bookingHistoryButtons.forEach(button => {
-        button.disabled = bookingBusy || !(button.dataset.bookingHistory === 'undo' ? bookingPast.length : bookingFuture.length);
+        button.disabled = busy || !(button.dataset.bookingHistory === 'undo' ? bookingPast.length : bookingFuture.length);
     });
-    bookingGridScroll.querySelectorAll('.booking-block').forEach(block => block.draggable = !bookingBusy);
+    bookingGridScroll.querySelectorAll('.booking-block').forEach(block => block.draggable = !busy);
 }
 function retainBookingHistory() {
     try {
-        sessionStorage.setItem(bookingHistoryKey, JSON.stringify({past: bookingPast, future: bookingFuture, expires: Date.now() + 7200000}));
+        sessionStorage.setItem(bookingHistoryKey(), JSON.stringify({past: bookingPast, future: bookingFuture, expires: Date.now() + 7200000}));
     } catch (_) { /* Keep the current page's history even without session storage. */ }
     updateBookingHistory();
+}
+function setBookingFilters(values) {
+    for (const name of ['calendarId', 'date', 'view']) {
+        const input = bookingToolbar.elements.namedItem(name);
+        if (input.selectize) input.selectize.setValue(values.get(name), true);
+        else input.value = values.get(name);
+    }
+}
+async function filterBookingSchedule(url) {
+    clearTimeout(bookingDateTimer);
+    if (!url) {
+        if (!bookingToolbar.checkValidity()) return;
+        url = new URL(location.href);
+        for (const [name, value] of new FormData(bookingToolbar)) url.searchParams.set(name, value);
+    }
+    if (bookingBusy) { pendingBookingSchedule = url; return; }
+    pendingBookingSchedule = null;
+    const current = ++bookingScheduleRevision;
+    bookingScheduleRequest?.abort();
+    const request = bookingScheduleRequest = new AbortController();
+    bookingScheduleLoading = true;
+    draggedBooking = null;
+    bookingGridScroll.setAttribute('aria-busy', 'true');
+    bookingSpinner.classList.remove('hidden');
+    updateBookingHistory();
+    try {
+        const response = await fetch(url, {credentials: 'same-origin', cache: 'no-store', signal: request.signal});
+        if (!response.ok) throw new Error();
+        const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+        if (current !== bookingScheduleRevision) return;
+        const grid = doc.querySelector('.booking-grid');
+        const toolbar = doc.querySelector('.booking-toolbar');
+        const newBooking = doc.querySelector('[data-booking-new]');
+        if (!grid || !toolbar || !newBooking) throw new Error();
+        const calendarChanged = grid.dataset.calendarId !== bookingGridScroll.querySelector('.booking-grid').dataset.calendarId;
+        bookingGridScroll.replaceChildren(document.importNode(grid, true));
+        // Keep the existing controls and scroll position; the returned page supplies canonical values and links.
+        bookingFilterValues = new FormData(toolbar);
+        setBookingFilters(bookingFilterValues);
+        bookingToolbar.querySelector('.booking-toolbar-navigation').innerHTML = toolbar.querySelector('.booking-toolbar-navigation').innerHTML;
+        bookingToolbar.querySelector('.booking-toolbar-timezone').textContent = toolbar.querySelector('.booking-toolbar-timezone').textContent;
+        document.querySelector('[data-booking-new]').href = newBooking.href;
+        history.replaceState(null, '', url);
+        if (calendarChanged) loadBookingHistory();
+    } catch (_) {
+        if (current === bookingScheduleRevision && !request.signal.aborted) {
+            setBookingFilters(bookingFilterValues);
+            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+        }
+    } finally {
+        if (current === bookingScheduleRevision) {
+            bookingScheduleLoading = false;
+            bookingGridScroll.removeAttribute('aria-busy');
+            bookingSpinner.classList.add('hidden');
+            updateBookingHistory();
+        }
+    }
+}
+// Bind to the toolbar because Selectize initialization clears handlers bound directly to its selects.
+$(bookingToolbar).on('change', '#booking-schedule-calendar, #booking-schedule-date, #booking-schedule-view', () => filterBookingSchedule());
+bookingToolbar.querySelector('#booking-schedule-date').addEventListener('input', () => {
+    clearTimeout(bookingDateTimer);
+    bookingDateTimer = setTimeout(() => filterBookingSchedule(), 300);
+});
+bookingToolbar.addEventListener('submit', event => { event.preventDefault(); filterBookingSchedule(); });
+bookingToolbar.addEventListener('click', event => {
+    const link = event.target.closest('.booking-toolbar-navigation a');
+    if (!link || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (bookingScheduleLoading || pendingBookingSchedule) return;
+    filterBookingSchedule(new URL(link.href));
+});
+document.querySelector('[data-booking-new]').addEventListener('click', event => {
+    if (bookingScheduleLoading || pendingBookingSchedule) event.preventDefault();
+});
+function finishBookingChange() {
+    bookingBusy = false;
+    updateBookingHistory();
+    if (pendingBookingSchedule) filterBookingSchedule(pendingBookingSchedule);
 }
 async function refreshBookingSchedule() {
     try {
@@ -38,7 +133,7 @@ async function refreshBookingSchedule() {
     }
 }
 async function replayBookingHistory(direction) {
-    if (bookingBusy) return;
+    if (bookingBusy || bookingScheduleLoading) return;
     const entries = direction === 'undo' ? bookingPast : bookingFuture;
     const token = entries.at(-1);
     if (!token) return;
@@ -57,28 +152,27 @@ async function replayBookingHistory(direction) {
     } catch (_) {
         Craft.cp.displayError(Craft.t('calendar', 'Could not restore the booking change.'));
     } finally {
-        bookingBusy = false;
-        updateBookingHistory();
+        finishBookingChange();
     }
 }
 bookingHistoryButtons.forEach(button => button.addEventListener('click', () => replayBookingHistory(button.dataset.bookingHistory)));
 bookingGridScroll.addEventListener('dragstart', event => {
     const block = event.target.closest('.booking-block');
-    if (!block || bookingBusy) { event.preventDefault(); return; }
+    if (!block || bookingBusy || bookingScheduleLoading) { event.preventDefault(); return; }
     draggedBooking = block.dataset.bookingId;
     event.dataTransfer.setData('text/plain', draggedBooking);
 });
 bookingGridScroll.addEventListener('dragover', event => {
-    if (draggedBooking && !bookingBusy && event.target.closest('.booking-day-body')) event.preventDefault();
+    if (draggedBooking && !bookingBusy && !bookingScheduleLoading && event.target.closest('.booking-day-body')) event.preventDefault();
 });
 bookingGridScroll.addEventListener('drop', async event => {
     const day = event.target.closest('.booking-day-body');
-    if (!day || !draggedBooking || bookingBusy) return;
+    if (!day || !draggedBooking || bookingBusy || bookingScheduleLoading) return;
     event.preventDefault();
     const bookingId = draggedBooking;
     draggedBooking = null;
     const minute = Math.max(0, Math.min(1439, Math.round((event.clientY - day.getBoundingClientRect().top) / 48 * 60)));
-    const increment = {{ calendar.schedulingSettings.increment }};
+    const increment = Number(bookingGridScroll.querySelector('.booking-grid').dataset.increment);
     const snapped = Math.floor(minute / increment) * increment;
     bookingBusy = true;
     updateBookingHistory();
@@ -94,13 +188,12 @@ bookingGridScroll.addEventListener('drop', async event => {
     } catch (_) {
         Craft.cp.displayError(Craft.t('calendar', 'Could not move booking.'));
     } finally {
-        bookingBusy = false;
-        updateBookingHistory();
+        finishBookingChange();
     }
 });
 document.addEventListener('dragend', () => draggedBooking = null);
 document.addEventListener('keydown', event => {
-    if (bookingBusy || event.defaultPrevented || event.altKey || !(event.metaKey || event.ctrlKey)) return;
+    if (bookingBusy || bookingScheduleLoading || event.defaultPrevented || event.altKey || !(event.metaKey || event.ctrlKey)) return;
     if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]:not([contenteditable=false]), [role=textbox]')) return;
     if (document.querySelector('.modal:not(.hidden), .cp-screen-slideout:not(.hidden)')) return;
     const key = event.key.toLowerCase();
