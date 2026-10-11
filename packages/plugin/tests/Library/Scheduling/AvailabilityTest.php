@@ -104,6 +104,35 @@ class AvailabilityTest extends TestCase
         self::assertSame(['08:30–09:00'], array_column($slots, 'label'));
     }
 
+    public function testMergedIntervalsMatchIndependentOverlapChecksAndFirstSlotSearch(): void
+    {
+        $settings = (new SchedulingSettings(['timezone' => 'UTC', 'duration' => 17, 'increment' => 7, 'buffer' => 3]))->toArray();
+        $day = new \DateTimeImmutable('2026-10-12T00:00:00Z');
+        for ($variation = 0; $variation < 20; ++$variation) {
+            $busy = [];
+            for ($i = 0; $i < 6; ++$i) {
+                $start = 480 + ($i * 113 + $variation * 29) % 700;
+                $busy[] = ['start' => $day->modify('+'.$start.' minutes'), 'end' => $day->modify('+'.($start + 20 + $i * 3).' minutes'), 'buffer' => $i];
+            }
+            $expected = [];
+            for ($minute = 480; $minute + 20 <= 1260; $minute += 7) {
+                $start = $day->getTimestamp() + $minute * 60;
+                $end = $start + 20 * 60;
+                $overlaps = false;
+                foreach ($busy as $row) {
+                    $overlaps = $overlaps || ($start < $row['end']->getTimestamp() + $row['buffer'] * 60 && $end > $row['start']->getTimestamp());
+                }
+                if (!$overlaps) {
+                    $expected[] = $start;
+                }
+            }
+            $slots = Availability::slots($settings, '2026-10-12', array_reverse($busy), $day, false);
+            self::assertSame($expected, array_map(static fn ($slot) => (new \DateTimeImmutable($slot['start']))->getTimestamp(), $slots));
+            self::assertSame(\array_slice($slots, 0, 1), Availability::slots($settings, '2026-10-12', $busy, $day, false, true));
+        }
+        self::assertSame([], Availability::slots($settings, '2026-10-12', [['start' => null, 'end' => null]], $day, false));
+    }
+
     private function slots(array $overrides = [], array $busy = [], string $date = '2026-10-12'): array
     {
         $settings = (new SchedulingSettings(array_merge(['timezone' => 'America/Winnipeg'], $overrides)))->toArray();

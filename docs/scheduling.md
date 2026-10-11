@@ -67,6 +67,10 @@ The demo installer includes a **Book a time** page in both Bootstrap and Tailwin
 
 Customer and optional staff notifications use Craft's mail settings and queue. Run the queue normally to deliver them. Notification failure does not release a confirmed booking.
 
+Notifications are registered by the booking element itself, including saves through Craft's element service. They are queued after the outer database transaction finishes and only for changes that remain committed. Several time/status changes within one transaction produce a notification for its final state; rolled-back changes do not notify. Restoring a deleted booking rechecks the current calendar rules and conflicts inside Craft's restore transaction.
+
+Guest request attempts use an atomic database counter shared across workers (20 attempts per IP address per hour). Old counters are periodically removed. Availability checks normalize occupied intervals once, and finding the next available time skips closed days and reads occupied times in batches of up to 31 days.
+
 If a notification job fails, check its error in Queue Manager. Transport failures include the underlying mail error when Craft exposes it. Test delivery from **Settings → Email** and check `storage/logs` for further details. Local development requires a working mail transport, such as a running local mail catcher or configured SMTP service. After correcting the mail configuration, retry the failed jobs; restart long-running workers after updating Calendar's code.
 
 ## Validation before release

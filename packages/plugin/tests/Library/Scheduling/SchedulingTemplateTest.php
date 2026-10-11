@@ -24,6 +24,10 @@ class SchedulingTemplateTest extends TestCase
         );
         $twig = new Environment(new ArrayLoader([
             'schedule' => $source,
+            '_includes/forms' => <<<'TWIG'
+                {% macro selectize(config) %}<select id="{{ config.id }}">{% for option in config.options %}<option value="{{ option.value }}"{% if option.value == config.value %} selected{% endif %}>{{ option.label }}</option>{% endfor %}</select>{% endmacro %}
+                {% macro text(config) %}<input type="{{ config.type }}" value="{{ config.value }}">{% endmacro %}
+                TWIG,
             'calendar/bookings/_schedule-js' => file_get_contents($root.'bookings/_schedule-js.twig'),
             'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
             'calendar/layouts/_bookings' => file_get_contents($root.'layouts/_bookings.twig'),
@@ -47,9 +51,9 @@ class SchedulingTemplateTest extends TestCase
                 'view' => $view,
                 'scheduleView' => $scheduleView,
                 'bookingTimeFormat' => 'short',
-                'calendar' => ['schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15]],
+                'calendar' => ['schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15, 'duration' => 30]],
                 'calendarId' => 7,
-                'calendars' => [['id' => 7, 'name' => 'Meeting room']],
+                'calendars' => [['id' => 7, 'name' => 'Meeting room', 'color' => '#2563eb']],
                 'days' => [['date' => new \DateTimeImmutable('2026-10-12'), 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]]],
                 'date' => '2026-10-12',
                 'previous' => '2026-10-05',

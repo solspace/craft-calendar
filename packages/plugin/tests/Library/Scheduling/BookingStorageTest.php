@@ -1,0 +1,391 @@
+<?php
+
+namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
+
+use craft\db\Connection;
+use craft\helpers\Db;
+use craft\models\FieldLayout;
+use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Booking;
+use Solspace\Calendar\Library\Scheduling\BookingConflictException;
+use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
+use Solspace\Calendar\migrations\m261011_020000_HardenBookings;
+use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Services\BookingsService;
+use Solspace\Calendar\Services\CalendarsService;
+
+/**
+ * Uses SQLite by default. Set CALENDAR_TEST_DSN (and optional CALENDAR_TEST_USER/
+ * CALENDAR_TEST_PASSWORD) to an empty, disposable MySQL/PostgreSQL database.
+ *
+ * @coversNothing
+ */
+class BookingStorageTest extends TestCase
+{
+    private Connection $db;
+    private BookingsService $service;
+    private mixed $previousApp;
+    private mixed $previousPlugin;
+    private mixed $previousDb;
+    private object $queue;
+    private array $tables = ['calendar_bookings', 'calendar_calendars', 'elements', 'calendar_booking_rate_limits'];
+
+    protected function setUp(): void
+    {
+        if (!getenv('CALENDAR_TEST_DSN') && !\extension_loaded('pdo_sqlite')) {
+            self::markTestSkipped('Requires PDO SQLite or CALENDAR_TEST_DSN.');
+        }
+        $this->previousApp = \Craft::$app;
+        $this->previousPlugin = Calendar::getInstance();
+        $property = new \ReflectionProperty(Db::class, '_db');
+        $this->previousDb = $property->getValue();
+        $property->setValue(null, null);
+        $this->queue = new class {
+            public array $jobs = [];
+
+            public function priority($value): self
+            {
+                return $this;
+            }
+
+            public function delay($value): self
+            {
+                return $this;
+            }
+
+            public function ttr($value): self
+            {
+                return $this;
+            }
+
+            public function push($job): string
+            {
+                $this->jobs[] = $job;
+
+                return (string) \count($this->jobs);
+            }
+        };
+        $this->connect();
+        foreach ($this->tables as $table) {
+            $this->db->createCommand('DROP TABLE IF EXISTS '.$table)->execute();
+        }
+        $this->db->createCommand()->createTable('elements', ['id' => 'integer PRIMARY KEY', 'dateDeleted' => 'datetime'])->execute();
+        $this->db->createCommand()->createTable('calendar_calendars', ['id' => 'integer PRIMARY KEY', 'type' => 'string', 'scheduling' => 'text'])->execute();
+        $this->db->createCommand()->createTable('calendar_bookings', [
+            'id' => 'integer PRIMARY KEY', 'calendarId' => 'integer', 'startDate' => 'datetime', 'endDate' => 'datetime',
+            'customerName' => 'string', 'customerEmail' => 'string', 'notes' => 'text', 'bookingStatus' => 'string', 'buffer' => 'integer',
+            'statusChangedAt' => 'datetime', 'statusChangedById' => 'integer', 'statusChangedByName' => 'string', 'statusChangeSource' => 'string',
+            'dateCreated' => 'datetime', 'dateUpdated' => 'datetime', 'uid' => 'string',
+        ])->execute();
+        $migration = new m261011_020000_HardenBookings(['db' => $this->db, 'compact' => true]);
+        $migration->safeUp();
+        $migration->safeUp();
+        $calendar = new CalendarModel(['id' => 1, 'name' => 'Room', 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['timezone' => 'UTC']]);
+        $this->db->createCommand()->insert('calendar_calendars', ['id' => 1, 'type' => 'scheduling', 'scheduling' => json_encode($calendar->getSchedulingSettings()->toArray())])->execute();
+        $calendars = $this->createMock(CalendarsService::class);
+        $calendars->method('getCalendarById')->willReturn($calendar);
+        $this->service = new BookingsService();
+        $plugin = (new \ReflectionClass(Calendar::class))->newInstanceWithoutConstructor();
+        $plugin->setComponents(['calendars' => $calendars, 'bookings' => $this->service]);
+        Calendar::setInstance($plugin);
+        foreach ([1, 2] as $id) {
+            $this->db->createCommand()->insert('elements', ['id' => $id])->execute();
+            $booking = $this->booking($id);
+            $this->db->createCommand()->insert('calendar_bookings', $booking->getRecordData())->execute();
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        if (!isset($this->db)) {
+            return;
+        }
+        foreach ($this->tables as $table) {
+            $this->db->createCommand('DROP TABLE IF EXISTS '.$table)->execute();
+        }
+        $this->db->close();
+        \Craft::$app = $this->previousApp;
+        Calendar::setInstance($this->previousPlugin);
+        (new \ReflectionProperty(Db::class, '_db'))->setValue(null, $this->previousDb);
+    }
+
+    public function testRestoreRejectsAnOccupiedSlotAndRollsBackItsElementRestoration(): void
+    {
+        $this->db->createCommand()->update('calendar_bookings', ['bookingStatus' => Booking::CONFIRMED], ['id' => [1, 2]])->execute();
+        $this->db->createCommand()->update('elements', ['dateDeleted' => '2026-10-11 00:00:00'], ['id' => 1])->execute();
+        $booking = $this->booking(1);
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $transaction = $this->db->beginTransaction();
+
+        try {
+            $this->db->createCommand()->update('elements', ['dateDeleted' => null], ['id' => 1])->execute();
+            $booking->afterRestore();
+            self::fail('A conflicting confirmed booking was restored.');
+        } catch (BookingConflictException $exception) {
+            $transaction->rollBack();
+        }
+        self::assertNotNull($this->db->createCommand('SELECT dateDeleted FROM elements WHERE id=1')->queryScalar());
+        self::assertSame([], $this->queue->jobs);
+        $this->db->createCommand()->update('calendar_bookings', ['bookingStatus' => Booking::CANCELLED], ['id' => 2])->execute();
+        $transaction = $this->db->beginTransaction();
+        $this->db->createCommand()->update('elements', ['dateDeleted' => null], ['id' => 1])->execute();
+        $booking->afterRestore();
+        self::assertSame([], $this->queue->jobs);
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+    }
+
+    public function testNativeElementSavesNotifyAfterOuterCommitAndOnlyForTheFinalChange(): void
+    {
+        $booking = $this->booking(1);
+        $transaction = $this->db->beginTransaction();
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $booking->afterSave(false);
+        $inner = $this->db->beginTransaction();
+        $booking->startDate = $booking->startDate->modify('+1 hour');
+        $booking->endDate = $booking->endDate->modify('+1 hour');
+        $booking->afterSave(false);
+        $inner->commit();
+        self::assertSame([], $this->queue->jobs);
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+        self::assertStringContainsString('10:00', $this->queue->jobs[0]->body);
+        $booking->notes = 'Unrelated edit';
+        $transaction = $this->db->beginTransaction();
+        $booking->afterSave(false);
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+    }
+
+    public function testOuterRollbackAndRolledBackSavepointsNeverNotify(): void
+    {
+        $booking = $this->booking(1);
+        $transaction = $this->db->beginTransaction();
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $booking->afterSave(false);
+        $transaction->rollBack();
+        self::assertSame([], $this->queue->jobs);
+        $transaction = $this->db->beginTransaction();
+        $inner = $this->db->beginTransaction();
+        $booking->afterSave(false);
+        $inner->rollBack();
+        $transaction->commit();
+        self::assertSame([], $this->queue->jobs);
+
+        $transaction = $this->db->beginTransaction();
+        $booking->afterSave(false);
+        $inner = $this->db->beginTransaction();
+        $booking->bookingStatus = Booking::CANCELLED;
+        $booking->afterSave(false);
+        $inner->rollBack();
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+        self::assertStringContainsString('Status: Confirmed', $this->queue->jobs[0]->body);
+    }
+
+    public function testAtomicRateCounterHasIndependentIpsHourlyResetAndExpiryCleanup(): void
+    {
+        $limit = new BookingRateLimit();
+        $now = 1791792000;
+        for ($i = 0; $i < 20; ++$i) {
+            self::assertTrue($limit->consume('192.0.2.1', $now));
+        }
+        self::assertFalse($limit->consume('192.0.2.1', $now));
+        self::assertTrue($limit->consume('192.0.2.2', $now));
+        self::assertTrue($limit->consume('192.0.2.1', $now + 3600));
+        $limit->prune($now + 3600);
+        self::assertSame(1, (int) $this->db->createCommand('SELECT COUNT(*) FROM calendar_booking_rate_limits')->queryScalar());
+    }
+
+    public function testConcurrentConfirmationsOnlyReserveTheSlotOnce(): void
+    {
+        $results = $this->parallel(2, function (int $worker): string {
+            $booking = $this->booking($worker + 1);
+            $booking->bookingStatus = Booking::CONFIRMED;
+            $transaction = $this->db->beginTransaction();
+            // Establish a consistent-read snapshot before either worker obtains the resource lock.
+            $this->db->createCommand('SELECT COUNT(*) FROM calendar_bookings')->queryScalar();
+            $command = $this->db->createCommand('SELECT id FROM elements WHERE id=:id FOR UPDATE', [':id' => $booking->id]);
+            $command->queryOne();
+
+            try {
+                $booking->afterSave(false);
+                usleep(100000);
+                $transaction->commit();
+
+                return 'saved';
+            } catch (BookingConflictException $exception) {
+                $transaction->rollBack();
+
+                return 'conflict';
+            }
+        });
+        sort($results);
+        self::assertSame(['conflict', 'saved'], $results);
+        self::assertSame(1, (int) $this->db->createCommand("SELECT COUNT(*) FROM calendar_bookings WHERE bookingStatus='confirmed'")->queryScalar());
+    }
+
+    public function testConcurrentRequestsCannotExceedTheRateLimit(): void
+    {
+        $results = $this->parallel(30, static function (int $worker): string {
+            return (new BookingRateLimit())->consume('192.0.2.99', 1791792000) ? 'accepted' : 'limited';
+        });
+        self::assertCount(20, array_filter($results, static fn ($result) => 'accepted' === $result));
+        self::assertCount(10, array_filter($results, static fn ($result) => 'limited' === $result));
+        self::assertSame(20, (int) $this->db->createCommand('SELECT attempts FROM calendar_booking_rate_limits')->queryScalar());
+    }
+
+    private function connect(): void
+    {
+        $plugin = Calendar::getInstance();
+        $this->db = new Connection(['dsn' => getenv('CALENDAR_TEST_DSN') ?: 'sqlite::memory:', 'username' => getenv('CALENDAR_TEST_USER') ?: null, 'password' => getenv('CALENDAR_TEST_PASSWORD') ?: null, 'enableSchemaCache' => false, 'enableLogging' => false, 'enableProfiling' => false]);
+        \Craft::$app = new class($this->db, $this->queue) {
+            public string $language = 'en-US';
+            public array $loadedModules = [];
+
+            public function __construct(public $db, private $queue) {}
+
+            public function getDb()
+            {
+                return $this->db;
+            }
+
+            public function getQueue()
+            {
+                return $this->queue;
+            }
+
+            public function getIsInstalled()
+            {
+                return false;
+            }
+
+            public function getBasePath()
+            {
+                return \dirname((new \ReflectionClass(\Craft::class))->getFileName());
+            }
+
+            public function get($id, $throw = true)
+            {
+                return null;
+            }
+
+            public function getRequest()
+            {
+                return new class {
+                    public function getIsConsoleRequest()
+                    {
+                        return true;
+                    }
+                };
+            }
+
+            public function getI18n()
+            {
+                return new class {
+                    public function translate($category, $message, $params, $language)
+                    {
+                        foreach ($params as $key => $value) {
+                            $message = str_replace('{'.$key.'}', $value, $message);
+                        }
+
+                        return $message;
+                    }
+                };
+            }
+        };
+        (new \ReflectionProperty(Db::class, '_db'))->setValue(null, null);
+        if ($plugin) {
+            Calendar::setInstance($plugin);
+        }
+    }
+
+    private function booking(int $id): Booking
+    {
+        $class = new class extends Booking {
+            public function init(): void {}
+
+            public function getFieldLayout(): ?FieldLayout
+            {
+                return null;
+            }
+        };
+        $booking = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
+        $booking->id = $id;
+        $booking->calendarId = 1;
+        $booking->startDate = new \DateTimeImmutable('2026-10-12T09:00:00Z');
+        $booking->endDate = new \DateTimeImmutable('2026-10-12T09:30:00Z');
+        $booking->customerName = 'Customer';
+        $booking->customerEmail = 'customer@example.test';
+        $booking->bookingStatus = Booking::REQUESTED;
+
+        return $booking;
+    }
+
+    private function parallel(int $workers, callable $action): array
+    {
+        if (!getenv('CALENDAR_TEST_DSN') || !\function_exists('pcntl_fork')) {
+            self::markTestSkipped('Concurrent integration checks require pcntl and a disposable MySQL/PostgreSQL database.');
+        }
+        $directory = sys_get_temp_dir().'/calendar-booking-test-'.bin2hex(random_bytes(8));
+        mkdir($directory);
+        $this->db->close();
+        $children = [];
+
+        try {
+            for ($worker = 0; $worker < $workers; ++$worker) {
+                $pid = pcntl_fork();
+                if (-1 === $pid) {
+                    throw new \RuntimeException('Could not start database test worker.');
+                }
+                if (0 === $pid) {
+                    try {
+                        $this->connect();
+                        touch($directory.'/ready-'.$worker);
+                        $deadline = microtime(true) + 15;
+                        while (!is_file($directory.'/start')) {
+                            if (microtime(true) > $deadline) {
+                                throw new \RuntimeException('Worker start timed out.');
+                            }
+                            usleep(1000);
+                        }
+                        file_put_contents($directory.'/result-'.$worker, $action($worker));
+
+                        exit(0);
+                    } catch (\Throwable $exception) {
+                        file_put_contents($directory.'/result-'.$worker, 'error: '.$exception->getMessage());
+
+                        exit(1);
+                    }
+                }
+                $children[] = $pid;
+            }
+            $deadline = microtime(true) + 15;
+            while (\count(glob($directory.'/ready-*')) < $workers) {
+                if (microtime(true) > $deadline) {
+                    throw new \RuntimeException('Workers did not become ready.');
+                }
+                usleep(1000);
+            }
+            touch($directory.'/start');
+            foreach ($children as $pid) {
+                pcntl_waitpid($pid, $status);
+            }
+            $results = [];
+            for ($worker = 0; $worker < $workers; ++$worker) {
+                $result = file_get_contents($directory.'/result-'.$worker);
+                self::assertStringNotContainsString('error:', $result);
+                $results[] = $result;
+            }
+
+            return $results;
+        } finally {
+            foreach (glob($directory.'/*') as $file) {
+                unlink($file);
+            }
+            rmdir($directory);
+            $this->connect();
+        }
+    }
+}

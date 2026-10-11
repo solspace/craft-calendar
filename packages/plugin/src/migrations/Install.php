@@ -51,11 +51,18 @@ class Install extends StreamlinedInstallMigration
                 ->addField('statusChangedById', $this->integer())
                 ->addField('statusChangedByName', $this->string())
                 ->addField('statusChangeSource', $this->string(32))
+                ->addField('notificationUid', $this->string(40))
                 ->addField('buffer', $this->integer()->notNull()->defaultValue(0))
                 ->addForeignKey('id', 'elements', 'id', ForeignKey::CASCADE)
                 ->addForeignKey('calendarId', 'calendar_calendars', 'id', ForeignKey::CASCADE)
                 ->addForeignKey('statusChangedById', 'users', 'id', ForeignKey::SET_NULL)
                 ->addIndex(['calendarId', 'bookingStatus', 'startDate']),
+
+            (new Table('calendar_booking_rate_limits'))
+                ->addField('id', $this->string(64)->notNull()->append('PRIMARY KEY'))
+                ->addField('attempts', $this->integer()->notNull()->defaultValue(0))
+                ->addField('expiresAt', $this->dateTime()->notNull())
+                ->addIndex(['expiresAt']),
 
             (new Table('calendar_calendar_sites'))
                 ->addField('id', $this->primaryKey())

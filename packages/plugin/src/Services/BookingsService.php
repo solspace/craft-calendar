@@ -14,6 +14,7 @@ use craft\fields\RadioButtons;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Queue;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
@@ -123,13 +124,29 @@ class BookingsService extends Component
 
     public function nextAvailableSlot(CalendarModel $calendar, ?\DateTimeImmutable $now = null): ?array
     {
+        if (!$calendar->getIsScheduling()) {
+            return null;
+        }
         $settings = $calendar->getSchedulingSettings();
         $zone = new \DateTimeZone($settings->timezone);
         $now = ($now ?? new \DateTimeImmutable('now', $zone))->setTimezone($zone);
         $day = $now->setTime(0, 0);
+        $lastDay = $day->modify('+'.$settings->maximumAdvance.' days');
+        $loadedThrough = null;
+        $busy = [];
         for ($offset = 0; $offset <= $settings->maximumAdvance; ++$offset) {
-            foreach ($this->availableSlots($calendar, $day->format('Y-m-d'), false) as $slot) {
-                if ((new \DateTimeImmutable($slot['start'])) >= $now) {
+            $date = $day->format('Y-m-d');
+            // Skip closed days without a database read or building every possible slot.
+            if (Availability::slots($settings->toArray(), $date, [], $now, false, true, $now)) {
+                if (!$loadedThrough || $day > $loadedThrough) {
+                    $loadedThrough = min($day->modify('+30 days'), $lastDay);
+                    $busy = $this->busy($calendar->id, null, false, $date, $settings->timezone, $loadedThrough->format('Y-m-d'));
+                }
+                $slots = Availability::slots($settings->toArray(), $date, $busy, $now, false, true, $now);
+                if ($slots) {
+                    $slot = $slots[0];
+                    $slot['label'] = DateFormatHelper::formatTimeRange(new \DateTimeImmutable($slot['start']), new \DateTimeImmutable($slot['end']), $settings->timezone);
+
                     return $slot;
                 }
             }
@@ -181,8 +198,6 @@ class BookingsService extends Component
 
     public function save(Booking $booking): bool
     {
-        $isNew = !$booking->id;
-        $previous = $isNew ? null : Booking::find()->id($booking->id)->status(null)->one();
         $oldId = $booking->id;
 
         try {
@@ -196,14 +211,38 @@ class BookingsService extends Component
 
             return false;
         }
-        if ($isNew || $previous?->bookingStatus !== $booking->bookingStatus || $previous?->startDate != $booking->startDate || $previous?->endDate != $booking->endDate) {
-            $this->notify($booking);
-        }
 
         return true;
     }
 
-    private function busy(int $calendarId, ?int $except = null, bool $lock = false, ?string $date = null, string $timezone = 'UTC'): array
+    /** Called from the element lifecycle, including native Craft saves and restores. */
+    public function scheduleNotification(Booking $booking, ?array $previous): void
+    {
+        $record = $booking->getRecordData();
+        if ($previous && !array_diff_assoc(array_intersect_key($record, array_flip(['calendarId', 'startDate', 'endDate', 'bookingStatus'])), $previous)) {
+            return;
+        }
+        // A persisted marker distinguishes committed changes from rolled-back savepoints.
+        // Multiple changes within one transaction only notify about its final state.
+        $token = StringHelper::randomString(40);
+        Db::update(Booking::TABLE, ['notificationUid' => $token], ['id' => $booking->id]);
+        $snapshot = clone $booking;
+        \Craft::$app->getDb()->onAfterTransaction(function () use ($snapshot, $token): void {
+            try {
+                $persisted = (new Query())->from(Booking::TABLE)->where(['id' => $snapshot->id, 'notificationUid' => $token])
+                    ->andWhere(['exists', (new Query())->select(new Expression('1'))->from(Table::ELEMENTS)->where(['id' => $snapshot->id, 'dateDeleted' => null])])->exists()
+                ;
+                if ($persisted) {
+                    $this->notify($snapshot);
+                }
+            } catch (\Throwable $exception) {
+                // A notification failure must not report a committed booking as a failed save.
+                \Craft::error('Could not queue booking notification: '.$exception->getMessage(), __METHOD__);
+            }
+        });
+    }
+
+    protected function busy(int $calendarId, ?int $except = null, bool $lock = false, ?string $date = null, string $timezone = 'UTC', ?string $dateTo = null): array
     {
         $query = (new Query())->select(['b.startDate AS start', 'b.endDate AS end', 'b.buffer'])
             ->from(['b' => Booking::TABLE])
@@ -215,7 +254,8 @@ class BookingsService extends Component
         if ($date) {
             $day = new \DateTimeImmutable($date, new \DateTimeZone($timezone));
             $query->andWhere(['>=', 'b.startDate', Db::prepareDateForDb($day->modify('-2 days'))]);
-            $query->andWhere(['<', 'b.startDate', Db::prepareDateForDb($day->modify('+2 days'))]);
+            $lastDay = $dateTo ? new \DateTimeImmutable($dateTo, new \DateTimeZone($timezone)) : $day;
+            $query->andWhere(['<', 'b.startDate', Db::prepareDateForDb($lastDay->modify('+2 days'))]);
         }
         if ($except) {
             $query->andWhere(['not', ['b.id' => $except]]);

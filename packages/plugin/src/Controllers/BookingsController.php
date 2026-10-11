@@ -12,6 +12,7 @@ use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
+use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\web\BadRequestHttpException;
@@ -297,13 +298,9 @@ class BookingsController extends BaseController
         $request = \Craft::$app->request;
         $calendar = $this->publicCalendar((int) $request->getRequiredBodyParam('calendarId'));
         $settings = $calendar->getSchedulingSettings();
-        $cache = \Craft::$app->getCache();
-        $key = ['calendar-booking-rate', hash('sha256', (string) $request->getUserIP()), (int) floor(time() / 3600)];
-        $attempts = (int) $cache->get($key);
-        if ($attempts >= 20 || $request->getBodyParam('bookingWebsite')) {
+        if ($request->getBodyParam('bookingWebsite') || !(new BookingRateLimit())->consume((string) $request->getUserIP())) {
             throw new TooManyRequestsHttpException(Calendar::t('Please try again later.'));
         }
-        $cache->set($key, $attempts + 1, 3600);
         $booking = new Booking();
         $booking->calendarId = $calendar->id;
         $booking->startDate = $this->parseStart((string) $request->getRequiredBodyParam('start'));

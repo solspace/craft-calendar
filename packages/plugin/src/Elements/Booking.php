@@ -142,7 +142,7 @@ class Booking extends Element
     {
         // This runs inside Craft's element transaction, including saves through native APIs.
         Calendar::getInstance()->bookings->assertSaveAllowed($this);
-        $previous = (new Query())->select(['bookingStatus', 'statusChangedAt', 'statusChangedById', 'statusChangedByName', 'statusChangeSource'])
+        $previous = (new Query())->select(['calendarId', 'startDate', 'endDate', 'bookingStatus', 'statusChangedAt', 'statusChangedById', 'statusChangedByName', 'statusChangeSource'])
             ->from(self::TABLE)->where(['id' => $this->id])->one()
         ;
         $request = \Craft::$app->getRequest();
@@ -155,6 +155,16 @@ class Booking extends Element
         $this->applyStatusChangeMetadata($previous ?: null, $user, $source, new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
         Db::upsert(self::TABLE, $this->getRecordData());
         parent::afterSave($isNew);
+        Calendar::getInstance()->bookings->scheduleNotification($this, $previous ?: null);
+    }
+
+    public function afterRestore(): void
+    {
+        // Craft restores elements without calling afterSave(), inside its restore transaction.
+        Calendar::getInstance()->bookings->assertSaveAllowed($this);
+        Db::update(self::TABLE, ['buffer' => $this->buffer], ['id' => $this->id]);
+        parent::afterRestore();
+        Calendar::getInstance()->bookings->scheduleNotification($this, null);
     }
 
     public function getRecordData(): array

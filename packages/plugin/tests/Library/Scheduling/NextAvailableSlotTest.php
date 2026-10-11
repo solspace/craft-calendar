@@ -2,40 +2,90 @@
 
 namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 
+use craft\i18n\Locale;
 use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Services\BookingsService;
+use Solspace\Calendar\Services\SettingsService;
 
 /** @coversNothing */
 class NextAvailableSlotTest extends TestCase
 {
-    public function testClosedTodayFindsTheNextOpenDayAndReturnsNullWhenFullyBooked(): void
+    private mixed $previousApp;
+    private mixed $previousPlugin;
+
+    protected function setUp(): void
     {
-        $service = new class extends BookingsService {
-            public array $dates = [];
-            public array $slots = [];
+        $this->previousApp = \Craft::$app;
+        $this->previousPlugin = Calendar::getInstance();
+        \Craft::$app = new class {
+            public array $loadedModules = [];
+            public string $timeZone = 'UTC';
 
-            public function availableSlots(CalendarModel $calendar, string $date, bool $public = true, ?int $except = null, ?int $duration = null): array
+            public function getFormattingLocale()
             {
-                $this->dates[] = $date;
-
-                return $this->slots[$date] ?? [];
+                return new Locale('en-US');
             }
         };
-        $calendar = new CalendarModel(['type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['timezone' => 'America/Winnipeg', 'maximumAdvance' => 2]]);
-        $slot = ['start' => '2026-10-12T08:00:00-05:00', 'end' => '2026-10-12T09:00:00-05:00', 'label' => '08:00–09:00'];
-        $service->slots['2026-10-12'] = [$slot];
-        $now = new \DateTimeImmutable('2026-10-11T01:29:00-05:00');
-        self::assertSame($slot, $service->nextAvailableSlot($calendar, $now));
-        self::assertSame(['2026-10-11', '2026-10-12'], $service->dates);
-        $service->slots = [];
-        $service->dates = [];
-        self::assertNull($service->nextAvailableSlot($calendar, $now));
-        self::assertSame(['2026-10-11', '2026-10-12', '2026-10-13'], $service->dates);
-        $service->slots['2026-10-11'] = [
-            ['start' => '2026-10-11T08:00:00-05:00', 'end' => '2026-10-11T09:00:00-05:00', 'label' => '08:00–09:00'],
-            ['start' => '2026-10-11T08:15:00-05:00', 'end' => '2026-10-11T09:15:00-05:00', 'label' => '08:15–09:15'],
-        ];
-        self::assertSame('08:15–09:15', $service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-11T08:07:00-05:00'))['label']);
+        $plugin = (new \ReflectionClass(Calendar::class))->newInstanceWithoutConstructor();
+        $settings = $this->createMock(SettingsService::class);
+        $settings->method('getSettingsModel')->willReturn(new SettingsModel());
+        $plugin->setComponents(['settings' => $settings]);
+        Calendar::setInstance($plugin);
+    }
+
+    protected function tearDown(): void
+    {
+        \Craft::$app = $this->previousApp;
+        Calendar::setInstance($this->previousPlugin);
+    }
+
+    public function testClosedDaysAreSkippedAndTheFirstAvailableTimeIsReturned(): void
+    {
+        $service = $this->service();
+        $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['timezone' => 'America/Winnipeg', 'maximumAdvance' => 2, 'hours' => [['day' => 1, 'start' => '08:00', 'end' => '09:00']]]]);
+        $slot = $service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-11T01:29:00-05:00'));
+        self::assertSame('2026-10-12T08:00:00-05:00', $slot['start']);
+        self::assertSame([['2026-10-12', '2026-10-13']], $service->reads);
+        $service->occupied = [['start' => '2026-10-12T08:00:00-05:00', 'end' => '2026-10-12T09:00:00-05:00', 'buffer' => 0]];
+        self::assertNull($service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-11T01:29:00-05:00')));
+    }
+
+    public function testMaximumWindowUsesBoundedBatchesRatherThanADatabaseReadPerDay(): void
+    {
+        $service = $this->service();
+        $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['timezone' => 'UTC', 'maximumAdvance' => 730]]);
+        $service->occupied = [['start' => '2026-10-11T00:00:00Z', 'end' => '2028-10-12T00:00:00Z', 'buffer' => 0]];
+        self::assertNull($service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-11T00:00:00Z')));
+        self::assertCount(24, $service->reads);
+        $calendar->scheduling = ['timezone' => 'UTC', 'maximumAdvance' => 730, 'hours' => []];
+        $service->reads = [];
+        self::assertNull($service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-11T00:00:00Z')));
+        self::assertSame([], $service->reads);
+    }
+
+    public function testPastTimesAreSkippedAndUnsortedOpeningPeriodsStillFindTheEarliestTime(): void
+    {
+        $service = $this->service();
+        $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['timezone' => 'America/Winnipeg', 'hours' => [['day' => 1, 'start' => '10:00', 'end' => '11:00'], ['day' => 1, 'start' => '08:00', 'end' => '09:00']]]]);
+        $slot = $service->nextAvailableSlot($calendar, new \DateTimeImmutable('2026-10-12T08:07:00-05:00'));
+        self::assertSame('2026-10-12T08:15:00-05:00', $slot['start']);
+    }
+
+    private function service(): BookingsService
+    {
+        return new class extends BookingsService {
+            public array $reads = [];
+            public array $occupied = [];
+
+            protected function busy(int $calendarId, ?int $except = null, bool $lock = false, ?string $date = null, string $timezone = 'UTC', ?string $dateTo = null): array
+            {
+                $this->reads[] = [$date, $dateTo];
+
+                return $this->occupied;
+            }
+        };
     }
 }
