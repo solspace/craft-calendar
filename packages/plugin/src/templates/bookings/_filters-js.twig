@@ -15,17 +15,19 @@
     let pendingUrl;
     let retrySelection;
     let footerMenus = [];
+    {% include 'calendar/bookings/_calendar-picker-js' with {calendarPickerPrefix: 'booking-filter', calendarPickerChange: 'filterBookings'} %}
 
     function filterUrl() {
         const url = new URL(location.href);
         const values = new FormData(form);
-        for (const name of ['calendarId', 'bookingStatus', 'search', 'sort', 'view']) {
+        url.searchParams.delete('calendarId');
+        for (const name of ['calendarIds', 'bookingStatus', 'search', 'sort', 'view']) {
             const value = values.get(name) || '';
             if (value) url.searchParams.set(name, value);
             else url.searchParams.delete(name);
         }
         url.searchParams.delete('page');
-        clear.classList.toggle('hidden', !['calendarId', 'bookingStatus', 'search'].some(name => values.get(name)));
+        clear.classList.toggle('hidden', values.get('calendarIds') === 'all' && !['bookingStatus', 'search'].some(name => values.get(name)));
         return url;
     }
 
@@ -175,7 +177,7 @@
     updateSelection();
 
     // Selectize detaches and reinserts its selects, clearing directly bound jQuery handlers.
-    $(form).on('change', '#booking-filter-calendar, #booking-filter-status, #booking-sort, #booking-list-view', () => filterBookings());
+    $(form).on('change', '#booking-filter-status, #booking-sort, #booking-list-view', () => filterBookings());
     results.addEventListener('click', event => {
         const link = event.target.closest('[data-booking-sort]');
         if (!link || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -222,7 +224,8 @@
     clear.addEventListener('click', event => {
         if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
-        ['booking-filter-calendar', 'booking-filter-status'].forEach(id => {
+        syncBookingCalendarPicker('all');
+        ['booking-filter-status'].forEach(id => {
             const select = document.getElementById(id);
             if (select.selectize) select.selectize.setValue('', true);
             else select.value = '';

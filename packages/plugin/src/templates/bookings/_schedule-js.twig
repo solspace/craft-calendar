@@ -3,35 +3,7 @@ bookingGridScroll.scrollTop = 7 * 48;
 const bookingHistoryButtons = document.querySelectorAll('[data-booking-history]');
 const bookingToolbar = document.querySelector('.booking-toolbar');
 const bookingSpinner = bookingToolbar.querySelector('.spinner');
-const bookingCalendarPicker = document.querySelector('#booking-schedule-calendar-picker');
-const bookingCalendarMenu = document.querySelector('#booking-schedule-calendar-menu');
-const bookingCalendarChoices = [...bookingCalendarMenu.querySelectorAll('[data-calendar-choice]')];
-const bookingCalendarAll = bookingCalendarMenu.querySelector('[data-calendar-all]');
-const bookingCalendarInput = bookingToolbar.elements.namedItem('calendarIds');
-const bookingCalendarDisclosure = $(bookingCalendarPicker).data('disclosureMenu') || new Garnish.DisclosureMenu(bookingCalendarPicker);
-function syncBookingCalendarPicker(selection) {
-    const ids = selection.split(',');
-    bookingCalendarChoices.forEach(input => input.checked = selection === 'all' || ids.includes(input.dataset.calendarChoice));
-    const selected = bookingCalendarChoices.filter(input => input.checked);
-    bookingCalendarAll.checked = selected.length === bookingCalendarChoices.length;
-    bookingCalendarAll.indeterminate = selected.length > 0 && !bookingCalendarAll.checked;
-    bookingCalendarInput.value = bookingCalendarAll.checked ? 'all' : selected.map(input => input.dataset.calendarChoice).join(',');
-    bookingCalendarPicker.querySelector('[data-calendar-label]').textContent = bookingCalendarAll.checked
-        ? Craft.t('calendar', 'All Calendars')
-        : (selected.length === 1 ? selected[0].dataset.calendarName : Craft.t('calendar', '{count} Calendars', {count: selected.length}));
-}
-syncBookingCalendarPicker(bookingCalendarInput.value);
-bookingCalendarMenu.addEventListener('change', event => {
-    if (event.target === bookingCalendarAll) {
-        bookingCalendarChoices.forEach(input => input.checked = bookingCalendarAll.checked);
-        if (!bookingCalendarAll.checked) bookingCalendarChoices[0].checked = true;
-    }
-    const selected = bookingCalendarChoices.filter(input => input.checked);
-    // The grid always needs at least one resource; keep the final choice checked.
-    if (!selected.length) { event.target.checked = true; return; }
-    syncBookingCalendarPicker(selected.map(input => input.dataset.calendarChoice).join(','));
-    filterBookingSchedule();
-});
+{% include 'calendar/bookings/_calendar-picker-js' with {calendarPickerPrefix: 'booking-schedule', calendarPickerChange: 'filterBookingSchedule'} %}
 let bookingFilterValues = new FormData(bookingToolbar);
 let bookingScheduleLoading = false;
 let bookingScheduleRevision = 0;

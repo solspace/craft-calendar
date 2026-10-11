@@ -7,8 +7,6 @@
 {% block actionButton %}<a href="{{ cpUrl('calendar/bookings/new') }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>{% endblock %}
 
 {% block content %}
-{% set calendarOptions = [{value: '', label: 'All calendars'|t('calendar')}] %}
-{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name, data: {color: calendar.color}}]) %}{% endfor %}
 {% set filterStatusOptions = [{value: '', label: 'All statuses'|t('calendar')}] %}
 {% for value, label in statusOptions %}
     {% set option = {value, label, data: {status: statusColors[value]}} %}
@@ -16,7 +14,7 @@
 {% endfor %}
 <form method="get" class="booking-filters">
     {{ forms.selectize({id: 'booking-list-view', class: 'booking-view-picker', name: 'view', value: bookingListView, options: [{value: 'active', label: 'Active bookings'|t('calendar'), icon: 'calendar'}, {value: 'trash', label: 'Trash'|t('app'), icon: 'trash'}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Booking list view'|t('calendar')}}}) }}
-    {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, extraPlugins: false, placeholder: 'All calendars'|t('calendar')}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
+    {% include 'calendar/bookings/_calendar-picker' with {calendarPickerPrefix: 'booking-filter'} %}
     {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, searchField: [], extraPlugins: false, placeholder: 'All statuses'|t('calendar')}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
     <div class="booking-search texticon">
         <span class="texticon-icon search icon" aria-hidden="true"></span>
@@ -27,13 +25,14 @@
         {{ forms.selectize({id: 'booking-sort', name: 'sort', value: sort, options: sortOptions, selectizeOptions: {searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Sort by'|t('app')}}}) }}
     </div>
     <span class="spinner hidden" aria-hidden="true"></span>
-    <a class="btn{{ calendarId or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings', {view: bookingListView, sort}) }}">{{ 'Clear'|t('app') }}</a>
+    <a class="btn{{ calendarSelection != 'all' or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings', {view: bookingListView, sort}) }}">{{ 'Clear'|t('app') }}</a>
 </form>
 <div id="booking-results">{% include 'calendar/bookings/_list' %}</div>
 {% endblock %}
 
 {% css %}
 {% include 'calendar/bookings/_confirm-delete-css' %}
+{% include 'calendar/bookings/_calendar-picker-css' %}
 .booking-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
 .booking-filters > .select.selectize { width:180px; flex-shrink:0; }
 .booking-filters > .booking-view-picker.select.selectize { width:155px; }

@@ -32,10 +32,16 @@ class BookingsController extends BaseController
     {
         $calendars = $this->manageableCalendars();
         $request = \Craft::$app->request;
-        $calendarId = $request->getQueryParam('calendarId');
-        if ($calendarId && !isset($calendars[$calendarId])) {
+        $selection = $request->getQueryParam('calendarIds', $request->getQueryParam('calendarId') ?: 'all');
+
+        try {
+            $calendarIds = Schedule::calendarIds($calendars, $selection);
+        } catch (\OutOfBoundsException) {
             throw new ForbiddenHttpException();
+        } catch (\InvalidArgumentException) {
+            throw new BadRequestHttpException();
         }
+        $calendarSelection = \count($calendarIds) === \count($calendars) ? 'all' : implode(',', $calendarIds);
         $status = $request->getQueryParam('bookingStatus');
         if ($status && !isset(Booking::statusOptions()[$status])) {
             throw new BadRequestHttpException();
@@ -65,7 +71,7 @@ class BookingsController extends BaseController
         }
         [$sortField, $sortDirection] = explode('-', $sort);
         $sortColumns = ['date' => 'calendar_bookings.startDate', 'submitted' => 'elements.dateCreated', 'updated' => 'elements.dateUpdated', 'customer' => 'calendar_bookings.customerName', 'calendar' => 'booking_calendar.name', 'status' => 'calendar_bookings.bookingStatus'];
-        $query = Booking::find()->calendarId($calendarId ?: array_keys($calendars))->status(null)->trashed($trashed);
+        $query = Booking::find()->calendarId($calendarIds)->status(null)->trashed($trashed);
         if ('calendar' === $sortField) {
             $query->leftJoin(['booking_calendar' => CalendarRecord::TABLE], '[[booking_calendar.id]] = [[calendar_bookings.calendarId]]');
         }
@@ -83,7 +89,7 @@ class BookingsController extends BaseController
 
         $variables = $this->variables() + [
             'bookings' => $query->limit(50)->offset(($page - 1) * 50)->all(), 'total' => $total, 'page' => $page,
-            'calendarId' => $calendarId, 'bookingStatus' => $status, 'search' => $search, 'sort' => $sort, 'sortOptions' => $sortOptions, 'bookingListView' => $bookingListView, 'trashed' => $trashed,
+            'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'bookingStatus' => $status, 'search' => $search, 'sort' => $sort, 'sortOptions' => $sortOptions, 'bookingListView' => $bookingListView, 'trashed' => $trashed,
         ];
         if ($request->getAcceptsJson()) {
             $view = \Craft::$app->getView();

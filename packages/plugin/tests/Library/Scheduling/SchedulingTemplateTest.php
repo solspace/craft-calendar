@@ -59,6 +59,9 @@ class SchedulingTemplateTest extends TestCase
                 {% macro checkbox(config) %}<input id="{{ config.id }}" type="checkbox"{% if config.checked %} checked{% endif %}{% for name, value in config.inputAttributes.data %} data-{{ name }}="{{ value }}"{% endfor %}><label for="{{ config.id }}">{{ config.label }}</label>{% endmacro %}
                 TWIG,
             'calendar/bookings/_schedule-js' => file_get_contents($root.'bookings/_schedule-js.twig'),
+            'calendar/bookings/_calendar-picker' => file_get_contents($root.'bookings/_calendar-picker.twig'),
+            'calendar/bookings/_calendar-picker-js' => file_get_contents($root.'bookings/_calendar-picker-js.twig'),
+            'calendar/bookings/_calendar-picker-css' => file_get_contents($root.'bookings/_calendar-picker-css.twig'),
             'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
             'calendar/layouts/_bookings' => file_get_contents($root.'layouts/_bookings.twig'),
             'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block sidebar %}{% endblock %}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",

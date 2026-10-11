@@ -1,0 +1,19 @@
+{% import '_includes/forms' as forms %}
+    <input type="hidden" id="{{ calendarPickerPrefix }}-calendars" name="calendarIds" value="{{ calendarSelection }}">
+    <button type="button" id="{{ calendarPickerPrefix }}-calendar-picker" class="btn menubtn booking-calendar-picker" data-disclosure-trigger aria-label="{{ 'Calendars'|t('calendar') }}" aria-controls="{{ calendarPickerPrefix }}-calendar-menu"><span data-calendar-label>{{ calendarSelection == 'all' ? 'All Calendars'|t('calendar') : (calendarIds|length == 1 ? calendars[calendarIds|first].name : '{count} Calendars'|t('calendar', {count: calendarIds|length})) }}</span></button>
+    <div id="{{ calendarPickerPrefix }}-calendar-menu" class="menu menu--disclosure booking-calendar-menu">
+        <ul class="booking-calendar-all"><li>{{ forms.checkbox({
+            id: calendarPickerPrefix ~ '-calendar-all',
+            label: 'All Calendars'|t('calendar'),
+            checked: calendarSelection == 'all',
+            inputAttributes: {data: {'calendar-all': true}},
+        }) }}</li></ul>
+        <hr>
+        <ul class="booking-calendar-options">{% for item in calendars %}<li>{{ forms.checkbox({
+            id: calendarPickerPrefix ~ '-calendar-' ~ item.id,
+            label: item.name,
+            color: item.color,
+            checked: item.id in calendarIds,
+            inputAttributes: {data: {'calendar-choice': item.id, 'calendar-name': item.name}},
+        }) }}</li>{% endfor %}</ul>
+    </div>

@@ -17,24 +17,7 @@
 {% endblock %}
 {% block content %}
 <form method="get" class="booking-toolbar">
-    <input type="hidden" id="booking-schedule-calendars" name="calendarIds" value="{{ calendarSelection }}">
-    <button type="button" id="booking-schedule-calendar-picker" class="btn menubtn" data-disclosure-trigger aria-label="{{ 'Calendars'|t('calendar') }}" aria-controls="booking-schedule-calendar-menu"><span data-calendar-label>{{ calendarSelection == 'all' ? 'All Calendars'|t('calendar') : (calendarIds|length == 1 ? calendar.name : '{count} Calendars'|t('calendar', {count: calendarIds|length})) }}</span></button>
-    <div id="booking-schedule-calendar-menu" class="menu menu--disclosure booking-calendar-menu">
-        <ul class="booking-calendar-all"><li>{{ forms.checkbox({
-            id: 'booking-calendar-all',
-            label: 'All Calendars'|t('calendar'),
-            checked: calendarSelection == 'all',
-            inputAttributes: {data: {'calendar-all': true}},
-        }) }}</li></ul>
-        <hr>
-        <ul class="booking-calendar-options">{% for item in calendars %}<li>{{ forms.checkbox({
-            id: 'booking-calendar-' ~ item.id,
-            label: item.name,
-            color: item.color,
-            checked: item.id in calendarIds,
-            inputAttributes: {data: {'calendar-choice': item.id, 'calendar-name': item.name}},
-        }) }}</li>{% endfor %}</ul>
-    </div>
+    {% include 'calendar/bookings/_calendar-picker' with {calendarPickerPrefix: 'booking-schedule'} %}
     <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, required: true, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
     {{ forms.selectize({id: 'booking-schedule-view', class: 'booking-toolbar-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
     <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
@@ -95,19 +78,7 @@
 .booking-resource-heading > span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .booking-resource-heading .color.small { width:10px; height:10px; flex:0 0 10px; margin:0; }
 .booking-grid-multiple .booking-grid-times .booking-day-heading { height:75px; }
-.booking-calendar-menu { width:240px; max-width:calc(100vw - 32px); padding:6px; box-sizing:border-box; }
-.booking-calendar-menu .booking-calendar-options { max-height:280px; overflow:auto; }
-.booking-calendar-menu li { padding:0; }
-.booking-calendar-menu input.checkbox + label { display:block; box-sizing:border-box; padding:9px 10px; padding-inline-start:34px; border-radius:var(--medium-border-radius,4px); line-height:18px; }
-.booking-calendar-menu input.checkbox + label::before { inset-block-start:10px; inset-inline-start:10px; }
-.booking-calendar-menu input.checkbox + label:hover, .booking-calendar-menu input.checkbox:focus-visible + label { background:var(--gray-050,#f3f6fa); }
-.booking-calendar-menu label > .flex { gap:8px; }
-.booking-calendar-menu label > .flex > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.booking-calendar-menu .color.small { width:10px; height:10px; flex:0 0 10px; margin:0; }
-.booking-calendar-menu .booking-calendar-all label { font-weight:600; }
-.booking-calendar-menu hr { margin:5px 4px; }
-#booking-schedule-calendar-picker { max-width:240px; }
-#booking-schedule-calendar-picker [data-calendar-label] { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+{% include 'calendar/bookings/_calendar-picker-css' %}
 .booking-day { border-left:1px solid var(--hairline-color,#d8dee5); }
 .booking-day-heading { height:42px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--white,#fff); z-index:5; font-weight:600; border-bottom:1px solid var(--hairline-color,#d8dee5); }
 .booking-day-body { position:relative; height:1152px; background:var(--gray-050,#f4f6f9); }

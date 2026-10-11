@@ -13,7 +13,7 @@
                 {% set ascending = sort == field ~ '-asc' %}
                 {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field in ['date', 'submitted', 'updated'] ? '-desc' : '-asc')) %}
                 <th scope="col" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
-                    <a class="booking-sort-link{{ active ? ' active' }}" data-booking-sort="{{ nextSort }}" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, view: bookingListView, sort: nextSort}) }}">
+                    <a class="booking-sort-link{{ active ? ' active' }}" data-booking-sort="{{ nextSort }}" href="{{ cpUrl('calendar/bookings', {calendarIds: calendarSelection, bookingStatus, search, view: bookingListView, sort: nextSort}) }}">
                         {{ label|t('calendar') }}<span class="booking-sort-arrow" aria-hidden="true">{{ active ? (ascending ? '↑' : '↓') : '↕' }}</span>
                     </a>
                 </th>
@@ -58,8 +58,8 @@
 <div class="booking-footer footer">
     <div class="booking-footer-count flex pagination">
         <nav class="flex flex-nowrap" aria-label="{{ '{element} pagination'|t('app', {element: craft.calendar.bookingLabel}) }}">
-            {% if page > 1 %}<a class="page-link prev-page" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page - 1}) }}" title="{{ 'Previous Page'|t('app') }}" aria-label="{{ 'Previous Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link prev-page disabled" disabled aria-label="{{ 'Previous Page'|t('app') }}"></button>{% endif %}
-            {% if page * 50 < total %}<a class="page-link next-page" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page + 1}) }}" title="{{ 'Next Page'|t('app') }}" aria-label="{{ 'Next Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link next-page disabled" disabled aria-label="{{ 'Next Page'|t('app') }}"></button>{% endif %}
+            {% if page > 1 %}<a class="page-link prev-page" href="{{ cpUrl('calendar/bookings', {calendarIds: calendarSelection, bookingStatus, search, sort, view: bookingListView, page: page - 1}) }}" title="{{ 'Previous Page'|t('app') }}" aria-label="{{ 'Previous Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link prev-page disabled" disabled aria-label="{{ 'Previous Page'|t('app') }}"></button>{% endif %}
+            {% if page * 50 < total %}<a class="page-link next-page" href="{{ cpUrl('calendar/bookings', {calendarIds: calendarSelection, bookingStatus, search, sort, view: bookingListView, page: page + 1}) }}" title="{{ 'Next Page'|t('app') }}" aria-label="{{ 'Next Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link next-page disabled" disabled aria-label="{{ 'Next Page'|t('app') }}"></button>{% endif %}
         </nav>
         <span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
         <span class="visually-hidden" data-booking-selection-count role="status" aria-live="polite"></span>
