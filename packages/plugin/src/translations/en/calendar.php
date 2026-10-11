@@ -1062,4 +1062,10 @@ return [
     'Submitted: oldest first' => 'Submitted: oldest first',
     'Last updated: newest first' => 'Last updated: newest first',
     'Last updated: oldest first' => 'Last updated: oldest first',
+    'Just now' => 'Just now',
+    '{minutes}m ago' => '{minutes}m ago',
+    '{hours}h ago' => '{hours}h ago',
+    '{hours}h {minutes}m ago' => '{hours}h {minutes}m ago',
+    '{days}d ago' => '{days}d ago',
+    '{days}d {hours}h ago' => '{days}d {hours}h ago',
 ];

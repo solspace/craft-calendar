@@ -27,6 +27,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Added a compact relative timestamp beside the booking status selector, refreshing while the editor is open.
 - Made booking list filters, customer search, and schedule controls update results automatically.
 - Refined the Bookings list with native Craft controls, status dots, and cleaner table spacing.
 - Made booking slot previews span the booking duration and refined the status banner and controls.

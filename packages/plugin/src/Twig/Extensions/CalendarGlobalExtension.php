@@ -12,7 +12,10 @@ class CalendarGlobalExtension extends AbstractExtension implements GlobalsInterf
 {
     public function getFilters(): array
     {
-        return [new TwigFilter('calendarTimeLabel', [DateFormatHelper::class, 'compactTimeLabel'])];
+        return [
+            new TwigFilter('calendarTimeLabel', [DateFormatHelper::class, 'compactTimeLabel']),
+            new TwigFilter('calendarRelativeTime', [DateFormatHelper::class, 'relativeTimeLabel']),
+        ];
     }
 
     public function getGlobals(): array

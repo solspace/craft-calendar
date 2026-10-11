@@ -27,6 +27,27 @@ class DateFormatHelper
         return preg_replace_callback('/\s*([ap])\.?\s*m\.?$/iu', static fn (array $matches) => strtolower($matches[1]).'m', $label);
     }
 
+    public static function relativeTimeLabel(\DateTimeInterface $timestamp, ?\DateTimeInterface $now = null): string
+    {
+        $minutes = max(0, intdiv(($now?->getTimestamp() ?? time()) - $timestamp->getTimestamp(), 60));
+        if ($minutes < 1) {
+            return Calendar::t('Just now');
+        }
+        if ($minutes < 60) {
+            return Calendar::t('{minutes}m ago', ['minutes' => $minutes]);
+        }
+        $hours = intdiv($minutes, 60);
+        if ($hours < 24) {
+            $minutes %= 60;
+
+            return $minutes ? Calendar::t('{hours}h {minutes}m ago', ['hours' => $hours, 'minutes' => $minutes]) : Calendar::t('{hours}h ago', ['hours' => $hours]);
+        }
+        $days = intdiv($hours, 24);
+        $hours %= 24;
+
+        return $hours ? Calendar::t('{days}d {hours}h ago', ['days' => $days, 'hours' => $hours]) : Calendar::t('{days}d ago', ['days' => $days]);
+    }
+
     public static function get(
         string $type = self::TYPE_DATE,
         string $format = Locale::FORMAT_ICU,

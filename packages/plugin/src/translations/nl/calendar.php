@@ -939,4 +939,10 @@ return [
     'Submitted: oldest first' => 'Ingediend: oudste eerst',
     'Last updated: newest first' => 'Laatst bijgewerkt: nieuwste eerst',
     'Last updated: oldest first' => 'Laatst bijgewerkt: oudste eerst',
+    'Just now' => 'Zojuist',
+    '{minutes}m ago' => '{minutes}m geleden',
+    '{hours}h ago' => '{hours}u geleden',
+    '{hours}h {minutes}m ago' => '{hours}u {minutes}m geleden',
+    '{days}d ago' => '{days}d geleden',
+    '{days}d {hours}h ago' => '{days}d {hours}u geleden',
 ];

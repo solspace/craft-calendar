@@ -899,4 +899,10 @@ return [
     'Submitted: oldest first' => 'Iesniegts: vecākie vispirms',
     'Last updated: newest first' => 'Pēdējoreiz atjaunināts: jaunākie vispirms',
     'Last updated: oldest first' => 'Pēdējoreiz atjaunināts: vecākie vispirms',
+    'Just now' => 'Tikko',
+    '{minutes}m ago' => 'pirms {minutes} min',
+    '{hours}h ago' => 'pirms {hours} st.',
+    '{hours}h {minutes}m ago' => 'pirms {hours} st. {minutes} min',
+    '{days}d ago' => 'pirms {days} d.',
+    '{days}d {hours}h ago' => 'pirms {days} d. {hours} st.',
 ];

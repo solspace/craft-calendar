@@ -1,0 +1,30 @@
+(() => {
+    const relative = document.querySelector('.booking-status-relative');
+    if (!relative) return;
+    const timestamp = Date.parse(relative.dateTime);
+    const serverTime = Number(relative.dataset.now) * 1000;
+    const initializedAt = performance.now();
+    if (!Number.isFinite(timestamp) || !Number.isFinite(serverTime)) return;
+
+    function updateRelativeTime() {
+        // Use server time plus elapsed time so a visitor's clock cannot skew the label.
+        let minutes = Math.max(0, Math.floor((serverTime + performance.now() - initializedAt - timestamp) / 60000));
+        let label;
+        if (minutes < 1) label = Craft.t('calendar', 'Just now');
+        else if (minutes < 60) label = Craft.t('calendar', '{minutes}m ago', {minutes});
+        else {
+            let hours = Math.floor(minutes / 60);
+            if (hours < 24) {
+                minutes %= 60;
+                label = minutes ? Craft.t('calendar', '{hours}h {minutes}m ago', {hours, minutes}) : Craft.t('calendar', '{hours}h ago', {hours});
+            } else {
+                const days = Math.floor(hours / 24);
+                hours %= 24;
+                label = hours ? Craft.t('calendar', '{days}d {hours}h ago', {days, hours}) : Craft.t('calendar', '{days}d ago', {days});
+            }
+        }
+        relative.textContent = label;
+    }
+    updateRelativeTime();
+    setInterval(updateRelativeTime, 60000);
+})();

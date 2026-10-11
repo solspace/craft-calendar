@@ -939,4 +939,10 @@ return [
     'Submitted: oldest first' => 'Soumise : les plus anciennes',
     'Last updated: newest first' => 'Dernière mise à jour : les plus récentes',
     'Last updated: oldest first' => 'Dernière mise à jour : les plus anciennes',
+    'Just now' => 'À l’instant',
+    '{minutes}m ago' => 'il y a {minutes} min',
+    '{hours}h ago' => 'il y a {hours} h',
+    '{hours}h {minutes}m ago' => 'il y a {hours} h {minutes} min',
+    '{days}d ago' => 'il y a {days} j',
+    '{days}d {hours}h ago' => 'il y a {days} j {hours} h',
 ];

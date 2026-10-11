@@ -59,6 +59,7 @@ bookingStatusSelect.addEventListener('change', () => {
     bookingStatusCard.querySelector('.booking-status-icon').textContent = bookingStatusIcons[bookingStatusSelect.value];
 });
 const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingStart.value, end: bookingEnd.value, label: {{ (booking.startDate and booking.endDate ? (booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel ~ ' - ' ~ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel) : '')|json_encode|raw }}};
+{% include 'calendar/bookings/_status-relative-js' %}
 let bookingSlotsRequest = 0;
 let bookingSlotsLoading = false;
 function chooseBookingSlot(slot, button) {
@@ -143,7 +144,8 @@ loadBookingSlots();
 .booking-status-card.declined { --status-color:var(--error-color,#cf1124); --status-background:#fff6f6; --status-border:#edc0c5; --status-icon-background:#f9e1e4; }
 .booking-status-card.cancelled { --status-color:#5c697a; --status-background:#f6f7f9; --status-border:#d6dce4; --status-icon-background:#e7ebf0; }
 .booking-status-header { display:flex; align-items:center; column-gap:75px; row-gap:12px; flex-wrap:wrap; }
-.booking-status-picker { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.booking-status-picker { display:flex; align-items:center; gap:12px; flex-shrink:0; flex-wrap:wrap; max-width:100%; }
+.booking-status-relative { font-size:12px; line-height:1.5; white-space:nowrap; color:var(--light-text-color,#596673); }
 .booking-status-icon { display:flex; align-items:center; justify-content:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; background:var(--status-icon-background); color:var(--status-color); font-size:20px; font-weight:600; line-height:1; }
 .booking-status-header .select { margin:0; }
 .booking-status-header .select select { min-width:148px; min-height:34px; box-sizing:border-box; padding:6px 30px 6px 10px; border:1px solid var(--status-color); border-radius:5px; background:#fff; color:var(--status-color); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.08); cursor:pointer; }
