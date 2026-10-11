@@ -74,6 +74,71 @@ class Schedule
         return ['calendar' => $calendar, 'bookings' => $dayBookings, 'lanes' => max(1, \count($lanes)), 'slots' => $slotGroups];
     }
 
+    /** Merge resources without treating bookings in different calendars as conflicts. */
+    public static function combined(array $columns): array
+    {
+        $bookings = [];
+        $slots = [];
+        foreach ($columns as $column) {
+            $calendar = $column['calendar'];
+            foreach ($column['bookings'] as $item) {
+                $bookings[] = $item + ['calendar' => $calendar];
+            }
+            foreach ($column['slots'] as $minute => $options) {
+                foreach ($options as $slot) {
+                    $slots[$minute]['options'][] = $slot + ['calendar' => $calendar];
+                }
+                $slots[$minute]['height'] = max($slots[$minute]['height'] ?? 0, $calendar->getSchedulingSettings()->increment);
+            }
+        }
+        ksort($slots);
+        $minutes = array_keys($slots);
+        foreach ($minutes as $index => $minute) {
+            // Never cover a later start offered by another resource.
+            $slots[$minute]['height'] = min($slots[$minute]['height'], ($minutes[$index + 1] ?? 1440) - $minute);
+        }
+        usort($bookings, static fn ($a, $b) => [$a['minute'], -$a['length'], $a['booking']->id] <=> [$b['minute'], -$b['length'], $b['booking']->id]);
+        $groups = [];
+        foreach ($bookings as $item) {
+            $last = \count($groups) - 1;
+            if ($last < 0 || $item['minute'] >= $groups[$last]['end']) {
+                $groups[] = ['minute' => $item['minute'], 'end' => $item['minute'] + $item['length'], 'items' => []];
+                ++$last;
+            }
+            $groups[$last]['items'][] = $item;
+            $groups[$last]['end'] = max($groups[$last]['end'], $item['minute'] + $item['length']);
+        }
+        $visible = [];
+        $overflow = [];
+        foreach ($groups as $group) {
+            $lanes = [];
+            foreach ($group['items'] as &$item) {
+                $lane = 0;
+                while (isset($lanes[$lane]) && $lanes[$lane] > $item['minute']) {
+                    ++$lane;
+                }
+                $lanes[$lane] = $item['minute'] + $item['length'];
+                $item['lane'] = $lane;
+            }
+            unset($item);
+            $count = \count($lanes);
+            $hidden = [];
+            foreach ($group['items'] as $item) {
+                $item['lanes'] = min(3, $count);
+                if ($count > 3 && $item['lane'] >= 2) {
+                    $hidden[] = $item;
+                } else {
+                    $visible[] = $item;
+                }
+            }
+            if ($hidden) {
+                $overflow[] = ['minute' => $group['minute'], 'length' => $group['end'] - $group['minute'], 'items' => $hidden];
+            }
+        }
+
+        return ['bookings' => $visible, 'overflow' => $overflow, 'slots' => $slots];
+    }
+
     public static function moveStart(string $date, mixed $minute, mixed $timezone): \DateTimeImmutable
     {
         $minute = filter_var($minute, \FILTER_VALIDATE_INT);

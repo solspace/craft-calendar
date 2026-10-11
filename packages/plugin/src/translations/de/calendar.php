@@ -2,6 +2,10 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Combined' => 'Kombiniert',
+    'By Calendar' => 'Nach Kalender',
+    'Choose a Calendar' => 'Kalender auswählen',
+    'Click an available time to choose a calendar. Shaded times are unavailable for all selected calendars.' => 'Klicken Sie auf eine verfügbare Zeit, um einen Kalender auszuwählen. Schattierte Zeiten sind für alle ausgewählten Kalender nicht verfügbar.',
     'No calendars match this type.' => 'Keine Kalender entsprechen diesem Typ.',
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Status für 1 Buchung gespeichert.} other{Status für # Buchungen gespeichert.}}',
     'Booking Defaults' => 'Buchungsstandards',

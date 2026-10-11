@@ -533,6 +533,7 @@ class BookingsController extends BaseController
             throw new BadRequestHttpException();
         }
         $scheduleView = 'day' === \Craft::$app->request->getQueryParam('view') ? 'day' : 'week';
+        $scheduleLayout = 'calendars' === $request->getQueryParam('layout') ? 'calendars' : 'combined';
         $start = new \DateTimeImmutable($date, $zone);
         if ('week' === $scheduleView) {
             $start = $start->modify('-'.((int) $start->format('N') - 1).' days');
@@ -544,6 +545,10 @@ class BookingsController extends BaseController
             ->orderBy(['calendar_bookings.startDate' => \SORT_ASC])->all()
         ;
         $days = [];
+        $calendarBookings = [];
+        foreach ($bookings as $booking) {
+            $calendarBookings[$booking->calendarId][] = $booking;
+        }
         $slotCache = [];
         $availableSlots = static function (CalendarModel $resource, string $localDate) use (&$slotCache): array {
             return $slotCache[$resource->id][$localDate] ??= Calendar::getInstance()->bookings->availableSlots($resource, $localDate, false);
@@ -551,13 +556,13 @@ class BookingsController extends BaseController
         for ($day = $start; $day < $end; $day = $day->modify('+1 day')) {
             $columns = [];
             foreach ($calendarIds as $id) {
-                $columns[] = Schedule::column($calendars[$id], $day, $bookings, $availableSlots);
+                $columns[] = Schedule::column($calendars[$id], $day, $calendarBookings[$id] ?? [], $availableSlots);
             }
-            $days[] = ['date' => $day, 'columns' => $columns];
+            $days[] = ['date' => $day, 'columns' => $columns, 'combined' => 'combined' === $scheduleLayout ? Schedule::combined($columns) : null];
         }
 
         return $this->renderTemplate('calendar/bookings/schedule', $this->variables() + [
-            'calendar' => $calendar, 'calendarId' => $calendarId, 'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'displayTimezone' => $zone->getName(), 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView,
+            'calendar' => $calendar, 'calendarId' => $calendarId, 'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'displayTimezone' => $zone->getName(), 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView, 'scheduleLayout' => $scheduleLayout,
             'previous' => $start->modify('day' === $scheduleView ? '-1 day' : '-7 days')->format('Y-m-d'), 'next' => $end->format('Y-m-d'),
         ]);
     }

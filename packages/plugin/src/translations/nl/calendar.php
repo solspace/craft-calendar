@@ -2,6 +2,10 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Combined' => 'Gecombineerd',
+    'By Calendar' => 'Per kalender',
+    'Choose a Calendar' => 'Kies een kalender',
+    'Click an available time to choose a calendar. Shaded times are unavailable for all selected calendars.' => 'Klik op een beschikbare tijd om een kalender te kiezen. Gearceerde tijden zijn niet beschikbaar voor alle geselecteerde kalenders.',
     'No calendars match this type.' => 'Geen kalenders komen overeen met dit type.',
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Status opgeslagen voor 1 boeking.} other{Status opgeslagen voor # boekingen.}}',
     'Booking Defaults' => 'Boekingsstandaarden',

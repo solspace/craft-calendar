@@ -4,6 +4,7 @@ namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Scheduling\Schedule;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Twig\Environment;
@@ -58,6 +59,8 @@ class SchedulingTemplateTest extends TestCase
                 {% macro text(config) %}<input type="{{ config.type }}" value="{{ config.value }}">{% endmacro %}
                 {% macro checkbox(config) %}<input id="{{ config.id }}" type="checkbox"{% if config.checked %} checked{% endif %}{% for name, value in config.inputAttributes.data %} data-{{ name }}="{{ value }}"{% endfor %}><label for="{{ config.id }}">{{ config.label }}</label>{% endmacro %}
                 TWIG,
+            'calendar/bookings/_combined-day' => file_get_contents($root.'bookings/_combined-day.twig'),
+            'calendar/bookings/_schedule-options-js' => file_get_contents($root.'bookings/_schedule-options-js.twig'),
             'calendar/bookings/_schedule-js' => file_get_contents($root.'bookings/_schedule-js.twig'),
             'calendar/bookings/_calendar-picker' => file_get_contents($root.'bookings/_calendar-picker.twig'),
             'calendar/bookings/_calendar-picker-js' => file_get_contents($root.'bookings/_calendar-picker-js.twig'),
@@ -80,53 +83,88 @@ class SchedulingTemplateTest extends TestCase
         };
 
         $twig->addGlobal('craft', ['calendar' => ['bookingLabel' => 'Bookings']]);
-        foreach (['day', 'week'] as $scheduleView) {
-            foreach ([[7], [7, 8]] as $calendarIds) {
-                $calendarSelection = \count($calendarIds) === 2 ? 'all' : '7';
-                $calendars = [7 => ['id' => 7, 'name' => 'Meeting room', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15, 'duration' => 30]], 8 => ['id' => 8, 'name' => 'Studio', 'color' => '#008a5b', 'schedulingSettings' => ['timezone' => 'Asia/Tokyo', 'increment' => 30, 'duration' => 30]]];
-                $columns = array_map(static fn ($id) => ['calendar' => $calendars[$id], 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]], $calendarIds);
-                $output = $twig->render('schedule', [
-                    'view' => $view,
-                    'scheduleView' => $scheduleView,
-                    'bookingTimeFormat' => 'short',
-                    'calendar' => $calendars[7],
-                    'calendarId' => 7,
-                    'calendarIds' => $calendarIds,
-                    'calendarSelection' => $calendarSelection,
-                    'displayTimezone' => 'America/Winnipeg',
-                    'calendars' => $calendars,
-                    'days' => [['date' => new \DateTimeImmutable('2026-10-12T00:00:00-05:00'), 'columns' => $columns]],
-                    'date' => '2026-10-12',
-                    'previous' => '2026-10-05',
-                    'next' => '2026-10-19',
-                    'currentUser' => ['admin' => false, 'id' => 7],
-                    'craft' => ['calendar' => ['bookingLabel' => 'Bookings']],
-                ]);
+        foreach (['combined', 'calendars'] as $scheduleLayout) {
+            foreach (['day', 'week'] as $scheduleView) {
+                foreach ([[7], [7, 8]] as $calendarIds) {
+                    $calendarSelection = \count($calendarIds) === 2 ? 'all' : '7';
+                    $calendars = [7 => ['id' => 7, 'name' => 'Meeting room', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15, 'duration' => 30]], 8 => ['id' => 8, 'name' => 'Studio', 'color' => '#008a5b', 'schedulingSettings' => ['timezone' => 'Asia/Tokyo', 'increment' => 30, 'duration' => 30]]];
+                    $columns = array_map(static fn ($id) => ['calendar' => $calendars[$id], 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]], $calendarIds);
+                    $output = $twig->render('schedule', [
+                        'view' => $view,
+                        'scheduleView' => $scheduleView,
+                        'scheduleLayout' => $scheduleLayout,
+                        'bookingTimeFormat' => 'short',
+                        'calendar' => $calendars[7],
+                        'calendarId' => 7,
+                        'calendarIds' => $calendarIds,
+                        'calendarSelection' => $calendarSelection,
+                        'displayTimezone' => 'America/Winnipeg',
+                        'calendars' => $calendars,
+                        'days' => [['date' => new \DateTimeImmutable('2026-10-12T00:00:00-05:00'), 'columns' => $columns, 'combined' => ['bookings' => [], 'overflow' => [], 'slots' => [480 => ['height' => 15, 'options' => array_map(static fn ($column) => $column['slots'][480][0] + ['calendar' => $column['calendar']], $columns)]]]]],
+                        'date' => '2026-10-12',
+                        'previous' => '2026-10-05',
+                        'next' => '2026-10-19',
+                        'currentUser' => ['admin' => false, 'id' => 7],
+                        'craft' => ['calendar' => ['bookingLabel' => 'Bookings']],
+                    ]);
 
-                self::assertStringContainsString('delta-active', $output);
-                self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
-                self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;date=2026-10-05', $output);
-                self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;date=2026-10-19', $output);
-                self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
-                self::assertStringContainsString('top:384px;--slot-height:24px;height:12px;', $output);
-                self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
-                self::assertStringNotContainsString('start=2026-10-12T07', $output);
-                self::assertStringContainsString('data-booking-history="undo" disabled', $output);
-                self::assertStringContainsString('data-booking-history="redo" disabled', $output);
-                self::assertStringContainsString('M37 1 1 30l36 29V41', $output);
-                $dom = new \DOMDocument();
-                @$dom->loadHTML($output);
-                $xpath = new \DOMXPath($dom);
-                self::assertSame(\count($calendarIds), $xpath->query('//*[@class="booking-day-body"]')->length);
-                self::assertSame(\count($calendarIds), $xpath->query('//input[@data-calendar-choice][@checked]')->length);
-                self::assertSame('2026-10-12', $xpath->query('//*[@class="booking-day-body"]')->item(0)->getAttribute('data-date'));
-                if (\count($calendarIds) > 1) {
-                    self::assertStringContainsString('calendar/bookings/new?calendarId=8&amp;start=', $output);
-                    self::assertStringContainsString('booking-grid-multiple', $output);
-                    self::assertSame(2, $xpath->query('//*[@class="booking-resource-heading"]')->length);
+                    self::assertStringContainsString('delta-active', $output);
+                    self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
+                    self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;layout='.$scheduleLayout.'&amp;date=2026-10-05', $output);
+                    self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;layout='.$scheduleLayout.'&amp;date=2026-10-19', $output);
+                    self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
+                    self::assertStringContainsString('top:384px;--slot-height:24px;height:12px;', $output);
+                    self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
+                    self::assertStringNotContainsString('start=2026-10-12T07', $output);
+                    self::assertStringContainsString('data-booking-history="undo" disabled', $output);
+                    self::assertStringContainsString('data-booking-history="redo" disabled', $output);
+                    self::assertStringContainsString('M37 1 1 30l36 29V41', $output);
+                    $dom = new \DOMDocument();
+                    @$dom->loadHTML($output);
+                    $xpath = new \DOMXPath($dom);
+                    self::assertSame($scheduleLayout === 'combined' ? 1 : \count($calendarIds), $xpath->query('//*[contains(concat(" ", @class, " "), " booking-day-body ")]')->length);
+                    self::assertStringContainsString('<option value="'.$scheduleLayout.'" selected>', $output);
+                    self::assertSame(\count($calendarIds), $xpath->query('//input[@data-calendar-choice][@checked]')->length);
+                    self::assertSame('2026-10-12', $xpath->query('//*[contains(concat(" ", @class, " "), " booking-day-body ")]')->item(0)->getAttribute('data-date'));
+                    if (\count($calendarIds) > 1) {
+                        self::assertStringContainsString('calendar/bookings/new?calendarId=8&amp;start=', $output);
+                        self::assertSame($scheduleLayout === 'combined' ? 0 : 2, $xpath->query('//*[@class="booking-resource-heading"]')->length);
+                        self::assertSame($scheduleLayout === 'combined' ? 1 : 0, $xpath->query('//button[@data-booking-options]')->length);
+                    }
                 }
             }
         }
+    }
+
+    public function testCombinedDayUsesOneColumnAndOverflowLinksForFortyCalendars(): void
+    {
+        $columns = [];
+        for ($id = 1; $id <= 40; ++$id) {
+            $calendar = new CalendarModel(['id' => $id, 'name' => 'Room '.$id, 'color' => '#2563eb']);
+            $columns[] = ['calendar' => $calendar, 'slots' => [540 => [['start' => '2026-10-12T09:00:00+00:00', 'length' => 60, 'label' => '9am - 10am']]], 'bookings' => [
+                ['booking' => (object) ['id' => $id, 'bookingStatus' => 'confirmed', 'cpEditUrl' => 'calendar/bookings/'.$id, 'customerName' => 'Customer '.$id], 'minute' => 480, 'length' => 60, 'label' => '8am - 9am'],
+            ]];
+        }
+        $columns[0]['slots'][600] = [['start' => '2026-10-12T10:00:00+00:00', 'length' => 60, 'label' => '10am - 11am']];
+        $twig = new Environment(new ArrayLoader(['day' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_combined-day.twig')]), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => str_replace('{count}', $params['count'] ?? '', $message)));
+        $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
+        $output = $twig->render('day', [
+            'day' => ['date' => new \DateTimeImmutable('2026-10-12'), 'combined' => Schedule::combined($columns)],
+            'calendarIds' => range(1, 40), 'displayTimezone' => 'UTC', 'statusOptions' => ['confirmed' => 'Confirmed'], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings']],
+        ]);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($output);
+        $xpath = new \DOMXPath($dom);
+        self::assertSame(1, $xpath->query('//div[@data-combined]')->length);
+        self::assertSame(0, $xpath->query('//div[@class="booking-resource"]')->length);
+        self::assertSame(2, $xpath->query('//a[@data-booking-id]')->length);
+        self::assertSame(38, $xpath->query('//template[starts-with(@id, "booking-overflow-")]//a')->length);
+        self::assertSame(40, $xpath->query('//template[starts-with(@id, "booking-slot-")]//a')->length);
+        self::assertSame(1, $xpath->query('//a[@class="booking-slot-target"]')->length);
+        self::assertStringContainsString('+38 more', $output);
+        self::assertStringContainsString('Room 1</small>', $output);
+        self::assertStringContainsString('calendar/bookings/new?calendarId=1&amp;start=2026-10-12T10%3A00%3A00%2B00%3A00', $output);
     }
 
     public function testBookingSidebarRestrictsFieldConfigurationAndMarksTheCurrentPage(): void

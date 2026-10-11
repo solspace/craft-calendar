@@ -2,6 +2,10 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Combined' => 'Apvienots',
+    'By Calendar' => 'Pēc kalendāra',
+    'Choose a Calendar' => 'Izvēlieties kalendāru',
+    'Click an available time to choose a calendar. Shaded times are unavailable for all selected calendars.' => 'Noklikšķiniet uz pieejama laika, lai izvēlētos kalendāru. Ieēnotie laiki nav pieejami nevienā no atlasītajiem kalendāriem.',
     'No calendars match this type.' => 'Nav šī veida kalendāru.',
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Statuss saglabāts 1 rezervācijai.} zero{Statuss saglabāts # rezervācijām.} one{Statuss saglabāts # rezervācijai.} other{Statuss saglabāts # rezervācijām.}}',
     'Booking Defaults' => 'Rezervāciju noklusējuma iestatījumi',

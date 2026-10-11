@@ -2,6 +2,10 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Combined' => 'Combinato',
+    'By Calendar' => 'Per calendario',
+    'Choose a Calendar' => 'Scegli un calendario',
+    'Click an available time to choose a calendar. Shaded times are unavailable for all selected calendars.' => 'Fai clic su un orario disponibile per scegliere un calendario. Gli orari ombreggiati non sono disponibili per nessuno dei calendari selezionati.',
     'No calendars match this type.' => 'Nessun calendario corrisponde a questo tipo.',
     '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Stato salvato per 1 prenotazione.} other{Stato salvato per # prenotazioni.}}',
     'Booking Defaults' => 'Impostazioni predefinite delle prenotazioni',
