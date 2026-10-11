@@ -1158,4 +1158,18 @@ return [
     'Email' => 'Email',
     'Timezone' => 'Timezone',
     'Preview Status' => 'Preview Status',
+
+    'Delivery Settings' => 'Delivery Settings',
+    'From Email' => 'From Email',
+    'From Name' => 'From Name',
+    'Reply-To Email' => 'Reply-To Email',
+    'CC' => 'CC',
+    'BCC' => 'BCC',
+    'Leave sender and reply-to fields blank to use Craft’s email settings. Addresses and names are plain text, not Twig templates.' => 'Leave sender and reply-to fields blank to use Craft’s email settings. Addresses and names are plain text, not Twig templates.',
+    'Enter email addresses separated by commas or new lines. BCC addresses are hidden from other recipients.' => 'Enter email addresses separated by commas or new lines. BCC addresses are hidden from other recipients.',
+    'These templates apply to all scheduling calendars. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.' => 'These templates apply to all scheduling calendars. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.',
+    'The notification delivery setting is too long.' => 'The notification delivery setting is too long.',
+    'Enter a single line without control characters.' => 'Enter a single line without control characters.',
+    'Enter no more than 100 email addresses.' => 'Enter no more than 100 email addresses.',
+    'Enter valid email addresses, separated by commas or new lines.' => 'Enter valid email addresses, separated by commas or new lines.',
 ];

@@ -133,6 +133,70 @@ class SendBookingNotificationTest extends TestCase
         self::assertSame("Booking request\nDate: 2026-10-13", $this->mailer->sent->getSymfonyEmail()->getTextBody());
     }
 
+    public function testSendsCustomSenderReplyToCcAndBccWithoutChangingCraftDefaults(): void
+    {
+        $job = $this->job();
+        $job->fromEmail = 'rooms@example.com';
+        $job->fromName = 'Room reservations';
+        $job->replyTo = 'support@example.com';
+        $job->cc = ['manager@example.com', 'assistant@example.com'];
+        $job->bcc = ['archive@example.com'];
+        $job->execute(null);
+        self::assertSame(['rooms@example.com' => 'Room reservations'], $this->mailer->sent->getFrom());
+        self::assertSame(['support@example.com' => ''], $this->mailer->sent->getReplyTo());
+        self::assertSame($job->cc, array_keys($this->mailer->sent->getCc()));
+        self::assertSame($job->bcc, array_keys($this->mailer->sent->getBcc()));
+        $this->job()->execute(null);
+        self::assertSame(['sender@example.com' => 'Bookings'], $this->mailer->sent->getFrom());
+        self::assertSame(['replies@example.com' => ''], $this->mailer->sent->getReplyTo());
+        self::assertEmpty($this->mailer->sent->getCc());
+        self::assertEmpty($this->mailer->sent->getBcc());
+    }
+
+    public function testIndividualSenderOverridesRetainCraftSiteDefaults(): void
+    {
+        $this->mailer->siteOverrides = ['primary' => ['fromEmail' => 'site@example.com', 'fromName' => 'Site sender']];
+        $job = $this->job();
+        $job->fromName = 'Reservations';
+        $job->execute(null);
+        self::assertSame(['site@example.com' => 'Reservations'], $this->mailer->sent->getFrom());
+        $job = $this->job();
+        $job->fromEmail = 'rooms@example.com';
+        $job->execute(null);
+        self::assertSame(['rooms@example.com' => 'Site sender'], $this->mailer->sent->getFrom());
+        self::assertSame(['sender@example.com' => 'Bookings'], $this->mailer->from);
+    }
+
+    public function testTestRecipientClearsAllAdditionalRecipientsEvenWithCustomDeliverySettings(): void
+    {
+        $this->config->testToEmailAddress = 'developer@example.com';
+        $job = $this->job();
+        $job->fromName = 'Reservations';
+        $job->cc = ['manager@example.com'];
+        $job->bcc = ['archive@example.com'];
+        $job->execute(null);
+        self::assertSame(['developer@example.com'], array_keys($this->mailer->sent->getTo()));
+        self::assertEmpty($this->mailer->sent->getCc());
+        self::assertEmpty($this->mailer->sent->getBcc());
+    }
+
+    public function testFailedSendDoesNotLeaveASenderOverrideOnTheSharedMailer(): void
+    {
+        $this->mailer->failure = new TransportException('Connection refused');
+        $job = $this->job();
+        $job->fromName = 'Reservations';
+
+        try {
+            $job->execute(null);
+            self::fail('Delivery should fail.');
+        } catch (\RuntimeException) {
+            self::assertFalse($this->mailer->hasEventHandlers(Mailer::EVENT_BEFORE_SEND));
+        }
+        $this->mailer->failure = null;
+        $this->job()->execute(null);
+        self::assertSame(['sender@example.com' => 'Bookings'], $this->mailer->sent->getFrom());
+    }
+
     public function testReportsTransportExceptionSwallowedByCraftMailer(): void
     {
         $error = new TransportException('Connection could not be established with host localhost:1025: Connection refused.');

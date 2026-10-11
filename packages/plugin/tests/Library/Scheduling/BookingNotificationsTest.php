@@ -41,6 +41,11 @@ class BookingNotificationsTest extends TestCase
             public function getI18n(): object
             {
                 return new class {
+                    public function format($message, $params, $language): string
+                    {
+                        return strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), array_values($params)));
+                    }
+
                     public function translate($category, $message, $params, $language): string
                     {
                         foreach ($params as $key => $value) {
@@ -129,6 +134,39 @@ class BookingNotificationsTest extends TestCase
             self::assertFalse($settings->validate());
             self::assertNotEmpty($settings->getTemplates());
         }
+    }
+
+    public function testDeliverySettingsAreValidatedNormalizedAndIndependentForEachAudience(): void
+    {
+        $settings = new BookingNotificationSettings(['templates' => [
+            'admin' => ['fromEmail' => ' sender@example.com ', 'fromName' => ' Room bookings ', 'replyTo' => ' replies@example.com ', 'cc' => "First@example.com, second@example.com\nfirst@example.com", 'bcc' => ' private@example.com '],
+            'requester' => ['fromName' => 'Customer care'],
+        ]]);
+        self::assertTrue($settings->validate());
+        self::assertSame(['fromEmail' => 'sender@example.com', 'fromName' => 'Room bookings', 'replyTo' => 'replies@example.com', 'cc' => ['First@example.com', 'second@example.com'], 'bcc' => ['private@example.com']], $settings->getDeliverySettings('admin'));
+        self::assertSame(['fromEmail' => null, 'fromName' => 'Customer care', 'replyTo' => null, 'cc' => [], 'bcc' => []], $settings->getDeliverySettings('requester'));
+        self::assertTrue((new BookingNotificationSettings())->validate());
+    }
+
+    public function testDeliverySettingsRejectInvalidAddressesHeaderInjectionAndTwig(): void
+    {
+        foreach ([
+            ['fromEmail', 'invalid'], ['replyTo', 'Name <sender@example.com>'],
+            ['fromEmail', "sender@example.com\r\nBcc: evil@example.com"],
+            ['fromName', "Name\nBcc: evil@example.com"], ['fromName', "Name\0"],
+            ['cc', 'valid@example.com, 0'], ['bcc', 'valid@example.com, invalid'],
+            ['fromEmail', '{{ booking.customerEmail }}'], ['bcc', ['invalid']],
+            ['fromName', str_repeat('x', 256)], ['cc', str_repeat('x', 10001)],
+            ['bcc', implode(',', array_map(static fn ($i) => 'person'.$i.'@example.com', range(1, 101)))],
+        ] as [$field, $value]) {
+            $settings = new BookingNotificationSettings(['templates' => ['admin' => [$field => $value]]]);
+            self::assertFalse($settings->validate(), $field);
+            self::assertTrue($settings->hasErrors('templates.admin.'.$field));
+            self::assertSame(\in_array($field, ['cc', 'bcc'], true) ? [] : null, $settings->getDeliverySettings('admin')[$field]);
+        }
+        $settings = new BookingNotificationSettings(['templates' => ['admin' => ['fromName' => '{{ calendar.name }}']]]);
+        self::assertTrue($settings->validate());
+        self::assertSame('{{ calendar.name }}', $settings->getDeliverySettings('admin')['fromName']);
     }
 
     public function testBadImportedTemplatesFallBackToTheMatchingAudienceDefault(): void

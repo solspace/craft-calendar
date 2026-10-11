@@ -131,6 +131,11 @@ class BookingNotificationsTest extends TestCase
             public function getI18n(): object
             {
                 return new class {
+                    public function format($message, $params, $language): string
+                    {
+                        return strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), array_values($params)));
+                    }
+
                     public function translate($category, $message, $params, $language): string
                     {
                         foreach ($params as $key => $value) {
@@ -204,7 +209,7 @@ class BookingNotificationsTest extends TestCase
 
     public function testValidTemplatesSaveOnlyToTheNotificationProjectConfigPath(): void
     {
-        $this->body = ['templates' => ['admin' => ['subject' => '{{ calendar.name }}', 'body' => '<p>{{ status }}</p>']]];
+        $this->body = ['templates' => ['admin' => ['fromEmail' => 'bookings@example.com', 'fromName' => 'Reservations', 'replyTo' => 'help@example.com', 'cc' => 'manager@example.com', 'bcc' => 'archive@example.com', 'subject' => '{{ calendar.name }}', 'body' => '<p>{{ status }}</p>']]];
         $response = $this->createMock(Response::class);
         $this->controller->expects(self::once())->method('redirect')->with('https://example.test/admin/calendar/bookings/notifications')->willReturn($response);
         self::assertSame($response, $this->controller->actionSaveNotifications());
@@ -229,6 +234,15 @@ class BookingNotificationsTest extends TestCase
         self::assertSame([], \Craft::$app->saved);
     }
 
+    public function testInvalidDeliveryPreviewReturnsFieldErrorsWithoutSaving(): void
+    {
+        $this->body = ['audience' => 'requester', 'templates' => ['requester' => ['bcc' => 'not an email']]];
+        $response = $this->createMock(Response::class);
+        $this->controller->expects(self::once())->method('asFailure')->with('Could not preview notification.', self::callback(static fn ($data) => isset($data['errors']['templates.requester.bcc'])))->willReturn($response);
+        self::assertSame($response, $this->controller->actionPreviewNotification());
+        self::assertSame([], \Craft::$app->saved);
+    }
+
     public function testInvalidSavePreservesTheSubmittedSourceAndDoesNotChangeProjectConfig(): void
     {
         $bookings = $this->createMock(BookingsService::class);
@@ -236,9 +250,9 @@ class BookingNotificationsTest extends TestCase
         $plugin = (new \ReflectionClass(Calendar::class))->newInstanceWithoutConstructor();
         $plugin->setComponents(['bookings' => $bookings, 'settings' => SettingsService::class]);
         Calendar::setInstance($plugin);
-        $this->body = ['templates' => ['admin' => ['body' => '{% if %}']]];
+        $this->body = ['templates' => ['admin' => ['body' => '{% if %}', 'fromEmail' => 'invalid sender']]];
         $response = $this->createMock(Response::class);
-        $this->controller->expects(self::once())->method('renderTemplate')->with('calendar/bookings/notifications', self::callback(static fn ($variables) => $variables['notificationSettings']->hasErrors('templates.admin.body') && '{% if %}' === $variables['notificationSettings']->templates['admin']['body']))->willReturn($response);
+        $this->controller->expects(self::once())->method('renderTemplate')->with('calendar/bookings/notifications', self::callback(static fn ($variables) => $variables['notificationSettings']->hasErrors('templates.admin.body') && $variables['notificationSettings']->hasErrors('templates.admin.fromEmail') && 'invalid sender' === $variables['notificationSettings']->getTemplates()['admin']['fromEmail'] && '{% if %}' === $variables['notificationSettings']->templates['admin']['body']))->willReturn($response);
         self::assertSame($response, $this->controller->actionSaveNotifications());
         self::assertSame([], \Craft::$app->saved);
     }

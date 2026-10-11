@@ -1037,4 +1037,18 @@ return [
     'Email' => 'E-Mail',
     'Timezone' => 'Zeitzone',
     'Preview Status' => 'Vorschaustatus',
+
+    'Delivery Settings' => 'Versandeinstellungen',
+    'From Email' => 'Absender-E-Mail',
+    'From Name' => 'Absendername',
+    'Reply-To Email' => 'Antwort-E-Mail',
+    'CC' => 'CC',
+    'BCC' => 'BCC',
+    'Leave sender and reply-to fields blank to use Craft’s email settings. Addresses and names are plain text, not Twig templates.' => 'Lassen Sie die Absender- und Antwortfelder leer, um die E-Mail-Einstellungen von Craft zu verwenden. Adressen und Namen sind einfacher Text, keine Twig-Vorlagen.',
+    'Enter email addresses separated by commas or new lines. BCC addresses are hidden from other recipients.' => 'Geben Sie E-Mail-Adressen durch Kommas oder Zeilenumbrüche getrennt ein. BCC-Adressen sind für andere Empfänger nicht sichtbar.',
+    'These templates apply to all scheduling calendars. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.' => 'Diese Vorlagen gelten für alle Buchungskalender. Leere Versandeinstellungen verwenden die Standardwerte von Craft. E-Mails verwenden die Mailer- und Warteschlangeneinstellungen von Craft.',
+    'The notification delivery setting is too long.' => 'Die Einstellung für den Benachrichtigungsversand ist zu lang.',
+    'Enter a single line without control characters.' => 'Geben Sie eine einzelne Zeile ohne Steuerzeichen ein.',
+    'Enter no more than 100 email addresses.' => 'Geben Sie höchstens 100 E-Mail-Adressen ein.',
+    'Enter valid email addresses, separated by commas or new lines.' => 'Geben Sie gültige E-Mail-Adressen ein, getrennt durch Kommas oder Zeilenumbrüche.',
 ];

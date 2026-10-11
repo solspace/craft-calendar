@@ -17,6 +17,7 @@ class BookingNotifications
         }
 
         return [
+            'fromEmail' => '', 'fromName' => '', 'replyTo' => '', 'cc' => '', 'bcc' => '',
             'subject' => '{{ calendar.name }} — {{ status }}',
             'body' => file_get_contents(__DIR__.'/../../templates/bookings/notifications/_'.$audience.'.twig'),
         ];

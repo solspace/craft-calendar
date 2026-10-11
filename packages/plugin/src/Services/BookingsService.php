@@ -319,7 +319,7 @@ class BookingsService extends Component
         foreach ($recipients as $audience => $recipient) {
             try {
                 $message = BookingNotifications::renderForBooking($booking, $calendar, $audience, $templates);
-                Queue::push(new SendBookingNotification(['recipient' => $recipient] + $message));
+                Queue::push(new SendBookingNotification(['recipient' => $recipient] + $templates->getDeliverySettings($audience) + $message));
             } catch (\Throwable $exception) {
                 \Craft::error('Could not queue booking notification: '.$exception->getMessage(), __METHOD__);
             }

@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added per-audience From Email, From Name, Reply-To Email, CC, and BCC settings for booking notifications.
 - Added a General setting to open either the Bookings list or Schedule from the Bookings navigation item.
 - Added an All Calendars checkbox picker to the Bookings list, with multiple calendar selections preserved through sorting and pagination.
 - Added separate Admin and Requester booking notification templates with editable Twig subjects, HTML email bodies, and sample previews.

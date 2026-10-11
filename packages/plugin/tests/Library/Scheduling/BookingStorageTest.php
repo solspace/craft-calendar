@@ -291,8 +291,8 @@ class BookingStorageTest extends TestCase
         $calendar = Calendar::getInstance()->calendars->getCalendarById(1);
         $calendar->scheduling['notificationEmail'] = 'customer@example.test';
         \Craft::$app->notificationTemplates = [
-            'requester' => ['subject' => 'Requester: {{ status }}', 'body' => '<p>{{ booking.customerName }}</p>'],
-            'admin' => ['subject' => 'Admin: {{ status }}', 'body' => '<p>{{ booking.customerEmail }}</p>'],
+            'requester' => ['fromName' => 'Customer care', 'cc' => 'customer-copy@example.test', 'subject' => 'Requester: {{ status }}', 'body' => '<p>{{ booking.customerName }}</p>'],
+            'admin' => ['fromEmail' => 'staff@example.test', 'replyTo' => 'help@example.test', 'bcc' => 'archive@example.test', 'subject' => 'Admin: {{ status }}', 'body' => '<p>{{ booking.customerEmail }}</p>'],
         ];
         $booking = $this->booking(1);
         $booking->customerName = '<b>{{ 7 * 7 }}</b>';
@@ -304,6 +304,13 @@ class BookingStorageTest extends TestCase
         self::assertCount(2, $this->queue->jobs);
         self::assertSame('Requester: Confirmed', $this->queue->jobs[0]->subject);
         self::assertSame('<p>&lt;b&gt;{{ 7 * 7 }}&lt;/b&gt;</p>', $this->queue->jobs[0]->htmlBody);
+        self::assertSame('Customer care', $this->queue->jobs[0]->fromName);
+        self::assertSame(['customer-copy@example.test'], $this->queue->jobs[0]->cc);
+        self::assertSame([], $this->queue->jobs[0]->bcc);
+        self::assertSame('staff@example.test', $this->queue->jobs[1]->fromEmail);
+        self::assertSame('help@example.test', $this->queue->jobs[1]->replyTo);
+        self::assertSame(['archive@example.test'], $this->queue->jobs[1]->bcc);
+        self::assertSame([], $this->queue->jobs[1]->cc);
         self::assertSame('Admin: Confirmed', $this->queue->jobs[1]->subject);
         self::assertSame('customer@example.test', $this->queue->jobs[1]->recipient);
     }

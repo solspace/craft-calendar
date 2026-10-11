@@ -8,6 +8,7 @@ use craft\queue\BaseJob;
 use Solspace\Calendar\Calendar;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use yii\log\Logger;
+use yii\mail\MailEvent;
 use yii\mail\MessageInterface;
 
 class SendBookingNotification extends BaseJob
@@ -16,16 +17,47 @@ class SendBookingNotification extends BaseJob
     public string $subject;
     public string $body;
     public ?string $htmlBody = null;
+    public ?string $fromEmail = null;
+    public ?string $fromName = null;
+    public ?string $replyTo = null;
+    public array $cc = [];
+    public array $bcc = [];
 
     public function execute($queue): void
     {
-        $message = \Craft::$app->getMailer()->compose()->setTo($this->recipient)->setSubject($this->subject)->setTextBody($this->body);
+        $mailer = \Craft::$app->getMailer();
+        $message = $mailer->compose()->setTo($this->recipient)->setCc($this->cc)->setBcc($this->bcc)->setSubject($this->subject)->setTextBody($this->body);
+        if (null !== $this->replyTo) {
+            $message->setReplyTo($this->replyTo);
+        }
         if (null !== $this->htmlBody) {
             $message->setHtmlBody($this->htmlBody);
         }
+        // Apply individual sender overrides after Craft has resolved its site defaults.
+        $senderOverride = function (MailEvent $event) use ($message): void {
+            if ($event->message !== $message) {
+                return;
+            }
+            $from = $message->getFrom();
+            $email = $this->fromEmail ?? array_key_first($from);
+            $name = $this->fromName ?? reset($from);
+            $message->setFrom([$email => false === $name ? '' : $name]);
+        };
+        $overrideSender = null !== $this->fromEmail || null !== $this->fromName;
+        if ($overrideSender) {
+            $mailer->on(Mailer::EVENT_BEFORE_SEND, $senderOverride);
+        }
         $startedAt = microtime(true);
-        if (!$message->send()) {
-            throw $this->deliveryFailure($message, $startedAt);
+
+        try {
+            if (!$message->send()) {
+                throw $this->deliveryFailure($message, $startedAt);
+            }
+        } finally {
+            // Queue workers reuse the mailer; do not leak these overrides to later mail.
+            if ($overrideSender) {
+                $mailer->off(Mailer::EVENT_BEFORE_SEND, $senderOverride);
+            }
         }
     }
 

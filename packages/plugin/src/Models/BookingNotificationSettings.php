@@ -7,11 +7,13 @@ use craft\web\View;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Scheduling\BookingNotifications;
 use Twig\Error\Error;
+use yii\validators\EmailValidator;
 
 class BookingNotificationSettings extends Model
 {
     public const PATH = 'solspace.calendar.bookingNotificationTemplates';
     public const AUDIENCES = ['admin', 'requester'];
+    public const DELIVERY_FIELDS = ['fromEmail', 'fromName', 'replyTo', 'cc', 'bcc'];
 
     public array $templates = [];
 
@@ -27,7 +29,7 @@ class BookingNotificationSettings extends Model
         $templates = [];
         foreach (self::AUDIENCES as $audience) {
             $templates[$audience] = BookingNotifications::defaults($audience);
-            foreach (['subject', 'body'] as $field) {
+            foreach (array_merge(['subject', 'body'], self::DELIVERY_FIELDS) as $field) {
                 $source = $this->templates[$audience][$field] ?? null;
                 if (\is_string($source) && '' !== trim($source)) {
                     $templates[$audience][$field] = $source;
@@ -48,8 +50,16 @@ class BookingNotificationSettings extends Model
             }
             foreach ($template as $field => $source) {
                 $attribute = 'templates.'.$audience.'.'.$field;
-                if (!\in_array($field, ['subject', 'body'], true) || !\is_string($source)) {
+                if (!\in_array($field, array_merge(['subject', 'body'], self::DELIVERY_FIELDS), true) || !\is_string($source)) {
                     $this->addError($attribute, Calendar::t('Enter valid notification templates.'));
+
+                    continue;
+                }
+                if (\in_array($field, self::DELIVERY_FIELDS, true)) {
+                    $error = $this->deliveryError($field, $source);
+                    if (null !== $error) {
+                        $this->addError($attribute, $error);
+                    }
 
                     continue;
                 }
@@ -72,8 +82,63 @@ class BookingNotificationSettings extends Model
         }
     }
 
+    public function getDeliverySettings(string $audience): array
+    {
+        $template = $this->getTemplates()[$audience];
+        $settings = [];
+        foreach (self::DELIVERY_FIELDS as $field) {
+            // Ignore invalid imported headers rather than breaking booking delivery.
+            $value = null === $this->deliveryError($field, $template[$field]) ? trim($template[$field]) : '';
+            $settings[$field] = \in_array($field, ['cc', 'bcc'], true) ? $this->addresses($value) : ('' === $value ? null : $value);
+        }
+
+        return $settings;
+    }
+
     protected function defineRules(): array
     {
         return [['templates', 'validateTemplates', 'skipOnEmpty' => false]];
+    }
+
+    private function deliveryError(string $field, string $value): ?string
+    {
+        if (mb_strlen($value) > (\in_array($field, ['cc', 'bcc'], true) ? 10000 : 255)) {
+            return Calendar::t('The notification delivery setting is too long.');
+        }
+        if ('' === trim($value)) {
+            return null;
+        }
+        if (!\in_array($field, ['cc', 'bcc'], true) && preg_match('/[\x00-\x1f\x7f]/', $value)) {
+            return Calendar::t('Enter a single line without control characters.');
+        }
+        if ('fromName' === $field) {
+            return null;
+        }
+        $addresses = \in_array($field, ['cc', 'bcc'], true) ? $this->addresses($value) : [trim($value)];
+        if (\count($addresses) > 100) {
+            return Calendar::t('Enter no more than 100 email addresses.');
+        }
+        $validator = new EmailValidator();
+        if (!$addresses) {
+            return Calendar::t('Enter valid email addresses, separated by commas or new lines.');
+        }
+        foreach ($addresses as $address) {
+            if (!$validator->validate($address)) {
+                return Calendar::t('Enter valid email addresses, separated by commas or new lines.');
+            }
+        }
+
+        return null;
+    }
+
+    private function addresses(string $value): array
+    {
+        $addresses = array_filter(array_map('trim', preg_split('/[,\r\n]+/', $value)), static fn (string $address) => '' !== $address);
+        $unique = [];
+        foreach ($addresses as $address) {
+            $unique[strtolower($address)] ??= $address;
+        }
+
+        return array_values($unique);
     }
 }

@@ -1037,4 +1037,18 @@ return [
     'Email' => 'E-mail',
     'Timezone' => 'Fuseau horaire',
     'Preview Status' => 'Statut de l’aperçu',
+
+    'Delivery Settings' => 'Paramètres d’envoi',
+    'From Email' => 'Adresse e-mail de l’expéditeur',
+    'From Name' => 'Nom de l’expéditeur',
+    'Reply-To Email' => 'Adresse de réponse',
+    'CC' => 'CC',
+    'BCC' => 'CCI',
+    'Leave sender and reply-to fields blank to use Craft’s email settings. Addresses and names are plain text, not Twig templates.' => 'Laissez les champs d’expéditeur et de réponse vides pour utiliser les paramètres e-mail de Craft. Les adresses et les noms sont du texte brut, pas des modèles Twig.',
+    'Enter email addresses separated by commas or new lines. BCC addresses are hidden from other recipients.' => 'Saisissez les adresses e-mail séparées par des virgules ou des retours à la ligne. Les adresses CCI sont masquées aux autres destinataires.',
+    'These templates apply to all scheduling calendars. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.' => 'Ces modèles s’appliquent à tous les calendriers de réservation. Les paramètres d’envoi vides utilisent les valeurs par défaut de Craft. Les e-mails utilisent les paramètres de messagerie et de file d’attente de Craft.',
+    'The notification delivery setting is too long.' => 'Le paramètre d’envoi de la notification est trop long.',
+    'Enter a single line without control characters.' => 'Saisissez une seule ligne sans caractères de contrôle.',
+    'Enter no more than 100 email addresses.' => 'Saisissez au maximum 100 adresses e-mail.',
+    'Enter valid email addresses, separated by commas or new lines.' => 'Saisissez des adresses e-mail valides, séparées par des virgules ou des retours à la ligne.',
 ];

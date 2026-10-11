@@ -997,4 +997,18 @@ return [
     'Email' => 'E-pasts',
     'Timezone' => 'Laika josla',
     'Preview Status' => 'Priekšskatījuma statuss',
+
+    'Delivery Settings' => 'Piegādes iestatījumi',
+    'From Email' => 'Sūtītāja e-pasts',
+    'From Name' => 'Sūtītāja vārds',
+    'Reply-To Email' => 'Atbildes e-pasts',
+    'CC' => 'CC',
+    'BCC' => 'BCC',
+    'Leave sender and reply-to fields blank to use Craft’s email settings. Addresses and names are plain text, not Twig templates.' => 'Atstājiet sūtītāja un atbildes laukus tukšus, lai izmantotu Craft e-pasta iestatījumus. Adreses un vārdi ir vienkāršs teksts, nevis Twig veidnes.',
+    'Enter email addresses separated by commas or new lines. BCC addresses are hidden from other recipients.' => 'Ievadiet e-pasta adreses, atdalot tās ar komatiem vai jaunām rindām. BCC adreses ir paslēptas no citiem saņēmējiem.',
+    'These templates apply to all scheduling calendars. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.' => 'Šīs veidnes attiecas uz visiem rezervāciju kalendāriem. Tukši piegādes iestatījumi izmanto Craft noklusējumus. E-pasti izmanto Craft pasta sūtītāja un rindas iestatījumus.',
+    'The notification delivery setting is too long.' => 'Paziņojuma piegādes iestatījums ir pārāk garš.',
+    'Enter a single line without control characters.' => 'Ievadiet vienu rindu bez vadības rakstzīmēm.',
+    'Enter no more than 100 email addresses.' => 'Ievadiet ne vairāk kā 100 e-pasta adreses.',
+    'Enter valid email addresses, separated by commas or new lines.' => 'Ievadiet derīgas e-pasta adreses, atdalot tās ar komatiem vai jaunām rindām.',
 ];
