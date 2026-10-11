@@ -2,6 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'The requested time is no longer available.' => 'La fascia oraria richiesta non è più disponibile.',
+    'Requested time: {date}, {time} ({timezone})' => 'Orario richiesto: {date}, {time} ({timezone})',
+    'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.' => 'Scegli un altro orario disponibile e contatta il cliente per confermare l’alternativa, oppure rifiuta o annulla la richiesta.',
     'Combined' => 'Combinato',
     'By Calendar' => 'Per calendario',
     'Choose a Calendar' => 'Scegli un calendario',

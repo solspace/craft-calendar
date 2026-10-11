@@ -10,6 +10,16 @@
 {% if booking.id %}{{ hiddenInput('bookingId', booking.id) }}{% endif %}
 <div class="booking-editor">
 {% include 'calendar/bookings/_status-card' %}
+{% if booking.id and booking.bookingStatus == 'requested' and booking.startDate and booking.endDate %}
+<section id="booking-unavailable-request" class="booking-unavailable-request" role="status" aria-live="polite" hidden>
+    <span data-icon="alert" aria-hidden="true"></span>
+    <div>
+        <strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong>
+        <p>{{ 'Requested time: {date}, {time} ({timezone})'|t('calendar', {date: booking.startDate|date('medium', timezone), time: booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel ~ ' - ' ~ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel, timezone}) }}</p>
+        <p>{{ 'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.'|t('calendar') }}</p>
+    </div>
+</section>
+{% endif %}
 <div class="booking-picker-controls">
 <div class="booking-calendar-control">
 {% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
@@ -64,6 +74,7 @@ const bookingDate = document.getElementById('booking-date');
 const bookingSlots = document.getElementById('booking-slots');
 const bookingSlotsMessage = document.getElementById('booking-slots-message');
 const bookingSlotsRetry = document.getElementById('booking-slots-retry');
+const bookingUnavailableRequest = document.getElementById('booking-unavailable-request');
 const bookingStart = document.querySelector('[name="startDate"]');
 const bookingEnd = document.querySelector('[name="endDate"]');
 const bookingStatusSelect = document.getElementById('booking-status');
@@ -79,6 +90,7 @@ const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingSt
 {% include 'calendar/bookings/_status-relative-js' %}
 let bookingSlotsRequest = 0;
 let bookingSlotsLoading = false;
+let bookingSlotSelected = false;
 function bookingTimesMatch(first, second) {
     return Date.parse(first.start) === Date.parse(second.start) && Date.parse(first.end) === Date.parse(second.end);
 }
@@ -88,6 +100,7 @@ function chooseBookingSlot(slot, button) {
     if (bookingCalendar.value === originalBookingTime.calendarId && bookingTimesMatch(slot, originalBookingTime)) slot = originalBookingTime;
     bookingStart.value = slot.start;
     bookingEnd.value = slot.end;
+    bookingSlotSelected = true;
     bookingStart.dispatchEvent(new Event('change', {bubbles: true}));
     bookingEnd.dispatchEvent(new Event('change', {bubbles: true}));
     bookingSlots.querySelectorAll('button').forEach(item => {
@@ -98,6 +111,7 @@ function chooseBookingSlot(slot, button) {
 async function loadBookingSlots(resetSelection = false) {
     const request = ++bookingSlotsRequest;
     bookingSlotsLoading = true;
+    bookingSlotSelected = false;
     bookingSlotsRetry.hidden = true;
     bookingSlots.replaceChildren();
     if (resetSelection) {
@@ -118,7 +132,9 @@ async function loadBookingSlots(resetSelection = false) {
         const slots = response.data.slots;
         const original = originalBookingTime.calendarId === bookingCalendar.value && originalBookingTime.start.slice(0, 10) === bookingDate.value ? originalBookingTime : null;
         {% if booking.id %}
-        if (original && !slots.some(slot => bookingTimesMatch(slot, original))) {
+        const originalAvailable = original && slots.some(slot => bookingTimesMatch(slot, original));
+        if (original && bookingUnavailableRequest) bookingUnavailableRequest.hidden = !!originalAvailable;
+        if (original && !originalAvailable && !bookingUnavailableRequest) {
             slots.unshift({start: original.start, end: original.end, label: Craft.t('calendar', 'Current booking time: {time}', {time: original.label})});
         }
         {% endif %}
@@ -153,13 +169,19 @@ bookingDate.addEventListener('click', event => {
 bookingDate.addEventListener('change', () => loadBookingSlots(true));
 bookingSlotsRetry.addEventListener('click', () => loadBookingSlots());
 bookingDate.form.addEventListener('submit', event => {
-    if (bookingSlotsLoading || !bookingStart.value || !bookingEnd.value) {
+    // A request can be released without moving it to a new time. Keep its saved
+    // timestamps on load so an unavailable request doesn't become an unsaved edit.
+    const releasingOriginal = {{ booking.id ? 'true' : 'false' }} && ['declined', 'cancelled'].includes(bookingStatusSelect.value)
+        && originalBookingTime.calendarId === bookingCalendar.value
+        && originalBookingTime.start.slice(0, 10) === bookingDate.value
+        && bookingTimesMatch({start: bookingStart.value, end: bookingEnd.value}, originalBookingTime);
+    if (bookingSlotsLoading || !bookingStart.value || !bookingEnd.value || (!bookingSlotSelected && !releasingOriginal)) {
         event.preventDefault();
         event.stopImmediatePropagation();
         bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose an available time.');
-        bookingDate.focus();
+        (bookingSlots.querySelector('button') || bookingDate).focus();
     }
-});
+}, true);
 loadBookingSlots();
 {% endjs %}
 {% css %}
@@ -167,6 +189,11 @@ loadBookingSlots();
 .booking-editor { max-width:960px; }
 .booking-editor .field { margin:0 0 22px; }
 .booking-editor .heading { margin-bottom:6px; }
+.booking-unavailable-request { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; margin-bottom:24px; border:1px solid #ebd6a0; border-left:4px solid #966000; border-radius:6px; background:#fffbef; color:#76531b; }
+.booking-unavailable-request[hidden] { display:none !important; }
+.booking-unavailable-request > [data-icon] { flex-shrink:0; margin-top:2px; }
+.booking-unavailable-request > div { min-width:0; overflow-wrap:anywhere; }
+.booking-unavailable-request p { margin:6px 0 0; font-size:12px; line-height:1.5; }
 .booking-status-card { --status-color:#966000; --status-background:#fffbef; --status-border:#ebd6a0; --status-icon-background:#faedc5; border:1px solid var(--status-border); border-left:4px solid var(--status-color); border-radius:6px; background:var(--status-background); padding:14px 16px; margin-bottom:24px; }
 .booking-status-card.confirmed { --status-color:var(--enabled-color,#008a5b); --status-background:#f2faf6; --status-border:#b3dcc6; --status-icon-background:#dcefe4; }
 .booking-status-card.declined { --status-color:var(--error-color,#cf1124); --status-background:#fff6f6; --status-border:#edc0c5; --status-icon-background:#f9e1e4; }
@@ -193,7 +220,7 @@ loadBookingSlots();
 #booking-timezone { margin:8px 0 0; font-size:12px; line-height:1.5; }
 #booking-slots-message { margin:6px 0 12px; font-size:12px; line-height:1.5; }
 #booking-slots { display:grid; grid-template-columns:repeat(auto-fill, minmax(148px, 1fr)); gap:8px; }
-#booking-slots .booking-slot { min-width:0; width:100%; min-height:34px; padding:7px 10px; box-sizing:border-box; justify-content:center; font-size:12px; font-variant-numeric:tabular-nums; }
+#booking-slots .booking-slot { min-width:0; width:100%; min-height:34px; height:auto; padding:7px 10px; box-sizing:border-box; justify-content:center; font-size:12px; font-variant-numeric:tabular-nums; white-space:normal; overflow-wrap:anywhere; text-align:center; }
 #booking-slots .booking-slot.active { background:var(--enabled-color,#008a5b); color:#fff; }
 #booking-slots .booking-slot:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
 #booking-slots-retry { margin-bottom:12px; }

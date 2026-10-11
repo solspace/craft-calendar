@@ -40,6 +40,8 @@
 
 ### Changed
 
+- Warn when a booking request’s original time is no longer available, requiring staff to select an available alternative before saving or confirming it.
+
 - Removed plus signs from available schedule times, retaining the booking preview on hover and keyboard focus.
 - Tidied booking notification settings with aligned sender fields, compact CC/BCC help, and a variable reference beside the template editor.
 - Renamed the Bookings area’s Booking Fields page to Fields.

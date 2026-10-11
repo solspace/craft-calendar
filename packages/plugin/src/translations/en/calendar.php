@@ -2,6 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'The requested time is no longer available.' => 'The requested time is no longer available.',
+    'Requested time: {date}, {time} ({timezone})' => 'Requested time: {date}, {time} ({timezone})',
+    'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.' => 'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.',
     'Combined' => 'Combined',
     'By Calendar' => 'By Calendar',
     'Choose a Calendar' => 'Choose a Calendar',

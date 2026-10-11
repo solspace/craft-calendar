@@ -212,6 +212,34 @@ class BookingStorageTest extends TestCase
         self::assertSame([], $this->queue->jobs);
     }
 
+    public function testCompetingConfirmationInvalidatesARequestButAllowsAnAlternativeOrRelease(): void
+    {
+        $this->db->createCommand()->update('calendar_bookings', ['bookingStatus' => Booking::CONFIRMED], ['id' => 2])->execute();
+        foreach ([Booking::REQUESTED, Booking::CONFIRMED] as $status) {
+            $booking = $this->booking(1);
+            $booking->bookingStatus = $status;
+
+            try {
+                $this->service->assertSaveAllowed($booking);
+                self::fail('An occupied request time was accepted.');
+            } catch (BookingConflictException $exception) {
+                self::assertStringContainsString('unavailable', $exception->getMessage());
+            }
+            $booking->startDate = $booking->startDate->modify('+1 hour');
+            $booking->endDate = $booking->endDate->modify('+1 hour');
+            $this->service->assertSaveAllowed($booking);
+            self::assertSame($status, $booking->bookingStatus);
+        }
+        foreach ([Booking::DECLINED, Booking::CANCELLED] as $status) {
+            $booking = $this->booking(1);
+            $booking->bookingStatus = $status;
+            $this->service->assertSaveAllowed($booking);
+            self::assertSame('2026-10-12T09:00:00+00:00', $booking->startDate->format(\DATE_ATOM));
+        }
+        self::assertSame(Booking::REQUESTED, $this->db->createCommand('SELECT bookingStatus FROM calendar_bookings WHERE id=1')->queryScalar());
+        self::assertSame([], $this->queue->jobs);
+    }
+
     public function testRestoreRejectsAnOccupiedSlotAndRollsBackItsElementRestoration(): void
     {
         $this->db->createCommand()->update('calendar_bookings', ['bookingStatus' => Booking::CONFIRMED], ['id' => [1, 2]])->execute();
