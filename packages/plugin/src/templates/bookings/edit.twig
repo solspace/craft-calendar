@@ -29,7 +29,10 @@
 </div>
 {{ hiddenInput('startDate', booking.startDate ? booking.startDate|date('c', timezone) : '') }}
 {{ hiddenInput('endDate', booking.endDate ? booking.endDate|date('c', timezone) : '') }}
+<div class="booking-status">
 {{ forms.selectField({label: 'Booking Status'|t('calendar'), instructions: 'Requested times are reserved only after confirmation.'|t('calendar'), name: 'bookingStatus', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
+{% include 'calendar/bookings/_status-meta' %}
+</div>
 <hr>
 <div class="booking-contact-grid">
 {{ forms.textField({label: 'Customer Name'|t('calendar'), name: 'customerName', value: booking.customerName, required: true, errors: booking.getErrors('customerName')}) }}
@@ -128,6 +131,8 @@ loadBookingSlots();
 .booking-editor { max-width:960px; }
 .booking-editor .field { margin:0 0 22px; }
 .booking-editor .heading { margin-bottom:6px; }
+.booking-status .field { margin-bottom:8px; }
+.booking-status-meta { margin:0; font-size:12px; line-height:1.5; }
 .booking-picker-controls, .booking-contact-grid { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; }
 .booking-picker-controls { margin-bottom:24px; max-width:720px; }
 .booking-picker-controls .field { margin-bottom:0; }

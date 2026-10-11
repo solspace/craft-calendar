@@ -16,6 +16,8 @@ The booking editor offers a date picker and available time slots instead of free
 
 Displayed dates and times follow the user's Craft formatting locale and Calendar's Auto/12-hour/24-hour time setting. Public slot labels use the current site's locale. Times remain in the scheduling calendar's timezone, including daylight saving offsets.
 
+The booking status shows who last changed it and when, using the control panel’s date and time formatting. Customer requests and automatic confirmations are identified separately. Saving other booking details does not replace the status attribution. Existing bookings show no attribution until their next status change.
+
 Requests do not reserve a time. Confirmation checks availability again. Turning off Require Approval confirms guest bookings immediately. Confirmed saves serialize on the calendar row inside Craft's element transaction and recheck conflicts. The same validation applies to direct element saves. Ordinary event creation is not available for Scheduling calendars. Booking contact details are not exported through event queries or ICS.
 
 ## Front end

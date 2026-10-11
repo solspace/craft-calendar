@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Elements;
 
 use craft\base\Element;
+use craft\db\Query;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\Db;
@@ -27,11 +28,15 @@ class Booking extends Element
     public string $customerEmail = '';
     public string $notes = '';
     public string $bookingStatus = self::REQUESTED;
+    public ?\DateTimeImmutable $statusChangedAt = null;
+    public ?int $statusChangedById = null;
+    public ?string $statusChangedByName = null;
+    public ?string $statusChangeSource = null;
     public int $buffer = 0;
 
     public function __construct($config = [])
     {
-        foreach (['startDate', 'endDate'] as $key) {
+        foreach (['startDate', 'endDate', 'statusChangedAt'] as $key) {
             if (isset($config[$key]) && \is_string($config[$key])) {
                 $config[$key] = new \DateTimeImmutable($config[$key], new \DateTimeZone('UTC'));
             }
@@ -137,6 +142,17 @@ class Booking extends Element
     {
         // This runs inside Craft's element transaction, including saves through native APIs.
         Calendar::getInstance()->bookings->assertSaveAllowed($this);
+        $previous = (new Query())->select(['bookingStatus', 'statusChangedAt', 'statusChangedById', 'statusChangedByName', 'statusChangeSource'])
+            ->from(self::TABLE)->where(['id' => $this->id])->one()
+        ;
+        $request = \Craft::$app->getRequest();
+        $isCp = !$request->getIsConsoleRequest() && $request->getIsCpRequest();
+        $user = $isCp ? \Craft::$app->getUser()->getIdentity() : null;
+        $source = $user ? 'user' : 'system';
+        if (!$previous && !$request->getIsConsoleRequest() && !$isCp) {
+            $source = self::CONFIRMED === $this->bookingStatus ? 'automatic' : 'customer';
+        }
+        $this->applyStatusChangeMetadata($previous ?: null, $user, $source, new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
         Db::upsert(self::TABLE, $this->getRecordData());
         parent::afterSave($isNew);
     }
@@ -152,8 +168,30 @@ class Booking extends Element
             'customerEmail' => $this->customerEmail,
             'notes' => $this->notes,
             'bookingStatus' => $this->bookingStatus,
+            'statusChangedAt' => Db::prepareDateForDb($this->statusChangedAt),
+            'statusChangedById' => $this->statusChangedById,
+            'statusChangedByName' => $this->statusChangedByName,
+            'statusChangeSource' => $this->statusChangeSource,
             'buffer' => $this->buffer,
         ];
+    }
+
+    /** Persist the actor only for a real status change, using stored data on ordinary saves. */
+    protected function applyStatusChangeMetadata(?array $previous, ?User $user, string $source, \DateTimeImmutable $now): void
+    {
+        if ($previous && $previous['bookingStatus'] === $this->bookingStatus) {
+            $this->statusChangedAt = !empty($previous['statusChangedAt']) ? new \DateTimeImmutable($previous['statusChangedAt'], new \DateTimeZone('UTC')) : null;
+            $this->statusChangedById = isset($previous['statusChangedById']) ? (int) $previous['statusChangedById'] : null;
+            $this->statusChangedByName = $previous['statusChangedByName'] ?? null;
+            $this->statusChangeSource = $previous['statusChangeSource'] ?? null;
+
+            return;
+        }
+
+        $this->statusChangedAt = $now;
+        $this->statusChangedById = $user?->id;
+        $this->statusChangedByName = $user ? mb_substr($user->getFriendlyName(), 0, 255) : null;
+        $this->statusChangeSource = $source;
     }
 
     protected function defineRules(): array

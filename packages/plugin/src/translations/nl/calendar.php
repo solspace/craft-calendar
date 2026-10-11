@@ -894,4 +894,10 @@ return [
     'User is not permitted to create events in this calendar' => 'De gebruiker heeft geen toestemming om evenementen in deze kalender aan te maken.',
     'Couldn’t remove the occurrence override.' => 'De aanpassing van het voorkomen kon niet worden verwijderd.',
     'Could not retain the event change for Undo.' => 'De evenementwijziging kon niet worden bewaard om ongedaan te maken.',
+    'Last changed by {user} on {date}.' => 'Laatst gewijzigd door {user} op {date}.',
+    'Automatically confirmed on {date}.' => 'Automatisch bevestigd op {date}.',
+    'Requested by the customer on {date}.' => 'Aangevraagd door de klant op {date}.',
+    'Last changed by the system on {date}.' => 'Laatst gewijzigd door het systeem op {date}.',
+    'No status change details were recorded for this booking.' => 'Er zijn geen details over de statuswijziging vastgelegd voor deze boeking.',
+    'Deleted user' => 'Verwijderde gebruiker',
 ];

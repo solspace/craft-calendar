@@ -1016,4 +1016,10 @@ return [
     'booking' => 'booking',
     'bookings' => 'bookings',
     '{field} is required.' => '{field} is required.',
+    'Last changed by {user} on {date}.' => 'Last changed by {user} on {date}.',
+    'Automatically confirmed on {date}.' => 'Automatically confirmed on {date}.',
+    'Requested by the customer on {date}.' => 'Requested by the customer on {date}.',
+    'Last changed by the system on {date}.' => 'Last changed by the system on {date}.',
+    'No status change details were recorded for this booking.' => 'No status change details were recorded for this booking.',
+    'Deleted user' => 'Deleted user',
 ];

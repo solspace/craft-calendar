@@ -47,9 +47,14 @@ class Install extends StreamlinedInstallMigration
                 ->addField('customerEmail', $this->string()->notNull())
                 ->addField('notes', $this->text())
                 ->addField('bookingStatus', $this->string(32)->notNull()->defaultValue('requested'))
+                ->addField('statusChangedAt', $this->dateTime())
+                ->addField('statusChangedById', $this->integer())
+                ->addField('statusChangedByName', $this->string())
+                ->addField('statusChangeSource', $this->string(32))
                 ->addField('buffer', $this->integer()->notNull()->defaultValue(0))
                 ->addForeignKey('id', 'elements', 'id', ForeignKey::CASCADE)
                 ->addForeignKey('calendarId', 'calendar_calendars', 'id', ForeignKey::CASCADE)
+                ->addForeignKey('statusChangedById', 'users', 'id', ForeignKey::SET_NULL)
                 ->addIndex(['calendarId', 'bookingStatus', 'startDate']),
 
             (new Table('calendar_calendar_sites'))

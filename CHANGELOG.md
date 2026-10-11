@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added the user and timestamp of the latest booking status change, with separate labels for customer requests and automatic confirmations.
 - Added Scheduling calendars with weekly availability, holiday exceptions, booking rules, guest requests, and a dedicated Bookings area with approval and schedule views.
 - Added repeating event presets to quick creation in the control panel calendar, with weekday repeats, end dates or occurrence limits, and a summary. Repeat settings carry through to the full event editor.
 - Added a calendar selector on the event editor with a field-mapping slideout. Similar fields are preselected, unmapped content is flagged, and event and occurrence changes move together within a draft.

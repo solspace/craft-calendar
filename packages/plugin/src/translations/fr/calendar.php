@@ -894,4 +894,10 @@ return [
     'User is not permitted to create events in this calendar' => 'L’utilisateur n’est pas autorisé à créer des événements dans ce calendrier.',
     'Couldn’t remove the occurrence override.' => 'Impossible de supprimer la personnalisation de l’occurrence.',
     'Could not retain the event change for Undo.' => 'Impossible de conserver la modification de l’événement pour l’annuler.',
+    'Last changed by {user} on {date}.' => 'Dernière modification par {user} le {date}.',
+    'Automatically confirmed on {date}.' => 'Confirmation automatique le {date}.',
+    'Requested by the customer on {date}.' => 'Demande du client le {date}.',
+    'Last changed by the system on {date}.' => 'Dernière modification par le système le {date}.',
+    'No status change details were recorded for this booking.' => 'Aucun détail de changement de statut n’a été enregistré pour cette réservation.',
+    'Deleted user' => 'Utilisateur supprimé',
 ];

@@ -1,0 +1,16 @@
+{% if booking.statusChangedAt %}
+    {% set changedDate = booking.statusChangedAt|datetime('short') %}
+    <p class="light booking-status-meta" title="{{ booking.statusChangedAt|datetime('full') }}">
+        {% if booking.statusChangeSource == 'user' %}
+            {{ 'Last changed by {user} on {date}.'|t('calendar', {user: booking.statusChangedByName ?: 'Deleted user'|t('calendar'), date: changedDate}) }}
+        {% elseif booking.statusChangeSource == 'automatic' %}
+            {{ 'Automatically confirmed on {date}.'|t('calendar', {date: changedDate}) }}
+        {% elseif booking.statusChangeSource == 'customer' %}
+            {{ 'Requested by the customer on {date}.'|t('calendar', {date: changedDate}) }}
+        {% else %}
+            {{ 'Last changed by the system on {date}.'|t('calendar', {date: changedDate}) }}
+        {% endif %}
+    </p>
+{% elseif booking.id %}
+    <p class="light booking-status-meta">{{ 'No status change details were recorded for this booking.'|t('calendar') }}</p>
+{% endif %}

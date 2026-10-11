@@ -43,7 +43,7 @@
     "post-update-cmd": "cghooks update"
   },
   "extra": {
-    "schemaVersion": "5.0.3",
+    "schemaVersion": "5.0.4",
     "handle": "calendar",
     "class": "Solspace\\Calendar\\Calendar",
     "name": "Calendar",
