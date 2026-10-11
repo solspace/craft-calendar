@@ -1,12 +1,12 @@
 {% import '_includes/forms' as forms %}
-{% set statusIcons = {requested: '…', confirmed: '✓', declined: '×', cancelled: '−'} %}
+{% set statusIcons = {requested: '?', confirmed: '✓', declined: '×', cancelled: '−'} %}
 <section class="booking-status booking-status-card {{ booking.bookingStatus }}" id="booking-status-card" aria-label="{{ 'Booking Status'|t('calendar') }}">
     <div class="booking-status-header">
-        <span class="booking-status-icon" aria-hidden="true">{{ statusIcons[booking.bookingStatus] ?? '…' }}</span>
-        {{ forms.select({name: 'bookingStatus', id: 'booking-status', options: statusOptions, value: booking.bookingStatus, inputAttributes: {aria: {label: 'Booking Status'|t('calendar'), invalid: booking.hasErrors('bookingStatus') ? 'true' : null, describedby: booking.hasErrors('bookingStatus') ? 'booking-status-errors' : null}}}) }}
-    </div>
-    <div class="booking-status-body">
-        {% if booking.hasErrors('bookingStatus') %}<div id="booking-status-errors">{{ forms.errorList(booking.getErrors('bookingStatus')) }}</div>{% endif %}
+        <div class="booking-status-picker">
+            <span class="booking-status-icon" aria-hidden="true">{{ statusIcons[booking.bookingStatus] ?? '?' }}</span>
+            {{ forms.select({name: 'bookingStatus', id: 'booking-status', options: statusOptions, value: booking.bookingStatus, inputAttributes: {aria: {label: 'Booking Status'|t('calendar'), invalid: booking.hasErrors('bookingStatus') ? 'true' : null, describedby: booking.hasErrors('bookingStatus') ? 'booking-status-errors' : null}}}) }}
+        </div>
         {% include 'calendar/bookings/_status-meta' %}
     </div>
+    {% if booking.hasErrors('bookingStatus') %}<div class="booking-status-body" id="booking-status-errors">{{ forms.errorList(booking.getErrors('bookingStatus')) }}</div>{% endif %}
 </section>
