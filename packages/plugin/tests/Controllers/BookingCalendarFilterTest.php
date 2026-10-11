@@ -232,6 +232,8 @@ class BookingCalendarFilterTest extends TestCase
                 self::assertSame(\count($ids), $xpath->query('//input[@data-calendar-choice][@checked]')->length);
                 self::assertSame($label, $xpath->query('//*[@data-calendar-label]')->item(0)->textContent);
                 self::assertStringContainsString('No bookings found.', $output);
+                self::assertSame('date-desc', $xpath->query('//input[@id="booking-sort"][@type="hidden"]')->item(0)->getAttribute('value'));
+                self::assertSame(0, $xpath->query('//select[@name="sort"]')->length);
                 self::assertSame(6, $xpath->query('//th[contains(@class, "orderable")]/button[@data-booking-sort]')->length);
                 $links = $xpath->query('//a[contains(@class, "page-link")]');
                 self::assertSame(2, $links->length);

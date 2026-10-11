@@ -4,10 +4,11 @@
 {% set selectedSubnavItem = "calendars" %}
 {% set title = "Calendars"|t('calendar') %}
 
-{% set content %}
-    <form class="calendar-index-toolbar" method="get" action="{{ url('calendar/calendars') }}">
+{% block toolbar %}
+    <form id="calendar-index-filters" class="calendar-index-toolbar" method="get" action="{{ cpUrl('calendar/calendars') }}">
+        <input type="hidden" name="sort" value="{{ sort }}">
         <label for="calendar-type-filter">{{ 'Calendar Type'|t('calendar') }}</label>
-        {{ forms.select({
+        {{ forms.selectize({
             id: 'calendar-type-filter',
             name: 'type',
             value: calendarType,
@@ -16,24 +17,37 @@
                 {value: 'events', label: 'Events'|t('calendar')},
                 {value: 'scheduling', label: 'Scheduling'|t('calendar')},
             ],
+            selectizeOptions: {searchField: [], extraPlugins: false},
         }) }}
         <noscript><button type="submit" class="btn">{{ 'Apply'|t('app') }}</button></noscript>
     </form>
+{% endblock %}
+
+{% block main %}
+    <div class="content-grid__main">
+        <div id="content">{{ block('content') }}</div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="calendar-list-pane">
     <div id="nocalendars"{% if calendars %} class="hidden"{% endif %}>
         <p>{{ (calendarType == 'all' ? 'No calendars exist yet.' : 'No calendars match this type.')|t('calendar') }}</p>
     </div>
 
     {% if calendars|length %}
-        <table id="calendars" class="data fullwidth collapsible">
+        <table id="calendars" class="data fullwidth big collapsible">
             <thead>
             <tr>
-            <th scope="col">{{ "Name"|t('calendar') }}</th>
-            <th scope="col">{{ "Type"|t('calendar') }}</th>
-            <th scope="col">{{ "Handle"|t('calendar') }}</th>
-            <th scope="col">{{ "Description"|t('calendar') }}</th>
-            {% if craft.calendar.pro %}
-                <th scope="col">{{ "ICS sharing"|t('calendar') }}</th>
-            {% endif %}
+            {% set columns = {name: 'Name', type: 'Type', handle: 'Handle', description: 'Description'} %}
+            {% if craft.calendar.pro %}{% set columns = columns|merge({sharing: 'ICS sharing'}) %}{% endif %}
+            {% for field, label in columns %}
+                {% set active = sort starts with field ~ '-' %}
+                {% set ascending = sort == field ~ '-asc' %}
+                <th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
+                    <button type="button" data-calendar-sort="{{ field ~ (active and ascending ? '-desc' : '-asc') }}">{{ label|t('calendar') }}</button>
+                </th>
+            {% endfor %}
             <th scope="col" class="calendar-actions-column"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
             </tr>
             </thead>
@@ -107,17 +121,17 @@
             </tbody>
         </table>
     {% endif %}
-{% endset %}
+    </div>
+{% endblock %}
 
 {% css %}
-    #content { padding: 0; }
-    .calendar-index-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:14px; border-bottom:1px solid var(--hairline-color, #edf0f4); }
-    .calendar-index-toolbar label { color:var(--medium-text-color, #596778); }
+    .calendar-index-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:0; }
+    .calendar-index-toolbar label { color:var(--light-text-color, #596673); font-size:12px; }
+    .calendar-index-toolbar > .select.selectize { width:160px; }
+    .calendar-list-pane { background:var(--pane-bg,var(--white,#fff)); box-shadow:var(--pane-shadow); border-radius:var(--radius-lg,5px); overflow-x:auto; }
     #nocalendars { padding:14px; }
     #calendars th, #calendars td { vertical-align:middle; }
     #calendars tbody th, #calendars tbody td { padding-top:12px; padding-bottom:12px; }
-    #calendars tbody tr + tr { border-top:1px solid var(--hairline-color, #edf0f4); }
-    #calendars tbody tr:hover { background:var(--pane-bg-color, #f8fafc); }
     #calendars .calendar-name { display:inline-flex; align-items:center; gap:9px; }
     #calendars .calendar-name .color-indicator { flex:none; margin:0; }
     #calendars .calendar-type { display:inline-flex; padding:4px 9px; border-radius:5px; background:var(--gray-100, #eef1f5); color:var(--medium-text-color, #596778); font-size:12px; font-weight:500; line-height:1.4; white-space:nowrap; }
@@ -141,8 +155,15 @@
 {% endcss %}
 
 {% js %}
-    document.getElementById('calendar-type-filter').addEventListener('change', function() {
-        this.form.requestSubmit();
+    const calendarIndexFilters = document.getElementById('calendar-index-filters');
+    document.querySelectorAll('[data-calendar-sort]').forEach(button => {
+        button.addEventListener('click', () => {
+            calendarIndexFilters.elements.namedItem('sort').value = button.dataset.calendarSort;
+            calendarIndexFilters.requestSubmit();
+        });
+    });
+    $(calendarIndexFilters).on('change', '#calendar-type-filter', () => {
+        calendarIndexFilters.requestSubmit();
     });
     document.querySelectorAll('#calendars .calendar-row-actions .clone').forEach(action => {
         action.addEventListener('keydown', event => {

@@ -68,6 +68,11 @@ class CalendarsController extends BaseController
         if ('all' !== $calendarType) {
             $calendars = array_filter($calendars, static fn (CalendarModel $calendar) => $calendar->type === $calendarType);
         }
+        $sort = \Craft::$app->request->getQueryParam('sort', 'name-asc');
+        if (!\is_string($sort) || !preg_match('/^(name|type|handle|description|sharing)-(asc|desc)$/D', $sort)) {
+            $sort = 'name-asc';
+        }
+        $calendars = $this->sortCalendars($calendars, $sort);
 
         $crumbs = [
             [
@@ -88,6 +93,7 @@ class CalendarsController extends BaseController
                 'crumbs' => $crumbs,
                 'calendars' => $calendars,
                 'calendarType' => $calendarType,
+                'sort' => $sort,
             ]
         );
     }
@@ -489,6 +495,27 @@ class CalendarsController extends BaseController
         }
 
         return $this->asJson(['success' => false]);
+    }
+
+    private function sortCalendars(array $calendars, string $sort): array
+    {
+        [$field, $direction] = explode('-', $sort);
+        $types = CalendarModel::typeOptions();
+        $value = static fn (CalendarModel $calendar) => match ($field) {
+            'type' => $types[$calendar->type],
+            'sharing' => !$calendar->getIsScheduling() && $calendar->icsHash ? '1' : '0',
+            default => (string) $calendar->{$field},
+        };
+        uasort($calendars, static function (CalendarModel $first, CalendarModel $second) use ($value, $direction) {
+            $comparison = strnatcasecmp($value($first), $value($second));
+            if ($comparison) {
+                return 'desc' === $direction ? -$comparison : $comparison;
+            }
+
+            return strnatcasecmp($first->name, $second->name) ?: $first->id <=> $second->id;
+        });
+
+        return $calendars;
     }
 
     /**

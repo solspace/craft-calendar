@@ -209,13 +209,12 @@
     updateSelection();
 
     // Selectize detaches and reinserts its selects, clearing directly bound jQuery handlers.
-    $(form).on('change', '#booking-filter-status, #booking-sort, #booking-list-view', () => filterBookings());
+    $(form).on('change', '#booking-filter-status, #booking-list-view', () => filterBookings());
     results.addEventListener('click', event => {
         const link = event.target.closest('[data-booking-sort]');
         if (!link || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
-        if (sort.selectize) sort.selectize.setValue(link.dataset.bookingSort, true);
-        else sort.value = link.dataset.bookingSort;
+        sort.value = link.dataset.bookingSort;
         filterBookings();
     });
     results.addEventListener('click', async event => {

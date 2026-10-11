@@ -18,10 +18,7 @@
         <span class="texticon-icon search icon" aria-hidden="true"></span>
         {{ forms.text({type: 'search', id: 'booking-filter-search', name: 'search', value: search, placeholder: 'Search name or email'|t('calendar'), inputAttributes: {aria: {label: 'Search name or email'|t('calendar')}}}) }}
     </div>
-    <div class="booking-sort">
-        <label for="booking-sort">{{ 'Sort by'|t('app') }}</label>
-        {{ forms.selectize({id: 'booking-sort', name: 'sort', value: sort, options: sortOptions, selectizeOptions: {searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Sort by'|t('app')}}}) }}
-    </div>
+    <input type="hidden" id="booking-sort" name="sort" value="{{ sort }}">
     <span class="spinner hidden" aria-hidden="true"></span>
     <a class="btn{{ calendarSelection != 'all' or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings', {view: bookingListView, sort}) }}">{{ 'Clear'|t('app') }}</a>
     <a href="{{ cpUrl('calendar/bookings/new') }}" class="btn submit add icon booking-new-button">{{ 'New booking'|t('calendar') }}</a>
@@ -46,9 +43,6 @@
 .booking-filters > .select.selectize { width:180px; flex-shrink:0; }
 .booking-filters > .booking-view-picker.select.selectize { width:155px; }
 .booking-search { flex:1; min-width:200px; }
-.booking-sort { display:flex; align-items:center; gap:8px; }
-.booking-sort label { white-space:nowrap; font-size:12px; color:var(--light-text-color,#596673); }
-.booking-sort > .select.selectize { width:230px; }
 .booking-filters .selectize-input, .booking-filters .text, .booking-filters > .btn { min-height:34px; box-sizing:border-box; }
 #booking-results[aria-busy="true"] { opacity:.65; pointer-events:none; }
 .booking-table-scroll { overflow-x:auto; }
