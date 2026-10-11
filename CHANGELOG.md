@@ -38,6 +38,8 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+
+- Renamed the Bookings area’s Booking Fields page to Fields.
 - Arranged scheduling availability, booking rules, and booking requests in responsive columns, including Booking Defaults settings.
 - Refined the booking schedule calendar picker with native Craft checkbox and color controls, aligned rows, and full-row hover targets.
 - Set fresh-install booking defaults to 60-minute bookings and start increments, no gap, 24 hours’ notice, and a 60-day booking window, with overlaps disabled.

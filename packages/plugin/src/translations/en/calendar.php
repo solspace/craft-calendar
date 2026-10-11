@@ -933,7 +933,6 @@ return [
     'Book a Time' => 'Book a Time',
     'Booking' => 'Booking',
     'Booking Duration' => 'Booking Duration',
-    'Booking Fields' => 'Booking Fields',
     'Booking Requests' => 'Booking Requests',
     'Booking Rules' => 'Booking Rules',
     'Booking Schedule' => 'Booking Schedule',
