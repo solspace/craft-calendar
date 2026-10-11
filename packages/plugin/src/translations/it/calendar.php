@@ -1142,4 +1142,7 @@ return [
     'Current time' => 'Orario attuale',
     'New time' => 'Nuovo orario',
     'Move booking' => 'Sposta prenotazione',
+    'Booking request for {customer} confirmed.' => 'Richiesta di prenotazione per {customer} confermata.',
+    'Booking request for {customer} declined.' => 'Richiesta di prenotazione per {customer} rifiutata.',
+    'Booking request for {customer} restored to Requested.' => 'Richiesta di prenotazione per {customer} ripristinata allo stato Richiesta.',
 ];

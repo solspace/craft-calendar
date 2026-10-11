@@ -1255,4 +1255,7 @@ return [
     'Current time' => 'Current time',
     'New time' => 'New time',
     'Move booking' => 'Move booking',
+    'Booking request for {customer} confirmed.' => 'Booking request for {customer} confirmed.',
+    'Booking request for {customer} declined.' => 'Booking request for {customer} declined.',
+    'Booking request for {customer} restored to Requested.' => 'Booking request for {customer} restored to Requested.',
 ];

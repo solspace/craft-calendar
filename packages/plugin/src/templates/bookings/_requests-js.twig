@@ -3,7 +3,7 @@ const form = document.querySelector('.booking-request-filters');
 const results = document.getElementById('request-results');
 const spinner = form.querySelector('.spinner');
 const historyBar = document.querySelector('.request-history');
-let pending = null, debounce = null, generation = 0, saving = false, historyToken = null, queuedUrl = null;
+let pending = null, debounce = null, generation = 0, saving = false, historyToken = null, historyCustomer = '', historyStatus = null, queuedUrl = null;
 function currentUrl() {
     const url = new URL(window.location.href);
     url.search = new URLSearchParams(new FormData(form)).toString();
@@ -60,10 +60,20 @@ function ages() {
         age.textContent = minutes < 60 ? Craft.t('calendar', '{count} min ago', {count: minutes}) : minutes < 1440 ? Craft.t('calendar', '{count} hr ago', {count: Math.floor(minutes / 60)}) : Craft.t('calendar', '{count} days ago', {count: Math.floor(minutes / 1440)});
     });
 }
-function remembered(token) {
+function moderationMessage(status) {
+    const messages = {
+        confirmed: 'Booking request for {customer} confirmed.',
+        declined: 'Booking request for {customer} declined.',
+        requested: 'Booking request for {customer} restored to Requested.',
+    };
+    return Craft.t('calendar', messages[status], {customer: historyCustomer});
+}
+function remembered(token, customer, status) {
     historyToken = token;
+    historyCustomer = customer;
+    historyStatus = status;
     historyBar.classList.toggle('hidden', typeof token !== 'string');
-    historyBar.querySelector('[data-request-history-message]').textContent = Craft.t('calendar', 'Booking status saved.');
+    historyBar.querySelector('[data-request-history-message]').textContent = moderationMessage(status);
     historyBar.querySelector('[data-request-undo]').classList.remove('hidden');
     historyBar.querySelector('[data-request-redo]').classList.add('hidden');
 }
@@ -75,10 +85,11 @@ results.addEventListener('click', async event => {
     const button = event.target.closest('[data-request-review], [data-request-status]');
     if (!button || saving || results.getAttribute('aria-busy') === 'true') return;
     const row = button.closest('[data-request-id]');
+    const customer = row.querySelector('.request-customer').textContent.trim();
     if (button.hasAttribute('data-request-review')) {
         new Craft.CpScreenSlideout('calendar/bookings/review-request', {
             params: {bookingId: row.dataset.requestId},
-            onSubmit: ev => { remembered(ev.response.data.historyToken); reload(); },
+            onSubmit: ev => { remembered(ev.response.data.historyToken, customer, ev.response.data.bookingStatus); reload(); },
         });
         return;
     }
@@ -91,8 +102,8 @@ results.addEventListener('click', async event => {
             originalCalendarId: row.dataset.originalCalendar, originalStartDate: row.dataset.originalStart, originalEndDate: row.dataset.originalEnd,
         }});
         if (!response.data.success) throw new Error(response.data.message);
-        remembered(response.data.historyToken);
-        Craft.cp.displayNotice(Craft.t('calendar', 'Booking status saved.'));
+        remembered(response.data.historyToken, customer, response.data.bookingStatus);
+        Craft.cp.displayNotice(moderationMessage(response.data.bookingStatus));
     } catch (error) { Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.')); }
     finally { saving = false; results.removeAttribute('aria-busy'); await reload(queuedUrl || new URL(window.location.href)); queuedUrl = null; }
 });
@@ -107,7 +118,7 @@ historyBar.addEventListener('click', async event => {
         if (!response.data.success) throw new Error(response.data.message);
         historyBar.querySelector('[data-request-undo]').classList.toggle('hidden', direction === 'undo');
         historyBar.querySelector('[data-request-redo]').classList.toggle('hidden', direction === 'redo');
-        historyBar.querySelector('[data-request-history-message]').textContent = Craft.t('calendar', direction === 'undo' ? 'Request moderation undone.' : 'Booking status saved.');
+        historyBar.querySelector('[data-request-history-message]').textContent = moderationMessage(direction === 'undo' ? 'requested' : historyStatus);
     } catch (error) { Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.')); }
     finally { saving = false; historyBar.querySelectorAll('button').forEach(item => item.disabled = false); await reload(queuedUrl || new URL(window.location.href)); queuedUrl = null; }
 });

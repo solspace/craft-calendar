@@ -46,6 +46,7 @@
 
 ### Changed
 - Styled request moderation Undo/Redo messages as compact informational banners.
+- Made request moderation banners identify the customer and the resulting booking status, including Undo/Redo.
 - Refined request review slide-outs with a compact customer header, request summary cards, and clearer notes, fields, and availability sections.
 - Moved request review availability controls above notes and fields, and grouped actions in the slide-out footer alongside Cancel and Confirm Booking.
 - Hid the request review’s “Choose another time” button while its time picker is expanded.

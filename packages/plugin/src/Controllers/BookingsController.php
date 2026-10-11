@@ -211,7 +211,7 @@ class BookingsController extends BaseController
             return $this->asFailure($exception->getMessage());
         }
 
-        return $this->asSuccess(Calendar::t('Booking status saved.'), ['success' => true, 'historyToken' => $token]);
+        return $this->asSuccess(Calendar::t('Booking status saved.'), ['success' => true, 'historyToken' => $token, 'bookingStatus' => $status]);
     }
 
     /** Refresh visible warnings after a status change without replacing the list controls. */

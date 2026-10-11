@@ -1142,4 +1142,7 @@ return [
     'Current time' => 'Huidige tijd',
     'New time' => 'Nieuwe tijd',
     'Move booking' => 'Boeking verplaatsen',
+    'Booking request for {customer} confirmed.' => 'Boekingsaanvraag voor {customer} bevestigd.',
+    'Booking request for {customer} declined.' => 'Boekingsaanvraag voor {customer} afgewezen.',
+    'Booking request for {customer} restored to Requested.' => 'Boekingsaanvraag voor {customer} teruggezet naar Aangevraagd.',
 ];

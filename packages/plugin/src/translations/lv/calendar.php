@@ -1102,4 +1102,7 @@ return [
     'Current time' => 'Pašreizējais laiks',
     'New time' => 'Jaunais laiks',
     'Move booking' => 'Pārcelt rezervāciju',
+    'Booking request for {customer} confirmed.' => 'Rezervācijas pieprasījums klientam {customer} apstiprināts.',
+    'Booking request for {customer} declined.' => 'Rezervācijas pieprasījums klientam {customer} noraidīts.',
+    'Booking request for {customer} restored to Requested.' => 'Rezervācijas pieprasījums klientam {customer} atjaunots statusā Pieprasīts.',
 ];
