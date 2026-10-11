@@ -5,10 +5,10 @@
 <div class="booking-table-scroll">
     <table class="data fullwidth booking-table">
         <thead><tr>
-            {% for field, label in {customer: 'Customer', calendar: 'Calendar', date: 'Date and Time', status: 'Status'} %}
+            {% for field, label in {customer: 'Customer', calendar: 'Calendar', date: 'Booking Time', submitted: 'Submitted', updated: 'Last Updated', status: 'Status'} %}
                 {% set active = sort starts with field ~ '-' %}
                 {% set ascending = sort == field ~ '-asc' %}
-                {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field == 'date' ? '-desc' : '-asc')) %}
+                {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field in ['date', 'submitted', 'updated'] ? '-desc' : '-asc')) %}
                 <th scope="col" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
                     <a class="booking-sort-link{{ active ? ' active' }}" data-booking-sort="{{ nextSort }}" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort: nextSort}) }}">
                         {{ label|t('calendar') }}<span class="booking-sort-arrow" aria-hidden="true">{{ active ? (ascending ? '↑' : '↓') : '↕' }}</span>
@@ -24,6 +24,16 @@
                 <td class="booking-customer"><a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a><div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
                 <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
                 <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
+                {% for field, timestamp in {submitted: booking.dateCreated, updated: booking.dateUpdated} %}
+                    <td class="booking-timestamp"{{ field == 'updated' ? ' data-booking-updated' }}>
+                        {% if timestamp %}
+                            <time datetime="{{ timestamp|atom }}" title="{{ craft.app.formatter.timeZone }}">
+                                <span data-timestamp-date>{{ timestamp|date('medium') }}</span>
+                                <span class="light booking-secondary booking-timestamp-time" data-timestamp-time>{{ timestamp|time(bookingTimeFormat)|calendarTimeLabel }}</span>
+                            </time>
+                        {% else %}<span class="light">—</span>{% endif %}
+                    </td>
+                {% endfor %}
                 <td class="booking-status-cell">
                     <div class="booking-status-control" data-booking-id="{{ booking.id }}">
                         {{ forms.selectize({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: rowStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
@@ -32,7 +42,7 @@
                 </td>
             </tr>
         {% else %}
-            <tr><td colspan="4" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
+            <tr><td colspan="6" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
         {% endfor %}
         </tbody>
     </table>
@@ -67,6 +77,15 @@
                 if (!response.data.success) throw new Error(response.data.message);
                 picker.setValue(response.data.bookingStatus, true);
                 select.dataset.savedStatus = select.value;
+                const updated = control.closest('tr').querySelector('[data-booking-updated]');
+                if (updated && response.data.updated) {
+                    const time = updated.querySelector('time');
+                    if (time) {
+                        time.dateTime = response.data.updated.iso;
+                        time.querySelector('[data-timestamp-date]').textContent = response.data.updated.date;
+                        time.querySelector('[data-timestamp-time]').textContent = response.data.updated.time;
+                    }
+                }
                 Craft.cp.displayNotice(Craft.t('calendar', 'Booking status saved.'));
             } catch (error) {
                 picker.setValue(previous, true);

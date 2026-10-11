@@ -890,4 +890,13 @@ return [
     'Calendar: Z–A' => 'Kalendārs: Z–A',
     'Status: A–Z' => 'Statuss: A–Z',
     'Status: Z–A' => 'Statuss: Z–A',
+    'Booking Time' => 'Rezervācijas laiks',
+    'Submitted' => 'Iesniegts',
+    'Last Updated' => 'Pēdējoreiz atjaunināts',
+    'Booking time: newest first' => 'Rezervācijas laiks: jaunākie vispirms',
+    'Booking time: oldest first' => 'Rezervācijas laiks: vecākie vispirms',
+    'Submitted: newest first' => 'Iesniegts: jaunākie vispirms',
+    'Submitted: oldest first' => 'Iesniegts: vecākie vispirms',
+    'Last updated: newest first' => 'Pēdējoreiz atjaunināts: jaunākie vispirms',
+    'Last updated: oldest first' => 'Pēdējoreiz atjaunināts: vecākie vispirms',
 ];

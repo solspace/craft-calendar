@@ -930,4 +930,13 @@ return [
     'Calendar: Z–A' => 'Calendrier : Z–A',
     'Status: A–Z' => 'Statut : A–Z',
     'Status: Z–A' => 'Statut : Z–A',
+    'Booking Time' => 'Horaire de réservation',
+    'Submitted' => 'Soumise',
+    'Last Updated' => 'Dernière mise à jour',
+    'Booking time: newest first' => 'Horaire de réservation : les plus récents',
+    'Booking time: oldest first' => 'Horaire de réservation : les plus anciens',
+    'Submitted: newest first' => 'Soumise : les plus récentes',
+    'Submitted: oldest first' => 'Soumise : les plus anciennes',
+    'Last updated: newest first' => 'Dernière mise à jour : les plus récentes',
+    'Last updated: oldest first' => 'Dernière mise à jour : les plus anciennes',
 ];

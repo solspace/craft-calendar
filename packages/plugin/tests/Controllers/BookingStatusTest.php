@@ -2,6 +2,8 @@
 
 namespace Solspace\Tests\Unit\Calendar\Controllers;
 
+use craft\i18n\Formatter;
+use craft\i18n\Locale;
 use craft\services\Elements;
 use craft\web\Request;
 use craft\web\Response;
@@ -10,7 +12,9 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Controllers\BookingsController;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Services\BookingsService;
+use Solspace\Calendar\Services\SettingsService;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\MethodNotAllowedHttpException;
@@ -39,12 +43,23 @@ class BookingStatusTest extends TestCase
         $this->elements = $this->createMock(Elements::class);
         \Craft::$app = new class($this->request, $this->elements) {
             public string $language = 'en';
+            public string $timeZone = 'America/Toronto';
 
             public function __construct(public Request $request, private Elements $elements) {}
 
             public function getElements(): Elements
             {
                 return $this->elements;
+            }
+
+            public function getFormatter(): Formatter
+            {
+                return new Formatter(['locale' => 'en-US', 'timeZone' => 'America/Toronto', 'booleanFormat' => ['No', 'Yes'], 'nullDisplay' => '']);
+            }
+
+            public function getFormattingLocale(): Locale
+            {
+                return new Locale('en-US');
             }
 
             public function getI18n(): object
@@ -87,6 +102,24 @@ class BookingStatusTest extends TestCase
         self::assertSame(['success' => true, 'bookingStatus' => Booking::CONFIRMED], $this->controller->actionSetStatus()->data);
         self::assertSame('Customer', $this->booking->customerName);
         self::assertSame(12, $this->booking->id);
+    }
+
+    public function testSavedStatusReturnsTheUpdatedTimestampInTheControlPanelTimezone(): void
+    {
+        $this->prepare(Booking::CONFIRMED);
+        $settings = $this->createMock(SettingsService::class);
+        $settings->method('getSettingsModel')->willReturn(new SettingsModel(['timeFormat' => SettingsModel::TIME_FORMAT_12_HOUR]));
+        Calendar::getInstance()->set('settings', $settings);
+        $created = new \DateTime('2026-10-10T23:40:00Z');
+        $this->booking->dateCreated = $created;
+        $this->service->method('save')->willReturnCallback(static function (Booking $booking): bool {
+            $booking->dateUpdated = new \DateTime('2026-10-11T04:30:00Z');
+
+            return true;
+        });
+        $data = $this->controller->actionSetStatus()->data;
+        self::assertSame(['iso' => '2026-10-11T04:30:00+00:00', 'date' => 'Oct 11, 2026', 'time' => '12:30am'], $data['updated']);
+        self::assertSame($created, $this->booking->dateCreated);
     }
 
     public function testUnchangedStatusDoesNotSaveOrSendAnotherNotification(): void

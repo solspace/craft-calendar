@@ -930,4 +930,13 @@ return [
     'Calendar: Z–A' => 'Kalender: Z–A',
     'Status: A–Z' => 'Status: A–Z',
     'Status: Z–A' => 'Status: Z–A',
+    'Booking Time' => 'Buchungszeit',
+    'Submitted' => 'Eingereicht',
+    'Last Updated' => 'Zuletzt aktualisiert',
+    'Booking time: newest first' => 'Buchungszeit: neueste zuerst',
+    'Booking time: oldest first' => 'Buchungszeit: älteste zuerst',
+    'Submitted: newest first' => 'Eingereicht: neueste zuerst',
+    'Submitted: oldest first' => 'Eingereicht: älteste zuerst',
+    'Last updated: newest first' => 'Zuletzt aktualisiert: neueste zuerst',
+    'Last updated: oldest first' => 'Zuletzt aktualisiert: älteste zuerst',
 ];

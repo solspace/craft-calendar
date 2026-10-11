@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added separate Booking Time, Submitted, and Last Updated columns to the Bookings list, with sorting for each timestamp.
 - Added a sort dropdown and clickable column headings to the Bookings list, with sorting preserved through filters and pagination.
 - Added a public booking demo in Bootstrap and Tailwind, with light/dark themes, a resource chooser, and a reusable `bookingForm()` helper with framework and theme options.
 - Added automatically saved booking status dropdowns to the Bookings list.

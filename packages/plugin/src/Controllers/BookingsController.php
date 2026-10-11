@@ -37,8 +37,12 @@ class BookingsController extends BaseController
             throw new BadRequestHttpException();
         }
         $sortOptions = [
-            'date-desc' => Calendar::t('Date and time: newest first'),
-            'date-asc' => Calendar::t('Date and time: oldest first'),
+            'date-desc' => Calendar::t('Booking time: newest first'),
+            'date-asc' => Calendar::t('Booking time: oldest first'),
+            'submitted-desc' => Calendar::t('Submitted: newest first'),
+            'submitted-asc' => Calendar::t('Submitted: oldest first'),
+            'updated-desc' => Calendar::t('Last updated: newest first'),
+            'updated-asc' => Calendar::t('Last updated: oldest first'),
             'customer-asc' => Calendar::t('Customer: A–Z'),
             'customer-desc' => Calendar::t('Customer: Z–A'),
             'calendar-asc' => Calendar::t('Calendar: A–Z'),
@@ -51,7 +55,7 @@ class BookingsController extends BaseController
             $sort = 'date-desc';
         }
         [$sortField, $sortDirection] = explode('-', $sort);
-        $sortColumns = ['date' => 'calendar_bookings.startDate', 'customer' => 'calendar_bookings.customerName', 'calendar' => 'booking_calendar.name', 'status' => 'calendar_bookings.bookingStatus'];
+        $sortColumns = ['date' => 'calendar_bookings.startDate', 'submitted' => 'elements.dateCreated', 'updated' => 'elements.dateUpdated', 'customer' => 'calendar_bookings.customerName', 'calendar' => 'booking_calendar.name', 'status' => 'calendar_bookings.bookingStatus'];
         $query = Booking::find()->calendarId($calendarId ?: array_keys($calendars));
         if ('calendar' === $sortField) {
             $query->leftJoin(['booking_calendar' => CalendarRecord::TABLE], '[[booking_calendar.id]] = [[calendar_bookings.calendarId]]');
@@ -187,7 +191,17 @@ class BookingsController extends BaseController
             }
         }
 
-        return $this->asJson(['success' => true, 'bookingStatus' => $booking->bookingStatus]);
+        $data = ['success' => true, 'bookingStatus' => $booking->bookingStatus];
+        if ($booking->dateUpdated) {
+            $formatter = \Craft::$app->getFormatter();
+            $data['updated'] = [
+                'iso' => $booking->dateUpdated->format(\DATE_ATOM),
+                'date' => $formatter->asDate($booking->dateUpdated->getTimestamp(), 'medium'),
+                'time' => DateFormatHelper::compactTimeLabel($formatter->asTime($booking->dateUpdated->getTimestamp(), DateFormatHelper::get(DateFormatHelper::TYPE_TIME, length: 'short'))),
+            ];
+        }
+
+        return $this->asJson($data);
     }
 
     public function actionMove(): Response
