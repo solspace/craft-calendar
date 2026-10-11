@@ -33,6 +33,7 @@
 
 ### Changed
 - Set fresh-install booking defaults to 60-minute bookings and start increments, no gap, 24 hours’ notice, and a 60-day booking window, with overlaps disabled.
+- Renamed Overview to Events and the element listing to Event List throughout control-panel navigation, page titles, breadcrumbs, and settings.
 - Matched booking row selection and the footer action menu to native Craft element lists.
 - Replaced browser booking-deletion confirmations with a shared Craft-style modal in the list and editor.
 - Disabled calendar type changes when events or bookings exist, with an explanation covering items in Trash and guidance for empty calendars.

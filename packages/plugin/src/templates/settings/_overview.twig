@@ -1,7 +1,7 @@
 {% extends "calendar/layouts/_settings" %}
 {% import "_includes/forms" as forms %}
 
-{% set title = "Overview"|t('calendar') %}
+{% set title = "Events"|t('calendar') %}
 {% set calendarTabs = {
     day: "Day"|t('calendar'),
     week: "Week"|t('calendar'),
@@ -19,7 +19,7 @@
         {{ forms.checkboxGroupField({
             first: true,
             label: "Visible Calendar Tabs"|t('calendar'),
-            instructions: "Choose the views available on the Overview page. Select at least one."|t('calendar'),
+            instructions: "Choose the views available on the Events page. Select at least one."|t('calendar'),
             id: 'enabledCalendarViews',
             name: 'settings[enabledCalendarViews]',
             options: calendarTabs,
@@ -29,7 +29,7 @@
 
         {{ forms.selectField({
             label: "Default Calendar Tab"|t('calendar'),
-            instructions: "Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead."|t('calendar'),
+            instructions: "Choose which enabled tab opens on the Events page. Links to a hidden tab open this tab instead."|t('calendar'),
             id: 'defaultCalendarView',
             name: 'settings[defaultCalendarView]',
             value: settings.defaultCalendarView,
@@ -39,7 +39,7 @@
 
         {{ forms.lightswitchField({
             label: "Show Disabled Events"|t('calendar'),
-            instructions: "Display disabled events with faded styling in all Overview views."|t('calendar'),
+            instructions: "Display disabled events with faded styling in all event calendar views."|t('calendar'),
             id: 'showDisabledEvents',
             name: 'settings[showDisabledEvents]',
             on: settings.showDisabledEvents,
@@ -48,7 +48,7 @@
 
         {{ forms.lightswitchField({
             label: "Show Cancelled Events"|t('calendar'),
-            instructions: "Display cancelled occurrences with their cancellation styling in all Overview views."|t('calendar'),
+            instructions: "Display cancelled occurrences with their cancellation styling in all event calendar views."|t('calendar'),
             id: 'showCancelledEvents',
             name: 'settings[showCancelledEvents]',
             on: settings.showCancelledEvents,

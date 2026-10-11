@@ -67,7 +67,7 @@ class SettingsController extends BaseController
 
     public function actionOverview(): Response
     {
-        return $this->provideTemplate('overview', ['label' => 'Overview']);
+        return $this->provideTemplate('overview', ['label' => 'Events']);
     }
 
     /**

@@ -421,6 +421,7 @@ return [
     'Overlap threshold (hours)' => 'Overlappingsdrempel (uren)',
     'Override the plugin name by specifying your own here.' => 'Voer hier een eigen naam voor de plugin in.',
     'Overview' => 'Overzicht',
+    'Event List' => 'Evenementenlijst',
     'PHP Configured Timezone' => 'In PHP geconfigureerde tijdzone',
     'PHP Execution Time Limit' => 'PHP-uitvoeringstijdlimiet',
     'PHP Extension: {extension}' => 'PHP-extensie: {extension}',
@@ -828,9 +829,9 @@ return [
 
     // Overview settings
     'Visible Calendar Tabs' => 'Zichtbare kalendertabbladen',
-    'Choose the views available on the Overview page. Select at least one.' => 'Kies de beschikbare weergaven op de overzichtspagina. Selecteer er minstens één.',
-    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Kies welk ingeschakeld tabblad op de overzichtspagina opent. Links naar een verborgen tabblad openen dit tabblad.',
-    'Display disabled events with faded styling in all Overview views.' => 'Toon uitgeschakelde evenementen vervaagd in alle overzichtsweergaven.',
+    'Choose the views available on the Events page. Select at least one.' => 'Kies de beschikbare weergaven op de pagina Evenementen. Selecteer er minstens één.',
+    'Choose which enabled tab opens on the Events page. Links to a hidden tab open this tab instead.' => 'Kies welk ingeschakeld tabblad op de pagina Evenementen opent. Links naar een verborgen tabblad openen dit tabblad.',
+    'Display disabled events with faded styling in all event calendar views.' => 'Toon uitgeschakelde evenementen vervaagd in alle weergaven van de evenementenkalender.',
     'Drag and Drop' => 'Verslepen',
     'Quick Event Creation' => 'Snel evenementen aanmaken',
     'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Laat gebruikers met bewerkingsrechten evenementen verplaatsen of de duur aanpassen in de maand-, week- en dagweergave.',
@@ -842,7 +843,7 @@ return [
 
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Geannuleerde evenementen tonen',
-    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Toon geannuleerde gebeurtenissen met hun annuleringsstijl in alle overzichtsweergaven.',
+    'Display cancelled occurrences with their cancellation styling in all event calendar views.' => 'Toon geannuleerde gebeurtenissen met hun annuleringsstijl in alle weergaven van de evenementenkalender.',
 
     'This event is disabled.' => 'Dit evenement is uitgeschakeld.',
 

@@ -421,6 +421,7 @@ return [
     'Overlap threshold (hours)' => 'Seuil de chevauchement (heures)',
     'Override the plugin name by specifying your own here.' => 'Saisissez ici un nom personnalisé pour le plugin.',
     'Overview' => 'Vue d’ensemble',
+    'Event List' => 'Liste des événements',
     'PHP Configured Timezone' => 'Fuseau horaire configuré dans PHP',
     'PHP Execution Time Limit' => 'Limite de temps d’exécution PHP',
     'PHP Extension: {extension}' => 'Extension PHP : {extension}',
@@ -828,9 +829,9 @@ return [
 
     // Overview settings
     'Visible Calendar Tabs' => 'Onglets de calendrier visibles',
-    'Choose the views available on the Overview page. Select at least one.' => 'Choisissez les vues disponibles sur la page Vue d’ensemble. Sélectionnez-en au moins une.',
-    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Choisissez l’onglet activé qui s’ouvre sur la page Vue d’ensemble. Les liens vers un onglet masqué ouvrent cet onglet à la place.',
-    'Display disabled events with faded styling in all Overview views.' => 'Affichez les événements désactivés avec un style atténué dans toutes les vues de la page Vue d’ensemble.',
+    'Choose the views available on the Events page. Select at least one.' => 'Choisissez les vues disponibles sur la page Événements. Sélectionnez-en au moins une.',
+    'Choose which enabled tab opens on the Events page. Links to a hidden tab open this tab instead.' => 'Choisissez l’onglet activé qui s’ouvre sur la page Événements. Les liens vers un onglet masqué ouvrent cet onglet à la place.',
+    'Display disabled events with faded styling in all event calendar views.' => 'Affichez les événements désactivés avec un style atténué dans toutes les vues du calendrier des événements.',
     'Drag and Drop' => 'Glisser-déposer',
     'Quick Event Creation' => 'Création rapide d’événements',
     'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Autorisez les utilisateurs ayant le droit de modifier les événements à les déplacer ou à modifier leur durée dans les vues Mois, Semaine et Jour.',
@@ -842,7 +843,7 @@ return [
 
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Afficher les événements annulés',
-    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Affichez les occurrences annulées avec leur style d’annulation dans toutes les vues de la page Vue d’ensemble.',
+    'Display cancelled occurrences with their cancellation styling in all event calendar views.' => 'Affichez les occurrences annulées avec leur style d’annulation dans toutes les vues du calendrier des événements.',
 
     'This event is disabled.' => 'Cet événement est désactivé.',
 

@@ -426,6 +426,7 @@ return [
     'Overlap threshold (hours)' => 'Overlap threshold (hours)',
     'Override the plugin name by specifying your own here.' => 'Override the plugin name by specifying your own here.',
     'Overview' => 'Overview',
+    'Event List' => 'Event List',
     'PHP Configured Timezone' => 'PHP Configured Timezone',
     'PHP Execution Time Limit' => 'PHP Execution Time Limit',
     'PHP Extension: {extension}' => 'PHP Extension: {extension}',
@@ -833,9 +834,9 @@ return [
 
     // Overview settings
     'Visible Calendar Tabs' => 'Visible Calendar Tabs',
-    'Choose the views available on the Overview page. Select at least one.' => 'Choose the views available on the Overview page. Select at least one.',
-    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.',
-    'Display disabled events with faded styling in all Overview views.' => 'Display disabled events with faded styling in all Overview views.',
+    'Choose the views available on the Events page. Select at least one.' => 'Choose the views available on the Events page. Select at least one.',
+    'Choose which enabled tab opens on the Events page. Links to a hidden tab open this tab instead.' => 'Choose which enabled tab opens on the Events page. Links to a hidden tab open this tab instead.',
+    'Display disabled events with faded styling in all event calendar views.' => 'Display disabled events with faded styling in all event calendar views.',
     'Drag and Drop' => 'Drag and Drop',
     'Quick Event Creation' => 'Quick Event Creation',
     'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.',
@@ -847,7 +848,7 @@ return [
 
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Show Cancelled Events',
-    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Display cancelled occurrences with their cancellation styling in all Overview views.',
+    'Display cancelled occurrences with their cancellation styling in all event calendar views.' => 'Display cancelled occurrences with their cancellation styling in all event calendar views.',
 
     'This event is disabled.' => 'This event is disabled.',
 

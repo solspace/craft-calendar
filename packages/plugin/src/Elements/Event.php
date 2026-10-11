@@ -1233,7 +1233,7 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
                 'url' => UrlHelper::cpUrl('calendar'),
             ],
             [
-                'label' => Calendar::t('Events'),
+                'label' => Calendar::t('Event List'),
                 'url' => UrlHelper::cpUrl('calendar/events'),
             ],
             [

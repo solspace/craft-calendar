@@ -421,6 +421,7 @@ return [
     'Overlap threshold (hours)' => 'Soglia di sovrapposizione (ore)',
     'Override the plugin name by specifying your own here.' => 'Specifica qui un nome personalizzato per il plugin.',
     'Overview' => 'Panoramica',
+    'Event List' => 'Elenco eventi',
     'PHP Configured Timezone' => 'Fuso orario configurato in PHP',
     'PHP Execution Time Limit' => 'Limite di tempo di esecuzione PHP',
     'PHP Extension: {extension}' => 'Estensione PHP: {extension}',
@@ -828,9 +829,9 @@ return [
 
     // Overview settings
     'Visible Calendar Tabs' => 'Schede del calendario visibili',
-    'Choose the views available on the Overview page. Select at least one.' => 'Scegli le viste disponibili nella pagina Panoramica. Selezionane almeno una.',
-    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Scegli quale scheda abilitata si apre nella pagina Panoramica. I collegamenti a una scheda nascosta aprono invece questa scheda.',
-    'Display disabled events with faded styling in all Overview views.' => 'Mostra gli eventi disabilitati con uno stile attenuato in tutte le viste della Panoramica.',
+    'Choose the views available on the Events page. Select at least one.' => 'Scegli le viste disponibili nella pagina Eventi. Selezionane almeno una.',
+    'Choose which enabled tab opens on the Events page. Links to a hidden tab open this tab instead.' => 'Scegli quale scheda abilitata si apre nella pagina Eventi. I collegamenti a una scheda nascosta aprono invece questa scheda.',
+    'Display disabled events with faded styling in all event calendar views.' => 'Mostra gli eventi disabilitati con uno stile attenuato in tutte le viste del calendario eventi.',
     'Drag and Drop' => 'Trascinamento',
     'Quick Event Creation' => 'Creazione rapida di eventi',
     'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Consenti agli utenti autorizzati a modificare gli eventi di spostarli o cambiarne la durata nelle viste Mese, Settimana e Giorno.',
@@ -842,7 +843,7 @@ return [
 
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Mostra eventi annullati',
-    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Mostra le occorrenze annullate con il relativo stile di annullamento in tutte le viste della Panoramica.',
+    'Display cancelled occurrences with their cancellation styling in all event calendar views.' => 'Mostra le occorrenze annullate con il relativo stile di annullamento in tutte le viste del calendario eventi.',
 
     'This event is disabled.' => 'Questo evento è disabilitato.',
 

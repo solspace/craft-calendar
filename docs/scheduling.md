@@ -17,7 +17,7 @@ New calendars receive a copy of these values and use Craft’s system timezone i
 
 ## Control panel
 
-Select **Bookings** under **Settings → General Settings → Default Page** to open the booking list when clicking Calendar in the control-panel navigation. Users without a manageable scheduling calendar fall back to Overview.
+Select **Bookings** under **Settings → General Settings → Default Page** to open the booking list when clicking Calendar in the control-panel navigation. Users without a manageable scheduling calendar fall back to Events.
 
 **Bookings** appears when the current user can manage at least one Scheduling calendar. Booking permissions are independent of event permissions and can be granted globally or per calendar. The list supports customer search, calendar/status filters, and pagination. Use **Sort by** or click a column heading to sort by customer, calendar, booking time, submitted date, last updated date, or status. **Booking Time** is the requested or confirmed appointment time in the calendar’s timezone. **Submitted** is when the booking was created; **Last Updated** is when it was most recently saved, including status changes. These two audit timestamps use the control-panel timezone. Click the same heading again to reverse the order. Sorting applies to all matching bookings and stays selected through filtering and pagination. The Schedule view provides Day/Week views and dragging to reschedule, without FullCalendar Scheduler. Clicking a booking opens its editor. Decline or cancel from the status selector.
 
@@ -31,7 +31,7 @@ Bookings are separate Craft elements and have one shared custom field layout, co
 
 The Bookings, Schedule, and Booking Fields pages use Craft’s standard left sidebar. In the schedule, click an available start time to open a new booking with that slot selected. Shaded times cannot be selected. Opening hours, exceptions, booking duration, buffers, and confirmed reservations determine available slots; the overlap setting is respected. Staff retain access to historical dates and are not limited by the guest notice or advance window. Availability is checked again when opening the editor and saving.
 
-Schedule hover previews span the full booking duration. Undo and Redo beside New Booking use the same controls and shortcuts as Calendar Overview. They track up to 50 saved moves in the current browser tab, per user and calendar, with server snapshots retained for two hours. Undo and redo preserve booking details and status attribution, recheck permissions and current availability, and refuse to overwrite a later time or status change. New moves clear the redo stack.
+Schedule hover previews span the full booking duration. Undo and Redo beside New Booking use the same controls and shortcuts as the Events calendar view. They track up to 50 saved moves in the current browser tab, per user and calendar, with server snapshots retained for two hours. Undo and redo preserve booking details and status attribution, recheck permissions and current availability, and refuse to overwrite a later time or status change. New moves clear the redo stack.
 
 The booking editor offers a date picker and available time slots instead of free-form start/end inputs. New bookings default to the next available slot within the booking window. Editing preserves the booking’s existing duration and excludes its own reservation when calculating availability. Staff can select historical dates; guest notice and advance limits apply to the public form. Availability is checked again when saving.
 

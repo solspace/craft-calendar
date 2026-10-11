@@ -421,6 +421,7 @@ return [
     'Overlap threshold (hours)' => 'Überlappungsschwelle (Stunden)',
     'Override the plugin name by specifying your own here.' => 'Geben Sie hier einen eigenen Namen für das Plugin ein.',
     'Overview' => 'Übersicht',
+    'Event List' => 'Ereignisliste',
     'PHP Configured Timezone' => 'In PHP konfigurierte Zeitzone',
     'PHP Execution Time Limit' => 'PHP-Ausführungszeitlimit',
     'PHP Extension: {extension}' => 'PHP-Erweiterung: {extension}',
@@ -828,9 +829,9 @@ return [
 
     // Overview settings
     'Visible Calendar Tabs' => 'Sichtbare Kalender-Tabs',
-    'Choose the views available on the Overview page. Select at least one.' => 'Wählen Sie die verfügbaren Ansichten auf der Übersichtsseite. Wählen Sie mindestens eine.',
-    'Choose which enabled tab opens on the Overview page. Links to a hidden tab open this tab instead.' => 'Wählen Sie den aktivierten Tab, der auf der Übersichtsseite geöffnet wird. Links zu ausgeblendeten Tabs öffnen stattdessen diesen Tab.',
-    'Display disabled events with faded styling in all Overview views.' => 'Zeigen Sie deaktivierte Ereignisse in allen Übersichtsansichten abgeschwächt an.',
+    'Choose the views available on the Events page. Select at least one.' => 'Wählen Sie die verfügbaren Ansichten auf der Ereignisseite. Wählen Sie mindestens eine.',
+    'Choose which enabled tab opens on the Events page. Links to a hidden tab open this tab instead.' => 'Wählen Sie den aktivierten Tab, der auf der Ereignisseite geöffnet wird. Links zu ausgeblendeten Tabs öffnen stattdessen diesen Tab.',
+    'Display disabled events with faded styling in all event calendar views.' => 'Zeigen Sie deaktivierte Ereignisse in allen Ereigniskalenderansichten abgeschwächt an.',
     'Drag and Drop' => 'Drag & Drop',
     'Quick Event Creation' => 'Schnelle Ereigniserstellung',
     'Allow users with permission to edit events to move or resize them in Month, Week, and Day views.' => 'Erlauben Sie Benutzern mit Bearbeitungsberechtigung, Ereignisse in der Monats-, Wochen- und Tagesansicht zu verschieben oder ihre Dauer zu ändern.',
@@ -842,7 +843,7 @@ return [
 
     // Cancelled occurrence visibility
     'Show Cancelled Events' => 'Abgesagte Ereignisse anzeigen',
-    'Display cancelled occurrences with their cancellation styling in all Overview views.' => 'Zeigen Sie abgesagte Vorkommen mit ihrer Absagemarkierung in allen Übersichtsansichten an.',
+    'Display cancelled occurrences with their cancellation styling in all event calendar views.' => 'Zeigen Sie abgesagte Vorkommen mit ihrer Absagemarkierung in allen Ereigniskalenderansichten an.',
 
     'This event is disabled.' => 'Dieser Termin ist deaktiviert.',
 
