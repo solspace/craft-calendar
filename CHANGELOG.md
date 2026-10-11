@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.32 - 2026-10-11
+
+### Fixed
+- Fixed an issue where **Save as a new event** did not preserve changes made while editing an event.
+
 ## 5.0.31 - 2026-08-31
 
 ### Fixed
