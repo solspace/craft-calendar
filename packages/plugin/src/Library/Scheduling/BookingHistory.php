@@ -54,6 +54,7 @@ class BookingHistory
                 throw new \RuntimeException(Calendar::t('This booking has changed since your last action. Reload the schedule to continue.'));
             }
             // Preserve current contact details, notes, custom fields, and status attribution.
+            $booking->calendarId = $entry[$target]['calendarId'];
             $booking->startDate = new \DateTimeImmutable($entry[$target]['startDate'], new \DateTimeZone('UTC'));
             $booking->endDate = new \DateTimeImmutable($entry[$target]['endDate'], new \DateTimeZone('UTC'));
             if ($entry['moderation'] ?? false) {
@@ -67,16 +68,19 @@ class BookingHistory
     }
 
     /** Serialize moderation with native saves, rejecting stale decisions and times. */
-    public function moderate(int $id, string $status, array $expected, ?\DateTimeImmutable $start = null): string
+    public function moderate(int $id, string $status, array $expected, ?\DateTimeImmutable $start = null, ?int $calendarId = null): string
     {
         if (!\in_array($status, [Booking::CONFIRMED, Booking::DECLINED], true)) {
             throw new \InvalidArgumentException();
         }
 
-        return $this->locked($id, function (Booking $booking) use ($id, $status, $expected, $start): string {
+        return $this->locked($id, function (Booking $booking) use ($id, $status, $expected, $start, $calendarId): string {
             $before = $this->snapshot($booking);
             if (Booking::REQUESTED !== $booking->bookingStatus || array_diff_assoc($expected, $before)) {
                 throw new \RuntimeException(Calendar::t('This request has changed. Reload the requests queue before reviewing it again.'));
+            }
+            if (Booking::CONFIRMED === $status && $calendarId !== null) {
+                $booking->calendarId = $calendarId;
             }
             if ($start && Booking::CONFIRMED === $status) {
                 $duration = $booking->endDate->getTimestamp() - $booking->startDate->getTimestamp();
