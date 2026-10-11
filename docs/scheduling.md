@@ -1,6 +1,6 @@
 # Scheduling calendars
 
-Choose **Events** or **Scheduling** at the top of New Calendar. Existing calendars remain Events. A calendar represents one bookable resource, such as a room or consultant. A calendar's type cannot change while it has events or bookings, including deleted records.
+Choose **Events** or **Scheduling** at the top of New Calendar. Existing calendars remain Events. A calendar represents one bookable resource, such as a room or consultant. Empty calendars can change type; review templates and integrations that use the calendar before switching. The type selector is locked while any events or bookings exist, including items in Trash and bookings in any status. Saves and project-config changes enforce the same rule. Create a new calendar to use a different type without affecting existing records; changing type does not convert events into bookings or vice versa.
 
 Scheduling calendars have weekly opening periods, date exceptions (closed, replacement hours, or blocked times), duration, start increments, a gap after bookings, notice, and an advance booking window. A closed date wins over replacement hours. Multiple periods support lunch breaks. Empty weekly hours keep all weekdays closed; replacement hours can still open a particular date.
 

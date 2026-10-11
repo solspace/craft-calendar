@@ -38,18 +38,7 @@
     {{ redirectInput('calendar/calendars') }}
     {{ csrfInput() }}
 
-    <fieldset class="calendar-type-picker">
-        <legend>{{ 'Calendar Type'|t('calendar') }}</legend>
-        <div class="calendar-type-options">
-            {% for value, label in calendar.typeOptions() %}
-                <label class="calendar-type-card">
-                    <input type="radio" name="type" value="{{ value }}" {{ calendar.type == value ? 'checked' }}>
-                    <span><strong>{{ label }}</strong><small>{{ (value == 'events' ? 'Publish events, recurring dates, and public calendars.' : 'Set availability and accept bookings for a room, person, or other resource.')|t('calendar') }}</small></span>
-                </label>
-            {% endfor %}
-        </div>
-        {{ forms.errorList(calendar.getErrors('type')) }}
-    </fieldset>
+    {% include 'calendar/calendars/_type-picker' %}
 
     {{ forms.textField({
         first: true,
@@ -362,6 +351,9 @@
     .calendar-type-card:has(input:checked) { border-color: var(--blue-600, #2563eb); background: var(--blue-050, #eff6ff); }
     .calendar-type-card input { margin-top: 3px; accent-color: var(--blue-600, #2563eb); }
     .calendar-type-card small { display: block; margin-top: 5px; color: var(--text-color, #536171); line-height: 1.5; }
+    .calendar-type-picker.is-locked .calendar-type-card { cursor: default; }
+    .calendar-type-picker.is-locked .calendar-type-card:not(:has(input:checked)) { opacity: .55; }
+    .calendar-type-help { margin-top: 10px; color: var(--text-color, #536171); font-size: 13px; line-height: 1.5; }
     [data-calendar-type][hidden] { display: none; }
     @media (max-width: 600px) { .calendar-type-options { grid-template-columns: 1fr; } }
 {% endcss %}

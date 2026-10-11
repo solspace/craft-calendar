@@ -241,6 +241,13 @@ class CalendarsService extends Component
         return null;
     }
 
+    /** Includes all statuses and trashed records so they remain restorable. */
+    public function hasCalendarContent(int $calendarId): bool
+    {
+        return (new Query())->from(Event::TABLE)->where(['calendarId' => $calendarId])->exists()
+            || (new Query())->from(Booking::TABLE)->where(['calendarId' => $calendarId])->exists();
+    }
+
     /**
      * @throws \Exception
      * @throws \Throwable
@@ -250,10 +257,7 @@ class CalendarsService extends Component
         $isNew = !$calendar->id;
         if (!$isNew) {
             $oldType = (new Query())->select('type')->from(CalendarRecord::TABLE)->where(['id' => $calendar->id])->scalar();
-            if ($oldType !== $calendar->type && (
-                (new Query())->from(Event::TABLE)->where(['calendarId' => $calendar->id])->exists()
-                || (new Query())->from(Booking::TABLE)->where(['calendarId' => $calendar->id])->exists()
-            )) {
+            if ($oldType !== $calendar->type && $this->hasCalendarContent($calendar->id)) {
                 $calendar->addError('type', Calendar::t('The calendar type cannot be changed while events or bookings exist.'));
 
                 return false;

@@ -28,6 +28,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Disabled calendar type changes when events or bookings exist, with an explanation covering items in Trash and guidance for empty calendars.
 - Added a compact relative timestamp beside the booking status selector, refreshing while the editor is open.
 - Reduced availability calculation overhead and batched the search for the next available booking time.
 - Made booking list filters, customer search, and schedule controls update results automatically.

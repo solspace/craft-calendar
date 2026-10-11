@@ -14,6 +14,35 @@ use Twig\TwigFunction;
 /** @coversNothing */
 class SchedulingTemplateTest extends TestCase
 {
+    public function testCalendarTypePickerLocksBothTypesAndKeepsTheSavedTypeInTheForm(): void
+    {
+        $twig = new Environment(new ArrayLoader([
+            'picker' => file_get_contents(__DIR__.'/../../../src/templates/calendars/_type-picker.twig'),
+            '_includes/forms' => '{% macro errorList(errors) %}{% endmacro %}',
+        ]), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+
+        foreach ([CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING] as $type) {
+            foreach ([[null, false], [1, false], [1, true]] as [$id, $locked]) {
+                $calendar = new CalendarModel(['id' => $id, 'type' => $type]);
+                $output = $twig->render('picker', ['calendar' => $calendar, 'calendarTypeLocked' => $locked]);
+                $dom = new \DOMDocument();
+                @$dom->loadHTML($output);
+                $xpath = new \DOMXPath($dom);
+                self::assertSame($locked ? 2 : 0, $xpath->query('//input[@type="radio"][@disabled]')->length);
+                self::assertSame($type, $xpath->query('//input[@type="radio"][@checked]')->item(0)->getAttribute('value'));
+                $hidden = $xpath->query('//input[@type="hidden"][@name="type"]');
+                self::assertSame($locked ? 1 : 0, $hidden->length);
+                if ($locked) {
+                    self::assertSame($type, $hidden->item(0)->getAttribute('value'));
+                    self::assertStringContainsString('including items in Trash', $output);
+                } elseif ($id) {
+                    self::assertStringContainsString('while this calendar is empty', $output);
+                }
+            }
+        }
+    }
+
     public function testDayAndWeekSchedulesPreserveTheControlPanelViewObject(): void
     {
         $root = __DIR__.'/../../../src/templates/';

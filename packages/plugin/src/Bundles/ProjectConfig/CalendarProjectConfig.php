@@ -42,7 +42,7 @@ class CalendarProjectConfig implements BundleInterface
         }
         if ($id) {
             $oldType = (new Query())->select('type')->from(CalendarRecord::TABLE)->where(['id' => $id])->scalar();
-            if ($newType !== $oldType && ((new Query())->from(Event::TABLE)->where(['calendarId' => $id])->exists() || (new Query())->from(Booking::TABLE)->where(['calendarId' => $id])->exists())) {
+            if ($newType !== $oldType && Calendar::getInstance()->calendars->hasCalendarContent((int) $id)) {
                 throw new InvalidConfigException('The calendar type cannot be changed while events or bookings exist.');
             }
         }

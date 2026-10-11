@@ -470,6 +470,12 @@ class CalendarsController extends BaseController
      */
     private function renderEditTemplate(CalendarModel $calendar, string $title): Response
     {
+        $calendarTypeLocked = $calendar->id && $this->getCalendarService()->hasCalendarContent($calendar->id);
+        if ($calendarTypeLocked) {
+            // A rejected type change must still display the persisted type and its settings.
+            $calendar->type = (string) (new Query())->select('type')->from(CalendarRecord::TABLE)->where(['id' => $calendar->id])->scalar();
+        }
+
         $fieldLayout = $calendar->getFieldLayout();
 
         if (!$fieldLayout) {
@@ -563,6 +569,7 @@ class CalendarsController extends BaseController
                 'crumbs' => $crumbs,
                 'title' => $title,
                 'calendar' => $calendar,
+                'calendarTypeLocked' => $calendarTypeLocked,
                 'scheduling' => $scheduling,
                 'schedulingHours' => $hours,
                 'schedulingExceptions' => $exceptions,

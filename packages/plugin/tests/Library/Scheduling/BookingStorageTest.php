@@ -29,7 +29,7 @@ class BookingStorageTest extends TestCase
     private mixed $previousPlugin;
     private mixed $previousDb;
     private object $queue;
-    private array $tables = ['calendar_bookings', 'calendar_calendars', 'elements', 'calendar_booking_rate_limits'];
+    private array $tables = ['calendar_bookings', 'calendar_events', 'calendar_calendars', 'elements', 'calendar_booking_rate_limits'];
 
     protected function setUp(): void
     {
@@ -71,6 +71,7 @@ class BookingStorageTest extends TestCase
             $this->db->createCommand('DROP TABLE IF EXISTS '.$table)->execute();
         }
         $this->db->createCommand()->createTable('elements', ['id' => 'integer PRIMARY KEY', 'dateDeleted' => 'datetime'])->execute();
+        $this->db->createCommand()->createTable('calendar_events', ['id' => 'integer PRIMARY KEY', 'calendarId' => 'integer'])->execute();
         $this->db->createCommand()->createTable('calendar_calendars', ['id' => 'integer PRIMARY KEY', 'type' => 'string', 'scheduling' => 'text'])->execute();
         $this->db->createCommand()->createTable('calendar_bookings', [
             'id' => 'integer PRIMARY KEY', 'calendarId' => 'integer', 'startDate' => 'datetime', 'endDate' => 'datetime',
@@ -108,6 +109,28 @@ class BookingStorageTest extends TestCase
         \Craft::$app = $this->previousApp;
         Calendar::setInstance($this->previousPlugin);
         (new \ReflectionProperty(Db::class, '_db'))->setValue(null, $this->previousDb);
+    }
+
+    public function testCalendarTypeChangesRemainBlockedForTrashedContentAndEveryBookingStatus(): void
+    {
+        $service = new CalendarsService();
+        self::assertFalse($service->hasCalendarContent(2));
+        $this->db->createCommand()->insert('elements', ['id' => 99, 'dateDeleted' => '2026-10-11 00:00:00'])->execute();
+        $this->db->createCommand()->insert('calendar_events', ['id' => 99, 'calendarId' => 2])->execute();
+        self::assertTrue($service->hasCalendarContent(2));
+        self::assertFalse($service->hasCalendarContent(3));
+        $this->db->createCommand()->delete('calendar_events', ['id' => 99])->execute();
+        self::assertFalse($service->hasCalendarContent(2));
+
+        $this->db->createCommand()->update('elements', ['dateDeleted' => '2026-10-11 00:00:00'], ['id' => 1])->execute();
+        foreach ([Booking::REQUESTED, Booking::CONFIRMED, Booking::DECLINED, Booking::CANCELLED] as $status) {
+            $this->db->createCommand()->update('calendar_bookings', ['bookingStatus' => $status], ['calendarId' => 1])->execute();
+            self::assertTrue($service->hasCalendarContent(1));
+            $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_EVENTS]);
+            self::assertFalse($service->saveCalendar($calendar, false));
+            self::assertTrue($calendar->hasErrors('type'));
+            self::assertSame('scheduling', $this->db->createCommand('SELECT type FROM calendar_calendars WHERE id=1')->queryScalar());
+        }
     }
 
     public function testRestoreRejectsAnOccupiedSlotAndRollsBackItsElementRestoration(): void
