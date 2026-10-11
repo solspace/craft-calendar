@@ -75,6 +75,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed booking schedules starting on Monday instead of respecting Calendar’s first day of week setting and Craft user preferences.
 - Fixed false unsaved-change warnings when leaving an unchanged booking editor or after deleting a booking.
 - Fixed restored bookings bypassing conflict checks, booking notifications escaping rolled-back changes, and concurrent guest requests bypassing the booking rate limit.
 - Fixed Craft's paragraph styles overriding the booking status details spacing and restored native styling on the schedule view dropdown.

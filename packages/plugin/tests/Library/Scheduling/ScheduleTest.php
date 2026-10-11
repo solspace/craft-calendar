@@ -53,6 +53,76 @@ class ScheduleTest extends TestCase
         Calendar::setInstance($this->previousPlugin);
     }
 
+    public function testWeekStartsFollowSettingsAndPreserveLocalDatesAcrossDstAndYearBoundaries(): void
+    {
+        foreach ([
+            ['2026-10-11', 0, '2026-10-11', '2026-10-04', '2026-10-18'],
+            ['2026-10-14', 0, '2026-10-11', '2026-10-04', '2026-10-18'],
+            ['2026-10-11', 1, '2026-10-05', '2026-09-28', '2026-10-12'],
+            ['2026-10-11', 6, '2026-10-10', '2026-10-03', '2026-10-17'],
+            ['2027-01-01', 0, '2026-12-27', '2026-12-20', '2027-01-03'],
+            ['2026-03-08', 0, '2026-03-08', '2026-03-01', '2026-03-15'],
+            ['2026-11-01', 0, '2026-11-01', '2026-10-25', '2026-11-08'],
+        ] as [$date, $firstDay, $expected, $previous, $next]) {
+            $day = new \DateTimeImmutable($date, new \DateTimeZone('America/Winnipeg'));
+            $start = Schedule::weekStart($day, $firstDay);
+            self::assertSame($expected.' 00:00', $start->format('Y-m-d H:i'));
+            self::assertSame($previous, $start->modify('-7 days')->format('Y-m-d'));
+            self::assertSame($next, $start->modify('+7 days')->format('Y-m-d'));
+            self::assertSame('America/Winnipeg', $start->getTimezone()->getName());
+            self::assertSame($date, $day->format('Y-m-d'));
+        }
+    }
+
+    public function testWeekStartsUseExplicitSettingsThenUserPreferenceThenCraftDefault(): void
+    {
+        $day = new \DateTimeImmutable('2026-10-11', new \DateTimeZone('America/Winnipeg'));
+        foreach ([[0, 1, 6, '2026-10-11'], [1, 0, 6, '2026-10-05'], [-1, 0, 1, '2026-10-11'], [-1, 1, 0, '2026-10-05'], [-1, null, 6, '2026-10-10']] as [$configured, $preference, $default, $expected]) {
+            $service = $this->getMockBuilder(SettingsService::class)->onlyMethods(['getSettingsModel'])->getMock();
+            $settings = new SettingsModel();
+            $settings->firstDayOfWeek = $configured;
+            $service->method('getSettingsModel')->willReturn($settings);
+            \Craft::$app = new class($preference, $default) {
+                public mixed $user;
+                public object $config;
+                public array $loadedModules = [];
+
+                public function __construct(private ?int $preference, int $default)
+                {
+                    $this->user = null === $preference ? null : (object) ['id' => 7];
+                    $this->config = new class($default) {
+                        public function __construct(private int $default) {}
+
+                        public function getGeneral(): object
+                        {
+                            return (object) ['defaultWeekStartDay' => $this->default];
+                        }
+                    };
+                }
+
+                public function getUsers(): object
+                {
+                    return new class($this->preference) {
+                        public function __construct(private int $preference) {}
+
+                        public function getUserById(int $id): object
+                        {
+                            return new class($this->preference) {
+                                public function __construct(private int $preference) {}
+
+                                public function getPreference(string $key): int
+                                {
+                                    return $this->preference;
+                                }
+                            };
+                        }
+                    };
+                }
+            };
+            self::assertSame($expected, Schedule::weekStart($day, $service->getFirstDayOfWeek())->format('Y-m-d'));
+        }
+    }
+
     public function testCalendarSelectionIsCanonicalAndRestrictedToManageableResources(): void
     {
         $calendars = [7 => 'A', 2 => 'B', 5 => 'C'];

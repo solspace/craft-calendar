@@ -536,7 +536,7 @@ class BookingsController extends BaseController
         $scheduleLayout = 'calendars' === $request->getQueryParam('layout') ? 'calendars' : 'combined';
         $start = new \DateTimeImmutable($date, $zone);
         if ('week' === $scheduleView) {
-            $start = $start->modify('-'.((int) $start->format('N') - 1).' days');
+            $start = Schedule::weekStart($start, Calendar::getInstance()->settings->getFirstDayOfWeek());
         }
         $end = $start->modify('day' === $scheduleView ? '+1 day' : '+7 days');
         $bookings = Booking::find()->calendarId($calendarIds)->bookingStatus([Booking::REQUESTED, Booking::CONFIRMED])

@@ -24,6 +24,14 @@ class Schedule
         return array_values(array_intersect(array_keys($calendars), $ids));
     }
 
+    /** Align a displayed week with Calendar's effective first day (Sunday = 0). */
+    public static function weekStart(\DateTimeImmutable $day, int $firstDay): \DateTimeImmutable
+    {
+        $offset = ((int) $day->format('w') - $firstDay + 7) % 7;
+
+        return $day->modify('-'.$offset.' days');
+    }
+
     /** Project one resource onto a day in the shared display timezone. */
     public static function column(CalendarModel $calendar, \DateTimeImmutable $day, array $bookings, callable $availableSlots): array
     {
