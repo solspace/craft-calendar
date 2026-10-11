@@ -395,6 +395,28 @@ class BookingStorageTest extends TestCase
         self::assertSame(20, (int) $this->db->createCommand('SELECT attempts FROM calendar_booking_rate_limits')->queryScalar());
     }
 
+    public function testRequestWarningsFollowCommittedReservationsAndIgnoreTrashAndOtherCalendars(): void
+    {
+        $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => ['timezone' => 'UTC']]);
+        $request = $this->booking(1);
+        self::assertSame([], $this->service->unavailableRequestIds([$request], [1 => $calendar]));
+        $this->db->createCommand()->update('calendar_bookings', ['bookingStatus' => Booking::CONFIRMED, 'buffer' => 15], ['id' => 2])->execute();
+        self::assertSame([1 => true], $this->service->unavailableRequestIds([$request], [1 => $calendar]));
+        $request->startDate = new \DateTimeImmutable('2026-10-12T09:30:00Z');
+        $request->endDate = new \DateTimeImmutable('2026-10-12T10:00:00Z');
+        self::assertSame([1 => true], $this->service->unavailableRequestIds([$request], [1 => $calendar]));
+        $request->startDate = new \DateTimeImmutable('2026-10-12T09:45:00Z');
+        $request->endDate = new \DateTimeImmutable('2026-10-12T10:15:00Z');
+        self::assertSame([], $this->service->unavailableRequestIds([$request], [1 => $calendar]));
+        $request = $this->booking(1);
+        $this->db->createCommand()->update('elements', ['dateDeleted' => '2026-10-11 00:00:00'], ['id' => 2])->execute();
+        self::assertSame([], $this->service->unavailableRequestIds([$request], [1 => $calendar]));
+        $this->db->createCommand()->update('elements', ['dateDeleted' => null], ['id' => 2])->execute();
+        $this->db->createCommand()->insert('calendar_calendars', ['id' => 2, 'type' => 'scheduling', 'scheduling' => json_encode($calendar->getSchedulingSettings()->toArray())])->execute();
+        $this->db->createCommand()->update('calendar_bookings', ['calendarId' => 2], ['id' => 2])->execute();
+        self::assertSame([], $this->service->unavailableRequestIds([$request], [1 => $calendar]));
+    }
+
     private function connect(): void
     {
         $plugin = Calendar::getInstance();

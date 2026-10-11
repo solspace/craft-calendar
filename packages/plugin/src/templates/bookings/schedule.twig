@@ -49,7 +49,7 @@
 <a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId: resource.id, start: slot.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ slot.length / 60 * 48 }}px;height:{{ min(resource.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ resource.name }} · {{ day.date|date('Y-m-d', displayTimezone) }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}" title="{{ resource.name }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}"><span>{{ slotLabel }}</span></a>
 {% endfor %}
 {% endfor %}
-{% for item in column.bookings %}<a draggable="true" data-booking-id="{{ item.booking.id }}" data-calendar-id="{{ resource.id }}" data-increment="{{ resource.schedulingSettings.increment }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ resource.color }};left:calc({{ item.lane / column.lanes * 100 }}% + 3px);width:calc({{ 100 / column.lanes }}% - 6px)" title="{{ resource.name }} · {{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong>{{ item.booking.customerName }}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}
+{% for item in column.bookings %}<a draggable="true" data-booking-id="{{ item.booking.id }}" data-calendar-id="{{ resource.id }}" data-increment="{{ resource.schedulingSettings.increment }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ resource.color }};left:calc({{ item.lane / column.lanes * 100 }}% + 3px);width:calc({{ 100 / column.lanes }}% - 6px)" title="{{ resource.name }} · {{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong><span class="booking-customer-name">{{ item.booking.customerName }}</span>{% include 'calendar/bookings/_request-warning' with {booking: item.booking} %}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}
 </div></div>{% endfor %}
 </div>
 {% endif %}
@@ -115,6 +115,7 @@ button.booking-slot-target { appearance:none; border:0; padding:0; font:inherit;
 .booking-choice > span:last-child { min-width:0; }
 .booking-choice strong, .booking-choice .light { display:block; overflow-wrap:anywhere; }
 .booking-choice .light { font-size:12px; margin-top:3px; }
+{% include 'calendar/bookings/_request-warning-css' %}
 {% endcss %}
 {% js %}
 {% include 'calendar/bookings/_schedule-js' %}

@@ -21,7 +21,7 @@
     {% endfor %}
     {% for item in combined.bookings %}
         <a draggable="true" data-booking-id="{{ item.booking.id }}" data-calendar-id="{{ item.calendar.id }}" data-increment="{{ item.calendar.schedulingSettings.increment }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;height:{{ item.length / 60 * 48 }}px;border-left-color:{{ item.calendar.color }};left:calc({{ item.lane / item.lanes * 100 }}% - {{ item.lane / item.lanes * 24 }}px + 3px);width:calc({{ 100 / item.lanes }}% - {{ 24 / item.lanes + 6 }}px)" title="{{ item.calendar.name }} · {{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}">
-            <strong>{{ item.booking.customerName }}</strong>{% if calendarIds|length > 1 %}<small>{{ item.calendar.name }}</small>{% endif %}<span>{{ item.label }}</span>
+            <strong><span class="booking-customer-name">{{ item.booking.customerName }}</span>{% include 'calendar/bookings/_request-warning' with {booking: item.booking} %}</strong>{% if calendarIds|length > 1 %}<small>{{ item.calendar.name }}</small>{% endif %}<span>{{ item.label }}</span>
         </a>
     {% endfor %}
     {% for group in combined.overflow %}
@@ -31,7 +31,7 @@
             {% for item in group.items %}
                 <a class="booking-choice" href="{{ item.booking.cpEditUrl }}">
                     <span class="color small" aria-hidden="true"><span class="color-preview" style="background-color:{{ item.calendar.color }}"></span></span>
-                    <span><strong>{{ item.booking.customerName }}</strong><span class="light">{{ item.calendar.name }} · {{ item.label }}</span><span class="light">{{ statusOptions[item.booking.bookingStatus] }}</span></span>
+                    <span><strong><span class="booking-customer-name">{{ item.booking.customerName }}</span>{% include 'calendar/bookings/_request-warning' with {booking: item.booking} %}</strong><span class="light">{{ item.calendar.name }} · {{ item.label }}</span><span class="light">{{ statusOptions[item.booking.bookingStatus] }}</span></span>
                 </a>
             {% endfor %}
         </template>

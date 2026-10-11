@@ -1,0 +1,2 @@
+{% set warningTag = (warningLink ?? false) ? 'a' : 'span' %}
+<{{ warningTag }} class="booking-request-warning" data-booking-request-warning="{{ booking.id }}"{% if not (unavailableRequestIds[booking.id] ?? false) %} hidden{% endif %}{% if warningLink ?? false %} href="{{ booking.cpEditUrl }}"{% else %} role="img"{% endif %} title="{{ 'The requested time is no longer available.'|t('calendar') }}" aria-label="{{ 'The requested time is no longer available.'|t('calendar') }}"><span data-icon="alert" aria-hidden="true"></span></{{ warningTag }}>

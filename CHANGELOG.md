@@ -5,6 +5,7 @@
 ### Added
 - Added a Bookings settings page for the booking label, default subpage, and default Schedule layout.
 - Added a setting for the default booking Schedule layout, with Combined selected for fresh installs and By Calendar available.
+- Added amber warnings for unavailable booking requests in the list and schedule, with links to the editor and automatic updates after status changes.
 - Added per-audience From Email, From Name, Reply-To Email, CC, and BCC settings for booking notifications.
 - Added a setting to open either the Bookings list or Schedule from the Bookings navigation item.
 - Added an All Calendars checkbox picker to the Bookings list, with multiple calendar selections preserved through sorting and pagination.

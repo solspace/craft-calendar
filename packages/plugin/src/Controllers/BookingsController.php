@@ -88,9 +88,11 @@ class BookingsController extends BaseController
         }
         $page = max(1, (int) $request->getQueryParam('page', 1));
         $total = (clone $query)->count();
+        $bookings = $query->limit(50)->offset(($page - 1) * 50)->all();
 
         $variables = $this->variables() + [
-            'bookings' => $query->limit(50)->offset(($page - 1) * 50)->all(), 'total' => $total, 'page' => $page,
+            'bookings' => $bookings, 'total' => $total, 'page' => $page,
+            'unavailableRequestIds' => $trashed ? [] : Calendar::getInstance()->bookings->unavailableRequestIds($bookings, $calendars),
             'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'bookingStatus' => $status, 'search' => $search, 'sort' => $sort, 'sortOptions' => $sortOptions, 'bookingListView' => $bookingListView, 'trashed' => $trashed,
         ];
         if ($request->getAcceptsJson()) {
@@ -101,6 +103,27 @@ class BookingsController extends BaseController
         }
 
         return $this->renderTemplate('calendar/bookings/index', $variables);
+    }
+
+    /** Refresh visible warnings after a status change without replacing the list controls. */
+    public function actionRequestWarnings(): Response
+    {
+        $calendars = $this->manageableCalendars();
+        $ids = \Craft::$app->request->getRequiredQueryParam('bookingIds');
+        if (!\is_array($ids) || !$ids || \count($ids) > 50) {
+            throw new BadRequestHttpException();
+        }
+        foreach ($ids as &$id) {
+            $id = filter_var($id, \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if (false === $id) {
+                throw new BadRequestHttpException();
+            }
+        }
+        unset($id);
+        $bookings = Booking::find()->id(array_unique($ids))->calendarId(array_keys($calendars))->status(null)->bookingStatus(Booking::REQUESTED)->all();
+        \Craft::$app->response->headers->set('Cache-Control', 'no-store');
+
+        return $this->asJson(['unavailableRequestIds' => array_keys(Calendar::getInstance()->bookings->unavailableRequestIds($bookings, $calendars))]);
     }
 
     public function actionEdit(?int $bookingId = null): Response
@@ -562,6 +585,7 @@ class BookingsController extends BaseController
         }
 
         return $this->renderTemplate('calendar/bookings/schedule', $this->variables() + [
+            'unavailableRequestIds' => Calendar::getInstance()->bookings->unavailableRequestIds($bookings, $calendars),
             'calendar' => $calendar, 'calendarId' => $calendarId, 'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'displayTimezone' => $zone->getName(), 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView, 'scheduleLayout' => $scheduleLayout,
             'previous' => $start->modify('day' === $scheduleView ? '-1 day' : '-7 days')->format('Y-m-d'), 'next' => $end->format('Y-m-d'),
         ]);

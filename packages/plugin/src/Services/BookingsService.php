@@ -139,6 +139,40 @@ class BookingsService extends Component
         return $slots;
     }
 
+    /** Read-only warnings use the same staff availability rules as the booking editor. */
+    public function unavailableRequestIds(array $bookings, array $calendars): array
+    {
+        $unavailable = [];
+        $busy = [];
+        $starts = [];
+        foreach ($bookings as $booking) {
+            if (Booking::REQUESTED !== $booking->bookingStatus || !isset($calendars[$booking->calendarId])) {
+                continue;
+            }
+            $seconds = $booking->startDate && $booking->endDate ? $booking->endDate->getTimestamp() - $booking->startDate->getTimestamp() : 0;
+            if ($seconds <= 0 || $seconds > 86400 || $seconds % 60) {
+                $unavailable[$booking->id] = true;
+
+                continue;
+            }
+            $settings = $calendars[$booking->calendarId]->getSchedulingSettings()->toArray();
+            $settings['duration'] = (int) ($seconds / 60);
+            $date = $booking->startDate->setTimezone(new \DateTimeZone($settings['timezone']))->format('Y-m-d');
+            $key = $booking->calendarId.':'.$date.':'.$settings['duration'];
+            if (!isset($starts[$key])) {
+                // One bounded reservation read per calendar/day, even with many requests.
+                $occupied = $settings['allowOverlap'] ? [] : ($busy[$booking->calendarId][$date] ??= $this->busy($booking->calendarId, null, false, $date, $settings['timezone']));
+                $slots = Availability::slots($settings, $date, $occupied, null, false);
+                $starts[$key] = array_fill_keys(array_map(static fn ($slot) => (new \DateTimeImmutable($slot['start']))->getTimestamp(), $slots), true);
+            }
+            if (!isset($starts[$key][$booking->startDate->getTimestamp()])) {
+                $unavailable[$booking->id] = true;
+            }
+        }
+
+        return $unavailable;
+    }
+
     public function nextAvailableSlot(CalendarModel $calendar, ?\DateTimeImmutable $now = null): ?array
     {
         if (!$calendar->getIsScheduling()) {

@@ -15,6 +15,9 @@
     let pendingUrl;
     let retrySelection;
     let footerMenus = [];
+    let warningRevision = 0;
+    let warningRequest;
+    let warningsDirty = false;
     {% include 'calendar/bookings/_calendar-picker-js' with {calendarPickerPrefix: 'booking-filter', calendarPickerChange: 'filterBookings'} %}
 
     function filterUrl() {
@@ -34,6 +37,8 @@
     async function filterBookings(url = filterUrl()) {
         clearTimeout(timer);
         const current = ++revision;
+        ++warningRevision;
+        warningRequest?.abort();
         request?.abort();
         if (writesInProgress) { pendingUrl = url; return; }
         pendingUrl = null;
@@ -56,6 +61,7 @@
                 destroyActionsMenu();
                 results.querySelectorAll('select').forEach(select => select.selectize?.destroy());
                 results.innerHTML = response.data.html;
+                warningsDirty = false;
                 await Craft.appendBodyHtml(response.data.bodyHtml || '');
                 Craft.initUiElements(results);
                 initActionsMenu();
@@ -77,6 +83,31 @@
             if (current === revision) {
                 results.removeAttribute('aria-busy');
                 spinner.classList.add('hidden');
+                if (!writesInProgress && warningsDirty) refreshRequestWarnings();
+            }
+        }
+    }
+
+    async function refreshRequestWarnings() {
+        const ids = [...results.querySelectorAll('[data-booking-row]')].map(row => row.dataset.bookingRow);
+        if (!ids.length || writesInProgress || results.getAttribute('aria-busy') === 'true') return;
+        const current = ++warningRevision;
+        warningRequest?.abort();
+        const request = warningRequest = new AbortController();
+        try {
+            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/request-warnings', {
+                params: {bookingIds: ids}, signal: request.signal,
+            });
+            if (current !== warningRevision || writesInProgress) return;
+            if (!Array.isArray(response.data.unavailableRequestIds)) throw new Error();
+            const unavailable = new Set(response.data.unavailableRequestIds.map(String));
+            results.querySelectorAll('[data-booking-request-warning]').forEach(warning => {
+                warning.hidden = !unavailable.has(warning.dataset.bookingRequestWarning);
+            });
+            warningsDirty = false;
+        } catch (_) {
+            if (current === warningRevision && !request.signal.aborted) {
+                Craft.cp.displayError(Craft.t('calendar', 'Could not refresh booking warnings. Reload this page.'));
             }
         }
     }
@@ -233,9 +264,12 @@
         search.value = '';
         filterBookings();
     });
+    results.addEventListener('booking-status-changed', () => { warningsDirty = true; });
     results.addEventListener('booking-status-save', event => {
+        if (event.detail > 0) { ++warningRevision; warningRequest?.abort(); }
         writesInProgress = Math.max(0, writesInProgress + event.detail);
         updateSelection();
         if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
+        else if (!writesInProgress && warningsDirty) refreshRequestWarnings();
     });
 })();

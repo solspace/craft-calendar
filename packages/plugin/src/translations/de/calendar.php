@@ -3,6 +3,7 @@
 // Keep these message keys in sync across the supported control-panel languages.
 return [
     'Times shown in {timezone}.' => 'Zeiten werden in {timezone} angezeigt.',
+    'Could not refresh booking warnings. Reload this page.' => 'Buchungswarnungen konnten nicht aktualisiert werden. Laden Sie diese Seite neu.',
     'The requested time is no longer available.' => 'Der angefragte Zeitraum ist nicht mehr verfügbar.',
     'Requested time: {date}, {time} {timezone}' => 'Angefragter Zeitraum: {date}, {time} {timezone}',
     'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.' => 'Wählen Sie einen anderen verfügbaren Zeitraum und kontaktieren Sie den Kunden, um die Alternative zu bestätigen, oder lehnen Sie die Anfrage ab bzw. stornieren Sie sie.',
