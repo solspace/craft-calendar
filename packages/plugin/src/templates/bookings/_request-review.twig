@@ -67,7 +67,7 @@
         {% endif %}
     {% endif %}
     <div class="request-review-actions">
-        <button type="button" class="btn" data-request-decline>{{ 'Decline Request'|t('calendar') }}</button>
+        <button type="button" class="btn booking-decline-btn" data-request-decline>{{ 'Decline Request'|t('calendar') }}</button>
         <a class="btn" href="{{ booking.cpEditUrl }}">{{ 'Edit booking'|t('calendar') }}</a>
     </div>
 </div>
@@ -115,6 +115,9 @@
 .request-review-slots:empty { display:none; }
 .request-review-slots .btn { font-size:12px; }
 .request-review-slots .btn[aria-pressed="true"] { background:var(--bg-selection-dark,#a6b4c9); color:var(--text-color,#263344); box-shadow:inset 0 0 0 2px var(--blue-600,#2563eb); }
+.booking-decline-btn { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 5%,#fff); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--error-color,#cf1124) 35%,transparent); }
+.booking-decline-btn:hover { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 10%,#fff); }
+.booking-decline-btn:focus-visible { outline:2px solid var(--error-color,#cf1124); outline-offset:2px; }
 .request-review-actions { display:flex; align-items:center; gap:var(--s,8px); }
 @media (max-width:600px) {
     .request-review-header { gap:10px; flex-wrap:wrap; }
