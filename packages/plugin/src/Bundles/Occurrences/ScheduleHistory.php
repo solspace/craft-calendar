@@ -55,7 +55,7 @@ class ScheduleHistory
                 'direction' => 'undo',
             ];
             if (!\Craft::$app->getCache()->set($this->key($token), $entry, self::TTL)) {
-                throw new \RuntimeException('Could not retain the event change for Undo.');
+                throw new \RuntimeException(Calendar::t('Could not retain the event change for Undo.'));
             }
             $response->data['historyToken'] = $token;
 

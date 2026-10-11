@@ -342,7 +342,7 @@ class EventsService extends Component
     public function requireEventCreatePermissions(CalendarModel|int $calendar): void
     {
         if (!$this->canCreateEvent($calendar)) {
-            throw new ForbiddenHttpException('User is not permitted to create events in this calendar');
+            throw new ForbiddenHttpException(Calendar::t('User is not permitted to create events in this calendar'));
         }
     }
 

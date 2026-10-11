@@ -1,13 +1,14 @@
 import deCalendar from "@fullcalendar/core/locales/de";
 import frCalendar from "@fullcalendar/core/locales/fr";
 import itCalendar from "@fullcalendar/core/locales/it";
+import lvCalendar from "@fullcalendar/core/locales/lv";
 import nlCalendar from "@fullcalendar/core/locales/nl";
 import type { Locale } from "date-fns";
-import { de, enGB, enUS, fr, it, nl } from "date-fns/locale";
+import { de, enGB, enUS, fr, it, lv, nl } from "date-fns/locale";
 import translate from "./translations";
 
 // FullCalendar compares this array by reference when rebuilding its date environment.
-const calendarLocales = [deCalendar, frCalendar, itCalendar, nlCalendar];
+const calendarLocales = [deCalendar, frCalendar, itCalendar, lvCalendar, nlCalendar];
 
 export const getControlPanelLanguage = (): string =>
   typeof document === "undefined" ? "en-US" : document.documentElement.lang || "en-US";
@@ -15,7 +16,7 @@ export const getControlPanelLanguage = (): string =>
 export const getDateLocale = (language = getControlPanelLanguage()): Locale => {
   const code = language.toLowerCase().replaceAll("_", "-");
   if (code === "en-gb") return enGB;
-  return ({ de, fr, it, nl } as Record<string, Locale>)[code.split("-")[0]] ?? enUS;
+  return ({ de, fr, it, lv, nl } as Record<string, Locale>)[code.split("-")[0]] ?? enUS;
 };
 
 export const getDatePickerTranslations = () => ({
