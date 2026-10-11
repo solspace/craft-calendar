@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added a native Set status menu for selected bookings, with per-booking availability checks and failure reporting.
 - Added booking checkboxes with page selection, bulk Move to Trash and Restore actions, and a compact Craft-style view dropdown with icons.
 - Added optional Cloudflare Turnstile, hCaptcha, and reCAPTCHA v2 spam protection for public booking forms, with environment-variable keys and server-side verification.
 - Added booking deletion through Craft’s element lifecycle, a Trash view with restoration, and availability checks when restoring bookings.

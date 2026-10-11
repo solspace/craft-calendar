@@ -65,6 +65,14 @@
         <span class="visually-hidden" data-booking-selection-count role="status" aria-live="polite"></span>
     </div>
     <div class="booking-bulk-actions hidden" role="group" aria-label="{{ 'Selected bookings'|t('calendar') }}">
+        {% if not trashed %}
+        <button type="button" class="btn secondary menubtn" data-booking-status-trigger aria-label="{{ 'Set status'|t('app') }}">{{ 'Set status'|t('app') }}</button>
+        <div class="menu">
+            <ul>
+                {% for value, label in statusOptions %}<li><a data-booking-set-status="{{ value }}"><span class="status {{ statusColors[value] }}" aria-hidden="true"></span> {{ label }}</a></li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         <button type="button" class="btn secondary menubtn" data-booking-actions-trigger data-icon="settings" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
         <div class="menu">
             <ul>

@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Statuss saglabāts 1 rezervācijai.} zero{Statuss saglabāts # rezervācijām.} one{Statuss saglabāts # rezervācijai.} other{Statuss saglabāts # rezervācijām.}}',
     'Selected bookings' => 'Atlasītās rezervācijas',
     'Select all bookings on this page' => 'Atlasīt visas rezervācijas šajā lapā',
     'Select booking for {customer}' => 'Atlasīt rezervāciju klientam {customer}',

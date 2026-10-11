@@ -243,6 +243,37 @@ class BookingsController extends BaseController
         return $this->changeSelectedBookings(false);
     }
 
+    public function actionSetStatusSelected(): Response
+    {
+        $this->requireCpRequest();
+        $this->requirePostRequest();
+        $status = \Craft::$app->request->getRequiredBodyParam('bookingStatus');
+        if (!\is_string($status) || !isset(Booking::statusOptions()[$status])) {
+            throw new BadRequestHttpException(Calendar::t('Choose a valid booking status.'));
+        }
+        $bookings = $this->selectedLifecycleBookings(false);
+        $service = Calendar::getInstance()->bookings;
+        $completedIds = [];
+        $errors = [];
+        foreach ($bookings as $booking) {
+            $previous = $booking->bookingStatus;
+            if ($previous === $status) {
+                $completedIds[] = $booking->id;
+
+                continue;
+            }
+            $booking->bookingStatus = $status;
+            if ($service->save($booking)) {
+                $completedIds[] = $booking->id;
+            } else {
+                $booking->bookingStatus = $previous;
+                $errors[] = ['bookingId' => $booking->id, 'customer' => $booking->customerName, 'message' => implode(' ', $booking->getErrorSummary(true)) ?: Calendar::t('Could not save booking status.')];
+            }
+        }
+
+        return $this->asJson(['success' => !$errors, 'completedIds' => $completedIds, 'errors' => $errors]);
+    }
+
     public function actionRestoreSelected(): Response
     {
         return $this->changeSelectedBookings(true);
@@ -512,7 +543,7 @@ class BookingsController extends BaseController
         return $booking;
     }
 
-    private function changeSelectedBookings(bool $restore): Response
+    private function selectedLifecycleBookings(bool $trashed): array
     {
         $this->requireCpRequest();
         $this->requirePostRequest();
@@ -528,8 +559,14 @@ class BookingsController extends BaseController
             }
             $validatedIds[$id] = $id;
         }
+
         // Authorize the entire selection before changing any elements.
-        $bookings = array_map(fn (int $id) => $this->findLifecycleBooking($id, $restore), array_values($validatedIds));
+        return array_map(fn (int $id) => $this->findLifecycleBooking($id, $trashed), array_values($validatedIds));
+    }
+
+    private function changeSelectedBookings(bool $restore): Response
+    {
+        $bookings = $this->selectedLifecycleBookings($restore);
         $elements = \Craft::$app->getElements();
         $completedIds = [];
         $errors = [];

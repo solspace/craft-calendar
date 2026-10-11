@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}' => '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}',
     'Selected bookings' => 'Selected bookings',
     'Select all bookings on this page' => 'Select all bookings on this page',
     'Select booking for {customer}' => 'Select booking for {customer}',

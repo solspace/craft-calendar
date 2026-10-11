@@ -14,7 +14,7 @@
     let writesInProgress = 0;
     let pendingUrl;
     let retrySelection;
-    let actionsMenu;
+    let footerMenus = [];
 
     function filterUrl() {
         const url = new URL(location.href);
@@ -96,8 +96,9 @@
         toolbar?.classList.toggle('hidden', count === 0);
         const label = results.querySelector('[data-booking-selection-count]');
         if (label) label.textContent = Craft.t('calendar', {{ '{count, plural, =1{1 booking selected} other{# bookings selected}}'|json_encode|raw }}, {count});
-        const trigger = results.querySelector('[data-booking-actions-trigger]');
-        if (trigger) trigger.disabled = !count || writesInProgress > 0;
+        results.querySelectorAll('[data-booking-actions-trigger], [data-booking-status-trigger]').forEach(trigger => {
+            trigger.disabled = !count || writesInProgress > 0;
+        });
     }
 
     results.addEventListener('change', event => {
@@ -107,26 +108,28 @@
         updateSelection();
     });
     function destroyActionsMenu() {
-        if (!actionsMenu) return;
-        const container = actionsMenu.menu.$container;
-        actionsMenu.destroy();
-        container.remove();
-        actionsMenu = null;
+        footerMenus.forEach(menu => {
+            const container = menu.menu.$container;
+            menu.destroy();
+            container.remove();
+        });
+        footerMenus = [];
     }
 
     function initActionsMenu() {
-        const trigger = results.querySelector('[data-booking-actions-trigger]');
-        if (!trigger) return;
-        actionsMenu = $(trigger).data('menubtn') || new Garnish.MenuBtn(trigger);
-        actionsMenu.on('optionSelect', event => {
-            if (trigger.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
-            const option = event.option;
-            if (option.hasAttribute('data-booking-deselect')) {
-                results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = false; });
-                updateSelection();
-            } else if (option.hasAttribute('data-booking-bulk-action')) {
-                changeSelectedBookings(option, trigger);
-            }
+        results.querySelectorAll('[data-booking-actions-trigger], [data-booking-status-trigger]').forEach(trigger => {
+            const menu = $(trigger).data('menubtn') || new Garnish.MenuBtn(trigger);
+            footerMenus.push(menu);
+            menu.on('optionSelect', event => {
+                if (trigger.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
+                const option = event.option;
+                if (option.hasAttribute('data-booking-deselect')) {
+                    results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = false; });
+                    updateSelection();
+                } else if (option.hasAttribute('data-booking-bulk-action') || option.hasAttribute('data-booking-set-status')) {
+                    changeSelectedBookings(option, trigger);
+                }
+            });
         });
     }
 
@@ -134,7 +137,8 @@
         if (trigger.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
         const ids = selectedBookings().map(checkbox => checkbox.value);
         if (!ids.length) return;
-        const action = button.dataset.bookingBulkAction;
+        const status = button.dataset.bookingSetStatus;
+        const action = status ? 'set-status' : button.dataset.bookingBulkAction;
         const selectionUrl = filterUrl().href;
         writesInProgress++;
         results.setAttribute('aria-busy', 'true');
@@ -144,12 +148,15 @@
             if (action === 'delete' && !await confirmBookingDeletion(null, trigger, ids.length)) return;
             submitted = true;
             retrySelection = {url: selectionUrl, ids};
-            const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action + '-selected', {data: {bookingIds: ids}});
+            const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action + '-selected', {data: {bookingIds: ids, ...(status ? {bookingStatus: status} : {})}});
             const completed = response.data.completedIds || [];
             retrySelection.ids = ids.filter(id => !completed.map(String).includes(id));
-            if (completed.length) Craft.cp.displayNotice(Craft.t('calendar', action === 'delete'
-                ? {{ '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}'|json_encode|raw }}
-                : {{ '{count, plural, =1{1 booking restored.} other{# bookings restored.}}'|json_encode|raw }}, {count: completed.length}));
+            const notice = action === 'set-status'
+                ? {{ '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}'|json_encode|raw }}
+                : (action === 'delete'
+                    ? {{ '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}'|json_encode|raw }}
+                    : {{ '{count, plural, =1{1 booking restored.} other{# bookings restored.}}'|json_encode|raw }});
+            if (completed.length) Craft.cp.displayNotice(Craft.t('calendar', notice, {count: completed.length}));
             if (response.data.errors?.length) {
                 Craft.cp.displayError(response.data.errors.map(error => Craft.t('calendar', '{customer}: {message}', error)).join(' '));
             } else if (!response.data.success) throw new Error(response.data.message);

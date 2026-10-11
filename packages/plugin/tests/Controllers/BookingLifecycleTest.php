@@ -317,6 +317,149 @@ class BookingLifecycleTest extends TestCase
         $this->controller->actionRestoreSelected();
     }
 
+    /**
+     * @dataProvider bulkStatuses
+     */
+    public function testBulkStatusUpdatesUseTheSaveService(string $status): void
+    {
+        $other = $this->additionalBooking(13);
+        $previous = Booking::CANCELLED === $status ? Booking::REQUESTED : Booking::CANCELLED;
+        $this->booking->bookingStatus = $other->bookingStatus = $previous;
+        $this->prepareSelection([12, '13', 12], false, [$this->booking, $other], true, $status);
+        $this->elements->expects(self::never())->method('deleteElement');
+        $this->elements->expects(self::never())->method('restoreElement');
+        $saved = [];
+        $this->service->expects(self::exactly(2))->method('save')->willReturnCallback(static function (Booking $booking) use ($status, &$saved) {
+            self::assertSame($status, $booking->bookingStatus);
+            $saved[] = $booking->id;
+
+            return true;
+        });
+        self::assertSame(['success' => true, 'completedIds' => [12, 13], 'errors' => []], $this->controller->actionSetStatusSelected()->data);
+        self::assertSame([12, 13], $saved);
+        self::assertSame('Customer', $this->booking->customerName);
+        self::assertSame('Another customer', $other->customerName);
+    }
+
+    public static function bulkStatuses(): array
+    {
+        return [[Booking::REQUESTED], [Booking::CONFIRMED], [Booking::DECLINED], [Booking::CANCELLED]];
+    }
+
+    public function testBulkUnchangedStatusDoesNotSaveOrNotifyAgain(): void
+    {
+        $this->prepareSelection([12], false, [$this->booking], true, Booking::REQUESTED);
+        $this->service->expects(self::never())->method('save');
+        self::assertSame(['success' => true, 'completedIds' => [12], 'errors' => []], $this->controller->actionSetStatusSelected()->data);
+    }
+
+    public function testBulkStatusConflictPreservesFailedStatusAndContinues(): void
+    {
+        $other = $this->additionalBooking(13);
+        $this->prepareSelection([12, 13], false, [$this->booking, $other], true, Booking::CONFIRMED);
+        $this->service->expects(self::exactly(2))->method('save')->willReturnCallback(static function (Booking $booking) {
+            if (12 === $booking->id) {
+                $booking->addError('startDate', 'This time is unavailable.');
+
+                return false;
+            }
+
+            return true;
+        });
+        self::assertSame([
+            'success' => false, 'completedIds' => [13],
+            'errors' => [['bookingId' => 12, 'customer' => 'Customer', 'message' => 'This time is unavailable.']],
+        ], $this->controller->actionSetStatusSelected()->data);
+        self::assertSame(Booking::REQUESTED, $this->booking->bookingStatus);
+        self::assertSame(Booking::CONFIRMED, $other->bookingStatus);
+    }
+
+    public function testBulkStatusFallbackSaveError(): void
+    {
+        $this->prepareSelection([12], false, [$this->booking], true, Booking::CONFIRMED);
+        $this->service->method('save')->willReturn(false);
+        self::assertSame('Could not save booking status.', $this->controller->actionSetStatusSelected()->data['errors'][0]['message']);
+    }
+
+    public function testBulkStatusAuthorizesAllCalendarsBeforeSaving(): void
+    {
+        $this->prepareSelection([12, 13], false, [$this->booking, $this->additionalBooking(13)], false, Booking::CONFIRMED);
+        $this->service->method('canManage')->willReturnOnConsecutiveCalls(true, false);
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(ForbiddenHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRejectsMissingOrTrashedElementsBeforeSaving(): void
+    {
+        $this->prepareSelection([12, 99], false, [$this->booking], true, Booking::CONFIRMED);
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(ForbiddenHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRejectsUnknownStatus(): void
+    {
+        $this->prepareSelection([12], false, [$this->booking], true, 'allowed');
+        $this->elements->expects(self::never())->method('getElementById');
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRejectsNonStringStatus(): void
+    {
+        $this->prepareSelection([12], false, [$this->booking], true, [Booking::CONFIRMED]);
+        $this->elements->expects(self::never())->method('getElementById');
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRejectsInvalidIdsBeforeSaving(): void
+    {
+        $this->prepareSelection([12, 0], false, [$this->booking], true, Booking::CONFIRMED);
+        $this->elements->expects(self::never())->method('getElementById');
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRejectsAnEmptySelection(): void
+    {
+        $this->prepareSelection([], false, [], true, Booking::CONFIRMED);
+        $this->elements->expects(self::never())->method('getElementById');
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRejectsMoreThanOnePage(): void
+    {
+        $this->prepareSelection(range(1, 51), false, [], true, Booking::CONFIRMED);
+        $this->elements->expects(self::never())->method('getElementById');
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRequiresACpRequest(): void
+    {
+        $this->request->method('getIsCpRequest')->willReturn(false);
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(BadRequestHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testBulkStatusRequiresPost(): void
+    {
+        $this->request->method('getIsCpRequest')->willReturn(true);
+        $this->request->method('getIsPost')->willReturn(false);
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(MethodNotAllowedHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
     private function additionalBooking(int $id): Booking
     {
         $booking = $this->getMockBuilder(Booking::class)->disableOriginalConstructor()->onlyMethods(['getCalendar'])->getMock();
@@ -337,11 +480,11 @@ class BookingLifecycleTest extends TestCase
         $this->elements->expects(self::never())->method('restoreElement');
     }
 
-    private function prepareSelection(array $ids, bool $trashed, array $bookings, bool $allowed = true): void
+    private function prepareSelection(array $ids, bool $trashed, array $bookings, bool $allowed = true, mixed $status = null): void
     {
         $this->request->method('getIsCpRequest')->willReturn(true);
         $this->request->method('getIsPost')->willReturn(true);
-        $this->request->method('getRequiredBodyParam')->with('bookingIds')->willReturn($ids);
+        $this->request->method('getRequiredBodyParam')->willReturnMap([['bookingIds', $ids], ['bookingStatus', $status]]);
         $this->elements->method('getElementById')->willReturnCallback(static function ($id, $type, $siteId, $criteria) use ($bookings, $trashed) {
             self::assertSame(Booking::class, $type);
             self::assertSame(1, $siteId);
