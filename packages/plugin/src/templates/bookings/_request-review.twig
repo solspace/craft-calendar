@@ -36,7 +36,7 @@
     <section class="request-review-section request-review-reschedule">
         <div class="request-review-section-heading">
             <h3>{{ 'Availability'|t('calendar') }}</h3>
-            <button type="button" class="btn small" data-request-alternative aria-expanded="{{ unavailable ? 'true' : 'false' }}" aria-controls="{{ containerId }}-time-picker">{{ 'Choose another time'|t('calendar') }}</button>
+            <button type="button" class="btn small{{ unavailable ? ' hidden' }}" data-request-alternative aria-expanded="{{ unavailable ? 'true' : 'false' }}" aria-controls="{{ containerId }}-time-picker">{{ 'Choose another time'|t('calendar') }}</button>
         </div>
         <p class="light request-review-help">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
         <div id="{{ containerId }}-time-picker" data-request-time-picker class="{{ not unavailable ? 'hidden' }}">
@@ -139,14 +139,17 @@
     const decision = form.querySelector('[data-request-decision]');
     const start = form.querySelector('[data-request-start]');
     const picker = form.querySelector('[data-request-time-picker]');
+    const alternative = form.querySelector('[data-request-alternative]');
     const date = form.querySelector('[data-request-date]');
     const slots = form.querySelector('[data-request-slots]');
     const message = form.querySelector('[data-request-slot-message]');
     let revision = 0, controller = null;
     const unavailable = {{ unavailable ? 'true' : 'false' }};
     function sync() {
-        screen.$saveBtn.prop('disabled', (unavailable || !picker.classList.contains('hidden')) && !start.value);
-        form.querySelector('[data-request-alternative]').setAttribute('aria-expanded', String(!picker.classList.contains('hidden')));
+        const expanded = !picker.classList.contains('hidden');
+        screen.$saveBtn.prop('disabled', (unavailable || expanded) && !start.value);
+        alternative.classList.toggle('hidden', expanded);
+        alternative.setAttribute('aria-expanded', String(expanded));
     }
     async function loadSlots() {
         controller?.abort(); controller = new AbortController();
@@ -167,11 +170,11 @@
             });
         } catch (error) { if (!signal.aborted) message.textContent = error.response?.data?.message || Craft.t('calendar', 'Could not load available times.'); }
     }
-    form.querySelector('[data-request-alternative]').addEventListener('click', () => { picker.classList.remove('hidden'); loadSlots(); });
+    alternative.addEventListener('click', () => { picker.classList.remove('hidden'); loadSlots(); date.focus(); });
     date.addEventListener('click', () => { try { date.showPicker?.(); } catch (_) {} });
     date.addEventListener('change', loadSlots);
     form.querySelector('[data-request-decline]').addEventListener('click', () => { decision.value = 'declined'; start.value = ''; screen.$saveBtn.prop('disabled', false); screen.handleSubmit(new Event('submit', {cancelable: true})); });
-    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; picker.classList.add('hidden'); sync(); });
+    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; picker.classList.add('hidden'); sync(); alternative.focus(); });
     const handleError = screen.handleSubmitError;
     screen.handleSubmitError = function(error) { decision.value = 'confirmed'; sync(); return handleError.call(this, error); };
     screen.on('beforeClose', () => { controller?.abort(); ++revision; });
