@@ -196,13 +196,17 @@ class BookingsController extends BaseController
             }
             $expected[$key] = Db::prepareDateForDb($this->parseStart($value));
         }
+        $targetCalendarId = filter_var($request->getBodyParam('calendarId', $calendarId), \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if (false === $targetCalendarId || !isset($this->manageableCalendars()[$targetCalendarId])) {
+            throw new ForbiddenHttpException();
+        }
         $start = $request->getBodyParam('start', '');
         if (!\is_string($start)) {
             throw new BadRequestHttpException();
         }
 
         try {
-            $token = (new BookingHistory(Calendar::getInstance()->bookings))->moderate($id, $status, $expected, '' !== $start ? $this->parseStart($start) : null);
+            $token = (new BookingHistory(Calendar::getInstance()->bookings))->moderate($id, $status, $expected, '' !== $start ? $this->parseStart($start) : null, $targetCalendarId);
         } catch (\RuntimeException $exception) {
             return $this->asFailure($exception->getMessage());
         }
