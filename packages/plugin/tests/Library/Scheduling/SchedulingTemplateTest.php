@@ -191,6 +191,7 @@ class SchedulingTemplateTest extends TestCase
             self::assertSame($admin && $allowAdminChanges, str_contains($output, 'calendar/bookings/fields'));
             self::assertSame($admin && $allowAdminChanges, str_contains($output, 'calendar/bookings/notifications'));
             self::assertStringContainsString('Appointments', $output);
+            self::assertLessThan(strpos($output, 'href="calendar/bookings"'), strpos($output, 'href="calendar/bookings/requests"'));
         }
     }
 

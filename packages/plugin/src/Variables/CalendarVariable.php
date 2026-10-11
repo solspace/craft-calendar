@@ -20,6 +20,7 @@ use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
+use Solspace\Calendar\Library\Scheduling\RequestQueue;
 use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
@@ -63,6 +64,16 @@ class CalendarVariable
     public function getBookingLabel(): string
     {
         return $this->settings()->getSettingsModel()->getBookingLabel();
+    }
+
+    public function getBookingRequestCount(): int
+    {
+        if (!\Craft::$app->getRequest()->getIsCpRequest()) {
+            return 0;
+        }
+        $bookings = Calendar::getInstance()->bookings;
+
+        return (new RequestQueue($bookings))->count(array_keys($bookings->getManageableCalendars()));
     }
 
     public function events(?array $attributes = null): ElementQueryInterface

@@ -15,6 +15,7 @@ use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
 use Solspace\Calendar\Library\Scheduling\BookingNotifications;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
+use Solspace\Calendar\Library\Scheduling\RequestQueue;
 use Solspace\Calendar\Library\Scheduling\Schedule;
 use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Models\BookingNotificationSettings;
@@ -103,6 +104,110 @@ class BookingsController extends BaseController
         }
 
         return $this->renderTemplate('calendar/bookings/index', $variables);
+    }
+
+    public function actionRequests(): Response
+    {
+        $calendars = $this->manageableCalendars();
+        $request = \Craft::$app->request;
+
+        try {
+            $calendarIds = Schedule::calendarIds($calendars, $request->getQueryParam('calendarIds', 'all'));
+        } catch (\OutOfBoundsException) {
+            throw new ForbiddenHttpException();
+        } catch (\InvalidArgumentException) {
+            throw new BadRequestHttpException();
+        }
+        $availability = $request->getQueryParam('availability', 'all');
+        if (!\in_array($availability, ['all', 'available', 'unavailable'], true)) {
+            throw new BadRequestHttpException();
+        }
+        $sort = $request->getQueryParam('sort', 'submitted-asc');
+        if (!\is_string($sort) || !isset(RequestQueue::SORTS[$sort])) {
+            $sort = 'submitted-asc';
+        }
+        $search = $request->getQueryParam('search', '');
+        if (!\is_string($search)) {
+            throw new BadRequestHttpException();
+        }
+        $search = trim($search);
+        $queue = new RequestQueue(Calendar::getInstance()->bookings);
+        $result = $queue->page($calendars, $calendarIds, $search, $sort, $availability, max(1, (int) $request->getQueryParam('page', 1)));
+        $elements = $result['ids'] ? Booking::find()->id($result['ids'])->calendarId($calendarIds)->status(null)->bookingStatus(Booking::REQUESTED)->indexBy('id')->all() : [];
+        $variables = $this->variables() + $result + [
+            'bookings' => array_values(array_filter(array_map(static fn ($id) => $elements[$id] ?? null, $result['ids']))),
+            'bookingView' => 'requests', 'bookingRequestCount' => $queue->count(array_keys($calendars)),
+            'calendarIds' => $calendarIds, 'calendarSelection' => \count($calendarIds) === \count($calendars) ? 'all' : implode(',', $calendarIds),
+            'availability' => $availability, 'sort' => $sort, 'search' => $search,
+        ];
+        $requestCount = $variables['bookingRequestCount'];
+        \Craft::$app->response->headers->set('Cache-Control', 'no-store');
+        if ($request->getAcceptsJson()) {
+            $view = \Craft::$app->getView();
+            $html = $view->renderTemplate('calendar/bookings/_requests-list', $variables, View::TEMPLATE_MODE_CP);
+
+            return $this->asJson(['html' => $html, 'headHtml' => $view->getHeadHtml(), 'bodyHtml' => $view->getBodyHtml(), 'requestCount' => $requestCount]);
+        }
+
+        return $this->renderTemplate('calendar/bookings/requests', $variables);
+    }
+
+    public function actionReviewRequest(): Response
+    {
+        $calendars = $this->manageableCalendars();
+        $id = filter_var(\Craft::$app->request->getRequiredQueryParam('bookingId'), \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if (false === $id) {
+            throw new BadRequestHttpException();
+        }
+        $booking = \Craft::$app->getElements()->getElementById($id, Booking::class);
+        if (!$booking instanceof Booking || !isset($calendars[$booking->calendarId]) || $booking->trashed) {
+            throw new ForbiddenHttpException();
+        }
+        if (Booking::REQUESTED !== $booking->bookingStatus) {
+            throw new BadRequestHttpException(Calendar::t('This request has changed. Reload the requests queue before reviewing it again.'));
+        }
+        $variables = $this->variables() + ['booking' => $booking, 'unavailable' => isset(Calendar::getInstance()->bookings->unavailableRequestIds([$booking], $calendars)[$id])];
+
+        return $this->asCpScreen()->title(Calendar::t('Review Request'))
+            ->action('calendar/bookings/moderate-request')->submitButtonLabel(Calendar::t('Confirm Booking'))
+            ->prepareScreen(static function (Response $response, string $containerId) use ($variables): void {
+                $response->contentTemplate('calendar/bookings/_request-review', $variables + ['containerId' => $containerId]);
+            })
+        ;
+    }
+
+    public function actionModerateRequest(): Response
+    {
+        $this->requireCpRequest();
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $request = \Craft::$app->request;
+        $id = filter_var($request->getRequiredBodyParam('bookingId'), \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $status = $request->getRequiredBodyParam('bookingStatus');
+        $calendarId = filter_var($request->getRequiredBodyParam('originalCalendarId'), \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if (false === $id || false === $calendarId || !\in_array($status, [Booking::CONFIRMED, Booking::DECLINED], true)) {
+            throw new BadRequestHttpException();
+        }
+        $expected = ['calendarId' => $calendarId, 'bookingStatus' => Booking::REQUESTED];
+        foreach (['startDate', 'endDate'] as $key) {
+            $value = $request->getRequiredBodyParam('original'.ucfirst($key));
+            if (!\is_string($value)) {
+                throw new BadRequestHttpException();
+            }
+            $expected[$key] = Db::prepareDateForDb($this->parseStart($value));
+        }
+        $start = $request->getBodyParam('start', '');
+        if (!\is_string($start)) {
+            throw new BadRequestHttpException();
+        }
+
+        try {
+            $token = (new BookingHistory(Calendar::getInstance()->bookings))->moderate($id, $status, $expected, '' !== $start ? $this->parseStart($start) : null);
+        } catch (\RuntimeException $exception) {
+            return $this->asFailure($exception->getMessage());
+        }
+
+        return $this->asSuccess(Calendar::t('Booking status saved.'), ['success' => true, 'historyToken' => $token]);
     }
 
     /** Refresh visible warnings after a status change without replacing the list controls. */

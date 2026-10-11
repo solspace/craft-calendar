@@ -1,0 +1,22 @@
+.booking-request-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; width:100%; margin:0; }
+.booking-request-filters > .select.selectize { width:180px; }
+.request-search { flex:1; min-width:200px; }
+.request-pane { background:var(--pane-bg,var(--white)); box-shadow:var(--pane-shadow); border-radius:var(--radius-lg,5px); overflow:hidden; }
+.request-table-scroll { overflow-x:auto; }
+.request-table { min-width:1050px; }
+.request-table tbody td { padding-block:16px; vertical-align:middle; }
+.request-customer { color:var(--link-color); font-weight:600; text-align:start; cursor:pointer; }
+.request-secondary { margin-top:4px; font-size:12px; }
+.request-submitted-time, .request-age { display:block; }
+.request-calendar, .request-availability, .request-actions { display:flex; align-items:center; gap:8px; }
+.request-calendar .color-indicator { margin:0; flex-shrink:0; }
+.request-time { line-height:1.5; white-space:nowrap; }
+.request-availability { color:var(--success-color,#27833e); white-space:nowrap; }
+.request-warning { color:var(--warning-color,#b45309); }
+.request-availability [data-icon] { width:20px; flex:0 0 20px; text-align:center; }
+.request-unavailable td { background:#fffbef; }
+.request-actions { flex-wrap:wrap; }
+.request-empty { text-align:center; padding-block:40px !important; }
+.request-history { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.request-history.hidden { display:none; }
+#request-results[aria-busy="true"] { opacity:.65; pointer-events:none; }

@@ -1,5 +1,7 @@
 <nav aria-label="{{ craft.calendar.bookingLabel }}">
+    {% set pendingRequestCount = bookingRequestCount ?? craft.calendar.bookingRequestCount|default(0) %}
     <ul>
+        <li><a href="{{ cpUrl('calendar/bookings/requests') }}"{% if bookingView == 'requests' %} class="sel" aria-current="page"{% endif %}>{{ 'Requests'|t('calendar') }} <span class="badge{{ not pendingRequestCount ? ' hidden' }}" data-booking-request-count{% if not pendingRequestCount %} hidden{% endif %}>{{ pendingRequestCount }}</span></a></li>
         <li><a href="{{ cpUrl('calendar/bookings') }}"{% if bookingView == 'list' %} class="sel" aria-current="page"{% endif %}>{{ craft.calendar.bookingLabel }}</a></li>
         <li><a href="{{ cpUrl('calendar/bookings/schedule') }}"{% if bookingView == 'schedule' %} class="sel" aria-current="page"{% endif %}>{{ 'Schedule'|t('calendar') }}</a></li>
         {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}

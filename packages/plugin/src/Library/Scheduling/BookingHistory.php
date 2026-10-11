@@ -12,7 +12,7 @@ use Solspace\Calendar\Services\BookingsService;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
-/** User-bound move snapshots; replay uses ordinary saves and current availability rules. */
+/** User-bound booking snapshots; replay uses ordinary saves and current availability rules. */
 class BookingHistory
 {
     private const TTL = 7200;
@@ -56,10 +56,39 @@ class BookingHistory
             // Preserve current contact details, notes, custom fields, and status attribution.
             $booking->startDate = new \DateTimeImmutable($entry[$target]['startDate'], new \DateTimeZone('UTC'));
             $booking->endDate = new \DateTimeImmutable($entry[$target]['endDate'], new \DateTimeZone('UTC'));
+            if ($entry['moderation'] ?? false) {
+                $booking->bookingStatus = $entry[$target]['bookingStatus'];
+            }
             $this->save($booking);
             $entry[$target] = $this->snapshot($booking);
             $entry['direction'] = 'undo' === $direction ? 'redo' : 'undo';
             $this->retain($token, $entry);
+        });
+    }
+
+    /** Serialize moderation with native saves, rejecting stale decisions and times. */
+    public function moderate(int $id, string $status, array $expected, ?\DateTimeImmutable $start = null): string
+    {
+        if (!\in_array($status, [Booking::CONFIRMED, Booking::DECLINED], true)) {
+            throw new \InvalidArgumentException();
+        }
+
+        return $this->locked($id, function (Booking $booking) use ($id, $status, $expected, $start): string {
+            $before = $this->snapshot($booking);
+            if (Booking::REQUESTED !== $booking->bookingStatus || array_diff_assoc($expected, $before)) {
+                throw new \RuntimeException(Calendar::t('This request has changed. Reload the requests queue before reviewing it again.'));
+            }
+            if ($start && Booking::CONFIRMED === $status) {
+                $duration = $booking->endDate->getTimestamp() - $booking->startDate->getTimestamp();
+                $booking->startDate = $start;
+                $booking->endDate = $start->setTimestamp($start->getTimestamp() + $duration);
+            }
+            $booking->bookingStatus = $status;
+            $this->save($booking);
+            $token = StringHelper::randomString(40);
+            $this->retain($token, ['bookingId' => $id, 'before' => $before, 'after' => $this->snapshot($booking), 'direction' => 'undo', 'moderation' => true]);
+
+            return $token;
         });
     }
 

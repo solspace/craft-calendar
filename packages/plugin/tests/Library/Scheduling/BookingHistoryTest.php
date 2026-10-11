@@ -236,6 +236,86 @@ class BookingHistoryTest extends TestCase
         $this->history->replay($token, 'undo');
     }
 
+    public function testModerationCanConfirmUndoRedoAndPreservesLaterNotes(): void
+    {
+        $expected = $this->requestSnapshot();
+        $token = $this->history->moderate(42, Booking::CONFIRMED, $expected);
+        self::assertSame('confirmed', $this->row()['bookingStatus']);
+        $this->db->createCommand()->update('calendar_bookings', ['notes' => 'Later notes'], ['id' => 42])->execute();
+        $this->history->replay($token, 'undo');
+        self::assertSame('requested', $this->row()['bookingStatus']);
+        self::assertSame('Later notes', $this->row()['notes']);
+        $this->history->replay($token, 'redo');
+        self::assertSame('confirmed', $this->row()['bookingStatus']);
+    }
+
+    public function testAlternateConfirmationKeepsDurationAndUndoRestoresOriginalTime(): void
+    {
+        $token = $this->history->moderate(42, Booking::CONFIRMED, $this->requestSnapshot(), new \DateTimeImmutable('2026-10-12T10:00:00-05:00'));
+        self::assertSame('2026-10-12 15:00:00', $this->row()['startDate']);
+        self::assertSame('2026-10-12 15:30:00', $this->row()['endDate']);
+        $this->history->replay($token, 'undo');
+        self::assertSame('2026-10-12 14:00:00', $this->row()['startDate']);
+        self::assertSame('requested', $this->row()['bookingStatus']);
+        $this->history->replay($token, 'redo');
+        self::assertSame('2026-10-12 15:30:00', $this->row()['endDate']);
+    }
+
+    public function testSecondModeratorCannotOverwriteTheFirstDecision(): void
+    {
+        $expected = $this->requestSnapshot();
+        $this->history->moderate(42, Booking::CONFIRMED, $expected);
+
+        try {
+            $this->history->moderate(42, Booking::DECLINED, $expected);
+            self::fail('Stale decision must fail.');
+        } catch (\RuntimeException) {
+            self::assertSame('confirmed', $this->row()['bookingStatus']);
+        }
+    }
+
+    public function testEditedRequestedTimeCannotBeConfirmedFromAStaleReview(): void
+    {
+        $expected = $this->requestSnapshot();
+        $this->db->createCommand()->update('calendar_bookings', ['startDate' => '2026-10-12 15:00:00', 'endDate' => '2026-10-12 15:30:00'], ['id' => 42])->execute();
+        $this->expectException(\RuntimeException::class);
+        $this->history->moderate(42, Booking::CONFIRMED, $expected);
+    }
+
+    public function testConfirmationRechecksNewReservationsButDeclineReleasesTheRequest(): void
+    {
+        $expected = $this->requestSnapshot();
+        $busy = $this->row();
+        $busy['id'] = 43;
+        $busy['bookingStatus'] = 'confirmed';
+        $this->db->createCommand()->insert('elements', ['id' => 43])->execute();
+        $this->db->createCommand()->insert('calendar_bookings', $busy)->execute();
+
+        try {
+            $this->history->moderate(42, Booking::CONFIRMED, $expected);
+            self::fail('The new reservation must block confirmation.');
+        } catch (\RuntimeException) {
+            self::assertSame('requested', $this->row()['bookingStatus']);
+        }
+        $this->history->moderate(42, Booking::DECLINED, $expected);
+        self::assertSame('declined', $this->row()['bookingStatus']);
+    }
+
+    public function testModerationChecksCurrentPermissions(): void
+    {
+        $expected = $this->requestSnapshot();
+        $this->allowed = false;
+        $this->expectException(ForbiddenHttpException::class);
+        $this->history->moderate(42, Booking::CONFIRMED, $expected);
+    }
+
+    private function requestSnapshot(): array
+    {
+        $this->db->createCommand()->update('calendar_bookings', ['bookingStatus' => 'requested'], ['id' => 42])->execute();
+
+        return array_intersect_key($this->row(), array_flip(['calendarId', 'startDate', 'endDate', 'bookingStatus']));
+    }
+
     private function move(string $time): ?string
     {
         return $this->history->move(42, new \DateTimeImmutable('2026-10-12T'.$time.':00-05:00'));

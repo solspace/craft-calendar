@@ -140,11 +140,23 @@ class BookingsService extends Component
     }
 
     /** Read-only warnings use the same staff availability rules as the booking editor. */
-    public function unavailableRequestIds(array $bookings, array $calendars): array
+    public function unavailableRequestIds(array $bookings, array $calendars, bool $batchDates = false): array
     {
         $unavailable = [];
         $busy = [];
         $starts = [];
+        $ranges = [];
+        if ($batchDates) {
+            foreach ($bookings as $booking) {
+                if (Booking::REQUESTED !== $booking->bookingStatus || !$booking->startDate || !isset($calendars[$booking->calendarId])) {
+                    continue;
+                }
+                $zone = $calendars[$booking->calendarId]->getSchedulingSettings()->timezone;
+                $date = $booking->startDate->setTimezone(new \DateTimeZone($zone))->format('Y-m-d');
+                $key = $booking->calendarId.':'.substr($date, 0, 7);
+                $ranges[$key] = isset($ranges[$key]) ? [min($ranges[$key][0], $date), max($ranges[$key][1], $date)] : [$date, $date];
+            }
+        }
         foreach ($bookings as $booking) {
             if (Booking::REQUESTED !== $booking->bookingStatus || !isset($calendars[$booking->calendarId])) {
                 continue;
@@ -161,7 +173,9 @@ class BookingsService extends Component
             $key = $booking->calendarId.':'.$date.':'.$settings['duration'];
             if (!isset($starts[$key])) {
                 // One bounded reservation read per calendar/day, even with many requests.
-                $occupied = $settings['allowOverlap'] ? [] : ($busy[$booking->calendarId][$date] ??= $this->busy($booking->calendarId, null, false, $date, $settings['timezone']));
+                $rangeKey = $batchDates ? $booking->calendarId.':'.substr($date, 0, 7) : $date;
+                $range = $batchDates ? $ranges[$rangeKey] : [$date, null];
+                $occupied = $settings['allowOverlap'] ? [] : ($busy[$booking->calendarId][$rangeKey] ??= $this->busy($booking->calendarId, null, false, $range[0], $settings['timezone'], $range[1]));
                 $slots = Availability::slots($settings, $date, $occupied, null, false);
                 $starts[$key] = array_fill_keys(array_map(static fn ($slot) => (new \DateTimeImmutable($slot['start']))->getTimestamp(), $slots), true);
             }

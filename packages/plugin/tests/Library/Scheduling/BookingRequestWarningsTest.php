@@ -75,6 +75,18 @@ class BookingRequestWarningsTest extends TestCase
         self::assertSame([1 => true], $service->unavailableRequestIds([$first, $second], [7 => $calendar]));
     }
 
+    public function testFilteringAcrossDatesSharesOneReservationReadPerCalendarMonth(): void
+    {
+        $service = $this->getMockBuilder(BookingsService::class)->onlyMethods(['busy'])->getMock();
+        $service->expects(self::once())->method('busy')->with(7, null, false, '2026-10-12', 'America/Winnipeg', '2026-10-13')->willReturn([]);
+        $first = $this->request(1, '09:00', '09:30');
+        $next = clone $first;
+        $next->id = 2;
+        $next->startDate = $next->startDate->modify('+1 day');
+        $next->endDate = $next->endDate->modify('+1 day');
+        self::assertSame([], $service->unavailableRequestIds([$first, $next], [7 => $this->calendar(7)], true));
+    }
+
     private function calendar(int $id, array $settings = []): CalendarModel
     {
         return new CalendarModel(['id' => $id, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => $settings + ['timezone' => 'America/Winnipeg', 'increment' => 15]]);

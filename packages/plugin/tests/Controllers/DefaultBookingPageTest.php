@@ -23,7 +23,7 @@ class DefaultBookingPageTest extends TestCase
 
         try {
             foreach ([true, false] as $canManage) {
-                foreach (['bookings', 'schedule', 'invalid'] as $bookingView) {
+                foreach (['bookings', 'schedule', 'requests', 'invalid'] as $bookingView) {
                     $request = $this->createMock(Request::class);
                     $request->method('getQueryParam')->with('site')->willReturn('secondary');
                     $request->method('getIsConsoleRequest')->willReturn(true);
@@ -87,14 +87,14 @@ class DefaultBookingPageTest extends TestCase
                     $subnav = include __DIR__.'/../../src/subnav.php';
                     if ($canManage) {
                         self::assertSame('Appointments', $subnav['bookings']['label']);
-                        self::assertSame('schedule' === $bookingView ? 'calendar/bookings/schedule' : 'calendar/bookings', $subnav['bookings']['url']);
+                        self::assertSame($settings->getBookingDefaultPath(), $subnav['bookings']['url']);
                     } else {
                         self::assertArrayNotHasKey('bookings', $subnav);
                     }
                     $controller = $this->getMockBuilder(SettingsController::class)->disableOriginalConstructor()->onlyMethods(['getSettingsService', 'redirect'])->getMock();
                     $controller->method('getSettingsService')->willReturn($service);
                     $response = $this->createMock(Response::class);
-                    $controller->expects(self::once())->method('redirect')->with('https://example.test/admin/calendar/'.($canManage ? ('schedule' === $bookingView ? 'bookings/schedule' : 'bookings') : 'overview').'?site=secondary')->willReturn($response);
+                    $controller->expects(self::once())->method('redirect')->with('https://example.test/admin/calendar/'.($canManage ? substr($settings->getBookingDefaultPath(), 9) : 'overview').'?site=secondary')->willReturn($response);
                     self::assertSame($response, $controller->actionDefaultView());
                 }
             }

@@ -1,0 +1,22 @@
+{% extends 'calendar/layouts/_bookings' %}
+{% import '_includes/forms' as forms %}
+{% set title = 'Requests'|t('calendar') %}
+{% set bookingView = 'requests' %}
+{% block toolbar %}
+<form method="get" class="booking-request-filters">
+    {% include 'calendar/bookings/_calendar-picker' with {calendarPickerPrefix: 'request-filter'} %}
+    {{ forms.selectize({id: 'request-availability', name: 'availability', value: availability, options: [{value: 'all', label: 'All availability'|t('calendar')}, {value: 'available', label: 'Available'|t('calendar')}, {value: 'unavailable', label: 'Needs attention'|t('calendar')}], selectizeOptions: {searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Availability'|t('calendar')}}}) }}
+    <div class="texticon request-search"><span class="texticon-icon search icon" aria-hidden="true"></span>{{ forms.text({type: 'search', name: 'search', value: search, placeholder: 'Search name or email'|t('calendar'), inputAttributes: {aria: {label: 'Search name or email'|t('calendar')}}}) }}</div>
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <span class="spinner hidden" aria-hidden="true"></span>
+    <a class="btn" data-request-clear href="{{ cpUrl('calendar/bookings/requests') }}">{{ 'Clear'|t('app') }}</a>
+</form>
+{% endblock %}
+{% block main %}<div class="content-grid__main"><div id="content">{{ block('content') }}</div></div>{% endblock %}
+{% block content %}
+<p class="light">{{ 'Review new booking requests. Requested times are reserved only after confirmation.'|t('calendar') }}</p>
+<div class="request-history hidden" role="status" aria-live="polite"><span data-request-history-message></span><button type="button" class="btn small" data-request-undo>{{ 'Undo'|t('app') }}</button><button type="button" class="btn small hidden" data-request-redo>{{ 'Redo'|t('app') }}</button></div>
+<div id="request-results">{% include 'calendar/bookings/_requests-list' %}</div>
+{% endblock %}
+{% css %}{% include 'calendar/bookings/_calendar-picker-css' %}{% include 'calendar/bookings/_requests-css' %}{% endcss %}
+{% js %}{% include 'calendar/bookings/_requests-js' %}{% endjs %}

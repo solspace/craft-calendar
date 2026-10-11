@@ -28,6 +28,10 @@ class SettingsModelTest extends TestCase
         self::assertSame('schedule', $settings->toArray()['defaultBookingView']);
         self::assertSame('calendar/bookings/schedule', $settings->getBookingDefaultPath());
         self::assertTrue($settings->validate(['defaultBookingView']));
+        $settings->setAttributes(['defaultBookingView' => 'requests']);
+        self::assertSame('requests', $settings->toArray()['defaultBookingView']);
+        self::assertSame('calendar/bookings/requests', $settings->getBookingDefaultPath());
+        self::assertTrue($settings->validate(['defaultBookingView']));
         foreach (['invalid', ''] as $value) {
             $settings->defaultBookingView = $value;
             self::assertFalse($settings->validate(['defaultBookingView']));

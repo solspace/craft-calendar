@@ -2,6 +2,7 @@
 
 return [
     'calendar/bookings' => 'calendar/bookings/index',
+    'calendar/bookings/requests' => 'calendar/bookings/requests',
     'calendar/bookings/schedule' => 'calendar/bookings/schedule',
     'calendar/bookings/fields' => 'calendar/bookings/fields',
     'calendar/bookings/notifications' => 'calendar/bookings/notifications',

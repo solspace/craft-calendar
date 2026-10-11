@@ -1,0 +1,81 @@
+{% import '_includes/forms' as forms %}
+{% set calendar = calendars[booking.calendarId] %}
+{% set timezone = calendar.schedulingSettings.timezone %}
+<input type="hidden" name="bookingId" value="{{ booking.id }}">
+<input type="hidden" name="bookingStatus" value="confirmed" data-request-decision>
+<input type="hidden" name="originalCalendarId" value="{{ booking.calendarId }}">
+<input type="hidden" name="originalStartDate" value="{{ booking.startDate|atom }}">
+<input type="hidden" name="originalEndDate" value="{{ booking.endDate|atom }}">
+<input type="hidden" name="start" value="" data-request-start>
+<div class="request-review-content">
+<h2>{{ booking.customerName }}</h2><p><a href="mailto:{{ booking.customerEmail }}">{{ booking.customerEmail }}</a></p>
+<dl class="request-summary"><dt>{{ 'Calendar'|t('calendar') }}</dt><dd>{{ calendar.name }}</dd><dt>{{ 'Requested Time'|t('calendar') }}</dt><dd>{{ booking.startDate|date('medium', timezone) }}<br>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} – {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span title="{{ timezone }}">{{ booking.startDate|calendarTimezoneAbbreviation(timezone) }}</span></dd><dt>{{ 'Submitted'|t('calendar') }}</dt><dd>{{ booking.dateCreated|date('medium') }} {{ booking.dateCreated|time(bookingTimeFormat)|calendarTimeLabel }}</dd></dl>
+{% if unavailable %}<div class="request-review-warning"><span data-icon="alert" aria-hidden="true"></span><div><strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong><p>{{ 'Choose another available time or decline this request.'|t('calendar') }}</p></div></div>{% endif %}
+{% if booking.notes %}<div class="field"><div class="heading"><h2>{{ 'Notes'|t('calendar') }}</h2></div><div class="request-notes">{{ booking.notes }}</div></div>{% endif %}
+{% if booking.fieldLayout %}{% set fieldForm = booking.fieldLayout.createForm(booking, true) %}{% for tab in fieldForm.tabs %}{% if fieldForm.tabs|length > 1 %}<h3>{{ tab.name }}</h3>{% endif %}<div class="flex-fields">{{ tab.content|raw }}</div>{% endfor %}{% endif %}
+<hr>
+<button type="button" class="btn" data-request-alternative>{{ 'Choose another time'|t('calendar') }}</button>
+<div data-request-time-picker class="{{ not unavailable ? 'hidden' }}">
+    <p class="light">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
+    {{ forms.textField({label: 'Date'|t('calendar'), type: 'date', value: booking.startDate|date('Y-m-d', timezone), inputAttributes: {data: {'request-date': true}}}) }}
+    {% if not unavailable %}<button type="button" class="btn small" data-request-original>{{ 'Keep requested time'|t('calendar') }}</button>{% endif %}
+    <div role="status" aria-live="polite" data-request-slot-message></div>
+    <div class="request-review-slots" data-request-slots></div>
+</div>
+<div class="request-review-actions"><button type="button" class="btn" data-request-decline>{{ 'Decline Request'|t('calendar') }}</button><a class="btn" href="{{ booking.cpEditUrl }}">{{ 'Edit booking'|t('calendar') }}</a></div>
+</div>
+{% css %}
+.request-summary { display:grid; grid-template-columns:110px 1fr; gap:12px; margin-block:20px; }
+.request-summary dt { color:var(--light-text-color); }
+.request-summary dd { margin:0; }
+.request-review-warning { display:flex; align-items:flex-start; gap:10px; padding:16px; background:#fffbef; color:var(--warning-color,#b45309); border-radius:5px; margin-block:20px; }
+.request-review-warning [data-icon] { flex:0 0 20px; text-align:center; }
+.request-review-warning p { margin-bottom:0; }
+.request-notes { white-space:pre-wrap; }
+.request-review-slots, .request-review-actions { display:flex; flex-wrap:wrap; gap:8px; margin-block:16px; }
+.request-review-slots .btn[aria-pressed="true"] { background:var(--selection-bg-color,#dbeafe); color:var(--link-color); }
+{% endcss %}
+{% js %}
+(() => {
+    const form = document.getElementById({{ containerId|json_encode|raw }});
+    const screen = $(form).data('cpScreen');
+    const decision = form.querySelector('[data-request-decision]');
+    const start = form.querySelector('[data-request-start]');
+    const picker = form.querySelector('[data-request-time-picker]');
+    const date = form.querySelector('[data-request-date]');
+    const slots = form.querySelector('[data-request-slots]');
+    const message = form.querySelector('[data-request-slot-message]');
+    let revision = 0, controller = null;
+    const unavailable = {{ unavailable ? 'true' : 'false' }};
+    function sync() { screen.$saveBtn.prop('disabled', (unavailable || !picker.classList.contains('hidden')) && !start.value); }
+    async function loadSlots() {
+        controller?.abort(); controller = new AbortController();
+        const signal = controller.signal, current = ++revision;
+        start.value = ''; sync(); slots.replaceChildren();
+        message.textContent = Craft.t('calendar', 'Loading available times…');
+        try {
+            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: {{ booking.calendarId }}, bookingId: {{ booking.id }}, date: date.value}, signal});
+            if (signal.aborted || revision !== current || !form.isConnected) return;
+            const available = response.data.slots.filter(slot => slot.available !== false);
+            message.textContent = available.length ? '' : Craft.t('calendar', 'No available times for this date.');
+            available.forEach(slot => {
+                const button = document.createElement('button');
+                button.type = 'button'; button.className = 'btn'; button.setAttribute('aria-pressed', 'false');
+                button.textContent = slot.label;
+                button.addEventListener('click', () => { start.value = slot.start; slots.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed', String(item === button))); sync(); screen.$saveBtn.find('.label').text(Craft.t('calendar', 'Confirm Booking')); });
+                slots.append(button);
+            });
+        } catch (error) { if (!signal.aborted) message.textContent = error.response?.data?.message || Craft.t('calendar', 'Could not load available times.'); }
+    }
+    form.querySelector('[data-request-alternative]').addEventListener('click', () => { picker.classList.remove('hidden'); loadSlots(); });
+    date.addEventListener('click', () => { try { date.showPicker?.(); } catch (_) {} });
+    date.addEventListener('change', loadSlots);
+    form.querySelector('[data-request-decline]').addEventListener('click', () => { decision.value = 'declined'; start.value = ''; screen.$saveBtn.prop('disabled', false); screen.handleSubmit(new Event('submit', {cancelable: true})); });
+    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; picker.classList.add('hidden'); sync(); });
+    const handleError = screen.handleSubmitError;
+    screen.handleSubmitError = function(error) { decision.value = 'confirmed'; sync(); return handleError.call(this, error); };
+    screen.on('beforeClose', () => { controller?.abort(); ++revision; });
+    sync();
+    if (unavailable) loadSlots();
+})();
+{% endjs %}

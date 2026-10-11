@@ -147,7 +147,11 @@ class SettingsModel extends Model
 
     public function getBookingDefaultPath(): string
     {
-        return 'schedule' === $this->defaultBookingView ? 'calendar/bookings/schedule' : 'calendar/bookings';
+        return match ($this->defaultBookingView) {
+            'requests' => 'calendar/bookings/requests',
+            'schedule' => 'calendar/bookings/schedule',
+            default => 'calendar/bookings',
+        };
     }
 
     public function getBookingScheduleLayout(mixed $requestedLayout = null): string
@@ -305,7 +309,7 @@ class SettingsModel extends Model
     {
         return array_merge(parent::defineRules(), [
             [['bookingPageLabel'], 'string', 'max' => 100],
-            [['defaultBookingView'], 'in', 'range' => ['bookings', 'schedule'], 'skipOnEmpty' => false],
+            [['defaultBookingView'], 'in', 'range' => ['requests', 'bookings', 'schedule'], 'skipOnEmpty' => false],
             [['defaultBookingScheduleLayout'], 'in', 'range' => ['combined', 'calendars'], 'skipOnEmpty' => false],
             [['bookingDefaults'], 'validateBookingDefaults', 'skipOnEmpty' => false],
             [['captchaProvider', 'bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha', 'recaptcha-v3'], 'skipOnEmpty' => false, 'when' => static fn ($model, $attribute) => null !== $model->{$attribute}],
