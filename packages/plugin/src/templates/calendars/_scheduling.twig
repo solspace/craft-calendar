@@ -1,7 +1,7 @@
 {% import '_includes/forms' as forms %}
 <h2>{{ 'Availability'|t('calendar') }}</h2>
 {{ forms.errorList(calendar.getErrors('scheduling')) }}
-{{ forms.selectField({label: 'Scheduling Timezone'|t('calendar'), instructions: 'Opening hours and booking times use this timezone, including daylight saving changes.'|t('calendar'), name: 'scheduling[timezone]', value: calendar.scheduling.timezone ?? craft.app.timeZone, options: timezoneOptions|filter(option => option.value != 'floating'), required: true}) }}
+{{ forms.selectField({label: 'Scheduling Timezone'|t('calendar'), instructions: 'Opening hours and booking times use this timezone, including daylight saving changes.'|t('calendar'), name: 'scheduling[timezone]', value: calendar.scheduling.timezone ?? craft.app.timeZone, options: timezoneOptions|filter((option, key) => key != 'floating'), required: true}) }}
 {{ forms.editableTableField({
     label: 'Weekly Opening Hours'|t('calendar'),
     instructions: 'Add an opening period for each available weekday. Add the same weekday twice for a break, or remove it to keep that day closed.'|t('calendar'),
