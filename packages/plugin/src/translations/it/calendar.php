@@ -922,4 +922,12 @@ return [
     'Please check back later.' => 'Riprova più tardi.',
     '{duration} minutes' => '{duration} minuti',
     'Optional' => 'Facoltativo',
+    'Date and time: newest first' => 'Data e ora: più recenti prima',
+    'Date and time: oldest first' => 'Data e ora: meno recenti prima',
+    'Customer: A–Z' => 'Cliente: A–Z',
+    'Customer: Z–A' => 'Cliente: Z–A',
+    'Calendar: A–Z' => 'Calendario: A–Z',
+    'Calendar: Z–A' => 'Calendario: Z–A',
+    'Status: A–Z' => 'Stato: A–Z',
+    'Status: Z–A' => 'Stato: Z–A',
 ];

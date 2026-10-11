@@ -13,6 +13,7 @@ use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Records\CalendarRecord;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -35,7 +36,28 @@ class BookingsController extends BaseController
         if ($status && !isset(Booking::statusOptions()[$status])) {
             throw new BadRequestHttpException();
         }
-        $query = Booking::find()->calendarId($calendarId ?: array_keys($calendars))->orderBy(['calendar_bookings.startDate' => \SORT_DESC]);
+        $sortOptions = [
+            'date-desc' => Calendar::t('Date and time: newest first'),
+            'date-asc' => Calendar::t('Date and time: oldest first'),
+            'customer-asc' => Calendar::t('Customer: A–Z'),
+            'customer-desc' => Calendar::t('Customer: Z–A'),
+            'calendar-asc' => Calendar::t('Calendar: A–Z'),
+            'calendar-desc' => Calendar::t('Calendar: Z–A'),
+            'status-asc' => Calendar::t('Status: A–Z'),
+            'status-desc' => Calendar::t('Status: Z–A'),
+        ];
+        $sort = $request->getQueryParam('sort', 'date-desc');
+        if (!\is_string($sort) || !isset($sortOptions[$sort])) {
+            $sort = 'date-desc';
+        }
+        [$sortField, $sortDirection] = explode('-', $sort);
+        $sortColumns = ['date' => 'calendar_bookings.startDate', 'customer' => 'calendar_bookings.customerName', 'calendar' => 'booking_calendar.name', 'status' => 'calendar_bookings.bookingStatus'];
+        $query = Booking::find()->calendarId($calendarId ?: array_keys($calendars));
+        if ('calendar' === $sortField) {
+            $query->leftJoin(['booking_calendar' => CalendarRecord::TABLE], '[[booking_calendar.id]] = [[calendar_bookings.calendarId]]');
+        }
+        // A unique tie-breaker keeps bookings with matching values stable across pages.
+        $query->orderBy([$sortColumns[$sortField] => 'asc' === $sortDirection ? \SORT_ASC : \SORT_DESC, 'calendar_bookings.id' => \SORT_DESC]);
         if ($status) {
             $query->bookingStatus($status);
         }
@@ -48,7 +70,7 @@ class BookingsController extends BaseController
 
         $variables = $this->variables() + [
             'bookings' => $query->limit(50)->offset(($page - 1) * 50)->all(), 'total' => $total, 'page' => $page,
-            'calendarId' => $calendarId, 'bookingStatus' => $status, 'search' => $search,
+            'calendarId' => $calendarId, 'bookingStatus' => $status, 'search' => $search, 'sort' => $sort, 'sortOptions' => $sortOptions,
         ];
         if ($request->getAcceptsJson()) {
             $view = \Craft::$app->getView();

@@ -4,7 +4,18 @@
 {% for value, label in statusOptions %}{% set rowStatusOptions = rowStatusOptions|merge([{value, label, data: {status: statusColors[value]}}]) %}{% endfor %}
 <div class="booking-table-scroll">
     <table class="data fullwidth booking-table">
-        <thead><tr><th scope="col">{{ 'Customer'|t('calendar') }}</th><th scope="col">{{ 'Calendar'|t('calendar') }}</th><th scope="col">{{ 'Date and Time'|t('calendar') }}</th><th scope="col">{{ 'Status'|t('calendar') }}</th></tr></thead>
+        <thead><tr>
+            {% for field, label in {customer: 'Customer', calendar: 'Calendar', date: 'Date and Time', status: 'Status'} %}
+                {% set active = sort starts with field ~ '-' %}
+                {% set ascending = sort == field ~ '-asc' %}
+                {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field == 'date' ? '-desc' : '-asc')) %}
+                <th scope="col" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
+                    <a class="booking-sort-link{{ active ? ' active' }}" data-booking-sort="{{ nextSort }}" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort: nextSort}) }}">
+                        {{ label|t('calendar') }}<span class="booking-sort-arrow" aria-hidden="true">{{ active ? (ascending ? '↑' : '↓') : '↕' }}</span>
+                    </a>
+                </th>
+            {% endfor %}
+        </tr></thead>
         <tbody>
         {% for booking in bookings %}
             {% set calendar = calendars[booking.calendarId] %}
@@ -29,8 +40,8 @@
 <div class="booking-footer">
     <span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
     <div class="buttons">
-        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
-        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
+        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
+        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
     </div>
 </div>
 {% js %}

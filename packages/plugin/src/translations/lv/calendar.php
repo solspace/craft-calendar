@@ -882,4 +882,12 @@ return [
     'Please check back later.' => 'Lūdzu, pārbaudiet vēlāk.',
     '{duration} minutes' => '{duration} minūtes',
     'Optional' => 'Neobligāti',
+    'Date and time: newest first' => 'Datums un laiks: jaunākie vispirms',
+    'Date and time: oldest first' => 'Datums un laiks: vecākie vispirms',
+    'Customer: A–Z' => 'Klients: A–Z',
+    'Customer: Z–A' => 'Klients: Z–A',
+    'Calendar: A–Z' => 'Kalendārs: A–Z',
+    'Calendar: Z–A' => 'Kalendārs: Z–A',
+    'Status: A–Z' => 'Statuss: A–Z',
+    'Status: Z–A' => 'Statuss: Z–A',
 ];

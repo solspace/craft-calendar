@@ -1045,4 +1045,12 @@ return [
     'Please check back later.' => 'Please check back later.',
     '{duration} minutes' => '{duration} minutes',
     'Optional' => 'Optional',
+    'Date and time: newest first' => 'Date and time: newest first',
+    'Date and time: oldest first' => 'Date and time: oldest first',
+    'Customer: A–Z' => 'Customer: A–Z',
+    'Customer: Z–A' => 'Customer: Z–A',
+    'Calendar: A–Z' => 'Calendar: A–Z',
+    'Calendar: Z–A' => 'Calendar: Z–A',
+    'Status: A–Z' => 'Status: A–Z',
+    'Status: Z–A' => 'Status: Z–A',
 ];

@@ -8,7 +8,7 @@ Defaults: 8am–9pm each day, 30-minute bookings, 15-minute start increments, no
 
 ## Control panel
 
-**Bookings** appears when the current user can manage at least one Scheduling calendar. Booking permissions are independent of event permissions and can be granted globally or per calendar. The list supports customer search, calendar/status filters, and pagination. The Schedule view provides Day/Week views and dragging to reschedule, without FullCalendar Scheduler. Clicking a booking opens its editor. Decline or cancel from the status selector.
+**Bookings** appears when the current user can manage at least one Scheduling calendar. Booking permissions are independent of event permissions and can be granted globally or per calendar. The list supports customer search, calendar/status filters, and pagination. Use **Sort by** or click a column heading to sort by customer, calendar, date and time, or status. Click the same heading again to reverse the order. Sorting applies to all matching bookings and stays selected through filtering and pagination. The Schedule view provides Day/Week views and dragging to reschedule, without FullCalendar Scheduler. Clicking a booking opens its editor. Decline or cancel from the status selector.
 
 Staff with booking management permission can change status directly in the list; changes save automatically with a saving indicator and confirmation. Failed changes restore the previous selection and show the error. Inline changes use the same availability checks, status attribution, and notifications as the booking editor.
 

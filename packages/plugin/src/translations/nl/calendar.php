@@ -922,4 +922,12 @@ return [
     'Please check back later.' => 'Kom later terug.',
     '{duration} minutes' => '{duration} minuten',
     'Optional' => 'Optioneel',
+    'Date and time: newest first' => 'Datum en tijd: nieuwste eerst',
+    'Date and time: oldest first' => 'Datum en tijd: oudste eerst',
+    'Customer: A–Z' => 'Klant: A–Z',
+    'Customer: Z–A' => 'Klant: Z–A',
+    'Calendar: A–Z' => 'Kalender: A–Z',
+    'Calendar: Z–A' => 'Kalender: Z–A',
+    'Status: A–Z' => 'Status: A–Z',
+    'Status: Z–A' => 'Status: Z–A',
 ];
