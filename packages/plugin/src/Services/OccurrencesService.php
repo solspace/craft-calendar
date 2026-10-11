@@ -363,7 +363,7 @@ class OccurrencesService extends Component
         }
 
         if ($override->id && !$this->resetOverride($this->requireEvent($override), $override->recurrenceId)) {
-            throw new InvalidElementException($override, 'Couldn’t remove the occurrence override.');
+            throw new InvalidElementException($override, Calendar::t('Couldn’t remove the occurrence override.'));
         }
 
         return null;

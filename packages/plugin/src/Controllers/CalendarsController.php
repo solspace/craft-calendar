@@ -122,7 +122,7 @@ class CalendarsController extends BaseController
         $calendar = $this->getCalendarService()->getCalendarById($id);
 
         if (!$calendar) {
-            return $this->asFailure('Could not find calendar');
+            return $this->asFailure(Calendar::t('Could not find calendar'));
         }
 
         PermissionHelper::requirePermission(Calendar::PERMISSION_CREATE_CALENDARS);

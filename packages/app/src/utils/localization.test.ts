@@ -19,6 +19,9 @@ const catalog = (language: string): Record<string, string> => {
   return Object.fromEntries(entries);
 };
 const english = catalog("en");
+const translatedLanguages = readdirSync(`${pluginRoot}/translations`).filter(
+  (language) => !["en", "en-US"].includes(language),
+);
 const files = (directory: string): string[] =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     if (
@@ -128,10 +131,25 @@ const sharedWords: Record<string, string[]> = {
     "Stack Exchange",
     "Community",
   ],
+  lv: [
+    "Apr",
+    "Aug",
+    "Craft Discord",
+    "Dec",
+    "Express Forms",
+    "Feb",
+    "Freeform",
+    "Jan",
+    "Mar",
+    "Nov",
+    "Sep",
+    "Slug",
+    "Stack Exchange",
+  ],
 };
 
 describe("control-panel translation catalogs", () => {
-  for (const language of ["de", "nl", "fr", "it"]) {
+  for (const language of translatedLanguages) {
     it(`${language} covers every English key with matching placeholders and markup`, () => {
       const messages = catalog(language);
       expect(Object.keys(messages).sort()).toEqual(Object.keys(english).sort());
@@ -167,6 +185,13 @@ describe("control-panel translation catalogs", () => {
       if (path.endsWith("Validator.php")) {
         for (const match of source.matchAll(
           new RegExp(`\\$errors\\[[^\\n]+\\]\\[\\]\\s*=\\s*(${literal})`, "g"),
+        ))
+          keys.add(decode(match[1]));
+      }
+      // Mapping services return these messages to the controller, which translates them.
+      if (/(?:CalendarFieldMapper|EventCalendarTransfer)\.php$/.test(path)) {
+        for (const match of source.matchAll(
+          new RegExp(`new InvalidArgumentException\\(\\s*(${literal})`, "g"),
         ))
           keys.add(decode(match[1]));
       }
@@ -223,6 +248,11 @@ describe("control-panel translation catalogs", () => {
 describe("control-panel locale wiring", () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  it.each(translatedLanguages)("loads matching date and calendar locales for %s", (language) => {
+    expect(getDateLocale(language).code).toBe(language);
+    expect(getCalendarTranslations().locales.some((locale) => locale.code === language)).toBe(true);
+  });
+
   it.each([
     "en-US",
     "en-GB",
@@ -230,6 +260,7 @@ describe("control-panel locale wiring", () => {
     "nl-NL",
     "fr-FR",
     "it-IT",
+    "lv-LV",
   ])("formats dates using %s", (language) => {
     vi.stubGlobal("document", { documentElement: { lang: language } });
     expect(getDateLocale().code).toBe(

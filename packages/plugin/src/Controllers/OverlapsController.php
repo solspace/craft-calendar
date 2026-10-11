@@ -26,7 +26,7 @@ class OverlapsController extends BaseController
         $site = \Craft::$app->getSites()->getSiteById($siteId);
         $user = static::currentUser();
         if (\Craft::$app->getIsMultiSite() && !$user->can("editSite:{$site->uid}")) {
-            throw new ForbiddenHttpException('User not authorized to edit content for this site.');
+            throw new ForbiddenHttpException(Calendar::t('User not authorized to edit content for this site.'));
         }
         $calendar = $this->resolveEventCalendar($request->getRequiredBodyParam('calendarId'), $siteId);
         $eventId = (int) $request->getBodyParam('eventId');
@@ -37,7 +37,7 @@ class OverlapsController extends BaseController
             }
             $this->getEventsService()->requireEventEditPermissions($event);
             if (($event->isProvisionalDraft && $event->creatorId !== $user->id) || !\Craft::$app->getElements()->canSave($event, $user)) {
-                throw new ForbiddenHttpException('User not authorized to save this event.');
+                throw new ForbiddenHttpException(Calendar::t('User not authorized to save this event.'));
             }
             if ((int) $event->calendarId !== (int) $calendar->id) {
                 $this->getEventsService()->requireEventCreatePermissions($calendar);
