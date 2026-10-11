@@ -5,7 +5,7 @@
     instructions: 'Add an opening period for each available weekday. Add the same weekday twice for a break, or remove it to keep that day closed.'|t('calendar'),
     id: 'scheduling-hours', name: schedulingPrefix~'[hours]',
     cols: {
-        day: {type: 'select', heading: 'Weekday'|t('calendar'), options: [{value: 1, label: 'Monday'|t('app')}, {value: 2, label: 'Tuesday'|t('app')}, {value: 3, label: 'Wednesday'|t('app')}, {value: 4, label: 'Thursday'|t('app')}, {value: 5, label: 'Friday'|t('app')}, {value: 6, label: 'Saturday'|t('app')}, {value: 7, label: 'Sunday'|t('app')}]},
+        day: {type: 'select', heading: 'Weekday'|t('calendar'), options: [{value: 7, label: 'Sunday'|t('app')}, {value: 1, label: 'Monday'|t('app')}, {value: 2, label: 'Tuesday'|t('app')}, {value: 3, label: 'Wednesday'|t('app')}, {value: 4, label: 'Thursday'|t('app')}, {value: 5, label: 'Friday'|t('app')}, {value: 6, label: 'Saturday'|t('app')}]},
         start: {type: 'time', heading: 'Opens'|t('calendar'), placeholder: '08:00'},
         end: {type: 'time', heading: 'Closes'|t('calendar'), placeholder: '21:00'}
     }, rows: schedulingHours, errors: scheduling.getErrors('hours'), allowAdd: true, allowDelete: true, allowReorder: false

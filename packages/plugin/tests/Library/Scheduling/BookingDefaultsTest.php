@@ -29,6 +29,7 @@ class BookingDefaultsTest extends TestCase
         self::assertFalse($defaults->allowGuests);
         self::assertTrue($defaults->requireApproval);
         self::assertCount(7, $defaults->hours);
+        self::assertSame([7, 1, 2, 3, 4, 5, 6], array_column($defaults->hours, 'day'));
         self::assertTrue((new SettingsModel())->validate());
     }
 
@@ -181,7 +182,7 @@ class BookingDefaultsTest extends TestCase
             'calendar/layouts/_settings' => '{% block content %}{% endblock %}{% block styles %}{% endblock %}',
             '_includes/forms' => <<<'TWIG'
                 {% macro errorList(errors) %}{% for error in errors %}<error>{{ error }}</error>{% endfor %}{% endmacro %}
-                {% macro editableTableField(config) %}<field name="{{ config.name }}">{{ config.rows|json_encode }}</field>{% endmacro %}
+                {% macro editableTableField(config) %}<field name="{{ config.name }}">{{ config.rows|json_encode }}</field>{% if config.cols.day is defined %}<weekdays>{{ config.cols.day.options|json_encode|raw }}</weekdays>{% endif %}{% endmacro %}
                 {% macro textField(config) %}<input name="{{ config.name }}" value="{{ config.value }}">{% for error in config.errors|default([]) %}<error>{{ error }}</error>{% endfor %}{% endmacro %}
                 {% macro lightswitchField(config) %}<input name="{{ config.name }}" value="{{ config.on ? 1 : 0 }}">{% endmacro %}
                 {% macro selectField(config) %}<input name="{{ config.name }}">{% endmacro %}
@@ -204,6 +205,10 @@ class BookingDefaultsTest extends TestCase
         $output = $twig->render('defaults', $variables);
         self::assertStringContainsString('name="settings[bookingDefaults][duration]" value="45"', $output);
         self::assertStringContainsString('name="settings[bookingDefaults][hours]"', $output);
+        self::assertSame(1, preg_match('/<weekdays>(.*?)<\/weekdays>/s', $output, $matches));
+        $weekdays = json_decode($matches[1], true, 512, \JSON_THROW_ON_ERROR);
+        self::assertSame([7, 1, 2, 3, 4, 5, 6], array_column($weekdays, 'value'));
+        self::assertSame('Sunday', $weekdays[0]['label']);
         self::assertStringContainsString('name="settings[bookingDefaults][requireApproval]"', $output);
         self::assertStringContainsString('Invalid duration', $output);
         self::assertStringContainsString('Changes here do not affect existing calendars.', $output);
@@ -213,6 +218,7 @@ class BookingDefaultsTest extends TestCase
         $output = $twig->render('scheduling', $variables);
         self::assertStringContainsString('name="scheduling[duration]" value="45"', $output);
         self::assertStringContainsString('name="scheduling[hours]"', $output);
+        self::assertStringContainsString($matches[0], $output);
         self::assertStringContainsString('name="scheduling[allowGuests]"', $output);
         self::assertStringNotContainsString('settings[bookingDefaults]', $output);
     }

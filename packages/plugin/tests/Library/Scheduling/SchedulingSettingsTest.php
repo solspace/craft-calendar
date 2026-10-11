@@ -20,7 +20,27 @@ class SchedulingSettingsTest extends TestCase
     {
         $settings = new SchedulingSettings(['hours' => []]);
         self::assertSame([], (new SchedulingSettings($settings->toArray()))->hours);
+        self::assertSame([], $settings->getHoursForDisplay());
         self::assertTrue($settings->validate());
+    }
+
+    public function testSavedHoursDisplaySundayFirstWithoutChangingSplitPeriods(): void
+    {
+        $hours = [
+            ['day' => '1', 'start' => '13:00', 'end' => '17:00'],
+            ['day' => 6, 'start' => '10:00', 'end' => '14:00'],
+            ['day' => '7', 'start' => '09:00', 'end' => '12:00'],
+            ['day' => 1, 'start' => '09:00', 'end' => '12:00'],
+            ['day' => 7, 'start' => '13:00', 'end' => '15:00'],
+        ];
+        $settings = new SchedulingSettings(['hours' => $hours]);
+        self::assertSame([$hours[2], $hours[4], $hours[0], $hours[3], $hours[1]], $settings->getHoursForDisplay());
+        self::assertSame($hours, $settings->hours);
+        self::assertSame($hours, $settings->toArray()['hours']);
+
+        // Invalid posted rows must remain available for correction after validation fails.
+        $settings->hours = ['invalid', ['day' => 'invalid'], $hours[2]];
+        self::assertSame([$hours[2], 'invalid', ['day' => 'invalid']], $settings->getHoursForDisplay());
     }
 
     public function testValidDefaultsAndInvalidLimits(): void

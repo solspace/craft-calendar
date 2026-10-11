@@ -107,7 +107,7 @@ class SettingsController extends BaseController
     {
         $settings = $this->getSettingsService()->getSettingsModel();
         $scheduling = $settings->getBookingDefaults();
-        $hours = $scheduling->hours;
+        $hours = $scheduling->getHoursForDisplay();
         $zone = new \DateTimeZone(\Craft::$app->getTimeZone());
         foreach ($hours as &$row) {
             if (!\is_array($row)) {

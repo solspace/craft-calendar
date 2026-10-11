@@ -21,15 +21,29 @@ class SchedulingSettings extends Model
     public bool $requireApproval = true;
     public string $notificationEmail = '';
     public array $hours = [
+        ['day' => 7, 'start' => '08:00', 'end' => '21:00'],
         ['day' => 1, 'start' => '08:00', 'end' => '21:00'],
         ['day' => 2, 'start' => '08:00', 'end' => '21:00'],
         ['day' => 3, 'start' => '08:00', 'end' => '21:00'],
         ['day' => 4, 'start' => '08:00', 'end' => '21:00'],
         ['day' => 5, 'start' => '08:00', 'end' => '21:00'],
         ['day' => 6, 'start' => '08:00', 'end' => '21:00'],
-        ['day' => 7, 'start' => '08:00', 'end' => '21:00'],
     ];
     public array $exceptions = [];
+
+    /** Show Sunday first, preserving split-period order and the saved configuration. */
+    public function getHoursForDisplay(): array
+    {
+        $hours = $this->hours;
+        $weekday = static function ($row): int {
+            $day = \is_array($row) ? filter_var($row['day'] ?? null, \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 7]]) : false;
+
+            return false === $day ? 7 : $day % 7;
+        };
+        usort($hours, static fn ($a, $b) => $weekday($a) <=> $weekday($b));
+
+        return $hours;
+    }
 
     public function validateAvailability(): void
     {

@@ -570,7 +570,7 @@ class CalendarsController extends BaseController
         foreach (['availableFrom', 'availableUntil'] as $key) {
             $schedulingDates[$key] = Availability::validDate($scheduling->{$key}) ? new \DateTimeImmutable($scheduling->{$key}, new \DateTimeZone($scheduling->timezone)) : null;
         }
-        $hours = $scheduling->hours;
+        $hours = $scheduling->getHoursForDisplay();
         $exceptions = $scheduling->exceptions;
         $zone = new \DateTimeZone(\Craft::$app->getTimeZone());
         foreach ([&$hours, &$exceptions] as &$rows) {
