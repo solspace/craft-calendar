@@ -159,6 +159,22 @@
     // Craft uses .submit for primary actions; remove any destructive treatment.
     screen.$saveBtn.removeClass('error destructive danger').addClass('submit');
     screen.$saveBtn.find('button').removeClass('error destructive danger').addClass('submit');
+    // The footer's native primary action is red in this Craft theme. Scope a
+    // blue treatment to this review screen, including its hover/focus states.
+    footer.classList.add('calendar-booking-review-footer');
+    if (!document.getElementById('calendar-booking-review-footer-style')) {
+        const style = document.createElement('style');
+        style.id = 'calendar-booking-review-footer-style';
+        style.textContent = `
+            .calendar-booking-review-footer .btn.submit,
+            .calendar-booking-review-footer button.submit { background:#2563eb !important; background-color:#2563eb !important; color:#fff !important; }
+            .calendar-booking-review-footer .btn.submit:hover,
+            .calendar-booking-review-footer button.submit:hover { background:#1d4ed8 !important; background-color:#1d4ed8 !important; }
+            .calendar-booking-review-footer .btn.submit:focus-visible,
+            .calendar-booking-review-footer button.submit:focus-visible { outline:2px solid #1d4ed8; outline-offset:2px; }
+        `;
+        document.head.appendChild(style);
+    }
     const decision = form.querySelector('[data-request-decision]');
     const start = form.querySelector('[data-request-start]');
     const picker = form.querySelector('[data-request-time-picker]');
