@@ -1120,7 +1120,7 @@ return [
     'Available From' => 'Available From',
     'Available Until' => 'Available Until',
     'Turn off to stop new bookings. Existing bookings remain available to manage and cancel.' => 'Turn off to stop new bookings. Existing bookings remain available to manage and cancel.',
-    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for no seasonal limit.' => 'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for no seasonal limit.',
+    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for open-ended availability.' => 'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for open-ended availability.',
     'Availability dates must use a valid date (YYYY-MM-DD).' => 'Availability dates must use a valid date (YYYY-MM-DD).',
     'Available Until must be on or after Available From.' => 'Available Until must be on or after Available From.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'This calendar is inactive or the booking falls outside its available dates.',

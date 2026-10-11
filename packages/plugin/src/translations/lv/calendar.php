@@ -957,7 +957,7 @@ return [
     'Available From' => 'Pieejams no',
     'Available Until' => 'Pieejams līdz',
     'Turn off to stop new bookings. Existing bookings remain available to manage and cancel.' => 'Izslēdziet, lai apturētu jaunas rezervācijas. Esošās rezervācijas joprojām var pārvaldīt un atcelt.',
-    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for no seasonal limit.' => 'Neobligāts pirmais vai pēdējais rezervējamais datums, ieskaitot, kalendāra laika joslā. Atstājiet tukšu, lai neierobežotu sezonu.',
+    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for open-ended availability.' => 'Neobligāts pirmais vai pēdējais rezervējamais datums, ieskaitot, kalendāra laika joslā. Atstājiet tukšu, lai pieejamība nebūtu ierobežota ar datumu.',
     'Availability dates must use a valid date (YYYY-MM-DD).' => 'Pieejamības datumiem jābūt derīgiem (GGGG-MM-DD).',
     'Available Until must be on or after Available From.' => 'Pieejamības beigu datumam jābūt vienādam ar sākuma datumu vai vēlākam.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Šis kalendārs ir neaktīvs vai rezervācija ir ārpus pieejamajiem datumiem.',

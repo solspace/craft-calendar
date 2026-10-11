@@ -104,7 +104,7 @@ class Availability
         return array_values($firstOnly ? \array_slice($slots, 0, 1, true) : $slots);
     }
 
-    /** Both seasonal bounds are inclusive, in the scheduling calendar's timezone. */
+    /** Both availability date bounds are inclusive, in the scheduling calendar's timezone. */
     public static function dateIsAvailable(array $settings, string $date): bool
     {
         return ($settings['active'] ?? true) && self::validDate($date)

@@ -997,7 +997,7 @@ return [
     'Available From' => 'Verfügbar ab',
     'Available Until' => 'Verfügbar bis',
     'Turn off to stop new bookings. Existing bookings remain available to manage and cancel.' => 'Deaktivieren Sie diese Option, um neue Buchungen zu stoppen. Vorhandene Buchungen können weiterhin verwaltet und storniert werden.',
-    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for no seasonal limit.' => 'Optionales erstes oder letztes buchbares Datum, einschließlich, in der Buchungszeitzone. Für keine saisonale Begrenzung leer lassen.',
+    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for open-ended availability.' => 'Optionales erstes oder letztes buchbares Datum, einschließlich, in der Buchungszeitzone. Für zeitlich unbegrenzte Verfügbarkeit leer lassen.',
     'Availability dates must use a valid date (YYYY-MM-DD).' => 'Verfügbarkeitsdaten müssen ein gültiges Datum verwenden (JJJJ-MM-TT).',
     'Available Until must be on or after Available From.' => 'Verfügbar bis muss am oder nach dem Datum Verfügbar ab liegen.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Dieser Kalender ist inaktiv oder die Buchung liegt außerhalb seiner verfügbaren Daten.',

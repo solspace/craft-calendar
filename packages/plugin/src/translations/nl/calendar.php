@@ -997,7 +997,7 @@ return [
     'Available From' => 'Beschikbaar vanaf',
     'Available Until' => 'Beschikbaar tot en met',
     'Turn off to stop new bookings. Existing bookings remain available to manage and cancel.' => 'Schakel uit om nieuwe boekingen te stoppen. Bestaande boekingen blijven beschikbaar om te beheren en te annuleren.',
-    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for no seasonal limit.' => 'Optionele eerste of laatste boekbare datum, inclusief, in de tijdzone van de kalender. Laat leeg voor geen seizoensbeperking.',
+    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for open-ended availability.' => 'Optionele eerste of laatste boekbare datum, inclusief, in de tijdzone van de kalender. Laat leeg voor beschikbaarheid zonder datumgrens.',
     'Availability dates must use a valid date (YYYY-MM-DD).' => 'Beschikbaarheidsdatums moeten geldig zijn (JJJJ-MM-DD).',
     'Available Until must be on or after Available From.' => 'Beschikbaar tot en met moet op of na Beschikbaar vanaf vallen.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Deze kalender is inactief of de boeking valt buiten de beschikbare datums.',

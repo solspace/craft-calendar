@@ -997,7 +997,7 @@ return [
     'Available From' => 'Disponibile dal',
     'Available Until' => 'Disponibile fino al',
     'Turn off to stop new bookings. Existing bookings remain available to manage and cancel.' => 'Disattiva per interrompere le nuove prenotazioni. Le prenotazioni esistenti rimangono disponibili per la gestione e l’annullamento.',
-    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for no seasonal limit.' => 'Prima o ultima data prenotabile facoltativa, inclusa, nel fuso orario del calendario. Lascia vuoto per non limitare la stagione.',
+    'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for open-ended availability.' => 'Prima o ultima data prenotabile facoltativa, inclusa, nel fuso orario del calendario. Lascia vuoto per una disponibilità senza limiti di data.',
     'Availability dates must use a valid date (YYYY-MM-DD).' => 'Le date di disponibilità devono essere valide (AAAA-MM-GG).',
     'Available Until must be on or after Available From.' => 'La data finale di disponibilità deve coincidere con o seguire la data iniziale.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Questo calendario è inattivo o la prenotazione non rientra nelle date disponibili.',
