@@ -16,32 +16,42 @@
 </div>
 {% endblock %}
 {% block content %}
-{% set calendarOptions = [] %}
-{% for item in calendars %}{% set calendarOptions = calendarOptions|merge([{value: item.id, label: item.name, data: {color: item.color}}]) %}{% endfor %}
 <form method="get" class="booking-toolbar">
-    {{ forms.selectize({id: 'booking-schedule-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', extraPlugins: false}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
+    <input type="hidden" id="booking-schedule-calendars" name="calendarIds" value="{{ calendarSelection }}">
+    <button type="button" id="booking-schedule-calendar-picker" class="btn menubtn" data-disclosure-trigger aria-label="{{ 'Calendars'|t('calendar') }}" aria-controls="booking-schedule-calendar-menu"><span data-calendar-label>{{ calendarSelection == 'all' ? 'All Calendars'|t('calendar') : (calendarIds|length == 1 ? calendar.name : '{count} Calendars'|t('calendar', {count: calendarIds|length})) }}</span></button>
+    <div id="booking-schedule-calendar-menu" class="menu menu--disclosure booking-calendar-menu">
+        <ul><li><input id="booking-calendar-all" type="checkbox" class="checkbox" data-calendar-all{{ calendarSelection == 'all' ? ' checked' : '' }}><label for="booking-calendar-all">{{ 'All Calendars'|t('calendar') }}</label></li></ul>
+        <hr>
+        <ul>{% for item in calendars %}<li><input id="booking-calendar-{{ item.id }}" type="checkbox" class="checkbox" data-calendar-choice="{{ item.id }}" data-calendar-name="{{ item.name }}"{{ item.id in calendarIds ? ' checked' : '' }}><label for="booking-calendar-{{ item.id }}"><span class="color small" style="background-color:{{ item.color }}" aria-hidden="true"></span><span>{{ item.name }}</span></label></li>{% endfor %}</ul>
+    </div>
     <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, required: true, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
     {{ forms.selectize({id: 'booking-schedule-view', class: 'booking-toolbar-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
     <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
-        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
-        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarId, view: scheduleView, date: next}) }}">{{ 'Next'|t('app') }}</a>
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, date: next}) }}">{{ 'Next'|t('app') }}</a>
     </div>
     <span class="spinner hidden" aria-hidden="true"></span>
-    <span class="light booking-toolbar-timezone">{{ calendar.schedulingSettings.timezone }}</span>
+    <span class="light booking-toolbar-timezone">{{ displayTimezone }}</span>
 </form>
 <p class="light">{{ 'Confirmed bookings reserve time. Requested bookings are shown for review.'|t('calendar') }}</p>
-<p class="light booking-grid-instructions">{{ 'Click an available time to add a booking. Shaded times are unavailable.'|t('calendar') }}</p>
-<div class="booking-grid-scroll"><div class="booking-grid" data-calendar-id="{{ calendarId }}" data-increment="{{ calendar.schedulingSettings.increment }}" style="--days:{{ days|length }}">
-<div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ ('2000-01-01 ' ~ '%02d:00'|format(hour))|time(bookingTimeFormat, calendar.schedulingSettings.timezone)|calendarTimeLabel }}</div>{% endfor %}</div>
-{% for day in days %}<div class="booking-day"><div class="booking-day-heading">{{ day.date|date('icu:EEE', calendar.schedulingSettings.timezone) }} {{ day.date|date('short', calendar.schedulingSettings.timezone) }}</div><div class="booking-day-body" data-date="{{ day.date|date('Y-m-d', calendar.schedulingSettings.timezone) }}">
+<p class="light booking-grid-instructions">{{ 'Click an available time to add a booking. Shaded times are unavailable for that calendar.'|t('calendar') }}</p>
+<div class="booking-grid-scroll"><div class="booking-grid{{ calendarIds|length > 1 ? ' booking-grid-multiple' : '' }}" data-calendar-ids="{{ calendarIds|join(',') }}" data-timezone="{{ displayTimezone }}" style="--days:{{ days|length }};--calendars:{{ calendarIds|length }};--columns:{{ days|length * calendarIds|length }}">
+<div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ ('2000-01-01 ' ~ '%02d:00'|format(hour))|time(bookingTimeFormat, displayTimezone)|calendarTimeLabel }}</div>{% endfor %}</div>
+{% for day in days %}<div class="booking-day"><div class="booking-day-heading">{{ day.date|date('icu:EEE', displayTimezone) }} {{ day.date|date('short', displayTimezone) }}</div><div class="booking-day-columns">
+{% for column in day.columns %}
+{% set resource = column.calendar %}
+<div class="booking-resource">
+{% if calendarIds|length > 1 %}<div class="booking-resource-heading" title="{{ resource.name }} · {{ resource.schedulingSettings.timezone }}"><span class="color small" style="background-color:{{ resource.color }}" aria-hidden="true"></span><span>{{ resource.name }}</span></div>{% endif %}
+<div class="booking-day-body" data-date="{{ day.date|date('Y-m-d', displayTimezone) }}" data-calendar-id="{{ resource.id }}" data-increment="{{ resource.schedulingSettings.increment }}">
 {% for hour in 0..23 %}<div class="booking-hour"></div>{% endfor %}
-{% for minute, slots in day.slots %}
+{% for minute, slots in column.slots %}
 {% for slot in slots %}
 {% set slotLabel = 'New booking: {time}'|t('calendar', {time: slot.label}) %}
-<a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId, start: slot.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ slot.length / 60 * 48 }}px;height:{{ min(calendar.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ day.date|date('Y-m-d', calendar.schedulingSettings.timezone) }} · {{ slotLabel }} · {{ slot.start|date('T', calendar.schedulingSettings.timezone) }}" title="{{ slotLabel }} · {{ slot.start|date('T', calendar.schedulingSettings.timezone) }}"><span>{{ slotLabel }}</span></a>
+<a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId: resource.id, start: slot.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ slot.length / 60 * 48 }}px;height:{{ min(resource.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ resource.name }} · {{ day.date|date('Y-m-d', displayTimezone) }} · {{ slotLabel }} · {{ slot.start|date('T', displayTimezone) }}" title="{{ resource.name }} · {{ slotLabel }} · {{ slot.start|date('T', displayTimezone) }}"><span>{{ slotLabel }}</span></a>
 {% endfor %}
 {% endfor %}
-{% for item in day.bookings %}<a draggable="true" data-booking-id="{{ item.booking.id }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ calendar.color }};left:calc({{ item.lane / day.lanes * 100 }}% + 3px);width:calc({{ 100 / day.lanes }}% - 6px)" title="{{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong>{{ item.booking.customerName }}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}
+{% for item in column.bookings %}<a draggable="true" data-booking-id="{{ item.booking.id }}" data-calendar-id="{{ resource.id }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ resource.color }};left:calc({{ item.lane / column.lanes * 100 }}% + 3px);width:calc({{ 100 / column.lanes }}% - 6px)" title="{{ resource.name }} · {{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong>{{ item.booking.customerName }}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}
+</div></div>{% endfor %}
 </div></div>{% endfor %}
 </div></div>
 {% endblock %}
@@ -66,7 +76,23 @@
 .booking-toolbar .selectize-input .color.small, .booking-picker-dropdown .color.small { width:12px; height:12px; flex:0 0 12px; margin:0; }
 .booking-grid-scroll { max-height:65vh; overflow:auto; border:1px solid var(--hairline-color,#d8dee5); border-radius:8px; }
 .booking-grid-scroll[aria-busy="true"] { opacity:.65; pointer-events:none; }
-.booking-grid { display:grid; grid-template-columns:80px repeat(var(--days),minmax(115px,1fr)); min-width:calc(var(--days) * 115px + 80px); }
+.booking-grid { display:grid; grid-template-columns:80px repeat(var(--days),minmax(calc(var(--calendars) * 140px),1fr)); min-width:calc(var(--columns) * 140px + 80px); }
+.booking-grid-times { position:sticky; left:0; z-index:6; background:var(--white,#fff); }
+.booking-day-columns { display:grid; grid-template-columns:repeat(var(--calendars),minmax(0,1fr)); }
+.booking-resource + .booking-resource { border-inline-start:1px solid var(--hairline-color,#d8dee5); }
+.booking-resource-heading { height:32px; position:sticky; top:42px; z-index:5; display:flex; align-items:center; justify-content:center; gap:6px; padding:0 8px; background:var(--white,#fff); border-bottom:1px solid var(--hairline-color,#d8dee5); font-size:11px; }
+.booking-resource-heading > span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.booking-resource-heading .color.small, .booking-calendar-menu .color.small { width:10px; height:10px; flex:0 0 10px; margin:0; }
+.booking-grid-multiple .booking-grid-times .booking-day-heading { height:75px; }
+.booking-calendar-menu { min-width:210px; max-width:320px; }
+.booking-calendar-menu ul { max-height:300px; overflow:auto; }
+.booking-calendar-menu li { padding:7px 12px; }
+.booking-calendar-menu label { display:flex; align-items:center; gap:8px; padding-inline-start:24px; cursor:pointer; }
+.booking-calendar-menu label:hover { background:var(--gray-050,#f3f6fa); }
+.booking-calendar-menu label > span:last-child { overflow:hidden; text-overflow:ellipsis; }
+.booking-calendar-menu input { flex-shrink:0; }
+#booking-schedule-calendar-picker { max-width:240px; }
+#booking-schedule-calendar-picker [data-calendar-label] { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .booking-day { border-left:1px solid var(--hairline-color,#d8dee5); }
 .booking-day-heading { height:42px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--white,#fff); z-index:5; font-weight:600; border-bottom:1px solid var(--hairline-color,#d8dee5); }
 .booking-day-body { position:relative; height:1152px; background:var(--gray-050,#f4f6f9); }

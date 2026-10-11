@@ -3,6 +3,35 @@ bookingGridScroll.scrollTop = 7 * 48;
 const bookingHistoryButtons = document.querySelectorAll('[data-booking-history]');
 const bookingToolbar = document.querySelector('.booking-toolbar');
 const bookingSpinner = bookingToolbar.querySelector('.spinner');
+const bookingCalendarPicker = document.querySelector('#booking-schedule-calendar-picker');
+const bookingCalendarMenu = document.querySelector('#booking-schedule-calendar-menu');
+const bookingCalendarChoices = [...bookingCalendarMenu.querySelectorAll('[data-calendar-choice]')];
+const bookingCalendarAll = bookingCalendarMenu.querySelector('[data-calendar-all]');
+const bookingCalendarInput = bookingToolbar.elements.namedItem('calendarIds');
+const bookingCalendarDisclosure = $(bookingCalendarPicker).data('disclosureMenu') || new Garnish.DisclosureMenu(bookingCalendarPicker);
+function syncBookingCalendarPicker(selection) {
+    const ids = selection.split(',');
+    bookingCalendarChoices.forEach(input => input.checked = selection === 'all' || ids.includes(input.dataset.calendarChoice));
+    const selected = bookingCalendarChoices.filter(input => input.checked);
+    bookingCalendarAll.checked = selected.length === bookingCalendarChoices.length;
+    bookingCalendarAll.indeterminate = selected.length > 0 && !bookingCalendarAll.checked;
+    bookingCalendarInput.value = bookingCalendarAll.checked ? 'all' : selected.map(input => input.dataset.calendarChoice).join(',');
+    bookingCalendarPicker.querySelector('[data-calendar-label]').textContent = bookingCalendarAll.checked
+        ? Craft.t('calendar', 'All Calendars')
+        : (selected.length === 1 ? selected[0].dataset.calendarName : Craft.t('calendar', '{count} Calendars', {count: selected.length}));
+}
+syncBookingCalendarPicker(bookingCalendarInput.value);
+bookingCalendarMenu.addEventListener('change', event => {
+    if (event.target === bookingCalendarAll) {
+        bookingCalendarChoices.forEach(input => input.checked = bookingCalendarAll.checked);
+        if (!bookingCalendarAll.checked) bookingCalendarChoices[0].checked = true;
+    }
+    const selected = bookingCalendarChoices.filter(input => input.checked);
+    // The grid always needs at least one resource; keep the final choice checked.
+    if (!selected.length) { event.target.checked = true; return; }
+    syncBookingCalendarPicker(selected.map(input => input.dataset.calendarChoice).join(','));
+    filterBookingSchedule();
+});
 let bookingFilterValues = new FormData(bookingToolbar);
 let bookingScheduleLoading = false;
 let bookingScheduleRevision = 0;
@@ -10,7 +39,7 @@ let bookingScheduleRequest;
 let pendingBookingSchedule;
 let bookingDateTimer;
 function bookingHistoryKey() {
-    return 'calendar-booking-history:{{ currentUser.id }}:' + bookingGridScroll.querySelector('.booking-grid').dataset.calendarId + ':' + {{ cpUrl('calendar/bookings/schedule')|json_encode|raw }};
+    return 'calendar-booking-history:{{ currentUser.id }}:' + bookingGridScroll.querySelector('.booking-grid').dataset.calendarIds + ':' + bookingGridScroll.querySelector('.booking-grid').dataset.timezone + ':' + {{ cpUrl('calendar/bookings/schedule')|json_encode|raw }};
 }
 let bookingPast = [];
 let bookingFuture = [];
@@ -42,7 +71,8 @@ function retainBookingHistory() {
     updateBookingHistory();
 }
 function setBookingFilters(values) {
-    for (const name of ['calendarId', 'date', 'view']) {
+    syncBookingCalendarPicker(values.get('calendarIds'));
+    for (const name of ['date', 'view']) {
         const input = bookingToolbar.elements.namedItem(name);
         if (input.selectize) input.selectize.setValue(values.get(name), true);
         else input.value = values.get(name);
@@ -53,6 +83,7 @@ async function filterBookingSchedule(url) {
     if (!url) {
         if (!bookingToolbar.checkValidity()) return;
         url = new URL(location.href);
+        url.searchParams.delete('calendarId');
         for (const [name, value] of new FormData(bookingToolbar)) url.searchParams.set(name, value);
     }
     if (bookingBusy) { pendingBookingSchedule = url; return; }
@@ -74,7 +105,8 @@ async function filterBookingSchedule(url) {
         const toolbar = doc.querySelector('.booking-toolbar');
         const newBooking = doc.querySelector('[data-booking-new]');
         if (!grid || !toolbar || !newBooking) throw new Error();
-        const calendarChanged = grid.dataset.calendarId !== bookingGridScroll.querySelector('.booking-grid').dataset.calendarId;
+        const currentGrid = bookingGridScroll.querySelector('.booking-grid');
+        const calendarChanged = grid.dataset.calendarIds !== currentGrid.dataset.calendarIds || grid.dataset.timezone !== currentGrid.dataset.timezone;
         bookingGridScroll.replaceChildren(document.importNode(grid, true));
         // Keep the existing controls and scroll position; the returned page supplies canonical values and links.
         bookingFilterValues = new FormData(toolbar);
@@ -99,7 +131,7 @@ async function filterBookingSchedule(url) {
     }
 }
 // Bind to the toolbar because Selectize initialization clears handlers bound directly to its selects.
-$(bookingToolbar).on('change', '#booking-schedule-calendar, #booking-schedule-date, #booking-schedule-view', () => filterBookingSchedule());
+$(bookingToolbar).on('change', '#booking-schedule-date, #booking-schedule-view', () => filterBookingSchedule());
 bookingToolbar.querySelector('#booking-schedule-date').addEventListener('input', () => {
     clearTimeout(bookingDateTimer);
     bookingDateTimer = setTimeout(() => filterBookingSchedule(), 300);
@@ -159,25 +191,26 @@ bookingHistoryButtons.forEach(button => button.addEventListener('click', () => r
 bookingGridScroll.addEventListener('dragstart', event => {
     const block = event.target.closest('.booking-block');
     if (!block || bookingBusy || bookingScheduleLoading) { event.preventDefault(); return; }
-    draggedBooking = block.dataset.bookingId;
-    event.dataTransfer.setData('text/plain', draggedBooking);
+    draggedBooking = {id: block.dataset.bookingId, calendarId: block.dataset.calendarId};
+    event.dataTransfer.setData('text/plain', draggedBooking.id);
 });
 bookingGridScroll.addEventListener('dragover', event => {
-    if (draggedBooking && !bookingBusy && !bookingScheduleLoading && event.target.closest('.booking-day-body')) event.preventDefault();
+    const day = event.target.closest('.booking-day-body');
+    if (draggedBooking && !bookingBusy && !bookingScheduleLoading && day?.dataset.calendarId === draggedBooking.calendarId) event.preventDefault();
 });
 bookingGridScroll.addEventListener('drop', async event => {
     const day = event.target.closest('.booking-day-body');
-    if (!day || !draggedBooking || bookingBusy || bookingScheduleLoading) return;
+    if (!day || !draggedBooking || day.dataset.calendarId !== draggedBooking.calendarId || bookingBusy || bookingScheduleLoading) return;
     event.preventDefault();
-    const bookingId = draggedBooking;
+    const bookingId = draggedBooking.id;
     draggedBooking = null;
     const minute = Math.max(0, Math.min(1439, Math.round((event.clientY - day.getBoundingClientRect().top) / 48 * 60)));
-    const increment = Number(bookingGridScroll.querySelector('.booking-grid').dataset.increment);
+    const increment = Number(day.dataset.increment);
     const snapped = Math.floor(minute / increment) * increment;
     bookingBusy = true;
     updateBookingHistory();
     try {
-        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/move', {data: {bookingId, date: day.dataset.date, minute: snapped}});
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/move', {data: {bookingId, calendarId: day.dataset.calendarId, date: day.dataset.date, minute: snapped, timezone: bookingGridScroll.querySelector('.booking-grid').dataset.timezone}});
         if (!response.data.success) { Craft.cp.displayError(response.data.message); return; }
         if (typeof response.data.historyToken === 'string') {
             bookingPast = [...bookingPast, response.data.historyToken].slice(-50);

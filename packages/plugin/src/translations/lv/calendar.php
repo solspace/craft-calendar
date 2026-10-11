@@ -962,4 +962,7 @@ return [
     'This calendar is inactive or the booking falls outside its available dates.' => 'Šis kalendārs ir neaktīvs vai rezervācija ir ārpus pieejamajiem datumiem.',
     'No booking dates are currently available.' => 'Pašlaik nav pieejamu rezervācijas datumu.',
     'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Aizsargājiet rezervāciju pieprasījumus, kas iesniegti no vietnes, arī no lietotājiem, kuri ir pierakstījušies. Iebūvētajās rezervāciju veidlapās CAPTCHA tiek iekļauts automātiski.',
+    'All Calendars' => 'Visi kalendāri',
+    '{count} Calendars' => '{count} kalendāri',
+    'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Noklikšķiniet uz pieejama laika, lai pievienotu rezervāciju. Iekrāsotie laiki šim kalendāram nav pieejami.',
 ];

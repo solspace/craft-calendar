@@ -1125,4 +1125,7 @@ return [
     'This calendar is inactive or the booking falls outside its available dates.' => 'This calendar is inactive or the booking falls outside its available dates.',
     'No booking dates are currently available.' => 'No booking dates are currently available.',
     'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.',
+    'All Calendars' => 'All Calendars',
+    '{count} Calendars' => '{count} Calendars',
+    'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Click an available time to add a booking. Shaded times are unavailable for that calendar.',
 ];

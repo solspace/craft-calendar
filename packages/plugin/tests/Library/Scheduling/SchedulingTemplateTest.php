@@ -76,31 +76,50 @@ class SchedulingTemplateTest extends TestCase
         };
 
         foreach (['day', 'week'] as $scheduleView) {
-            $output = $twig->render('schedule', [
-                'view' => $view,
-                'scheduleView' => $scheduleView,
-                'bookingTimeFormat' => 'short',
-                'calendar' => ['schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15, 'duration' => 30]],
-                'calendarId' => 7,
-                'calendars' => [['id' => 7, 'name' => 'Meeting room', 'color' => '#2563eb']],
-                'days' => [['date' => new \DateTimeImmutable('2026-10-12'), 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]]],
-                'date' => '2026-10-12',
-                'previous' => '2026-10-05',
-                'next' => '2026-10-19',
-                'currentUser' => ['admin' => false, 'id' => 7],
-            ]);
+            foreach ([[7], [7, 8]] as $calendarIds) {
+                $calendarSelection = \count($calendarIds) === 2 ? 'all' : '7';
+                $calendars = [7 => ['id' => 7, 'name' => 'Meeting room', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15, 'duration' => 30]], 8 => ['id' => 8, 'name' => 'Studio', 'color' => '#008a5b', 'schedulingSettings' => ['timezone' => 'Asia/Tokyo', 'increment' => 30, 'duration' => 30]]];
+                $columns = array_map(static fn ($id) => ['calendar' => $calendars[$id], 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]], $calendarIds);
+                $output = $twig->render('schedule', [
+                    'view' => $view,
+                    'scheduleView' => $scheduleView,
+                    'bookingTimeFormat' => 'short',
+                    'calendar' => $calendars[7],
+                    'calendarId' => 7,
+                    'calendarIds' => $calendarIds,
+                    'calendarSelection' => $calendarSelection,
+                    'displayTimezone' => 'America/Winnipeg',
+                    'calendars' => $calendars,
+                    'days' => [['date' => new \DateTimeImmutable('2026-10-12T00:00:00-05:00'), 'columns' => $columns]],
+                    'date' => '2026-10-12',
+                    'previous' => '2026-10-05',
+                    'next' => '2026-10-19',
+                    'currentUser' => ['admin' => false, 'id' => 7],
+                ]);
 
-            self::assertStringContainsString('delta-active', $output);
-            self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
-            self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-05', $output);
-            self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-19', $output);
-            self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
-            self::assertStringContainsString('top:384px;--slot-height:24px;height:12px;', $output);
-            self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
-            self::assertStringNotContainsString('start=2026-10-12T07', $output);
-            self::assertStringContainsString('data-booking-history="undo" disabled', $output);
-            self::assertStringContainsString('data-booking-history="redo" disabled', $output);
-            self::assertStringContainsString('M37 1 1 30l36 29V41', $output);
+                self::assertStringContainsString('delta-active', $output);
+                self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
+                self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;date=2026-10-05', $output);
+                self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;date=2026-10-19', $output);
+                self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
+                self::assertStringContainsString('top:384px;--slot-height:24px;height:12px;', $output);
+                self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
+                self::assertStringNotContainsString('start=2026-10-12T07', $output);
+                self::assertStringContainsString('data-booking-history="undo" disabled', $output);
+                self::assertStringContainsString('data-booking-history="redo" disabled', $output);
+                self::assertStringContainsString('M37 1 1 30l36 29V41', $output);
+                $dom = new \DOMDocument();
+                @$dom->loadHTML($output);
+                $xpath = new \DOMXPath($dom);
+                self::assertSame(\count($calendarIds), $xpath->query('//*[@class="booking-day-body"]')->length);
+                self::assertSame(\count($calendarIds), $xpath->query('//input[@data-calendar-choice][@checked]')->length);
+                self::assertSame('2026-10-12', $xpath->query('//*[@class="booking-day-body"]')->item(0)->getAttribute('data-date'));
+                if (\count($calendarIds) > 1) {
+                    self::assertStringContainsString('calendar/bookings/new?calendarId=8&amp;start=', $output);
+                    self::assertStringContainsString('booking-grid-multiple', $output);
+                    self::assertSame(2, $xpath->query('//*[@class="booking-resource-heading"]')->length);
+                }
+            }
         }
     }
 

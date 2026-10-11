@@ -1002,4 +1002,7 @@ return [
     'This calendar is inactive or the booking falls outside its available dates.' => 'Dieser Kalender ist inaktiv oder die Buchung liegt außerhalb seiner verfügbaren Daten.',
     'No booking dates are currently available.' => 'Derzeit sind keine Buchungsdaten verfügbar.',
     'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Schützen Sie Buchungsanfragen, die über Ihre Website eingereicht werden, auch von angemeldeten Besuchern. Integrierte Buchungsformulare enthalten das CAPTCHA automatisch.',
+    'All Calendars' => 'Alle Kalender',
+    '{count} Calendars' => '{count} Kalender',
+    'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Klicken Sie auf eine verfügbare Zeit, um eine Buchung hinzuzufügen. Schattierte Zeiten sind für diesen Kalender nicht verfügbar.',
 ];

@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added an All Calendars checkbox picker to booking schedules, with separate resource columns and availability shading in Day and Week views.
 - Added a native Set status menu for selected bookings, with per-booking availability checks and failure reporting.
 - Added Booking Defaults settings for the initial rules, approval, staff notification email, and weekly opening hours of new scheduling calendars.
 - Added booking checkboxes with page selection, bulk Move to Trash and Restore actions, and a compact Craft-style view dropdown with icons.

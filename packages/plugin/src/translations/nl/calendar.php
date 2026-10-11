@@ -1002,4 +1002,7 @@ return [
     'This calendar is inactive or the booking falls outside its available dates.' => 'Deze kalender is inactief of de boeking valt buiten de beschikbare datums.',
     'No booking dates are currently available.' => 'Er zijn momenteel geen boekingsdatums beschikbaar.',
     'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Beveilig boekingsaanvragen die via uw website worden ingediend, ook door aangemelde bezoekers. Ingebouwde boekingsformulieren bevatten automatisch de CAPTCHA.',
+    'All Calendars' => 'Alle agenda’s',
+    '{count} Calendars' => '{count} agenda’s',
+    'Click an available time to add a booking. Shaded times are unavailable for that calendar.' => 'Klik op een beschikbare tijd om een boeking toe te voegen. Gearceerde tijden zijn niet beschikbaar voor die agenda.',
 ];

@@ -14,6 +14,7 @@ use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
+use Solspace\Calendar\Library\Scheduling\Schedule;
 use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -288,15 +289,17 @@ class BookingsController extends BaseController
         if (!$booking || !Calendar::getInstance()->bookings->canManage($booking->getCalendar())) {
             throw new ForbiddenHttpException();
         }
-        $date = (string) $request->getRequiredBodyParam('date');
-        $minute = filter_var($request->getRequiredBodyParam('minute'), \FILTER_VALIDATE_INT);
-        if (!Availability::validDate($date) || false === $minute || $minute < 0 || $minute >= 1440) {
+        if ((int) $request->getBodyParam('calendarId', $booking->calendarId) !== (int) $booking->calendarId) {
             throw new BadRequestHttpException();
         }
-        $settings = $booking->getCalendar()->getSchedulingSettings();
-        $value = $date.' '.\sprintf('%02d:%02d', intdiv($minute, 60), $minute % 60);
-        $start = new \DateTimeImmutable($value, new \DateTimeZone($settings->timezone));
-        if ($start->format('Y-m-d H:i') !== $value) {
+
+        try {
+            $start = Schedule::moveStart(
+                (string) $request->getRequiredBodyParam('date'),
+                $request->getRequiredBodyParam('minute'),
+                $request->getBodyParam('timezone', $booking->getCalendar()->getSchedulingSettings()->timezone),
+            );
+        } catch (\InvalidArgumentException) {
             throw new BadRequestHttpException();
         }
 
@@ -449,12 +452,20 @@ class BookingsController extends BaseController
     public function actionSchedule(): Response
     {
         $calendars = $this->manageableCalendars();
-        $calendarId = (int) \Craft::$app->request->getQueryParam('calendarId', array_key_first($calendars));
-        if (!isset($calendars[$calendarId])) {
+        $request = \Craft::$app->request;
+        $selection = $request->getQueryParam('calendarIds', $request->getQueryParam('calendarId', 'all'));
+
+        try {
+            $calendarIds = Schedule::calendarIds($calendars, $selection);
+        } catch (\OutOfBoundsException) {
             throw new ForbiddenHttpException();
+        } catch (\InvalidArgumentException) {
+            throw new BadRequestHttpException();
         }
+        $calendarId = $calendarIds[0];
         $calendar = $calendars[$calendarId];
-        $zone = new \DateTimeZone($calendar->getSchedulingSettings()->timezone);
+        $calendarSelection = \count($calendarIds) === \count($calendars) ? 'all' : implode(',', $calendarIds);
+        $zone = new \DateTimeZone(\count($calendarIds) === 1 ? $calendar->getSchedulingSettings()->timezone : \Craft::$app->getFormatter()->timeZone);
         $date = (string) \Craft::$app->request->getQueryParam('date', (new \DateTimeImmutable('now', $zone))->format('Y-m-d'));
         if (!Availability::validDate($date)) {
             throw new BadRequestHttpException();
@@ -465,48 +476,26 @@ class BookingsController extends BaseController
             $start = $start->modify('-'.((int) $start->format('N') - 1).' days');
         }
         $end = $start->modify('day' === $scheduleView ? '+1 day' : '+7 days');
-        $bookings = Booking::find()->calendarId($calendarId)->bookingStatus([Booking::REQUESTED, Booking::CONFIRMED])
-            ->andWhere(['>=', 'calendar_bookings.startDate', Db::prepareDateForDb($start)])
+        $bookings = Booking::find()->calendarId($calendarIds)->bookingStatus([Booking::REQUESTED, Booking::CONFIRMED])
+            ->andWhere(['>', 'calendar_bookings.endDate', Db::prepareDateForDb($start)])
             ->andWhere(['<', 'calendar_bookings.startDate', Db::prepareDateForDb($end)])
             ->orderBy(['calendar_bookings.startDate' => \SORT_ASC])->all()
         ;
         $days = [];
+        $slotCache = [];
+        $availableSlots = static function (CalendarModel $resource, string $localDate) use (&$slotCache): array {
+            return $slotCache[$resource->id][$localDate] ??= Calendar::getInstance()->bookings->availableSlots($resource, $localDate, false);
+        };
         for ($day = $start; $day < $end; $day = $day->modify('+1 day')) {
-            $dayBookings = [];
-            foreach ($bookings as $booking) {
-                $localStart = $booking->startDate->setTimezone($zone);
-                $localEnd = $booking->endDate->setTimezone($zone);
-                if ($localStart->format('Y-m-d') === $day->format('Y-m-d')) {
-                    $minute = (int) $localStart->format('G') * 60 + (int) $localStart->format('i');
-                    $finish = $localEnd->format('Y-m-d') === $day->format('Y-m-d') ? (int) $localEnd->format('G') * 60 + (int) $localEnd->format('i') : 1440;
-                    $dayBookings[] = ['booking' => $booking, 'minute' => $minute, 'length' => max(15, $finish - $minute), 'label' => DateFormatHelper::formatTimeRange($localStart, $localEnd, $zone->getName())];
-                }
+            $columns = [];
+            foreach ($calendarIds as $id) {
+                $columns[] = Schedule::column($calendars[$id], $day, $bookings, $availableSlots);
             }
-            $lanes = [];
-            foreach ($dayBookings as &$item) {
-                $lane = 0;
-                while (isset($lanes[$lane]) && $lanes[$lane] > $item['minute']) {
-                    ++$lane;
-                }
-                $lanes[$lane] = $item['minute'] + $item['length'];
-                $item['lane'] = $lane;
-            }
-            unset($item);
-            $slotGroups = [];
-            foreach (Calendar::getInstance()->bookings->availableSlots($calendar, $day->format('Y-m-d'), false) as $slot) {
-                $localStart = (new \DateTimeImmutable($slot['start']))->setTimezone($zone);
-                $minute = (int) $localStart->format('G') * 60 + (int) $localStart->format('i');
-                // Repeated times during the autumn DST transition remain separate links.
-                $localEnd = (new \DateTimeImmutable($slot['end']))->setTimezone($zone);
-                $finish = $localEnd->format('Y-m-d') === $day->format('Y-m-d') ? (int) $localEnd->format('G') * 60 + (int) $localEnd->format('i') : 1440;
-                $slot['length'] = min(1440 - $minute, $finish > $minute ? $finish - $minute : $calendar->getSchedulingSettings()->duration);
-                $slotGroups[$minute][] = $slot;
-            }
-            $days[] = ['date' => $day, 'bookings' => $dayBookings, 'lanes' => max(1, \count($lanes)), 'slots' => $slotGroups];
+            $days[] = ['date' => $day, 'columns' => $columns];
         }
 
         return $this->renderTemplate('calendar/bookings/schedule', $this->variables() + [
-            'calendar' => $calendar, 'calendarId' => $calendarId, 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView,
+            'calendar' => $calendar, 'calendarId' => $calendarId, 'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'displayTimezone' => $zone->getName(), 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView,
             'previous' => $start->modify('day' === $scheduleView ? '-1 day' : '-7 days')->format('Y-m-d'), 'next' => $end->format('Y-m-d'),
         ]);
     }
