@@ -5,6 +5,7 @@ namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 use Twig\TwigFilter;
@@ -26,6 +27,9 @@ class SchedulingTemplateTest extends TestCase
             'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
             'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",
         ]), ['strict_variables' => true]);
+        foreach ((new CalendarGlobalExtension())->getFilters() as $filter) {
+            $twig->addFilter($filter);
+        }
         $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
         $twig->addFilter(new TwigFilter('time', static fn ($date) => (new \DateTimeImmutable($date))->format('H:i')));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));

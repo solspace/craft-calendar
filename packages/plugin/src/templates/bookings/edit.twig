@@ -48,7 +48,7 @@ const bookingSlotsMessage = document.getElementById('booking-slots-message');
 const bookingSlotsRetry = document.getElementById('booking-slots-retry');
 const bookingStart = document.querySelector('[name="startDate"]');
 const bookingEnd = document.querySelector('[name="endDate"]');
-const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingStart.value, end: bookingEnd.value, label: {{ (booking.startDate and booking.endDate ? (booking.startDate|time(bookingTimeFormat, timezone) ~ '–' ~ booking.endDate|time(bookingTimeFormat, timezone)) : '')|json_encode|raw }}};
+const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingStart.value, end: bookingEnd.value, label: {{ (booking.startDate and booking.endDate ? (booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel ~ ' - ' ~ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel) : '')|json_encode|raw }}};
 let bookingSlotsRequest = 0;
 let bookingSlotsLoading = false;
 function chooseBookingSlot(slot, button) {

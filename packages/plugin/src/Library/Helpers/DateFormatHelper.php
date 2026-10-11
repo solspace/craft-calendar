@@ -19,7 +19,12 @@ class DateFormatHelper
         $formatter->timeZone = $timezone;
         $format = self::get(self::TYPE_TIME, Locale::FORMAT_ICU, 'short');
 
-        return $formatter->asTime($start, $format).'–'.$formatter->asTime($end, $format);
+        return self::compactTimeLabel($formatter->asTime($start, $format)).' - '.self::compactTimeLabel($formatter->asTime($end, $format));
+    }
+
+    public static function compactTimeLabel(string $label): string
+    {
+        return preg_replace_callback('/\s*([ap])\.?\s*m\.?$/iu', static fn (array $matches) => strtolower($matches[1]).'m', $label);
     }
 
     public static function get(

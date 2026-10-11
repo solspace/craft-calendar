@@ -53,10 +53,11 @@ class DateFormatHelperTest extends TestCase
     public function timeRangeDataProvider(): array
     {
         return [
-            ['en-US', SettingsModel::TIME_FORMAT_AUTO, '1:00 PM–1:30 PM'],
-            ['de-DE', SettingsModel::TIME_FORMAT_AUTO, '13:00–13:30'],
-            ['de-DE', SettingsModel::TIME_FORMAT_12_HOUR, '1:00 PM–1:30 PM'],
-            ['en-US', SettingsModel::TIME_FORMAT_24_HOUR, '13:00–13:30'],
+            ['en-US', SettingsModel::TIME_FORMAT_AUTO, '1:00pm - 1:30pm'],
+            ['en-CA', SettingsModel::TIME_FORMAT_AUTO, '1:00pm - 1:30pm'],
+            ['de-DE', SettingsModel::TIME_FORMAT_AUTO, '13:00 - 13:30'],
+            ['de-DE', SettingsModel::TIME_FORMAT_12_HOUR, '1:00pm - 1:30pm'],
+            ['en-US', SettingsModel::TIME_FORMAT_24_HOUR, '13:00 - 13:30'],
         ];
     }
 
