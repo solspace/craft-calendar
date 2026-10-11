@@ -902,4 +902,8 @@ return [
     'Deleted user' => 'Utilisateur supprimé',
     'Click an available time to add a booking. Shaded times are unavailable.' => 'Cliquez sur un créneau disponible pour ajouter une réservation. Les créneaux grisés sont indisponibles.',
     'New booking: {time}' => 'Nouvelle réservation : {time}',
+    'Status for {customer}' => 'Statut de {customer}',
+    'Booking status saved.' => 'Statut de la réservation enregistré.',
+    'Could not save booking status.' => 'Impossible d’enregistrer le statut de la réservation.',
+    '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 réservation} other{# réservations}}',
 ];

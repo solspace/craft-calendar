@@ -1024,4 +1024,8 @@ return [
     'Deleted user' => 'Deleted user',
     'Click an available time to add a booking. Shaded times are unavailable.' => 'Click an available time to add a booking. Shaded times are unavailable.',
     'New booking: {time}' => 'New booking: {time}',
+    'Status for {customer}' => 'Status for {customer}',
+    'Booking status saved.' => 'Booking status saved.',
+    'Could not save booking status.' => 'Could not save booking status.',
+    '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 booking} other{# bookings}}',
 ];

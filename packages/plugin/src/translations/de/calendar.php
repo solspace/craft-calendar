@@ -902,4 +902,8 @@ return [
     'Deleted user' => 'Gelöschter Benutzer',
     'Click an available time to add a booking. Shaded times are unavailable.' => 'Klicken Sie auf eine verfügbare Zeit, um eine Buchung hinzuzufügen. Schattierte Zeiten sind nicht verfügbar.',
     'New booking: {time}' => 'Neue Buchung: {time}',
+    'Status for {customer}' => 'Status für {customer}',
+    'Booking status saved.' => 'Buchungsstatus gespeichert.',
+    'Could not save booking status.' => 'Buchungsstatus konnte nicht gespeichert werden.',
+    '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 Buchung} other{# Buchungen}}',
 ];

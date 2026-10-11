@@ -2,28 +2,113 @@
 {% import '_includes/forms' as forms %}
 {% set title = 'Bookings'|t('calendar') %}
 {% set selectedSubnavItem = 'bookings' %}
+{% set statusColors = {requested: 'orange', confirmed: 'green', declined: 'red', cancelled: 'disabled'} %}
+
 {% block actionButton %}<a href="{{ cpUrl('calendar/bookings/new') }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>{% endblock %}
+
 {% block content %}
+{% set calendarOptions = [{value: '', label: 'All calendars'|t('calendar')}] %}
+{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
+{% set filterStatusOptions = [{value: '', label: 'All statuses'|t('calendar')}] %}
+{% for value, label in statusOptions %}{% set filterStatusOptions = filterStatusOptions|merge([{value, label}]) %}{% endfor %}
 <form method="get" class="booking-filters">
-    <label>{{ 'Calendar'|t('calendar') }}<select name="calendarId"><option value="">{{ 'All calendars'|t('calendar') }}</option>{% for calendar in calendars %}<option value="{{ calendar.id }}" {{ calendarId == calendar.id ? 'selected' }}>{{ calendar.name }}</option>{% endfor %}</select></label>
-    <label>{{ 'Status'|t('calendar') }}<select name="bookingStatus"><option value="">{{ 'All statuses'|t('calendar') }}</option>{% for value, label in statusOptions %}<option value="{{ value }}" {{ bookingStatus == value ? 'selected' }}>{{ label }}</option>{% endfor %}</select></label>
-    <input type="search" class="text" name="search" value="{{ search }}" placeholder="{{ 'Search name or email'|t('calendar') }}" aria-label="{{ 'Search name or email'|t('calendar') }}">
+    {{ forms.select({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
+    {{ forms.select({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
+    <div class="booking-search">
+        {{ forms.text({type: 'search', id: 'booking-filter-search', name: 'search', value: search, placeholder: 'Search name or email'|t('calendar'), inputAttributes: {aria: {label: 'Search name or email'|t('calendar')}}}) }}
+    </div>
     <button type="submit" class="btn">{{ 'Filter'|t('calendar') }}</button>
+    {% if calendarId or bookingStatus or search %}<a class="btn" href="{{ cpUrl('calendar/bookings') }}">{{ 'Clear'|t('app') }}</a>{% endif %}
 </form>
-<table class="data fullwidth">
-<thead><tr><th>{{ 'Customer'|t('calendar') }}</th><th>{{ 'Calendar'|t('calendar') }}</th><th>{{ 'Date and Time'|t('calendar') }}</th><th>{{ 'Status'|t('calendar') }}</th></tr></thead>
-<tbody>{% for booking in bookings %}
-{% set calendar = calendars[booking.calendarId] %}{% set timezone = calendar.schedulingSettings.timezone %}
-<tr><th><a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a><div class="light">{{ booking.customerEmail }}</div></th><td><span class="color-indicator" style="background:{{ calendar.color }}"></span>{{ calendar.name }}</td><td>{{ booking.startDate|date('medium', timezone) }} · {{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}<div class="light">{{ timezone }}</div></td><td><span class="booking-status {{ booking.bookingStatus }}">{{ statusOptions[booking.bookingStatus] }}</span></td></tr>
-{% else %}<tr><td colspan="4"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>{% endfor %}</tbody>
-</table>
-<div class="buttons"><span class="light">{{ total }} {{ 'bookings'|t('calendar') }}</span>{% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}{% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}</div>
+<div class="booking-table-scroll">
+    <table class="data fullwidth booking-table">
+        <thead><tr><th scope="col">{{ 'Customer'|t('calendar') }}</th><th scope="col">{{ 'Calendar'|t('calendar') }}</th><th scope="col">{{ 'Date and Time'|t('calendar') }}</th><th scope="col">{{ 'Status'|t('calendar') }}</th></tr></thead>
+        <tbody>
+        {% for booking in bookings %}
+            {% set calendar = calendars[booking.calendarId] %}
+            {% set timezone = calendar.schedulingSettings.timezone %}
+            <tr>
+                <td class="booking-customer"><a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a><div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
+                <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
+                <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
+                <td class="booking-status-cell">
+                    <div class="booking-status-control" data-booking-id="{{ booking.id }}">
+                        <span class="status {{ statusColors[booking.bookingStatus] }}" aria-hidden="true"></span>
+                        {{ forms.select({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: statusOptions, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
+                        <span class="spinner hidden" aria-hidden="true"></span>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="booking-footer">
+    <span class="light">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
+    <div class="buttons">
+        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
+        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
+    </div>
+</div>
 {% endblock %}
+
 {% css %}
-.booking-filters { display:flex; align-items:end; flex-wrap:wrap; gap:12px; margin:20px 0; }
-.booking-filters label { display:grid; gap:6px; font-size:12px; }
-.booking-filters select { min-width:140px; padding:7px; }
-.booking-status { padding:4px 8px; border-radius:5px; background:#f1f3f5; }
-.booking-status.requested { background:#fff2d2; color:#805600; }
-.booking-status.confirmed { background:#e3f3e9; color:#24623e; }
+.booking-filters { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+.booking-filters > .select { min-width:150px; }
+.booking-search { flex:1; min-width:200px; max-width:360px; }
+.booking-table-scroll { overflow-x:auto; }
+.booking-table { min-width:650px; }
+.booking-table tbody td { padding-block:12px; vertical-align:middle; }
+.booking-customer > a { font-weight:600; }
+.booking-secondary { margin-top:3px; font-size:12px; font-weight:400; }
+.booking-calendar { display:inline-flex; align-items:center; gap:6px; }
+.booking-calendar .color-indicator { flex-shrink:0; margin:0; }
+.booking-datetime { line-height:1.5; white-space:nowrap; }
+.booking-status-cell { width:180px; }
+.booking-status-control { display:flex; align-items:center; gap:8px; }
+.booking-status-control > .status { flex-shrink:0; margin:0; }
+.booking-status-control .select { flex:1; }
+.booking-status-control .select select { width:100%; }
+.booking-status-control .spinner { flex-shrink:0; }
+.booking-table .booking-empty { padding-block:32px; text-align:center; }
+.booking-footer { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-top:16px; }
+.booking-footer .buttons { margin:0; }
 {% endcss %}
+
+{% js %}
+(() => {
+    const statusColors = {{ statusColors|json_encode|raw }};
+    document.querySelectorAll('.booking-status-control').forEach(control => {
+        const select = control.querySelector('select');
+        const dot = control.querySelector('.status');
+        const spinner = control.querySelector('.spinner');
+        select.addEventListener('change', async () => {
+            const previous = select.dataset.savedStatus;
+            const status = select.value;
+            if (select.disabled || status === previous) return;
+            select.disabled = true;
+            control.setAttribute('aria-busy', 'true');
+            spinner.classList.remove('hidden');
+            try {
+                const response = await Craft.sendActionRequest('POST', 'calendar/bookings/set-status', {
+                    data: {bookingId: control.dataset.bookingId, bookingStatus: status},
+                });
+                if (!response.data.success) throw new Error(response.data.message);
+                select.value = response.data.bookingStatus;
+                select.dataset.savedStatus = select.value;
+                dot.className = 'status ' + statusColors[select.value];
+                Craft.cp.displayNotice(Craft.t('calendar', 'Booking status saved.'));
+            } catch (error) {
+                select.value = previous;
+                Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.'));
+            } finally {
+                select.disabled = false;
+                control.removeAttribute('aria-busy');
+                spinner.classList.add('hidden');
+            }
+        });
+    });
+})();
+{% endjs %}

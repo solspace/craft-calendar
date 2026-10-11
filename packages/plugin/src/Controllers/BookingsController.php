@@ -134,6 +134,30 @@ class BookingsController extends BaseController
         return $this->renderEdit($booking);
     }
 
+    public function actionSetStatus(): Response
+    {
+        $this->requireCpRequest();
+        $this->requirePostRequest();
+        $request = \Craft::$app->request;
+        $booking = \Craft::$app->getElements()->getElementById((int) $request->getRequiredBodyParam('bookingId'), Booking::class);
+        $service = Calendar::getInstance()->bookings;
+        if (!$booking instanceof Booking || !$service->canManage($booking->getCalendar())) {
+            throw new ForbiddenHttpException();
+        }
+        $status = $request->getRequiredBodyParam('bookingStatus');
+        if (!\is_string($status) || !isset(Booking::statusOptions()[$status])) {
+            throw new BadRequestHttpException(Calendar::t('Choose a valid booking status.'));
+        }
+        if ($booking->bookingStatus !== $status) {
+            $booking->bookingStatus = $status;
+            if (!$service->save($booking)) {
+                return $this->asJson(['success' => false, 'message' => implode(' ', $booking->getErrorSummary(true)) ?: Calendar::t('Could not save booking status.')]);
+            }
+        }
+
+        return $this->asJson(['success' => true, 'bookingStatus' => $booking->bookingStatus]);
+    }
+
     public function actionMove(): Response
     {
         $this->requireCpRequest();

@@ -867,4 +867,8 @@ return [
     'User is not permitted to create events in this calendar' => 'Lietotājam nav atļauts izveidot pasākumus šajā kalendārā.',
     'Couldn’t remove the occurrence override.' => 'Neizdevās noņemt norises pielāgojumu.',
     'Could not retain the event change for Undo.' => 'Neizdevās saglabāt pasākuma izmaiņu atsaukšanai.',
+    'Status for {customer}' => 'Statuss klientam {customer}',
+    'Booking status saved.' => 'Rezervācijas statuss saglabāts.',
+    'Could not save booking status.' => 'Neizdevās saglabāt rezervācijas statusu.',
+    '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 rezervācija} other{# rezervācijas}}',
 ];

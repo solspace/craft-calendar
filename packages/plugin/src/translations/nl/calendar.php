@@ -902,4 +902,8 @@ return [
     'Deleted user' => 'Verwijderde gebruiker',
     'Click an available time to add a booking. Shaded times are unavailable.' => 'Klik op een beschikbare tijd om een boeking toe te voegen. Gearceerde tijden zijn niet beschikbaar.',
     'New booking: {time}' => 'Nieuwe boeking: {time}',
+    'Status for {customer}' => 'Status voor {customer}',
+    'Booking status saved.' => 'Boekingsstatus opgeslagen.',
+    'Could not save booking status.' => 'De boekingsstatus kon niet worden opgeslagen.',
+    '{count, plural, =1{1 booking} other{# bookings}}' => '{count, plural, =1{1 boeking} other{# boekingen}}',
 ];
