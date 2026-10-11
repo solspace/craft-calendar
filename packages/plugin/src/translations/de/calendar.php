@@ -1137,4 +1137,9 @@ return [
     '{count} hr ago' => 'vor {count} Std.',
     '{count} days ago' => 'vor {count} Tagen',
     '{count, plural, =1{1 request} other{# requests}}' => '{count, plural, =1{1 Anfrage} other{# Anfragen}}',
+    'Move booking?' => 'Buchung verschieben?',
+    'Reschedule the booking for {customer} in {calendar}?' => 'Die Buchung für {customer} im Kalender {calendar} verschieben?',
+    'Current time' => 'Aktuelle Zeit',
+    'New time' => 'Neue Zeit',
+    'Move booking' => 'Buchung verschieben',
 ];

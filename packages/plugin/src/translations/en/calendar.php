@@ -1250,4 +1250,9 @@ return [
     '{count} hr ago' => '{count} hr ago',
     '{count} days ago' => '{count} days ago',
     '{count, plural, =1{1 request} other{# requests}}' => '{count, plural, =1{1 request} other{# requests}}',
+    'Move booking?' => 'Move booking?',
+    'Reschedule the booking for {customer} in {calendar}?' => 'Reschedule the booking for {customer} in {calendar}?',
+    'Current time' => 'Current time',
+    'New time' => 'New time',
+    'Move booking' => 'Move booking',
 ];

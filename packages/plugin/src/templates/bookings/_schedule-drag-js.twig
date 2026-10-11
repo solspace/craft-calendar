@@ -1,0 +1,121 @@
+{% include 'calendar/bookings/_confirm-move-js' %}
+const bookingDropTimeFormatter = new Intl.DateTimeFormat({{ craft.app.language|replace({'_': '-'})|json_encode|raw }}, {
+    hour: 'numeric', minute: '2-digit', hour12: {{ (bookingTimeFormat matches '/[hK]/') ? 'true' : 'false' }}, timeZone: 'UTC',
+});
+function bookingDropDestination(event, booking) {
+    const day = event.target.closest('.booking-day-body');
+    if (!day || (!day.dataset.combined && day.dataset.calendarId !== booking.calendarId)) return null;
+    const minute = Math.max(0, Math.min(1439, (event.clientY - day.getBoundingClientRect().top) / 48 * 60 - booking.grabOffset));
+    const snapped = Math.floor(minute / booking.increment) * booking.increment;
+    const date = new Date(day.dataset.date + 'T00:00:00Z');
+    date.setUTCMinutes(snapped);
+    const time = bookingDropTimeFormatter.format(date).replace(/\s*(am|pm)$/i, (_, period) => period.toLowerCase());
+    return {day, date: day.dataset.date, minute: snapped, time, label: day.dataset.dateLabel + ' · ' + time};
+}
+function clearBookingDropPreview(booking) {
+    booking?.preview?.remove();
+    if (booking) booking.preview = null;
+}
+function clearBookingDrag(booking = draggedBooking) {
+    if (!booking) return;
+    booking.active = false;
+    clearBookingDropPreview(booking);
+    bookingGridScroll.querySelectorAll('.booking-drag-origin').forEach(block => block.classList.remove('booking-drag-origin'));
+    bookingGridScroll.classList.remove('booking-dragging');
+    if (draggedBooking === booking) draggedBooking = null;
+}
+function showBookingDropPreview(booking, destination) {
+    if (!destination) { clearBookingDropPreview(booking); return; }
+    if (!booking.preview) {
+        booking.preview = document.createElement('div');
+        booking.preview.className = 'booking-drop-preview';
+        booking.preview.setAttribute('aria-hidden', 'true');
+        const time = document.createElement('span');
+        time.className = 'booking-drop-time';
+        booking.preview.append(time);
+        const content = document.createElement('div');
+        content.className = 'booking-drop-content';
+        booking.preview.append(content);
+        for (const text of [booking.customer, booking.calendarName]) {
+            const line = document.createElement('span');
+            line.textContent = text;
+            content.append(line);
+        }
+    }
+    if (booking.preview.parentNode !== destination.day) destination.day.append(booking.preview);
+    booking.preview.style.transform = 'translateY(' + destination.minute / 60 * 48 + 'px)';
+    booking.preview.style.height = Math.min(booking.duration, 1440 - destination.minute) / 60 * 48 + 'px';
+    booking.preview.firstElementChild.textContent = destination.time;
+}
+bookingGridScroll.addEventListener('dragstart', event => {
+    const block = event.target.closest('.booking-block');
+    if (!block || bookingBusy || bookingScheduleLoading) { event.preventDefault(); return; }
+    clearBookingDrag();
+    closeBookingOptions();
+    const height = block.getBoundingClientRect().height;
+    const booking = draggedBooking = {
+        ...block.dataset, block, increment: Number(block.dataset.increment), duration: Number(block.dataset.duration), active: true,
+        grabOffset: Math.max(0, Math.min(height, event.clientY - block.getBoundingClientRect().top)) / 48 * 60,
+    };
+    event.dataTransfer.setData('text/plain', booking.bookingId);
+    event.dataTransfer.effectAllowed = 'move';
+    bookingGridScroll.classList.add('booking-dragging');
+    // Fade after the browser captures its drag image so the moving block stays legible.
+    requestAnimationFrame(() => {
+        if (!booking.active) return;
+        bookingGridScroll.querySelectorAll('.booking-block').forEach(origin => {
+            if (origin.dataset.bookingId === booking.bookingId) origin.classList.add('booking-drag-origin');
+        });
+    });
+});
+bookingGridScroll.addEventListener('dragover', event => {
+    if (!draggedBooking || bookingBusy || bookingScheduleLoading) return;
+    const destination = bookingDropDestination(event, draggedBooking);
+    showBookingDropPreview(draggedBooking, destination);
+    if (destination) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }
+});
+document.addEventListener('dragover', event => {
+    if (draggedBooking && !bookingGridScroll.contains(event.target)) clearBookingDropPreview(draggedBooking);
+});
+bookingGridScroll.addEventListener('dragleave', event => {
+    if (draggedBooking && !bookingGridScroll.contains(event.relatedTarget)) clearBookingDropPreview(draggedBooking);
+});
+bookingGridScroll.addEventListener('drop', async event => {
+    if (!draggedBooking || bookingBusy || bookingScheduleLoading) return;
+    const booking = draggedBooking;
+    const destination = bookingDropDestination(event, booking);
+    if (!destination) { clearBookingDrag(booking); return; }
+    event.preventDefault();
+    if (destination.date === booking.startDate && destination.minute === Number(booking.startMinute)) {
+        clearBookingDrag(booking);
+        return;
+    }
+    showBookingDropPreview(booking, destination);
+    booking.preview.classList.add('booking-drop-pending');
+    draggedBooking = null;
+    bookingBusy = true;
+    updateBookingHistory();
+    try {
+        if (!await confirmBookingMove(booking, destination)) return;
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/move', {data: {
+            bookingId: booking.bookingId, calendarId: booking.calendarId, date: destination.date, minute: destination.minute,
+            timezone: bookingGridScroll.querySelector('.booking-grid').dataset.timezone,
+        }});
+        if (!response.data.success) { Craft.cp.displayError(response.data.message); return; }
+        if (typeof response.data.historyToken === 'string') {
+            bookingPast = [...bookingPast, response.data.historyToken].slice(-50);
+            bookingFuture = [];
+            retainBookingHistory();
+        }
+        await refreshBookingSchedule();
+    } catch (_) {
+        Craft.cp.displayError(Craft.t('calendar', 'Could not move booking.'));
+    } finally {
+        clearBookingDrag(booking);
+        finishBookingChange();
+    }
+});
+document.addEventListener('dragend', () => clearBookingDrag());

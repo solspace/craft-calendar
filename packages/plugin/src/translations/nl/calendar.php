@@ -1137,4 +1137,9 @@ return [
     '{count} hr ago' => '{count} uur geleden',
     '{count} days ago' => '{count} dagen geleden',
     '{count, plural, =1{1 request} other{# requests}}' => '{count, plural, =1{1 verzoek} other{# verzoeken}}',
+    'Move booking?' => 'Boeking verplaatsen?',
+    'Reschedule the booking for {customer} in {calendar}?' => 'De boeking voor {customer} in kalender {calendar} verplaatsen?',
+    'Current time' => 'Huidige tijd',
+    'New time' => 'Nieuwe tijd',
+    'Move booking' => 'Boeking verplaatsen',
 ];

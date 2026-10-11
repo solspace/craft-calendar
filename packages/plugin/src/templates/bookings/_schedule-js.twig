@@ -66,7 +66,7 @@ async function filterBookingSchedule(url) {
     const request = bookingScheduleRequest = new AbortController();
     bookingScheduleLoading = true;
     closeBookingOptions();
-    draggedBooking = null;
+    clearBookingDrag();
     bookingGridScroll.setAttribute('aria-busy', 'true');
     bookingSpinner.classList.remove('hidden');
     updateBookingHistory();
@@ -165,42 +165,7 @@ async function replayBookingHistory(direction) {
     }
 }
 bookingHistoryButtons.forEach(button => button.addEventListener('click', () => replayBookingHistory(button.dataset.bookingHistory)));
-bookingGridScroll.addEventListener('dragstart', event => {
-    const block = event.target.closest('.booking-block');
-    if (!block || bookingBusy || bookingScheduleLoading) { event.preventDefault(); return; }
-    draggedBooking = {id: block.dataset.bookingId, calendarId: block.dataset.calendarId, increment: Number(block.dataset.increment)};
-    event.dataTransfer.setData('text/plain', draggedBooking.id);
-});
-bookingGridScroll.addEventListener('dragover', event => {
-    const day = event.target.closest('.booking-day-body');
-    if (draggedBooking && !bookingBusy && !bookingScheduleLoading && (day?.dataset.combined || day?.dataset.calendarId === draggedBooking.calendarId)) event.preventDefault();
-});
-bookingGridScroll.addEventListener('drop', async event => {
-    const day = event.target.closest('.booking-day-body');
-    if (!day || !draggedBooking || (!day.dataset.combined && day.dataset.calendarId !== draggedBooking.calendarId) || bookingBusy || bookingScheduleLoading) return;
-    event.preventDefault();
-    const {id: bookingId, calendarId, increment} = draggedBooking;
-    draggedBooking = null;
-    const minute = Math.max(0, Math.min(1439, Math.round((event.clientY - day.getBoundingClientRect().top) / 48 * 60)));
-    const snapped = Math.floor(minute / increment) * increment;
-    bookingBusy = true;
-    updateBookingHistory();
-    try {
-        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/move', {data: {bookingId, calendarId, date: day.dataset.date, minute: snapped, timezone: bookingGridScroll.querySelector('.booking-grid').dataset.timezone}});
-        if (!response.data.success) { Craft.cp.displayError(response.data.message); return; }
-        if (typeof response.data.historyToken === 'string') {
-            bookingPast = [...bookingPast, response.data.historyToken].slice(-50);
-            bookingFuture = [];
-            retainBookingHistory();
-        }
-        await refreshBookingSchedule();
-    } catch (_) {
-        Craft.cp.displayError(Craft.t('calendar', 'Could not move booking.'));
-    } finally {
-        finishBookingChange();
-    }
-});
-document.addEventListener('dragend', () => draggedBooking = null);
+{% include 'calendar/bookings/_schedule-drag-js' %}
 document.addEventListener('keydown', event => {
     if (bookingBusy || bookingScheduleLoading || event.defaultPrevented || event.altKey || !(event.metaKey || event.ctrlKey)) return;
     if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]:not([contenteditable=false]), [role=textbox]')) return;

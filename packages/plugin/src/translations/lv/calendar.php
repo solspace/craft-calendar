@@ -1097,4 +1097,9 @@ return [
     '{count} hr ago' => 'pirms {count} st.',
     '{count} days ago' => 'pirms {count} dienām',
     '{count, plural, =1{1 request} other{# requests}}' => '{count, plural, =1{1 pieprasījums} other{# pieprasījumi}}',
+    'Move booking?' => 'Pārcelt rezervāciju?',
+    'Reschedule the booking for {customer} in {calendar}?' => 'Pārcelt klienta {customer} rezervāciju kalendārā {calendar}?',
+    'Current time' => 'Pašreizējais laiks',
+    'New time' => 'Jaunais laiks',
+    'Move booking' => 'Pārcelt rezervāciju',
 ];

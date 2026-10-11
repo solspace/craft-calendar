@@ -45,6 +45,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Added animated booking drop previews, faded original positions, and a confirmation modal before rescheduling from the Schedule view.
 - Removed the redundant Bookings sort dropdown and aligned the Calendars list with Craft's native toolbar, table headings, and column sorting.
 - Restored the Requested status banner's original colors and aligned the separate availability warning icon with its heading.
 - Changed booking diagnostics to an expanded table with one row per calendar, and excluded scheduling calendars from the event diagnostics table.
