@@ -11,6 +11,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
+use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
 use Solspace\Calendar\Models\CalendarModel;
@@ -37,6 +38,11 @@ class BookingsController extends BaseController
         if ($status && !isset(Booking::statusOptions()[$status])) {
             throw new BadRequestHttpException();
         }
+        $bookingListView = $request->getQueryParam('view', 'active');
+        if (!\in_array($bookingListView, ['active', 'trash'], true)) {
+            throw new BadRequestHttpException();
+        }
+        $trashed = 'trash' === $bookingListView;
         $sortOptions = [
             'date-desc' => Calendar::t('Booking time: newest first'),
             'date-asc' => Calendar::t('Booking time: oldest first'),
@@ -57,7 +63,7 @@ class BookingsController extends BaseController
         }
         [$sortField, $sortDirection] = explode('-', $sort);
         $sortColumns = ['date' => 'calendar_bookings.startDate', 'submitted' => 'elements.dateCreated', 'updated' => 'elements.dateUpdated', 'customer' => 'calendar_bookings.customerName', 'calendar' => 'booking_calendar.name', 'status' => 'calendar_bookings.bookingStatus'];
-        $query = Booking::find()->calendarId($calendarId ?: array_keys($calendars));
+        $query = Booking::find()->calendarId($calendarId ?: array_keys($calendars))->status(null)->trashed($trashed);
         if ('calendar' === $sortField) {
             $query->leftJoin(['booking_calendar' => CalendarRecord::TABLE], '[[booking_calendar.id]] = [[calendar_bookings.calendarId]]');
         }
@@ -75,7 +81,7 @@ class BookingsController extends BaseController
 
         $variables = $this->variables() + [
             'bookings' => $query->limit(50)->offset(($page - 1) * 50)->all(), 'total' => $total, 'page' => $page,
-            'calendarId' => $calendarId, 'bookingStatus' => $status, 'search' => $search, 'sort' => $sort, 'sortOptions' => $sortOptions,
+            'calendarId' => $calendarId, 'bookingStatus' => $status, 'search' => $search, 'sort' => $sort, 'sortOptions' => $sortOptions, 'bookingListView' => $bookingListView, 'trashed' => $trashed,
         ];
         if ($request->getAcceptsJson()) {
             $view = \Craft::$app->getView();
@@ -203,6 +209,31 @@ class BookingsController extends BaseController
         }
 
         return $this->asJson($data);
+    }
+
+    public function actionDelete(): Response
+    {
+        $booking = $this->lifecycleBooking(false);
+        if (!\Craft::$app->getElements()->deleteElement($booking, false)) {
+            return $this->asJson(['success' => false, 'message' => Calendar::t('Could not delete booking.')]);
+        }
+
+        return $this->asJson(['success' => true]);
+    }
+
+    public function actionRestore(): Response
+    {
+        $booking = $this->lifecycleBooking(true);
+        try {
+            $success = \Craft::$app->getElements()->restoreElement($booking);
+        } catch (BookingConflictException $exception) {
+            return $this->asJson(['success' => false, 'message' => $exception->getMessage()]);
+        }
+        if (!$success) {
+            return $this->asJson(['success' => false, 'message' => implode(' ', $booking->getErrorSummary(true)) ?: Calendar::t('Could not restore booking.')]);
+        }
+
+        return $this->asJson(['success' => true]);
     }
 
     public function actionMove(): Response
@@ -435,6 +466,22 @@ class BookingsController extends BaseController
     private function variables(): array
     {
         return ['calendars' => $this->manageableCalendars(), 'statusOptions' => Booking::statusOptions(), 'bookingTimeFormat' => 'icu:'.DateFormatHelper::get(DateFormatHelper::TYPE_TIME, length: 'short'), 'crumbs' => [['label' => Calendar::getInstance()->name, 'url' => UrlHelper::cpUrl('calendar')], ['label' => Calendar::t('Bookings'), 'url' => UrlHelper::cpUrl('calendar/bookings')]]];
+    }
+
+    private function lifecycleBooking(bool $trashed): Booking
+    {
+        $this->requireCpRequest();
+        $this->requirePostRequest();
+        $id = filter_var(\Craft::$app->request->getRequiredBodyParam('bookingId'), \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if (false === $id) {
+            throw new BadRequestHttpException();
+        }
+        $booking = \Craft::$app->getElements()->getElementById($id, Booking::class, \Craft::$app->getSites()->getPrimarySite()->id, ['trashed' => $trashed]);
+        if (!$booking instanceof Booking || !Calendar::getInstance()->bookings->canManage($booking->getCalendar())) {
+            throw new ForbiddenHttpException();
+        }
+
+        return $booking;
     }
 
     private function manageableCalendars(): array

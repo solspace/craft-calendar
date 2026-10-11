@@ -4,7 +4,7 @@
 {% set selectedSubnavItem = 'bookings' %}
 {% set fullPageForm = true %}
 {% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
-{% block actionButton %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
+{% block actionButton %}{% if booking.id %}<button type="button" class="btn" id="booking-delete">{{ 'Delete'|t('app') }}</button>{% endif %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
 {% block content %}
 {{ actionInput('calendar/bookings/save') }}{{ csrfInput() }}{{ redirectInput('calendar/bookings') }}
 {% if booking.id %}{{ hiddenInput('bookingId', booking.id) }}{% endif %}
@@ -41,6 +41,19 @@
 </div>
 {% endblock %}
 {% js %}
+const deleteBooking = document.getElementById('booking-delete');
+if (deleteBooking) deleteBooking.addEventListener('click', async () => {
+    if (!confirm(Craft.t('calendar', 'Move the booking for {customer} to Trash?', {customer: {{ booking.customerName|json_encode(15)|raw }}}))) return;
+    deleteBooking.disabled = true;
+    try {
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/delete', {data: {bookingId: {{ booking.id ?: 'null' }}}});
+        if (!response.data.success) throw new Error(response.data.message);
+        window.location.href = {{ cpUrl('calendar/bookings')|json_encode|raw }};
+    } catch (error) {
+        Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
+        deleteBooking.disabled = false;
+    }
+});
 const bookingTimezones = {{ calendars|map(calendar => calendar.schedulingSettings.timezone)|json_encode|raw }};
 const bookingCalendar = document.getElementById('booking-calendar');
 const bookingDate = document.getElementById('booking-date');

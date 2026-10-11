@@ -15,6 +15,7 @@
     {% set filterStatusOptions = filterStatusOptions|merge([option]) %}
 {% endfor %}
 <form method="get" class="booking-filters">
+    {{ forms.selectize({id: 'booking-list-view', name: 'view', value: bookingListView, options: [{value: 'active', label: 'Active bookings'|t('calendar')}, {value: 'trash', label: 'Trash'|t('app')}], selectizeOptions: {searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Booking list view'|t('calendar')}}}) }}
     {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, extraPlugins: false, placeholder: 'All calendars'|t('calendar')}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
     {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, searchField: [], extraPlugins: false, placeholder: 'All statuses'|t('calendar')}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
     <div class="booking-search texticon">
@@ -26,7 +27,7 @@
         {{ forms.selectize({id: 'booking-sort', name: 'sort', value: sort, options: sortOptions, selectizeOptions: {searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Sort by'|t('app')}}}) }}
     </div>
     <span class="spinner hidden" aria-hidden="true"></span>
-    <a class="btn{{ calendarId or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings') }}">{{ 'Clear'|t('app') }}</a>
+    <a class="btn{{ calendarId or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings', {view: bookingListView, sort}) }}">{{ 'Clear'|t('app') }}</a>
 </form>
 <div id="booking-results">{% include 'calendar/bookings/_list' %}</div>
 {% endblock %}
@@ -55,6 +56,8 @@
 .booking-datetime { line-height:1.5; white-space:nowrap; }
 .booking-timestamp { min-width:135px; white-space:nowrap; }
 .booking-timestamp-time { display:block; }
+.booking-actions-cell { width:44px; white-space:nowrap; }
+.booking-trash-note { margin-bottom:16px; }
 .booking-status-cell { width:180px; }
 .booking-status-control { display:flex; align-items:center; gap:8px; }
 .booking-status-control > .select.selectize { flex:1; width:160px; min-width:0; }

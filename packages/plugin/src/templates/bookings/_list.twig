@@ -2,6 +2,7 @@
 {% set statusColors = {requested: 'orange', confirmed: 'green', declined: 'red', cancelled: 'disabled'} %}
 {% set rowStatusOptions = [] %}
 {% for value, label in statusOptions %}{% set rowStatusOptions = rowStatusOptions|merge([{value, label, data: {status: statusColors[value]}}]) %}{% endfor %}
+{% if trashed %}<p class="light booking-trash-note">{{ 'Trashed bookings do not reserve time. They can be restored until Craft permanently deletes them.'|t('calendar') }}</p>{% endif %}
 <div class="booking-table-scroll">
     <table class="data fullwidth booking-table">
         <thead><tr>
@@ -10,18 +11,19 @@
                 {% set ascending = sort == field ~ '-asc' %}
                 {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field in ['date', 'submitted', 'updated'] ? '-desc' : '-asc')) %}
                 <th scope="col" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
-                    <a class="booking-sort-link{{ active ? ' active' }}" data-booking-sort="{{ nextSort }}" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort: nextSort}) }}">
+                    <a class="booking-sort-link{{ active ? ' active' }}" data-booking-sort="{{ nextSort }}" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, view: bookingListView, sort: nextSort}) }}">
                         {{ label|t('calendar') }}<span class="booking-sort-arrow" aria-hidden="true">{{ active ? (ascending ? '↑' : '↓') : '↕' }}</span>
                     </a>
                 </th>
             {% endfor %}
+            <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
         </tr></thead>
         <tbody>
         {% for booking in bookings %}
             {% set calendar = calendars[booking.calendarId] %}
             {% set timezone = calendar.schedulingSettings.timezone %}
             <tr>
-                <td class="booking-customer"><a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a><div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
+                <td class="booking-customer">{% if trashed %}<strong>{{ booking.customerName }}</strong>{% else %}<a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a>{% endif %}<div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
                 <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
                 <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
                 {% for field, timestamp in {submitted: booking.dateCreated, updated: booking.dateUpdated} %}
@@ -35,14 +37,17 @@
                     </td>
                 {% endfor %}
                 <td class="booking-status-cell">
+                    {% if trashed %}<span class="booking-calendar"><span class="status {{ statusColors[booking.bookingStatus] }}" aria-hidden="true"></span>{{ statusOptions[booking.bookingStatus] }}</span>{% else %}
                     <div class="booking-status-control" data-booking-id="{{ booking.id }}">
                         {{ forms.selectize({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: rowStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
                         <span class="spinner hidden" aria-hidden="true"></span>
                     </div>
+                    {% endif %}
                 </td>
+                <td class="booking-actions-cell"><button type="button" class="btn small{{ trashed ? '' : ' delete icon' }}" data-booking-action="{{ trashed ? 'restore' : 'delete' }}" data-booking-id="{{ booking.id }}" data-customer="{{ booking.customerName }}" aria-label="{{ (trashed ? 'Restore booking for {customer}' : 'Delete booking for {customer}')|t('calendar', {customer: booking.customerName}) }}">{{ trashed ? 'Restore'|t('app') }}</button></td>
             </tr>
         {% else %}
-            <tr><td colspan="6" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
+            <tr><td colspan="7" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
         {% endfor %}
         </tbody>
     </table>
@@ -50,8 +55,8 @@
 <div class="booking-footer">
     <span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
     <div class="buttons">
-        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
-        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
+        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
+        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, sort, view: bookingListView, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
     </div>
 </div>
 {% js %}

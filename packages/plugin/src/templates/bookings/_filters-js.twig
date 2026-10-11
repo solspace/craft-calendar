@@ -16,7 +16,7 @@
     function filterUrl() {
         const url = new URL(location.href);
         const values = new FormData(form);
-        for (const name of ['calendarId', 'bookingStatus', 'search', 'sort']) {
+        for (const name of ['calendarId', 'bookingStatus', 'search', 'sort', 'view']) {
             const value = values.get(name) || '';
             if (value) url.searchParams.set(name, value);
             else url.searchParams.delete(name);
@@ -68,7 +68,7 @@
     }
 
     // Selectize detaches and reinserts its selects, clearing directly bound jQuery handlers.
-    $(form).on('change', '#booking-filter-calendar, #booking-filter-status, #booking-sort', () => filterBookings());
+    $(form).on('change', '#booking-filter-calendar, #booking-filter-status, #booking-sort, #booking-list-view', () => filterBookings());
     results.addEventListener('click', event => {
         const link = event.target.closest('[data-booking-sort]');
         if (!link || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -76,6 +76,31 @@
         if (sort.selectize) sort.selectize.setValue(link.dataset.bookingSort, true);
         else sort.value = link.dataset.bookingSort;
         filterBookings();
+    });
+    results.addEventListener('click', async event => {
+        const button = event.target.closest('[data-booking-action]');
+        if (!button || button.disabled || results.getAttribute('aria-busy') === 'true' || statusSaves) return;
+        const action = button.dataset.bookingAction;
+        if (action === 'delete' && !confirm(Craft.t('calendar', 'Move the booking for {customer} to Trash?', {customer: button.dataset.customer}))) return;
+        statusSaves++;
+        button.disabled = true;
+        const row = button.closest('tr');
+        row.setAttribute('aria-busy', 'true');
+        row.querySelectorAll('select').forEach(select => select.selectize?.disable());
+        try {
+            const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action, {data: {bookingId: button.dataset.bookingId}});
+            if (!response.data.success) throw new Error(response.data.message);
+            Craft.cp.displayNotice(Craft.t('calendar', action === 'delete' ? 'Booking moved to Trash.' : 'Booking restored.'));
+            if (!pendingUrl) pendingUrl = filterUrl();
+        } catch (error) {
+            Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
+        } finally {
+            button.disabled = false;
+            row.removeAttribute('aria-busy');
+            row.querySelectorAll('select').forEach(select => select.selectize?.enable());
+            statusSaves--;
+            if (!statusSaves && pendingUrl) filterBookings(pendingUrl);
+        }
     });
     function searchBookings() {
         clearTimeout(timer);
