@@ -7,6 +7,7 @@
 <input type="hidden" name="originalStartDate" value="{{ booking.startDate|atom }}">
 <input type="hidden" name="originalEndDate" value="{{ booking.endDate|atom }}">
 <input type="hidden" name="start" value="" data-request-start>
+<input type="hidden" name="calendarId" value="{{ booking.calendarId }}" data-request-calendar-target>
 <div class="request-review-content">
     <div class="request-review-header">
         <div class="request-review-avatar" aria-hidden="true">{{ booking.customerName|trim|slice(0, 1)|upper }}</div>
@@ -41,6 +42,14 @@
         <p class="light request-review-help">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
         <div id="{{ containerId }}-time-picker" data-request-time-picker class="{{ not unavailable ? 'hidden' }}">
             <div class="request-review-date-controls">
+                <div class="field request-review-calendar-field">
+                    <div class="heading"><label for="{{ containerId }}-calendar">{{ 'Calendar'|t('calendar') }}</label></div>
+                    <div class="input ltr"><select id="{{ containerId }}-calendar" class="text fullwidth" data-request-calendar aria-label="{{ 'Calendar'|t('calendar') }}">
+                    {% for resource in calendars %}
+                        <option value="{{ resource.id }}"{{ resource.id == booking.calendarId ? ' selected' }}>{{ resource.name }}</option>
+                    {% endfor %}
+                    </select></div>
+                </div>
                 {{ forms.textField({id: containerId ~ '-date', label: 'Date'|t('calendar'), type: 'date', value: booking.startDate|date('Y-m-d', timezone), inputAttributes: {data: {'request-date': true}}}) }}
                 {% if not unavailable %}<button type="button" class="btn small" data-request-original>{{ 'Keep requested time'|t('calendar') }}</button>{% endif %}
             </div>
@@ -108,6 +117,8 @@
 .request-review-help { margin:8px 0 0; font-size:12px; line-height:1.5; }
 .request-review-date-controls { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; margin-top:18px; }
 .request-review-date-controls > .field { margin:0; }
+.request-review-calendar-field { flex:1 1 210px; max-width:350px; }
+.request-review-calendar-field select { width:100%; }
 .request-review-date-controls > .btn { margin-bottom:1px; }
 .request-review-slot-message { margin-top:14px; font-size:13px; }
 .request-review-slot-message:empty { display:none; }
@@ -148,23 +159,26 @@
     const picker = form.querySelector('[data-request-time-picker]');
     const alternative = form.querySelector('[data-request-alternative]');
     const date = form.querySelector('[data-request-date]');
+    const calendarPicker = form.querySelector('[data-request-calendar]');
+    const calendarTarget = form.querySelector('[data-request-calendar-target]');
     const slots = form.querySelector('[data-request-slots]');
     const message = form.querySelector('[data-request-slot-message]');
     let revision = 0, controller = null;
     const unavailable = {{ unavailable ? 'true' : 'false' }};
     function sync() {
         const expanded = !picker.classList.contains('hidden');
-        screen.$saveBtn.prop('disabled', (unavailable || expanded) && !start.value);
+        const calendarChanged = calendarPicker.value !== {{ booking.calendarId|json_encode|raw }}.toString();
+        screen.$saveBtn.prop('disabled', (unavailable || expanded || calendarChanged) && !start.value);
         alternative.classList.toggle('hidden', expanded);
         alternative.setAttribute('aria-expanded', String(expanded));
     }
     async function loadSlots() {
         controller?.abort(); controller = new AbortController();
         const signal = controller.signal, current = ++revision;
-        start.value = ''; sync(); slots.replaceChildren();
+        start.value = ''; calendarTarget.value = calendarPicker.value; sync(); slots.replaceChildren();
         message.textContent = Craft.t('calendar', 'Loading available times…');
         try {
-            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: {{ booking.calendarId }}, bookingId: {{ booking.id }}, date: date.value}, signal});
+            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: calendarPicker.value, bookingId: {{ booking.id }}, date: date.value}, signal});
             if (signal.aborted || revision !== current || !form.isConnected) return;
             const available = response.data.slots.filter(slot => slot.available !== false);
             message.textContent = available.length ? '' : Craft.t('calendar', 'No available times for this date.');
@@ -180,8 +194,9 @@
     alternative.addEventListener('click', () => { picker.classList.remove('hidden'); loadSlots(); date.focus(); });
     date.addEventListener('click', () => { try { date.showPicker?.(); } catch (_) {} });
     date.addEventListener('change', loadSlots);
-    form.querySelector('[data-request-decline]').addEventListener('click', () => { decision.value = 'declined'; start.value = ''; screen.$saveBtn.prop('disabled', false); screen.handleSubmit(new Event('submit', {cancelable: true})); });
-    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; picker.classList.add('hidden'); sync(); alternative.focus(); });
+    calendarPicker.addEventListener('change', () => { picker.classList.remove('hidden'); loadSlots(); });
+    form.querySelector('[data-request-decline]').addEventListener('click', () => { decision.value = 'declined'; start.value = ''; calendarTarget.value = {{ booking.calendarId }}; screen.$saveBtn.prop('disabled', false); screen.handleSubmit(new Event('submit', {cancelable: true})); });
+    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; calendarPicker.value = {{ booking.calendarId }}; calendarTarget.value = calendarPicker.value; picker.classList.add('hidden'); sync(); alternative.focus(); });
     const handleError = screen.handleSubmitError;
     screen.handleSubmitError = function(error) { decision.value = 'confirmed'; sync(); return handleError.call(this, error); };
     screen.on('beforeClose', () => { controller?.abort(); ++revision; });
