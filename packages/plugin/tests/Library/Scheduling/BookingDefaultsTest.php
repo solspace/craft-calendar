@@ -17,17 +17,36 @@ use yii\web\BadRequestHttpException;
 /** @coversNothing */
 class BookingDefaultsTest extends TestCase
 {
-    public function testInitialDefaultsPreserveTheExistingBookingRules(): void
+    public function testFreshInstallUsesTheInitialBookingRules(): void
     {
         $defaults = (new SettingsModel())->getBookingDefaults();
-        self::assertSame(30, $defaults->duration);
-        self::assertSame(15, $defaults->increment);
-        self::assertSame(90, $defaults->maximumAdvance);
+        self::assertSame(60, $defaults->duration);
+        self::assertSame(60, $defaults->increment);
+        self::assertSame(0, $defaults->buffer);
+        self::assertSame(24, $defaults->minimumNotice);
+        self::assertSame(60, $defaults->maximumAdvance);
         self::assertFalse($defaults->allowOverlap);
         self::assertFalse($defaults->allowGuests);
         self::assertTrue($defaults->requireApproval);
         self::assertCount(7, $defaults->hours);
         self::assertTrue((new SettingsModel())->validate());
+    }
+
+    public function testSavedDefaultsAndExistingCalendarRulesArePreserved(): void
+    {
+        // The earlier empty defaults configuration retains its original fallback values.
+        foreach ([[], ['duration' => 30, 'increment' => 15, 'minimumNotice' => 0, 'maximumAdvance' => 90]] as $saved) {
+            $settings = new SettingsModel(['bookingDefaults' => $saved]);
+            self::assertSame(30, $settings->getBookingDefaults()->duration);
+            self::assertSame(15, $settings->getBookingDefaults()->increment);
+            self::assertSame(0, $settings->getBookingDefaults()->minimumNotice);
+            self::assertSame(90, $settings->getBookingDefaults()->maximumAdvance);
+        }
+        $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => []]);
+        self::assertSame(30, $calendar->getSchedulingSettings()->duration);
+        self::assertSame(15, $calendar->getSchedulingSettings()->increment);
+        self::assertSame(0, $calendar->getSchedulingSettings()->minimumNotice);
+        self::assertSame(90, $calendar->getSchedulingSettings()->maximumAdvance);
     }
 
     public function testNewCalendarsCopyDefaultsAndKeepTheirOwnSettings(): void

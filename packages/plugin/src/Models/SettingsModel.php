@@ -55,7 +55,14 @@ class SettingsModel extends Model
 
     public array|bool|null $guestAccess = null;
 
-    public array $bookingDefaults = [];
+    public array $bookingDefaults = [
+        'duration' => 60,
+        'increment' => 60,
+        'buffer' => 0,
+        'minimumNotice' => 24,
+        'maximumAdvance' => 60,
+        'allowOverlap' => false,
+    ];
 
     // Legacy booking-only settings remain readable for existing project config.
     public ?string $captchaProvider = null;
