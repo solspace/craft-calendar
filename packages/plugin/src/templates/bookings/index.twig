@@ -17,8 +17,8 @@
     {% set rowStatusOptions = rowStatusOptions|merge([option]) %}
 {% endfor %}
 <form method="get" class="booking-filters">
-    {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {allowEmptyOption: true, extraPlugins: false, placeholder: 'All calendars'|t('calendar')}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
-    {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {allowEmptyOption: true, searchField: [], extraPlugins: false, placeholder: 'All statuses'|t('calendar')}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
+    {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, extraPlugins: false, placeholder: 'All calendars'|t('calendar')}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
+    {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, searchField: [], extraPlugins: false, placeholder: 'All statuses'|t('calendar')}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
     <div class="booking-search texticon">
         <span class="texticon-icon search icon" aria-hidden="true"></span>
         {{ forms.text({type: 'search', id: 'booking-filter-search', name: 'search', value: search, placeholder: 'Search name or email'|t('calendar'), inputAttributes: {aria: {label: 'Search name or email'|t('calendar')}}}) }}
@@ -39,7 +39,7 @@
                 <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
                 <td class="booking-status-cell">
                     <div class="booking-status-control" data-booking-id="{{ booking.id }}">
-                        {{ forms.selectize({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: rowStatusOptions, selectizeOptions: {searchField: [], extraPlugins: false}, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
+                        {{ forms.selectize({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: rowStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
                         <span class="spinner hidden" aria-hidden="true"></span>
                     </div>
                 </td>
@@ -61,7 +61,7 @@
 
 {% css %}
 .booking-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px; padding:12px; background:var(--gray-050,#f3f6fa); border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; }
-.booking-filters > .select { width:180px; flex-shrink:0; }
+.booking-filters > .select.selectize { width:180px; flex-shrink:0; }
 .booking-search { flex:1; min-width:200px; }
 .booking-filters .selectize-input, .booking-filters .text, .booking-filters > .btn { min-height:34px; box-sizing:border-box; }
 .booking-table-scroll { overflow-x:auto; }
@@ -74,24 +74,27 @@
 .booking-datetime { line-height:1.5; white-space:nowrap; }
 .booking-status-cell { width:180px; }
 .booking-status-control { display:flex; align-items:center; gap:8px; }
-.booking-status-control .select { flex:1; }
+.booking-status-control > .select.selectize { flex:1; width:160px; min-width:0; }
 .booking-status-control .select select { width:100%; }
 .booking-status-control .spinner { flex-shrink:0; }
 .booking-table .booking-empty { padding-block:32px; text-align:center; }
 .booking-footer { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-top:16px; }
 .booking-footer .buttons { margin:0; }
+.booking-filters .selectize-input .item > .flex, .booking-status-control .selectize-input .item > .flex, .booking-picker-dropdown .option > .flex { gap:8px; }
+.booking-filters .selectize-input .status, .booking-status-control .selectize-input .status, .booking-picker-dropdown .status { width:12px; height:12px; margin:0; }
+.booking-filters .selectize-input .color.small, .booking-picker-dropdown .color.small { width:12px; height:12px; flex:0 0 12px; margin:0; }
 {% endcss %}
 
 {% js %}
 (() => {
     document.querySelectorAll('.booking-status-control').forEach(control => {
-        const select = control.querySelector('select');
-        const picker = select.selectize;
         const spinner = control.querySelector('.spinner');
-        $(select).on('change', async () => {
+        $(control).on('change', 'select', async event => {
+            const select = event.currentTarget;
             const previous = select.dataset.savedStatus;
             const status = select.value;
             if (select.disabled || status === previous) return;
+            const picker = select.selectize;
             picker.disable();
             control.setAttribute('aria-busy', 'true');
             spinner.classList.remove('hidden');

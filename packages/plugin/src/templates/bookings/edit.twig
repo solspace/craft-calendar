@@ -9,6 +9,7 @@
 {{ actionInput('calendar/bookings/save') }}{{ csrfInput() }}{{ redirectInput('calendar/bookings') }}
 {% if booking.id %}{{ hiddenInput('bookingId', booking.id) }}{% endif %}
 <div class="booking-editor">
+{% include 'calendar/bookings/_status-card' %}
 <div class="booking-picker-controls">
 <div class="booking-calendar-control">
 {% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
@@ -30,7 +31,6 @@
 </div>
 {{ hiddenInput('startDate', booking.startDate ? booking.startDate|date('c', timezone) : '') }}
 {{ hiddenInput('endDate', booking.endDate ? booking.endDate|date('c', timezone) : '') }}
-{% include 'calendar/bookings/_status-card' %}
 <hr>
 <div class="booking-contact-grid">
 {{ forms.textField({label: 'Customer Name'|t('calendar'), name: 'customerName', value: booking.customerName, required: true, errors: booking.getErrors('customerName')}) }}
@@ -138,22 +138,17 @@ loadBookingSlots();
 .booking-editor { max-width:960px; }
 .booking-editor .field { margin:0 0 22px; }
 .booking-editor .heading { margin-bottom:6px; }
-.booking-status-card { --status-color:#966000; --status-background:#fffbef; --status-border:#ebd6a0; --status-icon-background:#faedc5; border:1px solid var(--status-border); border-left:4px solid var(--status-color); border-radius:6px; background:var(--status-background); padding:14px 16px; }
+.booking-status-card { --status-color:#966000; --status-background:#fffbef; --status-border:#ebd6a0; --status-icon-background:#faedc5; border:1px solid var(--status-border); border-left:4px solid var(--status-color); border-radius:6px; background:var(--status-background); padding:14px 16px; margin-bottom:24px; }
 .booking-status-card.confirmed { --status-color:var(--enabled-color,#008a5b); --status-background:#f2faf6; --status-border:#b3dcc6; --status-icon-background:#dcefe4; }
 .booking-status-card.declined { --status-color:var(--error-color,#cf1124); --status-background:#fff6f6; --status-border:#edc0c5; --status-icon-background:#f9e1e4; }
 .booking-status-card.cancelled { --status-color:#5c697a; --status-background:#f6f7f9; --status-border:#d6dce4; --status-icon-background:#e7ebf0; }
 .booking-status-header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.booking-status-header label { font-size:13px; font-weight:500; line-height:1.5; color:var(--text-color,#3f4d5c); }
 .booking-status-icon { display:flex; align-items:center; justify-content:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; background:var(--status-icon-background); color:var(--status-color); font-size:20px; font-weight:600; line-height:1; }
-.booking-status-header .select { margin-inline-start:auto; }
+.booking-status-header .select { margin:0; }
 .booking-status-header .select select { min-width:152px; min-height:34px; background:#fff; color:var(--text-color,#3f4d5c); box-shadow:0 1px 2px rgba(0,0,0,.04); }
 .booking-status-body { padding-inline-start:44px; }
 .booking-status-meta { margin:6px 0 0; font-size:12px; line-height:1.5; color:var(--light-text-color,#596673); }
 .booking-status-body .errors { margin:8px 0 0; }
-@media (max-width:400px) {
-    .booking-status-header .select { margin-inline-start:44px; width:calc(100% - 44px); }
-    .booking-status-header .select select { width:100%; }
-}
 .booking-confirmation-note { margin:10px 0 0; font-size:12px; line-height:1.5; }
 .booking-picker-controls, .booking-contact-grid { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; }
 .booking-picker-controls { margin-bottom:24px; max-width:720px; }
