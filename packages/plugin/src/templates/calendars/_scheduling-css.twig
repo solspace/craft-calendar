@@ -1,0 +1,13 @@
+.calendar-scheduling-settings { container-type:inline-size; }
+.calendar-scheduling-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:24px 32px; margin-block:24px; }
+.calendar-scheduling-grid > .field { min-width:0; margin:0; display:flex; flex-direction:column; }
+.calendar-scheduling-grid > .field > .input { margin-block-start:auto; }
+.calendar-scheduling-grid > .field > .instructions { margin-block-end:8px; }
+.calendar-scheduling-grid .text, .calendar-scheduling-grid .select { max-width:100%; }
+.calendar-scheduling-grid .calendar-scheduling-wide { grid-column:1 / -1; }
+@container (min-width:680px) {
+    .calendar-scheduling-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@container (min-width:1040px) {
+    .calendar-scheduling-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}

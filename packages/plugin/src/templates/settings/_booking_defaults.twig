@@ -4,7 +4,7 @@
 {% set bookingDefaults = true %}
 {% set schedulingPrefix = 'settings[bookingDefaults]' %}
 {% block content %}
-    <form action="" method="post" accept-charset="UTF-8">
+    <form class="calendar-scheduling-settings" action="" method="post" accept-charset="UTF-8">
         {{ actionInput('calendar/settings/save-settings') }}
         {{ redirectInput('calendar/settings/booking-defaults') }}
         {{ csrfInput() }}
@@ -15,3 +15,7 @@
         {% include 'calendar/calendars/_booking-rules' %}
     </form>
 {% endblock %}
+
+{% css %}
+{% include 'calendar/calendars/_scheduling-css' %}
+{% endcss %}

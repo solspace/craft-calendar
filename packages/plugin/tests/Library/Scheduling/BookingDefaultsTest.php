@@ -173,11 +173,12 @@ class BookingDefaultsTest extends TestCase
     {
         $root = __DIR__.'/../../../src/templates/';
         $twig = new Environment(new ArrayLoader([
-            'defaults' => file_get_contents($root.'settings/_booking_defaults.twig'),
+            'defaults' => str_replace(['{% css %}', '{% endcss %}'], ['{% block styles %}', '{% endblock %}'], file_get_contents($root.'settings/_booking_defaults.twig')),
+            'calendar/calendars/_scheduling-css' => file_get_contents($root.'calendars/_scheduling-css.twig'),
             'scheduling' => file_get_contents($root.'calendars/_scheduling.twig'),
             'calendar/calendars/_weekly-hours' => file_get_contents($root.'calendars/_weekly-hours.twig'),
             'calendar/calendars/_booking-rules' => file_get_contents($root.'calendars/_booking-rules.twig'),
-            'calendar/layouts/_settings' => '{% block content %}{% endblock %}',
+            'calendar/layouts/_settings' => '{% block content %}{% endblock %}{% block styles %}{% endblock %}',
             '_includes/forms' => <<<'TWIG'
                 {% macro errorList(errors) %}{% for error in errors %}<error>{{ error }}</error>{% endfor %}{% endmacro %}
                 {% macro editableTableField(config) %}<field name="{{ config.name }}">{{ config.rows|json_encode }}</field>{% endmacro %}
