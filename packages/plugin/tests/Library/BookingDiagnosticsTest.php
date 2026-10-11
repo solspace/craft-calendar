@@ -94,21 +94,25 @@ class BookingDiagnosticsTest extends TestCase
         $twig = new Environment(new ArrayLoader(['diagnostics' => $source, 'calendar/layouts/_settings' => '{% block actionButton %}{% endblock %}{% block content %}{% endblock %}']), ['strict_variables' => true]);
         $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), array_values($params)))));
         $rows = $this->rules(new SchedulingSettings(['hours' => []]));
-        $bookingCalendar = ['title' => '<Room>', 'issueCount' => 1, 'rows' => array_values($rows)];
-        $calendar = ['title' => '<Room>', 'handle' => 'room', 'scheduling' => true, 'typeLabel' => 'Scheduling', 'bookingCount' => 7, 'eventCount' => 999, 'timezoneValid' => true, 'siteNames' => 'Main Site', 'siteCount' => 1];
-        $html = $twig->render('diagnostics', ['sampledAt' => '2026-10-11', 'columns' => [], 'errorCount' => 0, 'advisoryCount' => 1, 'calendars' => [$calendar], 'calendarWarningCount' => 0, 'bookingCalendars' => [$bookingCalendar], 'bookingWarningCount' => 1, 'report' => 'Booking Configuration']);
+        $rows['Handle'] = ['value' => 'room', 'status' => 'none', 'note' => null, 'isBoolean' => false];
+        $rows['Bookings'] = ['value' => '7', 'status' => 'none', 'note' => null, 'isBoolean' => false];
+        $bookingCalendar = ['title' => '<Room>', 'issueCount' => 1, 'issueNotes' => 'No booking times are available', 'cells' => $rows];
+        $calendar = ['title' => 'Events Only', 'handle' => 'events', 'eventCount' => 999, 'timezoneValid' => true, 'siteNames' => 'Main Site', 'siteCount' => 1, 'timezone' => 'Floating', 'repeatingEnabled' => true, 'repeating' => 'Enabled', 'guestAccessEnabled' => false, 'guestAccessLabel' => 'Disabled', 'icsSharingEnabled' => false, 'icsSharingLabel' => 'Disabled'];
+        $html = $twig->render('diagnostics', ['sampledAt' => '2026-10-11', 'columns' => [], 'errorCount' => 0, 'advisoryCount' => 1, 'calendars' => [$calendar], 'calendarWarningCount' => 0, 'bookingCalendars' => [$bookingCalendar], 'bookingColumns' => ['Handle', 'Bookings', 'Active', 'Booking Timezone', 'Opening Hours'], 'bookingWarningCount' => 1, 'report' => 'Booking Configuration']);
         self::assertStringContainsString('Booking Calendar Details (1)', $html);
         self::assertStringContainsString('&lt;Room&gt;', $html);
         self::assertStringContainsString('No booking times are available', $html);
-        self::assertStringContainsString('<td>7</td>', $html);
-        self::assertStringNotContainsString('999', $html);
-        self::assertStringNotContainsString('Floating', $html);
+        self::assertStringContainsString('Event Calendar Details (1)', $html);
+        self::assertStringContainsString('999', $html);
         self::assertStringNotContainsString('calendar.timezone', $html);
         $dom = new \DOMDocument();
         @$dom->loadHTML('<meta charset="utf-8">'.$html);
         $xpath = new \DOMXPath($dom);
-        self::assertSame(4, $xpath->query('//table/tbody/tr/td[text()="—"]')->length);
-        self::assertSame(1, $xpath->query('//details[contains(@class,"calendar-diag-booking-calendar")]')->length);
+        self::assertSame(1, $xpath->query('//div[contains(@class,"calendar-diag-booking-table")]/table/tbody/tr')->length);
+        self::assertSame(1, $xpath->query('//div[contains(@class,"calendar-diag-booking-table")]//td[normalize-space(.)="7"]')->length);
+        self::assertSame(1, $xpath->query('//details[@open]/div[contains(@class,"calendar-diag-booking-table")]')->length);
+        self::assertSame(0, $xpath->query('//details[contains(@class,"calendar-diag-calendars")]//strong[text()="<Room>"]')->length);
+        self::assertSame(0, $xpath->query('//div[contains(@class,"calendar-diag-booking-table")]//td[text()="Floating"]')->length);
     }
 
     private function rules(SchedulingSettings $settings, ?\DateTimeImmutable $now = null, bool $defaults = false): array

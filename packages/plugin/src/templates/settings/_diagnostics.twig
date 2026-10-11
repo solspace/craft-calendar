@@ -88,20 +88,19 @@
         {% if calendars %}
             <details class="calendar-diag-calendars calendar-diag-disclosure">
                 <summary>
-                    {{ 'Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}
+                    {{ 'Event Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}
                     {% if calendarWarningCount %}
                         <span class="calendar-diag-issue-count">{{ 'Potential issues: {count}'|t('calendar', {count: calendarWarningCount}) }}</span>
                     {% endif %}
                 </summary>
                 <div class="calendar-diag-calendar-table">
                     <table class="data fullwidth">
-                        <caption class="visually-hidden">{{ 'Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}</caption>
+                        <caption class="visually-hidden">{{ 'Event Calendar Details ({count})'|t('calendar', {count: calendars|length}) }}</caption>
                         <thead>
                             <tr>
                                 <th scope="col">{{ 'Calendar'|t('calendar') }}</th>
                                 <th scope="col">{{ 'Handle'|t('calendar') }}</th>
-                                <th scope="col">{{ 'Calendar Type'|t('calendar') }}</th>
-                                <th scope="col">{{ 'Events / Bookings'|t('calendar') }}</th>
+                                <th scope="col">{{ 'Events'|t('calendar') }}</th>
                                 <th scope="col">{{ 'Repeating Allowed'|t('calendar') }}</th>
                                 <th scope="col">{{ 'Supported Sites'|t('calendar') }}</th>
                                 <th scope="col">{{ 'Guest Access'|t('calendar') }}</th>
@@ -114,13 +113,12 @@
                                 <tr class="{{ calendar.timezoneValid ? 'is-pass' : 'is-error' }}">
                                     <th scope="row"><strong>{{ calendar.title }}</strong></th>
                                     <td class="calendar-diag-handle">{{ calendar.handle }}</td>
-                                    <td>{{ calendar.typeLabel }}</td>
-                                    <td>{{ calendar.scheduling ? (calendar.bookingCount ?? 'Unavailable'|t('calendar')) : (calendar.eventCount ?? 'Unavailable'|t('calendar')) }}</td>
-                                    <td>{% if not calendar.scheduling %}{{ _self.status(calendar.repeatingEnabled ? 'pass' : 'disabled', calendar.repeating) }}{% else %}—{% endif %}</td>
+                                    <td>{{ calendar.eventCount ?? 'Unavailable'|t('calendar') }}</td>
+                                    <td>{{ _self.status(calendar.repeatingEnabled ? 'pass' : 'disabled', calendar.repeating) }}</td>
                                     <td title="{{ calendar.siteNames|e('html_attr') }}">{{ calendar.siteCount }}{% if calendar.siteNames %}<span class="visually-hidden"> — {{ calendar.siteNames }}</span>{% endif %}</td>
-                                    <td>{% if not calendar.scheduling %}{{ _self.status(calendar.guestAccessEnabled ? 'pass' : 'disabled', calendar.guestAccessLabel) }}{% else %}—{% endif %}</td>
-                                    <td>{% if calendar.scheduling %}—{% else %}{{ calendar.timezone }}{% if not calendar.timezoneValid %} <span class="calendar-diag-issue-count" title="{{ 'This timezone identifier is invalid.'|t('calendar')|e('html_attr') }}">{{ 'Potential issue'|t('calendar') }}</span>{% endif %}{% endif %}</td>
-                                    <td>{% if not calendar.scheduling %}{{ _self.status(calendar.icsSharingEnabled ? 'pass' : 'disabled', calendar.icsSharingLabel) }}{% else %}—{% endif %}</td>
+                                    <td>{{ _self.status(calendar.guestAccessEnabled ? 'pass' : 'disabled', calendar.guestAccessLabel) }}</td>
+                                    <td>{{ calendar.timezone }}{% if not calendar.timezoneValid %} <span class="calendar-diag-issue-count" title="{{ 'This timezone identifier is invalid.'|t('calendar')|e('html_attr') }}">{{ 'Potential issue'|t('calendar') }}</span>{% endif %}</td>
+                                    <td>{{ _self.status(calendar.icsSharingEnabled ? 'pass' : 'disabled', calendar.icsSharingLabel) }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -129,17 +127,35 @@
             </details>
         {% endif %}
         {% if bookingCalendars %}
-            <details class="calendar-diag-disclosure">
+            <details class="calendar-diag-disclosure" open>
                 <summary>
                     {{ 'Booking Calendar Details ({count})'|t('calendar', {count: bookingCalendars|length}) }}
                     {% if bookingWarningCount %}<span class="calendar-diag-issue-count">{{ 'Calendars with advisories or issues: {count}'|t('calendar', {count: bookingWarningCount}) }}</span>{% endif %}
                 </summary>
-                {% for calendar in bookingCalendars %}
-                    <details class="calendar-diag-disclosure calendar-diag-booking-calendar">
-                        <summary>{{ calendar.title }}{% if calendar.issueCount %}<span class="calendar-diag-issue-count">{{ 'Advisories or issues: {count}'|t('calendar', {count: calendar.issueCount}) }}</span>{% endif %}</summary>
-                        {{ _self.rows(calendar.rows) }}
-                    </details>
-                {% endfor %}
+                <div class="calendar-diag-calendar-table calendar-diag-booking-table">
+                    <table class="data fullwidth">
+                        <caption class="visually-hidden">{{ 'Booking Calendar Details ({count})'|t('calendar', {count: bookingCalendars|length}) }}</caption>
+                        <thead><tr>
+                            <th scope="col">{{ 'Calendar'|t('calendar') }}</th>
+                            {% for label in bookingColumns %}<th scope="col">{{ label }}</th>{% endfor %}
+                        </tr></thead>
+                        <tbody>
+                            {% for calendar in bookingCalendars %}
+                                <tr>
+                                    <th scope="row"><strong>{{ calendar.title }}</strong>{% if calendar.issueCount %}<span class="calendar-diag-issue-count" title="{{ calendar.issueNotes }}">{{ 'Advisories or issues: {count}'|t('calendar', {count: calendar.issueCount}) }}</span>{% endif %}</th>
+                                    {% for label in bookingColumns %}
+                                        {% set item = calendar.cells[label] ?? null %}
+                                        <td class="{{ label == 'Handle'|t('calendar') ? 'calendar-diag-handle' }}{{ label == 'Opening Hours'|t('calendar') ? ' calendar-diag-opening-hours' }}"{% if item and item.note %} title="{{ item.note }}"{% endif %}>
+                                            {% if item %}
+                                                {% if item.isBoolean %}{{ _self.status(item.status, item.statusLabel) }}{% else %}{{ item.value }}{% if item.status in ['warning', 'error'] %} {{ _self.status(item.status, item.statusLabel) }}{% endif %}{% endif %}
+                                            {% else %}{{ 'Unavailable'|t('calendar') }}{% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </details>
         {% endif %}
         <details class="calendar-diag-report calendar-diag-disclosure">

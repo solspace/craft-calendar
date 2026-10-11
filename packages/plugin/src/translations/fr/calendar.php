@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Event Calendar Details ({count})' => 'Détails des calendriers d’événements ({count})',
     'Include booked time slots' => 'Inclure les créneaux réservés',
     'Booked' => 'Réservé',
     'This time is already booked or overlaps a booking buffer.' => 'Ce créneau est déjà réservé ou chevauche un délai entre les réservations.',

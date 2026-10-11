@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Event Calendar Details ({count})' => 'Details van evenementenkalenders ({count})',
     'Include booked time slots' => 'Geboekte tijdsloten weergeven',
     'Booked' => 'Geboekt',
     'This time is already booked or overlaps a booking buffer.' => 'Dit tijdstip is al geboekt of overlapt met een boekingsbuffer.',

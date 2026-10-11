@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Event Calendar Details ({count})' => 'Notikumu kalendāru informācija ({count})',
     'Include booked time slots' => 'Rādīt rezervētos laika intervālus',
     'Booked' => 'Rezervēts',
     'This time is already booked or overlaps a booking buffer.' => 'Šis laiks jau ir rezervēts vai pārklājas ar rezervācijas starplaiku.',

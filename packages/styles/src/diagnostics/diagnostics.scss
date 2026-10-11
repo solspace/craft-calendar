@@ -218,11 +218,27 @@
     }
   }
 
-  .calendar-diag-booking-calendar {
-    margin-inline: 16px;
+  .calendar-diag-booking-table {
+    thead th {
+      min-width: 100px;
+      max-width: 180px;
+      z-index: 2;
+    }
 
-    > dl {
-      padding: 16px 16px 0;
+    thead th:first-child {
+      left: 0;
+      z-index: 3;
+    }
+
+    tbody th {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: var(--white);
+    }
+
+    .calendar-diag-opening-hours {
+      min-width: 280px;
     }
   }
 

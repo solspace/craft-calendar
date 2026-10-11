@@ -45,6 +45,7 @@
 
 ### Changed
 - Restored the Requested status banner's original colors and aligned the separate availability warning icon with its heading.
+- Changed booking diagnostics to an expanded table with one row per calendar, and excluded scheduling calendars from the event diagnostics table.
 - Refined booking warning icon spacing, highlighted unavailable requests in the Bookings list, and matched warning colors across booking views.
 - Ordered booking opening-hour defaults, saved schedules, and weekday menus from Sunday through Saturday.
 - Shortened booking list timezones to date-aware abbreviations beside the time range, and adopted Craft's native sortable table headings.

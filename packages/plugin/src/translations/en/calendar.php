@@ -2,6 +2,7 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Event Calendar Details ({count})' => 'Event Calendar Details ({count})',
     'Admin Notification Template' => 'Admin Notification Template',
     'Requester Notification Template' => 'Requester Notification Template',
     'Advisories or issues: {count}' => 'Advisories or issues: {count}',

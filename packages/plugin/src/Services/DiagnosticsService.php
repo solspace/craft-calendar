@@ -277,6 +277,7 @@ class DiagnosticsService extends Component
                 $calendarSites[$site->calendarId][] = $site->getSite()?->name ?? (string) $site->siteId;
             }
             foreach ($allCalendars as $calendar) {
+                $siteNames = $calendarSites[$calendar->id] ?? [];
                 if ($calendar->getIsScheduling()) {
                     try {
                         $rows = $this->bookingRulesRows($calendar->getSchedulingSettings(), $row, $now);
@@ -284,20 +285,19 @@ class DiagnosticsService extends Component
                         \Craft::error($exception->getMessage(), __METHOD__);
                         $rows = [$row(Calendar::t('Availability Rules'), $unavailable, 'error', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'))];
                     }
-                    $bookingCalendars[] = ['id' => $calendar->id, 'title' => $calendar->name, 'rows' => [$row(Calendar::t('Handle'), $calendar->handle), ...$rows]];
+                    $bookingCalendars[] = ['id' => $calendar->id, 'title' => $calendar->name, 'rows' => [$row(Calendar::t('Handle'), $calendar->handle), ...$rows, $row(Calendar::t('Supported Sites'), implode(', ', $siteNames))]];
+
+                    continue;
                 }
                 $name = $calendar->getIcsTimezone();
                 $floating = DateHelper::FLOATING_TIMEZONE === $name;
-                $valid = $calendar->getIsScheduling() || $floating || null !== DiagnosticsHelper::timezone($name, $now);
+                $valid = $floating || null !== DiagnosticsHelper::timezone($name, $now);
                 $siteNames = $calendarSites[$calendar->id] ?? [];
                 $guestAccess = $plugin->calendars->isCalendarPublic($calendar);
                 $icsSharing = (bool) $calendar->icsHash;
                 $calendars[] = [
                     'id' => $calendar->id,
                     'title' => $calendar->name,
-                    'scheduling' => $calendar->getIsScheduling(),
-                    'typeLabel' => Calendar::t($calendar->getIsScheduling() ? 'Scheduling' : 'Events'),
-                    'bookingCount' => null,
                     'handle' => $calendar->handle,
                     'timezone' => $floating ? Calendar::t('Floating') : $name,
                     'timezoneValid' => $valid,
@@ -312,18 +312,15 @@ class DiagnosticsService extends Component
                     'siteNames' => implode(', ', $siteNames),
                     'rows' => [
                         $row(Calendar::t('Handle'), $calendar->handle),
-                        $row(Calendar::t('Calendar Type'), Calendar::t($calendar->getIsScheduling() ? 'Scheduling' : 'Events')),
-                        ...($calendar->getIsScheduling() ? [] : [
-                            $row(
-                                Calendar::t('ICS Export Timezone'),
-                                $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
-                                $valid ? 'pass' : 'error',
-                                $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')
-                            ),
-                            $booleanRow(Calendar::t('Repeating Events Allowed'), (bool) $calendar->allowRepeatingEvents),
-                            $booleanRow(Calendar::t('Guest Access'), $guestAccess),
-                            $booleanRow(Calendar::t('ICS Sharing'), $icsSharing),
-                        ]),
+                        $row(
+                            Calendar::t('ICS Export Timezone'),
+                            $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
+                            $valid ? 'pass' : 'error',
+                            $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')
+                        ),
+                        $booleanRow(Calendar::t('Repeating Events Allowed'), (bool) $calendar->allowRepeatingEvents),
+                        $booleanRow(Calendar::t('Guest Access'), $guestAccess),
+                        $booleanRow(Calendar::t('ICS Sharing'), $icsSharing),
                         $row(Calendar::t('Supported Sites'), implode(', ', $siteNames)),
                     ],
                 ];
@@ -381,9 +378,7 @@ class DiagnosticsService extends Component
         }
 
         foreach ($calendars as $index => $calendar) {
-            if (!$calendar['scheduling']) {
-                $calendars[$index]['rows'][] = $row(Calendar::t('Events'), $calendar['eventCount'] ?? $unavailable);
-            }
+            $calendars[$index]['rows'][] = $row(Calendar::t('Events'), $calendar['eventCount'] ?? $unavailable);
         }
 
         try {
@@ -398,10 +393,6 @@ class DiagnosticsService extends Component
             foreach (Booking::statusOptions() as $status => $label) {
                 $bookingStatistics[] = $row($label, $totals[$status]);
             }
-            foreach ($calendars as &$calendar) {
-                $calendar['bookingCount'] = array_sum($bookingCounts[$calendar['id']] ?? []);
-            }
-            unset($calendar);
             foreach ($bookingCalendars as &$calendar) {
                 $counts = $bookingCounts[$calendar['id']] ?? [];
                 $calendar['rows'][] = $row(Calendar::t('Bookings'), array_sum($counts));
@@ -415,7 +406,10 @@ class DiagnosticsService extends Component
             $bookingStatistics[] = $row(Calendar::t('Booking Data Checks'), $unavailable, 'warning', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'));
         }
         foreach ($bookingCalendars as &$calendar) {
-            $calendar['issueCount'] = \count(array_filter($calendar['rows'], static fn ($item) => \in_array($item['status'], ['warning', 'error'], true)));
+            $issues = array_filter($calendar['rows'], static fn ($item) => \in_array($item['status'], ['warning', 'error'], true));
+            $calendar['issueCount'] = \count($issues);
+            $calendar['issueNotes'] = implode(' ', array_map(static fn ($item) => $item['label'].': '.($item['note'] ?? $item['value']), $issues));
+            $calendar['cells'] = array_column($calendar['rows'], null, 'label');
         }
         unset($calendar);
 
@@ -450,6 +444,13 @@ class DiagnosticsService extends Component
             'columns' => $sections,
             'calendars' => $calendars,
             'bookingCalendars' => $bookingCalendars,
+            'bookingColumns' => array_map(static fn ($label) => Calendar::t($label), [
+                'Handle', 'Bookings', 'Requested', 'Confirmed', 'Active', 'Booking Timezone',
+                'Allow Guest Bookings', 'Require Approval', 'Allow Overlapping Bookings',
+                'Booking Duration (Minutes)', 'Start-Time Interval (Minutes)', 'Buffer After Booking (Minutes)',
+                'Minimum Notice (Hours)', 'Maximum Advance (Days)', 'Available From', 'Available Until',
+                'Opening Hours', 'Availability Exceptions', 'Staff Notification Email', 'Supported Sites',
+            ]),
             'bookingWarningCount' => \count(array_filter($bookingCalendars, static fn ($calendar) => $calendar['issueCount'] > 0)),
             'calendarWarningCount' => \count(array_filter($calendars, static fn ($calendar) => !$calendar['timezoneValid'])),
             'warnings' => $warnings,
