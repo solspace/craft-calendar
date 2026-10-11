@@ -1,0 +1,12 @@
+{% import '_includes/forms' as forms %}
+{% set statusIcons = {requested: '…', confirmed: '✓', declined: '×', cancelled: '−'} %}
+<section class="booking-status booking-status-card {{ booking.bookingStatus }}" id="booking-status-card" aria-labelledby="booking-status-heading">
+    <div class="booking-status-header">
+        <span class="booking-status-icon" aria-hidden="true">{{ statusIcons[booking.bookingStatus] ?? '…' }}</span>
+        <strong id="booking-status-heading" aria-live="polite">{{ statusOptions[booking.bookingStatus] ?? 'Requested'|t('calendar') }}</strong>
+    </div>
+    <div class="booking-status-body">
+        {{ forms.selectField({label: 'Booking Status'|t('calendar'), instructions: 'Requested times are reserved only after confirmation.'|t('calendar'), name: 'bookingStatus', id: 'booking-status', options: statusOptions, value: booking.bookingStatus, errors: booking.getErrors('bookingStatus')}) }}
+        {% include 'calendar/bookings/_status-meta' %}
+    </div>
+</section>

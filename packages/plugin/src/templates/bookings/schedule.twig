@@ -1,9 +1,9 @@
-{% extends 'calendar/layouts/_layoutWithoutSettings' %}
+{% extends 'calendar/layouts/_bookings' %}
 {% set title = 'Booking Schedule'|t('calendar') %}
 {% set selectedSubnavItem = 'bookings' %}
+{% set bookingView = 'schedule' %}
 {% block actionButton %}<a href="{{ cpUrl('calendar/bookings/new', {calendarId}) }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>{% endblock %}
 {% block content %}
-{% include 'calendar/bookings/_nav' with {bookingView: 'schedule'} %}
 <form method="get" class="booking-toolbar">
 <select name="calendarId" aria-label="{{ 'Calendar'|t('calendar') }}">{% for item in calendars %}<option value="{{ item.id }}" {{ item.id == calendarId ? 'selected' }}>{{ item.name }}</option>{% endfor %}</select>
 <input type="date" name="date" value="{{ date }}" aria-label="{{ 'Date'|t('app') }}">
@@ -14,10 +14,17 @@
 <span class="light">{{ calendar.schedulingSettings.timezone }}</span>
 </form>
 <p class="light">{{ 'Confirmed bookings reserve time. Requested bookings are shown for review.'|t('calendar') }}</p>
+<p class="light booking-grid-instructions">{{ 'Click an available time to add a booking. Shaded times are unavailable.'|t('calendar') }}</p>
 <div class="booking-grid-scroll"><div class="booking-grid" style="--days:{{ days|length }}">
 <div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ ('2000-01-01 ' ~ '%02d:00'|format(hour))|time(bookingTimeFormat, calendar.schedulingSettings.timezone)|calendarTimeLabel }}</div>{% endfor %}</div>
 {% for day in days %}<div class="booking-day"><div class="booking-day-heading">{{ day.date|date('icu:EEE', calendar.schedulingSettings.timezone) }} {{ day.date|date('short', calendar.schedulingSettings.timezone) }}</div><div class="booking-day-body" data-date="{{ day.date|date('Y-m-d', calendar.schedulingSettings.timezone) }}">
 {% for hour in 0..23 %}<div class="booking-hour"></div>{% endfor %}
+{% for minute, slots in day.slots %}
+{% for slot in slots %}
+{% set slotLabel = 'New booking: {time}'|t('calendar', {time: slot.label}) %}
+<a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId, start: slot.start}) }}" style="top:{{ minute / 60 * 48 }}px;height:{{ min(calendar.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ day.date|date('Y-m-d', calendar.schedulingSettings.timezone) }} · {{ slotLabel }} · {{ slot.start|date('T', calendar.schedulingSettings.timezone) }}" title="{{ slotLabel }} · {{ slot.start|date('T', calendar.schedulingSettings.timezone) }}"><span>{{ slotLabel }}</span></a>
+{% endfor %}
+{% endfor %}
 {% for item in day.bookings %}<a draggable="true" data-booking-id="{{ item.booking.id }}" class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ calendar.color }};left:calc({{ item.lane / day.lanes * 100 }}% + 3px);width:calc({{ 100 / day.lanes }}% - 6px)" title="{{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong>{{ item.booking.customerName }}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}
 </div></div>{% endfor %}
 </div></div>
@@ -28,11 +35,16 @@
 .booking-grid-scroll { max-height:65vh; overflow:auto; border:1px solid var(--hairline-color,#d8dee5); border-radius:8px; }
 .booking-grid { display:grid; grid-template-columns:80px repeat(var(--days),minmax(115px,1fr)); min-width:calc(var(--days) * 115px + 80px); }
 .booking-day { border-left:1px solid var(--hairline-color,#d8dee5); }
-.booking-day-heading { height:42px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--white,#fff); z-index:3; font-weight:600; border-bottom:1px solid var(--hairline-color,#d8dee5); }
-.booking-day-body { position:relative; height:1152px; }
+.booking-day-heading { height:42px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--white,#fff); z-index:5; font-weight:600; border-bottom:1px solid var(--hairline-color,#d8dee5); }
+.booking-day-body { position:relative; height:1152px; background:var(--gray-050,#f4f6f9); }
+.booking-grid-instructions { margin-top:-8px; font-size:12px; }
+.booking-slot-target { position:absolute; display:block; background:var(--white,#fff); box-shadow:inset 0 -1px var(--hairline-color,#e7ebef); z-index:1; cursor:pointer; }
+.booking-slot-target span { display:none; position:absolute; top:0; left:0; padding:4px 6px; border-radius:3px; background:var(--enabled-color,#008a5b); color:#fff; font-size:11px; line-height:1.4; white-space:nowrap; pointer-events:none; }
+.booking-slot-target:hover, .booking-slot-target:focus-visible { background:#e6f2eb; outline:2px solid var(--enabled-color,#008a5b); outline-offset:-2px; z-index:3; }
+.booking-slot-target:hover span, .booking-slot-target:focus-visible span { display:block; }
 .booking-hour, .booking-hour-label { height:48px; box-sizing:border-box; border-bottom:1px solid var(--hairline-color,#e7ebef); }
 .booking-hour-label { padding:4px; color:var(--light-text-color,#677586); font-size:11px; text-align:right; }
-.booking-block { position:absolute; left:3px; right:3px; padding:4px 6px; box-sizing:border-box; border-left:3px solid; border-radius:4px; background:#e6f2eb; overflow:hidden; color:#234c36; line-height:1.3; }
+.booking-block { position:absolute; z-index:4; left:3px; right:3px; padding:4px 6px; box-sizing:border-box; border-left:3px solid; border-radius:4px; background:#e6f2eb; overflow:hidden; color:#234c36; line-height:1.3; }
 .booking-block.requested { background:#fff3da; color:#76531b; border-style:dashed; }
 .booking-block strong, .booking-block span, .booking-block small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .booking-block strong { font-size:12px; }.booking-block span,.booking-block small { font-size:10px; }

@@ -25,7 +25,8 @@ class SchedulingTemplateTest extends TestCase
         $twig = new Environment(new ArrayLoader([
             'schedule' => $source,
             'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
-            'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",
+            'calendar/layouts/_bookings' => file_get_contents($root.'layouts/_bookings.twig'),
+            'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block sidebar %}{% endblock %}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",
         ]), ['strict_variables' => true]);
         foreach ((new CalendarGlobalExtension())->getFilters() as $filter) {
             $twig->addFilter($filter);
@@ -48,7 +49,7 @@ class SchedulingTemplateTest extends TestCase
                 'calendar' => ['schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15]],
                 'calendarId' => 7,
                 'calendars' => [['id' => 7, 'name' => 'Meeting room']],
-                'days' => [['date' => new \DateTimeImmutable('2026-10-12'), 'bookings' => [], 'lanes' => 1]],
+                'days' => [['date' => new \DateTimeImmutable('2026-10-12'), 'bookings' => [], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am']]]]],
                 'date' => '2026-10-12',
                 'previous' => '2026-10-05',
                 'next' => '2026-10-19',
@@ -59,6 +60,24 @@ class SchedulingTemplateTest extends TestCase
             self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
             self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-05', $output);
             self::assertStringContainsString('calendarId=7&amp;view='.$scheduleView.'&amp;date=2026-10-19', $output);
+            self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
+            self::assertStringContainsString('top:384px;height:12px;', $output);
+            self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
+            self::assertStringNotContainsString('start=2026-10-12T07', $output);
+        }
+    }
+
+    public function testBookingSidebarRestrictsFieldConfigurationAndMarksTheCurrentPage(): void
+    {
+        $twig = new Environment(new ArrayLoader(['nav' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_nav.twig')]), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+        $twig->addFunction(new TwigFunction('cpUrl', static fn ($path) => $path));
+        foreach ([[false, true], [true, false], [true, true]] as [$admin, $allowAdminChanges]) {
+            $output = $twig->render('nav', ['bookingView' => 'fields', 'currentUser' => ['admin' => $admin], 'craft' => ['app' => ['config' => ['general' => ['allowAdminChanges' => $allowAdminChanges]]]]]);
+            self::assertStringContainsString('<nav', $output);
+            self::assertStringContainsString('calendar/bookings/schedule', $output);
+            self::assertSame($admin && $allowAdminChanges, str_contains($output, 'class="sel" aria-current="page">Booking Fields'));
+            self::assertSame($admin && $allowAdminChanges, str_contains($output, 'calendar/bookings/fields'));
         }
     }
 

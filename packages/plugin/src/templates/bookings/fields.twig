@@ -1,7 +1,8 @@
 {% import '_includes/forms' as forms %}
-{% extends 'calendar/layouts/_layoutWithoutSettings' %}
+{% extends 'calendar/layouts/_bookings' %}
 {% set title = 'Booking Fields'|t('calendar') %}
 {% set selectedSubnavItem = 'bookings' %}
+{% set bookingView = 'fields' %}
 {% set fullPageForm = true %}
 {% block actionButton %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
 {% block content %}

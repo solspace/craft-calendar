@@ -12,6 +12,8 @@ Defaults: 8am–9pm each day, 30-minute bookings, 15-minute start increments, no
 
 Bookings are separate Craft elements and have one shared custom field layout, configured under **Bookings → Booking fields**. Name, email, times, status, and notes are built in. Guest-visible fields are explicitly selected from simple text, number, dropdown, radio, and checkbox fields; other custom fields remain private. Save new layout fields before selecting them for guest use.
 
+The Bookings, Schedule, and Booking Fields pages use Craft’s standard left sidebar. In the schedule, click an available start time to open a new booking with that slot selected. Shaded times cannot be selected. Opening hours, exceptions, booking duration, buffers, and confirmed reservations determine available slots; the overlap setting is respected. Staff retain access to historical dates and are not limited by the guest notice or advance window. Availability is checked again when opening the editor and saving.
+
 The booking editor offers a date picker and available time slots instead of free-form start/end inputs. New bookings default to the next available slot within the booking window. Editing preserves the booking’s existing duration and excludes its own reservation when calculating availability. Staff can select historical dates; guest notice and advance limits apply to the public form. Availability is checked again when saving.
 
 Displayed dates and times follow the user's Craft formatting locale and Calendar's Auto/12-hour/24-hour time setting. Public slot labels use the current site's locale. Times remain in the scheduling calendar's timezone, including daylight saving offsets.

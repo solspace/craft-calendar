@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added booking creation from available times in the schedule, with availability checks and a native Craft sidebar for booking navigation.
 - Added the linked user and timestamp of the latest booking status change, with separate labels for customer requests and automatic confirmations.
 - Added Scheduling calendars with weekly availability, holiday exceptions, booking rules, guest requests, and a dedicated Bookings area with approval and schedule views.
 - Added repeating event presets to quick creation in the control panel calendar, with weekday repeats, end dates or occurrence limits, and a summary. Repeat settings carry through to the full event editor.
@@ -21,6 +22,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Made booking statuses more prominent with colored banners and icons.
 - Refined the occurrence editor with clearer headings, compact scheduling controls, consistent conflict warnings, and a separate reset area.
 - Simplified Schedule Preview rows with date-only labels and hover details, subtle markers for edited occurrences, and a wider preview column.
 - Expanded the event schedule preview with counts of additional and excluded dates, edited and cancelled occurrences, edits off schedule, and split-series date ranges.

@@ -72,6 +72,10 @@ class BookingsController extends BaseController
                 $booking->startDate = $this->parseStart($start);
                 $booking->startDate = $booking->startDate->setTimestamp($booking->startDate->getTimestamp() - (int) $booking->startDate->format('s'));
                 $booking->endDate = $booking->startDate->setTimestamp($booking->startDate->getTimestamp() + $settings->duration * 60);
+                $available = Calendar::getInstance()->bookings->availableSlots($calendars[$calendarId], $booking->startDate->setTimezone(new \DateTimeZone($settings->timezone))->format('Y-m-d'), false);
+                if (!array_filter($available, static fn ($slot) => (new \DateTimeImmutable($slot['start']))->getTimestamp() === $booking->startDate->getTimestamp())) {
+                    $booking->addError('startDate', Calendar::t('This time is unavailable. Check opening hours, exceptions, and existing bookings.'));
+                }
             } else {
                 $slot = Calendar::getInstance()->bookings->nextAvailableSlot($calendars[$calendarId]);
                 if ($slot) {
@@ -322,7 +326,14 @@ class BookingsController extends BaseController
                 $item['lane'] = $lane;
             }
             unset($item);
-            $days[] = ['date' => $day, 'bookings' => $dayBookings, 'lanes' => max(1, \count($lanes))];
+            $slotGroups = [];
+            foreach (Calendar::getInstance()->bookings->availableSlots($calendar, $day->format('Y-m-d'), false) as $slot) {
+                $localStart = (new \DateTimeImmutable($slot['start']))->setTimezone($zone);
+                $minute = (int) $localStart->format('G') * 60 + (int) $localStart->format('i');
+                // Repeated times during the autumn DST transition remain separate links.
+                $slotGroups[$minute][] = $slot;
+            }
+            $days[] = ['date' => $day, 'bookings' => $dayBookings, 'lanes' => max(1, \count($lanes)), 'slots' => $slotGroups];
         }
 
         return $this->renderTemplate('calendar/bookings/schedule', $this->variables() + [

@@ -1,5 +1,9 @@
-<div class="buttons">
-    <a class="btn {{ bookingView == 'list' ? 'active' }}" href="{{ cpUrl('calendar/bookings') }}">{{ 'Bookings'|t('calendar') }}</a>
-    <a class="btn {{ bookingView == 'schedule' ? 'active' }}" href="{{ cpUrl('calendar/bookings/schedule') }}">{{ 'Schedule'|t('calendar') }}</a>
-    {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}<a class="btn" href="{{ cpUrl('calendar/bookings/fields') }}">{{ 'Booking fields'|t('calendar') }}</a>{% endif %}
-</div>
+<nav aria-label="{{ 'Bookings'|t('calendar') }}">
+    <ul>
+        <li><a href="{{ cpUrl('calendar/bookings') }}"{% if bookingView == 'list' %} class="sel" aria-current="page"{% endif %}>{{ 'Bookings'|t('calendar') }}</a></li>
+        <li><a href="{{ cpUrl('calendar/bookings/schedule') }}"{% if bookingView == 'schedule' %} class="sel" aria-current="page"{% endif %}>{{ 'Schedule'|t('calendar') }}</a></li>
+        {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
+            <li><a href="{{ cpUrl('calendar/bookings/fields') }}"{% if bookingView == 'fields' %} class="sel" aria-current="page"{% endif %}>{{ 'Booking Fields'|t('calendar') }}</a></li>
+        {% endif %}
+    </ul>
+</nav>
