@@ -66,9 +66,8 @@
         }
     }
 
-    ['booking-filter-calendar', 'booking-filter-status'].forEach(id => {
-        $(document.getElementById(id)).on('change', () => filterBookings());
-    });
+    // Selectize detaches and reinserts its selects, clearing directly bound jQuery handlers.
+    $(form).on('change', '#booking-filter-calendar, #booking-filter-status', () => filterBookings());
     function searchBookings() {
         clearTimeout(timer);
         if (!composing) timer = setTimeout(() => filterBookings(), 300);
