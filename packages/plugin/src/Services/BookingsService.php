@@ -115,7 +115,7 @@ class BookingsService extends Component
         return $fields;
     }
 
-    public function availableSlots(CalendarModel $calendar, string $date, bool $public = true, ?int $except = null, ?int $duration = null): array
+    public function availableSlots(CalendarModel $calendar, string $date, bool $public = true, ?int $except = null, ?int $duration = null, bool $includeBooked = false): array
     {
         if (!$calendar->getIsScheduling() || ($public && !isset($this->getPublicCalendars()[$calendar->id]))) {
             return [];
@@ -130,7 +130,7 @@ class BookingsService extends Component
             return [];
         }
 
-        $slots = Availability::slots($settings, $date, $this->busy($calendar->id, $public ? null : $except, false, $date, $settings['timezone']), null, $public);
+        $slots = Availability::slots($settings, $date, $this->busy($calendar->id, $public ? null : $except, false, $date, $settings['timezone']), public: $public, includeBooked: $includeBooked);
         foreach ($slots as &$slot) {
             $slot['label'] = DateFormatHelper::formatTimeRange(new \DateTimeImmutable($slot['start']), new \DateTimeImmutable($slot['end']), $settings['timezone']);
         }

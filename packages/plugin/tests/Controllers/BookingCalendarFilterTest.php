@@ -3,11 +3,13 @@
 namespace Solspace\Tests\Unit\Calendar\Controllers;
 
 use craft\web\Request;
+use craft\web\Response;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Controllers\BookingsController;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\BookingsService;
+use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 use Twig\TwigFilter;
@@ -18,6 +20,62 @@ use yii\web\ForbiddenHttpException;
 /** @coversNothing */
 class BookingCalendarFilterTest extends TestCase
 {
+    public function testOccupiedSlotRequestsRequireAManageableCalendarAndCpRequest(): void
+    {
+        $previousApp = \Craft::$app;
+        $previousPlugin = Calendar::getInstance();
+
+        try {
+            \Craft::$app = (object) ['loadedModules' => []];
+            $calendar = new CalendarModel(['id' => 7, 'type' => CalendarModel::TYPE_SCHEDULING]);
+            $service = $this->createMock(BookingsService::class);
+            $service->method('getManageableCalendars')->willReturn([7 => $calendar]);
+            $service->expects(self::exactly(4))->method('availableSlots')->willReturnCallback(static function ($resource, $date, $public, $except, $duration, $includeBooked) use ($calendar) {
+                self::assertSame($calendar, $resource);
+                self::assertSame('2026-10-12', $date);
+                self::assertFalse($public);
+                self::assertNull($except);
+                self::assertNull($duration);
+
+                return $includeBooked ? [['start' => '2026-10-12T08:00:00Z', 'end' => '2026-10-12T08:30:00Z', 'label' => '8am - 8:30am', 'available' => false]] : [];
+            });
+            $plugin = (new \ReflectionClass(Calendar::class))->newInstanceWithoutConstructor();
+            $plugin->setComponents(['bookings' => $service]);
+            Calendar::setInstance($plugin);
+            foreach ([[true, 7, true], [true, 7, '1'], [true, 7, false], [true, 7, 'false'], [true, 9, true], [false, 7, true]] as [$cp, $id, $include]) {
+                $request = $this->createMock(Request::class);
+                $request->method('getIsCpRequest')->willReturn($cp);
+                $request->method('getRequiredQueryParam')->willReturnCallback(static fn ($name) => 'calendarId' === $name ? $id : '2026-10-12');
+                $request->method('getQueryParam')->willReturnCallback(static fn ($name, $default = null) => 'includeBooked' === $name ? $include : $default);
+                $response = new Response(['charset' => 'UTF-8']);
+                \Craft::$app = (object) ['request' => $request, 'response' => $response, 'loadedModules' => []];
+                Calendar::setInstance($plugin);
+                $controller = $this->getMockBuilder(BookingsController::class)->disableOriginalConstructor()->onlyMethods(['asJson'])->getMock();
+                $controller->request = $request;
+                $controller->method('asJson')->willReturnCallback(static function ($data) use ($response) {
+                    $response->data = $data;
+
+                    return $response;
+                });
+                if (!$cp || 9 === $id) {
+                    try {
+                        $controller->actionAvailableSlots();
+                        self::fail('Exposed occupied slots outside a manageable CP calendar.');
+                    } catch (BadRequestHttpException|ForbiddenHttpException $exception) {
+                        self::assertInstanceOf($cp ? ForbiddenHttpException::class : BadRequestHttpException::class, $exception);
+                    }
+                } else {
+                    $result = $controller->actionAvailableSlots();
+                    self::assertCount(filter_var($include, \FILTER_VALIDATE_BOOLEAN) ? 1 : 0, $result->data['slots']);
+                    self::assertSame('no-store', $response->headers->get('Cache-Control'));
+                }
+            }
+        } finally {
+            \Craft::$app = $previousApp;
+            Calendar::setInstance($previousPlugin);
+        }
+    }
+
     public function testListRejectsMalformedAndUnauthorizedCalendarSelectionsBeforeQueryingBookings(): void
     {
         $previousApp = \Craft::$app;
@@ -133,14 +191,17 @@ class BookingCalendarFilterTest extends TestCase
             $templates['calendar/bookings/'.$name] = str_replace(['{% js %}', '{% endjs %}', '{% css %}', '{% endcss %}'], ['{% block scripts %}', '{% endblock %}', '{% block styles %}', '{% endblock %}'], file_get_contents($root.'bookings/'.$name.'.twig'));
         }
         $templates['calendar/layouts/_bookings'] = file_get_contents($root.'layouts/_bookings.twig');
-        $templates['calendar/layouts/_layoutWithoutSettings'] = '{% block sidebar %}{% endblock %}{% block actionButton %}{% endblock %}{% block toolbar %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}';
+        $templates['calendar/layouts/_layoutWithoutSettings'] = '{% block sidebar %}{% endblock %}{% block toolbar %}{% endblock %}{% block actionButton %}{% endblock %}{% block main %}{% block content %}{% endblock %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}';
         $templates['_includes/forms'] = <<<'TWIG'
             {% macro selectize(config) %}<select id="{{ config.id }}" name="{{ config.name }}">{% for key, option in config.options %}<option value="{{ option.value ?? key }}">{{ option.label ?? option }}</option>{% endfor %}</select>{% endmacro %}
             {% macro text(config) %}<input id="{{ config.id }}" type="{{ config.type }}" name="{{ config.name }}" value="{{ config.value }}">{% endmacro %}
             {% macro checkbox(config) %}<input id="{{ config.id }}" type="checkbox"{% if config.checked ?? false %} checked{% endif %}{% for name, value in config.inputAttributes.data %} data-{{ name }}="{{ value }}"{% endfor %}><label for="{{ config.id }}">{{ config.label ?? '' }}</label>{% endmacro %}
             TWIG;
         $twig = new Environment(new ArrayLoader($templates), ['strict_variables' => true]);
-        foreach (['time', 'calendarTimeLabel', 'calendarTimezoneAbbreviation', 'calendarTimezoneName', 'atom'] as $filter) {
+        foreach ((new CalendarGlobalExtension())->getFilters() as $filter) {
+            $twig->addFilter($filter);
+        }
+        foreach (['time', 'atom'] as $filter) {
             $twig->addFilter(new TwigFilter($filter, static fn ($value) => $value));
         }
         $twig->addFilter(new TwigFilter('t', static function ($message, $category, $params = []) {
@@ -168,7 +229,7 @@ class BookingCalendarFilterTest extends TestCase
                 self::assertSame(\count($ids), $xpath->query('//input[@data-calendar-choice][@checked]')->length);
                 self::assertSame($label, $xpath->query('//*[@data-calendar-label]')->item(0)->textContent);
                 self::assertStringContainsString('No bookings found.', $output);
-                self::assertSame(6, $xpath->query('//button[@data-booking-sort]')->length);
+                self::assertSame(6, $xpath->query('//th[contains(@class, "orderable")]/button[@data-booking-sort]')->length);
                 $links = $xpath->query('//a[contains(@class, "page-link")]');
                 self::assertSame(2, $links->length);
                 foreach ($links as $link) {

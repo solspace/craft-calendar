@@ -34,6 +34,7 @@
 </div>
 <div class="field" id="booking-slots-field">
     <div class="heading"><label id="booking-slots-label">{{ 'Available Times'|t('calendar') }} <span class="required" aria-hidden="true"></span></label></div>
+    <div class="booking-slots-options">{{ forms.checkbox({id: 'booking-include-booked', label: 'Include booked time slots'|t('calendar'), checked: true}) }}</div>
     <p class="light" id="booking-slots-message" role="status" aria-live="polite"></p>
     <button type="button" class="btn" id="booking-slots-retry" hidden>{{ 'Try again'|t('calendar') }}</button>
     <div id="booking-slots" role="group" aria-labelledby="booking-slots-label"></div>
@@ -77,6 +78,7 @@ const bookingDate = document.getElementById('booking-date');
 const bookingSlots = document.getElementById('booking-slots');
 const bookingSlotsMessage = document.getElementById('booking-slots-message');
 const bookingSlotsRetry = document.getElementById('booking-slots-retry');
+const bookingIncludeBooked = document.getElementById('booking-include-booked');
 const bookingUnavailableRequest = document.getElementById('booking-unavailable-request');
 const bookingStart = document.querySelector('[name="startDate"]');
 const bookingEnd = document.querySelector('[name="endDate"]');
@@ -98,6 +100,7 @@ function bookingTimesMatch(first, second) {
     return Date.parse(first.start) === Date.parse(second.start) && Date.parse(first.end) === Date.parse(second.end);
 }
 function chooseBookingSlot(slot, button) {
+    if (slot.available === false || button.disabled) return;
     // Equivalent API timestamps may use another offset. Keep the form's original
     // strings so initializing the picker doesn't count as an unsaved edit.
     if (bookingCalendar.value === originalBookingTime.calendarId && bookingTimesMatch(slot, originalBookingTime)) slot = originalBookingTime;
@@ -132,25 +135,36 @@ async function loadBookingSlots(resetSelection = false) {
     }
     bookingSlotsMessage.textContent = Craft.t('calendar', 'Loading available times…');
     try {
-        const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: bookingCalendar.value, date: bookingDate.value, bookingId: {{ booking.id ?? 0 }}}});
+        const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: bookingCalendar.value, date: bookingDate.value, bookingId: {{ booking.id ?? 0 }}, includeBooked: true}});
         if (request !== bookingSlotsRequest) return;
         const slots = response.data.slots;
         const original = originalBookingTime.calendarId === bookingCalendar.value && originalBookingTime.start.slice(0, 10) === bookingDate.value ? originalBookingTime : null;
         {% if booking.id %}
-        const originalAvailable = original && slots.some(slot => bookingTimesMatch(slot, original));
+        const originalAvailable = original && slots.some(slot => slot.available !== false && bookingTimesMatch(slot, original));
         if (original && bookingUnavailableRequest) bookingUnavailableRequest.hidden = !!originalAvailable;
-        if (original && !originalAvailable && !bookingUnavailableRequest) {
+        if (original && !originalAvailable && !bookingUnavailableRequest && !slots.some(slot => bookingTimesMatch(slot, original))) {
             slots.unshift({start: original.start, end: original.end, label: Craft.t('calendar', 'Current booking time: {time}', {time: original.label})});
         }
         {% endif %}
-        bookingSlotsMessage.textContent = slots.length ? Craft.t('calendar', 'Choose an available time.') : Craft.t('calendar', 'No times are available on this date.');
+        bookingSlotsMessage.textContent = slots.some(slot => slot.available !== false) ? Craft.t('calendar', 'Choose an available time.') : Craft.t('calendar', 'No times are available on this date.');
         slots.forEach(slot => {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'btn booking-slot';
             button.textContent = slot.label;
             button.setAttribute('aria-pressed', 'false');
-            button.addEventListener('click', () => chooseBookingSlot(slot, button));
+            if (slot.available === false) {
+                button.disabled = true;
+                button.dataset.booked = 'true';
+                button.hidden = !bookingIncludeBooked.checked;
+                const label = document.createElement('span');
+                label.className = 'booking-slot-booked-label';
+                label.textContent = Craft.t('calendar', 'Booked');
+                button.append(label);
+                button.title = Craft.t('calendar', 'This time is already booked or overlaps a booking buffer.');
+            } else {
+                button.addEventListener('click', () => chooseBookingSlot(slot, button));
+            }
             bookingSlots.append(button);
             if (bookingTimesMatch(slot, selectedTime)) chooseBookingSlot(slot, button);
         });
@@ -173,6 +187,9 @@ bookingDate.addEventListener('click', event => {
 });
 bookingDate.addEventListener('change', () => loadBookingSlots(true));
 bookingSlotsRetry.addEventListener('click', () => loadBookingSlots());
+bookingIncludeBooked.addEventListener('change', () => {
+    bookingSlots.querySelectorAll('[data-booked]').forEach(button => { button.hidden = !bookingIncludeBooked.checked; });
+});
 bookingDate.form.addEventListener('submit', event => {
     // A request can be released without moving it to a new time. Keep its saved
     // timestamps on load so an unavailable request doesn't become an unsaved edit.
@@ -184,7 +201,7 @@ bookingDate.form.addEventListener('submit', event => {
         event.preventDefault();
         event.stopImmediatePropagation();
         bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose an available time.');
-        (bookingSlots.querySelector('button') || bookingDate).focus();
+        (bookingSlots.querySelector('button:not(:disabled)') || bookingDate).focus();
     }
 }, true);
 loadBookingSlots();
@@ -224,9 +241,13 @@ loadBookingSlots();
 .booking-picker-controls input { width:100%; box-sizing:border-box; }
 #booking-timezone { margin:8px 0 0; font-size:12px; line-height:1.5; }
 #booking-slots-message { margin:6px 0 12px; font-size:12px; line-height:1.5; }
+.booking-slots-options { margin:10px 0; }
 #booking-slots { display:grid; grid-template-columns:repeat(auto-fill, minmax(148px, 1fr)); gap:8px; }
 #booking-slots .booking-slot { min-width:0; width:100%; min-height:34px; height:auto; padding:7px 10px; box-sizing:border-box; justify-content:center; font-size:12px; font-variant-numeric:tabular-nums; white-space:normal; overflow-wrap:anywhere; text-align:center; }
 #booking-slots .booking-slot.active { background:var(--enabled-color,#008a5b); color:#fff; }
+#booking-slots .booking-slot:disabled { flex-direction:column; gap:2px; background:var(--gray-050,#f3f6fa); color:var(--light-text-color,#596673); box-shadow:inset 0 0 0 1px var(--border-hairline,#e4e9ef); cursor:not-allowed; opacity:1; }
+#booking-slots .booking-slot[hidden] { display:none !important; }
+.booking-slot-booked-label { font-size:10px; line-height:1.2; }
 #booking-slots .booking-slot:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
 #booking-slots-retry { margin-bottom:12px; }
 #booking-slots-retry[hidden] { display:none !important; }

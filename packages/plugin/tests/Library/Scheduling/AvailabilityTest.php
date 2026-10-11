@@ -34,6 +34,35 @@ class AvailabilityTest extends TestCase
         self::assertSame(['08:00–08:30', '08:15–08:45', '08:30–09:00'], array_column($slots, 'label'));
     }
 
+    public function testStaffPickerCanIncludeOccupiedSlotsWithoutBypassingBuffersOrExceptions(): void
+    {
+        $settings = (new SchedulingSettings([
+            'timezone' => 'UTC', 'duration' => 30, 'increment' => 15, 'buffer' => 15,
+            'hours' => [['day' => 1, 'start' => '08:00', 'end' => '11:15']],
+            'exceptions' => [['dateFrom' => '2026-10-12', 'dateTo' => '2026-10-12', 'type' => 'block', 'start' => '10:00', 'end' => '10:30']],
+        ]))->toArray();
+        $busy = [['start' => '2026-10-12T09:00:00Z', 'end' => '2026-10-12T09:30:00Z', 'buffer' => 15]];
+        $now = new \DateTimeImmutable('2026-10-01T00:00:00Z');
+        $slots = Availability::slots($settings, '2026-10-12', $busy, $now, false, includeBooked: true);
+        self::assertSame(['08:00–08:30', '08:15–08:45', '08:30–09:00', '08:45–09:15', '09:00–09:30', '09:15–09:45', '10:30–11:00'], array_column($slots, 'label'));
+        self::assertSame([true, true, false, false, false, false, true], array_column($slots, 'available'));
+        $available = Availability::slots($settings, '2026-10-12', $busy, $now, false);
+        self::assertSame(array_column(array_filter($slots, static fn ($slot) => $slot['available']), 'start'), array_column($available, 'start'));
+        self::assertArrayNotHasKey('available', $available[0]);
+        self::assertSame([], Availability::slots(array_replace($settings, ['active' => false]), '2026-10-12', $busy, $now, false, includeBooked: true));
+        self::assertSame([], Availability::slots(array_replace($settings, ['availableUntil' => '2026-10-11']), '2026-10-12', $busy, $now, false, includeBooked: true));
+    }
+
+    public function testIncludingBookedSlotsNeverExposesThemPubliclyAndRespectsOverlapSettings(): void
+    {
+        $settings = (new SchedulingSettings(['timezone' => 'UTC', 'duration' => 30, 'increment' => 30, 'minimumNotice' => 0, 'hours' => [['day' => 1, 'start' => '08:00', 'end' => '09:00']]]))->toArray();
+        $busy = [['start' => '2026-10-12T08:00:00Z', 'end' => '2026-10-12T09:00:00Z', 'buffer' => 0]];
+        $now = new \DateTimeImmutable('2026-10-11T00:00:00Z');
+        self::assertSame([], Availability::slots($settings, '2026-10-12', $busy, $now, true, includeBooked: true));
+        self::assertSame([false, false], array_column(Availability::slots($settings, '2026-10-12', $busy, $now, false, includeBooked: true), 'available'));
+        self::assertSame([true, true], array_column(Availability::slots(array_replace($settings, ['allowOverlap' => true]), '2026-10-12', $busy, $now, false, includeBooked: true), 'available'));
+    }
+
     public function testSplitHoursAndClosedWeekday(): void
     {
         $settings = ['hours' => [['day' => 1, 'start' => '08:00', 'end' => '09:00'], ['day' => 1, 'start' => '10:00', 'end' => '11:00']]];

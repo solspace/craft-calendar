@@ -87,15 +87,35 @@ class NextAvailableSlotTest extends TestCase
         self::assertSame([['2026-11-01', '2026-11-01']], $service->reads);
     }
 
+    public function testStaffPickerIncludesBookedSlotsWithExistingDurationAndExclusion(): void
+    {
+        $service = $this->service();
+        $calendar = new CalendarModel(['id' => 1, 'type' => CalendarModel::TYPE_SCHEDULING, 'scheduling' => [
+            'timezone' => 'UTC', 'duration' => 30, 'increment' => 30,
+            'hours' => [['day' => 1, 'start' => '08:00', 'end' => '10:00']],
+        ]]);
+        $service->occupied = [['start' => '2026-10-12T08:30:00Z', 'end' => '2026-10-12T09:00:00Z', 'buffer' => 15]];
+        $slots = $service->availableSlots($calendar, '2026-10-12', false, 42, 60, true);
+        self::assertSame([false, false, false], array_column($slots, 'available'));
+        self::assertSame('8:00am - 9:00am', $slots[0]['label']);
+        self::assertSame([42], $service->exclusions);
+        self::assertSame([['2026-10-12', null]], $service->reads);
+        self::assertSame([], $service->availableSlots($calendar, '2026-10-12', false, 42, 60));
+        $service->occupied = [];
+        self::assertSame([true, true, true], array_column($service->availableSlots($calendar, '2026-10-12', false, 42, 60, true), 'available'));
+    }
+
     private function service(): BookingsService
     {
         return new class extends BookingsService {
             public array $reads = [];
             public array $occupied = [];
+            public array $exclusions = [];
 
             protected function busy(int $calendarId, ?int $except = null, bool $lock = false, ?string $date = null, string $timezone = 'UTC', ?string $dateTo = null): array
             {
                 $this->reads[] = [$date, $dateTo];
+                $this->exclusions[] = $except;
 
                 return $this->occupied;
             }

@@ -37,9 +37,11 @@ class Availability
         return $errors;
     }
 
-    /** @return array<array{start: string, end: string, label: string}> */
-    public static function slots(array $settings, string $date, array $busy = [], ?\DateTimeImmutable $now = null, bool $public = true, bool $firstOnly = false, ?\DateTimeImmutable $notBefore = null): array
+    /** @return array<array{start: string, end: string, label: string, available?: bool}> */
+    public static function slots(array $settings, string $date, array $busy = [], ?\DateTimeImmutable $now = null, bool $public = true, bool $firstOnly = false, ?\DateTimeImmutable $notBefore = null, bool $includeBooked = false): array
     {
+        // Occupied slots are only exposed to the permission-checked staff picker.
+        $includeBooked = $includeBooked && !$public;
         if (!self::dateIsAvailable($settings, $date) || self::configurationErrors($settings)) {
             return [];
         }
@@ -90,10 +92,17 @@ class Availability
                 }
                 $start = $opening->setTimestamp($stamp);
                 $end = $start->setTimestamp($stamp + $duration);
-                if (self::overlaps($stamp, $stamp + $duration + $buffer, $blocks) || self::overlaps($stamp, $stamp + $duration + $buffer, $busy)) {
+                if (self::overlaps($stamp, $stamp + $duration + $buffer, $blocks)) {
+                    continue;
+                }
+                $available = !self::overlaps($stamp, $stamp + $duration + $buffer, $busy);
+                if (!$available && !$includeBooked) {
                     continue;
                 }
                 $slots[$stamp] = ['start' => $start->format(\DATE_ATOM), 'end' => $end->format(\DATE_ATOM), 'label' => $start->format('H:i').'–'.$end->format('H:i')];
+                if ($includeBooked) {
+                    $slots[$stamp]['available'] = $available;
+                }
                 if ($firstOnly) {
                     break;
                 }

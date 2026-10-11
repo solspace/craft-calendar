@@ -2,6 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Include booked time slots' => 'Gebuchte Zeitfenster anzeigen',
+    'Booked' => 'Gebucht',
+    'This time is already booked or overlaps a booking buffer.' => 'Diese Zeit ist bereits gebucht oder überschneidet sich mit einem Buchungspuffer.',
     'Times shown in {timezone}.' => 'Zeiten werden in {timezone} angezeigt.',
     'Could not refresh booking warnings. Reload this page.' => 'Buchungswarnungen konnten nicht aktualisiert werden. Laden Sie diese Seite neu.',
     'The requested time is no longer available.' => 'Der angefragte Zeitraum ist nicht mehr verfügbar.',

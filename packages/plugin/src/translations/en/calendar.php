@@ -3,6 +3,9 @@
 // Keep these message keys in sync across the supported control-panel languages.
 return [
     'Could not refresh booking warnings. Reload this page.' => 'Could not refresh booking warnings. Reload this page.',
+    'Include booked time slots' => 'Include booked time slots',
+    'Booked' => 'Booked',
+    'This time is already booked or overlaps a booking buffer.' => 'This time is already booked or overlaps a booking buffer.',
     'The requested time is no longer available.' => 'The requested time is no longer available.',
     'Requested time: {date}, {time} {timezone}' => 'Requested time: {date}, {time} {timezone}',
     'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.' => 'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.',

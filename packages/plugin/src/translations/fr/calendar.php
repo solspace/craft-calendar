@@ -2,6 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Include booked time slots' => 'Inclure les créneaux réservés',
+    'Booked' => 'Réservé',
+    'This time is already booked or overlaps a booking buffer.' => 'Ce créneau est déjà réservé ou chevauche un délai entre les réservations.',
     'Times shown in {timezone}.' => 'Les horaires sont affichés en {timezone}.',
     'Could not refresh booking warnings. Reload this page.' => 'Impossible d’actualiser les avertissements de réservation. Rechargez cette page.',
     'The requested time is no longer available.' => 'Le créneau demandé n’est plus disponible.',

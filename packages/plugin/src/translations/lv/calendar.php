@@ -2,6 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Include booked time slots' => 'Rādīt rezervētos laika intervālus',
+    'Booked' => 'Rezervēts',
+    'This time is already booked or overlaps a booking buffer.' => 'Šis laiks jau ir rezervēts vai pārklājas ar rezervācijas starplaiku.',
     'Times shown in {timezone}.' => 'Laiki tiek rādīti laika joslā {timezone}.',
     'Could not refresh booking warnings. Reload this page.' => 'Neizdevās atjaunināt rezervāciju brīdinājumus. Pārlādējiet šo lapu.',
     'The requested time is no longer available.' => 'Pieprasītais laiks vairs nav pieejams.',

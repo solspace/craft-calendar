@@ -2,6 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Include booked time slots' => 'Includi le fasce orarie prenotate',
+    'Booked' => 'Prenotato',
+    'This time is already booked or overlaps a booking buffer.' => 'Questo orario è già prenotato o si sovrappone a un intervallo tra le prenotazioni.',
     'Times shown in {timezone}.' => 'Gli orari sono mostrati nel fuso {timezone}.',
     'Could not refresh booking warnings. Reload this page.' => 'Impossibile aggiornare gli avvisi delle prenotazioni. Ricarica questa pagina.',
     'The requested time is no longer available.' => 'La fascia oraria richiesta non è più disponibile.',

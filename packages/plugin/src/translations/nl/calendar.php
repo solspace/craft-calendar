@@ -2,6 +2,9 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'Include booked time slots' => 'Geboekte tijdsloten weergeven',
+    'Booked' => 'Geboekt',
+    'This time is already booked or overlaps a booking buffer.' => 'Dit tijdstip is al geboekt of overlapt met een boekingsbuffer.',
     'Times shown in {timezone}.' => 'Tijden worden weergegeven in {timezone}.',
     'Could not refresh booking warnings. Reload this page.' => 'De boekingswaarschuwingen konden niet worden vernieuwd. Laad deze pagina opnieuw.',
     'The requested time is no longer available.' => 'Het aangevraagde tijdstip is niet meer beschikbaar.',

@@ -394,7 +394,7 @@ class BookingsController extends BaseController
         \Craft::$app->response->headers->set('Cache-Control', 'no-store');
 
         return $this->asJson([
-            'slots' => Calendar::getInstance()->bookings->availableSlots($calendars[$calendarId], $date, false, $bookingId ?: null, $duration),
+            'slots' => Calendar::getInstance()->bookings->availableSlots($calendars[$calendarId], $date, false, $bookingId ?: null, $duration, filter_var($request->getQueryParam('includeBooked', false), \FILTER_VALIDATE_BOOLEAN)),
             'timezone' => $calendars[$calendarId]->getSchedulingSettings()->timezone,
         ]);
     }
