@@ -15,29 +15,39 @@
     {{ forms.errorList(notificationSettings.getErrors('templates')) }}
     {% for audience in ['admin', 'requester'] %}
         <div id="notification-{{ audience }}" class="booking-notification-tab{{ audience == 'requester' ? ' hidden' }}" data-notification-audience="{{ audience }}">
+            <p class="booking-notification-intro light">{{ (audience == 'admin' ? 'Sent to the Staff Notification Email configured for each scheduling calendar when a booking is created or its time or status changes.' : 'Sent to the requester’s email address when a booking is created or its time or status changes.')|t('calendar') }}</p>
+            <section class="booking-notification-delivery-panel" aria-labelledby="notification-{{ audience }}-delivery-heading" aria-describedby="notification-{{ audience }}-delivery-help">
+                <h3 id="notification-{{ audience }}-delivery-heading">{{ 'Delivery Settings'|t('calendar') }}</h3>
+                <p id="notification-{{ audience }}-delivery-help" class="light">{{ 'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.'|t('calendar') }}</p>
+                <div class="booking-notification-delivery">
+                    {% for field, label in {fromEmail: 'From Email', fromName: 'From Name', replyTo: 'Reply-To Email'} %}
+                        {{ forms.textField({
+                            label: label|t('calendar'),
+                            id: 'notification-' ~ audience ~ '-' ~ field,
+                            name: 'templates[' ~ audience ~ '][' ~ field ~ ']',
+                            value: templates[audience][field],
+                            type: field == 'fromName' ? 'text' : 'email',
+                            maxlength: 255,
+                            errors: notificationSettings.getErrors('templates.' ~ audience ~ '.' ~ field),
+                        }) }}
+                    {% endfor %}
+                </div>
+                <div class="booking-notification-copies">
+                    {% for field, label in {cc: 'CC', bcc: 'BCC'} %}
+                        {{ forms.textareaField({
+                            label: label|t('calendar'),
+                            id: 'notification-' ~ audience ~ '-' ~ field,
+                            name: 'templates[' ~ audience ~ '][' ~ field ~ ']',
+                            value: templates[audience][field],
+                            rows: 2, maxlength: 10000,
+                            errors: notificationSettings.getErrors('templates.' ~ audience ~ '.' ~ field),
+                        }) }}
+                    {% endfor %}
+                </div>
+                <p class="booking-notification-copies-help light">{{ 'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.'|t('calendar') }}</p>
+            </section>
             <div class="booking-notification-editor">
-                <div>
-                    <p class="light">{{ (audience == 'admin' ? 'Sent to the Staff Notification Email configured for each scheduling calendar when a booking is created or its time or status changes.' : 'Sent to the requester’s email address when a booking is created or its time or status changes.')|t('calendar') }}</p>
-                    <h2>{{ 'Delivery Settings'|t('calendar') }}</h2>
-                    <p class="light">{{ 'Leave sender and reply-to fields blank to use Craft’s email settings. Addresses and names are plain text, not Twig templates.'|t('calendar') }}</p>
-                    <div class="booking-notification-delivery">
-                        {% for field, label in {fromEmail: 'From Email', fromName: 'From Name', replyTo: 'Reply-To Email', cc: 'CC', bcc: 'BCC'} %}
-                            {% set options = {
-                                label: label|t('calendar'),
-                                id: 'notification-' ~ audience ~ '-' ~ field,
-                                name: 'templates[' ~ audience ~ '][' ~ field ~ ']',
-                                value: templates[audience][field],
-                                maxlength: field in ['cc', 'bcc'] ? 10000 : 255,
-                                fieldClass: field == 'replyTo' ? 'booking-notification-reply-to' : '',
-                                errors: notificationSettings.getErrors('templates.' ~ audience ~ '.' ~ field),
-                            } %}
-                            {% if field in ['cc', 'bcc'] %}
-                                {{ forms.textareaField(options|merge({rows: 2, instructions: 'Enter email addresses separated by commas or new lines. BCC addresses are hidden from other recipients.'|t('calendar')})) }}
-                            {% else %}
-                                {{ forms.textField(options|merge({type: field == 'fromName' ? 'text' : 'email'})) }}
-                            {% endif %}
-                        {% endfor %}
-                    </div>
+                <div class="booking-notification-content">
                     {{ forms.textField({
                         label: 'Subject'|t('app'),
                         id: 'notification-' ~ audience ~ '-subject',
@@ -56,7 +66,7 @@
                         inputAttributes: {spellcheck: false},
                         errors: notificationSettings.getErrors('templates.' ~ audience ~ '.body'),
                     }) }}
-                    <div class="flex">
+                    <div class="flex booking-notification-preview-controls">
                         <label for="notification-{{ audience }}-status" class="light">{{ 'Preview Status'|t('calendar') }}</label>
                         {{ forms.select({id: 'notification-' ~ audience ~ '-status', options: statusOptions, value: 'requested'}) }}
                         <button type="button" class="btn" data-notification-preview>{{ 'Preview'|t('app') }}</button>
@@ -82,17 +92,27 @@
     {% endfor %}
 {% endblock %}
 {% css %}
-    .booking-notification-editor { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:28px; }
-    .booking-notification-delivery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 20px; }
-    .booking-notification-reply-to { grid-column:1 / -1; }
+    .booking-notification-intro { margin:0 0 20px; line-height:1.6; }
+    .booking-notification-delivery-panel { margin:0 0 28px; padding:18px 20px; border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; background:var(--gray-050,#f3f6fa); }
+    .booking-notification-delivery-panel h3 { margin:0 0 6px; }
+    .booking-notification-delivery-panel p { margin:0 0 18px; font-size:12px; line-height:1.5; }
+    .booking-notification-delivery { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px 20px; }
+    .booking-notification-copies { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 20px; margin-top:18px; }
+    .booking-notification-delivery > .field, .booking-notification-copies > .field { margin:0; margin-block:0; margin-inline:0; min-width:0; }
+    .booking-notification-delivery-panel .booking-notification-copies-help { margin:8px 0 0; }
+    .booking-notification-editor { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:24px; align-items:start; }
+    .booking-notification-content { min-width:0; }
+    .booking-notification-content > .field:first-child { margin-top:0; }
     .booking-notification-source { width:100%; line-height:1.55; tab-size:4; }
-    .booking-notification-reference { align-self:start; padding:18px; background:var(--gray-050,#f3f6fa); border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; }
+    .booking-notification-reference { align-self:start; padding:16px; border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; }
+    .booking-notification-reference h3 { margin:0 0 12px; }
     .booking-notification-reference code { display:block; margin:8px 0; font-size:12px; overflow-wrap:anywhere; }
     .booking-notification-reference p { font-size:12px; line-height:1.6; margin:16px 0 0; }
+    .booking-notification-preview-controls { margin-top:20px; }
     .booking-notification-preview { margin-top:24px; padding-top:20px; border-top:1px solid var(--hairline-color,#e4e9ef); }
     .booking-notification-preview iframe { width:100%; height:460px; border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; background:#fff; }
-    @media (max-width:600px) { .booking-notification-delivery { grid-template-columns:minmax(0,1fr); } }
     @media (max-width:1100px) { .booking-notification-editor { grid-template-columns:minmax(0,1fr); } }
+    @media (max-width:800px) { .booking-notification-delivery, .booking-notification-copies { grid-template-columns:minmax(0,1fr); } }
 {% endcss %}
 {% js %}
     document.querySelectorAll('[data-notification-preview]').forEach(button => {

@@ -41,6 +41,7 @@
 ### Changed
 
 - Removed plus signs from available schedule times, retaining the booking preview on hover and keyboard focus.
+- Tidied booking notification settings with aligned sender fields, compact CC/BCC help, and a variable reference beside the template editor.
 - Renamed the Bookings area’s Booking Fields page to Fields.
 - Made Combined the default booking schedule layout, with shared day columns, calendar colors and names, a native available-calendar chooser, and overflow lists for dense bookings. By Calendar remains available.
 - Arranged scheduling availability, booking rules, and booking requests in responsive columns, including Booking Defaults settings.

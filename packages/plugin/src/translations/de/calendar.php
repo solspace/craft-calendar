@@ -1055,4 +1055,6 @@ return [
     'Enter a single line without control characters.' => 'Geben Sie eine einzelne Zeile ohne Steuerzeichen ein.',
     'Enter no more than 100 email addresses.' => 'Geben Sie höchstens 100 E-Mail-Adressen ein.',
     'Enter valid email addresses, separated by commas or new lines.' => 'Geben Sie gültige E-Mail-Adressen ein, getrennt durch Kommas oder Zeilenumbrüche.',
+    'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Leer lassen, um die Absender- und Antworteinstellungen von Craft zu verwenden. Namen und Adressen als einfachen Text eingeben.',
+    'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Mehrere Adressen durch Kommas oder Zeilenumbrüche trennen. BCC-Empfänger sind für andere Empfänger nicht sichtbar.',
 ];

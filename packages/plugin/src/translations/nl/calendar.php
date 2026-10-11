@@ -1055,4 +1055,6 @@ return [
     'Enter a single line without control characters.' => 'Voer één regel zonder besturingstekens in.',
     'Enter no more than 100 email addresses.' => 'Voer maximaal 100 e-mailadressen in.',
     'Enter valid email addresses, separated by commas or new lines.' => 'Voer geldige e-mailadressen in, gescheiden door komma’s of nieuwe regels.',
+    'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Laat leeg om de afzender- en antwoordinstellingen van Craft te gebruiken. Gebruik gewone tekst voor namen en adressen.',
+    'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Scheid meerdere adressen met komma’s of nieuwe regels. BCC-ontvangers zijn verborgen voor andere ontvangers.',
 ];

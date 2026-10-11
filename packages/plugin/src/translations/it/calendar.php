@@ -1055,4 +1055,6 @@ return [
     'Enter a single line without control characters.' => 'Inserisci una sola riga senza caratteri di controllo.',
     'Enter no more than 100 email addresses.' => 'Inserisci al massimo 100 indirizzi email.',
     'Enter valid email addresses, separated by commas or new lines.' => 'Inserisci indirizzi email validi, separati da virgole o su righe diverse.',
+    'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Lascia vuoto per usare le impostazioni del mittente e delle risposte di Craft. Usa testo semplice per nomi e indirizzi.',
+    'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Separa gli indirizzi con virgole o nuove righe. I destinatari CCN sono nascosti agli altri destinatari.',
 ];

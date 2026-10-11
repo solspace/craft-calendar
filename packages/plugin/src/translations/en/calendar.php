@@ -1176,4 +1176,6 @@ return [
     'Enter a single line without control characters.' => 'Enter a single line without control characters.',
     'Enter no more than 100 email addresses.' => 'Enter no more than 100 email addresses.',
     'Enter valid email addresses, separated by commas or new lines.' => 'Enter valid email addresses, separated by commas or new lines.',
+    'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.' => 'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.',
+    'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.' => 'Separate multiple addresses with commas or new lines. BCC recipients are hidden from other recipients.',
 ];
