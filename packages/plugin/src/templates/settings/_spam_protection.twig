@@ -42,7 +42,7 @@
                 errors: settings.getErrors('captchaSecretKey'),
             }) }}
         </div>
-        {{ forms.lightswitchField({label: 'Protect Booking Requests'|t('calendar'), name: 'settings[captchaProtectBookings]', on: settings.captchaProtectBookings}) }}
+        {{ forms.lightswitchField({label: 'Protect Booking Requests'|t('calendar'), instructions: 'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.'|t('calendar'), name: 'settings[captchaProtectBookings]', on: settings.captchaProtectBookings}) }}
         {{ forms.lightswitchField({label: 'Protect Event Creation'|t('calendar'), instructions: 'Protect new events submitted from your website, including submissions by signed-in visitors. Add the CAPTCHA template helper to custom event forms.'|t('calendar'), name: 'settings[captchaProtectEvents]', on: settings.captchaProtectEvents}) }}
         <div id="calendar-captcha-score"{{ settings.getCaptchaProvider() != 'recaptcha-v3' ? ' hidden' }}>
             {{ forms.textField({label: 'Minimum reCAPTCHA Score'|t('calendar'), instructions: 'Accept scores at or above this value (0–1). Start with 0.5 and adjust after reviewing traffic in the reCAPTCHA console. Use keys registered for reCAPTCHA v3.'|t('calendar'), name: 'settings[recaptchaMinimumScore]', type: 'number', min: 0, max: 1, step: 0.01, value: settings.recaptchaMinimumScore, errors: settings.getErrors('recaptchaMinimumScore')}) }}

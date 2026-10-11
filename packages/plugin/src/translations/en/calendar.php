@@ -1119,4 +1119,5 @@ return [
     'Available Until must be on or after Available From.' => 'Available Until must be on or after Available From.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'This calendar is inactive or the booking falls outside its available dates.',
     'No booking dates are currently available.' => 'No booking dates are currently available.',
+    'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.',
 ];

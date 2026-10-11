@@ -996,4 +996,5 @@ return [
     'Available Until must be on or after Available From.' => 'Verfügbar bis muss am oder nach dem Datum Verfügbar ab liegen.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Dieser Kalender ist inaktiv oder die Buchung liegt außerhalb seiner verfügbaren Daten.',
     'No booking dates are currently available.' => 'Derzeit sind keine Buchungsdaten verfügbar.',
+    'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Schützen Sie Buchungsanfragen, die über Ihre Website eingereicht werden, auch von angemeldeten Besuchern. Integrierte Buchungsformulare enthalten das CAPTCHA automatisch.',
 ];

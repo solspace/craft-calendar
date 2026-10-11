@@ -956,4 +956,5 @@ return [
     'Available Until must be on or after Available From.' => 'Pieejamības beigu datumam jābūt vienādam ar sākuma datumu vai vēlākam.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Šis kalendārs ir neaktīvs vai rezervācija ir ārpus pieejamajiem datumiem.',
     'No booking dates are currently available.' => 'Pašlaik nav pieejamu rezervācijas datumu.',
+    'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Aizsargājiet rezervāciju pieprasījumus, kas iesniegti no vietnes, arī no lietotājiem, kuri ir pierakstījušies. Iebūvētajās rezervāciju veidlapās CAPTCHA tiek iekļauts automātiski.',
 ];

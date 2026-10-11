@@ -996,4 +996,5 @@ return [
     'Available Until must be on or after Available From.' => 'La data finale di disponibilità deve coincidere con o seguire la data iniziale.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Questo calendario è inattivo o la prenotazione non rientra nelle date disponibili.',
     'No booking dates are currently available.' => 'Al momento non sono disponibili date di prenotazione.',
+    'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Proteggi le richieste di prenotazione inviate dal tuo sito, anche dai visitatori autenticati. I moduli di prenotazione integrati includono automaticamente il CAPTCHA.',
 ];

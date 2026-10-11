@@ -996,4 +996,5 @@ return [
     'Available Until must be on or after Available From.' => 'Beschikbaar tot en met moet op of na Beschikbaar vanaf vallen.',
     'This calendar is inactive or the booking falls outside its available dates.' => 'Deze kalender is inactief of de boeking valt buiten de beschikbare datums.',
     'No booking dates are currently available.' => 'Er zijn momenteel geen boekingsdatums beschikbaar.',
+    'Protect booking requests submitted from your website, including requests by signed-in visitors. Built-in booking forms include the CAPTCHA automatically.' => 'Beveilig boekingsaanvragen die via uw website worden ingediend, ook door aangemelde bezoekers. Ingebouwde boekingsformulieren bevatten automatisch de CAPTCHA.',
 ];
