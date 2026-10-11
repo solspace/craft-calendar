@@ -49,11 +49,6 @@
 .booking-sort { display:flex; align-items:center; gap:8px; }
 .booking-sort label { white-space:nowrap; font-size:12px; color:var(--light-text-color,#596673); }
 .booking-sort > .select.selectize { width:230px; }
-.booking-sort-link { display:inline-flex; align-items:center; gap:6px; color:inherit; text-decoration:none; }
-.booking-sort-link:hover { color:var(--link-color); text-decoration:none; }
-.booking-sort-link:focus-visible { outline:2px solid var(--link-color); outline-offset:3px; }
-.booking-sort-arrow { font-size:11px; opacity:.5; }
-.booking-sort-link.active .booking-sort-arrow { opacity:1; }
 .booking-filters .selectize-input, .booking-filters .text, .booking-filters > .btn { min-height:34px; box-sizing:border-box; }
 #booking-results[aria-busy="true"] { opacity:.65; pointer-events:none; }
 .booking-table-scroll { overflow-x:auto; }
@@ -64,6 +59,7 @@
 .booking-calendar { display:inline-flex; align-items:center; gap:6px; }
 .booking-calendar .color-indicator { flex-shrink:0; margin:0; }
 .booking-datetime { line-height:1.5; white-space:nowrap; }
+.booking-timezone { font-size:12px; }
 .booking-timestamp { min-width:135px; white-space:nowrap; }
 .booking-timestamp-time { display:block; }
 .booking-actions-cell { width:44px; white-space:nowrap; }

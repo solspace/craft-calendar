@@ -12,10 +12,8 @@
                 {% set active = sort starts with field ~ '-' %}
                 {% set ascending = sort == field ~ '-asc' %}
                 {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field in ['date', 'submitted', 'updated'] ? '-desc' : '-asc')) %}
-                <th scope="col" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
-                    <a class="booking-sort-link{{ active ? ' active' }}" data-booking-sort="{{ nextSort }}" href="{{ cpUrl('calendar/bookings', {calendarIds: calendarSelection, bookingStatus, search, view: bookingListView, sort: nextSort}) }}">
-                        {{ label|t('calendar') }}<span class="booking-sort-arrow" aria-hidden="true">{{ active ? (ascending ? '↑' : '↓') : '↕' }}</span>
-                    </a>
+                <th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
+                    <button type="button" data-booking-sort="{{ nextSort }}">{{ label|t('calendar') }}</button>
                 </th>
             {% endfor %}
             <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
@@ -24,11 +22,13 @@
         {% for booking in bookings %}
             {% set calendar = calendars[booking.calendarId] %}
             {% set timezone = calendar.schedulingSettings.timezone %}
+            {% set startTimezoneLabel = booking.startDate|calendarTimezoneAbbreviation(timezone) %}
+            {% set endTimezoneLabel = booking.endDate|calendarTimezoneAbbreviation(timezone) %}
             <tr data-booking-row="{{ booking.id }}">
                 <td class="checkbox-cell">{{ forms.checkbox({id: 'booking-select-' ~ booking.id, value: booking.id, inputAttributes: {data: {'booking-select': true}, aria: {label: 'Select booking for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}</td>
                 <td class="booking-customer">{% if trashed %}<strong>{{ booking.customerName }}</strong>{% else %}<a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a>{% endif %}<div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
                 <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
-                <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
+                <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span class="light booking-timezone" title="{{ timezone|calendarTimezoneName }} ({{ timezone }})">{{ startTimezoneLabel }}{{ startTimezoneLabel != endTimezoneLabel ? ' → ' ~ endTimezoneLabel }}</span></div></td>
                 {% for field, timestamp in {submitted: booking.dateCreated, updated: booking.dateUpdated} %}
                     <td class="booking-timestamp"{{ field == 'updated' ? ' data-booking-updated' }}>
                         {% if timestamp %}
