@@ -24,6 +24,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Made booking list filters and customer search update results automatically.
 - Refined the Bookings list with native Craft controls, status dots, and cleaner table spacing.
 - Made booking slot previews span the booking duration and refined the status banner and controls.
 - Made booking statuses more prominent with colored banners and icons.
@@ -44,6 +45,7 @@
 
 ### Fixed
 - Fixed booking status autosave failing when Craft initialized its dropdowns after the page's status handler.
+- Fixed booking notification failures hiding the underlying mail transport error in Queue Manager.
 - Fixed missing control panel translations and completed Latvian translation and date-picker coverage.
 - Fixed the event editor’s schedule preview showing original dates for moved occurrences. It now shows edited dates, titles, and times while keeping occurrence actions tied to the correct scheduled occurrence.
 - Fixed hovering over another event replacing the quick creation form and leaving its unsaved event stuck on the calendar.

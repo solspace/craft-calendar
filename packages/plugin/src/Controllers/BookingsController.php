@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\web\View;
 use Solspace\Calendar\Bundles\ProjectConfig\BookingFieldLayoutProjectConfig;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
@@ -45,10 +46,18 @@ class BookingsController extends BaseController
         $page = max(1, (int) $request->getQueryParam('page', 1));
         $total = (clone $query)->count();
 
-        return $this->renderTemplate('calendar/bookings/index', $this->variables() + [
+        $variables = $this->variables() + [
             'bookings' => $query->limit(50)->offset(($page - 1) * 50)->all(), 'total' => $total, 'page' => $page,
             'calendarId' => $calendarId, 'bookingStatus' => $status, 'search' => $search,
-        ]);
+        ];
+        if ($request->getAcceptsJson()) {
+            $view = \Craft::$app->getView();
+            $html = $view->renderTemplate('calendar/bookings/_list', $variables, View::TEMPLATE_MODE_CP);
+
+            return $this->asJson(['html' => $html, 'headHtml' => $view->getHeadHtml(), 'bodyHtml' => $view->getBodyHtml()]);
+        }
+
+        return $this->renderTemplate('calendar/bookings/index', $variables);
     }
 
     public function actionEdit(?int $bookingId = null): Response

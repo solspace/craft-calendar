@@ -1,0 +1,72 @@
+{% import '_includes/forms' as forms %}
+{% set statusColors = {requested: 'orange', confirmed: 'green', declined: 'red', cancelled: 'disabled'} %}
+{% set rowStatusOptions = [] %}
+{% for value, label in statusOptions %}{% set rowStatusOptions = rowStatusOptions|merge([{value, label, data: {status: statusColors[value]}}]) %}{% endfor %}
+<div class="booking-table-scroll">
+    <table class="data fullwidth booking-table">
+        <thead><tr><th scope="col">{{ 'Customer'|t('calendar') }}</th><th scope="col">{{ 'Calendar'|t('calendar') }}</th><th scope="col">{{ 'Date and Time'|t('calendar') }}</th><th scope="col">{{ 'Status'|t('calendar') }}</th></tr></thead>
+        <tbody>
+        {% for booking in bookings %}
+            {% set calendar = calendars[booking.calendarId] %}
+            {% set timezone = calendar.schedulingSettings.timezone %}
+            <tr>
+                <td class="booking-customer"><a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a><div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
+                <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
+                <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
+                <td class="booking-status-cell">
+                    <div class="booking-status-control" data-booking-id="{{ booking.id }}">
+                        {{ forms.selectize({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: rowStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
+                        <span class="spinner hidden" aria-hidden="true"></span>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="booking-footer">
+    <span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
+    <div class="buttons">
+        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
+        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
+    </div>
+</div>
+{% js %}
+(() => {
+    document.querySelectorAll('.booking-status-control').forEach(control => {
+        const spinner = control.querySelector('.spinner');
+        $(control).on('change', 'select', async event => {
+            const select = event.currentTarget;
+            const previous = select.dataset.savedStatus;
+            const status = select.value;
+            if (select.disabled || status === previous) return;
+            const picker = select.selectize;
+            const results = document.getElementById('booking-results');
+            if (results.getAttribute('aria-busy') === 'true') { picker.setValue(previous, true); return; }
+            results.dispatchEvent(new CustomEvent('booking-status-save', {detail: 1}));
+            picker.disable();
+            control.setAttribute('aria-busy', 'true');
+            spinner.classList.remove('hidden');
+            try {
+                const response = await Craft.sendActionRequest('POST', 'calendar/bookings/set-status', {
+                    data: {bookingId: control.dataset.bookingId, bookingStatus: status},
+                });
+                if (!response.data.success) throw new Error(response.data.message);
+                picker.setValue(response.data.bookingStatus, true);
+                select.dataset.savedStatus = select.value;
+                Craft.cp.displayNotice(Craft.t('calendar', 'Booking status saved.'));
+            } catch (error) {
+                picker.setValue(previous, true);
+                Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.'));
+            } finally {
+                picker.enable();
+                control.removeAttribute('aria-busy');
+                spinner.classList.add('hidden');
+                results.dispatchEvent(new CustomEvent('booking-status-save', {detail: -1}));
+            }
+        });
+    });
+})();
+{% endjs %}

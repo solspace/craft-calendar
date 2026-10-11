@@ -10,11 +10,9 @@
 {% set calendarOptions = [{value: '', label: 'All calendars'|t('calendar')}] %}
 {% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name, data: {color: calendar.color}}]) %}{% endfor %}
 {% set filterStatusOptions = [{value: '', label: 'All statuses'|t('calendar')}] %}
-{% set rowStatusOptions = [] %}
 {% for value, label in statusOptions %}
     {% set option = {value, label, data: {status: statusColors[value]}} %}
     {% set filterStatusOptions = filterStatusOptions|merge([option]) %}
-    {% set rowStatusOptions = rowStatusOptions|merge([option]) %}
 {% endfor %}
 <form method="get" class="booking-filters">
     {{ forms.selectize({id: 'booking-filter-calendar', name: 'calendarId', value: calendarId, options: calendarOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, extraPlugins: false, placeholder: 'All calendars'|t('calendar')}, inputAttributes: {aria: {label: 'Calendar'|t('calendar')}}}) }}
@@ -23,40 +21,10 @@
         <span class="texticon-icon search icon" aria-hidden="true"></span>
         {{ forms.text({type: 'search', id: 'booking-filter-search', name: 'search', value: search, placeholder: 'Search name or email'|t('calendar'), inputAttributes: {aria: {label: 'Search name or email'|t('calendar')}}}) }}
     </div>
-    <button type="submit" class="btn">{{ 'Filter'|t('calendar') }}</button>
-    {% if calendarId or bookingStatus or search %}<a class="btn" href="{{ cpUrl('calendar/bookings') }}">{{ 'Clear'|t('app') }}</a>{% endif %}
+    <span class="spinner hidden" aria-hidden="true"></span>
+    <a class="btn{{ calendarId or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings') }}">{{ 'Clear'|t('app') }}</a>
 </form>
-<div class="booking-table-scroll">
-    <table class="data fullwidth booking-table">
-        <thead><tr><th scope="col">{{ 'Customer'|t('calendar') }}</th><th scope="col">{{ 'Calendar'|t('calendar') }}</th><th scope="col">{{ 'Date and Time'|t('calendar') }}</th><th scope="col">{{ 'Status'|t('calendar') }}</th></tr></thead>
-        <tbody>
-        {% for booking in bookings %}
-            {% set calendar = calendars[booking.calendarId] %}
-            {% set timezone = calendar.schedulingSettings.timezone %}
-            <tr>
-                <td class="booking-customer"><a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a><div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
-                <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
-                <td class="booking-datetime">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</div><div class="light booking-secondary">{{ timezone }}</div></td>
-                <td class="booking-status-cell">
-                    <div class="booking-status-control" data-booking-id="{{ booking.id }}">
-                        {{ forms.selectize({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: rowStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
-                        <span class="spinner hidden" aria-hidden="true"></span>
-                    </div>
-                </td>
-            </tr>
-        {% else %}
-            <tr><td colspan="4" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
-<div class="booking-footer">
-    <span class="light">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
-    <div class="buttons">
-        {% if page > 1 %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page - 1}) }}">{{ 'Previous'|t('app') }}</a>{% endif %}
-        {% if page * 50 < total %}<a class="btn" href="{{ cpUrl('calendar/bookings', {calendarId, bookingStatus, search, page: page + 1}) }}">{{ 'Next'|t('app') }}</a>{% endif %}
-    </div>
-</div>
+<div id="booking-results">{% include 'calendar/bookings/_list' %}</div>
 {% endblock %}
 
 {% css %}
@@ -64,6 +32,7 @@
 .booking-filters > .select.selectize { width:180px; flex-shrink:0; }
 .booking-search { flex:1; min-width:200px; }
 .booking-filters .selectize-input, .booking-filters .text, .booking-filters > .btn { min-height:34px; box-sizing:border-box; }
+#booking-results[aria-busy="true"] { opacity:.65; pointer-events:none; }
 .booking-table-scroll { overflow-x:auto; }
 .booking-table { min-width:650px; }
 .booking-table tbody td { padding-block:12px; vertical-align:middle; }
@@ -86,35 +55,5 @@
 {% endcss %}
 
 {% js %}
-(() => {
-    document.querySelectorAll('.booking-status-control').forEach(control => {
-        const spinner = control.querySelector('.spinner');
-        $(control).on('change', 'select', async event => {
-            const select = event.currentTarget;
-            const previous = select.dataset.savedStatus;
-            const status = select.value;
-            if (select.disabled || status === previous) return;
-            const picker = select.selectize;
-            picker.disable();
-            control.setAttribute('aria-busy', 'true');
-            spinner.classList.remove('hidden');
-            try {
-                const response = await Craft.sendActionRequest('POST', 'calendar/bookings/set-status', {
-                    data: {bookingId: control.dataset.bookingId, bookingStatus: status},
-                });
-                if (!response.data.success) throw new Error(response.data.message);
-                picker.setValue(response.data.bookingStatus, true);
-                select.dataset.savedStatus = select.value;
-                Craft.cp.displayNotice(Craft.t('calendar', 'Booking status saved.'));
-            } catch (error) {
-                picker.setValue(previous, true);
-                Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.'));
-            } finally {
-                picker.enable();
-                control.removeAttribute('aria-busy');
-                spinner.classList.add('hidden');
-            }
-        });
-    });
-})();
+{% include 'calendar/bookings/_filters-js' %}
 {% endjs %}

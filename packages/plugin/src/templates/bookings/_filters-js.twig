@@ -1,0 +1,95 @@
+(() => {
+    const form = document.querySelector('.booking-filters');
+    const results = document.getElementById('booking-results');
+    const search = document.getElementById('booking-filter-search');
+    const clear = form.querySelector('[data-booking-filter-clear]');
+    const spinner = form.querySelector('.spinner');
+    let timer;
+    let composing = false;
+    let revision = 0;
+    let request;
+    let rendering = Promise.resolve();
+    let statusSaves = 0;
+    let pendingUrl;
+
+    function filterUrl() {
+        const url = new URL(location.href);
+        const values = new FormData(form);
+        for (const name of ['calendarId', 'bookingStatus', 'search']) {
+            const value = values.get(name) || '';
+            if (value) url.searchParams.set(name, value);
+            else url.searchParams.delete(name);
+        }
+        url.searchParams.delete('page');
+        clear.classList.toggle('hidden', !['calendarId', 'bookingStatus', 'search'].some(name => values.get(name)));
+        return url;
+    }
+
+    async function filterBookings(url = filterUrl()) {
+        clearTimeout(timer);
+        const current = ++revision;
+        request?.abort();
+        if (statusSaves) { pendingUrl = url; return; }
+        pendingUrl = null;
+        request = new AbortController();
+        results.setAttribute('aria-busy', 'true');
+        spinner.classList.remove('hidden');
+        try {
+            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/index', {
+                params: Object.fromEntries(url.searchParams),
+                headers: {Accept: 'application/json'},
+                signal: request.signal,
+            });
+            if (current !== revision) return;
+            if (typeof response.data.html !== 'string') throw new Error();
+            // Serialize Craft's script initialization so rapid changes cannot initialize the wrong rows.
+            rendering = rendering.catch(() => {}).then(async () => {
+                if (current !== revision) return;
+                await Craft.appendHeadHtml(response.data.headHtml || '');
+                if (current !== revision) return;
+                results.querySelectorAll('select').forEach(select => select.selectize?.destroy());
+                results.innerHTML = response.data.html;
+                await Craft.appendBodyHtml(response.data.bodyHtml || '');
+                Craft.initUiElements(results);
+                if (current === revision) history.replaceState(null, '', url);
+            });
+            await rendering;
+        } catch (error) {
+            if (current === revision && !request.signal.aborted) {
+                Craft.cp.displayError(error.response?.data?.message || Craft.t('app', 'An unknown error occurred.'));
+            }
+        } finally {
+            if (current === revision) {
+                results.removeAttribute('aria-busy');
+                spinner.classList.add('hidden');
+            }
+        }
+    }
+
+    ['booking-filter-calendar', 'booking-filter-status'].forEach(id => {
+        $(document.getElementById(id)).on('change', () => filterBookings());
+    });
+    function searchBookings() {
+        clearTimeout(timer);
+        if (!composing) timer = setTimeout(() => filterBookings(), 300);
+    }
+    search.addEventListener('input', searchBookings);
+    search.addEventListener('compositionstart', () => { composing = true; clearTimeout(timer); });
+    search.addEventListener('compositionend', () => { composing = false; searchBookings(); });
+    form.addEventListener('submit', event => { event.preventDefault(); filterBookings(); });
+    clear.addEventListener('click', event => {
+        if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        ['booking-filter-calendar', 'booking-filter-status'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select.selectize) select.selectize.setValue('', true);
+            else select.value = '';
+        });
+        search.value = '';
+        filterBookings();
+    });
+    results.addEventListener('booking-status-save', event => {
+        statusSaves = Math.max(0, statusSaves + event.detail);
+        if (!statusSaves && pendingUrl) filterBookings(pendingUrl);
+    });
+})();
