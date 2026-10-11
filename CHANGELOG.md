@@ -4,6 +4,7 @@
 
 ### Added
 - Added a checked-by-default Include booked time slots option to the control-panel booking editor, showing occupied slots as disabled and allowing staff to hide them.
+- Added booking configuration, status counts, per-calendar availability checks, and notification/CAPTCHA details to Diagnostics and its support report.
 - Added a Bookings settings page for the booking label, default subpage, and default Schedule layout.
 - Added a setting for the default booking Schedule layout, with Combined selected for fresh installs and By Calendar available.
 - Added amber warnings for unavailable booking requests in the list and schedule, with links to the editor and automatic updates after status changes.

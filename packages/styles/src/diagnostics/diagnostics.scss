@@ -218,6 +218,14 @@
     }
   }
 
+  .calendar-diag-booking-calendar {
+    margin-inline: 16px;
+
+    > dl {
+      padding: 16px 16px 0;
+    }
+  }
+
   .calendar-diag-report {
     textarea {
       font-family: monospace;

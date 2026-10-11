@@ -8,9 +8,12 @@ use craft\db\Table;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\DiagnosticsHelper;
+use Solspace\Calendar\Models\BookingNotificationSettings;
+use Solspace\Calendar\Models\SchedulingSettings;
 use Solspace\Calendar\Models\SettingsModel;
 
 class DiagnosticsService extends Component
@@ -195,6 +198,46 @@ class DiagnosticsService extends Component
             $booleanRow(Calendar::t('Restrict Editing to Own Events'), $settings->isAuthoredEventEditOnly()),
         ];
 
+        $bookingConfiguration = [
+            $row(Calendar::t('Bookings Label'), $model->getBookingLabel()),
+            $row(Calendar::t('Default Bookings Subpage'), 'schedule' === $model->defaultBookingView ? Calendar::t('Schedule') : $model->getBookingLabel()),
+            $row(Calendar::t('Default Schedule Layout'), 'combined' === $model->getBookingScheduleLayout() ? Calendar::t('Combined') : Calendar::t('By Calendar')),
+            $row(Calendar::t('Booking Date Storage'), Calendar::t('UTC instants'), 'none', Calendar::t('Booking times are converted to UTC for storage and displayed in the scheduling calendar’s timezone.')),
+            $booleanRow(Calendar::t('Automatic Queue Processing'), $general->runQueueAutomatically, note: Calendar::t('Booking notifications use Craft’s queue. An external queue worker can process jobs when automatic processing is disabled.')),
+        ];
+        $provider = $model->getCaptchaProvider();
+        $protectBookings = $model->captchaProtectBookings && 'none' !== $provider;
+        $captchaReady = !$protectBookings || ('' !== $model->getCaptchaSiteKey() && '' !== $model->getCaptchaSecretKey());
+        $bookingConfiguration[] = $row(Calendar::t('Booking CAPTCHA'), $protectBookings ? $provider : Calendar::t('Disabled'), $captchaReady ? ($protectBookings ? 'pass' : 'disabled') : 'error', $captchaReady ? null : Calendar::t('The selected booking CAPTCHA provider requires both a site key and a secret key.'));
+
+        try {
+            $templates = BookingNotificationSettings::fromProjectConfig();
+            foreach (['admin' => 'Admin Notification Template', 'requester' => 'Requester Notification Template'] as $audience => $label) {
+                $custom = false;
+                $overrides = 0;
+                foreach (\is_array($templates->templates[$audience] ?? null) ? $templates->templates[$audience] : [] as $field => $source) {
+                    if (\is_string($source) && '' !== trim($source)) {
+                        if (\in_array($field, ['subject', 'body'], true)) {
+                            $custom = true;
+                        } elseif (\in_array($field, BookingNotificationSettings::DELIVERY_FIELDS, true)) {
+                            ++$overrides;
+                        }
+                    }
+                }
+                $bookingConfiguration[] = $row(Calendar::t($label), Calendar::t($custom ? 'Customized' : 'Default'), 'none', Calendar::t('Notification delivery overrides: {count}.', ['count' => $overrides]));
+            }
+        } catch (\Throwable $exception) {
+            \Craft::error($exception->getMessage(), __METHOD__);
+            $bookingConfiguration[] = $row(Calendar::t('Booking Notifications'), $unavailable, 'warning', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'));
+        }
+
+        try {
+            $bookingDefaults = $this->section(Calendar::t('Booking Defaults'), $this->bookingRulesRows($model->getBookingDefaults(), $row, $now, true));
+        } catch (\Throwable $exception) {
+            \Craft::error($exception->getMessage(), __METHOD__);
+            $bookingDefaults = $this->section(Calendar::t('Booking Defaults'), [$row(Calendar::t('Availability Rules'), $unavailable, 'error', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'))]);
+        }
+
         $database = [];
 
         try {
@@ -221,24 +264,40 @@ class DiagnosticsService extends Component
         $statistics = [];
         $calendars = [];
         $eventZones = [];
+        $bookingCalendars = [];
+        $bookingStatistics = [];
 
         try {
             $allCalendars = $plugin->calendars->getAllCalendars();
             $statistics[] = $row(Calendar::t('Calendars'), \count($allCalendars));
+            $statistics[] = $row(Calendar::t('Event Calendars'), \count(array_filter($allCalendars, static fn ($calendar) => !$calendar->getIsScheduling())));
+            $bookingStatistics[] = $row(Calendar::t('Scheduling Calendars'), \count(array_filter($allCalendars, static fn ($calendar) => $calendar->getIsScheduling())));
             $calendarSites = [];
             foreach ($plugin->calendarSites->getAllSiteSettings() as $site) {
                 $calendarSites[$site->calendarId][] = $site->getSite()?->name ?? (string) $site->siteId;
             }
             foreach ($allCalendars as $calendar) {
+                if ($calendar->getIsScheduling()) {
+                    try {
+                        $rows = $this->bookingRulesRows($calendar->getSchedulingSettings(), $row, $now);
+                    } catch (\Throwable $exception) {
+                        \Craft::error($exception->getMessage(), __METHOD__);
+                        $rows = [$row(Calendar::t('Availability Rules'), $unavailable, 'error', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'))];
+                    }
+                    $bookingCalendars[] = ['id' => $calendar->id, 'title' => $calendar->name, 'rows' => [$row(Calendar::t('Handle'), $calendar->handle), ...$rows]];
+                }
                 $name = $calendar->getIcsTimezone();
                 $floating = DateHelper::FLOATING_TIMEZONE === $name;
-                $valid = $floating || null !== DiagnosticsHelper::timezone($name, $now);
+                $valid = $calendar->getIsScheduling() || $floating || null !== DiagnosticsHelper::timezone($name, $now);
                 $siteNames = $calendarSites[$calendar->id] ?? [];
                 $guestAccess = $plugin->calendars->isCalendarPublic($calendar);
                 $icsSharing = (bool) $calendar->icsHash;
                 $calendars[] = [
                     'id' => $calendar->id,
                     'title' => $calendar->name,
+                    'scheduling' => $calendar->getIsScheduling(),
+                    'typeLabel' => Calendar::t($calendar->getIsScheduling() ? 'Scheduling' : 'Events'),
+                    'bookingCount' => null,
                     'handle' => $calendar->handle,
                     'timezone' => $floating ? Calendar::t('Floating') : $name,
                     'timezoneValid' => $valid,
@@ -253,15 +312,18 @@ class DiagnosticsService extends Component
                     'siteNames' => implode(', ', $siteNames),
                     'rows' => [
                         $row(Calendar::t('Handle'), $calendar->handle),
-                        $row(
-                            Calendar::t('ICS Export Timezone'),
-                            $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
-                            $valid ? 'pass' : 'error',
-                            $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')
-                        ),
-                        $booleanRow(Calendar::t('Repeating Events Allowed'), (bool) $calendar->allowRepeatingEvents),
-                        $booleanRow(Calendar::t('Guest Access'), $guestAccess),
-                        $booleanRow(Calendar::t('ICS Sharing'), $icsSharing),
+                        $row(Calendar::t('Calendar Type'), Calendar::t($calendar->getIsScheduling() ? 'Scheduling' : 'Events')),
+                        ...($calendar->getIsScheduling() ? [] : [
+                            $row(
+                                Calendar::t('ICS Export Timezone'),
+                                $floating ? Calendar::t('Floating Timezone (recommended)') : $name,
+                                $valid ? 'pass' : 'error',
+                                $valid ? Calendar::t('This setting applies to ICS exports; it does not change stored event dates.') : Calendar::t('This timezone identifier is invalid.')
+                            ),
+                            $booleanRow(Calendar::t('Repeating Events Allowed'), (bool) $calendar->allowRepeatingEvents),
+                            $booleanRow(Calendar::t('Guest Access'), $guestAccess),
+                            $booleanRow(Calendar::t('ICS Sharing'), $icsSharing),
+                        ]),
                         $row(Calendar::t('Supported Sites'), implode(', ', $siteNames)),
                     ],
                 ];
@@ -319,8 +381,43 @@ class DiagnosticsService extends Component
         }
 
         foreach ($calendars as $index => $calendar) {
-            $calendars[$index]['rows'][] = $row(Calendar::t('Events'), $calendar['eventCount'] ?? $unavailable);
+            if (!$calendar['scheduling']) {
+                $calendars[$index]['rows'][] = $row(Calendar::t('Events'), $calendar['eventCount'] ?? $unavailable);
+            }
         }
+
+        try {
+            $bookingCounts = $this->bookingCounts();
+            $totals = array_fill_keys(array_keys(Booking::statusOptions()), 0);
+            foreach ($bookingCounts as $counts) {
+                foreach ($counts as $status => $total) {
+                    $totals[$status] = ($totals[$status] ?? 0) + $total;
+                }
+            }
+            $bookingStatistics[] = $row(Calendar::t('Bookings'), array_sum($totals), 'none', Calendar::t('Counts exclude trashed bookings, drafts, and revisions. Only confirmed bookings reserve time.'));
+            foreach (Booking::statusOptions() as $status => $label) {
+                $bookingStatistics[] = $row($label, $totals[$status]);
+            }
+            foreach ($calendars as &$calendar) {
+                $calendar['bookingCount'] = array_sum($bookingCounts[$calendar['id']] ?? []);
+            }
+            unset($calendar);
+            foreach ($bookingCalendars as &$calendar) {
+                $counts = $bookingCounts[$calendar['id']] ?? [];
+                $calendar['rows'][] = $row(Calendar::t('Bookings'), array_sum($counts));
+                foreach (Booking::statusOptions() as $status => $label) {
+                    $calendar['rows'][] = $row($label, $counts[$status] ?? 0);
+                }
+            }
+            unset($calendar);
+        } catch (\Throwable $exception) {
+            \Craft::error($exception->getMessage(), __METHOD__);
+            $bookingStatistics[] = $row(Calendar::t('Booking Data Checks'), $unavailable, 'warning', Calendar::t('Could not read diagnostic data. See the Craft logs for details.'));
+        }
+        foreach ($bookingCalendars as &$calendar) {
+            $calendar['issueCount'] = \count(array_filter($calendar['rows'], static fn ($item) => \in_array($item['status'], ['warning', 'error'], true)));
+        }
+        unset($calendar);
 
         $sites = [];
         foreach ($app->getSites()->getAllSites() as $site) {
@@ -328,15 +425,15 @@ class DiagnosticsService extends Component
         }
 
         $sections = [
-            [$this->section(Calendar::t('Server Checks'), $server), $this->section(Calendar::t('Database'), $database)],
-            [$this->section(Calendar::t('Timezones & Clocks'), $timezones), $this->section(Calendar::t('Locale & Date Formatting'), $locale)],
-            [$this->section(Calendar::t('Calendar Configuration'), $configuration), $this->section(Calendar::t('Statistics'), $statistics), $this->section(Calendar::t('Event Timezones'), $eventZones), $this->section(Calendar::t('Sites & Languages'), $sites)],
+            [$this->section(Calendar::t('Server Checks'), $server), $this->section(Calendar::t('Database'), $database), $this->section(Calendar::t('Booking Configuration'), $bookingConfiguration)],
+            [$this->section(Calendar::t('Timezones & Clocks'), $timezones), $this->section(Calendar::t('Locale & Date Formatting'), $locale), $bookingDefaults],
+            [$this->section(Calendar::t('Calendar Configuration'), $configuration), $this->section(Calendar::t('Statistics'), $statistics), $this->section(Calendar::t('Event Timezones'), $eventZones), $this->section(Calendar::t('Sites & Languages'), $sites), $this->section(Calendar::t('Booking Statistics'), $bookingStatistics)],
         ];
         $warnings = [];
         $errorCount = 0;
         $report = [Calendar::t('Calendar Diagnostics'), $now->format(\DateTimeInterface::ATOM)];
         // Keep the full per-calendar details in the support report, independently of the compact UI.
-        foreach ([...$sections, $calendars] as $column) {
+        foreach ([...$sections, $calendars, $bookingCalendars] as $column) {
             foreach ($column as $section) {
                 $report[] = "\n".$section['title'];
                 foreach ($section['rows'] as $item) {
@@ -352,6 +449,8 @@ class DiagnosticsService extends Component
         return [
             'columns' => $sections,
             'calendars' => $calendars,
+            'bookingCalendars' => $bookingCalendars,
+            'bookingWarningCount' => \count(array_filter($bookingCalendars, static fn ($calendar) => $calendar['issueCount'] > 0)),
             'calendarWarningCount' => \count(array_filter($calendars, static fn ($calendar) => !$calendar['timezoneValid'])),
             'warnings' => $warnings,
             'errorCount' => $errorCount,
@@ -359,6 +458,69 @@ class DiagnosticsService extends Component
             'report' => implode("\n", $report),
             'sampledAt' => $now->format(\DateTimeInterface::ATOM),
         ];
+    }
+
+    /** Aggregate only canonical, non-deleted bookings; never load customer data. */
+    private function bookingCounts(): array
+    {
+        $counts = [];
+        $query = (new Query())->select(['calendarId' => 'bookings.calendarId', 'bookingStatus' => 'bookings.bookingStatus', 'total' => 'COUNT(*)'])
+            ->from(['bookings' => Booking::TABLE])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[bookings.id]]')
+            ->where(['elements.dateDeleted' => null, 'elements.draftId' => null, 'elements.revisionId' => null])
+            ->groupBy(['bookings.calendarId', 'bookings.bookingStatus'])
+        ;
+        foreach ($query->all() as $count) {
+            $counts[(int) $count['calendarId']][$count['bookingStatus']] = (int) $count['total'];
+        }
+
+        return $counts;
+    }
+
+    private function bookingRulesRows(SchedulingSettings $settings, callable $row, \DateTimeImmutable $now, bool $defaults = false): array
+    {
+        $settings->validate();
+        $errors = $settings->getErrors();
+        $ruleRow = static fn (string $label, mixed $value, string $attribute, ?string $note = null) => $row(Calendar::t($label), $value, isset($errors[$attribute]) ? 'error' : 'none', isset($errors[$attribute]) ? implode(' ', $errors[$attribute]) : $note);
+        $booleanRow = static fn (string $label, bool $value) => $row(Calendar::t($label), Calendar::t($value ? 'Enabled' : 'Disabled'), $value ? 'pass' : 'disabled', isBoolean: true);
+        $rows = [];
+        if (!$defaults) {
+            $rows[] = $booleanRow('Active', $settings->active);
+            $zone = DiagnosticsHelper::timezone($settings->timezone, $now);
+            $rows[] = $ruleRow('Booking Timezone', $settings->timezone, 'timezone', $zone ? Calendar::t('Current local time: {time}. Daylight saving time: {dst}.', ['time' => $zone['clock'], 'dst' => Calendar::t($zone['dst'] ? 'Active' : 'Inactive')]) : null);
+            $rows[] = $ruleRow('Available From', $settings->availableFrom ?: Calendar::t('No limit'), 'availableFrom');
+            $until = $ruleRow('Available Until', $settings->availableUntil ?: Calendar::t('No limit'), 'availableUntil');
+            if ($settings->active && $zone && !isset($errors['availableUntil']) && $settings->availableUntil && $settings->availableUntil < substr($zone['clock'], 0, 10)) {
+                $until['status'] = 'warning';
+                $until['statusLabel'] = Calendar::t('Advisory');
+                $until['note'] = Calendar::t('This calendar’s availability has ended. New bookings cannot be made until its dates are extended.');
+            }
+            $rows[] = $until;
+            $rows[] = $booleanRow('Allow Guest Bookings', $settings->allowGuests);
+        }
+        foreach (['duration' => 'Booking Duration (Minutes)', 'increment' => 'Start-Time Interval (Minutes)', 'buffer' => 'Buffer After Booking (Minutes)', 'minimumNotice' => 'Minimum Notice (Hours)', 'maximumAdvance' => 'Maximum Advance (Days)'] as $attribute => $label) {
+            $rows[] = $ruleRow($label, $settings->{$attribute}, $attribute);
+        }
+        $rows[] = $booleanRow('Allow Overlapping Bookings', $settings->allowOverlap);
+        $rows[] = $booleanRow('Require Approval', $settings->requireApproval);
+        $rows[] = $ruleRow('Staff Notification Email', $settings->notificationEmail ? Calendar::t('Configured') : Calendar::t('Not configured'), 'notificationEmail');
+        $periods = [];
+        $weekdays = [1 => 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        foreach ($settings->hours as $period) {
+            if (\is_array($period) && isset($weekdays[$period['day'] ?? 0], $period['start'], $period['end'])) {
+                $periods[] = Calendar::t($weekdays[$period['day']]).' '.$period['start'].'–'.$period['end'];
+            }
+        }
+        $rows[] = $ruleRow('Opening Hours', implode('; ', $periods) ?: Calendar::t('None'), 'hours');
+        if (!$defaults) {
+            $rows[] = $ruleRow('Availability Exceptions', \count($settings->exceptions), 'exceptions');
+        }
+        $hasOpeningException = (bool) array_filter($settings->exceptions, static fn ($exception) => \is_array($exception) && 'hours' === ($exception['type'] ?? null));
+        if (!$errors && !$settings->hours && !$hasOpeningException && ($defaults || $settings->active)) {
+            $rows[] = $row(Calendar::t('Availability Rules'), Calendar::t('No opening hours'), 'warning', Calendar::t('No booking times are available until opening hours or an opening-hours exception is configured.'));
+        }
+
+        return $rows;
     }
 
     private function section(string $title, array $rows): array

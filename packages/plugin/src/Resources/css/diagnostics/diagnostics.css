@@ -189,3 +189,9 @@
   font-family: monospace;
   resize: vertical;
 }
+#calendar-diagnostics .calendar-diag-booking-calendar {
+  margin-inline: 16px;
+}
+#calendar-diagnostics .calendar-diag-booking-calendar > dl {
+  padding: 16px 16px 0;
+}

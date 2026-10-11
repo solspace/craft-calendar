@@ -172,3 +172,11 @@ If a notification job fails, check its error in Queue Manager. Transport failure
 ## Validation before release
 
 Exercise fresh install and upgrade, project-config apply/rebuild, creating both types of calendar, permission restrictions, guest booking on a secondary site, approval and cancellation, mail delivery, drag rescheduling, and simultaneous confirmations against both MySQL and PostgreSQL. Verify the live CP at narrow widths and the public form on mobile. Paid bookings, ticket inventory, recurring bookings, and Freeform integration are future work.
+
+## Diagnostics
+
+**Settings → Diagnostics** includes booking page defaults, CAPTCHA readiness, notification template customization, queue processing, new-calendar booking defaults, and counts for each booking status. Counts include all dates and exclude trashed bookings, drafts, and revisions; only confirmed bookings reserve time.
+
+The Calendar Details table identifies event and scheduling calendars and shows the appropriate event or booking count. **Booking Calendar Details** expands into each calendar’s timezone, active dates, opening hours, exception count, duration, interval, buffer, notice, advance limit, guest access, overlap and approval rules, notification setup, and status counts. Invalid rules, expired active calendars, missing opening hours, and incomplete booking CAPTCHA configuration appear in the diagnostic warning summary.
+
+The copied support report includes these details without booking customer data, notification addresses, template source, or CAPTCHA keys. Notification delivery still depends on Craft’s email configuration and a running queue worker; diagnostics do not send test messages or verify delivery.
