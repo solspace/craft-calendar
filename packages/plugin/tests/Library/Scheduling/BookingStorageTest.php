@@ -20,6 +20,9 @@ use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Services\BookingsService;
 use Solspace\Calendar\Services\CalendarsService;
 use Solspace\Calendar\Services\SettingsService;
+use Solspace\Tests\Unit\Calendar\Support\BookingNotificationView;
+
+require_once __DIR__.'/../../_support/BookingNotificationView.php';
 
 /**
  * Uses SQLite by default. Set CALENDAR_TEST_DSN (and optional CALENDAR_TEST_USER/
@@ -283,6 +286,28 @@ class BookingStorageTest extends TestCase
         self::assertStringContainsString('Status: Confirmed', $this->queue->jobs[0]->body);
     }
 
+    public function testSeparateAudienceTemplatesAreRenderedAndQueuedOnlyAfterCommit(): void
+    {
+        $calendar = Calendar::getInstance()->calendars->getCalendarById(1);
+        $calendar->scheduling['notificationEmail'] = 'customer@example.test';
+        \Craft::$app->notificationTemplates = [
+            'requester' => ['subject' => 'Requester: {{ status }}', 'body' => '<p>{{ booking.customerName }}</p>'],
+            'admin' => ['subject' => 'Admin: {{ status }}', 'body' => '<p>{{ booking.customerEmail }}</p>'],
+        ];
+        $booking = $this->booking(1);
+        $booking->customerName = '<b>{{ 7 * 7 }}</b>';
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $transaction = $this->db->beginTransaction();
+        $booking->afterSave(false);
+        self::assertSame([], $this->queue->jobs);
+        $transaction->commit();
+        self::assertCount(2, $this->queue->jobs);
+        self::assertSame('Requester: Confirmed', $this->queue->jobs[0]->subject);
+        self::assertSame('<p>&lt;b&gt;{{ 7 * 7 }}&lt;/b&gt;</p>', $this->queue->jobs[0]->htmlBody);
+        self::assertSame('Admin: Confirmed', $this->queue->jobs[1]->subject);
+        self::assertSame('customer@example.test', $this->queue->jobs[1]->recipient);
+    }
+
     public function testAtomicRateCounterHasIndependentIpsHourlyResetAndExpiryCleanup(): void
     {
         $limit = new BookingRateLimit();
@@ -343,6 +368,7 @@ class BookingStorageTest extends TestCase
             public string $language = 'en-US';
             public array $loadedModules = [];
             public ?Request $request = null;
+            public array $notificationTemplates = [];
 
             public function __construct(public $db, private $queue) {}
 
@@ -354,6 +380,23 @@ class BookingStorageTest extends TestCase
             public function getQueue()
             {
                 return $this->queue;
+            }
+
+            public function getProjectConfig()
+            {
+                return new class($this) {
+                    public function __construct(private object $app) {}
+
+                    public function get($path)
+                    {
+                        return $this->app->notificationTemplates;
+                    }
+                };
+            }
+
+            public function getView()
+            {
+                return new BookingNotificationView();
             }
 
             public function getIsInstalled()
@@ -419,6 +462,11 @@ class BookingStorageTest extends TestCase
             public function getFieldLayout(): ?FieldLayout
             {
                 return null;
+            }
+
+            public function getCpEditUrl(): ?string
+            {
+                return 'https://example.test/admin/calendar/bookings/'.$this->id;
             }
         };
         $booking = (new \ReflectionClass($class))->newInstanceWithoutConstructor();

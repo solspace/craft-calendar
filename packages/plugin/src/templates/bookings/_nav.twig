@@ -4,6 +4,7 @@
         <li><a href="{{ cpUrl('calendar/bookings/schedule') }}"{% if bookingView == 'schedule' %} class="sel" aria-current="page"{% endif %}>{{ 'Schedule'|t('calendar') }}</a></li>
         {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
             <li><a href="{{ cpUrl('calendar/bookings/fields') }}"{% if bookingView == 'fields' %} class="sel" aria-current="page"{% endif %}>{{ 'Booking Fields'|t('calendar') }}</a></li>
+            <li><a href="{{ cpUrl('calendar/bookings/notifications') }}"{% if bookingView == 'notifications' %} class="sel" aria-current="page"{% endif %}>{{ 'Notifications'|t('calendar') }}</a></li>
         {% endif %}
     </ul>
 </nav>

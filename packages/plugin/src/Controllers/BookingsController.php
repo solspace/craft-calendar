@@ -13,9 +13,11 @@ use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
+use Solspace\Calendar\Library\Scheduling\BookingNotifications;
 use Solspace\Calendar\Library\Scheduling\BookingRateLimit;
 use Solspace\Calendar\Library\Scheduling\Schedule;
 use Solspace\Calendar\Library\SpamProtection\Captcha;
+use Solspace\Calendar\Models\BookingNotificationSettings;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\web\BadRequestHttpException;
@@ -438,6 +440,60 @@ class BookingsController extends BaseController
         return $this->renderTemplate('calendar/bookings/fields', $this->variables() + ['fieldLayout' => Calendar::getInstance()->bookings->getFieldLayout(), 'availablePublicFields' => Calendar::getInstance()->bookings->getAvailablePublicFields(), 'publicFieldUids' => array_keys(Calendar::getInstance()->bookings->getPublicFields())]);
     }
 
+    public function actionNotifications(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAdmin();
+        $this->requireSchedulingAdminChanges();
+
+        return $this->renderTemplate('calendar/bookings/notifications', $this->variables() + ['notificationSettings' => BookingNotificationSettings::fromProjectConfig()]);
+    }
+
+    public function actionSaveNotifications(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAdmin();
+        $this->requireSchedulingAdminChanges();
+        $this->requirePostRequest();
+        $settings = $this->postedNotificationSettings();
+        if (!$settings->validate()) {
+            return $this->renderTemplate('calendar/bookings/notifications', $this->variables() + ['notificationSettings' => $settings]);
+        }
+        \Craft::$app->getProjectConfig()->set(BookingNotificationSettings::PATH, $settings->templates);
+        \Craft::$app->getSession()->setNotice(Calendar::t('Notification templates saved.'));
+
+        return $this->redirect(UrlHelper::cpUrl('calendar/bookings/notifications'));
+    }
+
+    public function actionPreviewNotification(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAdmin();
+        $this->requireSchedulingAdminChanges();
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $audience = \Craft::$app->request->getBodyParam('audience');
+        if (!\in_array($audience, BookingNotificationSettings::AUDIENCES, true)) {
+            throw new BadRequestHttpException();
+        }
+        $status = \Craft::$app->request->getBodyParam('bookingStatus', Booking::REQUESTED);
+        if (!\in_array($status, array_keys(Booking::statusOptions()), true)) {
+            throw new BadRequestHttpException();
+        }
+        $settings = $this->postedNotificationSettings();
+        if (!$settings->validate()) {
+            return $this->asFailure(Calendar::t('Could not preview notification.'), ['errors' => $settings->getErrors()]);
+        }
+
+        try {
+            $message = BookingNotifications::render($settings->getTemplates()[$audience], BookingNotifications::sampleVariables($audience, $status));
+        } catch (\Throwable) {
+            return $this->asFailure(Calendar::t('Could not preview notification. Check the template variables and Twig syntax.'));
+        }
+
+        return $this->asSuccess(data: ['subject' => $message['subject'], 'html' => $message['htmlBody']]);
+    }
+
     public function actionSaveFields(): Response
     {
         $this->requireCpRequest();
@@ -604,6 +660,16 @@ class BookingsController extends BaseController
         if (!\Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
             throw new ForbiddenHttpException();
         }
+    }
+
+    private function postedNotificationSettings(): BookingNotificationSettings
+    {
+        $templates = \Craft::$app->request->getBodyParam('templates', []);
+        if (!\is_array($templates)) {
+            throw new BadRequestHttpException();
+        }
+
+        return new BookingNotificationSettings(['templates' => $templates]);
     }
 
     private function parseStart(string $value): \DateTimeImmutable

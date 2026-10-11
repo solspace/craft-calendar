@@ -15,10 +15,14 @@ class SendBookingNotification extends BaseJob
     public string $recipient;
     public string $subject;
     public string $body;
+    public ?string $htmlBody = null;
 
     public function execute($queue): void
     {
         $message = \Craft::$app->getMailer()->compose()->setTo($this->recipient)->setSubject($this->subject)->setTextBody($this->body);
+        if (null !== $this->htmlBody) {
+            $message->setHtmlBody($this->htmlBody);
+        }
         $startedAt = microtime(true);
         if (!$message->send()) {
             throw $this->deliveryFailure($message, $startedAt);

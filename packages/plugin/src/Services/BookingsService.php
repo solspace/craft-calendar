@@ -22,6 +22,8 @@ use Solspace\Calendar\Jobs\SendBookingNotification;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
+use Solspace\Calendar\Library\Scheduling\BookingNotifications;
+use Solspace\Calendar\Models\BookingNotificationSettings;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\SchedulingSettings;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -309,27 +311,15 @@ class BookingsService extends Component
     {
         $calendar = $booking->getCalendar();
         $settings = $calendar->getSchedulingSettings();
-        $zone = new \DateTimeZone($settings->timezone);
-        $status = Booking::statusOptions()[$booking->bookingStatus];
-        $body = Calendar::t('Booking: {calendar}\nStatus: {status}\nName: {name}\nDate: {date}\nTime: {start}–{end}\nTimezone: {timezone}', [
-            'calendar' => $calendar->name, 'status' => $status, 'name' => $booking->customerName,
-            'date' => $booking->startDate->setTimezone($zone)->format('Y-m-d'),
-            'start' => $booking->startDate->setTimezone($zone)->format('H:i'),
-            'end' => $booking->endDate->setTimezone($zone)->format('H:i'), 'timezone' => $settings->timezone,
-        ]);
-        $body = str_replace('\n', "\n", $body);
-        if (Booking::REQUESTED === $booking->bookingStatus) {
-            $body .= "\n\n".Calendar::t('This is a booking request. Your time is reserved only after confirmation.');
-        }
-        $recipients = [$booking->customerEmail];
+        $templates = BookingNotificationSettings::fromProjectConfig();
+        $recipients = ['requester' => $booking->customerEmail];
         if ($settings->notificationEmail) {
-            $recipients[] = $settings->notificationEmail;
+            $recipients['admin'] = $settings->notificationEmail;
         }
-        foreach (array_unique($recipients) as $recipient) {
+        foreach ($recipients as $audience => $recipient) {
             try {
-                Queue::push(new SendBookingNotification([
-                    'recipient' => $recipient, 'subject' => $calendar->name.' — '.$status, 'body' => $body,
-                ]));
+                $message = BookingNotifications::renderForBooking($booking, $calendar, $audience, $templates);
+                Queue::push(new SendBookingNotification(['recipient' => $recipient] + $message));
             } catch (\Throwable $exception) {
                 \Craft::error('Could not queue booking notification: '.$exception->getMessage(), __METHOD__);
             }

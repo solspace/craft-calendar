@@ -126,6 +126,33 @@ The demo installer includes a **Book a time** page in both Bootstrap and Tailwin
 
 Customer and optional staff notifications use Craft's mail settings and queue. Run the queue normally to deliver them. Notification failure does not release a confirmed booking.
 
+Administrators can open **Bookings → Notifications** to customize the shared **Admin** and **Requester** email templates. Each has a Twig subject and HTML body, with defaults ready to edit. **Preview** uses example data without sending mail or reading a real booking. Choose **Preview Status** to review any of the four status messages. Blank fields restore their defaults. The page is available only when Craft allows administrative changes; templates are stored in project config.
+
+The Requester template goes to the booking’s customer email. The Admin template goes to each calendar’s **Staff Notification Email**, when configured. Both run for newly created bookings and committed changes to their time, calendar, or status, including Requested, Confirmed, Declined, and Cancelled. Admin and Requester messages are separate deliveries even when both recipients use the same address. Existing queued jobs retain the template rendered when they were created.
+
+Available Twig variables:
+
+| Variable | Value |
+| --- | --- |
+| `booking` | The booking element; use `booking.customerName`, `booking.customerEmail`, `booking.notes`, or a custom field handle. |
+| `calendar` | The scheduling calendar, including `calendar.name`. |
+| `status` | The translated booking status. |
+| `statusHandle` | `requested`, `confirmed`, `declined`, or `cancelled`. |
+| `date`, `startTime`, `endTime` | Booking date (`YYYY-MM-DD`) and 24-hour times in the calendar’s booking timezone. |
+| `timezone` | The calendar’s booking timezone. |
+| `cpEditUrl` | The booking editor URL in Admin templates; unavailable in Requester templates. |
+
+For example:
+
+```twig
+{% if statusHandle == 'confirmed' %}
+    <p>Your appointment with {{ calendar.name }} is confirmed for {{ date }} at {{ startTime }}.</p>
+{% endif %}
+```
+
+HTML bodies escape dynamic values automatically. Booking input is never evaluated as Twig. Use `|raw` only for content you trust, and choose explicitly which custom fields a requester should receive. Previews use sample booking data, so they do not populate custom fields. Syntax errors prevent saving; if an imported template or a later field change causes a rendering error, Calendar logs a warning and uses that audience’s default template. Every new email contains HTML and plain-text versions and uses Craft’s configured sender, reply-to, and test-recipient behavior. Older plain-text queue jobs remain deliverable.
+
+
 Notifications are registered by the booking element itself, including saves through Craft's element service. They are queued after the outer database transaction finishes and only for changes that remain committed. Several time/status changes within one transaction produce a notification for its final state; rolled-back changes do not notify. Restoring a deleted booking rechecks the current calendar rules and conflicts inside Craft's restore transaction.
 
 Guest request attempts use an atomic database counter shared across workers (20 attempts per IP address per hour). Old counters are periodically removed. Availability checks normalize occupied intervals once, and finding the next available time skips closed days and reads occupied times in batches of up to 31 days.

@@ -147,6 +147,15 @@ class SendBookingNotificationTest extends TestCase
         }
     }
 
+    public function testSendsHtmlAndPlainTextTogether(): void
+    {
+        $job = $this->job();
+        $job->htmlBody = '<p>Booking request</p>';
+        $job->execute(null);
+        self::assertSame('<p>Booking request</p>', $this->mailer->sent->getSymfonyEmail()->getHtmlBody());
+        self::assertSame("Booking request\nDate: 2026-10-13", $this->mailer->sent->getSymfonyEmail()->getTextBody());
+    }
+
     public function testCancelledDeliveryDoesNotReuseAnEarlierWorkersError(): void
     {
         \Craft::getLogger()->log(new TransportException('Earlier unrelated SMTP failure'), Logger::LEVEL_ERROR);

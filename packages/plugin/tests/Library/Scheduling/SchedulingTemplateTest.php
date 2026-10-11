@@ -135,11 +135,13 @@ class SchedulingTemplateTest extends TestCase
         $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path) => $path));
         foreach ([[false, true], [true, false], [true, true]] as [$admin, $allowAdminChanges]) {
-            $output = $twig->render('nav', ['bookingView' => 'fields', 'currentUser' => ['admin' => $admin], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings'], 'app' => ['config' => ['general' => ['allowAdminChanges' => $allowAdminChanges]]]]]);
+            $output = $twig->render('nav', ['bookingView' => 'fields', 'currentUser' => ['admin' => $admin], 'craft' => ['calendar' => ['bookingLabel' => 'Appointments'], 'app' => ['config' => ['general' => ['allowAdminChanges' => $allowAdminChanges]]]]]);
             self::assertStringContainsString('<nav', $output);
             self::assertStringContainsString('calendar/bookings/schedule', $output);
             self::assertSame($admin && $allowAdminChanges, str_contains($output, 'class="sel" aria-current="page">Booking Fields'));
             self::assertSame($admin && $allowAdminChanges, str_contains($output, 'calendar/bookings/fields'));
+            self::assertSame($admin && $allowAdminChanges, str_contains($output, 'calendar/bookings/notifications'));
+            self::assertStringContainsString('Appointments', $output);
         }
     }
 

@@ -4,6 +4,7 @@ return [
     'calendar/bookings' => 'calendar/bookings/index',
     'calendar/bookings/schedule' => 'calendar/bookings/schedule',
     'calendar/bookings/fields' => 'calendar/bookings/fields',
+    'calendar/bookings/notifications' => 'calendar/bookings/notifications',
     'calendar/bookings/new' => 'calendar/bookings/edit',
     'calendar/bookings/<bookingId:\d+>' => 'calendar/bookings/edit',
     // Overview

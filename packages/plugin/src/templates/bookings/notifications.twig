@@ -1,0 +1,106 @@
+{% extends 'calendar/layouts/_bookings' %}
+{% import '_includes/forms' as forms %}
+{% set title = 'Notifications'|t('calendar') %}
+{% set bookingView = 'notifications' %}
+{% set fullPageForm = true %}
+{% do view.registerTranslations('calendar', ['Could not preview notification.']) %}
+{% set templates = notificationSettings.getTemplates() %}
+{% set tabs = {
+    'notification-admin': {label: 'Admin'|t('app'), url: '#notification-admin', class: notificationSettings.getErrors('templates.admin.subject') or notificationSettings.getErrors('templates.admin.body') ? 'error' : ''},
+    'notification-requester': {label: 'Requester'|t('calendar'), url: '#notification-requester', class: notificationSettings.getErrors('templates.requester.subject') or notificationSettings.getErrors('templates.requester.body') ? 'error' : ''},
+} %}
+{% block actionButton %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
+{% block content %}
+    {{ csrfInput() }}{{ actionInput('calendar/bookings/save-notifications') }}
+    {{ forms.errorList(notificationSettings.getErrors('templates')) }}
+    {% for audience in ['admin', 'requester'] %}
+        <div id="notification-{{ audience }}" class="booking-notification-tab{{ audience == 'requester' ? ' hidden' }}" data-notification-audience="{{ audience }}">
+            <div class="booking-notification-editor">
+                <div>
+                    <p class="light">{{ (audience == 'admin' ? 'Sent to the Staff Notification Email configured for each scheduling calendar when a booking is created or its time or status changes.' : 'Sent to the requester’s email address when a booking is created or its time or status changes.')|t('calendar') }}</p>
+                    {{ forms.textField({
+                        label: 'Subject'|t('app'),
+                        id: 'notification-' ~ audience ~ '-subject',
+                        name: 'templates[' ~ audience ~ '][subject]',
+                        value: templates[audience].subject,
+                        class: 'code', maxlength: 1000,
+                        errors: notificationSettings.getErrors('templates.' ~ audience ~ '.subject'),
+                    }) }}
+                    {{ forms.textareaField({
+                        label: 'Email Body'|t('calendar'),
+                        instructions: 'Use HTML and Twig to customize this email. Dynamic values are escaped automatically. Leave a field blank to restore its default.'|t('calendar'),
+                        id: 'notification-' ~ audience ~ '-body',
+                        name: 'templates[' ~ audience ~ '][body]',
+                        value: templates[audience].body,
+                        class: 'code booking-notification-source', rows: 18,
+                        inputAttributes: {spellcheck: false},
+                        errors: notificationSettings.getErrors('templates.' ~ audience ~ '.body'),
+                    }) }}
+                    <div class="flex">
+                        <label for="notification-{{ audience }}-status" class="light">{{ 'Preview Status'|t('calendar') }}</label>
+                        {{ forms.select({id: 'notification-' ~ audience ~ '-status', options: statusOptions, value: 'requested'}) }}
+                        <button type="button" class="btn" data-notification-preview>{{ 'Preview'|t('app') }}</button>
+                        <span class="spinner hidden" aria-hidden="true"></span>
+                        <span class="light">{{ 'Preview uses example data and does not send email.'|t('calendar') }}</span>
+                    </div>
+                    <div class="booking-notification-preview" hidden aria-live="polite">
+                        <h3 data-preview-subject></h3>
+                        <iframe sandbox referrerpolicy="no-referrer" title="{{ 'Notification preview'|t('calendar') }}"></iframe>
+                    </div>
+                </div>
+                <aside class="booking-notification-reference">
+                    <h3>{{ 'Template Variables'|t('calendar') }}</h3>
+                    {% for variable in ['booking.customerName', 'booking.customerEmail', 'booking.notes', 'calendar.name', 'status', 'statusHandle', 'date', 'startTime', 'endTime', 'timezone'] %}
+                        <code>{{ '{{ ' ~ variable ~ ' }}' }}</code>
+                    {% endfor %}
+                    {% if audience == 'admin' %}<code>{{ '{{ cpEditUrl }}' }}</code>{% endif %}
+                    <p class="light">{{ 'statusHandle is requested, confirmed, declined, or cancelled. Times use the calendar’s booking timezone.'|t('calendar') }}</p>
+                    <p class="light">{{ 'These templates apply to all scheduling calendars. Emails use Craft’s sender, reply-to, and queue settings.'|t('calendar') }}</p>
+                </aside>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+{% css %}
+    .booking-notification-editor { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:28px; }
+    .booking-notification-source { width:100%; line-height:1.55; tab-size:4; }
+    .booking-notification-reference { align-self:start; padding:18px; background:var(--gray-050,#f3f6fa); border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; }
+    .booking-notification-reference code { display:block; margin:8px 0; font-size:12px; overflow-wrap:anywhere; }
+    .booking-notification-reference p { font-size:12px; line-height:1.6; margin:16px 0 0; }
+    .booking-notification-preview { margin-top:24px; padding-top:20px; border-top:1px solid var(--hairline-color,#e4e9ef); }
+    .booking-notification-preview iframe { width:100%; height:460px; border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; background:#fff; }
+    @media (max-width:1100px) { .booking-notification-editor { grid-template-columns:minmax(0,1fr); } }
+{% endcss %}
+{% js %}
+    document.querySelectorAll('[data-notification-preview]').forEach(button => {
+        button.addEventListener('click', async () => {
+            const tab = button.closest('[data-notification-audience]');
+            const audience = tab.dataset.notificationAudience;
+            const spinner = button.nextElementSibling;
+            button.disabled = true;
+            spinner.classList.remove('hidden');
+            try {
+                const templates = {};
+                templates[audience] = {
+                    subject: document.getElementById(`notification-${audience}-subject`).value,
+                    body: document.getElementById(`notification-${audience}-body`).value,
+                };
+                const bookingStatus = document.getElementById(`notification-${audience}-status`).value;
+                const response = await Craft.sendActionRequest('POST', 'calendar/bookings/preview-notification', {data: {audience, bookingStatus, templates}});
+                if (!response.data.success) {
+                    const errors = Object.values(response.data.errors || {}).flat();
+                    throw new Error(errors[0] || response.data.message);
+                }
+                const preview = tab.querySelector('.booking-notification-preview');
+                preview.querySelector('[data-preview-subject]').textContent = response.data.subject;
+                preview.querySelector('iframe').srcdoc = response.data.html;
+                preview.hidden = false;
+            } catch (error) {
+                Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not preview notification.'));
+            } finally {
+                button.disabled = false;
+                spinner.classList.add('hidden');
+            }
+        });
+    });
+{% endjs %}
