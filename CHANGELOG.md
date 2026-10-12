@@ -49,6 +49,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Aligned alternate time slots in booking request reviews into an equal-width, responsive grid with consistent spacing and centered time labels.
 - Grouped settings navigation into Events, Bookings, and Tools, clarified Event Views and Booking Settings labels, and moved event overlap warnings and author restrictions from General to Event Settings.
 - Removed the booking schedule’s status explanation and moved its interaction hint below the grid.
 - Styled request moderation Undo/Redo messages as compact informational banners.
