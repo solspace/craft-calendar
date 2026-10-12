@@ -148,32 +148,34 @@
     const form = document.getElementById({{ containerId|json_encode|raw }});
     const screen = $(form).data('cpScreen');
     const actions = form.querySelector('.request-review-actions');
-    // Move actions into the actual CP screen footer, not its content area.
-    // Craft's primary footer button is already marked as .submit.
-    screen.$saveBtn.removeClass('request-confirm-btn');
-    const footer = screen.$footer[0];
-    footer.querySelectorAll('.request-review-actions').forEach(node => node.remove());
-    const flexGrow = footer.querySelector('.flex-grow');
-    if (flexGrow) flexGrow.before(actions);
-    else footer.prepend(actions);
-    // Craft uses .submit for primary actions; remove any destructive treatment.
-    screen.$saveBtn.removeClass('error destructive danger').addClass('submit');
-    screen.$saveBtn.find('button').removeClass('error destructive danger').addClass('submit');
-    // The footer's native primary action is red in this Craft theme. Scope a
-    // blue treatment to this review screen, including its hover/focus states.
-    footer.classList.add('calendar-booking-review-footer');
-    if (!document.getElementById('calendar-booking-review-footer-style')) {
+    // Resolve the actual sticky footer from the visible Save button. The screen
+    // API's $footer can point at a content-level element in some Craft versions.
+    const $save = screen.$saveBtn;
+    const saveButton = $save.is('button') ? $save[0] : $save.find('button')[0] || $save[0];
+    const stickyFooter = saveButton.closest('.cp-screen-footer, .slideout-footer, .footer, footer')
+        || screen.$footer?.[0];
+    if (stickyFooter) {
+        const existing = stickyFooter.querySelector('.request-review-actions');
+        if (existing && existing !== actions) existing.remove();
+        stickyFooter.prepend(actions);
+        actions.style.marginRight = 'auto';
+        actions.style.flexShrink = '0';
+        stickyFooter.style.display = 'flex';
+        stickyFooter.style.alignItems = 'center';
+        stickyFooter.style.gap = '8px';
+    }
+    // Target the real button, not a content wrapper. Craft's default primary
+    // button is red, so give this specific positive action a blue treatment.
+    saveButton.classList.remove('error', 'destructive', 'danger');
+    saveButton.classList.add('calendar-confirm-booking');
+    saveButton.style.setProperty('background-color', '#2563eb', 'important');
+    saveButton.style.setProperty('background', '#2563eb', 'important');
+    saveButton.style.setProperty('color', '#fff', 'important');
+    if (!document.getElementById('calendar-confirm-booking-style')) {
         const style = document.createElement('style');
-        style.id = 'calendar-booking-review-footer-style';
-        style.textContent = `
-            .calendar-booking-review-footer .btn.submit,
-            .calendar-booking-review-footer button.submit { background:#2563eb !important; background-color:#2563eb !important; color:#fff !important; }
-            .calendar-booking-review-footer .btn.submit:hover,
-            .calendar-booking-review-footer button.submit:hover { background:#1d4ed8 !important; background-color:#1d4ed8 !important; }
-            .calendar-booking-review-footer .btn.submit:focus-visible,
-            .calendar-booking-review-footer button.submit:focus-visible { outline:2px solid #1d4ed8; outline-offset:2px; }
-        `;
-        document.head.appendChild(style);
+        style.id = 'calendar-confirm-booking-style';
+        style.textContent = '.calendar-confirm-booking:hover { background:#1d4ed8 !important; background-color:#1d4ed8 !important; } .calendar-confirm-booking:focus-visible { outline:2px solid #1d4ed8; outline-offset:2px; }';
+        document.head.append(style);
     }
     const decision = form.querySelector('[data-request-decision]');
     const start = form.querySelector('[data-request-start]');
