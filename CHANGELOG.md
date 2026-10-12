@@ -46,6 +46,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Removed the booking schedule’s status explanation and moved its interaction hint below the grid.
 - Styled request moderation Undo/Redo messages as compact informational banners.
 - Made request moderation banners identify the customer and the resulting booking status, including Undo/Redo.
 - Refined request review slide-outs with a compact customer header, request summary cards, and clearer notes, fields, and availability sections.
