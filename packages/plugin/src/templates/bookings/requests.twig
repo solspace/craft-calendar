@@ -14,7 +14,6 @@
 {% endblock %}
 {% block main %}<div class="content-grid__main"><div id="content">{{ block('content') }}</div></div>{% endblock %}
 {% block content %}
-<p class="light">{{ 'Review new booking requests. Requested times are reserved only after confirmation.'|t('calendar') }}</p>
 <div class="request-history hidden" role="status" aria-live="polite"><span data-icon="info" aria-hidden="true"></span><span data-request-history-message></span><button type="button" class="btn small" data-request-undo>{{ 'Undo'|t('app') }}</button><button type="button" class="btn small hidden" data-request-redo>{{ 'Redo'|t('app') }}</button></div>
 <div id="request-results">{% include 'calendar/bookings/_requests-list' %}</div>
 {% endblock %}
