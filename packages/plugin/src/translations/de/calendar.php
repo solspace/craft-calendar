@@ -1176,4 +1176,6 @@ return [
     'Configured timezones: {timezones}' => 'Konfigurierte Zeitzonen: {timezones}',
     'Show Pending Request Badge' => 'Badge für ausstehende Anfragen anzeigen',
     'Show a red count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Zeigt eine rote Anzahl neben dem Hauptnavigationseintrag des Plugins für Buchungsanfragen an, die auf Prüfung warten. Es werden nur Anfragen gezählt, die Sie verwalten können.',
+    'Display timezone' => 'Anzeigezeitzone',
+    'Automatic ({timezone})' => 'Automatisch ({timezone})',
 ];

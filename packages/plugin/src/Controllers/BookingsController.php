@@ -10,6 +10,7 @@ use Solspace\Calendar\Bundles\ProjectConfig\BookingFieldLayoutProjectConfig;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
+use Solspace\Calendar\Library\Helpers\TimezoneHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Library\Scheduling\BookingConflictException;
 use Solspace\Calendar\Library\Scheduling\BookingHistory;
@@ -659,7 +660,17 @@ class BookingsController extends BaseController
         $calendarId = $calendarIds[0];
         $calendar = $calendars[$calendarId];
         $calendarSelection = \count($calendarIds) === \count($calendars) ? 'all' : implode(',', $calendarIds);
-        $zone = new \DateTimeZone(Schedule::displayTimezone(array_intersect_key($calendars, array_flip($calendarIds)), \Craft::$app->getFormatter()->timeZone));
+        $staffTimezone = \Craft::$app->getFormatter()->timeZone;
+        $timezones = Schedule::timezones($calendars, $staffTimezone);
+
+        try {
+            $scheduleTimezone = Schedule::timezoneSelection($timezones, $request->getQueryParam('timezone', 'auto'));
+        } catch (\InvalidArgumentException) {
+            throw new BadRequestHttpException();
+        }
+        $automaticTimezone = Schedule::displayTimezone(array_intersect_key($calendars, array_flip($calendarIds)), $staffTimezone);
+        $zone = new \DateTimeZone('auto' !== $scheduleTimezone ? $scheduleTimezone : $automaticTimezone);
+        $timezoneOptions = array_map(static fn ($timezone) => ['value' => $timezone, 'label' => TimezoneHelper::name($timezone).' ('.$timezone.')'], $timezones);
         $date = (string) \Craft::$app->request->getQueryParam('date', (new \DateTimeImmutable('now', $zone))->format('Y-m-d'));
         if (!Availability::validDate($date)) {
             throw new BadRequestHttpException();
@@ -695,7 +706,7 @@ class BookingsController extends BaseController
 
         return $this->renderTemplate('calendar/bookings/schedule', $this->variables() + [
             'unavailableRequestIds' => Calendar::getInstance()->bookings->unavailableRequestIds($bookings, $calendars),
-            'calendar' => $calendar, 'calendarId' => $calendarId, 'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'displayTimezone' => $zone->getName(), 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView, 'scheduleLayout' => $scheduleLayout,
+            'calendar' => $calendar, 'calendarId' => $calendarId, 'calendarIds' => $calendarIds, 'calendarSelection' => $calendarSelection, 'displayTimezone' => $zone->getName(), 'scheduleTimezone' => $scheduleTimezone, 'automaticTimezone' => $automaticTimezone, 'timezoneOptions' => $timezoneOptions, 'days' => $days, 'date' => $date, 'scheduleView' => $scheduleView, 'scheduleLayout' => $scheduleLayout,
             'previous' => $start->modify('day' === $scheduleView ? '-1 day' : '-7 days')->format('Y-m-d'), 'next' => $end->format('Y-m-d'),
         ]);
     }

@@ -32,6 +32,21 @@ class Schedule
         return 1 === \count($zones) ? reset($zones) : $fallback;
     }
 
+    /** Only offer zones from calendars this staff member can manage, plus their own zone. */
+    public static function timezones(array $calendars, string $staffTimezone): array
+    {
+        return array_values(array_unique([$staffTimezone, ...array_map(static fn (CalendarModel $calendar) => $calendar->getSchedulingSettings()->timezone, $calendars)]));
+    }
+
+    public static function timezoneSelection(array $allowed, mixed $selection): string
+    {
+        if (!\is_string($selection) || (!\in_array($selection, ['', 'auto'], true) && !\in_array($selection, $allowed, true))) {
+            throw new \InvalidArgumentException('Invalid display timezone.');
+        }
+
+        return '' === $selection ? 'auto' : $selection;
+    }
+
     /** Align a displayed week with Calendar's effective first day (Sunday = 0). */
     public static function weekStart(\DateTimeImmutable $day, int $firstDay): \DateTimeImmutable
     {

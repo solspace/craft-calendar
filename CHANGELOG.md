@@ -5,6 +5,7 @@
 ### Added
 - Added independent Admin and Requester email switches and triggers for booking submission, confirmation, decline, cancellation, return to Requested, rescheduling, and restoration.
 - Added an optional red pending booking request count to the main Calendar navigation item, respecting staff access and updating after request moderation.
+- Added a display-timezone picker to the booking Schedule, offering manageable resource timezones and the staff timezone, with automatic defaults and selections preserved through filtering and navigation.
 - Added singular and plural booking resource labels under Settings → Bookings, replacing Calendar/Calendars in booking filters, table headings, editor/review forms, and Schedule layout choices.
 - Added a Requests moderation queue as the first Bookings submenu item, with a pending count, automatic filters, availability warnings, native review slideouts, alternate times, and Undo/Redo. Requests can also be the default Bookings subpage.
 - Added a checked-by-default Include booked time slots option to the control-panel booking editor, showing occupied slots as disabled and allowing staff to hide them.

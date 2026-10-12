@@ -107,6 +107,7 @@ class SchedulingTemplateTest extends TestCase
                         'calendarIds' => $calendarIds,
                         'calendarSelection' => $calendarSelection,
                         'displayTimezone' => 'America/Winnipeg',
+                        'scheduleTimezone' => 'auto', 'automaticTimezone' => 'America/Winnipeg', 'timezoneOptions' => [['value' => 'America/Winnipeg', 'label' => 'Central Time'], ['value' => 'Asia/Tokyo', 'label' => 'Japan Time']],
                         'calendars' => $calendars,
                         'days' => [['date' => new \DateTimeImmutable('2026-10-12T00:00:00-05:00'), 'columns' => $columns, 'combined' => ['bookings' => array_map(static fn ($column) => $column['bookings'][0] + ['calendar' => $column['calendar'], 'lanes' => 1], $columns), 'overflow' => [], 'slots' => [480 => ['height' => 15, 'options' => array_map(static fn ($column) => $column['slots'][480][0] + ['calendar' => $column['calendar']], $columns)]]]]],
                         'date' => '2026-10-12',
@@ -116,7 +117,10 @@ class SchedulingTemplateTest extends TestCase
                         'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
                     ]);
 
-                    self::assertStringContainsString('Times shown in ', $output);
+                    self::assertStringContainsString('Display timezone', $output);
+                    self::assertStringContainsString('Automatic (', $output);
+                    self::assertStringContainsString('id="booking-schedule-timezone"', $output);
+                    self::assertStringContainsString('<option value="Asia/Tokyo">Japan Time</option>', $output);
                     self::assertStringContainsString('All bookings and available times are converted to this display timezone.', $output);
                     self::assertStringContainsString('Configured timezones: ', $output);
                     self::assertStringContainsString('(America/Winnipeg)', $output);

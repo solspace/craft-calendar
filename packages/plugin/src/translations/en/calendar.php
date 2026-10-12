@@ -1289,4 +1289,6 @@ return [
     'Configured timezones: {timezones}' => 'Configured timezones: {timezones}',
     'Show Pending Request Badge' => 'Show Pending Request Badge',
     'Show a red count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Show a red count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.',
+    'Display timezone' => 'Display timezone',
+    'Automatic ({timezone})' => 'Automatic ({timezone})',
 ];

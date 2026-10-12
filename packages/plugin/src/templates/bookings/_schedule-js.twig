@@ -45,10 +45,21 @@ function retainBookingHistory() {
 }
 function setBookingFilters(values) {
     syncBookingCalendarPicker(values.get('calendarIds'));
-    for (const name of ['date', 'view', 'layout']) {
+    for (const name of ['date', 'view', 'layout', 'timezone']) {
         const input = bookingToolbar.elements.namedItem(name);
         if (input.selectize) input.selectize.setValue(values.get(name), true);
         else input.value = values.get(name);
+    }
+}
+function updateBookingTimezoneOptions(select) {
+    const input = bookingToolbar.elements.namedItem('timezone');
+    if (input.selectize) {
+        const picker = input.selectize;
+        picker.clear(true);
+        picker.clearOptions(true);
+        picker.addOption([...select.options].map(option => ({value: option.value, text: option.text})));
+    } else {
+        input.replaceChildren(...[...select.options].map(option => option.cloneNode(true)));
     }
 }
 async function filterBookingSchedule(url) {
@@ -78,15 +89,16 @@ async function filterBookingSchedule(url) {
         const grid = doc.querySelector('.booking-grid');
         const toolbar = doc.querySelector('.booking-toolbar');
         const newBooking = doc.querySelector('[data-booking-new]');
-        if (!grid || !toolbar || !newBooking) throw new Error();
+        const timezoneSelect = toolbar?.elements.namedItem('timezone');
+        if (!grid || !toolbar || !newBooking || !timezoneSelect) throw new Error();
         const currentGrid = bookingGridScroll.querySelector('.booking-grid');
         const calendarChanged = grid.dataset.calendarIds !== currentGrid.dataset.calendarIds || grid.dataset.timezone !== currentGrid.dataset.timezone;
         bookingGridScroll.replaceChildren(document.importNode(grid, true));
         // Keep the existing controls and scroll position; the returned page supplies canonical values and links.
         bookingFilterValues = new FormData(toolbar);
+        updateBookingTimezoneOptions(timezoneSelect);
         setBookingFilters(bookingFilterValues);
         bookingToolbar.querySelector('.booking-toolbar-navigation').innerHTML = toolbar.querySelector('.booking-toolbar-navigation').innerHTML;
-        bookingToolbar.querySelector('.booking-toolbar-timezone').textContent = toolbar.querySelector('.booking-toolbar-timezone').textContent;
         bookingToolbar.querySelector('.booking-toolbar-timezone').title = toolbar.querySelector('.booking-toolbar-timezone').title;
         document.querySelector('[data-booking-new]').href = newBooking.href;
         document.querySelector('[data-booking-instructions]').textContent = doc.querySelector('[data-booking-instructions]').textContent;
@@ -107,7 +119,7 @@ async function filterBookingSchedule(url) {
     }
 }
 // Bind to the toolbar because Selectize initialization clears handlers bound directly to its selects.
-$(bookingToolbar).on('change', '#booking-schedule-date, #booking-schedule-view, #booking-schedule-layout', () => filterBookingSchedule());
+$(bookingToolbar).on('change', '#booking-schedule-date, #booking-schedule-view, #booking-schedule-layout, #booking-schedule-timezone', () => filterBookingSchedule());
 bookingToolbar.querySelector('#booking-schedule-date').addEventListener('input', () => {
     clearTimeout(bookingDateTimer);
     bookingDateTimer = setTimeout(() => filterBookingSchedule(), 300);

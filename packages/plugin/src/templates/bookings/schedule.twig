@@ -23,8 +23,8 @@
     {{ forms.selectize({id: 'booking-schedule-view', class: 'booking-toolbar-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
     {{ forms.selectize({id: 'booking-schedule-layout', class: 'booking-toolbar-layout', name: 'layout', value: scheduleLayout, options: [{value: 'combined', label: 'Combined'|t('calendar')}, {value: 'calendars', label: resourceLabels.by}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Layout'|t('app')}}}) }}
     <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
-        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
-        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: next}) }}">{{ 'Next'|t('app') }}</a>
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: previous, timezone: scheduleTimezone}) }}">{{ 'Previous'|t('app') }}</a>
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: next, timezone: scheduleTimezone}) }}">{{ 'Next'|t('app') }}</a>
     </div>
     <span class="spinner hidden" aria-hidden="true"></span>
     {% set resourceTimezones = [] %}
@@ -34,7 +34,10 @@
     {% endfor %}
     {% set resourceTimezoneNames = [] %}
     {% for resourceTimezone in resourceTimezones %}{% set resourceTimezoneNames = resourceTimezoneNames|merge([resourceTimezone|calendarTimezoneName ~ ' (' ~ resourceTimezone ~ ')']) %}{% endfor %}
-    <span class="light booking-toolbar-timezone" title="{{ displayTimezone }}&#10;{{ 'All bookings and available times are converted to this display timezone.'|t('calendar') }}&#10;{{ 'Configured timezones: {timezones}'|t('calendar', {timezones: resourceTimezoneNames|join(', ')}) }}">{{ 'Times shown in {timezone}'|t('calendar', {timezone: displayTimezone|calendarTimezoneName}) }}</span>
+    <div class="booking-toolbar-timezone" title="{{ displayTimezone }}&#10;{{ 'All bookings and available times are converted to this display timezone.'|t('calendar') }}&#10;{{ 'Configured timezones: {timezones}'|t('calendar', {timezones: resourceTimezoneNames|join(', ')}) }}">
+        <label for="booking-schedule-timezone" class="light">{{ 'Display timezone'|t('calendar') }}</label>
+        {{ forms.selectize({id: 'booking-schedule-timezone', name: 'timezone', value: scheduleTimezone, options: [{value: 'auto', label: 'Automatic ({timezone})'|t('calendar', {timezone: automaticTimezone|calendarTimezoneName})}]|merge(timezoneOptions), selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', extraPlugins: false}, inputAttributes: {aria: {label: 'Display timezone'|t('calendar')}}}) }}
+    </div>
 </form>
 <div class="booking-grid-scroll"><div class="booking-grid{{ scheduleLayout == 'combined' ? ' booking-grid-combined' : (calendarIds|length > 1 ? ' booking-grid-multiple' : '') }}" data-calendar-ids="{{ calendarIds|join(',') }}" data-timezone="{{ displayTimezone }}" style="--days:{{ days|length }};--calendars:{{ calendarIds|length }};--columns:{{ days|length * calendarIds|length }}">
 <div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ date('2000-01-01 ' ~ '%02d:00'|format(hour), displayTimezone)|time(bookingTimeFormat, displayTimezone)|calendarTimeLabel }}</div>{% endfor %}</div>
@@ -80,7 +83,8 @@
 .booking-toolbar .selectize-input, .booking-toolbar .text, .booking-toolbar .btn { min-height:34px; box-sizing:border-box; }
 .booking-toolbar-date .text { width:100%; }
 .booking-toolbar-navigation { display:flex; margin:0; }
-.booking-toolbar-timezone { margin-inline-start:auto; font-size:12px; white-space:nowrap; }
+.booking-toolbar-timezone { margin-inline-start:auto; display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px; }
+.booking-toolbar-timezone > .select.selectize { width:270px; max-width:100%; }
 .booking-toolbar .selectize-input .item > .flex, .booking-picker-dropdown .option > .flex { gap:8px; }
 .booking-toolbar .selectize-input .color.small, .booking-picker-dropdown .color.small { width:12px; height:12px; flex:0 0 12px; margin:0; }
 .booking-grid-scroll { max-height:65vh; overflow:auto; border:1px solid var(--hairline-color,#d8dee5); border-radius:8px; }

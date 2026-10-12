@@ -65,6 +65,26 @@ class ScheduleTest extends TestCase
         self::assertSame('Europe/Paris', Schedule::displayTimezone([$tahiti, $central], 'Europe/Paris'));
     }
 
+    public function testDisplayTimezoneChoicesDeduplicateResourcesAndValidateExplicitOverrides(): void
+    {
+        $first = new CalendarModel(['id' => 7, 'scheduling' => ['timezone' => 'Pacific/Tahiti']]);
+        $second = new CalendarModel(['id' => 8, 'scheduling' => ['timezone' => 'Pacific/Tahiti']]);
+        $allowed = Schedule::timezones([$first, $second], 'America/Winnipeg');
+        self::assertSame(['America/Winnipeg', 'Pacific/Tahiti'], $allowed);
+        self::assertSame('auto', Schedule::timezoneSelection($allowed, ''));
+        self::assertSame('auto', Schedule::timezoneSelection($allowed, 'auto'));
+        self::assertSame('Pacific/Tahiti', Schedule::timezoneSelection($allowed, 'Pacific/Tahiti'));
+        self::assertSame('America/Winnipeg', Schedule::timezoneSelection($allowed, 'America/Winnipeg'));
+        foreach (['Europe/Paris', 'invalid', ['Pacific/Tahiti'], null] as $invalid) {
+            try {
+                Schedule::timezoneSelection($allowed, $invalid);
+                self::fail('Only configured resource and staff zones are selectable.');
+            } catch (\InvalidArgumentException) {
+                self::assertTrue(true);
+            }
+        }
+    }
+
     public function testWeekStartsFollowSettingsAndPreserveLocalDatesAcrossDstAndYearBoundaries(): void
     {
         foreach ([
