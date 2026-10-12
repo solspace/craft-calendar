@@ -1178,4 +1178,8 @@ return [
     'Show a count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Toon een aantal naast het hoofdnavigatie-item van de plugin voor boekingsaanvragen die op beoordeling wachten. Alleen aanvragen die je kunt beheren worden geteld.',
     'Display timezone' => 'Weergavetijdzone',
     'Automatic ({timezone})' => 'Automatisch ({timezone})',
+    'General' => 'Algemeen',
+    'Event Views' => 'Evenementweergaven',
+    'Booking Settings' => 'Boekingsinstellingen',
+    'Tools' => 'Hulpmiddelen',
 ];

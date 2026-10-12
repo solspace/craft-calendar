@@ -1178,4 +1178,8 @@ return [
     'Show a count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Mostra un contatore accanto alla voce principale del plugin nella navigazione per le richieste di prenotazione in attesa di revisione. Vengono conteggiate solo le richieste che puoi gestire.',
     'Display timezone' => 'Fuso orario visualizzato',
     'Automatic ({timezone})' => 'Automatico ({timezone})',
+    'General' => 'Generale',
+    'Event Views' => 'Viste degli eventi',
+    'Booking Settings' => 'Impostazioni delle prenotazioni',
+    'Tools' => 'Strumenti',
 ];

@@ -1291,4 +1291,8 @@ return [
     'Show a count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Show a count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.',
     'Display timezone' => 'Display timezone',
     'Automatic ({timezone})' => 'Automatic ({timezone})',
+    'General' => 'General',
+    'Event Views' => 'Event Views',
+    'Booking Settings' => 'Booking Settings',
+    'Tools' => 'Tools',
 ];

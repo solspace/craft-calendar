@@ -68,7 +68,7 @@ class SettingsController extends BaseController
 
     public function actionOverview(): Response
     {
-        return $this->provideTemplate('overview', ['label' => 'Events']);
+        return $this->provideTemplate('overview', ['label' => 'Event Views']);
     }
 
     /**
@@ -97,7 +97,7 @@ class SettingsController extends BaseController
 
     public function actionBookings(): Response
     {
-        return $this->provideTemplate('bookings', ['label' => 'Bookings']);
+        return $this->provideTemplate('bookings', ['label' => 'Booking Settings']);
     }
 
     /**
