@@ -4,6 +4,26 @@ const results = document.getElementById('request-results');
 const spinner = form.querySelector('.spinner');
 const historyBar = document.querySelector('.request-history');
 let pending = null, debounce = null, generation = 0, saving = false, historyToken = null, historyCustomer = '', historyStatus = null, queuedUrl = null;
+function updateRequestNavBadge(count) {
+    const link = document.querySelector('[data-booking-request-nav-badge]');
+    if (!link) return;
+    let badge = link.querySelector('.badge');
+    if (!badge && count > 0) {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'sidebar-action__badge';
+        badge = document.createElement('span');
+        badge.className = 'badge'; badge.setAttribute('aria-hidden', 'true');
+        const description = document.createElement('span');
+        description.className = 'visually-hidden'; description.setAttribute('data-notification', 'true');
+        wrapper.append(badge, description);
+        (link.querySelector('.sidebar-action__suffix') || link).append(wrapper);
+    }
+    if (!badge) return;
+    badge.textContent = new Intl.NumberFormat(Craft.language).format(count);
+    (badge.closest('.sidebar-action__badge') || badge).hidden = count === 0;
+    const description = link.querySelector('[data-notification]');
+    if (description) description.textContent = Craft.t('app', '{num, number} {num, plural, =1{notification} other{notifications}}', {num: count});
+}
 function currentUrl() {
     const url = new URL(window.location.href);
     url.search = new URLSearchParams(new FormData(form)).toString();
@@ -32,6 +52,7 @@ async function reload(url = new URL(window.location.href)) {
             badge.hidden = response.data.requestCount === 0;
             badge.classList.toggle('hidden', badge.hidden);
         });
+        updateRequestNavBadge(response.data.requestCount);
         ages();
     } catch (error) {
         if (!controller.signal.aborted) Craft.cp.displayError(error.response?.data?.message || Craft.t('calendar', 'Could not load booking requests.'));

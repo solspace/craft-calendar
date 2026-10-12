@@ -25,6 +25,7 @@ use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\FieldTypes\CalendarFieldType;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
+use Solspace\Calendar\Library\Scheduling\RequestQueue;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SettingsModel;
@@ -282,6 +283,15 @@ class Calendar extends Plugin
     {
         $navItem = parent::getCpNavItem();
         $navItem['subnav'] = include __DIR__.'/subnav.php';
+        if ($this->settings->getSettingsModel()->showBookingRequestBadge && \Craft::$app->getRequest()->getIsCpRequest()) {
+            $calendarIds = array_keys($this->bookings->getManageableCalendars());
+            $navItem['linkAttributes']['data']['booking-request-nav-badge'] = true;
+            $navItem['linkAttributes']['style'] = '--nav-item-badge-bg:var(--red-600,#dc2626);--nav-item-badge-fg:var(--white,#fff)';
+            $count = $calendarIds ? (new RequestQueue($this->bookings))->count($calendarIds) : 0;
+            if ($count > 0) {
+                $navItem['badgeCount'] = $count;
+            }
+        }
 
         return $navItem;
     }

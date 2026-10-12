@@ -94,6 +94,8 @@ class SettingsModel extends Model
 
     public string $defaultBookingScheduleLayout = 'combined';
 
+    public bool $showBookingRequestBadge = false;
+
     public ?int $firstDayOfWeek = null;
 
     public int|string|null $timeFormat = null;
@@ -331,6 +333,7 @@ class SettingsModel extends Model
             [['bookingPageLabel', 'bookingResourceLabelSingular', 'bookingResourceLabelPlural'], 'string', 'max' => 100],
             [['defaultBookingView'], 'in', 'range' => ['requests', 'bookings', 'schedule'], 'skipOnEmpty' => false],
             [['defaultBookingScheduleLayout'], 'in', 'range' => ['combined', 'calendars'], 'skipOnEmpty' => false],
+            [['showBookingRequestBadge'], 'boolean'],
             [['bookingDefaults'], 'validateBookingDefaults', 'skipOnEmpty' => false],
             [['captchaProvider', 'bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha', 'recaptcha-v3'], 'skipOnEmpty' => false, 'when' => static fn ($model, $attribute) => null !== $model->{$attribute}],
             [['captchaSiteKey', 'captchaSecretKey', 'bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],

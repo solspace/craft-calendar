@@ -12,6 +12,18 @@ use Solspace\Calendar\Models\SettingsModel;
  */
 class SettingsModelTest extends TestCase
 {
+    public function testPendingRequestBadgeIsOptionalAndSurvivesSettingsRoundTrip(): void
+    {
+        $settings = new SettingsModel();
+        self::assertFalse($settings->showBookingRequestBadge);
+        $settings->setAttributes(['showBookingRequestBadge' => '1']);
+        self::assertTrue($settings->validate(['showBookingRequestBadge']));
+        self::assertTrue((new SettingsModel($settings->toArray()))->showBookingRequestBadge);
+        $settings->setAttributes(['showBookingRequestBadge' => '0']);
+        self::assertTrue($settings->validate(['showBookingRequestBadge']));
+        self::assertFalse((new SettingsModel($settings->toArray()))->showBookingRequestBadge);
+    }
+
     public function testCancelledEventsRemainVisibleByDefaultAndCanBeHidden(): void
     {
         self::assertTrue((new SettingsModel())->showCancelledEvents);

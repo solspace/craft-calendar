@@ -65,6 +65,15 @@
             errors: settings.getErrors('defaultBookingScheduleLayout'),
         }) }}
 
+        {{ forms.lightswitchField({
+            label: 'Show Pending Request Badge'|t('calendar'),
+            instructions: 'Show a red count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.'|t('calendar'),
+            id: 'showBookingRequestBadge',
+            name: 'settings[showBookingRequestBadge]',
+            on: settings.showBookingRequestBadge,
+            errors: settings.getErrors('showBookingRequestBadge'),
+        }) }}
+
     </form>
 
 {% endblock %}

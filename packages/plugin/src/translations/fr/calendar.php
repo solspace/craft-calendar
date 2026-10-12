@@ -1174,4 +1174,6 @@ return [
     'Times shown in {timezone}' => 'Horaires en {timezone}',
     'All bookings and available times are converted to this display timezone.' => 'Toutes les réservations et les créneaux disponibles sont convertis dans ce fuseau horaire d’affichage.',
     'Configured timezones: {timezones}' => 'Fuseaux horaires configurés : {timezones}',
+    'Show Pending Request Badge' => 'Afficher le badge des demandes en attente',
+    'Show a red count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Affiche un compteur rouge à côté de l’entrée principale du plugin dans la navigation pour les demandes de réservation en attente de traitement. Seules les demandes que vous pouvez gérer sont comptées.',
 ];

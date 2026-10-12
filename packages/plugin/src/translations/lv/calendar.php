@@ -1134,4 +1134,6 @@ return [
     'Times shown in {timezone}' => 'Laiki zonā {timezone}',
     'All bookings and available times are converted to this display timezone.' => 'Visas rezervācijas un pieejamie laiki tiek pārrēķināti šajā attēlošanas laika joslā.',
     'Configured timezones: {timezones}' => 'Konfigurētās laika joslas: {timezones}',
+    'Show Pending Request Badge' => 'Rādīt gaidošo pieprasījumu skaitu',
+    'Show a red count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Rāda sarkanu skaitu pie spraudņa galvenā navigācijas vienuma rezervācijas pieprasījumiem, kas gaida pārskatīšanu. Tiek ieskaitīti tikai pieprasījumi, kurus varat pārvaldīt.',
 ];
