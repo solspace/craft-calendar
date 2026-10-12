@@ -50,6 +50,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Collapsed Booking Calendar Details by default on the Diagnostics page, matching Event Calendar Details.
 - Clarified global, calendar-specific, and full-access booking permissions with native help notes in Craft's permission settings.
 - Aligned alternate time slots in booking request reviews into an equal-width, responsive grid with consistent spacing and centered time labels.
 - Grouped settings navigation into Events, Bookings, and Tools, clarified Event Views and Booking Settings labels, and moved event overlap warnings and author restrictions from General to Event Settings.

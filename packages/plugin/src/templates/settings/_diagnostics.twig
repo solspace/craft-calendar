@@ -127,7 +127,7 @@
             </details>
         {% endif %}
         {% if bookingCalendars %}
-            <details class="calendar-diag-disclosure" open>
+            <details class="calendar-diag-disclosure">
                 <summary>
                     {{ 'Booking Calendar Details ({count})'|t('calendar', {count: bookingCalendars|length}) }}
                     {% if bookingWarningCount %}<span class="calendar-diag-issue-count">{{ 'Calendars with advisories or issues: {count}'|t('calendar', {count: bookingWarningCount}) }}</span>{% endif %}
