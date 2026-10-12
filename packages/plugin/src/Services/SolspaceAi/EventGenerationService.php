@@ -64,9 +64,12 @@ class EventGenerationService extends Component
             Update rules:
             - Only change fields the user explicitly asks to change.
             - Copy every other field EXACTLY from the current event JSON above.
-            - Include "changedFields": an array of field names you changed (subset of title, description, location, start, end, allDay, repeatType, rrule, calendarHandle).
-            - If the user only changes time/date/repeat, keep title/description/location/calendarHandle as-is.
+            - Include "changedFields": an array of field names you changed (subset of title, description, location, start, end, allDay, repeatType, rrule, calendarHandle, additionalDates, excludedDates).
+            - If the user only changes time/date/repeat/extra dates, keep title/description/location/calendarHandle as-is.
             - Relative phrases like "make it tomorrow" or "move to 3pm" are relative to the current event and the user reference now.
+            - "add an additional date Oct 24" / "also on Oct 24" → additionalDates: ["YYYY-MM-DD"] and changedFields includes "additionalDates".
+            - "exclude Oct 24" / "skip Thanksgiving" / "off for …" → excludedDates: ["YYYY-MM-DD"] and changedFields includes "excludedDates".
+            - Only list dates the user asked to add/exclude in this turn (server merges them into the existing set).
             UPDATE : '';
 
         $systemPrompt = <<<PROMPT
@@ -83,6 +86,8 @@ class EventGenerationService extends Component
               "allDay": boolean,
               "repeatType": "NEVER|DAILY|WEEKLY|MONTHLY|YEARLY|CUSTOM",
               "rrule": "RFC 5545 RRULE body without RRULE: prefix when repeating; empty when NEVER",
+              "additionalDates": ["YYYY-MM-DD dates outside the recurring pattern (Additional Dates / RDATE)"],
+              "excludedDates": ["YYYY-MM-DD dates removed from the recurring pattern (Excluded Dates / EXDATE)"],
               "calendarHandle": "handle from the allowed calendars list",
               "changedFields": ["optional array of changed field names when updating"]
             }
@@ -100,7 +105,7 @@ class EventGenerationService extends Component
               "9:00" means 9:00 on the calendar for everyone. Never emit Z or ±offsets.
 
             Rules:
-            - Interpret "today", "tomorrow", "next Tuesday", "Monday at 9am", etc. from the user reference now above.
+            - Interpret "today", "tomorrow", "next Tuesday", "Monday at 9am", "24 Oct", etc. from the user reference now above.
             - start/end must be naive ISO-like datetimes: 2026-10-11T09:00:00
             - For timed events, end must be after start. If duration is omitted, use {$eventDuration} minutes.
             - For all-day events: start at 00:00:00 on the first day; end at 00:00:00 on the day AFTER the last day (exclusive end).
@@ -108,7 +113,9 @@ class EventGenerationService extends Component
             - When repeatType is WEEKLY and the user names a weekday, set rrule like FREQ=WEEKLY;BYDAY=MO (use that weekday).
             - When repeatType is DAILY/MONTHLY/YEARLY and rrule is empty, you may omit rrule (server will fill a simple rule).
             - For CUSTOM, rrule is required (e.g. FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE).
-            - Do not include DTSTART, RDATE, or EXDATE in rrule; only the RRULE body (FREQ=...).
+            - Do not put DTSTART, RDATE, or EXDATE in rrule; only the RRULE body (FREQ=...). Use additionalDates / excludedDates instead.
+            - additionalDates = Calendar "Additional Dates" (extra occurrences outside the pattern).
+            - excludedDates = Calendar "Excluded Dates" (skip occurrences from the pattern).
             - When the user limits recurrence ("for 4 weeks", "10 times", "until December 1"), include COUNT= or UNTIL= in the rrule body.
               UNTIL must be floating local time: all-day YYYYMMDD, timed YYYYMMDDTHHMMSS (no Z / offsets).
             - "every Friday for 8 weeks" / "for N weeks" of a weekly event means COUNT=N (N occurrences), not COUNT=2.
@@ -182,24 +189,75 @@ class EventGenerationService extends Component
         $event['end'] = $end->format('Y-m-d\TH:i:s');
         $event['startTimestamp'] = $start->getTimestamp();
         $event['endTimestamp'] = $end->getTimestamp();
-        $event['rrule'] = $this->normalizeGeneratedRrule(
+
+        $changedFields = $isUpdate
+            ? array_values(array_unique(array_map(
+                static fn ($field) => (string) $field,
+                $parsed['changedFields'] ?? []
+            )))
+            : [];
+
+        $baseRrule = $this->normalizeGeneratedRrule(
             (string) $event['repeatType'],
             (string) $event['rrule'],
             $start,
             (bool) $event['allDay'],
         );
-        if (Event::REPEAT_NEVER === $event['repeatType']) {
-            $event['rrule'] = '';
+
+        // Preserve existing RDATE/EXDATE from the current event unless this update replaces them.
+        $existingRdates = [];
+        $existingExdates = [];
+        if ($isUpdate && $normalizedCurrent) {
+            [$existingRdates, $existingExdates] = $this->extractFixedDateValues((string) ($normalizedCurrent['rrule'] ?? ''));
         }
+
+        $addRdates = $this->normalizeDateList($event['additionalDates'] ?? []);
+        $addExdates = $this->normalizeDateList($event['excludedDates'] ?? []);
+
+        $rdates = $existingRdates;
+        $exdates = $existingExdates;
+        if (!$isUpdate || \in_array('additionalDates', $changedFields, true) || [] === $changedFields) {
+            $rdates = $this->mergeUniqueDates($existingRdates, $addRdates);
+        }
+        if (!$isUpdate || \in_array('excludedDates', $changedFields, true) || [] === $changedFields) {
+            $exdates = $this->mergeUniqueDates($existingExdates, $addExdates);
+        }
+
+        if (
+            Event::REPEAT_NEVER === $event['repeatType']
+            && [] === $rdates
+            && [] === $exdates
+        ) {
+            $event['rrule'] = '';
+        } else {
+            $event['rrule'] = $this->attachFixedDatesToRrule(
+                $baseRrule,
+                $start,
+                (bool) $event['allDay'],
+                $rdates,
+                $exdates,
+            );
+        }
+
+        if (
+            $isUpdate
+            && (
+                \in_array('additionalDates', $changedFields, true)
+                || \in_array('excludedDates', $changedFields, true)
+            )
+            && !\in_array('rrule', $changedFields, true)
+        ) {
+            $changedFields[] = 'rrule';
+        }
+
         [$repeatEndType, $untilTimestamp] = $this->inferRepeatEndFromRrule((string) $event['rrule']);
         $event['repeatEndType'] = $repeatEndType;
         $event['until'] = $untilTimestamp;
+        $event['additionalDates'] = $rdates;
+        $event['excludedDates'] = $exdates;
         $event['referenceNow'] = $referenceFloating->format('Y-m-d\TH:i:s');
         if ($isUpdate) {
-            $event['changedFields'] = array_values(array_unique(array_map(
-                static fn ($field) => (string) $field,
-                $parsed['changedFields'] ?? []
-            )));
+            $event['changedFields'] = $changedFields;
         }
 
         return ['success' => true, 'event' => $event];
@@ -298,6 +356,8 @@ class EventGenerationService extends Component
             'repeatType',
             'rrule',
             'calendarHandle',
+            'additionalDates',
+            'excludedDates',
         ];
         $changed = array_values(array_intersect(
             array_map(static fn ($field) => (string) $field, $changedFields),
@@ -465,6 +525,8 @@ class EventGenerationService extends Component
             'repeatType' => $repeatType,
             'rrule' => trim((string) ($data['rrule'] ?? '')),
             'calendarHandle' => trim((string) ($data['calendarHandle'] ?? '')),
+            'additionalDates' => $this->normalizeDateList($data['additionalDates'] ?? []),
+            'excludedDates' => $this->normalizeDateList($data['excludedDates'] ?? []),
         ];
 
         if ('' === $event['title']) {
@@ -543,6 +605,172 @@ class EventGenerationService extends Component
         $dtstart = $allDay ? $start->format('Ymd') : $start->format('Ymd\THis');
 
         return "DTSTART:{$dtstart}\nRRULE:{$rrule}";
+    }
+
+    /**
+     * @param list<string> $rdates  Y-m-d
+     * @param list<string> $exdates Y-m-d
+     */
+    private function attachFixedDatesToRrule(
+        string $baseRrule,
+        Carbon $start,
+        bool $allDay,
+        array $rdates,
+        array $exdates,
+    ): string {
+        $lines = [];
+        $baseRrule = trim(str_replace(["\r\n", "\r"], "\n", $baseRrule));
+        if ('' !== $baseRrule) {
+            foreach (explode("\n", $baseRrule) as $line) {
+                $line = trim($line);
+                if ('' === $line) {
+                    continue;
+                }
+                $upper = strtoupper($line);
+                if (str_starts_with($upper, 'RDATE') || str_starts_with($upper, 'EXDATE')) {
+                    continue;
+                }
+                $lines[] = $line;
+            }
+        }
+
+        if ([] === $lines) {
+            $dtstart = $allDay ? $start->format('Ymd') : $start->format('Ymd\THis');
+            $lines[] = 'DTSTART:'.$dtstart;
+        }
+
+        $rdates = array_values(array_unique($rdates));
+        $exdates = array_values(array_unique($exdates));
+        sort($rdates);
+        sort($exdates);
+
+        if ([] !== $rdates) {
+            $lines[] = $this->formatFixedDateLine('RDATE', $rdates, $start, $allDay);
+        }
+        if ([] !== $exdates) {
+            $lines[] = $this->formatFixedDateLine('EXDATE', $exdates, $start, $allDay);
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * @param list<string> $dates Y-m-d
+     */
+    private function formatFixedDateLine(string $property, array $dates, Carbon $start, bool $allDay): string
+    {
+        if ($allDay) {
+            $values = array_map(
+                static fn (string $date) => str_replace('-', '', $date),
+                $dates
+            );
+
+            return $property.';VALUE=DATE:'.implode(',', $values);
+        }
+
+        $time = $start->format('His');
+        $values = array_map(
+            static fn (string $date) => str_replace('-', '', $date).'T'.$time,
+            $dates
+        );
+
+        return $property.':'.implode(',', $values);
+    }
+
+    /**
+     * @return array{0: list<string>, 1: list<string>} Y-m-d lists
+     */
+    private function extractFixedDateValues(string $rrule): array
+    {
+        $rdates = [];
+        $exdates = [];
+        $rrule = trim(str_replace(["\r\n", "\r"], "\n", $rrule));
+        if ('' === $rrule) {
+            return [[], []];
+        }
+
+        foreach (explode("\n", $rrule) as $line) {
+            $line = trim($line);
+            if ('' === $line) {
+                continue;
+            }
+            $upper = strtoupper($line);
+            $target = null;
+            if (str_starts_with($upper, 'RDATE')) {
+                $target = &$rdates;
+            } elseif (str_starts_with($upper, 'EXDATE')) {
+                $target = &$exdates;
+            } else {
+                continue;
+            }
+
+            $raw = '';
+            if (str_contains($line, ':')) {
+                $raw = substr($line, strpos($line, ':') + 1);
+            }
+            foreach (explode(',', $raw) as $value) {
+                $value = trim($value);
+                if ('' === $value) {
+                    continue;
+                }
+                // 20261024 or 20261024T090000 → Y-m-d
+                if (preg_match('/^(\d{4})(\d{2})(\d{2})/', $value, $match)) {
+                    $target[] = $match[1].'-'.$match[2].'-'.$match[3];
+                }
+            }
+            unset($target);
+        }
+
+        return [
+            array_values(array_unique($rdates)),
+            array_values(array_unique($exdates)),
+        ];
+    }
+
+    /**
+     * @return list<string> Y-m-d
+     */
+    private function normalizeDateList(mixed $value): array
+    {
+        if (!\is_array($value)) {
+            return [];
+        }
+
+        $dates = [];
+        foreach ($value as $item) {
+            if (!\is_string($item) && !\is_numeric($item)) {
+                continue;
+            }
+            $raw = trim((string) $item);
+            if ('' === $raw) {
+                continue;
+            }
+
+            try {
+                if (preg_match('/^\d{4}-\d{2}-\d{2}/', $raw)) {
+                    $dates[] = DateHelper::parseFloatingCarbon(substr($raw, 0, 10).'T00:00:00')->format('Y-m-d');
+                } elseif (preg_match('/^\d{8}/', $raw)) {
+                    $dates[] = DateHelper::parseFloatingCarbon(
+                        substr($raw, 0, 4).'-'.substr($raw, 4, 2).'-'.substr($raw, 6, 2).'T00:00:00'
+                    )->format('Y-m-d');
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return array_values(array_unique($dates));
+    }
+
+    /**
+     * @param list<string> $existing
+     * @param list<string> $incoming
+     *
+     * @return list<string>
+     */
+    private function mergeUniqueDates(array $existing, array $incoming): array
+    {
+        return array_values(array_unique([...$existing, ...$incoming]));
     }
 
     private function getSolspaceAi(): SolspaceAiService

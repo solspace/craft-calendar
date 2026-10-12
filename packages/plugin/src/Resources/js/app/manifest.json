@@ -1,12 +1,9 @@
 {
-  "_calendar-preview.operations-lGmjIM0w.js": {
-    "file": "assets/calendar-preview.operations-lGmjIM0w.js",
-    "name": "calendar-preview.operations",
+  "_ai-button-DEEwQsMT.js": {
+    "file": "assets/ai-button-DEEwQsMT.js",
+    "name": "ai-button",
     "imports": [
-      "_translations-CPvEMAbD.js",
-      "_localization-Mf36Vfg7.js",
-      "_lightswitch-Bj0mJjdb.js",
-      "_http-bwzZaFVT.js"
+      "_translations-CPvEMAbD.js"
     ]
   },
   "_calendar.events-B0-G7rS_.js": {
@@ -32,25 +29,20 @@
       "_translations-CPvEMAbD.js"
     ]
   },
-  "_create-event.operations-ozEgpbIl.js": {
-    "file": "assets/create-event.operations-ozEgpbIl.js",
-    "name": "create-event.operations",
-    "imports": [
-      "_translations-CPvEMAbD.js"
-    ]
-  },
-  "_create-with-ai-CBRiwvCo.js": {
-    "file": "assets/create-with-ai-CBRiwvCo.js",
+  "_create-with-ai-DzGOu4nE.js": {
+    "file": "assets/create-with-ai-DzGOu4nE.js",
     "name": "create-with-ai",
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-qYsrLi6m.js",
+      "_create-with-ai.styles-dAY_Ede8.js",
+      "_localization-Mf36Vfg7.js",
+      "_lightswitch-Bj0mJjdb.js",
       "_http-bwzZaFVT.js",
       "_components-DAVK9kbC.js"
     ]
   },
-  "_create-with-ai.styles-qYsrLi6m.js": {
-    "file": "assets/create-with-ai.styles-qYsrLi6m.js",
+  "_create-with-ai.styles-dAY_Ede8.js": {
+    "file": "assets/create-with-ai.styles-dAY_Ede8.js",
     "name": "create-with-ai.styles",
     "imports": [
       "_translations-CPvEMAbD.js"
@@ -109,6 +101,10 @@
       "_translations-CPvEMAbD.js"
     ]
   },
+  "_open-event-create-with-ai-AyWFumb6.js": {
+    "file": "assets/open-event-create-with-ai-AyWFumb6.js",
+    "name": "open-event-create-with-ai"
+  },
   "_timegrid-dPK_ini7.js": {
     "file": "assets/timegrid-dPK_ini7.js",
     "name": "timegrid",
@@ -129,69 +125,68 @@
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-CcsN4-pb.js",
+    "file": "assets/overview-DlDa1-VC.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-qYsrLi6m.js",
+      "_create-with-ai.styles-dAY_Ede8.js",
       "_localization-Mf36Vfg7.js",
       "_calendar.events-B0-G7rS_.js",
       "_interaction-DqG35pqf.js",
       "_timegrid-dPK_ini7.js",
       "_lightswitch-Bj0mJjdb.js",
-      "_create-with-ai-CBRiwvCo.js",
+      "_create-with-ai-DzGOu4nE.js",
       "_http-bwzZaFVT.js",
-      "_calendar-preview.operations-lGmjIM0w.js",
       "_calendar.styles-CIEulExP.js",
       "_variables-BbBDeNZ7.js",
-      "_create-event.operations-ozEgpbIl.js",
-      "_components-DAVK9kbC.js"
+      "_components-DAVK9kbC.js",
+      "_ai-button-DEEwQsMT.js"
     ]
   },
   "src/standalone/calendars-ai/index.tsx": {
-    "file": "assets/calendars-ai-CPFCft8d.js",
+    "file": "assets/calendars-ai-BYdLZaqJ.js",
     "name": "calendars-ai",
     "src": "src/standalone/calendars-ai/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-qYsrLi6m.js",
+      "_create-with-ai.styles-dAY_Ede8.js",
       "_http-bwzZaFVT.js",
-      "_components-DAVK9kbC.js"
+      "_components-DAVK9kbC.js",
+      "_ai-button-DEEwQsMT.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-BMkvpfGQ.js",
+    "file": "assets/event-builder-Qe0CPS5e.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-qYsrLi6m.js",
+      "_create-with-ai.styles-dAY_Ede8.js",
       "_localization-Mf36Vfg7.js",
       "_calendar.events-B0-G7rS_.js",
       "_interaction-DqG35pqf.js",
       "_lightswitch-Bj0mJjdb.js",
-      "_create-with-ai-CBRiwvCo.js",
+      "_create-with-ai-DzGOu4nE.js",
       "_http-bwzZaFVT.js",
-      "_calendar-preview.operations-lGmjIM0w.js",
       "_components-DAVK9kbC.js",
+      "_ai-button-DEEwQsMT.js",
+      "_open-event-create-with-ai-AyWFumb6.js",
       "_dropdown-CVbJN3sq.js"
     ]
   },
   "src/standalone/events-ai/index.tsx": {
-    "file": "assets/events-ai-B8t0HtHj.js",
+    "file": "assets/events-ai-OqyUP4QB.js",
     "name": "events-ai",
     "src": "src/standalone/events-ai/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-qYsrLi6m.js",
-      "_create-with-ai-CBRiwvCo.js",
-      "_http-bwzZaFVT.js",
-      "_create-event.operations-ozEgpbIl.js"
+      "_ai-button-DEEwQsMT.js",
+      "_open-event-create-with-ai-AyWFumb6.js"
     ]
   },
   "src/standalone/solspaceai/index.js": {

@@ -8,6 +8,7 @@
     'New Event',
     'New {calendar} Event',
     'Create with AI',
+    'Update with AI',
     'Enable AI',
     'Generate Event',
     'Generating…',
@@ -17,6 +18,7 @@
     'No calendars are available.',
     'Describe your event in plain language. AI will suggest dates, title, and details.',
     'e.g. Team standup every Monday at 9am for 30 minutes',
+    'e.g. On the Staff Meetings calendar, Team Standup every Monday and Thursday starting Sept 14 for 20 times. Location "Conference Room A", description "Weekly sync."',
 ]) %}
 
 {% block actionButton %}
@@ -24,8 +26,8 @@
 		<span data-ai-create-root></span>
 		<script type="application/json" data-events-ai-config>{{ {
 			isSolspaceAiConnected: isSolspaceAiConnected ?? false,
-			siteId: craft.app.sites.currentSite.id,
-			defaultCalendarId: calendars|length ? calendars|first.id : null,
+			defaultCalendarHandle: calendars|length ? calendars|first.handle : null,
+			calendars: eventsAiCalendars ?? [],
 		}|json_encode|raw }}</script>
 		<div class="buttons">
 			{% if calendars|length %}

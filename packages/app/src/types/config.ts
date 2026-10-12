@@ -29,6 +29,7 @@ export type CalendarConfig = {
   enabledCalendarViews?: CalendarTab[];
   eventActionIcons?: Partial<Record<EventActionIcon, string>>;
   calendars: Record<number, string>;
+  calendarHandles?: Record<number, string>;
   calendarColors?: Record<number, string | null>;
   quickCreateFields?: Record<number, { location?: string; description?: string }>;
   quickCreateRequiredFields?: Record<number, { location?: boolean; description?: boolean }>;

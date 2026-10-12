@@ -4,13 +4,14 @@ import type { CalendarCreateDraft } from "@cal/pages/calendar/calendar.create-se
 import { PopoverCreateWithAi } from "@cal/pages/calendar/popovers/create-with-ai/create-with-ai";
 import type { AiCurrentEvent } from "@cal/pages/calendar/popovers/create-with-ai/use-generate-event-ai";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { consumeAiQueryFlag } from "@cal/utils/open-event-create-with-ai";
 import translate from "@cal/utils/translations";
 import { appSelectors } from "@event-builder/store/app.slice";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
 import type { BuilderContext } from "@event-builder/types";
 import { format } from "date-fns";
-import { type FC, useRef } from "react";
+import { type FC, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -64,24 +65,6 @@ const readCraftFieldValue = (handle: string | null | undefined): string => {
 const toFloatingDateTime = (timestamp: number): string =>
   format(utcTimestampToLocalDisplayDate(timestamp), "yyyy-MM-dd'T'HH:mm:ss");
 
-const rruleBody = (rrule?: string): string => {
-  if (!rrule) {
-    return "";
-  }
-
-  for (const line of rrule.split(/\r\n|\n|\r/)) {
-    const trimmed = line.trim();
-    if (trimmed.toUpperCase().startsWith("RRULE:")) {
-      return trimmed.replace(/^RRULE:/i, "");
-    }
-    if (trimmed.toUpperCase().startsWith("FREQ=")) {
-      return trimmed;
-    }
-  }
-
-  return rrule;
-};
-
 const openSolspaceAiSettings = () => {
   window.location.href = Craft.getCpUrl("calendar/settings/solspaceai");
 };
@@ -91,15 +74,12 @@ const shouldApplyField = (changedFields: string[] | undefined, field: string): b
 
 export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const autoOpenedRef = useRef(false);
   const dispatch = useDispatch<AppDispatch>();
   const isSolspaceAiConnected = useSelector(appSelectors.isSolspaceAiConnected);
   const eventState = useSelector(eventSelectors.state);
   const { showPopover, hidePopover } = usePopover();
   const mount = document.querySelector<HTMLElement>("[data-event-ai-create-root]");
-
-  if (!mount) {
-    return null;
-  }
 
   const buildCurrentEvent = (): AiCurrentEvent => ({
     title: readCraftInputValue("#title, input[name='title']") || "Untitled",
@@ -109,7 +89,8 @@ export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
     end: toFloatingDateTime(eventState.end),
     allDay: eventState.allDay,
     repeatType: eventState.repeatType,
-    rrule: rruleBody(eventState.rrule),
+    // Full ICS (DTSTART/RRULE/RDATE/EXDATE) so updates keep Additional / Excluded Dates.
+    rrule: eventState.rrule || "",
     calendarId: context?.calendarId,
   });
 
@@ -126,29 +107,47 @@ export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
       setCraftFieldValue(context?.locationFieldHandle, draft.location);
     }
 
-    const scheduleFields = ["start", "end", "allDay", "repeatType", "rrule"];
+    const scheduleFields = [
+      "start",
+      "end",
+      "allDay",
+      "repeatType",
+      "rrule",
+      "additionalDates",
+      "excludedDates",
+    ];
     const scheduleChanged =
       !changed?.length || scheduleFields.some((field) => changed.includes(field));
 
     if (scheduleChanged) {
-      dispatch(
-        eventActions.applyGeneratedSchedule({
-          start: draft.start,
-          end: draft.end,
-          allDay: draft.allDay,
-          repeatType: draft.repeatType || "NEVER",
-          repeatEndType: draft.repeatEndType || undefined,
-          until: draft.until ?? undefined,
-          rrule: draft.rrule || undefined,
-          timezone: eventState.timezone,
-        }),
-      );
+      // Prefer setRRule when only extra/excluded dates changed so we don't rebuild the series.
+      const onlyFixedDates =
+        !!changed?.length &&
+        changed.every((field) => ["additionalDates", "excludedDates", "rrule"].includes(field));
+
+      if (onlyFixedDates && draft.rrule) {
+        dispatch(eventActions.setRRule(draft.rrule));
+      } else {
+        dispatch(
+          eventActions.applyGeneratedSchedule({
+            start: draft.start,
+            end: draft.end,
+            allDay: draft.allDay,
+            repeatType: draft.repeatType || "NEVER",
+            repeatEndType: draft.repeatEndType || undefined,
+            until: draft.until ?? undefined,
+            rrule: draft.rrule || undefined,
+            timezone: eventState.timezone,
+          }),
+        );
+      }
     }
 
     hidePopover();
   };
 
-  const handleClick = () => {
+  // Event editor is always "Update with AI" — Create with AI lives on Overview only.
+  const openAiPopover = () => {
     if (!isSolspaceAiConnected) {
       openSolspaceAiSettings();
       return;
@@ -162,6 +161,7 @@ export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
     showPopover(
       <PopoverCreateWithAi
         mode="edit"
+        calendarSelected
         currentEvent={buildCurrentEvent()}
         onCancel={hidePopover}
         onApplyDraft={applyDraft}
@@ -174,13 +174,34 @@ export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
     );
   };
 
+  const openAiPopoverRef = useRef(openAiPopover);
+  openAiPopoverRef.current = openAiPopover;
+
+  useEffect(() => {
+    if (autoOpenedRef.current || !mount || !isSolspaceAiConnected) {
+      return;
+    }
+
+    if (!consumeAiQueryFlag()) {
+      return;
+    }
+
+    autoOpenedRef.current = true;
+    const timer = window.setTimeout(() => openAiPopoverRef.current(), 100);
+    return () => window.clearTimeout(timer);
+  }, [isSolspaceAiConnected, mount]);
+
+  if (!mount) {
+    return null;
+  }
+
   return createPortal(
     <AiButton
       ref={buttonRef}
       icon="edit"
       connected={isSolspaceAiConnected}
       label={translate("Update with AI")}
-      onClick={handleClick}
+      onClick={openAiPopover}
     />,
     mount,
   );

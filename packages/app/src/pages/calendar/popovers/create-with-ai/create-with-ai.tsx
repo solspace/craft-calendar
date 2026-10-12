@@ -21,6 +21,8 @@ type Props = {
   mode?: "create" | "edit";
   /** When editing, the current form values so AI only changes what the user asks for. */
   currentEvent?: AiCurrentEvent | null;
+  /** When true (e.g. + New Event already chose a calendar), omit calendar from the example prompt. */
+  calendarSelected?: boolean;
 };
 
 export const PopoverCreateWithAi: FC<Props> = ({
@@ -28,23 +30,34 @@ export const PopoverCreateWithAi: FC<Props> = ({
   onCancel,
   mode = "create",
   currentEvent = null,
+  calendarSelected = false,
 }) => {
   const [prompt, setPrompt] = useState("");
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const { generateEvent, isGenerating, error } = useGenerateEventAi();
   const isEdit = mode === "edit";
+  // Blank drafts on + New Event still use Update with AI, but need "describe the event" copy.
+  const isBlankEvent =
+    isEdit &&
+    (!currentEvent?.title?.trim() || currentEvent.title.trim().toLowerCase() === "untitled");
   const title = isEdit ? translate("Update with AI") : translate("Create with AI");
-  const hint = isEdit
-    ? translate(
-        "Say what to change (for example, move to next Tuesday or make it weekly). Everything else stays as it is.",
-      )
-    : translate(
-        "Describe your event in plain language. AI will suggest dates, title, and details.",
-      );
+  const hint =
+    isEdit && !isBlankEvent
+      ? translate(
+          "Say what to change (for example, move to next Tuesday or make it weekly). Everything else stays as it is.",
+        )
+      : translate(
+          "Describe your event in plain language. AI will suggest dates, title, and details.",
+        );
   const submitLabel = isEdit ? translate("Apply Changes") : translate("Generate Event");
-  const placeholder = isEdit
-    ? translate("e.g. Move to next Tuesday at 3pm")
-    : translate("e.g. Team standup every Monday at 9am for 30 minutes");
+  const placeholder =
+    isEdit && !isBlankEvent
+      ? translate("e.g. Move to next Tuesday at 3pm")
+      : calendarSelected || isBlankEvent
+        ? translate("e.g. Team standup every Monday at 9am for 30 minutes")
+        : translate(
+            'e.g. On the Staff Meetings calendar, Team Standup every Monday and Thursday starting Sept 14 for 20 times. Location "Conference Room A", description "Weekly sync."',
+          );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

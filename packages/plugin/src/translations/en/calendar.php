@@ -911,6 +911,7 @@ return [
     'Say what to change (for example, move to next Tuesday or make it weekly). Everything else stays as it is.' => 'Say what to change (for example, move to next Tuesday or make it weekly). Everything else stays as it is.',
     'e.g. Move to next Tuesday at 3pm' => 'e.g. Move to next Tuesday at 3pm',
     'e.g. Team standup every Monday at 9am for 30 minutes' => 'e.g. Team standup every Monday at 9am for 30 minutes',
+    'e.g. On the Staff Meetings calendar, Team Standup every Monday and Thursday starting Sept 14 for 20 times. Location "Conference Room A", description "Weekly sync."' => 'e.g. On the Staff Meetings calendar, Team Standup every Monday and Thursday starting Sept 14 for 20 times. Location "Conference Room A", description "Weekly sync."',
     'Generating…' => 'Generating…',
     'Generate Event' => 'Generate Event',
     'Generate Calendar' => 'Generate Calendar',

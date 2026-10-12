@@ -80,4 +80,25 @@ class EventGenerationServiceTest extends TestCase
         [$never] = $method->invoke($service, 'FREQ=WEEKLY;BYDAY=MO');
         self::assertSame(Event::REPEAT_END_NEVER, $never);
     }
+
+    public function testAttachFixedDatesMergesAdditionalAndExcludedDates(): void
+    {
+        $service = new EventGenerationService();
+        $method = new \ReflectionMethod($service, 'attachFixedDatesToRrule');
+        $method->setAccessible(true);
+
+        $start = DateHelper::parseFloatingCarbon('2026-10-13T09:00:00');
+        $result = $method->invoke(
+            $service,
+            "DTSTART:20261013T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO",
+            $start,
+            false,
+            ['2026-10-24', '2026-10-20'],
+            ['2026-10-27']
+        );
+
+        self::assertStringContainsString('RRULE:FREQ=WEEKLY;BYDAY=MO', $result);
+        self::assertStringContainsString('RDATE:20261020T090000,20261024T090000', $result);
+        self::assertStringContainsString('EXDATE:20261027T090000', $result);
+    }
 }

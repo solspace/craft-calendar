@@ -78,11 +78,13 @@ class OverviewController extends BaseController
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
         $calendarColors = [];
+        $calendarHandles = [];
         $quickCreateFields = [];
         $quickCreateRequiredFields = [];
         foreach ($this->getCalendarService()->getAllAllowedCalendars() as $calendar) {
             if (isset($calendarOptions[$calendar->id])) {
                 $calendarColors[$calendar->id] = $calendar->color;
+                $calendarHandles[$calendar->id] = $calendar->handle;
                 $quickCreateFields[$calendar->id] = $calendar->getQuickCreateFieldHandles();
                 $quickCreateRequiredFields[$calendar->id] = $calendar->getQuickCreateRequiredFields();
             }
@@ -92,6 +94,7 @@ class OverviewController extends BaseController
         $configuration = [
             'calendars' => $calendarOptions,
             'calendarColors' => $calendarColors,
+            'calendarHandles' => $calendarHandles,
             'quickCreateFields' => $quickCreateFields,
             'quickCreateRequiredFields' => $quickCreateRequiredFields,
             'eventActionIcons' => array_combine(
