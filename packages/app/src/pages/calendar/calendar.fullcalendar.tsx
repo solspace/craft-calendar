@@ -326,6 +326,11 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   }, [clearDraft, hidePopover]);
 
   const applyAiDraft = useCallback((nextDraft: CalendarCreateDraft) => {
+    const calendarApi = calendar.current?.getApi();
+    if (calendarApi && Number.isFinite(nextDraft.start)) {
+      calendarApi.gotoDate(new Date(nextDraft.start * 1000));
+    }
+
     setDraft(nextDraft);
     const anchor =
       calendarWrapper.current?.querySelector<HTMLElement>(".fc-toolbar-title") ??

@@ -22,6 +22,28 @@ describe("buildCreateEventPayload", () => {
       allDay: false,
       calendarId: 12,
       siteId: 4,
+      repeatType: "NEVER",
+    });
+  });
+
+  it("includes repeat rules from AI drafts", () => {
+    expect(
+      buildCreateEventPayload(
+        {
+          id: "draft-create-event",
+          title: "Standup",
+          start: 1_783_425_600,
+          end: 1_783_427_400,
+          allDay: false,
+          repeatType: "WEEKLY",
+          rrule: "DTSTART:20261013T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO",
+        },
+        12,
+        4,
+      ),
+    ).toMatchObject({
+      repeatType: "WEEKLY",
+      rrule: "DTSTART:20261013T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO",
     });
   });
 

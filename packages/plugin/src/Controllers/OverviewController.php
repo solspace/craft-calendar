@@ -99,6 +99,7 @@ class OverviewController extends BaseController
                 array_map(static fn (string $icon) => Cp::iconSvg($icon), $actionIcons),
             ),
             'formats' => DateFormatHelper::toConfig(),
+            'timezone' => \Craft::$app->getTimeZone() ?: 'UTC',
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),
             'defaultCalendarView' => $this->getSettingsService()->getSettingsModel()->getDefaultCalendarView(),

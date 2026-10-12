@@ -184,7 +184,6 @@ class ApiController extends BaseController
 
         $siteId = $this->resolveEventSiteId($request->post('siteId'));
         $calendar = $this->resolveEventCalendar($request->post('calendarId'), $siteId);
-        $refDate = new Carbon('now');
 
         $this->getEventsService()->requireEventCreatePermissions($calendar);
 
@@ -196,13 +195,31 @@ class ApiController extends BaseController
 
         $event->startDate = Carbon::createFromTimestampUTC((int) $start);
         $event->endDate = Carbon::createFromTimestampUTC((int) $end);
-        $event->timezone = $refDate?->timezone?->getName() ?? DateHelper::UTC;
+        $event->timezone = \Craft::$app->getTimeZone() ?: DateHelper::UTC;
         $event->title = $request->post('title');
         $event->allDay = (bool) $request->post('allDay');
 
         if ($event->allDay) {
             $event->endDate = DateHelper::allDayEndFromExclusive($event->startDate, $event->endDate);
         }
+
+        $repeatType = strtoupper(trim((string) $request->post('repeatType', Event::REPEAT_NEVER)));
+        $allowedRepeatTypes = [
+            Event::REPEAT_NEVER,
+            Event::REPEAT_DAILY,
+            Event::REPEAT_WEEKLY,
+            Event::REPEAT_MONTHLY,
+            Event::REPEAT_YEARLY,
+            Event::REPEAT_CUSTOM,
+        ];
+        if (!\in_array($repeatType, $allowedRepeatTypes, true)) {
+            $repeatType = Event::REPEAT_NEVER;
+        }
+
+        $rrule = trim((string) $request->post('rrule', ''));
+        $event->repeatType = $repeatType;
+        $event->repeatEndType = Event::REPEAT_END_NEVER;
+        $event->rrule = Event::REPEAT_NEVER === $repeatType ? null : ($rrule ?: null);
 
         $details = $request->post('details');
         $validDetails = true;

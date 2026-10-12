@@ -12,6 +12,7 @@ import {
   setCreateDraftTitle,
 } from "@cal/pages/calendar/calendar.create-session";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { getRRuleText } from "@cal/utils/rrule";
 import translate from "@cal/utils/translations";
 import clsx from "clsx";
 import type { FC } from "react";
@@ -68,13 +69,43 @@ export const PopoverCreateEvent: FC<Props> = ({
       })),
     [calendars, calendarColors],
   );
-  const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
-  const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>({});
+  const initialCalendarId =
+    draft.calendarId && calendarOptions.some((option) => option.value === draft.calendarId)
+      ? draft.calendarId
+      : (calendarOptions[0]?.value ?? 0);
+  const [calendarId, setCalendarId] = useState(initialCalendarId);
+  const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>(() => {
+    if (!draft.calendarId) {
+      return {};
+    }
+
+    const mapped = quickCreateFields?.[draft.calendarId];
+    if (!mapped) {
+      return {};
+    }
+
+    const seeded: Record<string, string> = {};
+    if (mapped.location && draft.location) {
+      seeded[mapped.location] = draft.location;
+    }
+    if (mapped.description && draft.description) {
+      seeded[mapped.description] = draft.description;
+    }
+
+    return Object.keys(seeded).length ? { [draft.calendarId]: seeded } : {};
+  });
   const mappedFields = quickCreateFields?.[calendarId];
   const locationHandle = mappedFields?.location;
   const descriptionHandle = mappedFields?.description;
   const requiredFields = quickCreateRequiredFields?.[calendarId];
   const values = fieldValues[calendarId] ?? {};
+  const repeatsText = useMemo(() => {
+    if (!draft.rrule || draft.repeatType === "NEVER") {
+      return null;
+    }
+
+    return getRRuleText(draft.rrule);
+  }, [draft.repeatType, draft.rrule]);
   const details =
     locationHandle || descriptionHandle
       ? {
@@ -199,6 +230,12 @@ export const PopoverCreateEvent: FC<Props> = ({
             }
           }}
         />
+
+        {repeatsText && (
+          <p>
+            <b>{translate("Repeats")}:</b> {repeatsText}
+          </p>
+        )}
 
         <LiveOverlapWarning
           formats={formats}

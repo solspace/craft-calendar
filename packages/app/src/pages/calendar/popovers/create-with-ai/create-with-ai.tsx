@@ -39,13 +39,25 @@ export const PopoverCreateWithAi: FC<Props> = ({ onApplyDraft, onCancel }) => {
     }
 
     const { event } = result;
+    const start = Number(event.startTimestamp);
+    const end = Number(event.endTimestamp);
+
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+      return;
+    }
 
     onApplyDraft({
       id: DEFAULT_CREATE_DRAFT_ID,
       title: event.title,
-      allDay: event.allDay,
-      start: event.startTimestamp,
-      end: event.endTimestamp,
+      allDay: Boolean(event.allDay),
+      start,
+      end,
+      preserveDuration: true,
+      calendarId: event.calendarId,
+      description: event.description,
+      location: event.location,
+      repeatType: event.repeatType || "NEVER",
+      rrule: event.rrule || "",
     });
   };
 

@@ -33,6 +33,7 @@ export type CalendarConfig = {
   quickCreateFields?: Record<number, { location?: string; description?: string }>;
   quickCreateRequiredFields?: Record<number, { location?: boolean; description?: boolean }>;
   formats: DateFormats;
+  timezone: string;
   language: string;
   overlapThreshold: number;
   showOverlapWarnings?: boolean;

@@ -13,6 +13,11 @@ export type CalendarCreateDraft = {
   start: number;
   end: number;
   preserveDuration?: boolean;
+  calendarId?: number;
+  description?: string;
+  location?: string;
+  repeatType?: string;
+  rrule?: string;
 };
 
 export type CalendarCreateDraftSettings = {

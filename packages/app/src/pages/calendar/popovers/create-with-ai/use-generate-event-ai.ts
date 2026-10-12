@@ -20,6 +20,14 @@ type GenerateEventResult =
   | { success: true; event: AiGeneratedEvent }
   | { success: false; error: string };
 
+const getBrowserTimezone = (): string | undefined => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export const useGenerateEventAi = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +48,12 @@ export const useGenerateEventAi = () => {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: trimmed }),
+        body: JSON.stringify({
+          prompt: trimmed,
+          // Same source Diagnostics uses for "User Browser Timezone".
+          // Relative phrases like "tomorrow at 9am" follow the user's clock.
+          timezone: getBrowserTimezone(),
+        }),
       });
 
       const raw = await response.text();

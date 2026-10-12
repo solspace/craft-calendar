@@ -18,5 +18,11 @@ export const buildCreateEventPayload = (
   allDay: event.allDay,
   calendarId,
   siteId,
+  ...(event.repeatType && event.repeatType !== "NEVER"
+    ? {
+        repeatType: event.repeatType,
+        rrule: event.rrule || "",
+      }
+    : { repeatType: "NEVER" }),
   ...(details && { details }),
 });
