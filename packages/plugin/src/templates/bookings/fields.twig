@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% import '_includes/forms' as forms %}
 {% extends 'calendar/layouts/_bookings' %}
 {% set title = 'Fields'|t('app') %}
@@ -7,7 +8,7 @@
 {% block actionButton %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
 {% block content %}
 {{ csrfInput() }}{{ actionInput('calendar/bookings/save-fields') }}
-<p>{{ 'All scheduling calendars share this booking field layout. Customer name, email, times, status, and notes are included automatically.'|t('calendar') }}</p>
+<p>{{ 'All {label} share this booking field layout. Customer name, email, times, status, and notes are included automatically.'|t('calendar', {label: resourceLabels.plural}) }}</p>
 {% include '_includes/fieldlayoutdesigner' with {fieldLayout, customizableUi: true} only %}
 <hr>
 {% set publicFieldOptions = [] %}{% for uid, element in availablePublicFields %}{% set publicFieldOptions = publicFieldOptions|merge([{value: uid, label: element.field.name}]) %}{% endfor %}

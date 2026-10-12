@@ -66,6 +66,11 @@ class CalendarVariable
         return $this->settings()->getSettingsModel()->getBookingLabel();
     }
 
+    public function getBookingResourceLabels(): array
+    {
+        return $this->settings()->getSettingsModel()->getBookingResourceLabels();
+    }
+
     public function getBookingRequestCount(): int
     {
         if (!\Craft::$app->getRequest()->getIsCpRequest()) {

@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Scheduling\Schedule;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
@@ -87,7 +88,7 @@ class SchedulingTemplateTest extends TestCase
             }
         };
 
-        $twig->addGlobal('craft', ['calendar' => ['bookingLabel' => 'Bookings']]);
+        $twig->addGlobal('craft', ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()]]);
         foreach (['combined', 'calendars'] as $scheduleLayout) {
             foreach (['day', 'week'] as $scheduleView) {
                 foreach ([[7], [7, 8]] as $calendarIds) {
@@ -112,7 +113,7 @@ class SchedulingTemplateTest extends TestCase
                         'previous' => '2026-10-05',
                         'next' => '2026-10-19',
                         'currentUser' => ['admin' => false, 'id' => 7],
-                        'craft' => ['calendar' => ['bookingLabel' => 'Bookings'], 'app' => ['language' => 'en-US']],
+                        'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
                     ]);
 
                     self::assertStringContainsString('delta-active', $output);
@@ -171,7 +172,7 @@ class SchedulingTemplateTest extends TestCase
         $output = $twig->render('day', [
             'bookingTimeFormat' => 'icu:HH:mm',
             'day' => ['date' => new \DateTimeImmutable('2026-10-12'), 'combined' => Schedule::combined($columns)],
-            'calendarIds' => range(1, 40), 'displayTimezone' => 'UTC', 'unavailableRequestIds' => [1 => true, 3 => true], 'statusOptions' => ['confirmed' => 'Confirmed', 'requested' => 'Requested'], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings'], 'app' => ['language' => 'en-US']],
+            'calendarIds' => range(1, 40), 'displayTimezone' => 'UTC', 'unavailableRequestIds' => [1 => true, 3 => true], 'statusOptions' => ['confirmed' => 'Confirmed', 'requested' => 'Requested'], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
         ]);
         $dom = new \DOMDocument();
         @$dom->loadHTML($output);
@@ -196,7 +197,7 @@ class SchedulingTemplateTest extends TestCase
         $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path) => $path));
         foreach ([[false, true], [true, false], [true, true]] as [$admin, $allowAdminChanges]) {
-            $output = $twig->render('nav', ['bookingView' => 'fields', 'currentUser' => ['admin' => $admin], 'craft' => ['calendar' => ['bookingLabel' => 'Appointments'], 'app' => ['config' => ['general' => ['allowAdminChanges' => $allowAdminChanges]]]]]);
+            $output = $twig->render('nav', ['bookingView' => 'fields', 'currentUser' => ['admin' => $admin], 'craft' => ['calendar' => ['bookingLabel' => 'Appointments', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['config' => ['general' => ['allowAdminChanges' => $allowAdminChanges]]]]]);
             self::assertStringContainsString('<nav', $output);
             self::assertStringContainsString('calendar/bookings/schedule', $output);
             self::assertSame($admin && $allowAdminChanges, str_contains($output, 'class="sel" aria-current="page">Fields'));

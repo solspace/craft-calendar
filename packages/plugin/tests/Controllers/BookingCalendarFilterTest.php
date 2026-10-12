@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Controllers\BookingsController;
 use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Services\BookingsService;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Twig\Environment;
@@ -168,7 +169,7 @@ class BookingCalendarFilterTest extends TestCase
             $output = $twig->render('list', [
                 'bookings' => $bookings, 'calendars' => [7 => ['name' => 'Room', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg']]],
                 'unavailableRequestIds' => [1 => true], 'statusOptions' => ['requested' => 'Requested', 'confirmed' => 'Confirmed'],
-                'trashed' => $trashed, 'sort' => 'date-desc', 'calendarSelection' => '7', 'bookingStatus' => '', 'search' => '', 'bookingListView' => $trashed ? 'trash' : 'active', 'bookingTimeFormat' => 'short', 'page' => 1, 'total' => 3, 'craft' => ['calendar' => ['bookingLabel' => 'Bookings']],
+                'trashed' => $trashed, 'sort' => 'date-desc', 'calendarSelection' => '7', 'bookingStatus' => '', 'search' => '', 'bookingListView' => $trashed ? 'trash' : 'active', 'bookingTimeFormat' => 'short', 'page' => 1, 'total' => 3, 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()]],
             ]);
             $dom = new \DOMDocument();
             @$dom->loadHTML($output);
@@ -223,7 +224,7 @@ class BookingCalendarFilterTest extends TestCase
                     'bookings' => [], 'total' => 151, 'page' => 2, 'trashed' => 'trash' === $view, 'bookingListView' => $view,
                     'statusOptions' => ['requested' => 'Requested'], 'bookingStatus' => '', 'search' => '',
                     'sort' => 'date-desc', 'sortOptions' => ['date-desc' => 'Newest first'],
-                    'craft' => ['calendar' => ['bookingLabel' => 'Bookings']], 'currentUser' => ['admin' => false],
+                    'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()]], 'currentUser' => ['admin' => false],
                 ]);
                 $dom = new \DOMDocument();
                 @$dom->loadHTML($output);

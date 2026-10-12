@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 const bookingCalendarPicker = document.querySelector('#{{ calendarPickerPrefix }}-calendar-picker');
 const bookingCalendarMenu = document.querySelector('#{{ calendarPickerPrefix }}-calendar-menu');
 const bookingCalendarChoices = [...bookingCalendarMenu.querySelectorAll('[data-calendar-choice]')];
@@ -12,8 +13,8 @@ function syncBookingCalendarPicker(selection) {
     bookingCalendarAll.indeterminate = selected.length > 0 && !bookingCalendarAll.checked;
     bookingCalendarInput.value = bookingCalendarAll.checked ? 'all' : selected.map(input => input.dataset.calendarChoice).join(',');
     bookingCalendarPicker.querySelector('[data-calendar-label]').textContent = bookingCalendarAll.checked
-        ? Craft.t('calendar', 'All Calendars')
-        : (selected.length === 1 ? selected[0].dataset.calendarName : Craft.t('calendar', '{count} Calendars', {count: selected.length}));
+        ? {{ resourceLabels.all|json_encode|raw }}
+        : (selected.length === 1 ? selected[0].dataset.calendarName : Craft.t('calendar', {{ resourceLabels.count|json_encode|raw }}, {count: selected.length, label: {{ resourceLabels.plural|json_encode|raw }}}));
 }
 syncBookingCalendarPicker(bookingCalendarInput.value);
 bookingCalendarMenu.addEventListener('change', event => {

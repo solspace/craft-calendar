@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added singular and plural booking resource labels under Settings → Bookings, replacing Calendar/Calendars in booking filters, table headings, editor/review forms, and Schedule layout choices.
 - Added a Requests moderation queue as the first Bookings submenu item, with a pending count, automatic filters, availability warnings, native review slideouts, alternate times, and Undo/Redo. Requests can also be the default Bookings subpage.
 - Added a checked-by-default Include booked time slots option to the control-panel booking editor, showing occupied slots as disabled and allowing staff to hide them.
 - Added booking configuration, status counts, per-calendar availability checks, and notification/CAPTCHA details to Diagnostics and its support report.

@@ -3,6 +3,7 @@
 namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 
 use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
@@ -73,6 +74,28 @@ class RequestQueueTemplateTest extends TestCase
         }
     }
 
+    public function testCustomResourceNamesAppearInFiltersAndReviewAndStayEscaped(): void
+    {
+        $twig = $this->environment();
+        $variables = $this->variables();
+        $settings = new SettingsModel(['bookingResourceLabelSingular' => 'Dining Hall', 'bookingResourceLabelPlural' => 'Dining Halls']);
+        $variables['craft']['calendar']['bookingResourceLabels'] = $settings->getBookingResourceLabels();
+        $queue = $twig->render('calendar/bookings/requests', $variables);
+        self::assertStringContainsString('aria-label="Dining Halls"', $queue);
+        self::assertStringContainsString('>All Dining Halls</span>', $queue);
+        self::assertStringContainsString('>Dining Hall</button>', $queue);
+        $review = $twig->render('calendar/bookings/_request-review', $variables + ['booking' => $variables['bookings'][0], 'unavailable' => false, 'containerId' => 'cp-screen-demo']);
+        self::assertStringContainsString('<dt>Dining Hall</dt>', $review);
+        self::assertStringNotContainsString('aria-label="Calendar"', $review);
+        $settings->bookingResourceLabelSingular = '<script>alert(1)</script>';
+        $settings->bookingResourceLabelPlural = '<b>Staff</b>';
+        $variables['craft']['calendar']['bookingResourceLabels'] = $settings->getBookingResourceLabels();
+        $queue = $twig->render('calendar/bookings/requests', $variables);
+        self::assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;</button>', $queue);
+        self::assertStringContainsString('All &lt;b&gt;Staff&lt;/b&gt;</span>', $queue);
+        self::assertStringNotContainsString('<b>Staff</b>', $queue);
+    }
+
     public function testEmptyQueueHasNoModerationControlsAndHidesZeroCount(): void
     {
         $variables = $this->variables();
@@ -119,6 +142,6 @@ class RequestQueueTemplateTest extends TestCase
             $bookings[] = (object) ['id' => $id, 'calendarId' => 7, 'customerName' => '<script>Customer</script>', 'customerEmail' => 'customer@example.test', 'startDate' => new \DateTimeImmutable('2026-10-12T14:00:00Z'), 'endDate' => new \DateTimeImmutable('2026-10-12T14:30:00Z'), 'dateCreated' => new \DateTimeImmutable('2026-10-11T01:00:00Z'), 'notes' => '', 'fieldLayout' => null, 'cpEditUrl' => 'calendar/bookings/'.$id];
         }
 
-        return ['bookings' => $bookings, 'calendars' => [7 => ['id' => 7, 'name' => 'Studio', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg']]], 'calendarIds' => [7], 'calendarSelection' => 'all', 'availability' => 'all', 'search' => '', 'sort' => 'submitted-asc', 'page' => 1, 'total' => 2, 'bookingRequestCount' => 2, 'unavailableRequestIds' => [2 => true], 'bookingTimeFormat' => 'short', 'currentUser' => ['admin' => false], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings'], 'app' => ['config' => ['general' => ['allowAdminChanges' => false]]]]];
+        return ['bookings' => $bookings, 'calendars' => [7 => ['id' => 7, 'name' => 'Studio', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg']]], 'calendarIds' => [7], 'calendarSelection' => 'all', 'availability' => 'all', 'search' => '', 'sort' => 'submitted-asc', 'page' => 1, 'total' => 2, 'bookingRequestCount' => 2, 'unavailableRequestIds' => [2 => true], 'bookingTimeFormat' => 'short', 'currentUser' => ['admin' => false], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['config' => ['general' => ['allowAdminChanges' => false]]]]];
     }
 }

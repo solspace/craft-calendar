@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% extends 'calendar/layouts/_bookings' %}
 {% import '_includes/forms' as forms %}
 {% set title = 'Notifications'|t('calendar') %}
@@ -84,8 +85,8 @@
                         <code>{{ '{{ ' ~ variable ~ ' }}' }}</code>
                     {% endfor %}
                     {% if audience == 'admin' %}<code>{{ '{{ cpEditUrl }}' }}</code>{% endif %}
-                    <p class="light">{{ 'statusHandle is requested, confirmed, declined, or cancelled. Times use the calendar’s booking timezone.'|t('calendar') }}</p>
-                    <p class="light">{{ 'These templates apply to all scheduling calendars. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.'|t('calendar') }}</p>
+                    <p class="light">{{ 'statusHandle is requested, confirmed, declined, or cancelled. Times use the booking timezone.'|t('calendar') }}</p>
+                    <p class="light">{{ 'These templates apply to all {label}. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.'|t('calendar', {label: resourceLabels.plural}) }}</p>
                 </aside>
             </div>
         </div>

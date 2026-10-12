@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% extends 'calendar/layouts/_bookings' %}
 {% import '_includes/forms' as forms %}
 {% set title = (booking.id ? 'Edit Booking' : 'New Booking')|t('calendar') %}
@@ -25,7 +26,7 @@
 <div class="booking-picker-controls">
 <div class="booking-calendar-control">
 {% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
-{{ forms.selectField({label: 'Calendar'|t('calendar'), name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
+{{ forms.selectField({label: resourceLabels.singular, name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
 <p class="light" id="booking-timezone" title="{{ timezone }}">{{ 'Times shown in {timezone}.'|t('calendar', {timezone: timezone|calendarTimezoneName}) }}</p>
 </div>
 <div class="booking-date-control">

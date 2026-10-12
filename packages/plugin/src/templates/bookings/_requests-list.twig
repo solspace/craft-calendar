@@ -1,8 +1,9 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 <div class="request-pane"><div class="request-table-scroll"><table class="data fullwidth big request-table">
 <thead><tr>
-{% for field, label in {customer: 'Customer', calendar: 'Calendar', date: 'Requested Time', submitted: 'Submitted'} %}
+{% for field, label in {customer: 'Customer', calendar: resourceLabels.singular, date: 'Requested Time', submitted: 'Submitted'} %}
 {% set active = sort starts with field ~ '-' %}{% set ascending = sort == field ~ '-asc' %}
-<th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}"><button type="button" data-request-sort="{{ field ~ (active and ascending ? '-desc' : '-asc') }}">{{ label|t('calendar') }}</button></th>
+<th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}"><button type="button" data-request-sort="{{ field ~ (active and ascending ? '-desc' : '-asc') }}">{{ field == 'calendar' ? label : label|t('calendar') }}</button></th>
 {% endfor %}
 <th scope="col">{{ 'Availability'|t('calendar') }}</th><th scope="col">{{ 'Actions'|t('app') }}</th>
 </tr></thead><tbody>

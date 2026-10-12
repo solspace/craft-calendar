@@ -19,6 +19,8 @@ New calendars receive a copy of these values and use Craft’s system timezone i
 
 Set **Bookings Label** under **Settings → Bookings** to rename the booking list, navigation links, breadcrumbs, and Default Page option. For example, use “Appointments” or “Reservations”. Leave it blank to use the translated “Bookings” label.
 
+**Settings → Bookings → Resource Label (Singular)** and **Resource Label (Plural)** customize how scheduling calendars are named in the booking control panel. For example, use “Dining Hall” / “Dining Halls”, “Massage Therapist” / “Massage Therapists”, or “Staff” in both fields. Leave each blank to keep its translated Calendar/Calendars default. The labels apply to Requests, Bookings, Schedule, booking and review forms, and booking configuration text. The main Calendars section, existing resource names, routes, and template/API identifiers retain their original names. The values are plain text and can also be set through `bookingResourceLabelSingular` and `bookingResourceLabelPlural` in `config/calendar.php`.
+
 Select **Bookings** under **Settings → General Settings → Default Page** to open the booking list when clicking Calendar in the control-panel navigation. Users without a manageable scheduling calendar fall back to Events.
 
 **Settings → Bookings → Default Bookings Subpage** chooses whether the Bookings navigation item opens Requests, the list, or Schedule. It defaults to Bookings and also applies when Calendar’s **Default Page** is Bookings. The booking breadcrumb returns to that preferred page; the sidebar’s Requests, Bookings, and Schedule links always open their respective views directly.

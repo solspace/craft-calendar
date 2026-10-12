@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% set combined = day.combined %}
 <div class="booking-day-body booking-day-combined" data-date="{{ day.date|date('Y-m-d', displayTimezone) }}" data-date-label="{{ day.date|date('short', displayTimezone) }}" data-combined="true">
     {% for hour in 0..23 %}<div class="booking-hour"></div>{% endfor %}
@@ -8,7 +9,7 @@
         {% if group.options|length == 1 %}
             <a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId: option.calendar.id, start: option.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ option.length / 60 * 48 }}px;height:{{ group.height / 60 * 48 }}px;left:0;width:100%" aria-label="{{ option.calendar.name }} · {{ slotLabel }}" title="{{ option.calendar.name }} · {{ slotLabel }}"><span>{{ slotLabel }}</span></a>
         {% else %}
-            <button type="button" class="booking-slot-target" data-booking-options="{{ templateId }}" data-booking-options-title="{{ 'Choose a Calendar'|t('calendar') }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ option.length / 60 * 48 }}px;height:{{ group.height / 60 * 48 }}px;left:0;width:100%" aria-label="{{ slotLabel }}" title="{{ slotLabel }}"><span>{{ slotLabel }}</span></button>
+            <button type="button" class="booking-slot-target" data-booking-options="{{ templateId }}" data-booking-options-title="{{ resourceLabels.choose }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ option.length / 60 * 48 }}px;height:{{ group.height / 60 * 48 }}px;left:0;width:100%" aria-label="{{ slotLabel }}" title="{{ slotLabel }}"><span>{{ slotLabel }}</span></button>
             <template id="{{ templateId }}">
                 {% for option in group.options %}
                     <a class="booking-choice" href="{{ cpUrl('calendar/bookings/new', {calendarId: option.calendar.id, start: option.start}) }}">

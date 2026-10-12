@@ -18,6 +18,25 @@ class SettingsModelTest extends TestCase
         self::assertFalse((new SettingsModel(['showCancelledEvents' => false]))->showCancelledEvents);
     }
 
+    public function testResourceNamesRoundTripRemainLiteralAndFallBackWhenBlank(): void
+    {
+        $settings = new SettingsModel(['bookingResourceLabelSingular' => '  Dining Hall  ', 'bookingResourceLabelPlural' => 'Dining Halls']);
+        self::assertTrue($settings->validate(['bookingResourceLabelSingular', 'bookingResourceLabelPlural']));
+        $loaded = new SettingsModel($settings->toArray());
+        self::assertSame('Dining Hall', $loaded->getBookingResourceLabels()['singular']);
+        self::assertSame('All Dining Halls', $loaded->getBookingResourceLabels()['all']);
+        self::assertSame('By Dining Hall', $loaded->getBookingResourceLabels()['by']);
+        self::assertSame('Choose Dining Hall', $loaded->getBookingResourceLabels()['choose']);
+        $loaded->bookingResourceLabelSingular = '{{ customer }}';
+        self::assertSame('{{ customer }}', $loaded->getBookingResourceLabels()['singular']);
+        self::assertSame('Choose {{ customer }}', $loaded->getBookingResourceLabels()['choose']);
+        $loaded->bookingResourceLabelSingular = ' ';
+        $loaded->bookingResourceLabelPlural = null;
+        self::assertSame((new SettingsModel())->getBookingResourceLabels(), $loaded->getBookingResourceLabels());
+        $loaded->bookingResourceLabelPlural = str_repeat('x', 101);
+        self::assertFalse($loaded->validate(['bookingResourceLabelPlural']));
+    }
+
     public function testBookingSubpageDefaultsAndValidation(): void
     {
         $settings = new SettingsModel();

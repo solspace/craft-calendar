@@ -86,6 +86,10 @@ class SettingsModel extends Model
 
     public ?string $bookingPageLabel = null;
 
+    public ?string $bookingResourceLabelSingular = null;
+
+    public ?string $bookingResourceLabelPlural = null;
+
     public string $defaultBookingView = 'bookings';
 
     public string $defaultBookingScheduleLayout = 'combined';
@@ -143,6 +147,22 @@ class SettingsModel extends Model
         $label = trim($this->bookingPageLabel ?? '');
 
         return '' !== $label ? $label : Calendar::t('Bookings');
+    }
+
+    /** Configured names stay literal; translate only the surrounding UI wording. */
+    public function getBookingResourceLabels(): array
+    {
+        $singular = trim($this->bookingResourceLabelSingular ?? '');
+        $plural = trim($this->bookingResourceLabelPlural ?? '');
+
+        return [
+            'singular' => '' !== $singular ? $singular : Calendar::t('Calendar'),
+            'plural' => '' !== $plural ? $plural : Calendar::t('Calendars'),
+            'all' => '' !== $plural ? Calendar::t('All {label}', ['label' => $plural]) : Calendar::t('All Calendars'),
+            'by' => '' !== $singular ? Calendar::t('By {label}', ['label' => $singular]) : Calendar::t('By Calendar'),
+            'choose' => '' !== $singular ? Calendar::t('Choose {label}', ['label' => $singular]) : Calendar::t('Choose a Calendar'),
+            'count' => '' !== $plural ? '{count} {label}' : '{count} Calendars',
+        ];
     }
 
     public function getBookingDefaultPath(): string
@@ -308,7 +328,7 @@ class SettingsModel extends Model
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['bookingPageLabel'], 'string', 'max' => 100],
+            [['bookingPageLabel', 'bookingResourceLabelSingular', 'bookingResourceLabelPlural'], 'string', 'max' => 100],
             [['defaultBookingView'], 'in', 'range' => ['requests', 'bookings', 'schedule'], 'skipOnEmpty' => false],
             [['defaultBookingScheduleLayout'], 'in', 'range' => ['combined', 'calendars'], 'skipOnEmpty' => false],
             [['bookingDefaults'], 'validateBookingDefaults', 'skipOnEmpty' => false],

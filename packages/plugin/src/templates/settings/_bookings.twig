@@ -23,6 +23,28 @@
             errors: settings.getErrors('bookingPageLabel'),
         }) }}
 
+        {{ forms.textField({
+            label: "Resource Label (Singular)"|t('calendar'),
+            instructions: "The name for one booking calendar, such as Massage Therapist or Dining Hall. Leave blank to use Calendar."|t('calendar'),
+            placeholder: "Calendar"|t('calendar'),
+            id: 'bookingResourceLabelSingular',
+            name: 'settings[bookingResourceLabelSingular]',
+            value: settings.bookingResourceLabelSingular,
+            maxlength: 100,
+            errors: settings.getErrors('bookingResourceLabelSingular'),
+        }) }}
+
+        {{ forms.textField({
+            label: "Resource Label (Plural)"|t('calendar'),
+            instructions: "The name for multiple booking calendars, such as Massage Therapists or Dining Halls. For Staff, use Staff in both fields. Leave blank to use Calendars."|t('calendar'),
+            placeholder: "Calendars"|t('calendar'),
+            id: 'bookingResourceLabelPlural',
+            name: 'settings[bookingResourceLabelPlural]',
+            value: settings.bookingResourceLabelPlural,
+            maxlength: 100,
+            errors: settings.getErrors('bookingResourceLabelPlural'),
+        }) }}
+
         {{ forms.selectField({
             label: "Default Bookings Subpage"|t('calendar'),
             instructions: "Choose the page that opens when you click {label} in the control-panel navigation."|t('calendar', {label: settings.bookingLabel}),
@@ -39,7 +61,7 @@
             id: 'defaultBookingScheduleLayout',
             name: 'settings[defaultBookingScheduleLayout]',
             value: settings.getBookingScheduleLayout(),
-            options: {combined: 'Combined'|t('calendar'), calendars: 'By Calendar'|t('calendar')},
+            options: {combined: 'Combined'|t('calendar'), calendars: settings.bookingResourceLabels.by},
             errors: settings.getErrors('defaultBookingScheduleLayout'),
         }) }}
 

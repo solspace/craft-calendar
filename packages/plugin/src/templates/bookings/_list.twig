@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% import '_includes/forms' as forms %}
 {% set statusColors = {requested: 'orange', confirmed: 'green', declined: 'red', cancelled: 'disabled'} %}
 {% set rowStatusOptions = [] %}
@@ -8,12 +9,12 @@
     <table class="data fullwidth big booking-table">
         <thead><tr>
             <th scope="col" class="checkbox-cell">{{ forms.checkbox({id: 'booking-select-all', disabled: bookings is empty, inputAttributes: {data: {'booking-select-all': true}, aria: {label: 'Select all bookings on this page'|t('calendar')}}}) }}</th>
-            {% for field, label in {customer: 'Customer', calendar: 'Calendar', date: 'Booking Time', submitted: 'Submitted', updated: 'Last Updated', status: 'Status'} %}
+            {% for field, label in {customer: 'Customer', calendar: resourceLabels.singular, date: 'Booking Time', submitted: 'Submitted', updated: 'Last Updated', status: 'Status'} %}
                 {% set active = sort starts with field ~ '-' %}
                 {% set ascending = sort == field ~ '-asc' %}
                 {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field in ['date', 'submitted', 'updated'] ? '-desc' : '-asc')) %}
                 <th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
-                    <button type="button" data-booking-sort="{{ nextSort }}">{{ label|t('calendar') }}</button>
+                    <button type="button" data-booking-sort="{{ nextSort }}">{{ field == 'calendar' ? label : label|t('calendar') }}</button>
                 </th>
             {% endfor %}
             <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>

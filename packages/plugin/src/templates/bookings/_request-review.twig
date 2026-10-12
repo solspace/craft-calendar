@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% import '_includes/forms' as forms %}
 {% set calendar = calendars[booking.calendarId] %}
 {% set timezone = calendar.schedulingSettings.timezone %}
@@ -23,7 +24,7 @@
             <dd><span class="request-summary-date">{{ booking.startDate|date('medium', timezone) }}</span><strong>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} – {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</strong><span class="light request-summary-timezone" title="{{ timezone }}">{{ booking.startDate|calendarTimezoneAbbreviation(timezone) }}</span></dd>
         </div>
         <div>
-            <dt>{{ 'Calendar'|t('calendar') }}</dt>
+            <dt>{{ resourceLabels.singular }}</dt>
             <dd class="request-summary-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span><strong>{{ calendar.name }}</strong></dd>
         </div>
         <div>
@@ -43,8 +44,8 @@
         <div id="{{ containerId }}-time-picker" data-request-time-picker class="{{ not unavailable ? 'hidden' }}">
             <div class="request-review-date-controls">
                 <div class="field request-review-calendar-field">
-                    <div class="heading"><label id="{{ containerId }}-calendar-label">{{ 'Calendar'|t('calendar') }}</label></div>
-                    <select class="hidden" data-request-calendar aria-label="{{ 'Calendar'|t('calendar') }}" tabindex="-1">
+                    <div class="heading"><label id="{{ containerId }}-calendar-label">{{ resourceLabels.singular }}</label></div>
+                    <select class="hidden" data-request-calendar aria-label="{{ resourceLabels.singular }}" tabindex="-1">
                         {% for resource in calendars %}
                             <option value="{{ resource.id }}"{{ resource.id == booking.calendarId ? ' selected' }}>{{ resource.name }}</option>
                         {% endfor %}

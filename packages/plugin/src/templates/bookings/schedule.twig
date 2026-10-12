@@ -1,3 +1,4 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% extends 'calendar/layouts/_bookings' %}
 {% import '_includes/forms' as forms %}
 {% set title = 'Booking Schedule'|t('calendar') %}
@@ -20,7 +21,7 @@
     {% include 'calendar/bookings/_calendar-picker' with {calendarPickerPrefix: 'booking-schedule'} %}
     <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, required: true, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
     {{ forms.selectize({id: 'booking-schedule-view', class: 'booking-toolbar-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
-    {{ forms.selectize({id: 'booking-schedule-layout', class: 'booking-toolbar-layout', name: 'layout', value: scheduleLayout, options: [{value: 'combined', label: 'Combined'|t('calendar')}, {value: 'calendars', label: 'By Calendar'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Layout'|t('app')}}}) }}
+    {{ forms.selectize({id: 'booking-schedule-layout', class: 'booking-toolbar-layout', name: 'layout', value: scheduleLayout, options: [{value: 'combined', label: 'Combined'|t('calendar')}, {value: 'calendars', label: resourceLabels.by}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Layout'|t('app')}}}) }}
     <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
         <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: previous}) }}">{{ 'Previous'|t('app') }}</a>
         <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: next}) }}">{{ 'Next'|t('app') }}</a>
