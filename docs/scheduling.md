@@ -200,6 +200,8 @@ Configure permissions in Craft’s user or user-group settings, in addition to *
 
 Grant **View All Bookings**, or check specific resources under **Booking Permissions by Calendar**, then select the actions that role needs. Every action requires View access to the same resource. Global action grants apply only to resources that the user can view. View access includes customer details, notes, and custom booking fields.
 
+Global and calendar-specific permissions are additive, so they can be combined. **View All Bookings** grants visibility in every scheduling calendar; leaving a calendar unchecked does not hide it. Actions selected beneath it apply to every calendar the user can view. Calendar-specific grants can add actions but cannot restrict a global grant. To limit visibility to selected calendars, leave **View All Bookings** unchecked and choose resources under **Booking Permissions by Calendar**. The permission options include help notes explaining these scopes and the full-access Manage overrides.
+
 | Permission | Allows |
 | --- | --- |
 | View Bookings | Read bookings, the Requests queue, availability, and Schedule for the granted resources. |

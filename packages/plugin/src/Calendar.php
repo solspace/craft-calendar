@@ -500,11 +500,11 @@ class Calendar extends Plugin
                     }
 
                     $permissions = [
-                        self::PERMISSION_BOOKINGS => ['label' => self::t('Manage All Bookings'), 'info' => self::t('Full access overrides individual booking action permissions. Existing grants retain their access.')],
-                        self::PERMISSION_BOOKINGS_INDIVIDUAL => ['label' => self::t('Manage Bookings by Calendar'), 'nested' => $bookingPermissions],
+                        self::PERMISSION_BOOKINGS => ['label' => self::t('Manage All Bookings'), 'info' => self::t('Grants every booking action in all scheduling calendars, overriding calendar-specific and individual action permissions. Uncheck this to limit access.')],
+                        self::PERMISSION_BOOKINGS_INDIVIDUAL => ['label' => self::t('Manage Bookings by Calendar'), 'info' => self::t('Grants every booking action in the selected calendars. Manage All Bookings overrides these selections. Uncheck these calendar grants to use individual action permissions.'), 'nested' => $bookingPermissions],
                         self::PERMISSION_BOOKINGS_ACCESS => ['label' => self::t('Access Bookings'), 'nested' => [
-                            self::PERMISSION_BOOKINGS_VIEW => ['label' => self::t('View All Bookings'), 'nested' => $bookingActions],
-                            self::PERMISSION_BOOKINGS_BY_CALENDAR => ['label' => self::t('Booking Permissions by Calendar'), 'nested' => $granularBookings],
+                            self::PERMISSION_BOOKINGS_VIEW => ['label' => self::t('View All Bookings'), 'info' => self::t('Grants view access to all scheduling calendars. Actions selected here apply to every calendar the user can view. To limit view access, leave this unchecked and use Booking Permissions by Calendar.'), 'nested' => $bookingActions],
+                            self::PERMISSION_BOOKINGS_BY_CALENDAR => ['label' => self::t('Booking Permissions by Calendar'), 'info' => self::t('Grants view access and selected actions for specific calendars. These permissions add to global grants; they cannot restrict View All Bookings or actions granted there.'), 'nested' => $granularBookings],
                         ]],
                         self::PERMISSION_CALENDARS => [
                             'label' => self::t('Access Calendars'),
