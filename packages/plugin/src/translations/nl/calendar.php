@@ -1175,7 +1175,7 @@ return [
     'All bookings and available times are converted to this display timezone.' => 'Alle boekingen en beschikbare tijden worden omgerekend naar deze weergavetijdzone.',
     'Configured timezones: {timezones}' => 'Ingestelde tijdzones: {timezones}',
     'Show Pending Request Badge' => 'Badge voor openstaande aanvragen tonen',
-    'Show a red count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Toon een rood aantal naast het hoofdnavigatie-item van de plugin voor boekingsaanvragen die op beoordeling wachten. Alleen aanvragen die je kunt beheren worden geteld.',
+    'Show a count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.' => 'Toon een aantal naast het hoofdnavigatie-item van de plugin voor boekingsaanvragen die op beoordeling wachten. Alleen aanvragen die je kunt beheren worden geteld.',
     'Display timezone' => 'Weergavetijdzone',
     'Automatic ({timezone})' => 'Automatisch ({timezone})',
 ];

@@ -57,7 +57,7 @@ Requests do not reserve a time. Confirmation checks availability again. Turning 
 
 **Requests** is the first Bookings submenu item. Its count includes pending requests only in calendars the current staff member can manage, excluding Trash. The queue starts with the oldest submissions and supports automatic calendar, availability, and customer name/email filters, sortable headings, and pagination.
 
-Enable **Settings → Bookings → Show Pending Request Badge** to show a red count beside Calendar in the main control-panel navigation. It defaults off, counts only Requested bookings in resources the current staff member can manage, and hides at zero. It refreshes when control-panel pages load and after moderation or Undo/Redo on the Requests page.
+Enable **Settings → Bookings → Show Pending Request Badge** to show a count using Craft’s native gray badge beside Calendar in the main control-panel navigation. It defaults off, counts only Requested bookings in resources the current staff member can manage, and hides at zero. It refreshes when control-panel pages load and after moderation or Undo/Redo on the Requests page.
 
 Confirm or decline directly, or open **Review** for the customer’s notes and custom fields. Requests whose original time is unavailable show **Needs attention** and **Choose another time** instead of Confirm. The native review slideout offers available alternatives in the same calendar’s timezone, preserving the booking’s duration. Use **Edit booking** for other changes.
 

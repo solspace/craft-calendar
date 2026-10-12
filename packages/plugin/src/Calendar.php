@@ -286,7 +286,6 @@ class Calendar extends Plugin
         if ($this->settings->getSettingsModel()->showBookingRequestBadge && \Craft::$app->getRequest()->getIsCpRequest()) {
             $calendarIds = array_keys($this->bookings->getManageableCalendars());
             $navItem['linkAttributes']['data']['booking-request-nav-badge'] = true;
-            $navItem['linkAttributes']['style'] = '--nav-item-badge-bg:var(--red-600,#dc2626);--nav-item-badge-fg:var(--white,#fff)';
             $count = $calendarIds ? (new RequestQueue($this->bookings))->count($calendarIds) : 0;
             if ($count > 0) {
                 $navItem['badgeCount'] = $count;
