@@ -218,6 +218,10 @@ form:has(> .request-review-content):focus-visible {
                 else item.removeAttribute('aria-current');
             });
             calendarPicker.dispatchEvent(new Event('change', {bubbles:true}));
+            // Craft's disclosure menu remains open for custom option buttons.
+            // Close it through its trigger so aria-expanded and focus stay in sync.
+            const trigger = form.querySelector('.request-calendar-picker');
+            if (trigger?.getAttribute('aria-expanded') === 'true') trigger.click();
         });
     });
     const slots = form.querySelector('[data-request-slots]');
