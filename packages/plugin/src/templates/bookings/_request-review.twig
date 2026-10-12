@@ -148,33 +148,22 @@
     const form = document.getElementById({{ containerId|json_encode|raw }});
     const screen = $(form).data('cpScreen');
     const actions = form.querySelector('.request-review-actions');
-    // Resolve the actual sticky footer from the visible Save button. The screen
-    // API's $footer can point at a content-level element in some Craft versions.
-    const $save = screen.$saveBtn;
-    const saveButton = $save.is('button') ? $save[0] : $save.find('button')[0] || $save[0];
-    const stickyFooter = saveButton.closest('.cp-screen-footer, .slideout-footer, .footer, footer')
-        || screen.$footer?.[0];
-    if (stickyFooter) {
-        const existing = stickyFooter.querySelector('.request-review-actions');
-        if (existing && existing !== actions) existing.remove();
-        stickyFooter.prepend(actions);
-        actions.style.marginRight = 'auto';
-        actions.style.flexShrink = '0';
-        stickyFooter.style.display = 'flex';
-        stickyFooter.style.alignItems = 'center';
-        stickyFooter.style.gap = '8px';
-    }
-    // Target the real button, not a content wrapper. Craft's default primary
-    // button is red, so give this specific positive action a blue treatment.
-    saveButton.classList.remove('error', 'destructive', 'danger');
+    // Place moderation actions alongside Craft's native footer controls.
+    const saveButton = screen.$saveBtn[0];
+    const footer = saveButton.closest('.cp-screen-footer, .slideout-footer, .footer, footer') || screen.$footer[0];
+    footer.prepend(actions);
+    footer.classList.add('calendar-review-footer');
     saveButton.classList.add('calendar-confirm-booking');
-    saveButton.style.setProperty('background-color', '#2563eb', 'important');
-    saveButton.style.setProperty('background', '#2563eb', 'important');
-    saveButton.style.setProperty('color', '#fff', 'important');
-    if (!document.getElementById('calendar-confirm-booking-style')) {
+    if (!document.getElementById('calendar-review-footer-styles')) {
         const style = document.createElement('style');
-        style.id = 'calendar-confirm-booking-style';
-        style.textContent = '.calendar-confirm-booking:hover { background:#1d4ed8 !important; background-color:#1d4ed8 !important; } .calendar-confirm-booking:focus-visible { outline:2px solid #1d4ed8; outline-offset:2px; }';
+        style.id = 'calendar-review-footer-styles';
+        style.textContent = `
+            .calendar-review-footer { display:flex; align-items:center; gap:8px; }
+            .calendar-review-footer .request-review-actions { margin-right:auto; flex-shrink:0; }
+            .calendar-review-footer .calendar-confirm-booking { background:#2563eb !important; color:#fff !important; }
+            .calendar-review-footer .calendar-confirm-booking:hover:not(:disabled) { background:#1d4ed8 !important; }
+            .calendar-review-footer .calendar-confirm-booking:focus-visible { outline:2px solid #1d4ed8; outline-offset:2px; }
+        `;
         document.head.append(style);
     }
     const decision = form.querySelector('[data-request-decision]');
