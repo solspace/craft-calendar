@@ -1,0 +1,20 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
+{% import '_includes/forms' as forms %}
+    <input type="hidden" id="{{ calendarPickerPrefix }}-calendars" name="calendarIds" value="{{ calendarSelection }}">
+    <button type="button" id="{{ calendarPickerPrefix }}-calendar-picker" class="btn menubtn booking-calendar-picker" data-disclosure-trigger aria-label="{{ resourceLabels.plural }}" aria-controls="{{ calendarPickerPrefix }}-calendar-menu"><span data-calendar-label>{{ calendarSelection == 'all' ? resourceLabels.all : (calendarIds|length == 1 ? calendars[calendarIds|first].name : resourceLabels.count|t('calendar', {count: calendarIds|length, label: resourceLabels.plural})) }}</span></button>
+    <div id="{{ calendarPickerPrefix }}-calendar-menu" class="menu menu--disclosure booking-calendar-menu">
+        <ul class="booking-calendar-all"><li>{{ forms.checkbox({
+            id: calendarPickerPrefix ~ '-calendar-all',
+            label: resourceLabels.all,
+            checked: calendarSelection == 'all',
+            inputAttributes: {data: {'calendar-all': true}},
+        }) }}</li></ul>
+        <hr>
+        <ul class="booking-calendar-options">{% for item in calendars %}<li>{{ forms.checkbox({
+            id: calendarPickerPrefix ~ '-calendar-' ~ item.id,
+            label: item.name,
+            color: item.color,
+            checked: item.id in calendarIds,
+            inputAttributes: {data: {'calendar-choice': item.id, 'calendar-name': item.name}},
+        }) }}</li>{% endfor %}</ul>
+    </div>

@@ -203,51 +203,7 @@ class ApiController extends BaseController
             $event->endDate = DateHelper::allDayEndFromExclusive($event->startDate, $event->endDate);
         }
 
-        $repeatType = strtoupper(trim((string) $request->post('repeatType', Event::REPEAT_NEVER)));
-        $allowedRepeatTypes = [
-            Event::REPEAT_NEVER,
-            Event::REPEAT_DAILY,
-            Event::REPEAT_WEEKLY,
-            Event::REPEAT_MONTHLY,
-            Event::REPEAT_YEARLY,
-            Event::REPEAT_CUSTOM,
-        ];
-        if (!\in_array($repeatType, $allowedRepeatTypes, true)) {
-            $repeatType = Event::REPEAT_NEVER;
-        }
-
-        $rrule = trim((string) $request->post('rrule', ''));
-        $repeatEndType = strtoupper(trim((string) $request->post('repeatEndType', '')));
-        $allowedRepeatEndTypes = [
-            Event::REPEAT_END_NEVER,
-            Event::REPEAT_END_AFTER,
-            Event::REPEAT_END_ON_DATE,
-        ];
-        if (!\in_array($repeatEndType, $allowedRepeatEndTypes, true)) {
-            $repeatEndType = Event::REPEAT_END_NEVER;
-        }
-        // COUNT/UNTIL on the rule always wins so AI drafts stay valid even if the client sent NEVER.
-        $inferredEndType = $this->inferRepeatEndTypeFromRrule($rrule);
-        if (Event::REPEAT_END_NEVER !== $inferredEndType) {
-            $repeatEndType = $inferredEndType;
-        }
-
-        $event->repeatType = $repeatType;
-        $event->repeatEndType = Event::REPEAT_NEVER === $repeatType
-            ? Event::REPEAT_END_NEVER
-            : $repeatEndType;
-        $event->rrule = Event::REPEAT_NEVER === $repeatType ? null : ($rrule ?: null);
-
-        if (Event::REPEAT_END_ON_DATE === $event->repeatEndType) {
-            $until = $request->post('until');
-            if (null !== $until && '' !== $until && is_numeric($until)) {
-                $event->until = Carbon::createFromTimestampUTC((int) $until);
-            } elseif ($event->rrule && preg_match('/(?:^|;)UNTIL=([0-9T]+)/i', $event->rrule, $untilMatch)) {
-                $event->until = $this->parseFloatingUntil($untilMatch[1]) ?? $event->until;
-            }
-        } else {
-            $event->until = null;
-        }
+        $this->applyQuickCreateRecurrence($event, $request->getBodyParams());
 
         $details = $request->post('details');
         $validDetails = true;
@@ -276,7 +232,9 @@ class ApiController extends BaseController
             }
         }
 
-        $success = $validDetails && ($asDraft
+        // Draft handoff must enforce the same recurrence and calendar restrictions as creation.
+        $validRecurrence = $event->validate(['rrule'], false);
+        $success = $validDetails && $validRecurrence && ($asDraft
             ? \Craft::$app->getDrafts()->saveElementAsDraft(
                 $event,
                 \Craft::$app->getUser()->getIdentity()->id,
@@ -339,5 +297,37 @@ class ApiController extends BaseController
         }
 
         return null;
+    }
+
+    private function applyQuickCreateRecurrence(Event $event, array $values): void
+    {
+        $schedule = array_intersect_key($values, array_flip(['repeatType', 'repeatEndType', 'rrule', 'until']));
+        foreach (['repeatType', 'repeatEndType', 'rrule'] as $key) {
+            if (\array_key_exists($key, $schedule) && !\is_string($schedule[$key])) {
+                throw new BadRequestHttpException(Calendar::t('Invalid repeating event settings.'));
+            }
+        }
+
+        if (isset($schedule['until']) && !is_numeric($schedule['until'])) {
+            throw new BadRequestHttpException(Calendar::t('Invalid repeating event settings.'));
+        }
+
+        // Preserve AI rules' COUNT/UNTIL while using the normal schedule parsing and validation.
+        $rrule = trim($schedule['rrule'] ?? '');
+        $inferredEndType = $this->inferRepeatEndTypeFromRrule($rrule);
+        if (Event::REPEAT_END_NEVER !== $inferredEndType) {
+            $schedule['repeatEndType'] = $inferredEndType;
+        }
+        if (Event::REPEAT_END_ON_DATE === ($schedule['repeatEndType'] ?? null)
+            && !isset($schedule['until'])
+            && preg_match('/(?:^|;)UNTIL=([0-9T]+)/i', $rrule, $untilMatch)
+        ) {
+            $until = $this->parseFloatingUntil($untilMatch[1]);
+            if ($until) {
+                $schedule['until'] = $until->getTimestamp();
+            }
+        }
+
+        $event->setScheduleFromRequest($schedule);
     }
 }

@@ -71,26 +71,30 @@ class OverrideReconciler
      *
      * @param array<array{recurrenceId: string, orphaned: bool}> $overrides
      *
-     * @return array{shift: ?int, orphaned: string[]} the seconds every occurrence would move by, and the
-     *                                                recurrence IDs of the overrides that would be orphaned
+     * Also returns each override's projected schedule anchor, keyed by its original recurrence ID
+     *
+     * @return array{shift: ?int, orphaned: string[], recurrenceIds: array<string, string>}
      */
     public function preview(CalendarEvent $changed, int $liveEventId, array $overrides): array
     {
         $previous = $this->findPreviousSchedule($liveEventId);
         $shift = $this->detectShift($changed, $previous);
         $orphaned = [];
+        $recurrenceIds = [];
 
         foreach ($overrides as $override) {
             $recurrenceId = $shift && $this->belongsToPreviousSchedule($override, $previous)
                 ? RecurrenceId::shift($override['recurrenceId'], $shift)
                 : $override['recurrenceId'];
 
+            $recurrenceIds[$override['recurrenceId']] = $recurrenceId;
+
             if (!$this->materializer->producesRecurrenceId($changed, RecurrenceId::toCarbon($recurrenceId))) {
                 $orphaned[] = $override['recurrenceId'];
             }
         }
 
-        return ['shift' => $shift, 'orphaned' => $orphaned];
+        return ['shift' => $shift, 'orphaned' => $orphaned, 'recurrenceIds' => $recurrenceIds];
     }
 
     /**

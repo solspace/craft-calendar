@@ -1,0 +1,38 @@
+{% extends 'demo/tailwind/layouts/_layout' %}
+{% set pageTitle = 'Book a time'|t('calendar') %}
+{% set page = 'bookings' %}
+
+{% block content %}
+    {% set bookingCalendars = craft.calendar.schedulingCalendars() %}
+    {% set requestedCalendar = craft.app.request.getQueryParam('calendarId') %}
+    {% set selectedCalendar = bookingCalendars|filter(item => item.id == requestedCalendar)|first ?: bookingCalendars|first %}
+    <header class="mb-6 pt-2">
+        <h1 class="mb-2 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">{{ 'Book a time'|t('calendar') }}</h1>
+        <p class="m-0 text-neutral-500 dark:text-neutral-400">{{ 'Choose a resource and an available time.'|t('calendar') }}</p>
+    </header>
+    {% if selectedCalendar %}
+        <div class="grid items-start gap-6 lg:grid-cols-[minmax(200px,1fr)_minmax(0,3fr)]">
+            <aside>
+                <h2 class="mb-3 text-sm font-semibold text-neutral-500 dark:text-neutral-400">{{ 'Choose a resource'|t('calendar') }}</h2>
+                <nav class="grid gap-2" aria-label="{{ 'Scheduling calendars'|t('calendar') }}">
+                    {% for resource in bookingCalendars %}
+                        {% set selected = resource.id == selectedCalendar.id %}
+                        <a class="block rounded-xl border p-4 no-underline {{ selected ? 'border-blue-500 bg-blue-50 text-blue-900 dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-100' : 'border-neutral-200 bg-white text-neutral-900 hover:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900/50 dark:text-neutral-100 dark:hover:border-neutral-500' }}" href="{{ url('demo/bookings', {calendarId: resource.id, framework: 'tailwind'}) }}"{% if selected %} aria-current="page"{% endif %}>
+                            <span class="flex items-center gap-2 font-semibold"><span class="size-2.5 shrink-0 rounded-full" style="background-color:{{ resource.color }}" aria-hidden="true"></span>{{ resource.name }}</span>
+                            <span class="mt-2 block text-sm text-neutral-500 dark:text-neutral-400">{{ '{duration} minutes'|t('calendar', {duration: resource.schedulingSettings.duration}) }} · {{ resource.schedulingSettings.timezone }}</span>
+                        </a>
+                    {% endfor %}
+                </nav>
+            </aside>
+            <div class="min-w-0">
+                {{ craft.calendar.bookingForm(selectedCalendar.id, {framework: 'tailwind', booking: booking ?? null}) }}
+            </div>
+        </div>
+    {% else %}
+        <div class="rounded-2xl bg-white p-6 text-center shadow-sm dark:bg-neutral-900/50 lg:p-10">
+            <span class="fas fa-calendar-alt mb-3 text-3xl text-neutral-500 dark:text-neutral-400" aria-hidden="true"></span>
+            <h2 class="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">{{ 'No booking times are available yet.'|t('calendar') }}</h2>
+            <p class="m-0 text-neutral-500 dark:text-neutral-400">{{ 'Please check back later.'|t('calendar') }}</p>
+        </div>
+    {% endif %}
+{% endblock %}

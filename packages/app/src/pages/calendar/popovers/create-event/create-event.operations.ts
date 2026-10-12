@@ -1,5 +1,6 @@
 import type { CalendarCreateDraft } from "@cal/pages/calendar/calendar.create-session";
 import translate from "@cal/utils/translations";
+import { buildQuickCreateRecurrence } from "./create-event.recurrence";
 
 export type QuickCreateDetails = {
   location?: string;
@@ -22,41 +23,42 @@ const inferRepeatEndTypeFromRrule = (rrule?: string): "NEVER" | "AFTER" | "ON_DA
   return "NEVER";
 };
 
+export const buildCreateEventRecurrence = (
+  event: CalendarCreateDraft,
+): {
+  repeatType: string;
+  repeatEndType: string;
+  rrule?: string;
+  until?: number;
+} => {
+  if (event.recurrence) {
+    return buildQuickCreateRecurrence(event) ?? { repeatType: "NEVER", repeatEndType: "NEVER" };
+  }
+  if (!event.repeatType || event.repeatType === "NEVER") {
+    return { repeatType: "NEVER", repeatEndType: "NEVER" };
+  }
+  const fromRrule = inferRepeatEndTypeFromRrule(event.rrule);
+  const repeatEndType = fromRrule !== "NEVER" ? fromRrule : event.repeatEndType || "NEVER";
+  return {
+    repeatType: event.repeatType,
+    repeatEndType,
+    rrule: event.rrule || "",
+    ...(repeatEndType === "ON_DATE" && event.until != null ? { until: event.until } : {}),
+  };
+};
+
 export const buildCreateEventPayload = (
   event: CalendarCreateDraft,
   calendarId: number,
   siteId: number,
   details?: QuickCreateDetails,
-) => {
-  if (!event.repeatType || event.repeatType === "NEVER") {
-    return {
-      title: event.title || translate("New Event"),
-      start: event.start,
-      end: event.end,
-      allDay: event.allDay,
-      calendarId,
-      siteId,
-      repeatType: "NEVER" as const,
-      repeatEndType: "NEVER" as const,
-      ...(details && { details }),
-    };
-  }
-
-  // Prefer COUNT/UNTIL from the rrule so AI drafts with "for 8 weeks" validate.
-  const fromRrule = inferRepeatEndTypeFromRrule(event.rrule);
-  const repeatEndType = fromRrule !== "NEVER" ? fromRrule : event.repeatEndType || "NEVER";
-
-  return {
-    title: event.title || translate("New Event"),
-    start: event.start,
-    end: event.end,
-    allDay: event.allDay,
-    calendarId,
-    siteId,
-    repeatType: event.repeatType,
-    repeatEndType,
-    rrule: event.rrule || "",
-    ...(repeatEndType === "ON_DATE" && event.until != null ? { until: event.until } : {}),
-    ...(details && { details }),
-  };
-};
+) => ({
+  title: event.title || translate("New Event"),
+  start: event.start,
+  end: event.end,
+  allDay: event.allDay,
+  calendarId,
+  siteId,
+  ...buildCreateEventRecurrence(event),
+  ...(details && { details }),
+});

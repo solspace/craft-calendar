@@ -1,0 +1,156 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
+{% extends 'calendar/layouts/_bookings' %}
+{% import '_includes/forms' as forms %}
+{% set title = 'Booking Schedule'|t('calendar') %}
+{% set selectedSubnavItem = 'bookings' %}
+{% set bookingView = 'schedule' %}
+{% block actionButton %}
+<div class="booking-schedule-actions">
+    {% set canReschedule = false %}{% for id in calendarIds %}{% if bookingPermissions[id].reschedule %}{% set canReschedule = true %}{% endif %}{% endfor %}
+    <div class="booking-history-controls{{ not canReschedule ? ' hidden' }}" role="group" aria-label="{{ 'Booking history'|t('calendar') }}">
+        {% for direction in ['undo', 'redo'] %}
+            <button type="button" data-booking-history="{{ direction }}" disabled title="{{ (direction == 'undo' ? 'Undo' : 'Redo')|t('calendar') }}" aria-label="{{ (direction == 'undo' ? 'Undo' : 'Redo')|t('calendar') }}">
+                <svg viewBox="0 0 96 80" width="18" height="16" aria-hidden="true" focusable="false"><g{% if direction == 'redo' %} transform="translate(96 0) scale(-1 1)"{% endif %}><path fill="currentColor" d="M37 1 1 30l36 29V41h18c15 0 23 8 23 22 0 6-2 11-5 16 12-8 19-19 19-31 0-20-14-31-37-31H37V1Z"/></g></svg>
+            </button>
+        {% endfor %}
+    </div>
+    <a data-booking-new{{ creatableCalendarIds is empty ? ' hidden' }} href="{{ cpUrl('calendar/bookings/new', {calendarId: creatableCalendarIds|first|default(calendarId)}) }}" class="btn submit add icon">{{ 'New booking'|t('calendar') }}</a>
+</div>
+{% endblock %}
+{% block content %}
+<form method="get" class="booking-toolbar">
+    {% include 'calendar/bookings/_calendar-picker' with {calendarPickerPrefix: 'booking-schedule'} %}
+    <div class="booking-toolbar-date">{{ forms.text({type: 'date', id: 'booking-schedule-date', name: 'date', value: date, required: true, inputAttributes: {aria: {label: 'Date'|t('app')}}}) }}</div>
+    {{ forms.selectize({id: 'booking-schedule-view', class: 'booking-toolbar-view', name: 'view', value: scheduleView, options: [{value: 'day', label: 'Day'|t('calendar')}, {value: 'week', label: 'Week'|t('calendar')}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'View'|t('app')}}}) }}
+    {{ forms.selectize({id: 'booking-schedule-layout', class: 'booking-toolbar-layout', name: 'layout', value: scheduleLayout, options: [{value: 'combined', label: 'Combined'|t('calendar')}, {value: 'calendars', label: resourceLabels.by}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Layout'|t('app')}}}) }}
+    <div class="btngroup booking-toolbar-navigation" role="group" aria-label="{{ 'Date'|t('app') }}">
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: previous, timezone: scheduleTimezone}) }}">{{ 'Previous'|t('app') }}</a>
+        <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: next, timezone: scheduleTimezone}) }}">{{ 'Next'|t('app') }}</a>
+    </div>
+    <span class="spinner hidden" aria-hidden="true"></span>
+    {% set resourceTimezones = [] %}
+    {% for id in calendarIds %}
+        {% set resourceTimezone = calendars[id].schedulingSettings.timezone %}
+        {% if resourceTimezone not in resourceTimezones %}{% set resourceTimezones = resourceTimezones|merge([resourceTimezone]) %}{% endif %}
+    {% endfor %}
+    {% set resourceTimezoneNames = [] %}
+    {% for resourceTimezone in resourceTimezones %}{% set resourceTimezoneNames = resourceTimezoneNames|merge([resourceTimezone|calendarTimezoneName ~ ' (' ~ resourceTimezone ~ ')']) %}{% endfor %}
+    <div class="booking-toolbar-timezone" title="{{ displayTimezone }}&#10;{{ 'All bookings and available times are converted to this display timezone.'|t('calendar') }}&#10;{{ 'Configured timezones: {timezones}'|t('calendar', {timezones: resourceTimezoneNames|join(', ')}) }}">
+        <label for="booking-schedule-timezone" class="light">{{ 'Display timezone'|t('calendar') }}</label>
+        {{ forms.selectize({id: 'booking-schedule-timezone', name: 'timezone', value: scheduleTimezone, options: [{value: 'auto', label: 'Automatic ({timezone})'|t('calendar', {timezone: automaticTimezone|calendarTimezoneName})}]|merge(timezoneOptions), selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', extraPlugins: false}, inputAttributes: {aria: {label: 'Display timezone'|t('calendar')}}}) }}
+    </div>
+</form>
+<div class="booking-grid-scroll"><div class="booking-grid{{ scheduleLayout == 'combined' ? ' booking-grid-combined' : (calendarIds|length > 1 ? ' booking-grid-multiple' : '') }}" data-calendar-ids="{{ calendarIds|join(',') }}" data-timezone="{{ displayTimezone }}" data-timezone-label="{{ displayTimezone|calendarTimezoneName }}" style="--days:{{ days|length }};--calendars:{{ calendarIds|length }};--columns:{{ days|length * calendarIds|length }}">
+<div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ date('2000-01-01 ' ~ '%02d:00'|format(hour), displayTimezone)|time(bookingTimeFormat, displayTimezone)|calendarTimeLabel }}</div>{% endfor %}</div>
+{% for day in days %}<div class="booking-day"><div class="booking-day-heading">{{ day.date|date('icu:EEE', displayTimezone) }} {{ day.date|date('short', displayTimezone) }}</div>
+{% if scheduleLayout == 'combined' %}
+    {% include 'calendar/bookings/_combined-day' %}
+{% else %}
+<div class="booking-day-columns">
+{% for column in day.columns %}
+{% set resource = column.calendar %}
+<div class="booking-resource">
+{% if calendarIds|length > 1 %}<div class="booking-resource-heading" title="{{ resource.name }} · {{ resource.schedulingSettings.timezone }}"><span class="color small" aria-hidden="true"><span class="color-preview" style="background-color:{{ resource.color }}"></span></span><span>{{ resource.name }}</span></div>{% endif %}
+<div class="booking-day-body" data-date="{{ day.date|date('Y-m-d', displayTimezone) }}" data-date-label="{{ day.date|date('short', displayTimezone) }}" data-calendar-id="{{ resource.id }}" data-increment="{{ resource.schedulingSettings.increment }}">
+{% for hour in 0..23 %}<div class="booking-hour"></div>{% endfor %}
+{% for minute, slots in column.slots %}
+{% for slot in slots %}
+{% set slotLabel = (bookingPermissions[resource.id].create ? 'New booking: {time}' : 'Available time: {time}')|t('calendar', {time: slot.label}) %}
+{% if bookingPermissions[resource.id].create %}<a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId: resource.id, start: slot.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ slot.length / 60 * 48 }}px;height:{{ min(resource.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ resource.name }} · {{ day.date|date('Y-m-d', displayTimezone) }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}" title="{{ resource.name }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}"><span>{{ slotLabel }}</span></a>{% else %}<span class="booking-slot-target booking-slot-readonly" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ slot.length / 60 * 48 }}px;height:{{ min(resource.schedulingSettings.increment, 1440 - minute) / 60 * 48 }}px;left:{{ loop.index0 / slots|length * 100 }}%;width:{{ 100 / slots|length }}%" aria-label="{{ resource.name }} · {{ day.date|date('Y-m-d', displayTimezone) }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}" title="{{ resource.name }} · {{ slotLabel }} · {{ slot.start|calendarTimezoneAbbreviation(displayTimezone) }}"><span>{{ slotLabel }}</span></span>{% endif %}
+{% endfor %}
+{% endfor %}
+{% for item in column.bookings %}<a draggable="{{ bookingPermissions[resource.id].reschedule ? 'true' : 'false' }}" {% include 'calendar/bookings/_schedule-booking-attributes' %} class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;min-height:{{ item.length / 60 * 48 }}px;border-left-color:{{ resource.color }};left:calc({{ item.lane / column.lanes * 100 }}% + 3px);width:calc({{ 100 / column.lanes }}% - 6px)" title="{{ resource.name }} · {{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}"><strong><span class="booking-customer-name">{{ item.booking.customerName }}</span>{% include 'calendar/bookings/_request-warning' with {booking: item.booking} %}</strong><span>{{ item.label }}</span><small>{{ statusOptions[item.booking.bookingStatus] }}</small></a>{% endfor %}
+</div></div>{% endfor %}
+</div>
+{% endif %}
+</div>{% endfor %}
+</div></div>
+<p class="light booking-grid-instructions" data-booking-instructions>{{ (creatableCalendarIds is empty ? 'Shaded times are unavailable. Select a booking to view its details.' : scheduleLayout == 'combined' and calendarIds|length > 1 ? 'Click an available time to choose a calendar. Shaded times are unavailable for all selected calendars.' : 'Click an available time to add a booking. Shaded times are unavailable for that calendar.')|t('calendar') }}</p>
+{% endblock %}
+{% css %}
+.booking-schedule-actions { display:flex; align-items:center; gap:var(--m,14px); }
+.booking-history-controls { display:flex; align-items:center; overflow:hidden; border-radius:var(--medium-border-radius,4px); background:#c4cfe1; }
+.booking-history-controls button { display:flex; align-items:center; justify-content:center; width:39px; height:34px; padding:0; border:0; background:#c4cfe1; color:#5a6875; cursor:pointer; }
+.booking-history-controls button + button { border-left:1px solid #e3ecfb; }
+.booking-history-controls button:hover:not(:disabled) { background:#b5c4d8; }
+.booking-history-controls button:active:not(:disabled) { background:#a6b4c9; }
+.booking-history-controls button:focus-visible { outline:2px solid currentColor; outline-offset:-2px; }
+.booking-history-controls button:disabled { background:#d5dfeb; color:#a0aab4; cursor:default; }
+.booking-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:0 0 20px; padding:12px; background:var(--gray-050,#f3f6fa); border:1px solid var(--hairline-color,#e4e9ef); border-radius:6px; }
+.booking-toolbar > .select.selectize { width:180px; flex-shrink:0; }
+.booking-toolbar > .select.selectize.booking-toolbar-view { width:110px; }
+.booking-toolbar > .select.selectize.booking-toolbar-layout { width:140px; }
+.booking-toolbar-date { width:160px; }
+.booking-toolbar .selectize-input, .booking-toolbar .text, .booking-toolbar .btn { min-height:34px; box-sizing:border-box; }
+.booking-toolbar-date .text { width:100%; }
+.booking-toolbar-navigation { display:flex; margin:0; }
+.booking-toolbar-timezone { margin-inline-start:auto; display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px; }
+.booking-toolbar-timezone > .select.selectize { width:270px; max-width:100%; }
+.booking-toolbar .selectize-input .item > .flex, .booking-picker-dropdown .option > .flex { gap:8px; }
+.booking-toolbar .selectize-input .color.small, .booking-picker-dropdown .color.small { width:12px; height:12px; flex:0 0 12px; margin:0; }
+.booking-grid-scroll { max-height:65vh; overflow:auto; border:1px solid var(--hairline-color,#d8dee5); border-radius:8px; }
+.booking-grid-scroll[aria-busy="true"] { opacity:.65; pointer-events:none; }
+.booking-grid { display:grid; grid-template-columns:80px repeat(var(--days),minmax(calc(var(--calendars) * 140px),1fr)); min-width:calc(var(--columns) * 140px + 80px); }
+.booking-grid-combined { grid-template-columns:80px repeat(var(--days),minmax(140px,1fr)); min-width:calc(var(--days) * 140px + 80px); }
+.booking-grid-times { position:sticky; left:0; z-index:6; background:var(--white,#fff); }
+.booking-day-columns { display:grid; grid-template-columns:repeat(var(--calendars),minmax(0,1fr)); }
+.booking-resource + .booking-resource { border-inline-start:1px solid var(--hairline-color,#d8dee5); }
+.booking-resource-heading { height:32px; position:sticky; top:42px; z-index:5; display:flex; align-items:center; justify-content:center; gap:6px; padding:0 8px; background:var(--white,#fff); border-bottom:1px solid var(--hairline-color,#d8dee5); font-size:11px; }
+.booking-resource-heading > span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.booking-resource-heading .color.small { width:10px; height:10px; flex:0 0 10px; margin:0; }
+.booking-grid-multiple .booking-grid-times .booking-day-heading { height:75px; }
+{% include 'calendar/bookings/_calendar-picker-css' %}
+.booking-day { border-left:1px solid var(--hairline-color,#d8dee5); }
+.booking-day-heading { height:42px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--white,#fff); z-index:5; font-weight:600; border-bottom:1px solid var(--hairline-color,#d8dee5); }
+.booking-day-body { position:relative; height:1152px; background:var(--gray-050,#f4f6f9); }
+.booking-grid-instructions { margin:12px 0 0; font-size:12px; line-height:1.5; }
+.booking-slot-target { position:absolute; display:block; background:var(--white,#fff); box-shadow:inset 0 -1px var(--hairline-color,#e7ebef); z-index:1; cursor:pointer; }
+button.booking-slot-target { appearance:none; border:0; padding:0; font:inherit; text-align:start; }
+.booking-slot-target span { display:none; position:absolute; top:0; left:0; width:100%; height:var(--slot-height); box-sizing:border-box; padding:4px 6px; border:2px solid var(--blue-600,#2563eb); border-radius:4px; background:var(--blue-050,#eff6ff); color:var(--blue-800,#1e40af); font-size:11px; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
+.booking-slot-target:hover, .booking-slot-target:focus-visible { background:var(--blue-050,#eff6ff); outline:2px solid var(--blue-600,#2563eb); outline-offset:-2px; z-index:3; }
+.booking-slot-target:hover span, .booking-slot-target:focus-visible span { display:block; }
+.booking-slot-readonly, .booking-slot-readonly:hover { cursor:default; outline:none; background:var(--white,#fff); }
+.booking-hour, .booking-hour-label { height:48px; box-sizing:border-box; border-bottom:1px solid var(--hairline-color,#e7ebef); }
+.booking-hour-label { padding:4px; color:var(--light-text-color,#677586); font-size:11px; text-align:right; }
+.booking-block { position:absolute; z-index:4; left:3px; right:3px; padding:4px 6px; box-sizing:border-box; border-left:3px solid; border-radius:4px; background:#e6f2eb; overflow:hidden; color:#234c36; line-height:1.3; transition:opacity .15s ease; }
+.booking-block.booking-drag-origin { opacity:.1; }
+.booking-dragging .booking-slot-target:hover, .booking-dragging .booking-slot-target:focus-visible { background:var(--white,#fff); outline:none; z-index:1; }
+.booking-dragging .booking-slot-target span { display:none; }
+.booking-drop-preview { position:absolute; top:0; left:3px; right:3px; z-index:5; pointer-events:none; box-sizing:border-box; border:2px solid var(--blue-600,#2563eb); border-radius:4px; background:var(--blue-050,#eff6ff); color:var(--blue-800,#1e40af); box-shadow:0 0 0 3px rgb(37 99 235 / .12); transition:transform .12s ease-out,height .12s ease-out; animation:booking-drop-appear .2s ease-out; }
+.booking-drop-content { height:100%; box-sizing:border-box; padding:4px 6px; overflow:hidden; }
+.booking-drop-content span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; line-height:1.3; }
+.booking-drop-content span:first-child { font-size:12px; font-weight:600; }
+.booking-drop-time { position:absolute; bottom:calc(100% + 5px); left:-2px; padding:3px 6px; border-radius:4px; background:var(--blue-600,#2563eb); color:var(--white,#fff); font-size:11px; line-height:1.3; white-space:nowrap; }
+.booking-drop-pending { border-style:dashed; }
+@keyframes booking-drop-appear { from { opacity:.3; box-shadow:0 0 0 7px rgb(37 99 235 / .2); } to { opacity:1; box-shadow:0 0 0 3px rgb(37 99 235 / .12); } }
+.modal.fitted.booking-move-modal { width:460px; max-width:calc(100vw - 40px); }
+.booking-move-modal .body { padding:24px; }
+.booking-move-modal .body h2 { margin:0 0 12px; }
+.booking-move-modal .body p { margin:0; overflow-wrap:anywhere; }
+.booking-move-times { display:grid; gap:12px; margin:20px 0; }
+.booking-move-times > div { display:grid; grid-template-columns:100px minmax(0,1fr); align-items:baseline; gap:12px; }
+.booking-move-times dt { font-size:12px; }
+.booking-move-times dd { margin:0; overflow-wrap:anywhere; font-weight:600; }
+.booking-move-times > div:last-child { padding:12px; margin:0 -12px; border-radius:4px; background:var(--blue-050,#eff6ff); }
+.booking-move-modal .booking-move-timezone { font-size:12px; }
+@media (prefers-reduced-motion:reduce) { .booking-block, .booking-drop-preview { transition:none; animation:none; } }
+.booking-day-combined .booking-block { padding:3px 4px; line-height:1.2; }
+.booking-block.requested { background:#fff3da; color:#76531b; border-style:dashed; }
+.booking-block strong, .booking-block span, .booking-block small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.booking-block strong { font-size:12px; }.booking-block span,.booking-block small { font-size:10px; }
+.booking-overflow { position:absolute; z-index:4; padding:4px; border:1px solid var(--hairline-color,#d8dee5); border-radius:4px; background:var(--gray-100,#e8eff8); color:var(--text-color,#263344); cursor:pointer; font-size:11px; text-align:center; overflow:hidden; }
+.booking-overflow:hover, .booking-overflow:focus-visible { background:var(--gray-150,#dbe6f4); }
+.booking-schedule-modal { width:480px; max-width:calc(100vw - 40px); }
+.booking-choice-list { max-height:55vh; overflow:auto; margin-top:14px; }
+.booking-choice { display:flex; align-items:flex-start; gap:10px; padding:12px 8px; border-radius:4px; color:var(--text-color,#263344); text-decoration:none; }
+.booking-choice:hover, .booking-choice:focus-visible { background:var(--gray-050,#f3f6fa); text-decoration:none; }
+.booking-choice + .booking-choice { border-top:1px solid var(--hairline-color,#e7ebef); }
+.booking-choice > .color.small { flex:0 0 12px; width:12px; height:12px; margin-top:3px; }
+.booking-choice > span:last-child { min-width:0; }
+.booking-choice strong, .booking-choice .light { display:block; overflow-wrap:anywhere; }
+.booking-choice .light { font-size:12px; margin-top:3px; }
+{% include 'calendar/bookings/_request-warning-css' %}
+{% endcss %}
+{% js %}
+{% include 'calendar/bookings/_schedule-js' %}
+{% endjs %}

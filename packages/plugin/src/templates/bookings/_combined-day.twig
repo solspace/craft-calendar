@@ -1,0 +1,46 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
+{% set combined = day.combined %}
+<div class="booking-day-body booking-day-combined" data-date="{{ day.date|date('Y-m-d', displayTimezone) }}" data-date-label="{{ day.date|date('short', displayTimezone) }}" data-combined="true">
+    {% for hour in 0..23 %}<div class="booking-hour"></div>{% endfor %}
+    {% for minute, group in combined.slots %}
+        {% set options = group.options|filter(option => bookingPermissions[option.calendar.id].create) %}
+        {% if options is empty %}
+            {% set available = group.options|first %}
+            <span class="booking-slot-target booking-slot-readonly" style="top:{{ minute / 60 * 48 }}px;height:{{ group.height / 60 * 48 }}px;left:0;width:100%" title="{{ available.label }}"></span>
+        {% else %}
+        {% set option = options|first %}
+        {% set slotLabel = 'New booking: {time}'|t('calendar', {time: option.label}) %}
+        {% set templateId = 'booking-slot-' ~ day.date|date('Y-m-d', displayTimezone) ~ '-' ~ minute %}
+        {% if options|length == 1 %}
+            <a class="booking-slot-target" href="{{ cpUrl('calendar/bookings/new', {calendarId: option.calendar.id, start: option.start}) }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ option.length / 60 * 48 }}px;height:{{ group.height / 60 * 48 }}px;left:0;width:100%" aria-label="{{ option.calendar.name }} · {{ slotLabel }}" title="{{ option.calendar.name }} · {{ slotLabel }}"><span>{{ slotLabel }}</span></a>
+        {% else %}
+            <button type="button" class="booking-slot-target" data-booking-options="{{ templateId }}" data-booking-options-title="{{ resourceLabels.choose }}" style="top:{{ minute / 60 * 48 }}px;--slot-height:{{ option.length / 60 * 48 }}px;height:{{ group.height / 60 * 48 }}px;left:0;width:100%" aria-label="{{ slotLabel }}" title="{{ slotLabel }}"><span>{{ slotLabel }}</span></button>
+            <template id="{{ templateId }}">
+                {% for option in options %}
+                    <a class="booking-choice" href="{{ cpUrl('calendar/bookings/new', {calendarId: option.calendar.id, start: option.start}) }}">
+                        <span class="color small" aria-hidden="true"><span class="color-preview" style="background-color:{{ option.calendar.color }}"></span></span>
+                        <span><strong>{{ option.calendar.name }}</strong><span class="light" title="{{ displayTimezone }}">{{ option.label }} · {{ option.start|calendarTimezoneAbbreviation(displayTimezone) }}</span></span>
+                    </a>
+                {% endfor %}
+            </template>
+        {% endif %}
+        {% endif %}
+    {% endfor %}
+    {% for item in combined.bookings %}
+        <a draggable="{{ bookingPermissions[item.calendar.id].reschedule ? 'true' : 'false' }}" {% include 'calendar/bookings/_schedule-booking-attributes' with {resource: item.calendar} %} class="booking-block {{ item.booking.bookingStatus }}" href="{{ item.booking.cpEditUrl }}" style="top:{{ item.minute / 60 * 48 }}px;height:{{ item.length / 60 * 48 }}px;border-left-color:{{ item.calendar.color }};left:calc({{ item.lane / item.lanes * 100 }}% - {{ item.lane / item.lanes * 24 }}px + 3px);width:calc({{ 100 / item.lanes }}% - {{ 24 / item.lanes + 6 }}px)" title="{{ item.calendar.name }} · {{ item.booking.customerName }} · {{ item.label }} · {{ statusOptions[item.booking.bookingStatus] }}">
+            <strong><span class="booking-customer-name">{{ item.booking.customerName }}</span>{% include 'calendar/bookings/_request-warning' with {booking: item.booking} %}</strong>{% if calendarIds|length > 1 %}<small>{{ item.calendar.name }}</small>{% endif %}<span>{{ item.label }}</span>
+        </a>
+    {% endfor %}
+    {% for group in combined.overflow %}
+        {% set templateId = 'booking-overflow-' ~ day.date|date('Y-m-d', displayTimezone) ~ '-' ~ loop.index %}
+        <button type="button" class="booking-overflow" data-booking-options="{{ templateId }}" data-booking-options-title="{{ craft.calendar.bookingLabel }}" style="top:{{ group.minute / 60 * 48 }}px;height:{{ group.length / 60 * 48 }}px;left:calc(66.6667% - 13px);width:calc(33.3333% - 14px)">{{ '+{count} more'|t('calendar', {count: group.items|length}) }}</button>
+        <template id="{{ templateId }}">
+            {% for item in group.items %}
+                <a class="booking-choice" href="{{ item.booking.cpEditUrl }}">
+                    <span class="color small" aria-hidden="true"><span class="color-preview" style="background-color:{{ item.calendar.color }}"></span></span>
+                    <span><strong><span class="booking-customer-name">{{ item.booking.customerName }}</span>{% include 'calendar/bookings/_request-warning' with {booking: item.booking} %}</strong><span class="light">{{ item.calendar.name }} · {{ item.label }}</span><span class="light">{{ statusOptions[item.booking.bookingStatus] }}</span></span>
+                </a>
+            {% endfor %}
+        </template>
+    {% endfor %}
+</div>

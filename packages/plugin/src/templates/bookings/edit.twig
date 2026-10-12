@@ -1,0 +1,273 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
+{% extends 'calendar/layouts/_bookings' %}
+{% import '_includes/forms' as forms %}
+{% set title = (booking.id ? (canSaveBooking ? 'Edit Booking' : 'View Booking') : 'New Booking')|t('calendar') %}
+{% set selectedSubnavItem = 'bookings' %}
+{% set fullPageForm = true %}
+{% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
+{% block actionButton %}{% if canDeleteBooking %}<button type="button" class="btn" id="booking-delete">{{ 'Delete'|t('app') }}</button>{% endif %}{% if canSaveBooking %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endif %}{% endblock %}
+{% block content %}
+{{ actionInput('calendar/bookings/save') }}{{ csrfInput() }}{{ redirectInput('calendar/bookings') }}
+{% if booking.id %}{{ hiddenInput('bookingId', booking.id) }}{% endif %}
+<div class="booking-editor">
+<fieldset class="booking-permission-fields"{{ not canSaveBooking ? ' disabled' }}>
+{% include 'calendar/bookings/_status-card' %}
+{% if booking.id and booking.bookingStatus == 'requested' and booking.startDate and booking.endDate %}
+<section id="booking-unavailable-request" class="booking-unavailable-request" role="status" aria-live="polite" hidden>
+    <span data-icon="alert" aria-hidden="true"></span>
+    <div>
+        <strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong>
+        {% set startTimezone = booking.startDate|calendarTimezoneAbbreviation(timezone) %}
+        {% set endTimezone = booking.endDate|calendarTimezoneAbbreviation(timezone) %}
+        <p title="{{ timezone }}">{{ 'Requested time: {date}, {time} {timezone}'|t('calendar', {date: booking.startDate|date('medium', timezone), time: booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel ~ ' - ' ~ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel, timezone: startTimezone == endTimezone ? startTimezone : startTimezone ~ ' → ' ~ endTimezone}) }}</p>
+        <p>{{ 'Choose another available time and contact the customer to confirm the alternative, or decline or cancel the request.'|t('calendar') }}</p>
+    </div>
+</section>
+{% endif %}
+<fieldset class="booking-permission-fields"{{ not canChooseTime ? ' disabled' }}>
+<div class="booking-picker-controls">
+<div class="booking-calendar-control">
+{% set calendarOptions = [] %}{% for calendar in calendars %}{% if booking.id ? ((bookingPermissions[calendar.id].edit and bookingPermissions[calendar.id].reschedule) or calendar.id == booking.calendarId) : bookingPermissions[calendar.id].create %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endif %}{% endfor %}
+{{ forms.selectField({label: resourceLabels.singular, name: 'calendarId', id: 'booking-calendar', options: calendarOptions, disabled: not canChooseTime, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
+<p class="light" id="booking-timezone" title="{{ timezone }}">{{ 'Times shown in {timezone}.'|t('calendar', {timezone: timezone|calendarTimezoneName}) }}</p>
+</div>
+<div class="booking-date-control">
+{{ forms.textField({label: 'Date'|t('app'), name: 'bookingDate', id: 'booking-date', disabled: not canChooseTime, type: 'date', value: booking.startDate ? booking.startDate|date('Y-m-d', timezone) : now|date('Y-m-d', timezone), required: true}) }}
+</div>
+</div>
+<div class="field" id="booking-slots-field">
+    <div class="heading"><label id="booking-slots-label">{{ 'Available Times'|t('calendar') }} <span class="required" aria-hidden="true"></span></label></div>
+    <div class="booking-slots-options">{{ forms.checkbox({id: 'booking-include-booked', label: 'Include booked time slots'|t('calendar'), checked: true}) }}</div>
+    <p class="light" id="booking-slots-message" role="status" aria-live="polite"></p>
+    <button type="button" class="btn" id="booking-slots-retry" hidden>{{ 'Try again'|t('calendar') }}</button>
+    <div id="booking-slots" role="group" aria-labelledby="booking-slots-label"></div>
+    <p class="light booking-confirmation-note">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
+    {{ forms.errorList(booking.getErrors('startDate')) }}
+    {{ forms.errorList(booking.getErrors('endDate')) }}
+</div>
+</fieldset>
+{% if not canChooseTime %}{{ hiddenInput('calendarId', booking.calendarId) }}{% endif %}
+{{ hiddenInput('startDate', booking.startDate ? booking.startDate|date('c', timezone) : '') }}
+{{ hiddenInput('endDate', booking.endDate ? booking.endDate|date('c', timezone) : '') }}
+<hr>
+<div class="booking-contact-grid">
+{{ forms.textField({label: 'Customer Name'|t('calendar'), name: 'customerName', value: booking.customerName, required: true, errors: booking.getErrors('customerName')}) }}
+{{ forms.textField({label: 'Customer Email'|t('calendar'), name: 'customerEmail', type: 'email', value: booking.customerEmail, required: true, errors: booking.getErrors('customerEmail')}) }}
+</div>
+{{ forms.textareaField({label: 'Notes'|t('calendar'), name: 'notes', value: booking.notes, errors: booking.getErrors('notes')}) }}
+{% for tab in fieldLayout.tabs %}<h2>{{ tab.name }}</h2>{% for field in tab.elements %}{{ field.formHtml(booking, not canSaveBooking)|raw }}{% endfor %}{% endfor %}
+</fieldset>
+</div>
+{% endblock %}
+{% js %}
+{% include 'calendar/bookings/_confirm-delete-js' %}
+const deleteBooking = document.getElementById('booking-delete');
+if (deleteBooking) deleteBooking.addEventListener('click', async () => {
+    if (deleteBooking.disabled) return;
+    deleteBooking.disabled = true;
+    try {
+        if (!await confirmBookingDeletion({{ booking.customerName|json_encode(15)|raw }}, deleteBooking)) return;
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/delete', {data: {bookingId: {{ booking.id ?: 'null' }}}});
+        if (!response.data.success) throw new Error(response.data.message);
+        Craft.cp.removeListener(Garnish.$win, 'beforeunload');
+        window.location.href = {{ cpUrl('calendar/bookings')|json_encode|raw }};
+    } catch (error) {
+        Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
+    } finally {
+        deleteBooking.disabled = false;
+    }
+});
+const bookingTimezones = {{ calendars|map(calendar => calendar.schedulingSettings.timezone)|json_encode|raw }};
+const bookingTimezoneNames = {{ calendars|map(calendar => calendar.schedulingSettings.timezone|calendarTimezoneName)|json_encode|raw }};
+const bookingCalendar = document.getElementById('booking-calendar');
+const bookingDate = document.getElementById('booking-date');
+const bookingSlots = document.getElementById('booking-slots');
+const bookingSlotsMessage = document.getElementById('booking-slots-message');
+const bookingSlotsRetry = document.getElementById('booking-slots-retry');
+const bookingIncludeBooked = document.getElementById('booking-include-booked');
+const bookingUnavailableRequest = document.getElementById('booking-unavailable-request');
+const bookingStart = document.querySelector('[name="startDate"]');
+const bookingEnd = document.querySelector('[name="endDate"]');
+const bookingStatusSelect = document.getElementById('booking-status');
+const bookingStatusCard = document.getElementById('booking-status-card');
+const bookingStatusIcons = {requested: '?', confirmed: '✓', declined: '×', cancelled: '−'};
+bookingStatusSelect.addEventListener('change', () => {
+    if (!Object.hasOwn(bookingStatusIcons, bookingStatusSelect.value)) return;
+    bookingStatusCard.classList.remove(...Object.keys(bookingStatusIcons));
+    bookingStatusCard.classList.add(bookingStatusSelect.value);
+    bookingStatusCard.querySelector('.booking-status-icon').textContent = bookingStatusIcons[bookingStatusSelect.value];
+});
+const originalBookingTime = {calendarId: bookingCalendar.value, start: bookingStart.value, end: bookingEnd.value, label: {{ (booking.startDate and booking.endDate ? (booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel ~ ' - ' ~ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel) : '')|json_encode|raw }}};
+{% include 'calendar/bookings/_status-relative-js' %}
+let bookingSlotsRequest = 0;
+let bookingSlotsLoading = false;
+let bookingSlotSelected = false;
+function bookingTimesMatch(first, second) {
+    return Date.parse(first.start) === Date.parse(second.start) && Date.parse(first.end) === Date.parse(second.end);
+}
+function chooseBookingSlot(slot, button) {
+    if (slot.available === false || button.disabled) return;
+    // Equivalent API timestamps may use another offset. Keep the form's original
+    // strings so initializing the picker doesn't count as an unsaved edit.
+    if (bookingCalendar.value === originalBookingTime.calendarId && bookingTimesMatch(slot, originalBookingTime)) slot = originalBookingTime;
+    bookingStart.value = slot.start;
+    bookingEnd.value = slot.end;
+    bookingSlotSelected = true;
+    bookingStart.dispatchEvent(new Event('change', {bubbles: true}));
+    bookingEnd.dispatchEvent(new Event('change', {bubbles: true}));
+    bookingSlots.querySelectorAll('button').forEach(item => {
+        item.classList.toggle('active', item === button);
+        item.setAttribute('aria-pressed', item === button ? 'true' : 'false');
+    });
+}
+async function loadBookingSlots(resetSelection = false) {
+    {% if not canChooseTime %}
+    bookingSlotSelected = true;
+    bookingSlotsMessage.textContent = originalBookingTime.label;
+    return;
+    {% endif %}
+    const request = ++bookingSlotsRequest;
+    bookingSlotsLoading = true;
+    bookingSlotSelected = false;
+    bookingSlotsRetry.hidden = true;
+    bookingSlots.replaceChildren();
+    if (resetSelection) {
+        bookingStart.value = '';
+        bookingEnd.value = '';
+    }
+    const selectedTime = {start: bookingStart.value, end: bookingEnd.value};
+    const timezoneCaption = document.getElementById('booking-timezone');
+    timezoneCaption.textContent = Craft.t('calendar', 'Times shown in {timezone}.', {timezone: bookingTimezoneNames[bookingCalendar.value]});
+    timezoneCaption.title = bookingTimezones[bookingCalendar.value];
+    if (!bookingDate.value) {
+        bookingSlotsLoading = false;
+        bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose a date to see available times.');
+        return;
+    }
+    bookingSlotsMessage.textContent = Craft.t('calendar', 'Loading available times…');
+    try {
+        const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: bookingCalendar.value, date: bookingDate.value, bookingId: {{ booking.id ?? 0 }}, includeBooked: true}});
+        if (request !== bookingSlotsRequest) return;
+        const slots = response.data.slots;
+        const original = originalBookingTime.calendarId === bookingCalendar.value && originalBookingTime.start.slice(0, 10) === bookingDate.value ? originalBookingTime : null;
+        {% if booking.id %}
+        const originalAvailable = original && slots.some(slot => slot.available !== false && bookingTimesMatch(slot, original));
+        if (original && bookingUnavailableRequest) bookingUnavailableRequest.hidden = !!originalAvailable;
+        if (original && !originalAvailable && !bookingUnavailableRequest && !slots.some(slot => bookingTimesMatch(slot, original))) {
+            slots.unshift({start: original.start, end: original.end, label: Craft.t('calendar', 'Current booking time: {time}', {time: original.label})});
+        }
+        {% endif %}
+        bookingSlotsMessage.textContent = slots.some(slot => slot.available !== false) ? Craft.t('calendar', 'Choose an available time.') : Craft.t('calendar', 'No times are available on this date.');
+        slots.forEach(slot => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn booking-slot';
+            button.textContent = slot.label;
+            button.setAttribute('aria-pressed', 'false');
+            if (slot.available === false) {
+                button.disabled = true;
+                button.dataset.booked = 'true';
+                button.hidden = !bookingIncludeBooked.checked;
+                const label = document.createElement('span');
+                label.className = 'booking-slot-booked-label';
+                label.textContent = Craft.t('calendar', 'Booked');
+                button.append(label);
+                button.title = Craft.t('calendar', 'This time is already booked or overlaps a booking buffer.');
+            } else {
+                button.addEventListener('click', () => chooseBookingSlot(slot, button));
+            }
+            bookingSlots.append(button);
+            if (bookingTimesMatch(slot, selectedTime)) chooseBookingSlot(slot, button);
+        });
+    } catch (_) {
+        if (request === bookingSlotsRequest) {
+            bookingSlotsMessage.textContent = Craft.t('calendar', 'Could not load available times. Please try again.');
+            bookingSlotsRetry.hidden = false;
+        }
+    } finally {
+        if (request === bookingSlotsRequest) bookingSlotsLoading = false;
+    }
+}
+bookingCalendar.addEventListener('change', () => loadBookingSlots(true));
+bookingDate.addEventListener('click', event => {
+    if (typeof bookingDate.showPicker !== 'function') return;
+    try {
+        bookingDate.showPicker();
+        event.preventDefault();
+    } catch (_) { /* Keep the browser's normal date input behavior when unavailable. */ }
+});
+bookingDate.addEventListener('change', () => loadBookingSlots(true));
+bookingSlotsRetry.addEventListener('click', () => loadBookingSlots());
+bookingIncludeBooked.addEventListener('change', () => {
+    bookingSlots.querySelectorAll('[data-booked]').forEach(button => { button.hidden = !bookingIncludeBooked.checked; });
+});
+bookingDate.form.addEventListener('submit', event => {
+    // A request can be released without moving it to a new time. Keep its saved
+    // timestamps on load so an unavailable request doesn't become an unsaved edit.
+    const releasingOriginal = {{ booking.id ? 'true' : 'false' }} && ['declined', 'cancelled'].includes(bookingStatusSelect.value)
+        && originalBookingTime.calendarId === bookingCalendar.value
+        && originalBookingTime.start.slice(0, 10) === bookingDate.value
+        && bookingTimesMatch({start: bookingStart.value, end: bookingEnd.value}, originalBookingTime);
+    if (bookingSlotsLoading || !bookingStart.value || !bookingEnd.value || (!bookingSlotSelected && !releasingOriginal)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        bookingSlotsMessage.textContent = Craft.t('calendar', 'Choose an available time.');
+        (bookingSlots.querySelector('button:not(:disabled)') || bookingDate).focus();
+    }
+}, true);
+loadBookingSlots();
+{% endjs %}
+{% css %}
+.booking-permission-fields { border:0; padding:0; margin:0; min-width:0; }
+
+{% include 'calendar/bookings/_confirm-delete-css' %}
+.booking-editor { max-width:960px; }
+.booking-editor .field { margin:0 0 22px; }
+.booking-editor .heading { margin-bottom:6px; }
+.booking-unavailable-request { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; margin-bottom:24px; border:1px solid #ebd6a0; border-left:4px solid var(--warning-color,#b45309); border-radius:6px; background:#fffbef; color:#76531b; }
+.booking-unavailable-request[hidden] { display:none !important; }
+.booking-unavailable-request > [data-icon] { --icon-color:var(--warning-color,#b45309); display:flex; align-items:center; justify-content:center; color:var(--warning-color,#b45309); flex:0 0 20px; width:20px; height:20px; margin:0; font-size:16px; line-height:1; }
+.booking-unavailable-request > div { min-width:0; overflow-wrap:anywhere; }
+.booking-unavailable-request strong { display:block; line-height:20px; }
+.booking-unavailable-request p { margin:6px 0 0; font-size:12px; line-height:1.5; }
+.booking-status-card { --status-color:#966000; --status-background:#fffbef; --status-border:#ebd6a0; --status-icon-background:#faedc5; border:1px solid var(--status-border); border-left:4px solid var(--status-color); border-radius:6px; background:var(--status-background); padding:14px 16px; margin-bottom:24px; }
+.booking-status-card.confirmed { --status-color:var(--enabled-color,#008a5b); --status-background:#f2faf6; --status-border:#b3dcc6; --status-icon-background:#dcefe4; }
+.booking-status-card.declined { --status-color:var(--error-color,#cf1124); --status-background:#fff6f6; --status-border:#edc0c5; --status-icon-background:#f9e1e4; }
+.booking-status-card.cancelled { --status-color:#5c697a; --status-background:#f6f7f9; --status-border:#d6dce4; --status-icon-background:#e7ebf0; }
+.booking-status-header { display:flex; align-items:center; column-gap:75px; row-gap:12px; flex-wrap:wrap; }
+.booking-status-picker { display:flex; align-items:center; gap:12px; flex-shrink:0; flex-wrap:wrap; max-width:100%; }
+.booking-status-relative { font-size:12px; line-height:1.5; white-space:nowrap; color:var(--light-text-color,#596673); }
+.booking-status-icon { display:flex; align-items:center; justify-content:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; background:var(--status-icon-background); color:var(--status-color); font-size:20px; font-weight:600; line-height:1; }
+.booking-status-header .select { margin:0; }
+.booking-status-header .select select { min-width:148px; min-height:34px; box-sizing:border-box; padding:6px 30px 6px 10px; border:1px solid var(--status-color); border-radius:5px; background:#fff; color:var(--status-color); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.08); cursor:pointer; }
+.booking-status-header .select::after { color:var(--status-color); opacity:1; }
+.booking-status-header .select select:hover { background:var(--status-icon-background); }
+.booking-status-header .select select:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
+.booking-status-body { padding-inline-start:44px; }
+.booking-status-header .booking-status-meta { flex:1 1 280px; min-width:0; margin:0; font-size:12px; line-height:1.5; color:var(--light-text-color,#596673); }
+.booking-status-body .errors { margin:8px 0 0; }
+.booking-confirmation-note { margin:10px 0 0; font-size:12px; line-height:1.5; }
+.booking-picker-controls, .booking-contact-grid { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; }
+.booking-picker-controls { margin-bottom:24px; max-width:720px; }
+.booking-picker-controls .field { margin-bottom:0; }
+.booking-contact-grid { margin-bottom:22px; }
+.booking-contact-grid > .field { margin-bottom:0; }
+.booking-picker-controls input { width:100%; box-sizing:border-box; }
+#booking-timezone { margin:8px 0 0; font-size:12px; line-height:1.5; }
+#booking-slots-message { margin:6px 0 12px; font-size:12px; line-height:1.5; }
+.booking-slots-options { margin:10px 0; }
+#booking-slots { display:grid; grid-template-columns:repeat(auto-fill, minmax(148px, 1fr)); gap:8px; }
+#booking-slots .booking-slot { min-width:0; width:100%; min-height:34px; height:auto; padding:7px 10px; box-sizing:border-box; justify-content:center; font-size:12px; font-variant-numeric:tabular-nums; white-space:normal; overflow-wrap:anywhere; text-align:center; }
+#booking-slots .booking-slot.active { background:var(--enabled-color,#008a5b); color:#fff; }
+#booking-slots .booking-slot:disabled { flex-direction:column; gap:2px; background:var(--gray-050,#f3f6fa); color:var(--light-text-color,#596673); box-shadow:inset 0 0 0 1px var(--border-hairline,#e4e9ef); cursor:not-allowed; opacity:1; }
+#booking-slots .booking-slot[hidden] { display:none !important; }
+.booking-slot-booked-label { font-size:10px; line-height:1.2; }
+#booking-slots .booking-slot:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
+#booking-slots-retry { margin-bottom:12px; }
+#booking-slots-retry[hidden] { display:none !important; }
+.booking-editor hr { margin:26px 0; }
+@media (max-width:600px) {
+    .booking-picker-controls, .booking-contact-grid { grid-template-columns:minmax(0, 1fr); gap:18px; }
+    #booking-slots { grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); }
+}
+{% endcss %}

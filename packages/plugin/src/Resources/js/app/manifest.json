@@ -6,12 +6,12 @@
       "_translations-CPvEMAbD.js"
     ]
   },
-  "_calendar.events-B0-G7rS_.js": {
-    "file": "assets/calendar.events-B0-G7rS_.js",
+  "_calendar.events-CgSVi6Oj.js": {
+    "file": "assets/calendar.events-CgSVi6Oj.js",
     "name": "calendar.events",
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_localization-Mf36Vfg7.js",
+      "_localization-BHnAK9Na.js",
       "_http-bwzZaFVT.js"
     ]
   },
@@ -29,20 +29,20 @@
       "_translations-CPvEMAbD.js"
     ]
   },
-  "_create-with-ai-DzGOu4nE.js": {
-    "file": "assets/create-with-ai-DzGOu4nE.js",
+  "_create-with-ai-C8YxjJes.js": {
+    "file": "assets/create-with-ai-C8YxjJes.js",
     "name": "create-with-ai",
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-dAY_Ede8.js",
-      "_localization-Mf36Vfg7.js",
-      "_lightswitch-Bj0mJjdb.js",
+      "_create-with-ai.styles-B3GlnHSg.js",
+      "_localization-BHnAK9Na.js",
+      "_lightswitch-C4sgii-l.js",
       "_http-bwzZaFVT.js",
       "_components-DAVK9kbC.js"
     ]
   },
-  "_create-with-ai.styles-dAY_Ede8.js": {
-    "file": "assets/create-with-ai.styles-dAY_Ede8.js",
+  "_create-with-ai.styles-B3GlnHSg.js": {
+    "file": "assets/create-with-ai.styles-B3GlnHSg.js",
     "name": "create-with-ai.styles",
     "imports": [
       "_translations-CPvEMAbD.js"
@@ -52,35 +52,35 @@
     "file": "assets/defineProperty-BbfpZ9Tg.js",
     "name": "defineProperty"
   },
-  "_dropdown-CVbJN3sq.js": {
-    "file": "assets/dropdown-CVbJN3sq.js",
+  "_dropdown-5rfGMki3.js": {
+    "file": "assets/dropdown-5rfGMki3.js",
     "name": "dropdown",
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_lightswitch-Bj0mJjdb.js"
+      "_lightswitch-C4sgii-l.js"
     ]
   },
   "_http-bwzZaFVT.js": {
     "file": "assets/http-bwzZaFVT.js",
     "name": "http"
   },
-  "_interaction-DqG35pqf.js": {
-    "file": "assets/interaction-DqG35pqf.js",
+  "_interaction-DkjMMopr.js": {
+    "file": "assets/interaction-DkjMMopr.js",
     "name": "interaction",
     "imports": [
-      "_calendar.events-B0-G7rS_.js"
+      "_calendar.events-CgSVi6Oj.js"
     ]
   },
   "_lightswitch-BMkzam91.css": {
     "file": "assets/lightswitch-BMkzam91.css",
     "src": "_lightswitch-BMkzam91.css"
   },
-  "_lightswitch-Bj0mJjdb.js": {
-    "file": "assets/lightswitch-Bj0mJjdb.js",
+  "_lightswitch-C4sgii-l.js": {
+    "file": "assets/lightswitch-C4sgii-l.js",
     "name": "lightswitch",
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_localization-Mf36Vfg7.js",
+      "_localization-BHnAK9Na.js",
       "_defineProperty-BbfpZ9Tg.js"
     ],
     "css": [
@@ -94,8 +94,8 @@
       "_translations-CPvEMAbD.js"
     ]
   },
-  "_localization-Mf36Vfg7.js": {
-    "file": "assets/localization-Mf36Vfg7.js",
+  "_localization-BHnAK9Na.js": {
+    "file": "assets/localization-BHnAK9Na.js",
     "name": "localization",
     "imports": [
       "_translations-CPvEMAbD.js"
@@ -105,77 +105,77 @@
     "file": "assets/open-event-create-with-ai-AyWFumb6.js",
     "name": "open-event-create-with-ai"
   },
-  "_timegrid-dPK_ini7.js": {
-    "file": "assets/timegrid-dPK_ini7.js",
+  "_timegrid-DkP0uxp5.js": {
+    "file": "assets/timegrid-DkP0uxp5.js",
     "name": "timegrid",
     "imports": [
-      "_calendar.events-B0-G7rS_.js"
+      "_calendar.events-CgSVi6Oj.js"
     ]
   },
   "_translations-CPvEMAbD.js": {
     "file": "assets/translations-CPvEMAbD.js",
     "name": "translations"
   },
-  "_variables-BbBDeNZ7.js": {
-    "file": "assets/variables-BbBDeNZ7.js",
+  "_variables-XTEqmteb.js": {
+    "file": "assets/variables-XTEqmteb.js",
     "name": "variables",
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_lightswitch-Bj0mJjdb.js"
+      "_lightswitch-C4sgii-l.js"
     ]
   },
   "src/index.tsx": {
-    "file": "assets/overview-DlDa1-VC.js",
+    "file": "assets/overview-DkXo9hT5.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-dAY_Ede8.js",
-      "_localization-Mf36Vfg7.js",
-      "_calendar.events-B0-G7rS_.js",
-      "_interaction-DqG35pqf.js",
-      "_timegrid-dPK_ini7.js",
-      "_lightswitch-Bj0mJjdb.js",
-      "_create-with-ai-DzGOu4nE.js",
+      "_create-with-ai.styles-B3GlnHSg.js",
+      "_localization-BHnAK9Na.js",
+      "_calendar.events-CgSVi6Oj.js",
+      "_interaction-DkjMMopr.js",
+      "_timegrid-DkP0uxp5.js",
+      "_lightswitch-C4sgii-l.js",
+      "_create-with-ai-C8YxjJes.js",
       "_http-bwzZaFVT.js",
       "_calendar.styles-CIEulExP.js",
-      "_variables-BbBDeNZ7.js",
+      "_variables-XTEqmteb.js",
       "_components-DAVK9kbC.js",
       "_ai-button-DEEwQsMT.js"
     ]
   },
   "src/standalone/calendars-ai/index.tsx": {
-    "file": "assets/calendars-ai-BYdLZaqJ.js",
+    "file": "assets/calendars-ai-C3gD3EGf.js",
     "name": "calendars-ai",
     "src": "src/standalone/calendars-ai/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-dAY_Ede8.js",
+      "_create-with-ai.styles-B3GlnHSg.js",
       "_http-bwzZaFVT.js",
       "_components-DAVK9kbC.js",
       "_ai-button-DEEwQsMT.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-Qe0CPS5e.js",
+    "file": "assets/event-builder-0q9SDZQ_.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_create-with-ai.styles-dAY_Ede8.js",
-      "_localization-Mf36Vfg7.js",
-      "_calendar.events-B0-G7rS_.js",
-      "_interaction-DqG35pqf.js",
-      "_lightswitch-Bj0mJjdb.js",
-      "_create-with-ai-DzGOu4nE.js",
+      "_create-with-ai.styles-B3GlnHSg.js",
+      "_localization-BHnAK9Na.js",
+      "_calendar.events-CgSVi6Oj.js",
+      "_interaction-DkjMMopr.js",
+      "_lightswitch-C4sgii-l.js",
+      "_create-with-ai-C8YxjJes.js",
       "_http-bwzZaFVT.js",
       "_components-DAVK9kbC.js",
       "_ai-button-DEEwQsMT.js",
       "_open-event-create-with-ai-AyWFumb6.js",
-      "_dropdown-CVbJN3sq.js"
+      "_dropdown-5rfGMki3.js"
     ]
   },
   "src/standalone/events-ai/index.tsx": {
@@ -199,44 +199,44 @@
     ]
   },
   "src/standalone/widgets/agenda/index.tsx": {
-    "file": "assets/widget-agenda-BS_DsGQa.js",
+    "file": "assets/widget-agenda-C8VJVhgo.js",
     "name": "widget-agenda",
     "src": "src/standalone/widgets/agenda/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_localization-Mf36Vfg7.js",
-      "_calendar.events-B0-G7rS_.js",
-      "_timegrid-dPK_ini7.js",
+      "_localization-BHnAK9Na.js",
+      "_calendar.events-CgSVi6Oj.js",
+      "_timegrid-DkP0uxp5.js",
       "_calendar.styles-CIEulExP.js",
       "_loader-DKETRy5r.js"
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-mAJ98kKU.js",
+    "file": "assets/widget-event-DojqTDh2.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_localization-Mf36Vfg7.js",
-      "_lightswitch-Bj0mJjdb.js",
-      "_variables-BbBDeNZ7.js",
+      "_localization-BHnAK9Na.js",
+      "_lightswitch-C4sgii-l.js",
+      "_variables-XTEqmteb.js",
       "_components-DAVK9kbC.js",
-      "_dropdown-CVbJN3sq.js",
+      "_dropdown-5rfGMki3.js",
       "_loader-DKETRy5r.js"
     ]
   },
   "src/standalone/widgets/mini/index.tsx": {
-    "file": "assets/widget-mini-D5ZZw-Tn.js",
+    "file": "assets/widget-mini-D69znRJF.js",
     "name": "widget-mini",
     "src": "src/standalone/widgets/mini/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
-      "_localization-Mf36Vfg7.js",
-      "_calendar.events-B0-G7rS_.js",
-      "_interaction-DqG35pqf.js",
+      "_localization-BHnAK9Na.js",
+      "_calendar.events-CgSVi6Oj.js",
+      "_interaction-DkjMMopr.js",
       "_calendar.styles-CIEulExP.js",
       "_loader-DKETRy5r.js"
     ]

@@ -1,0 +1,287 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
+{% import '_includes/forms' as forms %}
+{% set calendar = calendars[booking.calendarId] %}
+{% set timezone = calendar.schedulingSettings.timezone %}
+<input type="hidden" name="bookingId" value="{{ booking.id }}">
+<input type="hidden" name="bookingStatus" value="confirmed" data-request-decision>
+<input type="hidden" name="originalCalendarId" value="{{ booking.calendarId }}">
+<input type="hidden" name="originalStartDate" value="{{ booking.startDate|atom }}">
+<input type="hidden" name="originalEndDate" value="{{ booking.endDate|atom }}">
+<input type="hidden" name="start" value="" data-request-start>
+<input type="hidden" name="calendarId" value="{{ booking.calendarId }}" data-request-calendar-target>
+<div class="request-review-content">
+    <div class="request-review-header">
+        <div class="request-review-avatar" aria-hidden="true">{{ booking.customerName|trim|slice(0, 1)|upper }}</div>
+        <div class="request-review-customer">
+            <h2>{{ booking.customerName }}</h2>
+            <a href="mailto:{{ booking.customerEmail }}">{{ booking.customerEmail }}</a>
+        </div>
+        <span class="request-review-status"><span class="status orange" aria-hidden="true"></span>{{ 'Requested'|t('calendar') }}</span>
+    </div>
+    <dl class="request-summary">
+        <div class="request-summary-time">
+            <dt><span data-icon="calendar" aria-hidden="true"></span>{{ 'Requested Time'|t('calendar') }}</dt>
+            <dd><span class="request-summary-date">{{ booking.startDate|date('medium', timezone) }}</span><strong>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} – {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }}</strong><span class="light request-summary-timezone" title="{{ timezone }}">{{ booking.startDate|calendarTimezoneAbbreviation(timezone) }}</span></dd>
+        </div>
+        <div>
+            <dt>{{ resourceLabels.singular }}</dt>
+            <dd class="request-summary-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span><strong>{{ calendar.name }}</strong></dd>
+        </div>
+        <div>
+            <dt>{{ 'Submitted'|t('calendar') }}</dt>
+            <dd><span class="request-summary-date">{{ booking.dateCreated|date('medium') }}</span><span class="light">{{ booking.dateCreated|time(bookingTimeFormat)|calendarTimeLabel }}</span></dd>
+        </div>
+    </dl>
+    {% if unavailable %}
+        <div class="request-review-warning"><span data-icon="alert" aria-hidden="true"></span><div><strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong><p>{{ (bookingPermissions[booking.calendarId].reschedule ? 'Choose another available time or decline this request.' : 'The requested time cannot be confirmed. Contact a scheduler or decline this request.')|t('calendar') }}</p></div></div>
+    {% endif %}
+    <section class="request-review-section request-review-reschedule">
+        <div class="request-review-section-heading">
+            <h3>{{ 'Availability'|t('calendar') }}</h3>
+            <button type="button" class="btn small{{ unavailable or not bookingPermissions[booking.calendarId].reschedule ? ' hidden' }}" data-request-alternative aria-expanded="{{ unavailable ? 'true' : 'false' }}" aria-controls="{{ containerId }}-time-picker">{{ 'Choose another time'|t('calendar') }}</button>
+        </div>
+        <p class="light request-review-help">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
+        <div id="{{ containerId }}-time-picker" data-request-time-picker class="{{ not unavailable or not bookingPermissions[booking.calendarId].reschedule ? 'hidden' }}">
+            <div class="request-review-date-controls">
+                <div class="field request-review-calendar-field">
+                    <div class="heading"><label id="{{ containerId }}-calendar-label">{{ resourceLabels.singular }}</label></div>
+                    <select class="hidden" data-request-calendar aria-label="{{ resourceLabels.singular }}" tabindex="-1">
+                        {% for resource in calendars|filter(resource => resource.id == booking.calendarId or (bookingPermissions[resource.id].status and bookingPermissions[resource.id].reschedule)) %}
+                            <option value="{{ resource.id }}"{{ resource.id == booking.calendarId ? ' selected' }}>{{ resource.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn menubtn request-calendar-picker" data-disclosure-trigger aria-labelledby="{{ containerId }}-calendar-label {{ containerId }}-calendar-current" aria-controls="{{ containerId }}-calendar-menu">
+                        <span class="color-indicator" data-request-calendar-color style="background:{{ calendar.color }}" aria-hidden="true"></span>
+                        <span id="{{ containerId }}-calendar-current" data-request-calendar-label>{{ calendar.name }}</span>
+                    </button>
+                    <div id="{{ containerId }}-calendar-menu" class="menu menu--disclosure request-calendar-menu"{% if calendars|length > 10 %} data-with-search-input="true"{% endif %}>
+                        <ul class="padded">
+                            {% for resource in calendars|filter(resource => resource.id == booking.calendarId or (bookingPermissions[resource.id].status and bookingPermissions[resource.id].reschedule)) %}
+                                <li><button type="button" class="menu-item{{ resource.id == booking.calendarId ? ' sel' }}" data-request-calendar-option="{{ resource.id }}" data-calendar-color="{{ resource.color }}" data-calendar-name="{{ resource.name }}"{{ resource.id == booking.calendarId ? ' aria-current="true"' }}>
+                                    <span class="menu-item-label request-calendar-option-label"><span class="color-indicator" style="background:{{ resource.color }}" aria-hidden="true"></span><span>{{ resource.name }}</span></span>
+                                </button></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {{ forms.textField({id: containerId ~ '-date', label: 'Date'|t('calendar'), type: 'date', value: booking.startDate|date('Y-m-d', timezone), inputAttributes: {data: {'request-date': true}}}) }}
+                {% if not unavailable %}<button type="button" class="btn small" data-request-original>{{ 'Keep requested time'|t('calendar') }}</button>{% endif %}
+            </div>
+            <div class="light request-review-slot-message" role="status" aria-live="polite" data-request-slot-message></div>
+            <div class="request-review-slots" data-request-slots></div>
+        </div>
+    </section>
+    {% if booking.notes %}
+        <section class="request-review-section request-review-notes">
+            <h3>{{ 'Notes'|t('calendar') }}</h3>
+            <div class="request-notes">{{ booking.notes }}</div>
+        </section>
+    {% endif %}
+    {% if booking.fieldLayout %}
+        {% set fieldForm = booking.fieldLayout.createForm(booking, true) %}
+        {% if fieldForm.tabs|length %}
+            <section class="request-review-section request-review-fields">
+                <h3>{{ 'Fields'|t('calendar') }}</h3>
+                {% for tab in fieldForm.tabs %}
+                    {% if fieldForm.tabs|length > 1 %}<h4 class="request-review-tab">{{ tab.name }}</h4>{% endif %}
+                    <div class="flex-fields">{{ tab.content|raw }}</div>
+                {% endfor %}
+            </section>
+        {% endif %}
+    {% endif %}
+    <div class="request-review-actions">
+        <button type="button" class="btn booking-decline-btn" data-request-decline>{{ 'Decline Request'|t('calendar') }}</button>
+        <a class="btn" href="{{ booking.cpEditUrl }}">{{ (bookingPermissions[booking.calendarId].edit ? 'Edit booking' : 'View Booking')|t('calendar') }}</a>
+    </div>
+</div>
+{% css %}
+/* Suppress Craft's persistent focus ring on the slideout content container.
+   Interactive controls retain their own focus-visible outlines. */
+.cp-screen:has(.request-review-content):focus,
+.cp-screen:has(.request-review-content) .cp-screen-body:focus,
+.cp-screen:has(.request-review-content) .cp-screen-content:focus,
+.cp-screen:has(.request-review-content) .cp-screen-main:focus,
+form:has(> .request-review-content):focus,
+form:has(> .request-review-content):focus-visible {
+    outline: none !important;
+}
+.request-review-content { max-width:960px; margin-inline:auto; padding-block:4px 12px; container-type:inline-size; container-name:request-review; }
+.request-review-header { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+.request-review-avatar { display:flex; align-items:center; justify-content:center; flex:0 0 48px; height:48px; border-radius:50%; background:var(--gray-100,#e7edf5); color:var(--medium-text-color,#596673); font-size:22px; font-weight:600; }
+.request-review-customer { min-width:0; flex:1; }
+.request-review-customer h2 { margin:0 0 4px; font-size:22px; line-height:1.3; overflow-wrap:anywhere; }
+.request-review-customer a { font-size:13px; overflow-wrap:anywhere; }
+.request-review-status { display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:5px; background:#fff3da; color:#76531b; font-size:12px; white-space:nowrap; }
+.request-review-status .status { margin:0; }
+.request-summary { display:grid; grid-template-columns:minmax(0,1.25fr) repeat(2,minmax(0,1fr)); gap:12px; margin:0 0 24px; }
+.request-summary > div { padding:16px; border:1px solid var(--hairline-color,#d8dee5); border-radius:6px; }
+.request-summary dt { display:flex; align-items:center; gap:6px; margin-bottom:10px; color:var(--light-text-color,#596673); font-size:12px; font-weight:500; }
+.request-summary dt [data-icon] { display:inline-flex; align-items:center; line-height:1; font-size:12px; }
+.request-summary dd { margin:0; overflow-wrap:anywhere; }
+.request-summary .request-summary-time { background:var(--gray-050,#f4f6f9); }
+.request-summary-date { display:block; margin-bottom:4px; }
+.request-summary-time strong { font-size:17px; line-height:1.4; }
+.request-summary-timezone { display:inline-block; margin-inline-start:5px; font-size:12px; }
+.request-summary-calendar { display:flex; align-items:baseline; gap:8px; }
+.request-summary-calendar .color-indicator { flex-shrink:0; margin:0; }
+.request-review-section { margin-block:20px; }
+.request-review-section > h3, .request-review-section-heading > h3 { margin:0 0 12px; font-size:14px; font-weight:600; }
+.request-review-notes { padding:16px 20px; background:var(--gray-050,#f4f6f9); border-inline-start:3px solid var(--gray-200,#d8dee5); border-radius:5px; }
+.request-notes { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.6; }
+.request-review-fields { padding:20px; border:1px solid var(--hairline-color,#d8dee5); border-radius:6px; }
+.request-review-fields > h3 { padding-bottom:14px; border-bottom:1px solid var(--hairline-color,#d8dee5); margin-bottom:20px; }
+.request-review-fields .request-review-tab { margin:20px 0 12px; font-size:12px; font-weight:600; color:var(--light-text-color,#596673); }
+.request-review-fields > .flex-fields:last-child .field:last-child { margin-bottom:0; }
+.request-review-warning { display:flex; align-items:flex-start; gap:12px; padding:16px; background:#fffbef; color:var(--warning-color,#b45309); border:1px solid #f2ddb3; border-radius:6px; margin-block:20px; }
+.request-review-warning > [data-icon] { display:inline-flex; align-items:center; justify-content:center; flex:0 0 18px; font-size:16px; line-height:1; margin-top:2px; }
+.request-review-warning p { margin:5px 0 0; font-size:13px; line-height:1.5; }
+.request-review-reschedule { padding:18px 20px; border:1px solid var(--hairline-color,#d8dee5); border-radius:6px; }
+.request-review-section-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.request-review-section-heading h3 { margin:0; }
+.request-review-help { margin:8px 0 0; font-size:12px; line-height:1.5; }
+.request-review-date-controls { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; margin-top:18px; }
+.request-review-date-controls > .field { margin:0; }
+.request-review-calendar-field { flex:0 1 280px; min-width:190px; max-width:320px; }
+.request-calendar-picker { display:flex; align-items:center; gap:9px; width:100%; min-height:36px; padding-inline:12px; text-align:start; }
+.request-calendar-picker::after { margin-inline-start:auto; }
+.request-calendar-picker [data-request-calendar-label] { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.request-calendar-picker .color-indicator, .request-calendar-menu .color-indicator { width:10px; height:10px; flex:0 0 10px; margin:0; }
+.request-calendar-menu { width:280px; max-width:calc(100vw - 32px); box-sizing:border-box; }
+.request-calendar-option-label { display:inline-flex; align-items:center; gap:9px; max-width:100%; vertical-align:middle; white-space:normal; overflow-wrap:anywhere; }
+.request-calendar-menu .sel { font-weight:600; }
+.request-review-date-controls > .btn { margin-bottom:1px; }
+.request-review-slot-message { margin-top:14px; font-size:13px; }
+.request-review-slot-message:empty { display:none; }
+.request-review-slots { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr)); gap:8px; margin-top:16px; }
+.request-review-slots:empty { display:none; }
+.request-review-slots .btn { min-width:0; width:100%; min-height:34px; height:auto; padding:7px 10px; box-sizing:border-box; justify-content:center; font-size:12px; font-variant-numeric:tabular-nums; white-space:normal; overflow-wrap:anywhere; text-align:center; }
+.request-review-slots .btn[aria-pressed="true"] { background:var(--bg-selection-dark,#a6b4c9); color:var(--text-color,#263344); box-shadow:inset 0 0 0 2px var(--blue-600,#2563eb); }
+.booking-decline-btn { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 5%,#fff); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--error-color,#cf1124) 35%,transparent); }
+.booking-decline-btn:hover { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 10%,#fff); }
+.booking-decline-btn:focus-visible { outline:2px solid var(--error-color,#cf1124); outline-offset:2px; }
+.request-review-actions { display:flex; align-items:center; gap:var(--s,8px); }
+@media (max-width:600px) {
+    .request-review-header { gap:10px; flex-wrap:wrap; }
+    .request-review-customer h2 { font-size:20px; }
+    .request-summary { grid-template-columns:minmax(0,1fr); }
+    .request-review-fields, .request-review-reschedule { padding:16px; }
+}
+@container request-review (max-width:600px) {
+    .request-review-header { gap:10px; flex-wrap:wrap; }
+    .request-review-customer h2 { font-size:20px; }
+    .request-summary { grid-template-columns:minmax(0,1fr); }
+    .request-review-fields, .request-review-reschedule { padding:16px; }
+}
+{% endcss %}
+{% js %}
+(() => {
+    const form = document.getElementById({{ containerId|json_encode|raw }});
+    const screen = $(form).data('cpScreen');
+    const actions = form.querySelector('.request-review-actions');
+    // Place moderation actions alongside Craft's native footer controls.
+    const saveButton = screen.$saveBtn[0];
+    const footer = saveButton.closest('.cp-screen-footer, .slideout-footer, .footer, footer') || screen.$footer[0];
+    footer.prepend(actions);
+    footer.classList.add('calendar-review-footer');
+    saveButton.classList.add('calendar-confirm-booking');
+    if (!document.getElementById('calendar-review-footer-styles')) {
+        const style = document.createElement('style');
+        style.id = 'calendar-review-footer-styles';
+        style.textContent = `
+            .calendar-review-footer { display:flex; align-items:center; gap:8px; }
+            .calendar-review-footer .request-review-actions { margin-right:auto; flex-shrink:0; }
+            .calendar-review-footer .btn.submit.calendar-confirm-booking {
+                --primary-button-bg:#2563eb;
+                --primary-button-bg--hover:#1e40af;
+                --primary-button-bg--active:#1e3a8a;
+                --primary-button-text-color:#fff;
+                background:#2563eb !important;
+                color:#fff !important;
+            }
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading):hover,
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading).hover { background:#1e40af !important; }
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading):active,
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading).active { background:#1e3a8a !important; }
+            .calendar-review-footer .calendar-confirm-booking:focus-visible { outline:2px solid #1d4ed8; outline-offset:2px; }
+        `;
+        document.head.append(style);
+    }
+    const decision = form.querySelector('[data-request-decision]');
+    const start = form.querySelector('[data-request-start]');
+    const picker = form.querySelector('[data-request-time-picker]');
+    const alternative = form.querySelector('[data-request-alternative]');
+    const date = form.querySelector('[data-request-date]');
+    const calendarPicker = form.querySelector('[data-request-calendar]');
+    const calendarTarget = form.querySelector('[data-request-calendar-target]');
+    const calendarLabel = form.querySelector('[data-request-calendar-label]');
+    const calendarColor = form.querySelector('[data-request-calendar-color]');
+    const calendarTrigger = form.querySelector('.request-calendar-picker');
+    // Craft reparents disclosure menus to <body>; retain their options outside the form.
+    const calendarMenu = document.getElementById(calendarTrigger.getAttribute('aria-controls'));
+    const calendarOptions = [...calendarMenu.querySelectorAll('[data-request-calendar-option]')];
+    function syncCalendarMenu() {
+        calendarOptions.forEach(option => {
+            const selected = option.dataset.requestCalendarOption === calendarPicker.value;
+            option.classList.toggle('sel', selected);
+            if (selected) {
+                option.setAttribute('aria-current', 'true');
+                calendarLabel.textContent = option.dataset.calendarName;
+                calendarColor.style.backgroundColor = option.dataset.calendarColor;
+            } else option.removeAttribute('aria-current');
+        });
+    }
+    calendarOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            if (calendarPicker.value !== option.dataset.requestCalendarOption) {
+                calendarPicker.value = option.dataset.requestCalendarOption;
+                calendarPicker.dispatchEvent(new Event('change', {bubbles:true}));
+            }
+            $(calendarTrigger).data('disclosureMenu')?.hide();
+        });
+    });
+    const slots = form.querySelector('[data-request-slots]');
+    const message = form.querySelector('[data-request-slot-message]');
+    let revision = 0, controller = null;
+    const unavailable = {{ unavailable ? 'true' : 'false' }};
+    const canReschedule = {{ bookingPermissions[booking.calendarId].reschedule ? 'true' : 'false' }};
+    function sync() {
+        const expanded = !picker.classList.contains('hidden');
+        const calendarChanged = calendarPicker.value !== String({{ booking.calendarId|json_encode|raw }});
+        screen.$saveBtn.prop('disabled', (unavailable || expanded || calendarChanged) && !start.value);
+        alternative.classList.toggle('hidden', expanded || !canReschedule);
+        alternative.setAttribute('aria-expanded', String(expanded));
+    }
+    async function loadSlots() {
+        if (!canReschedule) return;
+        controller?.abort(); controller = new AbortController();
+        const signal = controller.signal, current = ++revision;
+        start.value = ''; calendarTarget.value = calendarPicker.value; sync(); slots.replaceChildren();
+        message.textContent = Craft.t('calendar', 'Loading available times…');
+        try {
+            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/available-slots', {params: {calendarId: calendarPicker.value, bookingId: {{ booking.id }}, date: date.value}, signal});
+            if (signal.aborted || revision !== current || !form.isConnected) return;
+            const available = response.data.slots.filter(slot => slot.available !== false);
+            message.textContent = available.length ? '' : Craft.t('calendar', 'No available times for this date.');
+            available.forEach(slot => {
+                const button = document.createElement('button');
+                button.type = 'button'; button.className = 'btn'; button.setAttribute('aria-pressed', 'false');
+                button.textContent = slot.label;
+                button.addEventListener('click', () => { start.value = slot.start; slots.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed', String(item === button))); sync(); screen.$saveBtn.find('.label').text(Craft.t('calendar', 'Confirm Booking')); });
+                slots.append(button);
+            });
+        } catch (error) { if (!signal.aborted) message.textContent = error.response?.data?.message || Craft.t('calendar', 'Could not load available times.'); }
+    }
+    alternative.addEventListener('click', () => { picker.classList.remove('hidden'); loadSlots(); date.focus(); });
+    date.addEventListener('click', () => { try { date.showPicker?.(); } catch (_) {} });
+    date.addEventListener('change', loadSlots);
+    calendarPicker.addEventListener('change', () => { syncCalendarMenu(); picker.classList.remove('hidden'); loadSlots(); });
+    form.querySelector('[data-request-decline]').addEventListener('click', () => { decision.value = 'declined'; start.value = ''; calendarTarget.value = {{ booking.calendarId }}; screen.$saveBtn.prop('disabled', false); screen.handleSubmit(new Event('submit', {cancelable: true})); });
+    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; calendarPicker.value = {{ booking.calendarId }}; calendarTarget.value = calendarPicker.value; syncCalendarMenu(); picker.classList.add('hidden'); sync(); alternative.focus(); });
+    const handleError = screen.handleSubmitError;
+    screen.handleSubmitError = function(error) { decision.value = 'confirmed'; sync(); return handleError.call(this, error); };
+    screen.on('beforeClose', () => { controller?.abort(); ++revision; });
+    syncCalendarMenu();
+    sync();
+    if (unavailable && canReschedule) loadSlots();
+})();
+{% endjs %}

@@ -1,0 +1,13 @@
+.booking-calendar-menu { width:240px; max-width:calc(100vw - 32px); padding:6px; box-sizing:border-box; }
+.booking-calendar-menu .booking-calendar-options { max-height:280px; overflow:auto; }
+.booking-calendar-menu li { padding:0; }
+.booking-calendar-menu input.checkbox + label { display:block; box-sizing:border-box; padding:9px 10px; padding-inline-start:34px; border-radius:var(--medium-border-radius,4px); line-height:18px; }
+.booking-calendar-menu input.checkbox + label::before { inset-block-start:10px; inset-inline-start:10px; }
+.booking-calendar-menu input.checkbox + label:hover, .booking-calendar-menu input.checkbox:focus-visible + label { background:var(--gray-050,#f3f6fa); }
+.booking-calendar-menu label > .flex { gap:8px; }
+.booking-calendar-menu label > .flex > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.booking-calendar-menu .color.small { width:10px; height:10px; flex:0 0 10px; margin:0; }
+.booking-calendar-menu .booking-calendar-all label { font-weight:600; }
+.booking-calendar-menu hr { margin:5px 4px; }
+.booking-calendar-picker { max-width:240px; }
+.booking-calendar-picker [data-calendar-label] { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

@@ -6,6 +6,11 @@
     {{ hiddenInput('siteId', event.siteId) }}
     {{ hiddenInput('recurrenceId', recurrenceId) }}
 
+    <header class="calendar-occurrence-editor-heading">
+        <h1>{{ 'Edit occurrence'|t('calendar') }}</h1>
+        <p>{{ occurrenceTitle }} <span class="light">· {{ occurrenceDate }}</span></p>
+    </header>
+
     {% if isDraft %}
         <p class="notice has-icon">
             <span class="icon" aria-hidden="true"></span>
@@ -20,11 +25,7 @@
         </p>
     {% endif %}
 
-    {% include 'calendar/occurrences/_meta' with meta only %}
-
-    {% if showOverlapWarnings %}
-        <div data-overlap-warning role="status" aria-live="polite"></div>
-    {% endif %}
+    {% include 'calendar/occurrences/_meta' with meta|merge({showOverlapWarnings: showOverlapWarnings}) only %}
 
     {% for tab in tabs %}
         <div id="{{ tab.id }}" class="flex-fields{{ not loop.first ? ' hidden' }}" data-layout-tab="{{ tab.uid }}">
@@ -54,4 +55,13 @@
             {% endfor %}
         </div>
     {% endfor %}
+
+    {% if meta.canReset %}
+        <div class="calendar-occurrence-reset">
+            <div>
+                <p class="light">{{ 'Remove all customizations and restore the event’s values.'|t('calendar') }}</p>
+            </div>
+            <button type="button" class="btn calendar-occurrence-reset-btn">{{ 'Reset Occurrence'|t('calendar') }}</button>
+        </div>
+    {% endif %}
 </div>

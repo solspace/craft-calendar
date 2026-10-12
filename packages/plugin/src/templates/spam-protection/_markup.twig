@@ -1,0 +1,5 @@
+<div class="calendar-captcha booking-captcha" data-calendar-captcha data-captcha-theme="{{ theme ?? 'auto' }}">
+    <div class="calendar-captcha-widget booking-captcha-widget"></div>
+    <input type="hidden" name="{{ captchaTokenName ?? 'captchaToken' }}" value="">
+    <p class="calendar-captcha-message booking-captcha-message" role="status" aria-live="polite">{{ 'Loading spam protection…'|t('calendar') }}</p>
+</div>

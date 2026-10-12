@@ -4,10 +4,16 @@
 {% set fullPageForm = fullPageForm ?? true %}
 
 {% set navItems = {
-'general': { title: "General Settings"|t('calendar') },
-'overview': { title: "Overview"|t('calendar') },
+'general': { title: "General Settings"|t('calendar'), label: 'General'|t('calendar') },
+'spam-protection': { title: "Spam Protection"|t('calendar') },
+'events-heading': { heading: 'Events'|t('calendar') },
+'overview': { title: "Event Views"|t('calendar') },
 'events': { title: "Event Settings"|t('calendar') },
 'guest-access': { title: "Guest Access"|t('calendar') },
+'bookings-heading': { heading: 'Bookings'|t('calendar') },
+'bookings': { title: "Booking Settings"|t('calendar') },
+'booking-defaults': { title: "Booking Defaults"|t('calendar') },
+'tools-heading': { heading: 'Tools'|t('calendar') },
 'solspaceai': { title: "SolspaceAI"|t('calendar') },
 'demo-templates': {title: 'Demo Templates'|t('calendar')},
 'diagnostics': {title: 'Diagnostics'|t('calendar')},
@@ -33,7 +39,7 @@
                     {% if item.heading is defined %}
                         <li class="heading"><span>{{ item.heading }}</span></li>
                     {% else %}
-                        <li><a href="{{ url('calendar/settings/'~id) }}"{% if id == selectedItem %} class="sel"{% endif %}>{{ item.title }}</a></li>
+                        <li><a href="{{ url('calendar/settings/'~id) }}"{% if id == selectedItem %} class="sel" aria-current="page"{% endif %}>{{ item.label ?? item.title }}</a></li>
                     {% endif %}
                 {% endif %}
             {% endfor %}

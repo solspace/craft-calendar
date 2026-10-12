@@ -10,6 +10,7 @@
     init(id) {
       this.$container = $(`#${id}`);
       this.$form = this.$container.closest("form");
+      this.$form.addClass("calendar-occurrence-slideout");
 
       this.$container.find(".calendar-occurrence-field").each((_, field) => {
         this.initField($(field));
@@ -81,10 +82,7 @@
       updateAllDay();
     },
 
-    /**
-     * Resets through its own action, then finishes the way saving does: the slideout reports
-     * the result, tells whoever opened it, and closes.
-     */
+    /** Advisory conflict checks stay beside the occurrence's date and time controls. */
     initOverlaps() {
       const $warning = this.$container.find("[data-overlap-warning]");
       if (!$warning.length) return;
@@ -107,23 +105,36 @@
             });
             if (check !== revision || !this.$container[0].isConnected) return;
             $warning.empty();
-            if (!response.data.count) return;
-            const $message = $("<p>").addClass("warning").text(
+            if (!response.data.count) {
+              $warning.append($("<p>").addClass("calendar-occurrence-overlaps-clear").text(
+                Craft.t("calendar", "No schedule conflicts found."),
+              ));
+              return;
+            }
+            const $panel = $("<div>").addClass("calendar-occurrence-overlap-panel");
+            const $heading = $("<strong>").addClass("calendar-occurrence-overlap-heading");
+            $heading.append($("<span>").addClass("icon").attr({ "data-icon": "alert", "aria-hidden": "true" }));
+            $heading.append(document.createTextNode(Craft.t("calendar", "Scheduling conflict")));
+            const $message = $("<p>").text(
               Craft.t("calendar", "Overlaps with other events in this calendar. You can still save."),
             );
             const $list = $("<ul>");
             const events = response.data.events.slice(0, 3);
             for (const event of events) {
-              $("<li>").append($("<a>").attr({ href: event.url, target: "_blank", rel: "noopener noreferrer" }).text(event.title)).appendTo($list);
+              const $title = event.url
+                ? $("<a>").attr({ href: event.url, target: "_blank", rel: "noopener noreferrer" })
+                : $("<span>");
+              $("<li>").append($title.text(event.title)).appendTo($list);
             }
-            $warning.append($message, $list);
+            $panel.append($heading, $message, $list);
             const remaining = response.data.count - events.length;
             if (remaining > 0) {
-              $warning.append($("<p>").addClass("light").text(Craft.t("calendar", "And {count} more", { count: remaining })));
+              $panel.append($("<p>").addClass("light").text(Craft.t("calendar", "And {count} more", { count: remaining })));
             }
+            $warning.append($panel);
           } catch {
             if (check === revision && this.$container[0].isConnected) {
-              $warning.text(Craft.t("calendar", "Couldn’t check for overlaps. You can still save."));
+              $warning.append($("<p>").addClass("light").text(Craft.t("calendar", "Couldn’t check for overlaps. You can still save.")));
             }
           }
         }, 400);
@@ -132,6 +143,7 @@
       update();
     },
 
+    /** Reset through its own action, then notify the opener and close just like saving. */
     initReset() {
       this.addListener(
         this.$container.find(".calendar-occurrence-reset-btn"),

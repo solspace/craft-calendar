@@ -1,0 +1,21 @@
+{% extends "calendar/layouts/_settings" %}
+{% import "_includes/forms" as forms %}
+{% set title = "Booking Defaults"|t("calendar") %}
+{% set bookingDefaults = true %}
+{% set schedulingPrefix = 'settings[bookingDefaults]' %}
+{% block content %}
+    <form class="calendar-scheduling-settings" action="" method="post" accept-charset="UTF-8">
+        {{ actionInput('calendar/settings/save-settings') }}
+        {{ redirectInput('calendar/settings/booking-defaults') }}
+        {{ csrfInput() }}
+        <h2>{{ 'Booking Defaults'|t('calendar') }}</h2>
+        <p>{{ 'Choose the initial booking rules and availability for new booking calendars. Each calendar can be customized separately. Changes here do not affect existing calendars.'|t('calendar') }}</p>
+        {{ forms.errorList(settings.getErrors('bookingDefaults')) }}
+        {% include 'calendar/calendars/_weekly-hours' %}
+        {% include 'calendar/calendars/_booking-rules' %}
+    </form>
+{% endblock %}
+
+{% css %}
+{% include 'calendar/calendars/_scheduling-css' %}
+{% endcss %}

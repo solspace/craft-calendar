@@ -1,0 +1,42 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
+<div class="request-pane"><div class="request-table-scroll"><table class="data fullwidth big request-table">
+<thead><tr>
+{% for field, label in {customer: 'Customer', calendar: resourceLabels.singular, date: 'Requested Time', submitted: 'Submitted'} %}
+{% set active = sort starts with field ~ '-' %}{% set ascending = sort == field ~ '-asc' %}
+<th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}"><button type="button" data-request-sort="{{ field ~ (active and ascending ? '-desc' : '-asc') }}">{{ field == 'calendar' ? label : label|t('calendar') }}</button></th>
+{% endfor %}
+<th scope="col">{{ 'Availability'|t('calendar') }}</th><th scope="col">{{ 'Actions'|t('app') }}</th>
+</tr></thead><tbody>
+{% for booking in bookings %}
+{% set permissions = bookingPermissions[booking.calendarId] %}
+{% set calendar = calendars[booking.calendarId] %}{% set timezone = calendar.schedulingSettings.timezone %}{% set unavailable = unavailableRequestIds[booking.id] ?? false %}
+<tr data-request-id="{{ booking.id }}" data-original-calendar="{{ booking.calendarId }}" data-original-start="{{ booking.startDate|atom }}" data-original-end="{{ booking.endDate|atom }}" class="{{ unavailable ? 'request-unavailable' }}">
+<td>{% if permissions.status %}<button type="button" class="request-customer" data-request-review>{{ booking.customerName }}</button>{% else %}<a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a>{% endif %}<div class="light request-secondary">{{ booking.customerEmail }}</div></td>
+<td><span class="request-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
+<td class="request-time">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} – {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span class="light" title="{{ timezone }}">{{ booking.startDate|calendarTimezoneAbbreviation(timezone) }}</span></div></td>
+{% set submittedAge = max(0, 'now'|date('U') - booking.dateCreated|date('U')) %}
+<td><time datetime="{{ booking.dateCreated|atom }}" title="{{ booking.dateCreated|date('medium') }} {{ booking.dateCreated|time(bookingTimeFormat)|calendarTimeLabel }}">
+{%- if submittedAge < 60 -%}
+    {{ 'Just now'|t('calendar') }}
+{%- elseif submittedAge < 3600 -%}
+    {{ '{minutes}m ago'|t('calendar', {minutes: submittedAge // 60}) }}
+{%- elseif submittedAge < 86400 -%}
+    {{ '{hours}h ago'|t('calendar', {hours: submittedAge // 3600}) }}
+{%- elseif submittedAge < 604800 -%}
+    {{ '{days}d ago'|t('calendar', {days: submittedAge // 86400}) }}
+{%- else -%}
+    {{ booking.dateCreated|date('medium') }}
+{%- endif -%}
+</time></td>
+<td><span class="request-availability {{ unavailable ? 'request-warning' }}"><span data-icon="{{ unavailable ? 'alert' : 'check' }}" aria-hidden="true"></span>{{ (unavailable ? 'Needs attention' : 'Available')|t('calendar') }}</span>{% if unavailable %}<div class="light request-secondary">{{ 'The requested time is no longer available.'|t('calendar') }}</div>{% endif %}</td>
+<td><div class="request-actions">{% if permissions.status %}{% if unavailable %}{% if permissions.reschedule %}<button type="button" class="btn small" data-request-review>{{ 'Choose another time'|t('calendar') }}</button>{% endif %}{% else %}<button type="button" class="btn small booking-confirm-btn" data-request-status="confirmed">{{ 'Confirm'|t('calendar') }}</button>{% endif %}<button type="button" class="btn small booking-decline-btn" data-request-status="declined">{{ 'Decline'|t('calendar') }}</button><button type="button" class="btn small" data-request-review>{{ 'Review'|t('calendar') }}</button>{% else %}<a class="btn small" href="{{ booking.cpEditUrl }}">{{ 'View Booking'|t('calendar') }}</a>{% endif %}</div></td>
+</tr>
+{% else %}<tr><td colspan="6" class="request-empty"><p class="light">{{ 'No booking requests found.'|t('calendar') }}</p></td></tr>{% endfor %}
+</tbody></table></div>
+<div class="footer flex pagination">
+<nav class="flex flex-nowrap" aria-label="{{ 'Requests'|t('calendar') }}">
+{% for direction, available in {prev: page > 1, next: page * 50 < total} %}
+{% set label = direction == 'prev' ? 'Previous Page' : 'Next Page' %}
+{% if available %}<a class="page-link {{ direction }}-page" href="{{ cpUrl('calendar/bookings/requests', {calendarIds: calendarSelection, availability, search, sort, page: direction == 'prev' ? page - 1 : page + 1}) }}" aria-label="{{ label|t('app') }}"></a>{% else %}<button type="button" class="page-link {{ direction }}-page disabled" disabled aria-label="{{ label|t('app') }}"></button>{% endif %}
+{% endfor %}</nav><span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 request} other{# requests}}'|t('calendar', {count: total}) }}</span>
+</div></div>

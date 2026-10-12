@@ -417,7 +417,7 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
     public function canView(User $user): bool
     {
-        return true;
+        return PermissionHelper::canAccessEvents($this->getCalendar(), $user);
     }
 
     public static function gqlTypeNameByContext(mixed $context): string
@@ -650,6 +650,12 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
     public function beforeValidate(): bool
     {
+        if ($this->getCalendar()?->getIsScheduling()) {
+            $this->addError('calendarId', Calendar::t('Use Bookings to manage scheduling calendars.'));
+
+            return false;
+        }
+
         $this->setDefaultPostDate();
 
         return parent::beforeValidate();
@@ -703,17 +709,17 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
     public function canDuplicate(User $user): bool
     {
-        return $this->isEditable();
+        return PermissionHelper::canEditEvent($this, $user);
     }
 
     public function canDelete(User $user): bool
     {
-        return $this->isEditable();
+        return PermissionHelper::canEditEvent($this, $user);
     }
 
     public function canSave(User $user): bool
     {
-        return $this->isEditable();
+        return PermissionHelper::canEditEvent($this, $user);
     }
 
     /**
@@ -721,6 +727,12 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
      */
     public function beforeSave(bool $isNew): bool
     {
+        if ($this->getCalendar()?->getIsScheduling()) {
+            $this->addError('calendarId', Calendar::t('Use Bookings to manage scheduling calendars.'));
+
+            return false;
+        }
+
         if (!parent::beforeSave($isNew)) {
             return false;
         }
@@ -780,7 +792,9 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
         $this->repeatEndType = $values['repeatEndType'] ?? $this->repeatEndType;
 
         // Builder posts exclusive all-day ends; persist end-of-last-day like API creates / FC moves.
-        if ($this->allDay && $this->startDate && $this->endDate) {
+        if ($this->allDay && $this->startDate && $this->endDate
+            && (\array_key_exists('end', $values) || \array_key_exists('endDate', $values))
+        ) {
             $this->endDate = DateHelper::allDayEndFromExclusive($this->startDate, $this->endDate);
         }
 
@@ -1232,7 +1246,7 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
                 'url' => UrlHelper::cpUrl('calendar'),
             ],
             [
-                'label' => Calendar::t('Events'),
+                'label' => Calendar::t('Event List'),
                 'url' => UrlHelper::cpUrl('calendar/events'),
             ],
             [

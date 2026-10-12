@@ -1,0 +1,27 @@
+{% import '_includes/forms' as forms %}
+<div class="calendar-scheduling-settings">
+<h2>{{ 'Availability'|t('calendar') }}</h2>
+{{ forms.errorList(calendar.getErrors('scheduling')) }}
+<div class="calendar-scheduling-grid">
+{{ forms.lightswitchField({label: 'Active'|t('calendar'), instructions: 'Turn off to stop new bookings. Existing bookings remain available to manage and cancel.'|t('calendar'), name: 'scheduling[active]', on: scheduling.active}) }}
+{% for key, label in {availableFrom: 'Available From', availableUntil: 'Available Until'} %}
+    {{ forms.dateField({label: label|t('calendar'), instructions: 'Optional first or last bookable date, inclusive, in the scheduling timezone. Leave blank for open-ended availability.'|t('calendar'), name: 'scheduling['~key~']', value: attribute(scheduling, key) ? attribute(schedulingDates, key) : null, errors: scheduling.getErrors(key)}) }}
+{% endfor %}
+{{ forms.selectField({label: 'Scheduling Timezone'|t('calendar'), instructions: 'Opening hours and booking times use this timezone, including daylight saving changes.'|t('calendar'), fieldClass: 'calendar-scheduling-wide', name: 'scheduling[timezone]', value: calendar.scheduling.timezone ?? craft.app.timeZone, options: timezoneOptions|filter((option, key) => key != 'floating'), required: true}) }}
+</div>
+{% include 'calendar/calendars/_weekly-hours' %}
+{{ forms.editableTableField({
+    label: 'Availability Exceptions'|t('calendar'),
+    instructions: 'Closed overrides all hours; Custom hours replaces the weekly hours; Block time removes part of a day. For a single day, use the same start and end date.'|t('calendar'),
+    id: 'scheduling-exceptions', name: 'scheduling[exceptions]',
+    cols: {
+        label: {type: 'singleline', heading: 'Reason'|t('calendar'), placeholder: 'Holiday'|t('calendar')},
+        dateFrom: {type: 'date', heading: 'From Date'|t('calendar'), placeholder: '2026-12-25'},
+        dateTo: {type: 'date', heading: 'Through Date'|t('calendar'), placeholder: '2026-12-25'},
+        type: {type: 'select', heading: 'Exception'|t('calendar'), options: [{value: 'closed', label: 'Closed'|t('calendar')}, {value: 'hours', label: 'Custom hours'|t('calendar')}, {value: 'block', label: 'Block time'|t('calendar')}]},
+        start: {type: 'time', heading: 'Starts'|t('calendar'), placeholder: '10:00'},
+        end: {type: 'time', heading: 'Ends'|t('calendar'), placeholder: '14:00'}
+    }, rows: schedulingExceptions, allowAdd: true, allowDelete: true, allowReorder: false
+}) }}
+{% include 'calendar/calendars/_booking-rules' %}
+</div>

@@ -1,0 +1,87 @@
+{% extends 'calendar/layouts/_bookings' %}
+{% import '_includes/forms' as forms %}
+{% set title = craft.calendar.bookingLabel %}
+{% set selectedSubnavItem = 'bookings' %}
+{% set statusColors = {requested: 'orange', confirmed: 'green', declined: 'red', cancelled: 'disabled'} %}
+
+{% block toolbar %}
+{% set filterStatusOptions = [{value: '', label: 'All statuses'|t('calendar')}] %}
+{% for value, label in statusOptions %}
+    {% set option = {value, label, data: {status: statusColors[value]}} %}
+    {% set filterStatusOptions = filterStatusOptions|merge([option]) %}
+{% endfor %}
+<form method="get" class="booking-filters">
+    {{ forms.selectize({id: 'booking-list-view', class: 'booking-view-picker', name: 'view', value: bookingListView, options: [{value: 'active', label: 'Active bookings'|t('calendar'), icon: 'calendar'}, {value: 'trash', label: 'Trash'|t('app'), icon: 'trash'}], selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {aria: {label: 'Booking list view'|t('calendar')}}}) }}
+    {% include 'calendar/bookings/_calendar-picker' with {calendarPickerPrefix: 'booking-filter'} %}
+    {{ forms.selectize({id: 'booking-filter-status', name: 'bookingStatus', value: bookingStatus, options: filterStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', allowEmptyOption: true, searchField: [], extraPlugins: false, placeholder: 'All statuses'|t('calendar')}, inputAttributes: {aria: {label: 'Status'|t('calendar')}}}) }}
+    <div class="booking-search texticon">
+        <span class="texticon-icon search icon" aria-hidden="true"></span>
+        {{ forms.text({type: 'search', id: 'booking-filter-search', name: 'search', value: search, placeholder: 'Search name or email'|t('calendar'), inputAttributes: {aria: {label: 'Search name or email'|t('calendar')}}}) }}
+    </div>
+    <input type="hidden" id="booking-sort" name="sort" value="{{ sort }}">
+    <span class="spinner hidden" aria-hidden="true"></span>
+    <a class="btn{{ calendarSelection != 'all' or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings', {view: bookingListView, sort}) }}">{{ 'Clear'|t('app') }}</a>
+    {% if creatableCalendarIds is not empty %}<a href="{{ cpUrl('calendar/bookings/new', {calendarId: creatableCalendarIds|first}) }}" class="btn submit add icon booking-new-button">{{ 'New booking'|t('calendar') }}</a>{% endif %}
+</form>
+{% endblock %}
+
+{% block main %}
+    <div class="content-grid__main">
+        <div id="content">{{ block('content') }}</div>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div id="booking-results">{% include 'calendar/bookings/_list' %}</div>
+{% endblock %}
+
+{% css %}
+{% include 'calendar/bookings/_confirm-delete-css' %}
+{% include 'calendar/bookings/_calendar-picker-css' %}
+.booking-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; width:100%; margin:0; }
+.booking-new-button { margin-inline-start:auto; flex-shrink:0; white-space:nowrap; }
+.booking-filters > .select.selectize { width:180px; flex-shrink:0; }
+.booking-filters > .booking-view-picker.select.selectize { width:155px; }
+.booking-search { flex:1; min-width:200px; }
+.booking-filters .selectize-input, .booking-filters .text, .booking-filters > .btn { min-height:34px; box-sizing:border-box; }
+#booking-results[aria-busy="true"] { opacity:.65; pointer-events:none; }
+.booking-table-scroll { overflow-x:auto; }
+.booking-table { min-width:1050px; }
+.booking-table tbody td { padding-block:12px; vertical-align:middle; }
+.booking-customer > a { font-weight:600; }
+.booking-secondary { margin-top:3px; font-size:12px; font-weight:400; }
+.booking-calendar { display:inline-flex; align-items:center; gap:6px; }
+.booking-calendar .color-indicator { flex-shrink:0; margin:0; }
+.booking-datetime { line-height:1.5; white-space:nowrap; }
+.booking-date-heading { display:inline-flex; align-items:center; gap:8px; }
+.booking-table tbody tr.booking-request-unavailable:not(.sel) > td { background:#fffbef; }
+.booking-table tbody tr.booking-request-unavailable:not(.sel):hover > td { background:#fff3da; }
+.booking-timezone { font-size:12px; }
+.booking-timestamp { min-width:135px; white-space:nowrap; }
+.booking-timestamp-time { display:block; }
+.booking-actions-cell { width:44px; white-space:nowrap; }
+.booking-list-pane { background:var(--pane-bg,var(--white,#fff)); box-shadow:var(--pane-shadow); border-radius:var(--radius-lg,5px); overflow:hidden; }
+.booking-table .sel .booking-status-control .selectize-input { --text-color:var(--gray-900); --ui-control-color:var(--gray-600); color:var(--gray-900); }
+.booking-table .sel .booking-actions-cell .btn { --text-color:var(--gray-900); --icon-color:var(--gray-600) !important; }
+.booking-bulk-actions { display:flex; justify-content:center; gap:8px; }
+.booking-bulk-actions.hidden { display:none; }
+.booking-trash-note { margin-bottom:16px; }
+.booking-status-cell { width:180px; }
+.booking-status-control { display:flex; align-items:center; gap:8px; }
+.booking-status-control > .select.selectize { flex:1; width:160px; min-width:0; }
+.booking-status-control .select select { width:100%; }
+.booking-status-control .spinner { flex-shrink:0; }
+.booking-table .booking-empty { padding-block:32px; text-align:center; }
+.booking-footer { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:16px; background:var(--gray-050,#f3f6fa); border-top:2px solid var(--white,#fff); }
+.booking-footer-count { grid-column:1; }
+.booking-bulk-actions { grid-column:2; }
+@media (max-width:600px) { .booking-footer { grid-template-columns:1fr auto; gap:8px; } }
+.booking-filters .selectize-input .item > .flex, .booking-status-control .selectize-input .item > .flex, .booking-picker-dropdown .option > .flex { gap:8px; }
+.booking-filters .selectize-input .status, .booking-status-control .selectize-input .status, .booking-picker-dropdown .status { width:12px; height:12px; margin:0; }
+.booking-filters .selectize-input .color.small, .booking-picker-dropdown .color.small { width:12px; height:12px; flex:0 0 12px; margin:0; }
+{% include 'calendar/bookings/_request-warning-css' %}
+{% endcss %}
+
+{% js %}
+{% include 'calendar/bookings/_filters-js' %}
+{% endjs %}

@@ -1,0 +1,22 @@
+{% import '_includes/forms' as forms %}
+
+{% if calendarTypeLocked %}
+    <input type="hidden" name="type" value="{{ calendar.type }}">
+{% endif %}
+<fieldset class="calendar-type-picker{{ calendarTypeLocked ? ' is-locked' }}"{% if calendarTypeLocked or calendar.id %} aria-describedby="calendar-type-help"{% endif %}>
+    <legend>{{ 'Calendar Type'|t('calendar') }}</legend>
+    <div class="calendar-type-options">
+        {% for value, label in calendar.typeOptions() %}
+            <label class="calendar-type-card">
+                <input type="radio" name="type" value="{{ value }}"{{ calendar.type == value ? ' checked' }}{{ calendarTypeLocked ? ' disabled' }}>
+                <span><strong>{{ label }}</strong><small>{{ (value == 'events' ? 'Publish events, recurring dates, and public calendars.' : 'Set availability and accept bookings for a room, person, or other resource.')|t('calendar') }}</small></span>
+            </label>
+        {% endfor %}
+    </div>
+    {% if calendarTypeLocked %}
+        <p id="calendar-type-help" class="calendar-type-help">{{ 'The calendar type is locked because events or bookings exist, including items in Trash. Create a new calendar to use a different type.'|t('calendar') }}</p>
+    {% elseif calendar.id %}
+        <p id="calendar-type-help" class="calendar-type-help">{{ 'You can change the type while this calendar is empty. Review any templates or integrations that use it before switching.'|t('calendar') }}</p>
+    {% endif %}
+    {{ forms.errorList(calendar.getErrors('type')) }}
+</fieldset>

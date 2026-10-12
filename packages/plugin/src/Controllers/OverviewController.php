@@ -49,7 +49,7 @@ class OverviewController extends BaseController
         ];
 
         $crumbs[] = [
-            'label' => Calendar::t('Overview'),
+            'label' => Calendar::t('Events'),
             'url' => UrlHelper::cpUrl('calendar/overview'),
             'current' => true,
         ];
@@ -79,12 +79,14 @@ class OverviewController extends BaseController
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
         $calendarColors = [];
         $calendarHandles = [];
+        $calendarAllowRepeating = [];
         $quickCreateFields = [];
         $quickCreateRequiredFields = [];
         foreach ($this->getCalendarService()->getAllAllowedCalendars() as $calendar) {
             if (isset($calendarOptions[$calendar->id])) {
                 $calendarColors[$calendar->id] = $calendar->color;
                 $calendarHandles[$calendar->id] = $calendar->handle;
+                $calendarAllowRepeating[$calendar->id] = Calendar::getInstance()->isPro() && (bool) $calendar->allowRepeatingEvents;
                 $quickCreateFields[$calendar->id] = $calendar->getQuickCreateFieldHandles();
                 $quickCreateRequiredFields[$calendar->id] = $calendar->getQuickCreateRequiredFields();
             }
@@ -95,6 +97,7 @@ class OverviewController extends BaseController
             'calendars' => $calendarOptions,
             'calendarColors' => $calendarColors,
             'calendarHandles' => $calendarHandles,
+            'calendarAllowRepeating' => $calendarAllowRepeating,
             'quickCreateFields' => $quickCreateFields,
             'quickCreateRequiredFields' => $quickCreateRequiredFields,
             'eventActionIcons' => array_combine(

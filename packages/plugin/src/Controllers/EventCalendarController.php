@@ -124,23 +124,23 @@ class EventCalendarController extends BaseController
             throw new NotFoundHttpException(Calendar::t('Event could not be found'));
         }
         if (!$event->getIsDraft() || $event->getIsRevision()) {
-            throw new BadRequestHttpException('Save the pending changes in a draft before changing calendars.');
+            throw new BadRequestHttpException(Calendar::t('Save the pending changes in a draft before changing calendars.'));
         }
         $this->getEventsService()->requireEventEditPermissions($event);
         if (($event->isProvisionalDraft && $event->creatorId !== $user->id) || !\Craft::$app->getElements()->canSave($event, $user)) {
-            throw new ForbiddenHttpException('User not authorized to save this event.');
+            throw new ForbiddenHttpException(Calendar::t('User not authorized to save this event.'));
         }
         $target = $this->resolveEventCalendar($request->getRequiredParam('targetCalendarId'), $siteId);
         if (!PermissionHelper::canEditCalendar($target)) {
-            throw new ForbiddenHttpException('User not authorized to edit events in the destination calendar.');
+            throw new ForbiddenHttpException(Calendar::t('User not authorized to edit events in the destination calendar.'));
         }
         if ($event->calendarId === $target->id) {
-            throw new BadRequestHttpException('The event already belongs to this calendar.');
+            throw new BadRequestHttpException(Calendar::t('The event already belongs to this calendar.'));
         }
         foreach ($event->getCalendar()->getSiteSettings() as $settings) {
             $site = \Craft::$app->getSites()->getSiteById($settings->siteId);
             if (\Craft::$app->getIsMultiSite() && !$user->can("editSite:{$site->uid}")) {
-                throw new ForbiddenHttpException('User not authorized to edit content for every site this event uses.');
+                throw new ForbiddenHttpException(Calendar::t('User not authorized to edit content for every site this event uses.'));
             }
         }
 

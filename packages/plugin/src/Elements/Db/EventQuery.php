@@ -608,10 +608,9 @@ class EventQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam("[[{$eventsAlias}.timezone]]", $this->timezone));
         }
 
-        if ($this->allowedCalendarsOnly) {
+        if ($this->allowedCalendarsOnly || (!\Craft::$app->getRequest()->getIsConsoleRequest() && \Craft::$app->getRequest()->getIsCpRequest())) {
             $isAdmin = PermissionHelper::isAdmin();
-            $canAccessAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS)
-                || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_READ)
+            $canAccessAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_READ)
                 || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
 
             if (!$isAdmin && !$canAccessAll) {

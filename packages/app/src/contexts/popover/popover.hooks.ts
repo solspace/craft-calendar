@@ -65,8 +65,8 @@ export const usePopoverPosition = ({
     const popoverRect = popover.getBoundingClientRect();
 
     // Viewport coords + position:fixed so header-anchored buttons (Update with AI) align correctly.
-    setLayout(
-      resolvePopoverLayout({
+    setLayout({
+      ...resolvePopoverLayout({
         anchorRect,
         popoverRect,
         viewportWidth: window.innerWidth,
@@ -74,7 +74,8 @@ export const usePopoverPosition = ({
         options: normalizedOptions,
         arrowPadding: ARROW_PADDING,
       }),
-    );
+      maxHeight: Math.max(0, window.innerHeight - normalizedOptions.padding * 2 - 2),
+    });
   }, [state, normalizedOptions, popoverRef]);
 
   useLayoutEffect(() => {
@@ -87,6 +88,9 @@ export const usePopoverPosition = ({
     }
 
     const onUpdate = () => calculate();
+    const observer =
+      typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(onUpdate);
+    if (popoverRef.current) observer?.observe(popoverRef.current);
 
     window.addEventListener("resize", onUpdate);
     window.addEventListener("scroll", onUpdate, true);
@@ -94,8 +98,9 @@ export const usePopoverPosition = ({
     return () => {
       window.removeEventListener("resize", onUpdate);
       window.removeEventListener("scroll", onUpdate, true);
+      observer?.disconnect();
     };
-  }, [state, calculate]);
+  }, [state, calculate, popoverRef]);
 
   return layout;
 };

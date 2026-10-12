@@ -31,6 +31,7 @@ export type CalendarConfig = {
   calendars: Record<number, string>;
   calendarHandles?: Record<number, string>;
   calendarColors?: Record<number, string | null>;
+  calendarAllowRepeating?: Record<number, boolean>;
   quickCreateFields?: Record<number, { location?: string; description?: string }>;
   quickCreateRequiredFields?: Record<number, { location?: boolean; description?: boolean }>;
   formats: DateFormats;

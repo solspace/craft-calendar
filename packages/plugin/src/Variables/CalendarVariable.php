@@ -3,8 +3,11 @@
 namespace Solspace\Calendar\Variables;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\StringHelper;
+use craft\web\View;
 use Solspace\Calendar\Bundles\Occurrences\OccurrenceProvider;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Db\OccurrenceQuery;
 use Solspace\Calendar\Elements\Event;
@@ -16,11 +19,15 @@ use Solspace\Calendar\Library\Exceptions\AttributeException;
 use Solspace\Calendar\Library\Export\ExportCalendarToIcs;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
+use Solspace\Calendar\Library\Scheduling\Availability;
+use Solspace\Calendar\Library\Scheduling\RequestQueue;
+use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\FormatsService;
 use Solspace\Calendar\Services\SettingsService;
 use Solspace\Calendar\Services\ViewDataService;
+use Twig\Markup;
 use yii\base\Exception;
 
 class CalendarVariable
@@ -54,6 +61,26 @@ class CalendarVariable
         return Calendar::getInstance()->name;
     }
 
+    public function getBookingLabel(): string
+    {
+        return $this->settings()->getSettingsModel()->getBookingLabel();
+    }
+
+    public function getBookingResourceLabels(): array
+    {
+        return $this->settings()->getSettingsModel()->getBookingResourceLabels();
+    }
+
+    public function getBookingRequestCount(): int
+    {
+        if (!\Craft::$app->getRequest()->getIsCpRequest()) {
+            return 0;
+        }
+        $bookings = Calendar::getInstance()->bookings;
+
+        return (new RequestQueue($bookings))->count(array_keys($bookings->getManageableCalendars()));
+    }
+
     public function events(?array $attributes = null): ElementQueryInterface
     {
         return Event::buildQuery($attributes);
@@ -62,6 +89,87 @@ class CalendarVariable
     public function occurrences(array $criteria = []): OccurrenceQuery
     {
         return $this->occurrenceProvider->createQuery($criteria);
+    }
+
+    public function schedulingCalendars(): array
+    {
+        return Calendar::getInstance()->bookings->getPublicCalendars();
+    }
+
+    public function availableSlots(int|string $calendar, string $date): array
+    {
+        $model = is_numeric($calendar) ? Calendar::getInstance()->calendars->getCalendarById((int) $calendar) : Calendar::getInstance()->calendars->getCalendarByHandle($calendar);
+
+        return $model ? Calendar::getInstance()->bookings->availableSlots($model, $date) : [];
+    }
+
+    public function bookingForm(int|string $calendar, array $options = []): Markup
+    {
+        $service = Calendar::getInstance()->bookings;
+        $model = is_numeric($calendar) ? Calendar::getInstance()->calendars->getCalendarById((int) $calendar) : Calendar::getInstance()->calendars->getCalendarByHandle($calendar);
+        if (!$model || !isset($service->getPublicCalendars()[$model->id])) {
+            return new Markup('', 'UTF-8');
+        }
+        $booking = $options['booking'] ?? new Booking();
+        $settings = $model->getSchedulingSettings();
+        $today = new \DateTimeImmutable('now', new \DateTimeZone($settings->timezone));
+        $minDate = max($today->format('Y-m-d'), $settings->availableFrom ?? '');
+        $maxDate = $today->modify('+'.$settings->maximumAdvance.' days')->format('Y-m-d');
+        if ($settings->availableUntil) {
+            $maxDate = min($maxDate, $settings->availableUntil);
+        }
+        if ($minDate > $maxDate) {
+            return new Markup(\Craft::t('calendar', 'No booking dates are currently available.'), 'UTF-8');
+        }
+        $date = $options['date'] ?? $booking->startDate?->setTimezone($today->getTimezone())->format('Y-m-d') ?? $minDate;
+        if (!\is_string($date) || !Availability::validDate($date) || $date < $minDate || $date > $maxDate) {
+            $date = $minDate;
+        }
+        $framework = $options['framework'] ?? 'default';
+        $theme = $options['theme'] ?? 'auto';
+        if (!\in_array($framework, ['default', 'bootstrap', 'tailwind'], true) || !\in_array($theme, ['auto', 'light', 'dark'], true)) {
+            throw new \InvalidArgumentException('Choose a supported booking form framework (default, bootstrap, tailwind) and theme (auto, light, dark).');
+        }
+        $html = \Craft::$app->view->renderTemplate('calendar/bookings/_form', [
+            'calendar' => $model, 'settings' => $settings,
+            'formId' => 'calendar-booking-'.StringHelper::randomString(12),
+            'booking' => $booking,
+            'publicFields' => $service->getPublicFormFields($booking),
+            'minDate' => $minDate, 'maxDate' => $maxDate, 'date' => $date,
+            'framework' => $framework, 'theme' => $theme,
+            'captcha' => $this->bookingCaptcha(),
+        ], View::TEMPLATE_MODE_CP);
+
+        return new Markup($html, 'UTF-8');
+    }
+
+    public function bookingCaptcha(): ?array
+    {
+        return $this->spamProtection('booking');
+    }
+
+    public function spamProtection(string $purpose = 'event'): ?array
+    {
+        return (new Captcha())->getClientConfig(Calendar::getInstance()->getSettings(), $purpose);
+    }
+
+    /** Place inside a public event-creation form. Booking forms include this automatically. */
+    public function captcha(string $purpose = 'event', array $options = []): Markup
+    {
+        $config = $this->spamProtection($purpose);
+        if (!$config) {
+            return new Markup('', 'UTF-8');
+        }
+        $theme = $options['theme'] ?? 'auto';
+        if (!\in_array($theme, ['auto', 'light', 'dark'], true)) {
+            throw new \InvalidArgumentException('Choose auto, light, or dark CAPTCHA theme.');
+        }
+        $html = \Craft::$app->view->renderTemplate('calendar/spam-protection/_widget', [
+            'widgetId' => 'calendar-captcha-'.StringHelper::randomString(12),
+            'captcha' => $config, 'theme' => $theme, 'autoSubmit' => $options['autoSubmit'] ?? true,
+        ], View::TEMPLATE_MODE_CP);
+
+        return new Markup($html, 'UTF-8');
     }
 
     public function formats(): FormatsService

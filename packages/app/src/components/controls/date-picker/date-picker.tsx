@@ -1,7 +1,8 @@
 import { localDisplayDateToUtcTimestamp, utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import { getDatePickerTranslations } from "@cal/utils/localization";
-import { type FC, useEffect, useState } from "react";
+import { type FC, type PropsWithChildren, useEffect, useState } from "react";
 import DatePickerControl, { type DatePickerProps } from "react-datepicker";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 import { Control, type ControlProps } from "../control";
 
@@ -15,6 +16,7 @@ type Props = {
   value: number | null;
   onChange?: (value: number | null) => void;
   datePickerProps?: Omit<DatePickerProps, "onChange">;
+  portal?: boolean;
 } & ControlProps;
 
 export const DatePicker: FC<Props> = ({
@@ -24,6 +26,7 @@ export const DatePicker: FC<Props> = ({
   id,
   required,
   datePickerProps,
+  portal = false,
 }) => {
   const [date, setDate] = useState<Date | null>(
     value !== null ? utcTimestampToLocalDisplayDate(value) : null,
@@ -40,6 +43,8 @@ export const DatePicker: FC<Props> = ({
         <DatePickerControl
           {...getDatePickerTranslations()}
           {...datePickerProps}
+          portalId={portal ? undefined : datePickerProps?.portalId}
+          popperContainer={portal ? DatePickerPortal : datePickerProps?.popperContainer}
           id={id ?? datePickerProps?.id}
           ariaRequired={required ? "true" : undefined}
           wrapperClassName="fullwidth"
@@ -57,12 +62,18 @@ export const DatePicker: FC<Props> = ({
   );
 };
 
-const DatePickerWrapper = styled.div`
+// Keep the same picker theme when the popup is portalled out of a scrolling form.
+const DatePickerPortal: FC<PropsWithChildren> = ({ children }) =>
+  children
+    ? createPortal(<DatePickerWrapper $portal>{children}</DatePickerWrapper>, document.body)
+    : null;
+
+const DatePickerWrapper = styled.div<{ $portal?: boolean }>`
   ${datePickerTheme}
 
   .react-datepicker {
     &-popper {
-      z-index: 13;
+      z-index: ${({ $portal }) => ($portal ? 100 : 13)};
       width: 327px;
 
       &:has(.react-datepicker__time-container) {

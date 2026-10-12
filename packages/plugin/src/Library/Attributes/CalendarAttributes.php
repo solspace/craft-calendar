@@ -6,6 +6,7 @@ class CalendarAttributes extends AbstractAttributes
 {
     protected ?array $validAttributes = [
         'id',
+        'type',
         'name',
         'handle',
         'color',

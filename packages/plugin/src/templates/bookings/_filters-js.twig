@@ -1,0 +1,276 @@
+(() => {
+    {% include 'calendar/bookings/_confirm-delete-js' %}
+    const form = document.querySelector('.booking-filters');
+    const results = document.getElementById('booking-results');
+    const search = document.getElementById('booking-filter-search');
+    const sort = document.getElementById('booking-sort');
+    const clear = form.querySelector('[data-booking-filter-clear]');
+    const spinner = form.querySelector('.spinner');
+    let timer;
+    let composing = false;
+    let revision = 0;
+    let request;
+    let rendering = Promise.resolve();
+    let writesInProgress = 0;
+    let pendingUrl;
+    let retrySelection;
+    let footerMenus = [];
+    let warningRevision = 0;
+    let warningRequest;
+    let warningsDirty = false;
+    {% include 'calendar/bookings/_calendar-picker-js' with {calendarPickerPrefix: 'booking-filter', calendarPickerChange: 'filterBookings'} %}
+
+    function filterUrl() {
+        const url = new URL(location.href);
+        const values = new FormData(form);
+        url.searchParams.delete('calendarId');
+        for (const name of ['calendarIds', 'bookingStatus', 'search', 'sort', 'view']) {
+            const value = values.get(name) || '';
+            if (value) url.searchParams.set(name, value);
+            else url.searchParams.delete(name);
+        }
+        url.searchParams.delete('page');
+        clear.classList.toggle('hidden', values.get('calendarIds') === 'all' && !['bookingStatus', 'search'].some(name => values.get(name)));
+        return url;
+    }
+
+    async function filterBookings(url = filterUrl()) {
+        clearTimeout(timer);
+        const current = ++revision;
+        ++warningRevision;
+        warningRequest?.abort();
+        request?.abort();
+        if (writesInProgress) { pendingUrl = url; return; }
+        pendingUrl = null;
+        request = new AbortController();
+        results.setAttribute('aria-busy', 'true');
+        spinner.classList.remove('hidden');
+        try {
+            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/index', {
+                params: Object.fromEntries(url.searchParams),
+                headers: {Accept: 'application/json'},
+                signal: request.signal,
+            });
+            if (current !== revision) return;
+            if (typeof response.data.html !== 'string') throw new Error();
+            // Serialize Craft's script initialization so rapid changes cannot initialize the wrong rows.
+            rendering = rendering.catch(() => {}).then(async () => {
+                if (current !== revision) return;
+                await Craft.appendHeadHtml(response.data.headHtml || '');
+                if (current !== revision) return;
+                destroyActionsMenu();
+                results.querySelectorAll('select').forEach(select => select.selectize?.destroy());
+                results.innerHTML = response.data.html;
+                warningsDirty = false;
+                await Craft.appendBodyHtml(response.data.bodyHtml || '');
+                Craft.initUiElements(results);
+                initActionsMenu();
+                if (retrySelection?.url === url.href) {
+                    results.querySelectorAll('[data-booking-select]').forEach(checkbox => {
+                        checkbox.checked = !checkbox.disabled && retrySelection.ids.includes(checkbox.value);
+                    });
+                }
+                retrySelection = null;
+                updateSelection();
+                if (current === revision) history.replaceState(null, '', url);
+            });
+            await rendering;
+        } catch (error) {
+            if (current === revision && !request.signal.aborted) {
+                Craft.cp.displayError(error.response?.data?.message || Craft.t('app', 'An unknown error occurred.'));
+            }
+        } finally {
+            if (current === revision) {
+                results.removeAttribute('aria-busy');
+                spinner.classList.add('hidden');
+                if (!writesInProgress && warningsDirty) refreshRequestWarnings();
+            }
+        }
+    }
+
+    async function refreshRequestWarnings() {
+        const ids = [...results.querySelectorAll('[data-booking-row]')].map(row => row.dataset.bookingRow);
+        if (!ids.length || writesInProgress || results.getAttribute('aria-busy') === 'true') return;
+        const current = ++warningRevision;
+        warningRequest?.abort();
+        const request = warningRequest = new AbortController();
+        try {
+            const response = await Craft.sendActionRequest('GET', 'calendar/bookings/request-warnings', {
+                params: {bookingIds: ids}, signal: request.signal,
+            });
+            if (current !== warningRevision || writesInProgress) return;
+            if (!Array.isArray(response.data.unavailableRequestIds)) throw new Error();
+            const unavailable = new Set(response.data.unavailableRequestIds.map(String));
+            results.querySelectorAll('[data-booking-request-warning]').forEach(warning => {
+                warning.hidden = !unavailable.has(warning.dataset.bookingRequestWarning);
+                warning.closest('[data-booking-row]')?.classList.toggle('booking-request-unavailable', !warning.hidden);
+            });
+            warningsDirty = false;
+        } catch (_) {
+            if (current === warningRevision && !request.signal.aborted) {
+                Craft.cp.displayError(Craft.t('calendar', 'Could not refresh booking warnings. Reload this page.'));
+            }
+        }
+    }
+
+    function selectedBookings() {
+        return [...results.querySelectorAll('[data-booking-select]:checked:not(:disabled)')];
+    }
+
+    function updateSelection() {
+        const checkboxes = [...results.querySelectorAll('[data-booking-select]:not(:disabled)')];
+        const count = selectedBookings().length;
+        const all = results.querySelector('[data-booking-select-all]');
+        if (all) {
+            all.checked = count > 0 && count === checkboxes.length;
+            all.indeterminate = count > 0 && count < checkboxes.length;
+        }
+        checkboxes.forEach(checkbox => checkbox.closest('tr').classList.toggle('sel', checkbox.checked));
+        const toolbar = results.querySelector('.booking-bulk-actions');
+        toolbar?.classList.toggle('hidden', count === 0);
+        const label = results.querySelector('[data-booking-selection-count]');
+        if (label) label.textContent = Craft.t('calendar', {{ '{count, plural, =1{1 booking selected} other{# bookings selected}}'|json_encode|raw }}, {count});
+        results.querySelectorAll('[data-booking-actions-trigger], [data-booking-status-trigger]').forEach(trigger => {
+            const action = trigger.hasAttribute('data-booking-status-trigger') ? 'status' : {{ trashed ? "'restore'" : "'delete'" }};
+            trigger.disabled = !count || writesInProgress > 0 || selectedBookings().some(input => input.closest('tr').dataset['can' + action[0].toUpperCase() + action.slice(1)] !== 'true');
+        });
+    }
+
+    results.addEventListener('change', event => {
+        if (event.target.matches('[data-booking-select-all]')) {
+            results.querySelectorAll('[data-booking-select]').forEach(checkbox => { if (!checkbox.disabled) checkbox.checked = event.target.checked; });
+        } else if (!event.target.matches('[data-booking-select]')) return;
+        updateSelection();
+    });
+    function destroyActionsMenu() {
+        footerMenus.forEach(menu => {
+            const container = menu.menu.$container;
+            menu.destroy();
+            container.remove();
+        });
+        footerMenus = [];
+    }
+
+    function initActionsMenu() {
+        results.querySelectorAll('[data-booking-actions-trigger], [data-booking-status-trigger]').forEach(trigger => {
+            const menu = $(trigger).data('menubtn') || new Garnish.MenuBtn(trigger);
+            footerMenus.push(menu);
+            menu.on('optionSelect', event => {
+                if (trigger.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
+                const option = event.option;
+                if (option.hasAttribute('data-booking-deselect')) {
+                    results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = false; });
+                    updateSelection();
+                } else if (option.hasAttribute('data-booking-bulk-action') || option.hasAttribute('data-booking-set-status')) {
+                    changeSelectedBookings(option, trigger);
+                }
+            });
+        });
+    }
+
+    async function changeSelectedBookings(button, trigger) {
+        if (trigger.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
+        const ids = selectedBookings().map(checkbox => checkbox.value);
+        if (!ids.length) return;
+        const status = button.dataset.bookingSetStatus;
+        const action = status ? 'set-status' : button.dataset.bookingBulkAction;
+        const selectionUrl = filterUrl().href;
+        writesInProgress++;
+        results.setAttribute('aria-busy', 'true');
+        updateSelection();
+        let submitted = false;
+        try {
+            if (action === 'delete' && !await confirmBookingDeletion(null, trigger, ids.length)) return;
+            submitted = true;
+            retrySelection = {url: selectionUrl, ids};
+            const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action + '-selected', {data: {bookingIds: ids, ...(status ? {bookingStatus: status} : {})}});
+            const completed = response.data.completedIds || [];
+            retrySelection.ids = ids.filter(id => !completed.map(String).includes(id));
+            const notice = action === 'set-status'
+                ? {{ '{count, plural, =1{Status saved for 1 booking.} other{Status saved for # bookings.}}'|json_encode|raw }}
+                : (action === 'delete'
+                    ? {{ '{count, plural, =1{1 booking moved to Trash.} other{# bookings moved to Trash.}}'|json_encode|raw }}
+                    : {{ '{count, plural, =1{1 booking restored.} other{# bookings restored.}}'|json_encode|raw }});
+            if (completed.length) Craft.cp.displayNotice(Craft.t('calendar', notice, {count: completed.length}));
+            if (response.data.errors?.length) {
+                Craft.cp.displayError(response.data.errors.map(error => Craft.t('calendar', '{customer}: {message}', error)).join(' '));
+            } else if (!response.data.success) throw new Error(response.data.message);
+        } catch (error) {
+            Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
+        } finally {
+            results.removeAttribute('aria-busy');
+            writesInProgress--;
+            updateSelection();
+            // Reconcile even an interrupted request: some elements may already have changed.
+            if (submitted && !pendingUrl) pendingUrl = filterUrl();
+            if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
+        }
+    }
+    initActionsMenu();
+    updateSelection();
+
+    // Selectize detaches and reinserts its selects, clearing directly bound jQuery handlers.
+    $(form).on('change', '#booking-filter-status, #booking-list-view', () => filterBookings());
+    results.addEventListener('click', event => {
+        const link = event.target.closest('[data-booking-sort]');
+        if (!link || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        sort.value = link.dataset.bookingSort;
+        filterBookings();
+    });
+    results.addEventListener('click', async event => {
+        const button = event.target.closest('[data-booking-action]');
+        if (!button || button.disabled || results.getAttribute('aria-busy') === 'true' || writesInProgress) return;
+        const action = button.dataset.bookingAction;
+        writesInProgress++;
+        updateSelection();
+        button.disabled = true;
+        const row = button.closest('tr');
+        row.setAttribute('aria-busy', 'true');
+        row.querySelectorAll('select').forEach(select => select.selectize?.disable());
+        try {
+            if (action === 'delete' && !await confirmBookingDeletion(button.dataset.customer, button)) return;
+            const response = await Craft.sendActionRequest('POST', 'calendar/bookings/' + action, {data: {bookingId: button.dataset.bookingId}});
+            if (!response.data.success) throw new Error(response.data.message);
+            Craft.cp.displayNotice(Craft.t('calendar', action === 'delete' ? 'Booking moved to Trash.' : 'Booking restored.'));
+            if (!pendingUrl) pendingUrl = filterUrl();
+        } catch (error) {
+            Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('app', 'An unknown error occurred.'));
+        } finally {
+            button.disabled = false;
+            row.removeAttribute('aria-busy');
+            row.querySelectorAll('select').forEach(select => select.selectize?.enable());
+            writesInProgress--;
+            updateSelection();
+            if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
+        }
+    });
+    function searchBookings() {
+        clearTimeout(timer);
+        if (!composing) timer = setTimeout(() => filterBookings(), 300);
+    }
+    search.addEventListener('input', searchBookings);
+    search.addEventListener('compositionstart', () => { composing = true; clearTimeout(timer); });
+    search.addEventListener('compositionend', () => { composing = false; searchBookings(); });
+    form.addEventListener('submit', event => { event.preventDefault(); filterBookings(); });
+    clear.addEventListener('click', event => {
+        if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        syncBookingCalendarPicker('all');
+        ['booking-filter-status'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select.selectize) select.selectize.setValue('', true);
+            else select.value = '';
+        });
+        search.value = '';
+        filterBookings();
+    });
+    results.addEventListener('booking-status-changed', () => { warningsDirty = true; });
+    results.addEventListener('booking-status-save', event => {
+        if (event.detail > 0) { ++warningRevision; warningRequest?.abort(); }
+        writesInProgress = Math.max(0, writesInProgress + event.detail);
+        updateSelection();
+        if (!writesInProgress && pendingUrl) filterBookings(pendingUrl);
+        else if (!writesInProgress && warningsDirty) refreshRequestWarnings();
+    });
+})();

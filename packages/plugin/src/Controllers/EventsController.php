@@ -37,7 +37,7 @@ class EventsController extends BaseController
                 'url' => UrlHelper::cpUrl('calendar'),
             ],
             [
-                'label' => Calendar::t('Events'),
+                'label' => Calendar::t('Event List'),
                 'url' => UrlHelper::cpUrl('calendar/events'),
                 'current' => true,
             ],

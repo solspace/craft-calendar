@@ -1,0 +1,139 @@
+(() => {
+const form = document.querySelector('.booking-request-filters');
+const results = document.getElementById('request-results');
+const spinner = form.querySelector('.spinner');
+const historyBar = document.querySelector('.request-history');
+let pending = null, debounce = null, generation = 0, saving = false, historyToken = null, historyCustomer = '', historyStatus = null, queuedUrl = null;
+function updateRequestNavBadge(count) {
+    const link = document.querySelector('[data-booking-request-nav-badge]');
+    if (!link) return;
+    let badge = link.querySelector('.badge');
+    if (!badge && count > 0) {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'sidebar-action__badge';
+        badge = document.createElement('span');
+        badge.className = 'badge'; badge.setAttribute('aria-hidden', 'true');
+        const description = document.createElement('span');
+        description.className = 'visually-hidden'; description.setAttribute('data-notification', 'true');
+        wrapper.append(badge, description);
+        (link.querySelector('.sidebar-action__suffix') || link).append(wrapper);
+    }
+    if (!badge) return;
+    badge.textContent = new Intl.NumberFormat(Craft.language).format(count);
+    (badge.closest('.sidebar-action__badge') || badge).hidden = count === 0;
+    const description = link.querySelector('[data-notification]');
+    if (description) description.textContent = Craft.t('app', '{num, number} {num, plural, =1{notification} other{notifications}}', {num: count});
+}
+function currentUrl() {
+    const url = new URL(window.location.href);
+    url.search = new URLSearchParams(new FormData(form)).toString();
+    return url;
+}
+async function reload(url = new URL(window.location.href)) {
+    if (saving) { queuedUrl = url; return; }
+    pending?.abort();
+    const controller = pending = new AbortController();
+    const revision = ++generation;
+    results.setAttribute('aria-busy', 'true');
+    spinner.classList.remove('hidden');
+    try {
+        const response = await Craft.sendActionRequest('GET', 'calendar/bookings/requests', {params: Object.fromEntries(url.searchParams), headers: {Accept: 'application/json'}, signal: controller.signal});
+        if (controller.signal.aborted || revision !== generation) return;
+        if (typeof response.data.html !== 'string') throw new Error();
+        await Craft.appendHeadHtml(response.data.headHtml || '');
+        if (controller.signal.aborted || revision !== generation) return;
+        results.innerHTML = response.data.html;
+        await Craft.appendBodyHtml(response.data.bodyHtml || '');
+        if (controller.signal.aborted || revision !== generation) return;
+        Craft.initUiElements(results);
+        history.replaceState(null, '', url);
+        document.querySelectorAll('[data-booking-request-count]').forEach(badge => {
+            badge.textContent = response.data.requestCount;
+            badge.hidden = response.data.requestCount === 0;
+            badge.classList.toggle('hidden', badge.hidden);
+        });
+        updateRequestNavBadge(response.data.requestCount);
+    } catch (error) {
+        if (!controller.signal.aborted) Craft.cp.displayError(error.response?.data?.message || Craft.t('calendar', 'Could not load booking requests.'));
+    } finally {
+        if (revision === generation) { results.removeAttribute('aria-busy'); spinner.classList.add('hidden'); pending = null; }
+    }
+}
+function filter() { clearTimeout(debounce); reload(currentUrl()); }
+{% include 'calendar/bookings/_calendar-picker-js' with {calendarPickerPrefix: 'request-filter', calendarPickerChange: 'filter'} %}
+$(form).on('change', 'select', filter);
+form.addEventListener('submit', event => { event.preventDefault(); filter(); });
+form.elements.namedItem('search').addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(filter, 250); });
+form.querySelector('[data-request-clear]').addEventListener('click', event => {
+    event.preventDefault();
+    syncBookingCalendarPicker('all');
+    form.elements.namedItem('availability').selectize.setValue('all', true);
+    form.elements.namedItem('search').value = '';
+    form.elements.namedItem('sort').value = 'submitted-asc';
+    filter();
+});
+function moderationMessage(status) {
+    const messages = {
+        confirmed: 'Booking request for {customer} confirmed.',
+        declined: 'Booking request for {customer} declined.',
+        requested: 'Booking request for {customer} restored to Requested.',
+    };
+    return Craft.t('calendar', messages[status], {customer: historyCustomer});
+}
+function remembered(token, customer, status) {
+    historyToken = token;
+    historyCustomer = customer;
+    historyStatus = status;
+    historyBar.classList.toggle('hidden', typeof token !== 'string');
+    historyBar.querySelector('[data-request-history-message]').textContent = moderationMessage(status);
+    historyBar.querySelector('[data-request-undo]').classList.remove('hidden');
+    historyBar.querySelector('[data-request-redo]').classList.add('hidden');
+}
+results.addEventListener('click', async event => {
+    const pagination = event.target.closest('a.page-link');
+    if (pagination) { event.preventDefault(); if (!saving) reload(new URL(pagination.href)); return; }
+    const sort = event.target.closest('[data-request-sort]');
+    if (sort) { form.elements.namedItem('sort').value = sort.dataset.requestSort; filter(); return; }
+    const button = event.target.closest('[data-request-review], [data-request-status]');
+    if (!button || saving || results.getAttribute('aria-busy') === 'true') return;
+    const row = button.closest('[data-request-id]');
+    const customer = row.querySelector('.request-customer').textContent.trim();
+    if (button.hasAttribute('data-request-review')) {
+        new Craft.CpScreenSlideout('calendar/bookings/review-request', {
+            params: {bookingId: row.dataset.requestId},
+            onSubmit: ev => { remembered(ev.response.data.historyToken, customer, ev.response.data.bookingStatus); reload(); },
+        });
+        return;
+    }
+    saving = true;
+    clearTimeout(debounce);
+    results.setAttribute('aria-busy', 'true');
+    try {
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/moderate-request', {data: {
+            bookingId: row.dataset.requestId, bookingStatus: button.dataset.requestStatus,
+            originalCalendarId: row.dataset.originalCalendar, originalStartDate: row.dataset.originalStart, originalEndDate: row.dataset.originalEnd,
+        }});
+        if (!response.data.success) throw new Error(response.data.message);
+        remembered(response.data.historyToken, customer, response.data.bookingStatus);
+        Craft.cp.displayNotice(moderationMessage(response.data.bookingStatus));
+    } catch (error) { Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.')); }
+    finally { saving = false; results.removeAttribute('aria-busy'); await reload(queuedUrl || new URL(window.location.href)); queuedUrl = null; }
+});
+historyBar.addEventListener('click', async event => {
+    const button = event.target.closest('[data-request-undo], [data-request-redo]');
+    if (!button || !historyToken || saving) return;
+    saving = true;
+    const direction = button.hasAttribute('data-request-undo') ? 'undo' : 'redo';
+    historyBar.querySelectorAll('button').forEach(item => item.disabled = true);
+    try {
+        const response = await Craft.sendActionRequest('POST', 'calendar/bookings/history', {data: {token: historyToken, direction}});
+        if (!response.data.success) throw new Error(response.data.message);
+        historyBar.querySelector('[data-request-undo]').classList.toggle('hidden', direction === 'undo');
+        historyBar.querySelector('[data-request-redo]').classList.toggle('hidden', direction === 'redo');
+        historyBar.querySelector('[data-request-history-message]').textContent = moderationMessage(direction === 'undo' ? 'requested' : historyStatus);
+    } catch (error) { Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.')); }
+    finally { saving = false; historyBar.querySelectorAll('button').forEach(item => item.disabled = false); await reload(queuedUrl || new URL(window.location.href)); queuedUrl = null; }
+});
+window.addEventListener('pageshow', event => { if (event.persisted) reload(); });
+window.addEventListener('focus', () => { if (!saving && !pending && !document.querySelector('.cp-screen')) reload(); });
+})();

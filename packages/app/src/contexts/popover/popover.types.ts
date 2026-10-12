@@ -28,6 +28,7 @@ export type PopoverArrowLayout = {
 };
 
 export type PopoverLayout = {
+  maxHeight?: number;
   top: number;
   left: number;
   position: PopoverPosition;

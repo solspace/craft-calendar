@@ -19,16 +19,19 @@ use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Elements\Event as CalendarEvent;
 use Solspace\Calendar\Elements\OccurrenceOverride;
 use Solspace\Calendar\FieldTypes\CalendarFieldType;
 use Solspace\Calendar\FieldTypes\EventFieldType;
 use Solspace\Calendar\Library\Bundles\BundleInterface;
+use Solspace\Calendar\Library\Scheduling\RequestQueue;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use Solspace\Calendar\Resources\Bundles\MainAssetBundle;
+use Solspace\Calendar\Services\BookingsService;
 use Solspace\Calendar\Services\CalendarSitesService;
 use Solspace\Calendar\Services\CalendarsService;
 use Solspace\Calendar\Services\ClientAssetsService;
@@ -70,6 +73,7 @@ use yii\web\ForbiddenHttpException;
  * @property SolspaceAi\SolspaceAiService         $solspaceAi
  * @property SolspaceAi\EventGenerationService    $eventGeneration
  * @property SolspaceAi\CalendarGenerationService $calendarGeneration
+ * @property BookingsService                      $bookings
  */
 class Calendar extends Plugin
 {
@@ -80,6 +84,7 @@ class Calendar extends Plugin
     public const VIEW_OVERVIEW = 'overview';
     public const VIEW_EVENTS = 'events';
     public const VIEW_CALENDARS = 'calendars';
+    public const VIEW_BOOKINGS = 'bookings';
     public const VIEW_RESOURCES = 'resources';
 
     public const PERMISSION_CALENDARS_ACCESS = 'calendar-calendarsAccess';
@@ -110,6 +115,26 @@ class Calendar extends Plugin
     public const LEGACY_PERMISSION_EVENTS_READ_INDIVIDUAL = 'calendar-readEventsIndividual';
     public const LEGACY_PERMISSION_EVENTS_FOR = 'calendar-manageEventsFor';
     public const LEGACY_PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
+    public const PERMISSION_BOOKINGS = 'calendar-bookingsManage';
+    public const PERMISSION_BOOKINGS_INDIVIDUAL = 'calendar-bookingsManageIndividual';
+    public const PERMISSION_BOOKINGS_ACCESS = 'calendar-bookingsAccess';
+    public const PERMISSION_BOOKINGS_VIEW = 'calendar-bookingsView';
+    public const PERMISSION_BOOKINGS_BY_CALENDAR = 'calendar-bookingsByCalendar';
+    public const BOOKING_PERMISSIONS = [
+        'view' => self::PERMISSION_BOOKINGS_VIEW,
+        'create' => 'calendar-bookingsCreate',
+        'edit' => 'calendar-bookingsEdit',
+        'reschedule' => 'calendar-bookingsReschedule',
+        'status' => 'calendar-bookingsChangeStatus',
+        'delete' => 'calendar-bookingsDelete',
+        'restore' => 'calendar-bookingsRestore',
+    ];
+    public const BOOKING_PERMISSION_LABELS = [
+        'view' => 'View Bookings', 'create' => 'Create Bookings', 'edit' => 'Edit Booking Details',
+        'reschedule' => 'Reschedule Bookings', 'status' => 'Change Booking Status',
+        'delete' => 'Delete Bookings', 'restore' => 'Restore Bookings',
+    ];
+
     public const PERMISSION_SETTINGS = 'calendar-settings';
     public const PERMISSION_RESOURCES = 'calendar-resources';
 
@@ -281,6 +306,14 @@ class Calendar extends Plugin
     {
         $navItem = parent::getCpNavItem();
         $navItem['subnav'] = include __DIR__.'/subnav.php';
+        if ($this->settings->getSettingsModel()->showBookingRequestBadge && \Craft::$app->getRequest()->getIsCpRequest()) {
+            $calendarIds = array_keys($this->bookings->getManageableCalendars());
+            $navItem['linkAttributes']['data']['booking-request-nav-badge'] = true;
+            $count = $calendarIds ? (new RequestQueue($this->bookings))->count($calendarIds) : 0;
+            if ($count > 0) {
+                $navItem['badgeCount'] = $count;
+            }
+        }
 
         return $navItem;
     }
@@ -289,6 +322,7 @@ class Calendar extends Plugin
     {
         \Craft::$app->projectConfig->remove(self::CONFIG_PATH_ROOT);
         \Craft::$app->fields->deleteLayoutsByType(CalendarEvent::class);
+        \Craft::$app->fields->deleteLayoutsByType(Booking::class);
     }
 
     protected function createSettingsModel(): ?Model
@@ -338,6 +372,7 @@ class Calendar extends Plugin
         $this->setComponents(
             [
                 'calendars' => CalendarsService::class,
+                'bookings' => BookingsService::class,
                 'calendarSites' => CalendarSitesService::class,
                 'clientAssets' => ClientAssetsService::class,
                 'diagnostics' => DiagnosticsService::class,
@@ -415,6 +450,7 @@ class Calendar extends Plugin
             Elements::EVENT_REGISTER_ELEMENT_TYPES,
             static function (RegisterComponentTypesEvent $event) {
                 $event->types[] = CalendarEvent::class;
+                $event->types[] = Booking::class;
                 $event->types[] = OccurrenceOverride::class;
             }
         );
@@ -437,14 +473,33 @@ class Calendar extends Plugin
                     $calendars = $this->calendars->getAllCalendars();
 
                     $calendarPermissions = [];
+                    $bookingPermissions = [];
+                    $granularBookings = [];
+                    $bookingActions = [];
+                    foreach (self::BOOKING_PERMISSIONS as $action => $permission) {
+                        if ('view' !== $action) {
+                            $bookingActions[$permission] = ['label' => self::t(self::BOOKING_PERMISSION_LABELS[$action])];
+                        }
+                    }
                     $readEventsPermissions = [];
                     $editEventsPermissions = [];
                     foreach ($calendars as $calendar) {
                         $suffix = ':'.$calendar->uid;
+                        if ($calendar->getIsScheduling()) {
+                            $bookingPermissions[self::PERMISSION_BOOKINGS_INDIVIDUAL.$suffix] = ['label' => $calendar->name];
+                            $actions = [];
+                            foreach ($bookingActions as $permission => $definition) {
+                                $actions[$permission.$suffix] = $definition;
+                            }
+                            $granularBookings[self::PERMISSION_BOOKINGS_VIEW.$suffix] = ['label' => $calendar->name, 'nested' => $actions];
+                        }
 
                         $calendarPermissions[self::PERMISSION_EDIT_CALENDARS_INDIVIDUAL.$suffix] = [
                             'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
                         ];
+                        if ($calendar->getIsScheduling()) {
+                            continue;
+                        }
                         $readEventsPermissions[self::PERMISSION_EVENTS_READ_INDIVIDUAL.$suffix] = [
                             'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
                         ];
@@ -454,6 +509,12 @@ class Calendar extends Plugin
                     }
 
                     $permissions = [
+                        self::PERMISSION_BOOKINGS => ['label' => self::t('Manage All Bookings'), 'info' => self::t('Grants every booking action in all scheduling calendars, overriding calendar-specific and individual action permissions. Uncheck this to limit access.')],
+                        self::PERMISSION_BOOKINGS_INDIVIDUAL => ['label' => self::t('Manage Bookings by Calendar'), 'info' => self::t('Grants every booking action in the selected calendars. Manage All Bookings overrides these selections. Uncheck these calendar grants to use individual action permissions.'), 'nested' => $bookingPermissions],
+                        self::PERMISSION_BOOKINGS_ACCESS => ['label' => self::t('Access Bookings'), 'nested' => [
+                            self::PERMISSION_BOOKINGS_VIEW => ['label' => self::t('View All Bookings'), 'info' => self::t('Grants view access to all scheduling calendars. Actions selected here apply to every calendar the user can view. To limit view access, leave this unchecked and use Booking Permissions by Calendar.'), 'nested' => $bookingActions],
+                            self::PERMISSION_BOOKINGS_BY_CALENDAR => ['label' => self::t('Booking Permissions by Calendar'), 'info' => self::t('Grants view access and selected actions for specific calendars. These permissions add to global grants; they cannot restrict View All Bookings or actions granted there.'), 'nested' => $granularBookings],
+                        ]],
                         self::PERMISSION_CALENDARS => [
                             'label' => self::t('Access Calendars'),
                             'nested' => [

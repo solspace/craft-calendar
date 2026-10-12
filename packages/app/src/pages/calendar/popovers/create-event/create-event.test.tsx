@@ -1,13 +1,23 @@
 // @vitest-environment jsdom
+
+import type { CalendarCreateDraft } from "@cal/pages/calendar/calendar.create-session";
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PopoverCreateEvent } from "./create-event";
 
-const { createEvent, prepareEvent } = vi.hoisted(() => ({
+const { createEvent, prepareEvent, overlap } = vi.hoisted(() => ({
   createEvent: vi.fn(),
-  prepareEvent: vi.fn(async (): Promise<string | null> => null),
+  prepareEvent: vi.fn(
+    async (
+      _draft: CalendarCreateDraft,
+      _calendarId: number,
+      _details?: { location?: string; description?: string },
+    ): Promise<string | null> => null,
+  ),
+  overlap: vi.fn((_props: { schedule: Record<string, unknown> }) => null),
 }));
+vi.mock("@cal/components/overlap-warning/overlap-warning", () => ({ LiveOverlapWarning: overlap }));
 vi.mock("./create-event.mutation", () => ({
   useCreateEvent: () => ({
     createEvent,
@@ -37,6 +47,7 @@ vi.mock("../../context/config.context", () => ({
       2: { location: false },
       4: { description: true },
     },
+    calendarAllowRepeating: { 1: true, 2: false, 4: true, 5: true },
     formats: {
       date: { short: { icu: "yyyy-MM-dd" } },
       datetime: { short: { icu: "yyyy-MM-dd h:mm a" } },
@@ -72,20 +83,32 @@ vi.mock("./create-event.calendar-dropdown", () => ({
   ),
 }));
 vi.mock("@cal/components/controls/date-picker/date-picker", () => ({
-  DatePicker: ({ label, id, required }: { label: string; id: string; required: boolean }) => (
+  DatePicker: ({
+    label,
+    id,
+    required,
+    value,
+    onChange,
+  }: {
+    label: string;
+    id: string;
+    required: boolean;
+    value: number;
+    onChange: (value: number) => void;
+  }) => (
     <div>
       <label htmlFor={id} className={required ? "required" : undefined}>
         {label}
       </label>
-      <input id={id} />
+      <input id={id} value={value} onChange={(event) => onChange(Number(event.target.value))} />
     </div>
   ),
   Icon: (): null => null,
 }));
 
 const draft = { id: "draft-create-event", title: "Yoga", start: 100, end: 3700, allDay: false };
-const Editor = () => {
-  const [value, setValue] = useState(draft);
+const Editor = ({ initialDraft = draft }: { initialDraft?: CalendarCreateDraft }) => {
+  const [value, setValue] = useState<CalendarCreateDraft>(initialDraft);
   return (
     <PopoverCreateEvent
       draft={value}
@@ -144,6 +167,82 @@ describe("quick-create mapped fields", () => {
         .find((button) => button.textContent === "Create Event")!
         .click();
     });
+  const choose = (label: string, value: string) =>
+    act(async () => {
+      const select = field(label)! as unknown as HTMLSelectElement;
+      select.value = value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+  it("starts without repeats and hides end controls until a preset is selected", async () => {
+    expect(field("Repeat")!.value).toBe("NEVER");
+    expect(field("Repeat ends")).toBeNull();
+    await choose("Repeat", "DAILY");
+    expect(field("Repeat ends")!.value).toBe("NEVER");
+    expect(container.textContent).toContain("Every day.");
+    expect(overlap.mock.lastCall?.[0].schedule.rrule).toContain("FREQ=DAILY");
+    await choose("Repeat", "NEVER");
+    expect(field("Repeat ends")).toBeNull();
+    expect(overlap.mock.lastCall?.[0].schedule).not.toHaveProperty("rrule");
+  });
+
+  it("clears repeat settings when switching to a calendar that disallows them", async () => {
+    await choose("Repeat", "WEEKDAYS");
+    await chooseCalendar(2);
+    expect(field("Repeat")).toBeNull();
+    await save();
+    expect(createEvent.mock.lastCall?.[0].recurrence).toBeUndefined();
+    await chooseCalendar(1);
+    expect(field("Repeat")!.value).toBe("NEVER");
+  });
+
+  it("keeps counted repeats and details in both Create Event and More details", async () => {
+    await choose("Repeat", "WEEKLY");
+    await choose("Repeat ends", "AFTER");
+    await type("Occurrences", "4");
+    await type("Location", "Studio A");
+    await save();
+    expect(createEvent.mock.lastCall?.[0].recurrence).toMatchObject({
+      type: "WEEKLY",
+      endType: "AFTER",
+      count: 4,
+    });
+    await act(async () =>
+      Array.from(container.querySelectorAll("button"))
+        .find((button) => button.textContent === "More details…")!
+        .click(),
+    );
+    expect(prepareEvent.mock.lastCall?.[0]).toEqual(createEvent.mock.lastCall?.[0]);
+    expect(prepareEvent.mock.lastCall?.[2]).toEqual({ location: "Studio A", description: "" });
+  });
+
+  it("blocks saving and handoff while the repeat count is empty or fractional", async () => {
+    await choose("Repeat", "DAILY");
+    await choose("Repeat ends", "AFTER");
+    const buttons = () =>
+      Array.from(container.querySelectorAll("button")).filter((button) =>
+        ["Create Event", "More details…"].includes(button.textContent!),
+      );
+    for (const value of ["", "0", "1.5"]) {
+      await type("Occurrences", value);
+      expect(buttons().every((button) => button.disabled)).toBe(true);
+    }
+    await type("Occurrences", "1");
+    expect(buttons().every((button) => !button.disabled)).toBe(true);
+  });
+
+  it("includes the selected last date in the conflict check and updates preset labels when start changes", async () => {
+    await choose("Repeat", "WEEKLY");
+    await choose("Repeat ends", "ON_DATE");
+    const start = Date.UTC(2026, 9, 12, 14, 30) / 1000;
+    await type("Starts", String(start));
+    await type("Last date", String(Date.UTC(2026, 9, 26) / 1000));
+    expect(field("Repeat")!.textContent).toContain("Weekly on Monday");
+    expect(overlap.mock.lastCall?.[0].schedule.rrule).toContain("UNTIL=20261026T143000");
+    await save();
+    expect(createEvent.mock.lastCall?.[0].start).toBe(start);
+    expect(createEvent.mock.lastCall?.[0].end - start).toBe(3600);
+  });
 
   it("only shows the mapped inputs for the selected calendar", async () => {
     expect(field("Location")).toBeInstanceOf(HTMLInputElement);
@@ -217,6 +316,37 @@ describe("quick-create mapped fields", () => {
     expect(createEvent).toHaveBeenLastCalledWith(draft, 5, {
       location: "Updated details",
       description: "Updated details",
+    });
+  });
+
+  it("preserves the AI-selected calendar, mapped details, and recurrence through the merged form", async () => {
+    const aiDraft: CalendarCreateDraft = {
+      ...draft,
+      calendarId: 4,
+      description: "Bring a notebook.",
+      repeatType: "WEEKLY",
+      repeatEndType: "NEVER",
+      rrule: "DTSTART:20261013T090000\nRRULE:FREQ=WEEKLY;BYDAY=TU;COUNT=8",
+    };
+    await act(async () => root.render(<Editor key="ai" initialDraft={aiDraft} />));
+    expect(container.querySelector<HTMLSelectElement>('[aria-label="Calendar"]')?.value).toBe("4");
+    expect(field("Description")?.value).toBe("Bring a notebook.");
+    expect(field("Location")).toBeNull();
+    expect(field("Repeat")).toBeNull();
+    expect(container.textContent).toContain("Repeats:");
+    expect(overlap.mock.lastCall?.[0].schedule).toMatchObject({
+      rrule: aiDraft.rrule,
+      repeatEndType: "AFTER",
+    });
+    await save();
+    expect(createEvent).toHaveBeenLastCalledWith(aiDraft, 4, { description: "Bring a notebook." });
+    await chooseCalendar(2);
+    expect(container.textContent).not.toContain("Repeats:");
+    await save();
+    expect(createEvent.mock.lastCall?.[0]).toMatchObject({
+      repeatType: "NEVER",
+      repeatEndType: "NEVER",
+      rrule: undefined,
     });
   });
 });

@@ -173,7 +173,7 @@ class OccurrencesController extends BaseController
         $event = $this->requireEvent();
 
         $recurrenceId = RecurrenceId::normalize(\Craft::$app->getRequest()->getRequiredParam('recurrenceId'))
-            ?? throw new BadRequestHttpException('Invalid recurrence ID.');
+            ?? throw new BadRequestHttpException(Calendar::t('Invalid recurrence ID.'));
 
         $service = $this->getOccurrencesService();
         if (!$service->getOverride($event, $recurrenceId) && !$service->hasOccurrence($event, $recurrenceId)) {
@@ -195,7 +195,7 @@ class OccurrencesController extends BaseController
         $site = \Craft::$app->getSites()->getSiteById($siteId);
 
         if (\Craft::$app->getIsMultiSite() && !$user?->can("editSite:{$site->uid}")) {
-            throw new ForbiddenHttpException('User not authorized to edit content for this site.');
+            throw new ForbiddenHttpException(Calendar::t('User not authorized to edit content for this site.'));
         }
 
         $event = Event::find()
@@ -218,7 +218,7 @@ class OccurrencesController extends BaseController
             ($event->isProvisionalDraft && $event->creatorId !== $user?->id)
             || !\Craft::$app->getElements()->canSave($event, $user)
         ) {
-            throw new ForbiddenHttpException('User not authorized to save this event.');
+            throw new ForbiddenHttpException(Calendar::t('User not authorized to save this event.'));
         }
 
         return $event;
@@ -274,6 +274,8 @@ class OccurrencesController extends BaseController
             'id' => 'calendar-occurrence-editor',
             'meta' => $meta,
             'event' => $event,
+            'occurrenceTitle' => $override->isFieldOverridden(OccurrenceOverride::TITLE) ? $override->title : $event->title,
+            'occurrenceDate' => DateHelper::formatFloating($occurrence['startDate'], $occurrence['allDay']),
             'recurrenceId' => $recurrenceId,
             'tabs' => $tabs,
             'isDraft' => (bool) $event->getIsDraft(),

@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'calendar/bookings' => 'calendar/bookings/index',
+    'calendar/bookings/requests' => 'calendar/bookings/requests',
+    'calendar/bookings/schedule' => 'calendar/bookings/schedule',
+    'calendar/bookings/fields' => 'calendar/bookings/fields',
+    'calendar/bookings/notifications' => 'calendar/bookings/notifications',
+    'calendar/bookings/new' => 'calendar/bookings/edit',
+    'calendar/bookings/<bookingId:\d+>' => 'calendar/bookings/edit',
     // Overview
     'calendar' => 'calendar/settings/default-view',
     'calendar/overview' => 'calendar/overview',
@@ -50,7 +57,10 @@ return [
     'calendar/settings/general' => 'calendar/settings/general',
     'calendar/settings/overview' => 'calendar/settings/overview',
     'calendar/settings/events' => 'calendar/settings/events',
+    'calendar/settings/bookings' => 'calendar/settings/bookings',
+    'calendar/settings/booking-defaults' => 'calendar/settings/booking-defaults',
     'calendar/settings/guest-access' => 'calendar/settings/guest-access',
+    'calendar/settings/spam-protection' => 'calendar/settings/spam-protection',
     'calendar/settings/ics' => 'calendar/settings/ics',
     'GET calendar/settings/solspaceai/usage' => 'calendar/solspace-ai/usage',
     'GET calendar/settings/solspaceai/plans' => 'calendar/solspace-ai/plans',
