@@ -127,6 +127,7 @@ class RequestQueueTemplateTest extends TestCase
             $twig->addFilter($filter);
         }
         $twig->addFilter(new TwigFilter('atom', static fn ($date) => $date->format('c')));
+        $twig->addFilter(new TwigFilter('timestamp', static fn ($date) => $date->format('Y-m-d')));
         $twig->addFilter(new TwigFilter('t', static fn ($text) => $text));
         $twig->addFilter(new TwigFilter('date', static fn ($date, $format = 'Y-m-d', $timezone = 'UTC') => (new \DateTimeImmutable($date instanceof \DateTimeInterface ? $date->format('c') : $date))->setTimezone(new \DateTimeZone($timezone))->format($format === 'medium' ? 'Y-m-d' : $format)));
         $twig->addFilter(new TwigFilter('time', static fn ($date, $format = '', $timezone = 'UTC') => $date->setTimezone(new \DateTimeZone($timezone))->format('g:i a')));

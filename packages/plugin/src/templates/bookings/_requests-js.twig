@@ -53,7 +53,6 @@ async function reload(url = new URL(window.location.href)) {
             badge.classList.toggle('hidden', badge.hidden);
         });
         updateRequestNavBadge(response.data.requestCount);
-        ages();
     } catch (error) {
         if (!controller.signal.aborted) Craft.cp.displayError(error.response?.data?.message || Craft.t('calendar', 'Could not load booking requests.'));
     } finally {
@@ -73,14 +72,6 @@ form.querySelector('[data-request-clear]').addEventListener('click', event => {
     form.elements.namedItem('sort').value = 'submitted-asc';
     filter();
 });
-function ages() {
-    results.querySelectorAll('time').forEach(time => {
-        const age = time.querySelector('[data-request-age]');
-        if (!age) return;
-        const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(time.dateTime)) / 60000));
-        age.textContent = minutes < 60 ? Craft.t('calendar', '{count} min ago', {count: minutes}) : minutes < 1440 ? Craft.t('calendar', '{count} hr ago', {count: Math.floor(minutes / 60)}) : Craft.t('calendar', '{count} days ago', {count: Math.floor(minutes / 1440)});
-    });
-}
 function moderationMessage(status) {
     const messages = {
         confirmed: 'Booking request for {customer} confirmed.',
@@ -145,5 +136,4 @@ historyBar.addEventListener('click', async event => {
 });
 window.addEventListener('pageshow', event => { if (event.persisted) reload(); });
 window.addEventListener('focus', () => { if (!saving && !pending && !document.querySelector('.cp-screen')) reload(); });
-ages();
 })();
