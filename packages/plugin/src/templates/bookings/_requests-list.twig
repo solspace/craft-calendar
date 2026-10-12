@@ -13,7 +13,20 @@
 <td><button type="button" class="request-customer" data-request-review>{{ booking.customerName }}</button><div class="light request-secondary">{{ booking.customerEmail }}</div></td>
 <td><span class="request-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
 <td class="request-time">{{ booking.startDate|date('medium', timezone) }}<div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} – {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span class="light" title="{{ timezone }}">{{ booking.startDate|calendarTimezoneAbbreviation(timezone) }}</span></div></td>
-<td><time datetime="{{ booking.dateCreated|atom }}" title="{{ booking.dateCreated|date('medium') }} {{ booking.dateCreated|time(bookingTimeFormat)|calendarTimeLabel }}">{{ booking.dateCreated|timestamp }}</time></td>
+{% set submittedAge = max(0, 'now'|date('U') - booking.dateCreated|date('U')) %}
+<td><time datetime="{{ booking.dateCreated|atom }}" title="{{ booking.dateCreated|date('medium') }} {{ booking.dateCreated|time(bookingTimeFormat)|calendarTimeLabel }}">
+{%- if submittedAge < 60 -%}
+    {{ 'Just now'|t('calendar') }}
+{%- elseif submittedAge < 3600 -%}
+    {{ '{minutes}m ago'|t('calendar', {minutes: submittedAge // 60}) }}
+{%- elseif submittedAge < 86400 -%}
+    {{ '{hours}h ago'|t('calendar', {hours: submittedAge // 3600}) }}
+{%- elseif submittedAge < 604800 -%}
+    {{ '{days}d ago'|t('calendar', {days: submittedAge // 86400}) }}
+{%- else -%}
+    {{ booking.dateCreated|date('medium') }}
+{%- endif -%}
+</time></td>
 <td><span class="request-availability {{ unavailable ? 'request-warning' }}"><span data-icon="{{ unavailable ? 'alert' : 'check' }}" aria-hidden="true"></span>{{ (unavailable ? 'Needs attention' : 'Available')|t('calendar') }}</span>{% if unavailable %}<div class="light request-secondary">{{ 'The requested time is no longer available.'|t('calendar') }}</div>{% endif %}</td>
 <td><div class="request-actions">{% if unavailable %}<button type="button" class="btn small" data-request-review>{{ 'Choose another time'|t('calendar') }}</button>{% else %}<button type="button" class="btn small booking-confirm-btn" data-request-status="confirmed">{{ 'Confirm'|t('calendar') }}</button>{% endif %}<button type="button" class="btn small booking-decline-btn" data-request-status="declined">{{ 'Decline'|t('calendar') }}</button><button type="button" class="btn small" data-request-review>{{ 'Review'|t('calendar') }}</button></div></td>
 </tr>
