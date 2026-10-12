@@ -81,6 +81,16 @@
     </div>
 </div>
 {% css %}
+/* Suppress Craft's persistent focus ring on the slideout content container.
+   Interactive controls retain their own focus-visible outlines. */
+.cp-screen:has(.request-review-content):focus,
+.cp-screen:has(.request-review-content) .cp-screen-body:focus,
+.cp-screen:has(.request-review-content) .cp-screen-content:focus,
+.cp-screen:has(.request-review-content) .cp-screen-main:focus,
+form:has(> .request-review-content):focus,
+form:has(> .request-review-content):focus-visible {
+    outline: none !important;
+}
 .request-review-content { max-width:960px; margin-inline:auto; padding-block:4px 12px; container-type:inline-size; container-name:request-review; }
 .request-review-header { display:flex; align-items:center; gap:14px; margin-bottom:24px; }
 .request-review-avatar { display:flex; align-items:center; justify-content:center; flex:0 0 48px; height:48px; border-radius:50%; background:var(--gray-100,#e7edf5); color:var(--medium-text-color,#596673); font-size:22px; font-weight:600; }
