@@ -1,15 +1,16 @@
 {% set resourceLabels = craft.calendar.bookingResourceLabels %}
 {% extends 'calendar/layouts/_bookings' %}
 {% import '_includes/forms' as forms %}
-{% set title = (booking.id ? 'Edit Booking' : 'New Booking')|t('calendar') %}
+{% set title = (booking.id ? (canSaveBooking ? 'Edit Booking' : 'View Booking') : 'New Booking')|t('calendar') %}
 {% set selectedSubnavItem = 'bookings' %}
 {% set fullPageForm = true %}
 {% set timezone = calendars[booking.calendarId].schedulingSettings.timezone %}
-{% block actionButton %}{% if booking.id %}<button type="button" class="btn" id="booking-delete">{{ 'Delete'|t('app') }}</button>{% endif %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
+{% block actionButton %}{% if canDeleteBooking %}<button type="button" class="btn" id="booking-delete">{{ 'Delete'|t('app') }}</button>{% endif %}{% if canSaveBooking %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endif %}{% endblock %}
 {% block content %}
 {{ actionInput('calendar/bookings/save') }}{{ csrfInput() }}{{ redirectInput('calendar/bookings') }}
 {% if booking.id %}{{ hiddenInput('bookingId', booking.id) }}{% endif %}
 <div class="booking-editor">
+<fieldset class="booking-permission-fields"{{ not canSaveBooking ? ' disabled' }}>
 {% include 'calendar/bookings/_status-card' %}
 {% if booking.id and booking.bookingStatus == 'requested' and booking.startDate and booking.endDate %}
 <section id="booking-unavailable-request" class="booking-unavailable-request" role="status" aria-live="polite" hidden>
@@ -23,14 +24,15 @@
     </div>
 </section>
 {% endif %}
+<fieldset class="booking-permission-fields"{{ not canChooseTime ? ' disabled' }}>
 <div class="booking-picker-controls">
 <div class="booking-calendar-control">
-{% set calendarOptions = [] %}{% for calendar in calendars %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endfor %}
-{{ forms.selectField({label: resourceLabels.singular, name: 'calendarId', id: 'booking-calendar', options: calendarOptions, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
+{% set calendarOptions = [] %}{% for calendar in calendars %}{% if booking.id ? ((bookingPermissions[calendar.id].edit and bookingPermissions[calendar.id].reschedule) or calendar.id == booking.calendarId) : bookingPermissions[calendar.id].create %}{% set calendarOptions = calendarOptions|merge([{value: calendar.id, label: calendar.name}]) %}{% endif %}{% endfor %}
+{{ forms.selectField({label: resourceLabels.singular, name: 'calendarId', id: 'booking-calendar', options: calendarOptions, disabled: not canChooseTime, value: booking.calendarId, required: true, errors: booking.getErrors('calendarId')}) }}
 <p class="light" id="booking-timezone" title="{{ timezone }}">{{ 'Times shown in {timezone}.'|t('calendar', {timezone: timezone|calendarTimezoneName}) }}</p>
 </div>
 <div class="booking-date-control">
-{{ forms.textField({label: 'Date'|t('app'), name: 'bookingDate', id: 'booking-date', type: 'date', value: booking.startDate ? booking.startDate|date('Y-m-d', timezone) : now|date('Y-m-d', timezone), required: true}) }}
+{{ forms.textField({label: 'Date'|t('app'), name: 'bookingDate', id: 'booking-date', disabled: not canChooseTime, type: 'date', value: booking.startDate ? booking.startDate|date('Y-m-d', timezone) : now|date('Y-m-d', timezone), required: true}) }}
 </div>
 </div>
 <div class="field" id="booking-slots-field">
@@ -43,6 +45,8 @@
     {{ forms.errorList(booking.getErrors('startDate')) }}
     {{ forms.errorList(booking.getErrors('endDate')) }}
 </div>
+</fieldset>
+{% if not canChooseTime %}{{ hiddenInput('calendarId', booking.calendarId) }}{% endif %}
 {{ hiddenInput('startDate', booking.startDate ? booking.startDate|date('c', timezone) : '') }}
 {{ hiddenInput('endDate', booking.endDate ? booking.endDate|date('c', timezone) : '') }}
 <hr>
@@ -51,7 +55,8 @@
 {{ forms.textField({label: 'Customer Email'|t('calendar'), name: 'customerEmail', type: 'email', value: booking.customerEmail, required: true, errors: booking.getErrors('customerEmail')}) }}
 </div>
 {{ forms.textareaField({label: 'Notes'|t('calendar'), name: 'notes', value: booking.notes, errors: booking.getErrors('notes')}) }}
-{% for tab in fieldLayout.tabs %}<h2>{{ tab.name }}</h2>{% for field in tab.elements %}{{ field.formHtml(booking, false)|raw }}{% endfor %}{% endfor %}
+{% for tab in fieldLayout.tabs %}<h2>{{ tab.name }}</h2>{% for field in tab.elements %}{{ field.formHtml(booking, not canSaveBooking)|raw }}{% endfor %}{% endfor %}
+</fieldset>
 </div>
 {% endblock %}
 {% js %}
@@ -116,6 +121,11 @@ function chooseBookingSlot(slot, button) {
     });
 }
 async function loadBookingSlots(resetSelection = false) {
+    {% if not canChooseTime %}
+    bookingSlotSelected = true;
+    bookingSlotsMessage.textContent = originalBookingTime.label;
+    return;
+    {% endif %}
     const request = ++bookingSlotsRequest;
     bookingSlotsLoading = true;
     bookingSlotSelected = false;
@@ -208,6 +218,8 @@ bookingDate.form.addEventListener('submit', event => {
 loadBookingSlots();
 {% endjs %}
 {% css %}
+.booking-permission-fields { border:0; padding:0; margin:0; min-width:0; }
+
 {% include 'calendar/bookings/_confirm-delete-css' %}
 .booking-editor { max-width:960px; }
 .booking-editor .field { margin:0 0 22px; }

@@ -28,6 +28,7 @@ use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\SchedulingSettings;
 use Solspace\Calendar\Records\CalendarRecord;
 use yii\db\Expression;
+use yii\web\ForbiddenHttpException;
 
 class BookingsService extends Component
 {
@@ -40,9 +41,72 @@ class BookingsService extends Component
         return $calendar?->getIsScheduling() && $user && ($user->admin || $user->can(Calendar::PERMISSION_BOOKINGS) || $user->can(Calendar::PERMISSION_BOOKINGS_INDIVIDUAL.':'.$calendar->uid));
     }
 
-    public function getManageableCalendars(): array
+    public function can(?CalendarModel $calendar, string $action = 'view', ?User $user = null): bool
     {
-        return array_filter(Calendar::getInstance()->calendars->getAllCalendars(), fn ($calendar) => $this->canManage($calendar));
+        if (!isset(Calendar::BOOKING_PERMISSIONS[$action])) {
+            throw new \InvalidArgumentException('Unknown booking action.');
+        }
+        if (!$calendar?->getIsScheduling()) {
+            return false;
+        }
+        if ($this->canManage($calendar, $user)) {
+            return true;
+        }
+        $user ??= \Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return false;
+        }
+        $view = Calendar::PERMISSION_BOOKINGS_VIEW;
+        if (!$user->can($view) && !$user->can($view.':'.$calendar->uid)) {
+            return false;
+        }
+        $permission = Calendar::BOOKING_PERMISSIONS[$action];
+
+        return 'view' === $action || $user->can($permission) || $user->can($permission.':'.$calendar->uid);
+    }
+
+    /** Defaults to resources readable by staff; mutation callers request an explicit action. */
+    public function getManageableCalendars(string $action = 'view'): array
+    {
+        return array_filter(Calendar::getInstance()->calendars->getAllCalendars(), fn ($calendar) => $this->can($calendar, $action));
+    }
+
+    public function assertPermission(?CalendarModel $calendar, string $action, ?User $user = null): void
+    {
+        if (!$this->can($calendar, $action, $user)) {
+            throw new ForbiddenHttpException();
+        }
+    }
+
+    /** Validate the actual changes, including both ends of a move between resources. */
+    public function canSaveChanges(Booking $booking, ?array $previous, ?User $user = null): bool
+    {
+        $target = $booking->getCalendar();
+        if (!$previous) {
+            return $this->can($target, 'create', $user) && (Booking::REQUESTED === $booking->bookingStatus || $this->can($target, 'status', $user));
+        }
+        $source = (int) $previous['calendarId'] === $booking->calendarId ? $target : Calendar::getInstance()->calendars->getCalendarById((int) $previous['calendarId']);
+        if (!$this->can($source, 'view', $user) || !$this->can($target, 'view', $user)) {
+            return false;
+        }
+        if ($this->canManage($source, $user) && $this->canManage($target, $user)) {
+            return true;
+        }
+        $current = $booking->getRecordData();
+        $moved = (bool) array_diff_assoc(array_intersect_key($current, array_flip(['calendarId', 'startDate', 'endDate'])), $previous);
+        $status = $booking->bookingStatus !== $previous['bookingStatus'];
+        $details = (bool) array_diff_assoc(array_intersect_key($current, array_flip(['customerName', 'customerEmail', 'notes'])), $previous) || $booking->getDirtyFields() || $booking->isAttributeDirty('enabled');
+        if ($moved && (!$this->can($source, 'reschedule', $user) || !$this->can($target, 'reschedule', $user))) {
+            return false;
+        }
+        if ($status && (!$this->can($source, 'status', $user) || !$this->can($target, 'status', $user))) {
+            return false;
+        }
+        if ($details && (!$this->can($source, 'edit', $user) || !$this->can($target, 'edit', $user))) {
+            return false;
+        }
+
+        return $moved || $status || $this->can($target, 'edit', $user);
     }
 
     public function getPublicCalendars(): array

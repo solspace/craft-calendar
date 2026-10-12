@@ -417,7 +417,7 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
     public function canView(User $user): bool
     {
-        return true;
+        return PermissionHelper::canAccessEvents($this->getCalendar(), $user);
     }
 
     public static function gqlTypeNameByContext(mixed $context): string
@@ -709,17 +709,17 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
     public function canDuplicate(User $user): bool
     {
-        return $this->isEditable();
+        return PermissionHelper::canEditEvent($this, $user);
     }
 
     public function canDelete(User $user): bool
     {
-        return $this->isEditable();
+        return PermissionHelper::canEditEvent($this, $user);
     }
 
     public function canSave(User $user): bool
     {
-        return $this->isEditable();
+        return PermissionHelper::canEditEvent($this, $user);
     }
 
     /**

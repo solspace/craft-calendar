@@ -194,6 +194,30 @@ Guest request attempts use an atomic database counter shared across workers (20 
 
 If a notification job fails, check its error in Queue Manager. Transport failures include the underlying mail error when Craft exposes it. Test delivery from **Settings → Email** and check `storage/logs` for further details. Local development requires a working mail transport, such as a running local mail catcher or configured SMTP service. After correcting the mail configuration, retry the failed jobs; restart long-running workers after updating Calendar's code.
 
+## Staff permissions
+
+Configure permissions in Craft’s user or user-group settings, in addition to **Access the control panel** and **Access Calendar**. Booking permissions are independent of event permissions and calendar configuration permissions. **Access Bookings** is a grouping permission; it does not grant access to customer data on its own.
+
+Grant **View All Bookings**, or check specific resources under **Booking Permissions by Calendar**, then select the actions that role needs. Every action requires View access to the same resource. Global action grants apply only to resources that the user can view. View access includes customer details, notes, and custom booking fields.
+
+| Permission | Allows |
+| --- | --- |
+| View Bookings | Read bookings, the Requests queue, availability, and Schedule for the granted resources. |
+| Create Bookings | Create booking requests for the granted resources. Creating with another initial status also requires Change Booking Status. |
+| Edit Booking Details | Change customer details, notes, enabled state, and custom booking fields. |
+| Reschedule Bookings | Drag bookings, choose alternative times, and move bookings between resources. |
+| Change Booking Status | Confirm, decline, cancel, or return bookings to Requested, including bulk actions and request review. |
+| Delete Bookings | Move bookings to Trash and authorize native permanent deletion. |
+| Restore Bookings | Restore bookings from Trash, subject to current availability and rules. |
+
+For example, a viewer needs only View; a receptionist may need View, Create, and Edit Details; a scheduler needs View and Reschedule; and a moderator needs View and Change Status. Give moderators Reschedule too if they should choose alternative times. The full editor saves details and requires Edit Details for existing bookings; status-only staff use the list or request review, and reschedule-only staff use Schedule. Moving between resources requires Reschedule on both source and destination. Combined status/time changes require each applicable permission on both resources. Undo and Redo recheck the relevant permissions when replaying a change.
+
+Existing **Manage All Bookings** and **Manage Bookings by Calendar** grants continue to provide full operational access. These override the individual action permissions, so uncheck the broad grants when setting up a granular role. Craft administrators retain full access. Booking Fields and Notification Templates remain administrator-only and require `allowAdminChanges`, because they change schema or evaluate administrator-authored Twig. Plugin settings use **Access Settings** and respect `allowAdminChanges`; calendar configuration uses the separate Calendar permissions.
+
+Read-only staff can open booking details and see available times, with creation, editing, dragging, moderation, deletion, and restoration controls disabled or omitted as appropriate. Server checks also protect direct POST requests, bulk selections, native element saves/deletes/restores, and native control-panel queries. Public guest booking forms continue to use resource guest-access, availability, rate-limit, and spam-protection settings; trusted site templates and console operations are not staff control-panel permission contexts.
+
+Event-calendar permissions remain separate: **Access Events** opens the area, while **Read All Events**, **Read Events by Calendar**, or the corresponding Manage grant determines which calendars are readable. Public guest-access settings do not grant control-panel read access. Native element permission checks use the supplied user, and control-panel event queries respect the same calendar scope.
+
 ## Validation before release
 
 Exercise fresh install and upgrade, project-config apply/rebuild, creating both types of calendar, permission restrictions, guest booking on a secondary site, approval and cancellation, mail delivery, drag rescheduling, and simultaneous confirmations against both MySQL and PostgreSQL. Verify the live CP at narrow widths and the public form on mobile. Paid bookings, ticket inventory, recurring bookings, and Freeform integration are future work.

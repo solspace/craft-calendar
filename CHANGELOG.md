@@ -3,6 +3,7 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added separate booking view, create, details-edit, reschedule, status, delete, and restore permissions globally and per scheduling calendar, enforced throughout the control panel and native element lifecycle while retaining existing full-access grants.
 - Added independent Admin and Requester email switches and triggers for booking submission, confirmation, decline, cancellation, return to Requested, rescheduling, and restoration.
 - Added an optional pending booking request count to the main Calendar navigation item, respecting staff access and updating after request moderation.
 - Added a display-timezone picker to the booking Schedule, offering manageable resource timezones and the staff timezone, with automatic defaults and selections preserved through filtering and navigation.
@@ -103,6 +104,8 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed event read access leaking beyond per-calendar grants through the parent Access Events permission, public calendar settings, and native control-panel queries.
+- Fixed settings-save requests bypassing the control-panel and `allowAdminChanges` restrictions.
 - Fixed the booking move confirmation timezone sentence to use the grid’s resolved timezone name instead of duplicated dropdown text.
 - Fixed notification template previews showing an error after rendering successfully because the response was missing its success flag.
 - Clarified the booking Schedule display timezone and listed configured resource timezones in its tooltip. Selected resources sharing a timezone now use it automatically; mixed zones use the staff display timezone. Hour labels retain the correct local clock.

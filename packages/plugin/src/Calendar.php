@@ -111,6 +111,23 @@ class Calendar extends Plugin
     public const LEGACY_PERMISSION_EVENTS_FOR_ALL = 'calendar-manageEventsFor:all';
     public const PERMISSION_BOOKINGS = 'calendar-bookingsManage';
     public const PERMISSION_BOOKINGS_INDIVIDUAL = 'calendar-bookingsManageIndividual';
+    public const PERMISSION_BOOKINGS_ACCESS = 'calendar-bookingsAccess';
+    public const PERMISSION_BOOKINGS_VIEW = 'calendar-bookingsView';
+    public const PERMISSION_BOOKINGS_BY_CALENDAR = 'calendar-bookingsByCalendar';
+    public const BOOKING_PERMISSIONS = [
+        'view' => self::PERMISSION_BOOKINGS_VIEW,
+        'create' => 'calendar-bookingsCreate',
+        'edit' => 'calendar-bookingsEdit',
+        'reschedule' => 'calendar-bookingsReschedule',
+        'status' => 'calendar-bookingsChangeStatus',
+        'delete' => 'calendar-bookingsDelete',
+        'restore' => 'calendar-bookingsRestore',
+    ];
+    public const BOOKING_PERMISSION_LABELS = [
+        'view' => 'View Bookings', 'create' => 'Create Bookings', 'edit' => 'Edit Booking Details',
+        'reschedule' => 'Reschedule Bookings', 'status' => 'Change Booking Status',
+        'delete' => 'Delete Bookings', 'restore' => 'Restore Bookings',
+    ];
 
     public const PERMISSION_SETTINGS = 'calendar-settings';
     public const PERMISSION_RESOURCES = 'calendar-resources';
@@ -448,17 +465,32 @@ class Calendar extends Plugin
 
                     $calendarPermissions = [];
                     $bookingPermissions = [];
+                    $granularBookings = [];
+                    $bookingActions = [];
+                    foreach (self::BOOKING_PERMISSIONS as $action => $permission) {
+                        if ('view' !== $action) {
+                            $bookingActions[$permission] = ['label' => self::t(self::BOOKING_PERMISSION_LABELS[$action])];
+                        }
+                    }
                     $readEventsPermissions = [];
                     $editEventsPermissions = [];
                     foreach ($calendars as $calendar) {
                         $suffix = ':'.$calendar->uid;
                         if ($calendar->getIsScheduling()) {
                             $bookingPermissions[self::PERMISSION_BOOKINGS_INDIVIDUAL.$suffix] = ['label' => $calendar->name];
+                            $actions = [];
+                            foreach ($bookingActions as $permission => $definition) {
+                                $actions[$permission.$suffix] = $definition;
+                            }
+                            $granularBookings[self::PERMISSION_BOOKINGS_VIEW.$suffix] = ['label' => $calendar->name, 'nested' => $actions];
                         }
 
                         $calendarPermissions[self::PERMISSION_EDIT_CALENDARS_INDIVIDUAL.$suffix] = [
                             'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
                         ];
+                        if ($calendar->getIsScheduling()) {
+                            continue;
+                        }
                         $readEventsPermissions[self::PERMISSION_EVENTS_READ_INDIVIDUAL.$suffix] = [
                             'label' => self::t('"{name}" calendar', ['name' => $calendar->name]),
                         ];
@@ -468,8 +500,12 @@ class Calendar extends Plugin
                     }
 
                     $permissions = [
-                        self::PERMISSION_BOOKINGS => ['label' => self::t('Manage All Bookings')],
+                        self::PERMISSION_BOOKINGS => ['label' => self::t('Manage All Bookings'), 'info' => self::t('Full access overrides individual booking action permissions. Existing grants retain their access.')],
                         self::PERMISSION_BOOKINGS_INDIVIDUAL => ['label' => self::t('Manage Bookings by Calendar'), 'nested' => $bookingPermissions],
+                        self::PERMISSION_BOOKINGS_ACCESS => ['label' => self::t('Access Bookings'), 'nested' => [
+                            self::PERMISSION_BOOKINGS_VIEW => ['label' => self::t('View All Bookings'), 'nested' => $bookingActions],
+                            self::PERMISSION_BOOKINGS_BY_CALENDAR => ['label' => self::t('Booking Permissions by Calendar'), 'nested' => $granularBookings],
+                        ]],
                         self::PERMISSION_CALENDARS => [
                             'label' => self::t('Access Calendars'),
                             'nested' => [

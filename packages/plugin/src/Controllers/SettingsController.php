@@ -169,6 +169,10 @@ class SettingsController extends BaseController
      */
     public function actionSaveSettings(): ?Response
     {
+        $this->requireCpRequest();
+        if (!\Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            throw new ForbiddenHttpException(Calendar::t('Administrative changes are disallowed in this environment.'));
+        }
         PermissionHelper::requirePermission(Calendar::PERMISSION_SETTINGS);
 
         $this->requirePostRequest();

@@ -21,7 +21,7 @@
     <input type="hidden" id="booking-sort" name="sort" value="{{ sort }}">
     <span class="spinner hidden" aria-hidden="true"></span>
     <a class="btn{{ calendarSelection != 'all' or bookingStatus or search ? '' : ' hidden' }}" data-booking-filter-clear href="{{ cpUrl('calendar/bookings', {view: bookingListView, sort}) }}">{{ 'Clear'|t('app') }}</a>
-    <a href="{{ cpUrl('calendar/bookings/new') }}" class="btn submit add icon booking-new-button">{{ 'New booking'|t('calendar') }}</a>
+    {% if creatableCalendarIds is not empty %}<a href="{{ cpUrl('calendar/bookings/new', {calendarId: creatableCalendarIds|first}) }}" class="btn submit add icon booking-new-button">{{ 'New booking'|t('calendar') }}</a>{% endif %}
 </form>
 {% endblock %}
 

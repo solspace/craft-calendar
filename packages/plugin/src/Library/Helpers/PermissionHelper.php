@@ -2,6 +2,7 @@
 
 namespace Solspace\Calendar\Library\Helpers;
 
+use craft\elements\User;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Models\CalendarModel;
@@ -157,27 +158,35 @@ class PermissionHelper
         );
     }
 
-    public static function canAccessEvents(?CalendarModel $calendar = null): bool
+    public static function canAccessEvents(?CalendarModel $calendar = null, ?User $user = null): bool
     {
-        if (
-            self::checkPermission(Calendar::PERMISSION_EVENTS)
-            || self::checkPermission(Calendar::PERMISSION_EVENTS_READ)
-            || self::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL)
-        ) {
+        $check = static fn (string $permission) => $user ? self::userHasPermission($user, $permission) : self::checkPermission($permission);
+        if ($check(Calendar::PERMISSION_EVENTS_READ) || $check(Calendar::PERMISSION_EVENTS_FOR_ALL)) {
             return true;
         }
-
         if (null === $calendar) {
-            return self::checkPermission(Calendar::PERMISSION_EVENTS_READ_INDIVIDUAL, true)
+            return $check(Calendar::PERMISSION_EVENTS)
+                || self::checkPermission(Calendar::PERMISSION_EVENTS_READ_INDIVIDUAL, true)
                 || self::checkPermission(Calendar::PERMISSION_EVENTS_FOR, true);
         }
 
-        return self::checkPermission(
-            self::prepareNestedPermission(
-                Calendar::PERMISSION_EVENTS_READ_INDIVIDUAL,
-                $calendar->uid
-            )
-        ) || self::canEditCalendar($calendar);
+        return $check(self::prepareNestedPermission(Calendar::PERMISSION_EVENTS_READ_INDIVIDUAL, $calendar->uid))
+            || $check(self::prepareNestedPermission(Calendar::PERMISSION_EVENTS_FOR, $calendar->uid));
+    }
+
+    /** Check the supplied element user rather than the current session identity. */
+    public static function userHasPermission(User $user, string $permission): bool
+    {
+        if ($user->admin) {
+            return true;
+        }
+        foreach (self::permissionAliases($permission) as $name) {
+            if ($user->can($name)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function canEditCalendar(?CalendarModel $calendar = null): bool
@@ -200,15 +209,18 @@ class PermissionHelper
         );
     }
 
-    public static function canEditEvent(Event $event): bool
+    public static function canEditEvent(Event $event, ?User $user = null): bool
     {
-        $canEditCalendar = self::canEditCalendar($event->getCalendar());
+        $canEditCalendar = $user
+            ? self::userHasPermission($user, Calendar::PERMISSION_EVENTS_FOR_ALL)
+                || self::userHasPermission($user, self::prepareNestedPermission(Calendar::PERMISSION_EVENTS_FOR, $event->getCalendar()->uid))
+            : self::canEditCalendar($event->getCalendar());
 
-        if (self::isAdmin() || !Calendar::getInstance()->settings->isAuthoredEventEditOnly()) {
+        if (($user ? $user->admin : self::isAdmin()) || !Calendar::getInstance()->settings->isAuthoredEventEditOnly()) {
             return $canEditCalendar;
         }
 
-        return $canEditCalendar && (int) $event->authorId === (int) \Craft::$app->getUser()->id;
+        return $canEditCalendar && (int) $event->authorId === (int) ($user?->id ?? \Craft::$app->getUser()->id);
     }
 
     private static function isConsole(): bool

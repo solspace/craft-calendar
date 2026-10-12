@@ -3,6 +3,7 @@
 namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 
 use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Scheduling\Schedule;
 use Solspace\Calendar\Models\CalendarModel;
@@ -95,11 +96,11 @@ class SchedulingTemplateTest extends TestCase
                     $calendarSelection = \count($calendarIds) === 2 ? 'all' : '7';
                     $calendars = [7 => ['id' => 7, 'name' => 'Meeting room', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15, 'duration' => 30]], 8 => ['id' => 8, 'name' => 'Studio', 'color' => '#008a5b', 'schedulingSettings' => ['timezone' => 'Asia/Tokyo', 'increment' => 30, 'duration' => 30]]];
                     $columns = array_map(static fn ($id) => ['calendar' => $calendars[$id], 'bookings' => [['booking' => (object) ['id' => $id + 93, 'bookingStatus' => 7 === $id ? 'requested' : 'confirmed', 'customerName' => 'Customer', 'startDate' => new \DateTimeImmutable('2026-10-12T08:30:00-05:00'), 'endDate' => new \DateTimeImmutable('2026-10-12T09:00:00-05:00'), 'cpEditUrl' => 'calendar/bookings/'.($id + 93)], 'minute' => 510, 'length' => 30, 'label' => '8:30am - 9am', 'lane' => 0]], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]], $calendarIds);
-                    $output = $twig->render('schedule', [
+                    $variables = [
                         'view' => $view,
                         'scheduleView' => $scheduleView,
                         'scheduleLayout' => $scheduleLayout,
-                        'bookingTimeFormat' => 'short',
+                        'bookingPermissions' => array_fill_keys(range(1, 40), array_fill_keys(array_keys(Calendar::BOOKING_PERMISSIONS), true)), 'creatableCalendarIds' => [7, 8], 'bookingTimeFormat' => 'short',
                         'statusOptions' => ['requested' => 'Requested', 'confirmed' => 'Confirmed'],
                         'unavailableRequestIds' => [100 => true],
                         'calendar' => $calendars[7],
@@ -115,8 +116,21 @@ class SchedulingTemplateTest extends TestCase
                         'next' => '2026-10-19',
                         'currentUser' => ['admin' => false, 'id' => 7],
                         'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
-                    ]);
+                    ];
+                    $output = $twig->render('schedule', $variables);
 
+                    $readOnly = $variables;
+                    $readOnly['bookingPermissions'] = array_fill_keys([7, 8], array_fill_keys(array_keys(Calendar::BOOKING_PERMISSIONS), false));
+                    $readOnly['creatableCalendarIds'] = [];
+                    $readOnlyHtml = $twig->render('schedule', $readOnly);
+                    $readDom = new \DOMDocument();
+                    @$readDom->loadHTML($readOnlyHtml);
+                    $readXpath = new \DOMXPath($readDom);
+                    self::assertSame(0, $readXpath->query('//a[contains(@class, "booking-block")][@draggable="true"]')->length);
+                    self::assertSame(0, $readXpath->query('//a[contains(@class, "booking-slot-target")]|//button[@data-booking-options]')->length);
+                    self::assertGreaterThan(0, $readXpath->query('//span[contains(@class, "booking-slot-readonly")]')->length);
+                    self::assertSame(1, $readXpath->query('//a[@data-booking-new][@hidden]')->length);
+                    self::assertStringContainsString('Shaded times are unavailable. Select a booking to view its details.', $readOnlyHtml);
                     self::assertStringContainsString('Display timezone', $output);
                     self::assertStringContainsString('Automatic (', $output);
                     self::assertStringContainsString('id="booking-schedule-timezone"', $output);
@@ -181,7 +195,7 @@ class SchedulingTemplateTest extends TestCase
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
         $twig->addFilter(new TwigFilter('time', static fn ($date) => $date->format('H:i')));
         $output = $twig->render('day', [
-            'bookingTimeFormat' => 'icu:HH:mm',
+            'bookingPermissions' => array_fill_keys(range(1, 40), array_fill_keys(array_keys(Calendar::BOOKING_PERMISSIONS), true)), 'creatableCalendarIds' => [7, 8], 'bookingTimeFormat' => 'icu:HH:mm',
             'day' => ['date' => new \DateTimeImmutable('2026-10-12'), 'combined' => Schedule::combined($columns)],
             'calendarIds' => range(1, 40), 'displayTimezone' => 'UTC', 'unavailableRequestIds' => [1 => true, 3 => true], 'statusOptions' => ['confirmed' => 'Confirmed', 'requested' => 'Requested'], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
         ]);

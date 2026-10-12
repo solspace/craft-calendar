@@ -155,7 +155,7 @@ class BookingsController extends BaseController
 
     public function actionReviewRequest(): Response
     {
-        $calendars = $this->manageableCalendars();
+        $calendars = $this->manageableCalendars('status');
         $id = filter_var(\Craft::$app->request->getRequiredQueryParam('bookingId'), \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         if (false === $id) {
             throw new BadRequestHttpException();
@@ -198,7 +198,7 @@ class BookingsController extends BaseController
             $expected[$key] = Db::prepareDateForDb($this->parseStart($value));
         }
         $targetCalendarId = filter_var($request->getBodyParam('calendarId', $calendarId), \FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if (false === $targetCalendarId || !isset($this->manageableCalendars()[$targetCalendarId])) {
+        if (false === $targetCalendarId || !isset($this->manageableCalendars('status')[$targetCalendarId])) {
             throw new ForbiddenHttpException();
         }
         $start = $request->getBodyParam('start', '');
@@ -238,7 +238,7 @@ class BookingsController extends BaseController
 
     public function actionEdit(?int $bookingId = null): Response
     {
-        $calendars = $this->manageableCalendars();
+        $calendars = $this->manageableCalendars($bookingId ? 'view' : 'create');
         $booking = $bookingId ? Booking::find()->id($bookingId)->one() : new Booking();
         if (!$booking) {
             throw new NotFoundHttpException();
@@ -287,11 +287,17 @@ class BookingsController extends BaseController
         if (!$booking || ($id && !isset($calendars[$booking->calendarId]))) {
             throw new ForbiddenHttpException();
         }
+        $service = Calendar::getInstance()->bookings;
+        if ($id) {
+            $service->assertPermission($booking->getCalendar(), 'edit');
+        }
+        $previous = $id ? $booking->getRecordData() : null;
         $calendarId = (int) $request->getRequiredBodyParam('calendarId');
         if (!isset($calendars[$calendarId])) {
             throw new ForbiddenHttpException();
         }
         $booking->calendarId = $calendarId;
+        $service->assertPermission($booking->getCalendar(), $id ? 'edit' : 'create');
         $zone = new \DateTimeZone($calendars[$calendarId]->getSchedulingSettings()->timezone);
         foreach (['startDate', 'endDate'] as $key) {
             $value = (string) $request->getRequiredBodyParam($key);
@@ -307,6 +313,9 @@ class BookingsController extends BaseController
         }
         foreach (['customerName', 'customerEmail', 'notes', 'bookingStatus'] as $key) {
             $booking->{$key} = trim((string) $request->getBodyParam($key, ''));
+        }
+        if (!$service->canSaveChanges($booking, $previous)) {
+            throw new ForbiddenHttpException();
         }
         $booking->setScenario(Booking::SCENARIO_LIVE);
         $booking->setFieldValuesFromRequest('fields');
@@ -327,7 +336,7 @@ class BookingsController extends BaseController
         $request = \Craft::$app->request;
         $booking = \Craft::$app->getElements()->getElementById((int) $request->getRequiredBodyParam('bookingId'), Booking::class);
         $service = Calendar::getInstance()->bookings;
-        if (!$booking instanceof Booking || !$service->canManage($booking->getCalendar())) {
+        if (!$booking instanceof Booking || !$service->can($booking->getCalendar(), 'status')) {
             throw new ForbiddenHttpException();
         }
         $status = $request->getRequiredBodyParam('bookingStatus');
@@ -393,7 +402,7 @@ class BookingsController extends BaseController
         if (!\is_string($status) || !isset(Booking::statusOptions()[$status])) {
             throw new BadRequestHttpException(Calendar::t('Choose a valid booking status.'));
         }
-        $bookings = $this->selectedLifecycleBookings(false);
+        $bookings = $this->selectedLifecycleBookings(false, 'status');
         $service = Calendar::getInstance()->bookings;
         $completedIds = [];
         $errors = [];
@@ -427,7 +436,7 @@ class BookingsController extends BaseController
         $this->requirePostRequest();
         $request = \Craft::$app->request;
         $booking = Booking::find()->id((int) $request->getRequiredBodyParam('bookingId'))->one();
-        if (!$booking || !Calendar::getInstance()->bookings->canManage($booking->getCalendar())) {
+        if (!$booking || !Calendar::getInstance()->bookings->can($booking->getCalendar(), 'reschedule')) {
             throw new ForbiddenHttpException();
         }
         if ((int) $request->getBodyParam('calendarId', $booking->calendarId) !== (int) $booking->calendarId) {
@@ -713,12 +722,23 @@ class BookingsController extends BaseController
 
     private function renderEdit(Booking $booking): Response
     {
-        return $this->renderTemplate('calendar/bookings/edit', $this->variables() + ['booking' => $booking, 'fieldLayout' => $booking->getFieldLayout()]);
+        $service = Calendar::getInstance()->bookings;
+        $canEdit = $service->can($booking->getCalendar(), $booking->id ? 'edit' : 'create');
+
+        return $this->renderTemplate('calendar/bookings/edit', $this->variables() + ['booking' => $booking, 'fieldLayout' => $booking->getFieldLayout(), 'canSaveBooking' => $canEdit, 'canChooseTime' => $canEdit && (!$booking->id || $service->can($booking->getCalendar(), 'reschedule')), 'canChangeStatus' => $canEdit && $service->can($booking->getCalendar(), 'status'), 'canDeleteBooking' => $booking->id && $service->can($booking->getCalendar(), 'delete')]);
     }
 
     private function variables(): array
     {
-        return ['calendars' => $this->manageableCalendars(), 'statusOptions' => Booking::statusOptions(), 'bookingTimeFormat' => 'icu:'.DateFormatHelper::get(DateFormatHelper::TYPE_TIME, length: 'short'), 'crumbs' => [['label' => Calendar::getInstance()->name, 'url' => UrlHelper::cpUrl('calendar')], ['label' => Calendar::getInstance()->settings->getSettingsModel()->getBookingLabel(), 'url' => UrlHelper::cpUrl(Calendar::getInstance()->settings->getSettingsModel()->getBookingDefaultPath())]]];
+        $calendars = $this->manageableCalendars();
+        $capabilities = [];
+        foreach ($calendars as $id => $calendar) {
+            foreach (Calendar::BOOKING_PERMISSIONS as $action => $permission) {
+                $capabilities[$id][$action] = Calendar::getInstance()->bookings->can($calendar, $action);
+            }
+        }
+
+        return ['bookingPermissions' => $capabilities, 'creatableCalendarIds' => array_keys(array_filter($calendars, static fn ($calendar) => Calendar::getInstance()->bookings->can($calendar, 'create'))), 'calendars' => $calendars, 'statusOptions' => Booking::statusOptions(), 'bookingTimeFormat' => 'icu:'.DateFormatHelper::get(DateFormatHelper::TYPE_TIME, length: 'short'), 'crumbs' => [['label' => Calendar::getInstance()->name, 'url' => UrlHelper::cpUrl('calendar')], ['label' => Calendar::getInstance()->settings->getSettingsModel()->getBookingLabel(), 'url' => UrlHelper::cpUrl(Calendar::getInstance()->settings->getSettingsModel()->getBookingDefaultPath())]]];
     }
 
     private function lifecycleBooking(bool $trashed): Booking
@@ -730,20 +750,20 @@ class BookingsController extends BaseController
             throw new BadRequestHttpException();
         }
 
-        return $this->findLifecycleBooking($id, $trashed);
+        return $this->findLifecycleBooking($id, $trashed, $trashed ? 'restore' : 'delete');
     }
 
-    private function findLifecycleBooking(int $id, bool $trashed): Booking
+    private function findLifecycleBooking(int $id, bool $trashed, string $action): Booking
     {
         $booking = \Craft::$app->getElements()->getElementById($id, Booking::class, \Craft::$app->getSites()->getPrimarySite()->id, ['trashed' => $trashed]);
-        if (!$booking instanceof Booking || !Calendar::getInstance()->bookings->canManage($booking->getCalendar())) {
+        if (!$booking instanceof Booking || !Calendar::getInstance()->bookings->can($booking->getCalendar(), $action)) {
             throw new ForbiddenHttpException();
         }
 
         return $booking;
     }
 
-    private function selectedLifecycleBookings(bool $trashed): array
+    private function selectedLifecycleBookings(bool $trashed, ?string $action = null): array
     {
         $this->requireCpRequest();
         $this->requirePostRequest();
@@ -761,7 +781,7 @@ class BookingsController extends BaseController
         }
 
         // Authorize the entire selection before changing any elements.
-        return array_map(fn (int $id) => $this->findLifecycleBooking($id, $trashed), array_values($validatedIds));
+        return array_map(fn (int $id) => $this->findLifecycleBooking($id, $trashed, $action ?? ($trashed ? 'restore' : 'delete')), array_values($validatedIds));
     }
 
     private function changeSelectedBookings(bool $restore): Response
@@ -788,10 +808,10 @@ class BookingsController extends BaseController
         return $this->asJson(['success' => !$errors, 'completedIds' => $completedIds, 'errors' => $errors]);
     }
 
-    private function manageableCalendars(): array
+    private function manageableCalendars(string $action = 'view'): array
     {
         $this->requireCpRequest();
-        $calendars = Calendar::getInstance()->bookings->getManageableCalendars();
+        $calendars = Calendar::getInstance()->bookings->getManageableCalendars($action);
         if (!$calendars) {
             throw new ForbiddenHttpException();
         }

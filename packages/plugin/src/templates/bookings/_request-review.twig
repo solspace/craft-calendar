@@ -33,20 +33,20 @@
         </div>
     </dl>
     {% if unavailable %}
-        <div class="request-review-warning"><span data-icon="alert" aria-hidden="true"></span><div><strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong><p>{{ 'Choose another available time or decline this request.'|t('calendar') }}</p></div></div>
+        <div class="request-review-warning"><span data-icon="alert" aria-hidden="true"></span><div><strong>{{ 'The requested time is no longer available.'|t('calendar') }}</strong><p>{{ (bookingPermissions[booking.calendarId].reschedule ? 'Choose another available time or decline this request.' : 'The requested time cannot be confirmed. Contact a scheduler or decline this request.')|t('calendar') }}</p></div></div>
     {% endif %}
     <section class="request-review-section request-review-reschedule">
         <div class="request-review-section-heading">
             <h3>{{ 'Availability'|t('calendar') }}</h3>
-            <button type="button" class="btn small{{ unavailable ? ' hidden' }}" data-request-alternative aria-expanded="{{ unavailable ? 'true' : 'false' }}" aria-controls="{{ containerId }}-time-picker">{{ 'Choose another time'|t('calendar') }}</button>
+            <button type="button" class="btn small{{ unavailable or not bookingPermissions[booking.calendarId].reschedule ? ' hidden' }}" data-request-alternative aria-expanded="{{ unavailable ? 'true' : 'false' }}" aria-controls="{{ containerId }}-time-picker">{{ 'Choose another time'|t('calendar') }}</button>
         </div>
         <p class="light request-review-help">{{ 'Requested times are reserved only after confirmation.'|t('calendar') }}</p>
-        <div id="{{ containerId }}-time-picker" data-request-time-picker class="{{ not unavailable ? 'hidden' }}">
+        <div id="{{ containerId }}-time-picker" data-request-time-picker class="{{ not unavailable or not bookingPermissions[booking.calendarId].reschedule ? 'hidden' }}">
             <div class="request-review-date-controls">
                 <div class="field request-review-calendar-field">
                     <div class="heading"><label id="{{ containerId }}-calendar-label">{{ resourceLabels.singular }}</label></div>
                     <select class="hidden" data-request-calendar aria-label="{{ resourceLabels.singular }}" tabindex="-1">
-                        {% for resource in calendars %}
+                        {% for resource in calendars|filter(resource => resource.id == booking.calendarId or (bookingPermissions[resource.id].status and bookingPermissions[resource.id].reschedule)) %}
                             <option value="{{ resource.id }}"{{ resource.id == booking.calendarId ? ' selected' }}>{{ resource.name }}</option>
                         {% endfor %}
                     </select>
@@ -56,7 +56,7 @@
                     </button>
                     <div id="{{ containerId }}-calendar-menu" class="menu menu--disclosure request-calendar-menu"{% if calendars|length > 10 %} data-with-search-input="true"{% endif %}>
                         <ul class="padded">
-                            {% for resource in calendars %}
+                            {% for resource in calendars|filter(resource => resource.id == booking.calendarId or (bookingPermissions[resource.id].status and bookingPermissions[resource.id].reschedule)) %}
                                 <li><button type="button" class="menu-item{{ resource.id == booking.calendarId ? ' sel' }}" data-request-calendar-option="{{ resource.id }}" data-calendar-color="{{ resource.color }}" data-calendar-name="{{ resource.name }}"{{ resource.id == booking.calendarId ? ' aria-current="true"' }}>
                                     <span class="menu-item-label request-calendar-option-label"><span class="color-indicator" style="background:{{ resource.color }}" aria-hidden="true"></span><span>{{ resource.name }}</span></span>
                                 </button></li>
@@ -91,7 +91,7 @@
     {% endif %}
     <div class="request-review-actions">
         <button type="button" class="btn booking-decline-btn" data-request-decline>{{ 'Decline Request'|t('calendar') }}</button>
-        <a class="btn" href="{{ booking.cpEditUrl }}">{{ 'Edit booking'|t('calendar') }}</a>
+        <a class="btn" href="{{ booking.cpEditUrl }}">{{ (bookingPermissions[booking.calendarId].edit ? 'Edit booking' : 'View Booking')|t('calendar') }}</a>
     </div>
 </div>
 {% css %}
@@ -243,14 +243,16 @@ form:has(> .request-review-content):focus-visible {
     const message = form.querySelector('[data-request-slot-message]');
     let revision = 0, controller = null;
     const unavailable = {{ unavailable ? 'true' : 'false' }};
+    const canReschedule = {{ bookingPermissions[booking.calendarId].reschedule ? 'true' : 'false' }};
     function sync() {
         const expanded = !picker.classList.contains('hidden');
         const calendarChanged = calendarPicker.value !== String({{ booking.calendarId|json_encode|raw }});
         screen.$saveBtn.prop('disabled', (unavailable || expanded || calendarChanged) && !start.value);
-        alternative.classList.toggle('hidden', expanded);
+        alternative.classList.toggle('hidden', expanded || !canReschedule);
         alternative.setAttribute('aria-expanded', String(expanded));
     }
     async function loadSlots() {
+        if (!canReschedule) return;
         controller?.abort(); controller = new AbortController();
         const signal = controller.signal, current = ++revision;
         start.value = ''; calendarTarget.value = calendarPicker.value; sync(); slots.replaceChildren();
@@ -280,6 +282,6 @@ form:has(> .request-review-content):focus-visible {
     screen.on('beforeClose', () => { controller?.abort(); ++revision; });
     syncCalendarMenu();
     sync();
-    if (unavailable) loadSlots();
+    if (unavailable && canReschedule) loadSlots();
 })();
 {% endjs %}

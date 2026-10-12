@@ -2,6 +2,7 @@
 
 namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 
+use craft\elements\User;
 use craft\helpers\Db;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Calendar;
@@ -31,6 +32,7 @@ class BookingHistoryTest extends TestCase
     private mixed $previousPlugin;
     private mixed $previousDb;
     private bool $allowed = true;
+    private ?array $allowedActions = null;
     private int $userId = 7;
 
     protected function setUp(): void
@@ -51,6 +53,11 @@ class BookingHistoryTest extends TestCase
         $cache = new ArrayCache();
         $user = new class($this) {
             public function __construct(private BookingHistoryTest $test) {}
+
+            public function getIdentity(): ?User
+            {
+                return null;
+            }
 
             public function getId(): int
             {
@@ -92,8 +99,9 @@ class BookingHistoryTest extends TestCase
         $plugin = (new \ReflectionClass(Calendar::class))->newInstanceWithoutConstructor();
         $plugin->setComponents(['calendars' => $calendars]);
         Calendar::setInstance($plugin);
-        $service = $this->getMockBuilder(BookingsService::class)->onlyMethods(['canManage', 'save'])->getMock();
+        $service = $this->getMockBuilder(BookingsService::class)->onlyMethods(['canManage', 'can', 'save'])->getMock();
         $service->method('canManage')->willReturnCallback(fn () => $this->allowed);
+        $service->method('can')->willReturnCallback(fn ($calendar, $action = 'view') => $this->allowed && (null === $this->allowedActions || \in_array($action, $this->allowedActions, true)));
         $service->method('save')->willReturnCallback(function (Booking $booking) use ($service): bool {
             try {
                 // Keep real server availability validation; mock Craft's element lifecycle only.
@@ -125,6 +133,27 @@ class BookingHistoryTest extends TestCase
         \Craft::$app = $this->previousApp;
         Calendar::setInstance($this->previousPlugin);
         (new \ReflectionProperty(Db::class, '_db'))->setValue(null, $this->previousDb);
+    }
+
+    public function testViewAccessCannotMoveBookings(): void
+    {
+        $this->allowedActions = ['view'];
+        $this->expectException(ForbiddenHttpException::class);
+        $this->history->move(42, new \DateTimeImmutable('2026-10-12T15:00:00Z'));
+    }
+
+    public function testUndoRechecksReschedulePermissionEvenWithViewAccess(): void
+    {
+        $this->allowedActions = ['view', 'reschedule'];
+        $token = $this->history->move(42, new \DateTimeImmutable('2026-10-12T15:00:00Z'));
+        $this->allowedActions = ['view', 'status'];
+
+        try {
+            $this->history->replay($token, 'undo');
+            self::fail('Revoked reschedule permission must prevent Undo.');
+        } catch (ForbiddenHttpException) {
+            self::assertSame('2026-10-12 15:00:00', $this->db->createCommand('SELECT startDate FROM calendar_bookings WHERE id=42')->queryScalar());
+        }
     }
 
     public function currentUserId(): int

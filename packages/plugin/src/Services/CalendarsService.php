@@ -79,9 +79,12 @@ class CalendarsService extends Component
      */
     public function getAllAllowedCalendars(bool $eventsOnly = true): array
     {
+        $request = \Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            return array_filter($this->getAllCalendars(), static fn ($calendar) => (!$eventsOnly || !$calendar->getIsScheduling()) && PermissionHelper::canAccessEvents($calendar));
+        }
         $isAdmin = PermissionHelper::isAdmin();
-        $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS)
-            || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_READ)
+        $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_READ)
             || PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS_FOR_ALL);
 
         /** @var SettingsService $settings */

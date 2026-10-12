@@ -40,8 +40,10 @@ class BookingStatusTest extends TestCase
         $this->previousPlugin = Calendar::getInstance();
         $this->request = $this->createMock(Request::class);
         $this->service = $this->createMock(BookingsService::class);
+        $this->service->method('can')->willReturnCallback(fn ($calendar, $action, $user = null) => $this->service->canManage($calendar, $user));
         $this->elements = $this->createMock(Elements::class);
         \Craft::$app = new class($this->request, $this->elements) {
+            public array $loadedModules = [];
             public string $language = 'en';
             public string $timeZone = 'America/Toronto';
 

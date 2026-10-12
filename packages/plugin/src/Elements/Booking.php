@@ -12,6 +12,7 @@ use craft\models\FieldLayout;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\BookingQuery;
 use Solspace\Calendar\Models\CalendarModel;
+use yii\web\ForbiddenHttpException;
 
 class Booking extends Element
 {
@@ -107,17 +108,23 @@ class Booking extends Element
 
     public function canView(User $user): bool
     {
-        return Calendar::getInstance()->bookings->canManage($this->getCalendar(), $user);
+        return Calendar::getInstance()->bookings->can($this->getCalendar(), 'view', $user);
     }
 
     public function canSave(User $user): bool
     {
-        return $this->canView($user);
+        $service = Calendar::getInstance()->bookings;
+        if ($this->trashed) {
+            return $service->can($this->getCalendar(), 'restore', $user);
+        }
+        $previous = $this->id ? (new Query())->from(self::TABLE)->where(['id' => $this->id])->one() : null;
+
+        return $service->can($this->getCalendar(), $previous ? 'edit' : 'create', $user) && $service->canSaveChanges($this, $previous ?: null, $user);
     }
 
     public function canDelete(User $user): bool
     {
-        return $this->canView($user);
+        return Calendar::getInstance()->bookings->can($this->getCalendar(), 'delete', $user);
     }
 
     public function canDuplicate(User $user): bool
@@ -141,13 +148,16 @@ class Booking extends Element
     public function afterSave(bool $isNew): void
     {
         // This runs inside Craft's element transaction, including saves through native APIs.
-        Calendar::getInstance()->bookings->assertSaveAllowed($this);
-        $previous = (new Query())->select(['calendarId', 'startDate', 'endDate', 'bookingStatus', 'statusChangedAt', 'statusChangedById', 'statusChangedByName', 'statusChangeSource'])
+        $previous = (new Query())
             ->from(self::TABLE)->where(['id' => $this->id])->one()
         ;
         $request = \Craft::$app->getRequest();
         $isCp = !$request->getIsConsoleRequest() && $request->getIsCpRequest();
         $user = $isCp ? \Craft::$app->getUser()->getIdentity() : null;
+        if ($isCp && (!$user || !Calendar::getInstance()->bookings->canSaveChanges($this, $previous ?: null, $user))) {
+            throw new ForbiddenHttpException();
+        }
+        Calendar::getInstance()->bookings->assertSaveAllowed($this);
         $source = $user ? 'user' : 'system';
         if (!$previous && !$request->getIsConsoleRequest() && !$isCp) {
             $source = self::CONFIRMED === $this->bookingStatus ? 'automatic' : 'customer';
@@ -156,6 +166,20 @@ class Booking extends Element
         Db::upsert(self::TABLE, $this->getRecordData());
         parent::afterSave($isNew);
         Calendar::getInstance()->bookings->scheduleNotification($this, $previous ?: null);
+    }
+
+    public function beforeDelete(): bool
+    {
+        $this->requireCpBookingAction('delete');
+
+        return parent::beforeDelete();
+    }
+
+    public function beforeRestore(): bool
+    {
+        $this->requireCpBookingAction('restore');
+
+        return parent::beforeRestore();
     }
 
     public function afterRestore(): void
@@ -213,5 +237,13 @@ class Booking extends Element
             [['notes'], 'string', 'max' => 10000],
             [['bookingStatus'], 'in', 'range' => array_keys(self::statusOptions())],
         ]);
+    }
+
+    private function requireCpBookingAction(string $action): void
+    {
+        $request = \Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            Calendar::getInstance()->bookings->assertPermission($this->getCalendar(), $action);
+        }
     }
 }

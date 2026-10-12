@@ -35,7 +35,7 @@ function updateBookingHistory() {
     bookingHistoryButtons.forEach(button => {
         button.disabled = busy || !(button.dataset.bookingHistory === 'undo' ? bookingPast.length : bookingFuture.length);
     });
-    bookingGridScroll.querySelectorAll('.booking-block').forEach(block => block.draggable = !busy);
+    bookingGridScroll.querySelectorAll('.booking-block').forEach(block => block.draggable = !busy && block.dataset.canReschedule === 'true');
 }
 function retainBookingHistory() {
     try {
@@ -101,6 +101,10 @@ async function filterBookingSchedule(url) {
         bookingToolbar.querySelector('.booking-toolbar-navigation').innerHTML = toolbar.querySelector('.booking-toolbar-navigation').innerHTML;
         bookingToolbar.querySelector('.booking-toolbar-timezone').title = toolbar.querySelector('.booking-toolbar-timezone').title;
         document.querySelector('[data-booking-new]').href = newBooking.href;
+        document.querySelector('[data-booking-new]').hidden = newBooking.hidden;
+        const historyControls = document.querySelector('.booking-history-controls');
+        const returnedHistory = doc.querySelector('.booking-history-controls');
+        if (historyControls && returnedHistory) historyControls.classList.toggle('hidden', returnedHistory.classList.contains('hidden'));
         document.querySelector('[data-booking-instructions]').textContent = doc.querySelector('[data-booking-instructions]').textContent;
         history.replaceState(null, '', url);
         if (calendarChanged) loadBookingHistory();

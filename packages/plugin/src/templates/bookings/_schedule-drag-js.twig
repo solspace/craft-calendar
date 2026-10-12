@@ -49,7 +49,7 @@ function showBookingDropPreview(booking, destination) {
 }
 bookingGridScroll.addEventListener('dragstart', event => {
     const block = event.target.closest('.booking-block');
-    if (!block || bookingBusy || bookingScheduleLoading) { event.preventDefault(); return; }
+    if (!block || block.dataset.canReschedule !== 'true' || bookingBusy || bookingScheduleLoading) { event.preventDefault(); return; }
     clearBookingDrag();
     closeBookingOptions();
     const height = block.getBoundingClientRect().height;

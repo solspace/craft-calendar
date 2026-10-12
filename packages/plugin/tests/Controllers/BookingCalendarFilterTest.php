@@ -169,7 +169,7 @@ class BookingCalendarFilterTest extends TestCase
             $output = $twig->render('list', [
                 'bookings' => $bookings, 'calendars' => [7 => ['name' => 'Room', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg']]],
                 'unavailableRequestIds' => [1 => true], 'statusOptions' => ['requested' => 'Requested', 'confirmed' => 'Confirmed'],
-                'trashed' => $trashed, 'sort' => 'date-desc', 'calendarSelection' => '7', 'bookingStatus' => '', 'search' => '', 'bookingListView' => $trashed ? 'trash' : 'active', 'bookingTimeFormat' => 'short', 'page' => 1, 'total' => 3, 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()]],
+                'trashed' => $trashed, 'sort' => 'date-desc', 'calendarSelection' => '7', 'bookingStatus' => '', 'search' => '', 'bookingListView' => $trashed ? 'trash' : 'active', 'bookingPermissions' => array_fill_keys([7, 8, 9], array_fill_keys(array_keys(Calendar::BOOKING_PERMISSIONS), true)), 'creatableCalendarIds' => [7, 8], 'bookingTimeFormat' => 'short', 'page' => 1, 'total' => 3, 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()]],
             ]);
             $dom = new \DOMDocument();
             @$dom->loadHTML($output);
@@ -220,6 +220,7 @@ class BookingCalendarFilterTest extends TestCase
         foreach ([['all', [7, 8, 9], 'All Calendars'], ['7,9', [7, 9], '2 Calendars'], ['8', [8], 'Studio']] as [$selection, $ids, $label]) {
             foreach (['active', 'trash'] as $view) {
                 $output = $twig->render('calendar/bookings/index', [
+                    'creatableCalendarIds' => [7],
                     'calendars' => $calendars, 'calendarSelection' => $selection, 'calendarIds' => $ids,
                     'bookings' => [], 'total' => 151, 'page' => 2, 'trashed' => 'trash' === $view, 'bookingListView' => $view,
                     'statusOptions' => ['requested' => 'Requested'], 'bookingStatus' => '', 'search' => '',

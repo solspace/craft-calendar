@@ -67,7 +67,7 @@
                 initActionsMenu();
                 if (retrySelection?.url === url.href) {
                     results.querySelectorAll('[data-booking-select]').forEach(checkbox => {
-                        checkbox.checked = retrySelection.ids.includes(checkbox.value);
+                        checkbox.checked = !checkbox.disabled && retrySelection.ids.includes(checkbox.value);
                     });
                 }
                 retrySelection = null;
@@ -114,11 +114,11 @@
     }
 
     function selectedBookings() {
-        return [...results.querySelectorAll('[data-booking-select]:checked')];
+        return [...results.querySelectorAll('[data-booking-select]:checked:not(:disabled)')];
     }
 
     function updateSelection() {
-        const checkboxes = [...results.querySelectorAll('[data-booking-select]')];
+        const checkboxes = [...results.querySelectorAll('[data-booking-select]:not(:disabled)')];
         const count = selectedBookings().length;
         const all = results.querySelector('[data-booking-select-all]');
         if (all) {
@@ -131,13 +131,14 @@
         const label = results.querySelector('[data-booking-selection-count]');
         if (label) label.textContent = Craft.t('calendar', {{ '{count, plural, =1{1 booking selected} other{# bookings selected}}'|json_encode|raw }}, {count});
         results.querySelectorAll('[data-booking-actions-trigger], [data-booking-status-trigger]').forEach(trigger => {
-            trigger.disabled = !count || writesInProgress > 0;
+            const action = trigger.hasAttribute('data-booking-status-trigger') ? 'status' : {{ trashed ? "'restore'" : "'delete'" }};
+            trigger.disabled = !count || writesInProgress > 0 || selectedBookings().some(input => input.closest('tr').dataset['can' + action[0].toUpperCase() + action.slice(1)] !== 'true');
         });
     }
 
     results.addEventListener('change', event => {
         if (event.target.matches('[data-booking-select-all]')) {
-            results.querySelectorAll('[data-booking-select]').forEach(checkbox => { checkbox.checked = event.target.checked; });
+            results.querySelectorAll('[data-booking-select]').forEach(checkbox => { if (!checkbox.disabled) checkbox.checked = event.target.checked; });
         } else if (!event.target.matches('[data-booking-select]')) return;
         updateSelection();
     });

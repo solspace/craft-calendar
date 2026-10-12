@@ -22,6 +22,7 @@ class BookingHistory
     public function move(int $id, \DateTimeImmutable $start): ?string
     {
         return $this->locked($id, function (Booking $booking) use ($id, $start): ?string {
+            $this->bookings->assertPermission($booking->getCalendar(), 'reschedule');
             $before = $this->snapshot($booking);
             $duration = $booking->endDate->getTimestamp() - $booking->startDate->getTimestamp();
             $booking->startDate = $start;
@@ -53,12 +54,22 @@ class BookingHistory
             if ($this->snapshot($booking) !== $entry[$expected]) {
                 throw new \RuntimeException(Calendar::t('This booking has changed since your last action. Reload the schedule to continue.'));
             }
+            $action = ($entry['moderation'] ?? false) ? 'status' : 'reschedule';
+            $this->bookings->assertPermission($booking->getCalendar(), $action);
+            $moved = array_diff_assoc(array_intersect_key($entry[$target], array_flip(['calendarId', 'startDate', 'endDate'])), $entry[$expected]);
+            if ($moved) {
+                $this->bookings->assertPermission($booking->getCalendar(), 'reschedule');
+            }
             // Preserve current contact details, notes, custom fields, and status attribution.
             $booking->calendarId = $entry[$target]['calendarId'];
             $booking->startDate = new \DateTimeImmutable($entry[$target]['startDate'], new \DateTimeZone('UTC'));
             $booking->endDate = new \DateTimeImmutable($entry[$target]['endDate'], new \DateTimeZone('UTC'));
             if ($entry['moderation'] ?? false) {
                 $booking->bookingStatus = $entry[$target]['bookingStatus'];
+            }
+            $this->bookings->assertPermission($booking->getCalendar(), $action);
+            if ($moved) {
+                $this->bookings->assertPermission($booking->getCalendar(), 'reschedule');
             }
             $this->save($booking);
             $entry[$target] = $this->snapshot($booking);
@@ -75,6 +86,8 @@ class BookingHistory
         }
 
         return $this->locked($id, function (Booking $booking) use ($id, $status, $expected, $start, $calendarId): string {
+            $this->bookings->assertPermission($booking->getCalendar(), 'status');
+            $source = $booking->getCalendar();
             $before = $this->snapshot($booking);
             if (Booking::REQUESTED !== $booking->bookingStatus || array_diff_assoc($expected, $before)) {
                 throw new \RuntimeException(Calendar::t('This request has changed. Reload the requests queue before reviewing it again.'));
@@ -88,6 +101,11 @@ class BookingHistory
                 $booking->endDate = $start->setTimestamp($start->getTimestamp() + $duration);
             }
             $booking->bookingStatus = $status;
+            $this->bookings->assertPermission($booking->getCalendar(), 'status');
+            if (array_diff_assoc(array_intersect_key($this->snapshot($booking), array_flip(['calendarId', 'startDate', 'endDate'])), $before)) {
+                $this->bookings->assertPermission($source, 'reschedule');
+                $this->bookings->assertPermission($booking->getCalendar(), 'reschedule');
+            }
             $this->save($booking);
             $token = StringHelper::randomString(40);
             $this->retain($token, ['bookingId' => $id, 'before' => $before, 'after' => $this->snapshot($booking), 'direction' => 'undo', 'moderation' => true]);
@@ -143,7 +161,7 @@ class BookingHistory
                 $db->createCommand($command->getSql().' FOR UPDATE', $command->params)->queryOne();
             }
             $booking = $this->booking($id);
-            if (!$this->bookings->canManage($booking->getCalendar())) {
+            if (!$this->bookings->can($booking->getCalendar(), 'view')) {
                 throw new ForbiddenHttpException();
             }
             $result = $action($booking);

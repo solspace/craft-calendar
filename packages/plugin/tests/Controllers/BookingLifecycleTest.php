@@ -32,6 +32,7 @@ class BookingLifecycleTest extends TestCase
     private BookingsService $service;
     private Elements $elements;
     private Booking $booking;
+    private ?array $allowedActions = null;
 
     protected function setUp(): void
     {
@@ -39,8 +40,10 @@ class BookingLifecycleTest extends TestCase
         $this->previousPlugin = Calendar::getInstance();
         $this->request = $this->createMock(Request::class);
         $this->service = $this->createMock(BookingsService::class);
+        $this->service->method('can')->willReturnCallback(fn ($calendar, $action, $user = null) => null === $this->allowedActions ? $this->service->canManage($calendar, $user) : \in_array($action, $this->allowedActions, true));
         $this->elements = $this->createMock(Elements::class);
         \Craft::$app = new class($this->request, $this->elements) {
+            public array $loadedModules = [];
             public string $language = 'en';
             public string $timeZone = 'America/Toronto';
 
@@ -102,6 +105,41 @@ class BookingLifecycleTest extends TestCase
     {
         \Craft::$app = $this->previousApp;
         Calendar::setInstance($this->previousPlugin);
+    }
+
+    public function testViewPermissionCannotDeleteThroughDirectPost(): void
+    {
+        $this->allowedActions = ['view'];
+        $this->prepare(false);
+        $this->elements->expects(self::never())->method('deleteElement');
+        $this->expectException(ForbiddenHttpException::class);
+        $this->controller->actionDelete();
+    }
+
+    public function testStatusPermissionCannotDeleteThroughBulkPost(): void
+    {
+        $this->allowedActions = ['view', 'status'];
+        $this->prepareSelection([12], false, [$this->booking]);
+        $this->elements->expects(self::never())->method('deleteElement');
+        $this->expectException(ForbiddenHttpException::class);
+        $this->controller->actionDeleteSelected();
+    }
+
+    public function testDeletePermissionDoesNotGrantBulkStatusChanges(): void
+    {
+        $this->allowedActions = ['view', 'delete'];
+        $this->prepareSelection([12], false, [$this->booking], true, Booking::CONFIRMED);
+        $this->service->expects(self::never())->method('save');
+        $this->expectException(ForbiddenHttpException::class);
+        $this->controller->actionSetStatusSelected();
+    }
+
+    public function testRestorePermissionAllowsRestoreWithoutDelete(): void
+    {
+        $this->allowedActions = ['view', 'restore'];
+        $this->prepare(true);
+        $this->elements->expects(self::once())->method('restoreElement')->willReturn(true);
+        self::assertTrue($this->controller->actionRestore()->data['success']);
     }
 
     public function testDeletionUsesNativeSoftDeletionOnThePrimarySite(): void

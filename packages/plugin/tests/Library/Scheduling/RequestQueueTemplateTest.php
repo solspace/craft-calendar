@@ -3,6 +3,7 @@
 namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
 
 use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Twig\Environment;
@@ -96,6 +97,28 @@ class RequestQueueTemplateTest extends TestCase
         self::assertStringNotContainsString('<b>Staff</b>', $queue);
     }
 
+    public function testReadersCannotModerateAndModeratorsWithoutRescheduleKeepTheOriginalResource(): void
+    {
+        $twig = $this->environment();
+        $variables = $this->variables();
+        $variables['bookingPermissions'][7] = array_fill_keys(array_keys(Calendar::BOOKING_PERMISSIONS), false);
+        $variables['bookingPermissions'][7]['view'] = true;
+        $output = $twig->render('calendar/bookings/requests', $variables);
+        self::assertStringNotContainsString('data-request-status="confirmed"', $output);
+        self::assertStringNotContainsString('data-request-status="declined"', $output);
+        $readDom = new \DOMDocument();
+        @$readDom->loadHTML($output);
+        self::assertSame(0, (new \DOMXPath($readDom))->query('//button[@data-request-review]')->length);
+        self::assertStringContainsString('View Booking', $output);
+        $variables['bookingPermissions'][7]['status'] = true;
+        $review = $twig->render('calendar/bookings/_request-review', $variables + ['booking' => $variables['bookings'][0], 'unavailable' => false, 'containerId' => 'cp-screen-demo']);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($review);
+        $xpath = new \DOMXPath($dom);
+        self::assertSame(1, $xpath->query('//select[@data-request-calendar]/option[@value="7"][@selected]')->length);
+        self::assertSame(1, $xpath->query('//button[@data-request-alternative][contains(@class, "hidden")]')->length);
+    }
+
     public function testEmptyQueueHasNoModerationControlsAndHidesZeroCount(): void
     {
         $variables = $this->variables();
@@ -143,6 +166,6 @@ class RequestQueueTemplateTest extends TestCase
             $bookings[] = (object) ['id' => $id, 'calendarId' => 7, 'customerName' => '<script>Customer</script>', 'customerEmail' => 'customer@example.test', 'startDate' => new \DateTimeImmutable('2026-10-12T14:00:00Z'), 'endDate' => new \DateTimeImmutable('2026-10-12T14:30:00Z'), 'dateCreated' => new \DateTimeImmutable('2026-10-11T01:00:00Z'), 'notes' => '', 'fieldLayout' => null, 'cpEditUrl' => 'calendar/bookings/'.$id];
         }
 
-        return ['bookings' => $bookings, 'calendars' => [7 => ['id' => 7, 'name' => 'Studio', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg']]], 'calendarIds' => [7], 'calendarSelection' => 'all', 'availability' => 'all', 'search' => '', 'sort' => 'submitted-asc', 'page' => 1, 'total' => 2, 'bookingRequestCount' => 2, 'unavailableRequestIds' => [2 => true], 'bookingTimeFormat' => 'short', 'currentUser' => ['admin' => false], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['config' => ['general' => ['allowAdminChanges' => false]]]]];
+        return ['bookings' => $bookings, 'calendars' => [7 => ['id' => 7, 'name' => 'Studio', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg']]], 'calendarIds' => [7], 'calendarSelection' => 'all', 'availability' => 'all', 'search' => '', 'sort' => 'submitted-asc', 'page' => 1, 'total' => 2, 'bookingRequestCount' => 2, 'unavailableRequestIds' => [2 => true], 'bookingPermissions' => array_fill_keys([7, 8, 9], array_fill_keys(array_keys(Calendar::BOOKING_PERMISSIONS), true)), 'creatableCalendarIds' => [7, 8], 'bookingTimeFormat' => 'short', 'currentUser' => ['admin' => false], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['config' => ['general' => ['allowAdminChanges' => false]]]]];
     }
 }
