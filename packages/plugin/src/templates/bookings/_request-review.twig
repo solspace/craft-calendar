@@ -53,12 +53,11 @@
                         <span class="color-indicator" data-request-calendar-color style="background:{{ calendar.color }}" aria-hidden="true"></span>
                         <span id="{{ containerId }}-calendar-current" data-request-calendar-label>{{ calendar.name }}</span>
                     </button>
-                    <div id="{{ containerId }}-calendar-menu" class="menu menu--disclosure request-calendar-menu">
-                        <ul>
+                    <div id="{{ containerId }}-calendar-menu" class="menu menu--disclosure request-calendar-menu"{% if calendars|length > 10 %} data-with-search-input="true"{% endif %}>
+                        <ul class="padded">
                             {% for resource in calendars %}
-                                <li><button type="button" data-request-calendar-option="{{ resource.id }}" data-calendar-color="{{ resource.color }}" data-calendar-name="{{ resource.name }}"{{ resource.id == booking.calendarId ? ' aria-current="true"' }}>
-                                    <span class="color-indicator" style="background:{{ resource.color }}" aria-hidden="true"></span>
-                                    <span>{{ resource.name }}</span>
+                                <li><button type="button" class="menu-item{{ resource.id == booking.calendarId ? ' sel' }}" data-request-calendar-option="{{ resource.id }}" data-calendar-color="{{ resource.color }}" data-calendar-name="{{ resource.name }}"{{ resource.id == booking.calendarId ? ' aria-current="true"' }}>
+                                    <span class="menu-item-label request-calendar-option-label"><span class="color-indicator" style="background:{{ resource.color }}" aria-hidden="true"></span><span>{{ resource.name }}</span></span>
                                 </button></li>
                             {% endfor %}
                         </ul>
@@ -146,12 +145,9 @@ form:has(> .request-review-content):focus-visible {
 .request-calendar-picker::after { margin-inline-start:auto; }
 .request-calendar-picker [data-request-calendar-label] { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .request-calendar-picker .color-indicator, .request-calendar-menu .color-indicator { width:10px; height:10px; flex:0 0 10px; margin:0; }
-.request-calendar-menu { width:280px; max-width:calc(100vw - 32px); padding:4px; box-sizing:border-box; }
-.request-calendar-menu li { padding:0; }
-.request-calendar-menu [data-request-calendar-option] { display:flex; align-items:center; gap:9px; width:100%; padding:7px 10px; border-radius:4px; text-align:start; line-height:20px; cursor:pointer; }
-.request-calendar-menu [data-request-calendar-option]:hover, .request-calendar-menu [data-request-calendar-option]:focus-visible { background:var(--gray-050,#f3f6fa); }
-.request-calendar-menu [data-request-calendar-option]:focus-visible { outline:2px solid var(--focus-ring-color,#2563eb); outline-offset:-2px; }
-.request-calendar-menu [aria-current="true"] { font-weight:600; }
+.request-calendar-menu { width:280px; max-width:calc(100vw - 32px); box-sizing:border-box; }
+.request-calendar-option-label { display:inline-flex; align-items:center; gap:9px; max-width:100%; vertical-align:middle; white-space:normal; overflow-wrap:anywhere; }
+.request-calendar-menu .sel { font-weight:600; }
 .request-review-date-controls > .btn { margin-bottom:1px; }
 .request-review-slot-message { margin-top:14px; font-size:13px; }
 .request-review-slot-message:empty { display:none; }
@@ -208,20 +204,28 @@ form:has(> .request-review-content):focus-visible {
     const calendarTarget = form.querySelector('[data-request-calendar-target]');
     const calendarLabel = form.querySelector('[data-request-calendar-label]');
     const calendarColor = form.querySelector('[data-request-calendar-color]');
-    form.querySelectorAll('[data-request-calendar-option]').forEach(option => {
+    const calendarTrigger = form.querySelector('.request-calendar-picker');
+    // Craft reparents disclosure menus to <body>; retain their options outside the form.
+    const calendarMenu = document.getElementById(calendarTrigger.getAttribute('aria-controls'));
+    const calendarOptions = [...calendarMenu.querySelectorAll('[data-request-calendar-option]')];
+    function syncCalendarMenu() {
+        calendarOptions.forEach(option => {
+            const selected = option.dataset.requestCalendarOption === calendarPicker.value;
+            option.classList.toggle('sel', selected);
+            if (selected) {
+                option.setAttribute('aria-current', 'true');
+                calendarLabel.textContent = option.dataset.calendarName;
+                calendarColor.style.backgroundColor = option.dataset.calendarColor;
+            } else option.removeAttribute('aria-current');
+        });
+    }
+    calendarOptions.forEach(option => {
         option.addEventListener('click', () => {
-            calendarPicker.value = option.dataset.requestCalendarOption;
-            calendarLabel.textContent = option.dataset.calendarName;
-            calendarColor.style.backgroundColor = option.dataset.calendarColor;
-            form.querySelectorAll('[data-request-calendar-option]').forEach(item => {
-                if (item === option) item.setAttribute('aria-current', 'true');
-                else item.removeAttribute('aria-current');
-            });
-            calendarPicker.dispatchEvent(new Event('change', {bubbles:true}));
-            // Craft's disclosure menu remains open for custom option buttons.
-            // Close it through its trigger so aria-expanded and focus stay in sync.
-            const trigger = form.querySelector('.request-calendar-picker');
-            if (trigger?.getAttribute('aria-expanded') === 'true') trigger.click();
+            if (calendarPicker.value !== option.dataset.requestCalendarOption) {
+                calendarPicker.value = option.dataset.requestCalendarOption;
+                calendarPicker.dispatchEvent(new Event('change', {bubbles:true}));
+            }
+            $(calendarTrigger).data('disclosureMenu')?.hide();
         });
     });
     const slots = form.querySelector('[data-request-slots]');
@@ -257,12 +261,13 @@ form:has(> .request-review-content):focus-visible {
     alternative.addEventListener('click', () => { picker.classList.remove('hidden'); loadSlots(); date.focus(); });
     date.addEventListener('click', () => { try { date.showPicker?.(); } catch (_) {} });
     date.addEventListener('change', loadSlots);
-    calendarPicker.addEventListener('change', () => { picker.classList.remove('hidden'); loadSlots(); });
+    calendarPicker.addEventListener('change', () => { syncCalendarMenu(); picker.classList.remove('hidden'); loadSlots(); });
     form.querySelector('[data-request-decline]').addEventListener('click', () => { decision.value = 'declined'; start.value = ''; calendarTarget.value = {{ booking.calendarId }}; screen.$saveBtn.prop('disabled', false); screen.handleSubmit(new Event('submit', {cancelable: true})); });
-    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; calendarPicker.value = {{ booking.calendarId }}; calendarTarget.value = calendarPicker.value; calendarLabel.textContent = {{ calendar.name|json_encode|raw }}; calendarColor.style.backgroundColor = {{ calendar.color|json_encode|raw }}; form.querySelectorAll('[data-request-calendar-option]').forEach(item => { if (item.dataset.requestCalendarOption === calendarPicker.value) item.setAttribute('aria-current', 'true'); else item.removeAttribute('aria-current'); }); picker.classList.add('hidden'); sync(); alternative.focus(); });
+    form.querySelector('[data-request-original]')?.addEventListener('click', () => { controller?.abort(); ++revision; start.value = ''; calendarPicker.value = {{ booking.calendarId }}; calendarTarget.value = calendarPicker.value; syncCalendarMenu(); picker.classList.add('hidden'); sync(); alternative.focus(); });
     const handleError = screen.handleSubmitError;
     screen.handleSubmitError = function(error) { decision.value = 'confirmed'; sync(); return handleError.call(this, error); };
     screen.on('beforeClose', () => { controller?.abort(); ++revision; });
+    syncCalendarMenu();
     sync();
     if (unavailable) loadSlots();
 })();

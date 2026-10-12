@@ -96,6 +96,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed stale selected calendar indicators in request review menus, using native Craft menu rows and keeping selection, labels, colors, and resets in sync after the menu moves outside the form.
 - Fixed booking schedules starting on Monday instead of respecting Calendar’s first day of week setting and Craft user preferences.
 - Fixed false unsaved-change warnings when leaving an unchanged booking editor or after deleting a booking.
 - Fixed restored bookings bypassing conflict checks, booking notifications escaping rolled-back changes, and concurrent guest requests bypassing the booking rate limit.
