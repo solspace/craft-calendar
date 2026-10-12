@@ -141,14 +141,16 @@ form:has(> .request-review-content):focus-visible {
 .request-review-help { margin:8px 0 0; font-size:12px; line-height:1.5; }
 .request-review-date-controls { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; margin-top:18px; }
 .request-review-date-controls > .field { margin:0; }
-.request-review-calendar-field { flex:1 1 210px; max-width:350px; }
-.request-calendar-picker { display:flex; align-items:center; gap:8px; width:100%; max-width:350px; text-align:start; }
-.request-calendar-picker [data-request-calendar-label] { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.request-review-calendar-field { flex:0 1 280px; min-width:190px; max-width:320px; }
+.request-calendar-picker { display:flex; align-items:center; gap:9px; width:100%; min-height:36px; padding-inline:12px; text-align:start; }
+.request-calendar-picker::after { margin-inline-start:auto; }
+.request-calendar-picker [data-request-calendar-label] { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .request-calendar-picker .color-indicator, .request-calendar-menu .color-indicator { width:10px; height:10px; flex:0 0 10px; margin:0; }
-.request-calendar-menu { width:300px; max-width:calc(100vw - 32px); padding:6px; }
+.request-calendar-menu { width:280px; max-width:calc(100vw - 32px); padding:4px; box-sizing:border-box; }
 .request-calendar-menu li { padding:0; }
-.request-calendar-menu [data-request-calendar-option] { display:flex; align-items:center; gap:9px; width:100%; padding:9px 10px; border-radius:4px; text-align:start; cursor:pointer; }
+.request-calendar-menu [data-request-calendar-option] { display:flex; align-items:center; gap:9px; width:100%; padding:7px 10px; border-radius:4px; text-align:start; line-height:20px; cursor:pointer; }
 .request-calendar-menu [data-request-calendar-option]:hover, .request-calendar-menu [data-request-calendar-option]:focus-visible { background:var(--gray-050,#f3f6fa); }
+.request-calendar-menu [data-request-calendar-option]:focus-visible { outline:2px solid var(--focus-ring-color,#2563eb); outline-offset:-2px; }
 .request-calendar-menu [aria-current="true"] { font-weight:600; }
 .request-review-date-controls > .btn { margin-bottom:1px; }
 .request-review-slot-message { margin-top:14px; font-size:13px; }
