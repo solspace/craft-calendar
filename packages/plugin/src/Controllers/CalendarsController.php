@@ -5,6 +5,7 @@ namespace Solspace\Calendar\Controllers;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper as CraftStringHelper;
@@ -19,6 +20,7 @@ use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\Helpers\SitesHelper;
 use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
+use Solspace\Calendar\Library\Scheduling\Availability;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -58,6 +60,20 @@ class CalendarsController extends BaseController
     {
         \Craft::$app->view->registerAssetBundle(CalendarIndexBundle::class);
 
+        $calendarType = \Craft::$app->request->getQueryParam('type', 'all');
+        if (!\in_array($calendarType, ['all', CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING], true)) {
+            $calendarType = 'all';
+        }
+        $calendars = $this->getCalendarService()->getAllCalendars();
+        if ('all' !== $calendarType) {
+            $calendars = array_filter($calendars, static fn (CalendarModel $calendar) => $calendar->type === $calendarType);
+        }
+        $sort = \Craft::$app->request->getQueryParam('sort', 'name-asc');
+        if (!\is_string($sort) || !preg_match('/^(name|type|handle|description|sharing)-(asc|desc)$/D', $sort)) {
+            $sort = 'name-asc';
+        }
+        $calendars = $this->sortCalendars($calendars, $sort);
+
         $crumbs = [
             [
                 'label' => Calendar::t(Calendar::getInstance()->name),
@@ -75,7 +91,9 @@ class CalendarsController extends BaseController
             [
                 'isCraft5' => $this->isCraft5,
                 'crumbs' => $crumbs,
-                'calendars' => $this->getCalendarService()->getAllCalendars(),
+                'calendars' => $calendars,
+                'calendarType' => $calendarType,
+                'sort' => $sort,
             ]
         );
     }
@@ -87,7 +105,7 @@ class CalendarsController extends BaseController
     {
         PermissionHelper::requirePermission(Calendar::PERMISSION_CREATE_CALENDARS);
 
-        $calendar = CalendarModel::create();
+        $calendar = CalendarModel::create($this->getSettingsService()->getSettingsModel()->getBookingDefaults());
 
         $layout = new FieldLayout();
         $layout->type = Event::class;
@@ -229,11 +247,66 @@ class CalendarsController extends BaseController
 
         $calendar = $postedCalendar ?? $this->getCalendarService()->getCalendarById($postedCalendarId);
         if (!$calendar) {
-            $calendar = new CalendarModel();
+            $calendar = new CalendarModel(['scheduling' => $this->getSettingsService()->getSettingsModel()->getBookingDefaults()->toArray()]);
             $calendar->uid = CraftStringHelper::UUID();
         }
 
         $calendar->name = $request->post('name');
+        $calendar->type = (string) $request->getBodyParam('type', $calendar->type);
+        if ($calendar->getIsScheduling()) {
+            $data = (array) $request->getBodyParam('scheduling', []);
+            $settings = $calendar->getSchedulingSettings();
+            $settings->timezone = (string) ($data['timezone'] ?? $settings->timezone);
+            foreach (['duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance'] as $key) {
+                $number = filter_var($data[$key] ?? $settings->{$key}, \FILTER_VALIDATE_INT);
+                if (false === $number) {
+                    throw new BadRequestHttpException(Calendar::t('Booking rules must use whole numbers.'));
+                }
+                $settings->{$key} = $number;
+            }
+            foreach (['allowOverlap', 'allowGuests', 'requireApproval'] as $key) {
+                $settings->{$key} = \array_key_exists($key, $data) ? !empty($data[$key]) : $settings->{$key};
+            }
+            $settings->active = \array_key_exists('active', $data) ? !empty($data['active']) : $calendar->getSchedulingSettings()->active;
+            foreach (['availableFrom', 'availableUntil'] as $key) {
+                $value = $data[$key] ?? null;
+                if (\is_array($value)) {
+                    if (empty($value['date'])) {
+                        $value = null;
+                    } else {
+                        try {
+                            $value = DateTimeHelper::toDateTime($value, true)?->format('Y-m-d') ?? 'invalid';
+                        } catch (\Throwable) {
+                            $value = 'invalid';
+                        }
+                    }
+                }
+                $settings->{$key} = null === $value || '' === $value ? null : (\is_string($value) ? trim($value) : 'invalid');
+            }
+            $settings->notificationEmail = trim((string) ($data['notificationEmail'] ?? $settings->notificationEmail));
+            $settings->hours = array_values((array) (($data['hours'] ?? $settings->hours) ?: []));
+            $settings->exceptions = array_values((array) (($data['exceptions'] ?? $settings->exceptions) ?: []));
+            foreach (['hours', 'exceptions'] as $group) {
+                foreach ($settings->{$group} as &$row) {
+                    if (!\is_array($row)) {
+                        continue;
+                    }
+                    foreach (['start' => 'H:i', 'end' => 'H:i', 'dateFrom' => 'Y-m-d', 'dateTo' => 'Y-m-d'] as $key => $format) {
+                        if (isset($row[$key]) && \is_array($row[$key])) {
+                            try {
+                                $parsed = DateTimeHelper::toDateTime($row[$key], true);
+                                $row[$key] = $parsed ? $parsed->format($format) : '';
+                            } catch (\Throwable) {
+                                $row[$key] = '';
+                            }
+                        }
+                    }
+                }
+                unset($row);
+            }
+
+            $calendar->scheduling = $settings->toArray();
+        }
         $calendar->handle = $request->post('handle');
         $calendar->description = $request->post('description');
         $calendar->color = $request->post('color');
@@ -242,11 +315,14 @@ class CalendarsController extends BaseController
         $calendar->locationFieldHandle = $request->post('locationFieldHandle');
         $calendar->titleFormat = $request->post('titleFormat');
         $calendar->titleLabel = $request->post('titleLabel');
-        $calendar->hasTitleField = (bool) $request->post('hasTitleField');
+        if ($calendar->getIsScheduling() && !$calendar->titleLabel) {
+            $calendar->titleLabel = 'Title';
+        }
+        $calendar->hasTitleField = $calendar->getIsScheduling() || (bool) $request->post('hasTitleField');
         $calendar->titleTranslationMethod = $request->post('titleTranslationMethod');
         $calendar->titleTranslationKeyFormat = $request->post('titleTranslationKeyFormat');
         $calendar->icsTimezone = $request->post('icsTimezone');
-        $calendar->allowRepeatingEvents = (bool) $request->post('allowRepeatingEvents');
+        $calendar->allowRepeatingEvents = !$calendar->getIsScheduling() && (bool) $request->post('allowRepeatingEvents');
 
         // Set the field layout
         $fieldLayout = \Craft::$app->getFields()->assembleLayoutFromPost();
@@ -421,11 +497,38 @@ class CalendarsController extends BaseController
         return $this->asJson(['success' => false]);
     }
 
+    private function sortCalendars(array $calendars, string $sort): array
+    {
+        [$field, $direction] = explode('-', $sort);
+        $types = CalendarModel::typeOptions();
+        $value = static fn (CalendarModel $calendar) => match ($field) {
+            'type' => $types[$calendar->type],
+            'sharing' => !$calendar->getIsScheduling() && $calendar->icsHash ? '1' : '0',
+            default => (string) $calendar->{$field},
+        };
+        uasort($calendars, static function (CalendarModel $first, CalendarModel $second) use ($value, $direction) {
+            $comparison = strnatcasecmp($value($first), $value($second));
+            if ($comparison) {
+                return 'desc' === $direction ? -$comparison : $comparison;
+            }
+
+            return strnatcasecmp($first->name, $second->name) ?: $first->id <=> $second->id;
+        });
+
+        return $calendars;
+    }
+
     /**
      * @throws InvalidConfigException
      */
     private function renderEditTemplate(CalendarModel $calendar, string $title): Response
     {
+        $calendarTypeLocked = $calendar->id && $this->getCalendarService()->hasCalendarContent($calendar->id);
+        if ($calendarTypeLocked) {
+            // A rejected type change must still display the persisted type and its settings.
+            $calendar->type = (string) (new Query())->select('type')->from(CalendarRecord::TABLE)->where(['id' => $calendar->id])->scalar();
+        }
+
         $fieldLayout = $calendar->getFieldLayout();
 
         if (!$fieldLayout) {
@@ -489,6 +592,33 @@ class CalendarsController extends BaseController
             ];
         }
 
+        $scheduling = $calendar->getSchedulingSettings();
+        $schedulingDates = [];
+        foreach (['availableFrom', 'availableUntil'] as $key) {
+            $schedulingDates[$key] = Availability::validDate($scheduling->{$key}) ? new \DateTimeImmutable($scheduling->{$key}, new \DateTimeZone($scheduling->timezone)) : null;
+        }
+        $hours = $scheduling->getHoursForDisplay();
+        $exceptions = $scheduling->exceptions;
+        $zone = new \DateTimeZone(\Craft::$app->getTimeZone());
+        foreach ([&$hours, &$exceptions] as &$rows) {
+            foreach ($rows as &$row) {
+                if (!\is_array($row)) {
+                    continue;
+                }
+                foreach (['start', 'end', 'dateFrom', 'dateTo'] as $key) {
+                    if (!empty($row[$key]) && \is_string($row[$key])) {
+                        try {
+                            $row[$key] = new \DateTimeImmutable($row[$key], $zone);
+                        } catch (\Throwable) {
+                            $row[$key] = null;
+                        }
+                    }
+                }
+            }
+            unset($row);
+        }
+        unset($rows);
+
         return $this->renderTemplate(
             'calendar/calendars/_edit',
             [
@@ -496,6 +626,11 @@ class CalendarsController extends BaseController
                 'crumbs' => $crumbs,
                 'title' => $title,
                 'calendar' => $calendar,
+                'calendarTypeLocked' => $calendarTypeLocked,
+                'scheduling' => $scheduling,
+                'schedulingDates' => $schedulingDates,
+                'schedulingHours' => $hours,
+                'schedulingExceptions' => $exceptions,
                 'continueEditingUrl' => 'calendar/calendars/{handle}',
                 'customFields' => $customFieldData,
                 'timezoneOptions' => DateHelper::getTimezoneOptions(),

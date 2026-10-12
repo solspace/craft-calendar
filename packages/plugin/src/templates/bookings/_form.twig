@@ -1,0 +1,53 @@
+{% set inputClass = framework == 'bootstrap' ? 'form-control' : (framework == 'tailwind' ? 'demo-input' : '') %}
+{% set selectClass = framework == 'bootstrap' ? 'form-select' : (framework == 'tailwind' ? 'demo-select' : '') %}
+{% set buttonClass = framework == 'bootstrap' ? 'btn btn-primary' : (framework == 'tailwind' ? 'demo-btn demo-btn-primary' : '') %}
+<form id="{{ formId }}" method="post" class="calendar-booking-form calendar-booking-form--{{ framework }}" data-booking-theme="{{ theme }}"{% if theme != 'auto' %} data-bs-theme="{{ theme }}"{% endif %}>
+    {{ csrfInput() }}{{ actionInput('calendar/bookings/request') }}{{ hiddenInput('calendarId', calendar.id) }}
+    <header class="booking-form-header">
+        <div class="booking-form-eyebrow">{{ 'Book a time'|t('calendar') }}</div>
+        <h2>{{ calendar.name }}</h2>
+        {% if calendar.description %}<p>{{ calendar.description }}</p>{% endif %}
+        <div class="booking-form-meta"><span>{{ '{duration} minutes'|t('calendar', {duration: settings.duration}) }}</span><span title="{{ settings.timezone }}">{{ 'Times shown in {timezone}.'|t('calendar', {timezone: settings.timezone|calendarTimezoneName}) }}</span></div>
+    </header>
+    <div class="booking-form-message{{ booking.hasErrors ? ' error' }}" role="status" aria-live="polite" tabindex="-1" {{ not booking.hasErrors ? 'hidden' }}>{% if booking.hasErrors %}{{ booking.getErrorSummary(true)|join(' ') }}{% endif %}</div>
+    <fieldset class="booking-form-inputs">
+        <legend class="booking-visually-hidden">{{ 'Booking details'|t('calendar') }}</legend>
+        <div class="booking-form-layout">
+            <section class="booking-form-times-panel" aria-labelledby="{{ formId }}-time-heading">
+                <h3 id="{{ formId }}-time-heading"><span class="booking-step-number" aria-hidden="true">1</span>{{ 'Choose a time'|t('calendar') }}</h3>
+                <label class="booking-form-label" for="{{ formId }}-date">{{ 'Choose a date'|t('calendar') }}</label>
+                <input class="{{ inputClass }}" type="date" id="{{ formId }}-date" name="bookingDate" min="{{ minDate }}" max="{{ maxDate }}" value="{{ date }}" required>
+                <fieldset class="booking-times"><legend>{{ 'Available times'|t('calendar') }}</legend><p class="booking-times-message" role="status">{{ 'Loading available times…'|t('calendar') }}</p><div class="booking-times-options"></div></fieldset>
+                {% if settings.requireApproval %}<p class="booking-approval-note">{{ 'Your time is reserved only after confirmation.'|t('calendar') }}</p>{% endif %}
+            </section>
+            <section class="booking-form-details-panel" aria-labelledby="{{ formId }}-details-heading">
+                <h3 id="{{ formId }}-details-heading"><span class="booking-step-number" aria-hidden="true">2</span>{{ 'Your details'|t('calendar') }}</h3>
+                <div class="booking-selected-time" hidden></div>
+                <div class="booking-form-field"><label class="booking-form-label" for="{{ formId }}-name">{{ 'Your name'|t('calendar') }}</label><input class="{{ inputClass }}" type="text" id="{{ formId }}-name" name="customerName" autocomplete="name" maxlength="255" value="{{ booking.customerName ?? '' }}" required></div>
+                <div class="booking-form-field"><label class="booking-form-label" for="{{ formId }}-email">{{ 'Email address'|t('calendar') }}</label><input class="{{ inputClass }}" type="email" id="{{ formId }}-email" name="customerEmail" autocomplete="email" maxlength="255" value="{{ booking.customerEmail ?? '' }}" required></div>
+                <div class="booking-form-field"><label class="booking-form-label" for="{{ formId }}-notes">{{ 'Notes'|t('calendar') }} <span class="booking-optional">{{ 'Optional'|t('calendar') }}</span></label><textarea class="{{ inputClass }}" id="{{ formId }}-notes" name="notes" rows="3" maxlength="10000">{{ booking.notes ?? '' }}</textarea></div>
+                {% for field in publicFields %}<div class="booking-form-field booking-custom-field">
+                    {% if field.type == 'checkboxes' %}<fieldset><legend class="booking-form-label">{{ field.label }}{{ field.required ? ' *' }}</legend>{% for option in field.options %}<label class="booking-check"><input type="checkbox" name="fields[{{ field.handle }}][]" value="{{ option.value }}" {{ option.value in field.selected ? 'checked' }}>{{ option.label }}</label>{% endfor %}</fieldset>
+                    {% else %}<label class="booking-form-label" for="{{ formId }}-{{ field.handle }}">{{ field.label }}{{ field.required ? ' *' }}</label>
+                    {% if field.type == 'textarea' %}<textarea class="{{ inputClass }}" id="{{ formId }}-{{ field.handle }}" name="fields[{{ field.handle }}]" rows="3" {{ field.required ? 'required' }}>{{ field.value }}</textarea>
+                    {% elseif field.type == 'select' %}<select class="{{ selectClass }}" id="{{ formId }}-{{ field.handle }}" name="fields[{{ field.handle }}]" {{ field.required ? 'required' }}><option value="">{{ 'Choose an option'|t('calendar') }}</option>{% for option in field.options %}<option value="{{ option.value }}" {{ option.value == field.value ? 'selected' }}>{{ option.label }}</option>{% endfor %}</select>
+                    {% else %}<input class="{{ inputClass }}" id="{{ formId }}-{{ field.handle }}" type="{{ field.type }}" name="fields[{{ field.handle }}]" value="{{ field.value }}" {{ field.type == 'number' ? 'step="any"' }} {{ field.required ? 'required' }}>{% endif %}
+                    {% endif %}
+                </div>{% endfor %}
+                <div class="booking-honeypot" aria-hidden="true"><label>{{ 'Website'|t('calendar') }}<input name="bookingWebsite" tabindex="-1" autocomplete="off"></label></div>
+                {% if captcha %}
+                    {% include 'calendar/spam-protection/_markup' with {captchaTokenName: 'bookingCaptchaToken', theme: 'auto'} %}
+                {% endif %}
+                <button class="booking-form-submit {{ buttonClass }}" type="submit" disabled><span>{{ (settings.requireApproval ? 'Request booking' : 'Book this time')|t('calendar') }}</span><span class="booking-form-spinner" hidden aria-hidden="true"></span></button>
+            </section>
+        </div>
+    </fieldset>
+    <div class="booking-form-success" hidden>
+        <div class="booking-success-icon" aria-hidden="true">✓</div>
+        <h3 tabindex="-1"></h3><p></p>
+        <button class="booking-form-another {{ buttonClass }}" type="button">{{ 'Book another time'|t('calendar') }}</button>
+    </div>
+    <noscript><p>{{ 'Enable JavaScript to select an available timeslot.'|t('calendar') }}</p></noscript>
+</form>
+{% css %}{% include 'calendar/bookings/_form-css' %}{% endcss %}
+{% js at endBody %}{% include 'calendar/bookings/_form-js' %}{% endjs %}

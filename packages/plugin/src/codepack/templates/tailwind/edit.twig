@@ -379,6 +379,7 @@
                     </section>
                 {% endif %}
 
+                {% if not event.id %}{{ craft.calendar.captcha('event', {theme: 'auto'}) }}{% endif %}
                 <div class="flex flex-wrap items-center gap-2 border-t border-neutral-200 dark:border-neutral-700 mt-6 pt-6">
                     <button type="submit" class="demo-btn demo-btn-primary px-6">{{ 'Save Event'|t }}</button>
                     <a href="{{ siteUrl }}demo/{{ event.id ? 'event/' ~ event.id : 'month' }}" class="demo-btn demo-btn-outline">{{ 'Cancel'|t }}</a>

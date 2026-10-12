@@ -91,6 +91,10 @@ class BaseController extends Controller
             ));
         }
 
+        if ($calendar->getIsScheduling()) {
+            throw new BadRequestHttpException(Calendar::t('Use Bookings to manage scheduling calendars.'));
+        }
+
         if (!$calendar->getSiteSettingsForSite($siteId)) {
             throw new BadRequestHttpException(Calendar::t(
                 'Calendar "{calendar}" does not support the selected site',

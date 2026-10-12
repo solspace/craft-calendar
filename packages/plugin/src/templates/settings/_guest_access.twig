@@ -27,7 +27,7 @@
              class="{{ settings.guestAccess is null ? 'hidden' }}">
             {{ forms.checkboxSelectField({
                 label: "Guest Submission Calendars"|t('calendar'),
-                instructions: "Select at least one calendar. Guests can submit events only to the selected calendars."|t('calendar'),
+                instructions: "Select at least one event calendar. Guest booking requests are controlled separately in each scheduling calendar."|t('calendar'),
                 id: 'calendar-list',
                 name: 'settings[guestAccess]',
                 options: calendars,

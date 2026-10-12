@@ -1,28 +1,61 @@
 {% extends "calendar/layouts/_calendarsLayout" %}
+{% import "_includes/forms" as forms %}
 
 {% set selectedSubnavItem = "calendars" %}
 {% set title = "Calendars"|t('calendar') %}
 
-{% set content %}
+{% block toolbar %}
+    <form id="calendar-index-filters" class="calendar-index-toolbar" method="get" action="{{ cpUrl('calendar/calendars') }}">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <label for="calendar-type-filter">{{ 'Type'|t('calendar') }}</label>
+        {{ forms.selectize({
+            id: 'calendar-type-filter',
+            name: 'type',
+            value: calendarType,
+            options: [
+                {value: 'all', label: 'All'|t('app')},
+                {value: 'events', label: 'Events'|t('calendar')},
+                {value: 'scheduling', label: 'Scheduling'|t('calendar')},
+            ],
+            selectizeOptions: {searchField: [], extraPlugins: false},
+        }) }}
+        <noscript><button type="submit" class="btn">{{ 'Apply'|t('app') }}</button></noscript>
+    </form>
+{% endblock %}
+
+{% block main %}
+    <div class="content-grid__main">
+        <div id="content">{{ block('content') }}</div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="calendar-list-pane">
     <div id="nocalendars"{% if calendars %} class="hidden"{% endif %}>
-        <p>{{ "No calendars exist yet."|t('calendar') }}</p>
+        <p>{{ (calendarType == 'all' ? 'No calendars exist yet.' : 'No calendars match this type.')|t('calendar') }}</p>
     </div>
 
     {% if calendars|length %}
-        <table id="calendars" class="data fullwidth collapsible">
+        <table id="calendars" class="data fullwidth big collapsible">
             <thead>
-            <th scope="col">{{ "Name"|t('calendar') }}</th>
-            <th scope="col">{{ "Handle"|t('calendar') }}</th>
-            <th scope="col">{{ "Description"|t('calendar') }}</th>
-            {% if craft.calendar.pro %}
-                <th scope="col">{{ "ICS sharing"|t('calendar') }}</th>
-            {% endif %}
-            <td class="thin"></td>
+            <tr>
+            {% set columns = {name: 'Name', type: 'Type', handle: 'Handle', description: 'Description'} %}
+            {% if craft.calendar.pro %}{% set columns = columns|merge({sharing: 'ICS sharing'}) %}{% endif %}
+            {% for field, label in columns %}
+                {% set active = sort starts with field ~ '-' %}
+                {% set ascending = sort == field ~ '-asc' %}
+                <th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
+                    <button type="button" data-calendar-sort="{{ field ~ (active and ascending ? '-desc' : '-asc') }}">{{ label|t('calendar') }}</button>
+                </th>
+            {% endfor %}
+            <th scope="col" class="calendar-actions-column"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
+            </tr>
             </thead>
             <tbody>
             {% for calendar in calendars %}
                 <tr data-id="{{ calendar.id }}" data-name="{{ calendar.name|t }}">
                     <th scope="row" data-title="{{ 'Name'|t('calendar') }}">
+                        <span class="calendar-name">
                         <span class="color-indicator" style="background-color: {{ calendar.color }};"></span>
                         {% if currentUser.can("calendar-editCalendars") %}
                             <a href="{{ url('calendar/calendars/' ~ calendar.handle) }}">
@@ -31,18 +64,23 @@
                         {% else %}
                             {{ calendar.name }}
                         {% endif %}
+                        </span>
                     </th>
+                    <td data-title="{{ 'Type'|t('calendar') }}"><span class="calendar-type {{ calendar.isScheduling ? 'scheduling' : 'events' }}">{{ calendar.typeOptions()[calendar.type] }}</span></td>
                     <td data-title="{{ 'Handle'|t('calendar') }}">
                         <code>
                             {{ calendar.handle }}
                         </code>
                     </td>
-                    <td style="width: 50%;">
-                        {{ calendar.description }}
+                    <td class="calendar-description" data-title="{{ 'Description'|t('calendar') }}">
+                        {% if calendar.description %}<span title="{{ calendar.description }}">{{ calendar.description }}</span>{% else %}<span class="light">—</span>{% endif %}
                     </td>
                     {% if craft.calendar.pro %}
-                        <td style="width: 200px;">
-                            {% if calendar.icsHash %}
+                        <td class="calendar-sharing" data-title="{{ 'ICS sharing'|t('calendar') }}">
+                            <div class="calendar-sharing-actions">
+                            {% if calendar.isScheduling %}
+                                <span class="light">—</span>
+                            {% elseif calendar.icsHash %}
                                 <a href="javascript:;"
                                    data-link="{{ calendar.icsUrl }}"
                                    class="copy-ics-link btn small"
@@ -63,35 +101,83 @@
                                     {{ "Share this calendar"|t('calendar') }}
                                 </a>
                             {% endif %}
+                            </div>
                         </td>
                     {% endif %}
-                    <td class="thin">
+                    <td class="calendar-actions-column">
+                        <div class="calendar-row-actions">
                         {% if currentUser.can("calendar-editCalendars") %}
-                            <a class="clone icon" title="{{ 'Clone'|t('calendar') }}" role="button" data-id="{{ calendar.id }}">
+                            <a class="clone icon" title="{{ 'Clone'|t('calendar') }}" aria-label="{{ 'Clone'|t('calendar') }}" role="button" tabindex="0" data-id="{{ calendar.id }}">
                                 <svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="copy" class="svg-inline--fa fa-copy fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"></path></svg>
                             </a>
                         {% endif %}
                         {% if currentUser.can("calendar-deleteCalendars") %}
-                            <a class="delete icon" title="{{ 'Delete'|t('calendar') }}" role="button"></a>
+                            <a class="delete icon" title="{{ 'Delete'|t('calendar') }}" aria-label="{{ 'Delete'|t('calendar') }}" role="button" tabindex="0"></a>
                         {% endif %}
+                        </div>
                     </td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
     {% endif %}
-{% endset %}
+    </div>
+{% endblock %}
 
 {% css %}
-    #content { padding: 0; }
+    .calendar-index-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:0; }
+    .calendar-index-toolbar label { color:var(--light-text-color, #596673); font-size:12px; }
+    .calendar-index-toolbar > .select.selectize { width:160px; }
+    .calendar-list-pane { background:var(--pane-bg,var(--white,#fff)); box-shadow:var(--pane-shadow); border-radius:var(--radius-lg,5px); overflow-x:auto; }
+    #nocalendars { padding:14px; }
+    #calendars th, #calendars td { vertical-align:middle; }
+    #calendars tbody th, #calendars tbody td { padding-top:12px; padding-bottom:12px; }
+    #calendars .calendar-name { display:inline-flex; align-items:center; gap:9px; }
+    #calendars .calendar-name .color-indicator { flex:none; margin:0; }
+    #calendars .calendar-type { display:inline-flex; padding:4px 9px; border-radius:5px; background:var(--gray-100, #eef1f5); color:var(--medium-text-color, #596778); font-size:12px; font-weight:500; line-height:1.4; white-space:nowrap; }
+    #calendars .calendar-type.scheduling { background:#e8f0fb; color:#356091; }
+    #calendars code { font-size:13px; white-space:nowrap; }
+    #calendars .calendar-description { width:40%; }
+    #calendars .calendar-description > span { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color:var(--medium-text-color, #596778); }
+    #calendars .calendar-sharing-actions { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+    #calendars .calendar-actions-column { width:76px; min-width:76px; box-sizing:content-box; text-align:right; }
+    #calendars .calendar-row-actions { display:inline-flex; align-items:center; justify-content:flex-end; gap:4px; white-space:nowrap; }
+    #calendars .calendar-row-actions > .icon { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; margin:0; border-radius:5px; color:var(--medium-text-color, #596778); cursor:pointer; text-decoration:none; }
+    #calendars .calendar-row-actions > .icon:hover { background:var(--gray-100, #edf1f6); color:var(--text-color, #263344); }
+    #calendars .calendar-row-actions > .delete:hover { background:#fbe9e9; color:var(--error-color, #cf2929); }
+    #calendars .calendar-row-actions > .icon:focus-visible { outline:2px solid var(--link-color, #2563eb); outline-offset:2px; }
+    #calendars .calendar-row-actions svg { width:14px; height:16px; }
+    @media (max-width:767px) {
+        #calendars .calendar-description { width:auto; }
+        #calendars .calendar-actions-column { width:auto; }
+        #calendars .calendar-row-actions { justify-content:flex-start; }
+    }
 {% endcss %}
 
 {% js %}
+    const calendarIndexFilters = document.getElementById('calendar-index-filters');
+    document.querySelectorAll('[data-calendar-sort]').forEach(button => {
+        button.addEventListener('click', () => {
+            calendarIndexFilters.elements.namedItem('sort').value = button.dataset.calendarSort;
+            calendarIndexFilters.requestSubmit();
+        });
+    });
+    $(calendarIndexFilters).on('change', '#calendar-type-filter', () => {
+        calendarIndexFilters.requestSubmit();
+    });
+    document.querySelectorAll('#calendars .calendar-row-actions .clone').forEach(action => {
+        action.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                action.click();
+            }
+        });
+    });
     var adminTable = new Craft.AdminTable({
     tableSelector: '#calendars',
     noObjectsSelector: '#nocalendars',
     newObjectBtnSelector: '#newcalendarcontainer',
     deleteAction: 'calendar/calendars/delete',
-    confirmDeleteMessage: {{ "Are you sure you want to delete “{name}” and all its events?"|t('calendar')|json_encode|raw }}
+    confirmDeleteMessage: {{ "Are you sure you want to delete “{name}” and all its events and bookings?"|t('calendar')|json_encode|raw }}
     });
 {% endjs %}

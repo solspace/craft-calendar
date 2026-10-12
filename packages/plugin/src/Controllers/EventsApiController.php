@@ -11,6 +11,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
+use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Services\OccurrencesService;
 use Solspace\Calendar\Services\SeriesService;
 use Solspace\Calendar\Transformers\FullCalTransformer;
@@ -34,6 +35,10 @@ class EventsApiController extends BaseController
         $this->requirePostRequest();
 
         $request = \Craft::$app->request;
+        if ($request->getIsCpRequest()) {
+            $this->requireLogin();
+            $this->requirePermission('accessCp');
+        }
         $eventId = (int) $request->getBodyParam('eventId');
         $siteId = $this->resolveEventSiteId($request->getBodyParam('siteId'));
         $calendarId = $request->getBodyParam('calendarId');
@@ -69,7 +74,9 @@ class EventsApiController extends BaseController
         $event->setScheduleFromRequest($request->getBodyParams());
         $event->setFieldValuesFromRequest('fields');
 
-        if (!$this->getEventsService()->saveEvent($event)) {
+        $this->validateSubmissionCaptcha($event, !$eventId);
+
+        if ($event->hasErrors('captchaToken') || !$this->getEventsService()->saveEvent($event)) {
             $message = implode(' ', $event->getErrorSummary(true)) ?: Calendar::t('Could not save event');
 
             if ($request->getAcceptsJson()) {
@@ -231,6 +238,20 @@ class EventsApiController extends BaseController
         }
 
         return $this->asJson(['success' => true, 'url' => ($draft ?? $event)->getCpEditUrl()]);
+    }
+
+    protected function validateSubmissionCaptcha(Event $event, bool $isNew): void
+    {
+        $request = \Craft::$app->request;
+        if ($isNew && !$request->getIsCpRequest()) {
+            $captcha = new Captcha();
+            $settings = $this->getSettingsService()->getSettingsModel();
+            $config = $captcha->getClientConfig($settings, 'event');
+            $token = $request->getBodyParam('captchaToken', $config ? $request->getBodyParam($config['responseField']) : null);
+            if (!$captcha->verify($settings, $token, $request->getUserIP(), 'event')) {
+                $event->addError('captchaToken', Calendar::t('Please complete the spam protection check and try again.'));
+            }
+        }
     }
 
     private function recordScheduleChange(callable $change): Response

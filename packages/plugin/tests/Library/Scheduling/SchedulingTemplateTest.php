@@ -1,0 +1,269 @@
+<?php
+
+namespace Solspace\Tests\Unit\Calendar\Library\Scheduling;
+
+use PHPUnit\Framework\TestCase;
+use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Scheduling\Schedule;
+use Solspace\Calendar\Models\CalendarModel;
+use Solspace\Calendar\Models\SettingsModel;
+use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
+use Twig\Environment;
+use Twig\Loader\ArrayLoader;
+use Twig\TwigFilter;
+use Twig\TwigFunction;
+
+/** @coversNothing */
+class SchedulingTemplateTest extends TestCase
+{
+    public function testCalendarTypePickerLocksBothTypesAndKeepsTheSavedTypeInTheForm(): void
+    {
+        $twig = new Environment(new ArrayLoader([
+            'picker' => file_get_contents(__DIR__.'/../../../src/templates/calendars/_type-picker.twig'),
+            '_includes/forms' => '{% macro errorList(errors) %}{% endmacro %}',
+        ]), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
+
+        foreach ([CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING] as $type) {
+            foreach ([[null, false], [1, false], [1, true]] as [$id, $locked]) {
+                $calendar = new CalendarModel(['id' => $id, 'type' => $type]);
+                $output = $twig->render('picker', ['calendar' => $calendar, 'calendarTypeLocked' => $locked]);
+                $dom = new \DOMDocument();
+                @$dom->loadHTML($output);
+                $xpath = new \DOMXPath($dom);
+                self::assertSame($locked ? 2 : 0, $xpath->query('//input[@type="radio"][@disabled]')->length);
+                self::assertSame($type, $xpath->query('//input[@type="radio"][@checked]')->item(0)->getAttribute('value'));
+                $hidden = $xpath->query('//input[@type="hidden"][@name="type"]');
+                self::assertSame($locked ? 1 : 0, $hidden->length);
+                if ($locked) {
+                    self::assertSame($type, $hidden->item(0)->getAttribute('value'));
+                    self::assertStringContainsString('including items in Trash', $output);
+                } elseif ($id) {
+                    self::assertStringContainsString('while this calendar is empty', $output);
+                }
+            }
+        }
+    }
+
+    public function testDayAndWeekSchedulesPreserveTheControlPanelViewObject(): void
+    {
+        $root = __DIR__.'/../../../src/templates/';
+        $source = str_replace(
+            ['{% js %}', '{% endjs %}', '{% css %}', '{% endcss %}'],
+            ['{% block scripts %}', '{% endblock %}', '{% block styles %}', '{% endblock %}'],
+            file_get_contents($root.'bookings/schedule.twig'),
+        );
+        $twig = new Environment(new ArrayLoader([
+            'schedule' => $source,
+            '_includes/forms' => <<<'TWIG'
+                {% macro selectize(config) %}<select id="{{ config.id }}">{% for option in config.options %}<option value="{{ option.value }}"{% if option.value == config.value %} selected{% endif %}>{{ option.label }}</option>{% endfor %}</select>{% endmacro %}
+                {% macro text(config) %}<input type="{{ config.type }}" value="{{ config.value }}">{% endmacro %}
+                {% macro checkbox(config) %}<input id="{{ config.id }}" type="checkbox"{% if config.checked %} checked{% endif %}{% for name, value in config.inputAttributes.data %} data-{{ name }}="{{ value }}"{% endfor %}><label for="{{ config.id }}">{{ config.label }}</label>{% endmacro %}
+                TWIG,
+            'calendar/bookings/_request-warning' => file_get_contents($root.'bookings/_request-warning.twig'),
+            'calendar/bookings/_request-warning-css' => file_get_contents($root.'bookings/_request-warning-css.twig'),
+            'calendar/bookings/_combined-day' => file_get_contents($root.'bookings/_combined-day.twig'),
+            'calendar/bookings/_schedule-options-js' => file_get_contents($root.'bookings/_schedule-options-js.twig'),
+            'calendar/bookings/_schedule-js' => file_get_contents($root.'bookings/_schedule-js.twig'),
+            'calendar/bookings/_schedule-drag-js' => file_get_contents($root.'bookings/_schedule-drag-js.twig'),
+            'calendar/bookings/_confirm-move-js' => file_get_contents($root.'bookings/_confirm-move-js.twig'),
+            'calendar/bookings/_schedule-booking-attributes' => file_get_contents($root.'bookings/_schedule-booking-attributes.twig'),
+            'calendar/bookings/_calendar-picker' => file_get_contents($root.'bookings/_calendar-picker.twig'),
+            'calendar/bookings/_calendar-picker-js' => file_get_contents($root.'bookings/_calendar-picker-js.twig'),
+            'calendar/bookings/_calendar-picker-css' => file_get_contents($root.'bookings/_calendar-picker-css.twig'),
+            'calendar/bookings/_nav' => file_get_contents($root.'bookings/_nav.twig'),
+            'calendar/layouts/_bookings' => file_get_contents($root.'layouts/_bookings.twig'),
+            'calendar/layouts/_layoutWithoutSettings' => "{{ view.getIsDeltaRegistrationActive() ? 'delta-active' : 'delta-inactive' }}{% block sidebar %}{% endblock %}{% block actionButton %}{% endblock %}{% block content %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}",
+        ]), ['strict_variables' => true]);
+        foreach ((new CalendarGlobalExtension())->getFilters() as $filter) {
+            $twig->addFilter($filter);
+        }
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
+        $twig->addFilter(new TwigFilter('time', static fn ($date) => ($date instanceof \DateTimeInterface ? $date : new \DateTimeImmutable($date))->format('H:i')));
+        $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
+        $view = new class {
+            public function getIsDeltaRegistrationActive(): bool
+            {
+                return true;
+            }
+        };
+
+        $twig->addGlobal('craft', ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()]]);
+        foreach (['combined', 'calendars'] as $scheduleLayout) {
+            foreach (['day', 'week'] as $scheduleView) {
+                foreach ([[7], [7, 8]] as $calendarIds) {
+                    $calendarSelection = \count($calendarIds) === 2 ? 'all' : '7';
+                    $calendars = [7 => ['id' => 7, 'name' => 'Meeting room', 'color' => '#2563eb', 'schedulingSettings' => ['timezone' => 'America/Winnipeg', 'increment' => 15, 'duration' => 30]], 8 => ['id' => 8, 'name' => 'Studio', 'color' => '#008a5b', 'schedulingSettings' => ['timezone' => 'Asia/Tokyo', 'increment' => 30, 'duration' => 30]]];
+                    $columns = array_map(static fn ($id) => ['calendar' => $calendars[$id], 'bookings' => [['booking' => (object) ['id' => $id + 93, 'bookingStatus' => 7 === $id ? 'requested' : 'confirmed', 'customerName' => 'Customer', 'startDate' => new \DateTimeImmutable('2026-10-12T08:30:00-05:00'), 'endDate' => new \DateTimeImmutable('2026-10-12T09:00:00-05:00'), 'cpEditUrl' => 'calendar/bookings/'.($id + 93)], 'minute' => 510, 'length' => 30, 'label' => '8:30am - 9am', 'lane' => 0]], 'lanes' => 1, 'slots' => [480 => [['start' => '2026-10-12T08:00:00-05:00', 'label' => '8am - 8:30am', 'length' => 30]]]], $calendarIds);
+                    $output = $twig->render('schedule', [
+                        'view' => $view,
+                        'scheduleView' => $scheduleView,
+                        'scheduleLayout' => $scheduleLayout,
+                        'bookingTimeFormat' => 'short',
+                        'statusOptions' => ['requested' => 'Requested', 'confirmed' => 'Confirmed'],
+                        'unavailableRequestIds' => [100 => true],
+                        'calendar' => $calendars[7],
+                        'calendarId' => 7,
+                        'calendarIds' => $calendarIds,
+                        'calendarSelection' => $calendarSelection,
+                        'displayTimezone' => 'America/Winnipeg',
+                        'scheduleTimezone' => 'auto', 'automaticTimezone' => 'America/Winnipeg', 'timezoneOptions' => [['value' => 'America/Winnipeg', 'label' => 'Central Time'], ['value' => 'Asia/Tokyo', 'label' => 'Japan Time']],
+                        'calendars' => $calendars,
+                        'days' => [['date' => new \DateTimeImmutable('2026-10-12T00:00:00-05:00'), 'columns' => $columns, 'combined' => ['bookings' => array_map(static fn ($column) => $column['bookings'][0] + ['calendar' => $column['calendar'], 'lanes' => 1], $columns), 'overflow' => [], 'slots' => [480 => ['height' => 15, 'options' => array_map(static fn ($column) => $column['slots'][480][0] + ['calendar' => $column['calendar']], $columns)]]]]],
+                        'date' => '2026-10-12',
+                        'previous' => '2026-10-05',
+                        'next' => '2026-10-19',
+                        'currentUser' => ['admin' => false, 'id' => 7],
+                        'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
+                    ]);
+
+                    self::assertStringContainsString('Display timezone', $output);
+                    self::assertStringContainsString('Automatic (', $output);
+                    self::assertStringContainsString('id="booking-schedule-timezone"', $output);
+                    self::assertStringContainsString('<option value="Asia/Tokyo">Japan Time</option>', $output);
+                    self::assertStringContainsString('All bookings and available times are converted to this display timezone.', $output);
+                    self::assertStringContainsString('Configured timezones: ', $output);
+                    self::assertStringContainsString('(America/Winnipeg)', $output);
+                    self::assertSame(\count($calendarIds) > 1, str_contains($output, '(Asia/Tokyo)'));
+                    self::assertStringContainsString('delta-active', $output);
+                    self::assertStringNotContainsString('window.confirm(', $output);
+                    self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
+                    self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;layout='.$scheduleLayout.'&amp;date=2026-10-05', $output);
+                    self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;layout='.$scheduleLayout.'&amp;date=2026-10-19', $output);
+                    self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
+                    self::assertStringContainsString('top:384px;--slot-height:24px;height:12px;', $output);
+                    self::assertStringContainsString('class="booking-hour-label">00:00</div>', $output);
+                    self::assertStringContainsString('class="booking-hour-label">23:00</div>', $output);
+                    self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
+                    self::assertStringNotContainsString('start=2026-10-12T07', $output);
+                    self::assertStringContainsString('data-booking-history="undo" disabled', $output);
+                    self::assertStringContainsString('data-booking-history="redo" disabled', $output);
+                    self::assertStringContainsString('M37 1 1 30l36 29V41', $output);
+                    $dom = new \DOMDocument();
+                    @$dom->loadHTML($output);
+                    $xpath = new \DOMXPath($dom);
+                    self::assertSame($scheduleLayout === 'combined' ? 1 : \count($calendarIds), $xpath->query('//*[contains(concat(" ", @class, " "), " booking-day-body ")]')->length);
+                    self::assertStringContainsString('<option value="'.$scheduleLayout.'" selected>', $output);
+                    self::assertSame(\count($calendarIds), $xpath->query('//input[@data-calendar-choice][@checked]')->length);
+                    self::assertSame(1, $xpath->query('//a[@data-booking-id="100"]//*[@data-booking-request-warning][not(@hidden)]')->length);
+                    self::assertSame('2026-10-12', $xpath->query('//*[contains(concat(" ", @class, " "), " booking-day-body ")]')->item(0)->getAttribute('data-date'));
+                    $block = $xpath->query('//a[@data-booking-id="100"]')->item(0);
+                    self::assertSame('30', $block->getAttribute('data-duration'));
+                    self::assertSame('510', $block->getAttribute('data-start-minute'));
+                    self::assertSame('2026-10-12', $block->getAttribute('data-start-date'));
+                    self::assertSame('Meeting room', $block->getAttribute('data-calendar-name'));
+                    self::assertStringContainsString('08:30', $block->getAttribute('data-original-time'));
+                    if (\count($calendarIds) > 1) {
+                        self::assertStringContainsString('calendar/bookings/new?calendarId=8&amp;start=', $output);
+                        self::assertSame($scheduleLayout === 'combined' ? 0 : 2, $xpath->query('//*[@class="booking-resource-heading"]')->length);
+                        self::assertSame($scheduleLayout === 'combined' ? 1 : 0, $xpath->query('//button[@data-booking-options]')->length);
+                    }
+                }
+            }
+        }
+    }
+
+    public function testCombinedDayUsesOneColumnAndOverflowLinksForFortyCalendars(): void
+    {
+        $columns = [];
+        for ($id = 1; $id <= 40; ++$id) {
+            $calendar = new CalendarModel(['id' => $id, 'name' => 'Room '.$id, 'color' => '#2563eb']);
+            $columns[] = ['calendar' => $calendar, 'slots' => [540 => [['start' => '2026-10-12T09:00:00+00:00', 'length' => 60, 'label' => '9am - 10am']]], 'bookings' => [
+                ['booking' => (object) ['id' => $id, 'bookingStatus' => \in_array($id, [1, 3], true) ? 'requested' : 'confirmed', 'cpEditUrl' => 'calendar/bookings/'.$id, 'customerName' => 'Customer '.$id, 'startDate' => new \DateTimeImmutable('2026-10-12T08:00:00Z'), 'endDate' => new \DateTimeImmutable('2026-10-12T09:00:00Z')], 'minute' => 480, 'length' => 60, 'label' => '8am - 9am'],
+            ]];
+        }
+        $columns[0]['slots'][600] = [['start' => '2026-10-12T10:00:00+00:00', 'length' => 60, 'label' => '10am - 11am']];
+        $twig = new Environment(new ArrayLoader(['day' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_combined-day.twig'), 'calendar/bookings/_request-warning' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_request-warning.twig'), 'calendar/bookings/_schedule-booking-attributes' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_schedule-booking-attributes.twig')]), ['strict_variables' => true]);
+        foreach ((new CalendarGlobalExtension())->getFilters() as $filter) {
+            $twig->addFilter($filter);
+        }
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => str_replace('{count}', $params['count'] ?? '', $message)));
+        $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
+        $twig->addFilter(new TwigFilter('time', static fn ($date) => $date->format('H:i')));
+        $output = $twig->render('day', [
+            'bookingTimeFormat' => 'icu:HH:mm',
+            'day' => ['date' => new \DateTimeImmutable('2026-10-12'), 'combined' => Schedule::combined($columns)],
+            'calendarIds' => range(1, 40), 'displayTimezone' => 'UTC', 'unavailableRequestIds' => [1 => true, 3 => true], 'statusOptions' => ['confirmed' => 'Confirmed', 'requested' => 'Requested'], 'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
+        ]);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($output);
+        $xpath = new \DOMXPath($dom);
+        self::assertSame(1, $xpath->query('//div[@data-combined]')->length);
+        self::assertSame(0, $xpath->query('//div[@class="booking-resource"]')->length);
+        self::assertSame(2, $xpath->query('//a[@data-booking-id]')->length);
+        self::assertSame(38, $xpath->query('//template[starts-with(@id, "booking-overflow-")]//a')->length);
+        self::assertSame(40, $xpath->query('//template[starts-with(@id, "booking-slot-")]//a')->length);
+        self::assertSame(1, $xpath->query('//a[@class="booking-slot-target"]')->length);
+        self::assertSame(2, $xpath->query('//*[@data-booking-request-warning][not(@hidden)]')->length);
+        self::assertSame(1, $xpath->query('//a[@data-booking-id="1"]//*[@data-booking-request-warning][not(@hidden)]')->length);
+        self::assertSame(1, $xpath->query('//template[starts-with(@id, "booking-overflow-")]//*[@data-booking-request-warning][not(@hidden)]')->length);
+        self::assertStringContainsString('+38 more', $output);
+        self::assertStringContainsString('Room 1</small>', $output);
+        self::assertStringContainsString('calendar/bookings/new?calendarId=1&amp;start=2026-10-12T10%3A00%3A00%2B00%3A00', $output);
+    }
+
+    public function testBookingSidebarRestrictsFieldConfigurationAndMarksTheCurrentPage(): void
+    {
+        $twig = new Environment(new ArrayLoader(['nav' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_nav.twig')]), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
+        $twig->addFunction(new TwigFunction('cpUrl', static fn ($path) => $path));
+        foreach ([[false, true], [true, false], [true, true]] as [$admin, $allowAdminChanges]) {
+            $output = $twig->render('nav', ['bookingView' => 'fields', 'currentUser' => ['admin' => $admin], 'craft' => ['calendar' => ['bookingLabel' => 'Appointments', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['config' => ['general' => ['allowAdminChanges' => $allowAdminChanges]]]]]);
+            self::assertStringContainsString('<nav', $output);
+            self::assertStringContainsString('calendar/bookings/schedule', $output);
+            self::assertSame($admin && $allowAdminChanges, str_contains($output, 'class="sel" aria-current="page">Fields'));
+            self::assertSame($admin && $allowAdminChanges, str_contains($output, 'calendar/bookings/fields'));
+            self::assertSame($admin && $allowAdminChanges, str_contains($output, 'calendar/bookings/notifications'));
+            self::assertStringContainsString('Appointments', $output);
+            self::assertLessThan(strpos($output, 'href="calendar/bookings"'), strpos($output, 'href="calendar/bookings/requests"'));
+        }
+    }
+
+    public function testTimezoneOptionsRenderForExistingEventAndSchedulingCalendars(): void
+    {
+        $app = \Craft::$app;
+
+        try {
+            \Craft::$app = null;
+            $options = DateHelper::getTimezoneOptions();
+        } finally {
+            \Craft::$app = $app;
+        }
+
+        $source = file_get_contents(__DIR__.'/../../../src/templates/calendars/_scheduling.twig');
+        $twig = new Environment(new ArrayLoader([
+            'scheduling' => $source,
+            'calendar/calendars/_weekly-hours' => file_get_contents(__DIR__.'/../../../src/templates/calendars/_weekly-hours.twig'),
+            'calendar/calendars/_booking-rules' => file_get_contents(__DIR__.'/../../../src/templates/calendars/_booking-rules.twig'),
+            '_includes/forms' => <<<'TWIG'
+                {% macro selectField(config) %}<timezone>{{ config.options|json_encode|raw }}</timezone>{% endmacro %}
+                {% macro errorList(errors) %}{% endmacro %}
+                {% macro editableTableField(config) %}{% endmacro %}
+                {% macro textField(config) %}{% endmacro %}
+                {% macro lightswitchField(config) %}{% endmacro %}
+                {% macro dateField(config) %}{% endmacro %}
+                TWIG,
+        ]), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
+
+        foreach ([CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING] as $type) {
+            $calendar = new CalendarModel(['id' => 1, 'type' => $type]);
+            $output = $twig->render('scheduling', [
+                'calendar' => $calendar,
+                'scheduling' => $calendar->getSchedulingSettings(),
+                'schedulingDates' => ['availableFrom' => null, 'availableUntil' => null],
+                'schedulingHours' => [],
+                'schedulingExceptions' => [],
+                'timezoneOptions' => $options,
+                'craft' => ['app' => ['timeZone' => 'America/Winnipeg']],
+            ]);
+
+            self::assertSame(1, preg_match('/<timezone>(.*?)<\/timezone>/s', $output, $matches));
+            $rendered = json_decode($matches[1], true, 512, \JSON_THROW_ON_ERROR);
+            $expected = $options;
+            unset($expected[DateHelper::FLOATING_TIMEZONE]);
+            self::assertSame($expected, $rendered);
+            self::assertContains('America/Winnipeg', array_column($rendered, 'value'));
+        }
+    }
+}

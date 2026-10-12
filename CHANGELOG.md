@@ -3,6 +3,36 @@
 ## 6.0.0 - Unreleased
 
 ### Added
+- Added independent Admin and Requester email switches and triggers for booking submission, confirmation, decline, cancellation, return to Requested, rescheduling, and restoration.
+- Added an optional pending booking request count to the main Calendar navigation item, respecting staff access and updating after request moderation.
+- Added a display-timezone picker to the booking Schedule, offering manageable resource timezones and the staff timezone, with automatic defaults and selections preserved through filtering and navigation.
+- Added singular and plural booking resource labels under Settings → Bookings, replacing Calendar/Calendars in booking filters, table headings, editor/review forms, and Schedule layout choices.
+- Added a Requests moderation queue as the first Bookings submenu item, with a pending count, automatic filters, availability warnings, native review slideouts, alternate times, and Undo/Redo. Requests can also be the default Bookings subpage.
+- Added a checked-by-default Include booked time slots option to the control-panel booking editor, showing occupied slots as disabled and allowing staff to hide them.
+- Added booking configuration, status counts, per-calendar availability checks, and notification/CAPTCHA details to Diagnostics and its support report.
+- Added a Bookings settings page for the booking label, default subpage, and default Schedule layout.
+- Added a setting for the default booking Schedule layout, with Combined selected for fresh installs and By Calendar available.
+- Added amber warnings for unavailable booking requests in the list and schedule, with links to the editor and automatic updates after status changes.
+- Added per-audience From Email, From Name, Reply-To Email, CC, and BCC settings for booking notifications.
+- Added a setting to open either the Bookings list or Schedule from the Bookings navigation item.
+- Added an All Calendars checkbox picker to the Bookings list, with multiple calendar selections preserved through sorting and pagination.
+- Added separate Admin and Requester booking notification templates with editable Twig subjects, HTML email bodies, and sample previews.
+- Added an All Calendars checkbox picker to booking schedules, with separate resource columns and availability shading in Day and Week views.
+- Added an All, Events, and Scheduling type filter to the Calendars list, defaulting to All.
+- Added a Bookings Label setting to customize the booking list title, navigation, breadcrumbs, and Default Page option.
+- Added a native Set status menu for selected bookings, with per-booking availability checks and failure reporting.
+- Added Booking Defaults settings for the initial rules, approval, staff notification email, and weekly opening hours of new scheduling calendars.
+- Added booking checkboxes with page selection, bulk Move to Trash and Restore actions, and a compact Craft-style view dropdown with icons.
+- Added optional Cloudflare Turnstile, hCaptcha, and reCAPTCHA v2 spam protection for public booking forms, with environment-variable keys and server-side verification.
+- Added booking deletion through Craft’s element lifecycle, a Trash view with restoration, and availability checks when restoring bookings.
+- Added separate Booking Time, Submitted, and Last Updated columns to the Bookings list, with sorting for each timestamp.
+- Added a sort dropdown and clickable column headings to the Bookings list, with sorting preserved through filters and pagination.
+- Added a public booking demo in Bootstrap and Tailwind, with light/dark themes, a resource chooser, and a reusable `bookingForm()` helper with framework and theme options.
+- Added automatically saved booking status dropdowns to the Bookings list.
+- Added Undo and Redo controls to the booking schedule for saved drag moves.
+- Added booking creation from available times in the schedule, with availability checks and a native Craft sidebar for booking navigation.
+- Added the linked user and timestamp of the latest booking status change, with separate labels for customer requests and automatic confirmations.
+- Added Scheduling calendars with weekly availability, holiday exceptions, booking rules, guest requests, and a dedicated Bookings area with approval and schedule views.
 - Added repeating event presets to quick creation in the control panel calendar, with weekday repeats, end dates or occurrence limits, and a summary. Repeat settings carry through to the full event editor.
 - Added a calendar selector on the event editor with a field-mapping slideout. Similar fields are preselected, unmapped content is flagged, and event and occurrence changes move together within a draft.
 - Added an optional **Expiry Date** for events, with Live, Pending, and Expired statuses like Craft entries.
@@ -19,6 +49,43 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Grouped settings navigation into Events, Bookings, and Tools, clarified Event Views and Booking Settings labels, and moved event overlap warnings and author restrictions from General to Event Settings.
+- Removed the booking schedule’s status explanation and moved its interaction hint below the grid.
+- Styled request moderation Undo/Redo messages as compact informational banners.
+- Made request moderation banners identify the customer and the resulting booking status, including Undo/Redo.
+- Refined request review slide-outs with a compact customer header, request summary cards, and clearer notes, fields, and availability sections.
+- Moved request review availability controls above notes and fields, and grouped actions in the slide-out footer alongside Cancel and Confirm Booking.
+- Hid the request review’s “Choose another time” button while its time picker is expanded.
+- Added animated booking drop previews, faded original positions, and a confirmation modal before rescheduling from the Schedule view.
+- Removed the redundant Bookings sort dropdown and aligned the Calendars list with Craft's native toolbar, table headings, and column sorting.
+- Restored the Requested status banner's original colors and aligned the separate availability warning icon with its heading.
+- Changed booking diagnostics to an expanded table with one row per calendar, and excluded scheduling calendars from the event diagnostics table.
+- Refined booking warning icon spacing, highlighted unavailable requests in the Bookings list, and matched warning colors across booking views.
+- Ordered booking opening-hour defaults, saved schedules, and weekday menus from Sunday through Saturday.
+- Shortened booking list timezones to date-aware abbreviations beside the time range, and adopted Craft's native sortable table headings.
+- Aligned the Bookings list with Craft's native index layout, with filters and New booking in the page toolbar and a single table pane.
+
+- Changed new-booking hover and keyboard-focus previews to Craft’s blue selection colors.
+- Display friendly, localized timezone names in booking editors, schedules, and public forms, with date-specific abbreviations and precise timezone tooltips.
+- Warn when a booking request’s original time is no longer available, requiring staff to select an available alternative before saving or confirming it.
+
+- Removed plus signs from available schedule times, retaining the booking preview on hover and keyboard focus.
+- Tidied booking notification settings with aligned sender fields, compact CC/BCC help, and a variable reference beside the template editor.
+- Renamed the Bookings area’s Booking Fields page to Fields.
+- Made Combined the default booking schedule layout, with shared day columns, calendar colors and names, a native available-calendar chooser, and overflow lists for dense bookings. By Calendar remains available.
+- Arranged scheduling availability, booking rules, and booking requests in responsive columns, including Booking Defaults settings.
+- Refined the booking schedule calendar picker with native Craft checkbox and color controls, aligned rows, and full-row hover targets.
+- Set fresh-install booking defaults to 60-minute bookings and start increments, no gap, 24 hours’ notice, and a 60-day booking window, with overlaps disabled.
+- Renamed Overview to Events and the element listing to Event List throughout control-panel navigation, page titles, breadcrumbs, and settings.
+- Matched booking row selection and the footer action menu to native Craft element lists.
+- Replaced browser booking-deletion confirmations with a shared Craft-style modal in the list and editor.
+- Disabled calendar type changes when events or bookings exist, with an explanation covering items in Trash and guidance for empty calendars.
+- Added a compact relative timestamp beside the booking status selector, refreshing while the editor is open.
+- Reduced availability calculation overhead and batched the search for the next available booking time.
+- Made booking list filters, customer search, and schedule controls update results automatically.
+- Refined the Bookings list with native Craft controls, status dots, and cleaner table spacing.
+- Made booking slot previews span the booking duration and refined the status banner and controls.
+- Made booking statuses more prominent with colored banners and icons.
 - Refined the occurrence editor with clearer headings, compact scheduling controls, consistent conflict warnings, and a separate reset area.
 - Simplified Schedule Preview rows with date-only labels and hover details, subtle markers for edited occurrences, and a wider preview column.
 - Expanded the event schedule preview with counts of additional and excluded dates, edited and cancelled occurrences, edits off schedule, and split-series date ranges.
@@ -35,6 +102,17 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed the booking move confirmation timezone sentence to use the grid’s resolved timezone name instead of duplicated dropdown text.
+- Fixed notification template previews showing an error after rendering successfully because the response was missing its success flag.
+- Clarified the booking Schedule display timezone and listed configured resource timezones in its tooltip. Selected resources sharing a timezone now use it automatically; mixed zones use the staff display timezone. Hour labels retain the correct local clock.
+- Fixed the request review Confirm Booking button reverting to Craft’s red primary color, with distinct darker blue hover and pressed states.
+- Fixed stale selected calendar indicators in request review menus, using native Craft menu rows and keeping selection, labels, colors, and resets in sync after the menu moves outside the form.
+- Fixed booking schedules starting on Monday instead of respecting Calendar’s first day of week setting and Craft user preferences.
+- Fixed false unsaved-change warnings when leaving an unchanged booking editor or after deleting a booking.
+- Fixed restored bookings bypassing conflict checks, booking notifications escaping rolled-back changes, and concurrent guest requests bypassing the booking rate limit.
+- Fixed Craft's paragraph styles overriding the booking status details spacing and restored native styling on the schedule view dropdown.
+- Fixed booking status autosave failing when Craft initialized its dropdowns after the page's status handler.
+- Fixed booking notification failures hiding the underlying mail transport error in Queue Manager.
 - Fixed missing control panel translations and completed Latvian translation and date-picker coverage.
 - Fixed the event editor’s schedule preview showing original dates for moved occurrences. It now shows edited dates, titles, and times while keeping occurrence actions tied to the correct scheduled occurrence.
 - Fixed hovering over another event replacing the quick creation form and leaving its unsaved event stuck on the calendar.

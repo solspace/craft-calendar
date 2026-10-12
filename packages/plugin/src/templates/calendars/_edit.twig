@@ -38,6 +38,8 @@
     {{ redirectInput('calendar/calendars') }}
     {{ csrfInput() }}
 
+    {% include 'calendar/calendars/_type-picker' %}
+
     {{ forms.textField({
         first: true,
         label: "Calendar Name"|t('calendar'),
@@ -85,6 +87,7 @@
         required: true
     }) }}
 
+    <div data-calendar-type="events" {{ calendar.isScheduling ? 'hidden' }}>
     {% set siteRows = [] %}
     {% set siteErrors = calendar.getErrors('siteSettings') %}
 
@@ -284,11 +287,31 @@
         customizableUi: true,
         fieldLayout: calendar.getFieldLayout()
     } only %}
+    </div>
+
+    <div data-calendar-type="scheduling" {{ not calendar.isScheduling ? 'hidden' }}>
+        {% include 'calendar/calendars/_scheduling' %}
+    </div>
 
 {% endblock %}
 
 
 {% js %}
+    function updateCalendarType() {
+        const type = document.querySelector('input[name="type"]:checked').value;
+        document.querySelectorAll('[data-calendar-type]').forEach(section => {
+            section.hidden = section.dataset.calendarType !== type;
+            // Hidden event settings can contain required inputs. Retain their values for saving.
+            section.querySelectorAll('[required]').forEach(input => {
+                input.dataset.wasRequired = '1';
+                input.required = !section.hidden;
+            });
+            section.querySelectorAll('[data-was-required]').forEach(input => input.required = !section.hidden);
+        });
+    }
+    document.querySelectorAll('input[name="type"]').forEach(input => input.addEventListener('change', updateCalendarType));
+    updateCalendarType();
+
     var customFieldData = {{ customFields|json_encode|raw }};
     {% if not calendar.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
@@ -319,3 +342,19 @@
         {% endfor %}
     {% endif %}
 {% endjs %}
+
+{% css %}
+    {% include 'calendar/calendars/_scheduling-css' %}
+    .calendar-type-picker { margin-bottom: 28px; border: 0; padding: 0; }
+    .calendar-type-picker legend { font-weight: 600; margin-bottom: 10px; }
+    .calendar-type-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .calendar-type-card { display: flex; align-items: flex-start; gap: 12px; padding: 18px; border: 1px solid var(--hairline-color, #d8dee5); border-radius: 8px; cursor: pointer; }
+    .calendar-type-card:has(input:checked) { border-color: var(--blue-600, #2563eb); background: var(--blue-050, #eff6ff); }
+    .calendar-type-card input { margin-top: 3px; accent-color: var(--blue-600, #2563eb); }
+    .calendar-type-card small { display: block; margin-top: 5px; color: var(--text-color, #536171); line-height: 1.5; }
+    .calendar-type-picker.is-locked .calendar-type-card { cursor: default; }
+    .calendar-type-picker.is-locked .calendar-type-card:not(:has(input:checked)) { opacity: .55; }
+    .calendar-type-help { margin-top: 10px; color: var(--text-color, #536171); font-size: 13px; line-height: 1.5; }
+    [data-calendar-type][hidden] { display: none; }
+    @media (max-width: 600px) { .calendar-type-options { grid-template-columns: 1fr; } }
+{% endcss %}

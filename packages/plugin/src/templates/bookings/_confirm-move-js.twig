@@ -1,0 +1,46 @@
+function confirmBookingMove(booking, destination) {
+    return new Promise(resolve => {
+        let confirmed = false;
+        const id = 'booking-move-' + Craft.randomString(10);
+        const $container = $('<div/>', {
+            class: 'modal fitted booking-move-modal',
+            'aria-labelledby': id + '-title',
+            'aria-describedby': id + '-message ' + id + '-timezone',
+        }).appendTo(Garnish.$bod);
+        const $body = $('<div/>', {class: 'body'}).appendTo($container);
+        $('<h2/>', {id: id + '-title', text: Craft.t('calendar', 'Move booking?')}).appendTo($body);
+        $('<p/>', {
+            id: id + '-message',
+            text: Craft.t('calendar', 'Reschedule the booking for {customer} in {calendar}?', {customer: booking.customer, calendar: booking.calendarName}),
+        }).appendTo($body);
+        const $times = $('<dl/>', {class: 'booking-move-times'}).appendTo($body);
+        for (const [label, value] of [[Craft.t('calendar', 'Current time'), booking.originalTime], [Craft.t('calendar', 'New time'), destination.label]]) {
+            const $row = $('<div/>').appendTo($times);
+            $('<dt/>', {class: 'light', text: label}).appendTo($row);
+            $('<dd/>', {text: value}).appendTo($row);
+        }
+        $('<p/>', {
+            id: id + '-timezone', class: 'light booking-move-timezone',
+            text: Craft.t('calendar', 'Times shown in {timezone}.', {timezone: bookingGridScroll.querySelector('.booking-grid').dataset.timezoneLabel}),
+        }).appendTo($body);
+        const $buttons = $('<div/>', {class: 'buttons right'})
+            .appendTo($('<div/>', {class: 'footer'}).appendTo($container));
+        const $cancel = $('<button/>', {type: 'button', class: 'btn', text: Craft.t('app', 'Cancel')}).appendTo($buttons);
+        const $confirm = $('<button/>', {type: 'button', class: 'btn submit', text: Craft.t('calendar', 'Move booking')}).appendTo($buttons);
+        const modal = new Garnish.Modal($container, {
+            triggerElement: () => $(booking.block.isConnected ? booking.block :
+                [...bookingGridScroll.querySelectorAll('.booking-block')].find(block => block.dataset.bookingId === booking.bookingId) || document.querySelector('[data-booking-new]')),
+            onFadeIn: () => $cancel.trigger('focus'),
+            onHide: () => resolve(confirmed),
+            onFadeOut: () => {
+                modal.destroy();
+                $container.remove();
+            },
+        });
+        $cancel.on('click', () => modal.hide());
+        $confirm.on('click', () => {
+            confirmed = true;
+            modal.hide();
+        });
+    });
+}

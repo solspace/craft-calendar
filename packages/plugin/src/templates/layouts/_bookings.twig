@@ -1,0 +1,7 @@
+{% extends 'calendar/layouts/_layoutWithoutSettings' %}
+{% set selectedSubnavItem = 'bookings' %}
+{% set bookingView = bookingView ?? 'list' %}
+
+{% block sidebar %}
+    {% include 'calendar/bookings/_nav' %}
+{% endblock %}

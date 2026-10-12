@@ -1,0 +1,39 @@
+<div id="{{ widgetId }}">{% include 'calendar/spam-protection/_markup' %}</div>
+{% css %}
+.calendar-captcha {margin: 1rem 0; color-scheme: light; --calendar-captcha-error: #b91c1c;}
+.calendar-captcha-message {margin: .5rem 0 0; font-size: .875rem;}
+.calendar-captcha-message.error {color: var(--calendar-captcha-error);}
+@media (prefers-color-scheme: dark) {
+    .calendar-captcha[data-captcha-theme="auto"] {color-scheme: dark; --calendar-captcha-error: #fca5a5;}
+}
+[data-bs-theme="light"] .calendar-captcha[data-captcha-theme="auto"], .calendar-captcha[data-captcha-theme="light"] {color-scheme: light; --calendar-captcha-error: #b91c1c;}
+[data-bs-theme="dark"] .calendar-captcha[data-captcha-theme="auto"], .dark .calendar-captcha[data-captcha-theme="auto"], .calendar-captcha[data-captcha-theme="dark"] {color-scheme: dark; --calendar-captcha-error: #fca5a5;}
+{% endcss %}
+{% js at endBody %}
+(() => {
+    const root = document.getElementById({{ widgetId|json_encode|raw }});
+    const form = root.closest('form');
+    if (!form) return;
+    const inputs = {hidden: false};
+    let submitting = false;
+    let approved = false;
+    function updateSelection() {}
+    {% include 'calendar/spam-protection/_captcha-js' %}
+    {% if autoSubmit ?? true %}
+    form.addEventListener('submit', async event => {
+        if (approved) { approved = false; return; }
+        if (event.defaultPrevented) return;
+        event.preventDefault();
+        if (submitting || !form.reportValidity()) return;
+        submitting = true;
+        try {
+            if (!await prepareCaptcha()) return;
+            approved = true;
+            form.requestSubmit(event.submitter ?? undefined);
+            approved = false;
+        } finally { submitting = false; }
+    });
+    {% endif %}
+    form.addEventListener('reset', resetCaptcha);
+})();
+{% endjs %}

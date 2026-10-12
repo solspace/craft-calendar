@@ -189,3 +189,21 @@
   font-family: monospace;
   resize: vertical;
 }
+#calendar-diagnostics .calendar-diag-booking-table thead th {
+  min-width: 100px;
+  max-width: 180px;
+  z-index: 2;
+}
+#calendar-diagnostics .calendar-diag-booking-table thead th:first-child {
+  left: 0;
+  z-index: 3;
+}
+#calendar-diagnostics .calendar-diag-booking-table tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--white);
+}
+#calendar-diagnostics .calendar-diag-booking-table .calendar-diag-opening-hours {
+  min-width: 280px;
+}

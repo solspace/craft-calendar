@@ -1,0 +1,32 @@
+.booking-request-filters { display:flex; align-items:center; flex-wrap:wrap; gap:10px; width:100%; margin:0; }
+.booking-request-filters > .select.selectize { width:180px; }
+.request-search { flex:1; min-width:200px; }
+.request-pane { background:var(--pane-bg,var(--white)); box-shadow:var(--pane-shadow); border-radius:var(--radius-lg,5px); overflow:hidden; }
+.request-table-scroll { overflow-x:auto; }
+.request-table { min-width:1050px; }
+.request-table tbody td { padding-block:16px; vertical-align:middle; }
+.request-customer { color:var(--link-color); font-weight:600; text-align:start; cursor:pointer; }
+.request-secondary { margin-top:4px; font-size:12px; }
+.request-calendar, .request-availability, .request-actions { display:flex; align-items:center; gap:8px; }
+.request-calendar .color-indicator { margin:0; flex-shrink:0; }
+.request-time { line-height:1.5; white-space:nowrap; }
+.request-availability { gap:6px; color:var(--success-color,#27833e); white-space:nowrap; }
+.request-warning { color:var(--warning-color,#b45309); }
+.request-availability [data-icon] { display:inline-flex; align-items:center; justify-content:center; width:16px; flex:0 0 16px; font-size:14px; line-height:1; }
+.request-unavailable td { background:#fffbef; }
+.request-actions { flex-wrap:wrap; }
+.request-empty { text-align:center; padding-block:40px !important; }
+.request-history { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; padding:12px 14px; background:var(--sky-050,#f0f9ff); color:var(--fg-notice,#0369a1); border:1px solid var(--sky-200,#bae6fd); border-radius:var(--radius-lg,5px); }
+.request-history > [data-icon] { display:inline-flex; align-items:center; justify-content:center; flex:0 0 16px; font-size:16px; line-height:1; }
+.request-history > [data-request-history-message] { flex:1; min-width:160px; line-height:1.5; }
+.request-history > .btn { flex-shrink:0; }
+.request-history.hidden { display:none; }
+#request-results[aria-busy="true"] { opacity:.65; pointer-events:none; }
+
+/* Keep positive and destructive moderation actions visually distinct. */
+.booking-confirm-btn { background:var(--link-color,#2563eb); color:#fff; box-shadow:none; }
+.booking-confirm-btn:hover { background:color-mix(in srgb,var(--link-color,#2563eb) 85%,#000); color:#fff; }
+.booking-confirm-btn:focus-visible { outline:2px solid var(--link-color,#2563eb); outline-offset:2px; }
+.booking-decline-btn { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 5%,#fff); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--error-color,#cf1124) 35%,transparent); }
+.booking-decline-btn:hover { color:var(--error-color,#cf1124); background:color-mix(in srgb,var(--error-color,#cf1124) 10%,#fff); }
+.booking-decline-btn:focus-visible { outline:2px solid var(--error-color,#cf1124); outline-offset:2px; }

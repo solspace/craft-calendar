@@ -1,0 +1,46 @@
+function confirmBookingDeletion(customer, triggerElement, count = null) {
+    return new Promise(resolve => {
+        let confirmed = false;
+        const id = 'booking-delete-' + Craft.randomString(10);
+        const $container = $('<div/>', {
+            class: 'modal fitted booking-delete-modal',
+            'aria-labelledby': id + '-title',
+            'aria-describedby': id + '-message ' + id + '-note',
+        }).appendTo(Garnish.$bod);
+        const $body = $('<div/>', {class: 'body'}).appendTo($container);
+        $('<h2/>', {
+            id: id + '-title',
+            text: Craft.t('calendar', 'Move to Trash'),
+        }).appendTo($body);
+        $('<p/>', {
+            id: id + '-message',
+            text: count === null
+                ? Craft.t('calendar', 'Move the booking for {customer} to Trash?', {customer})
+                : Craft.t('calendar', '{count, plural, =1{Move 1 selected booking to Trash?} other{Move # selected bookings to Trash?}}', {count}),
+        }).appendTo($body);
+        $('<p/>', {
+            id: id + '-note',
+            class: 'light booking-delete-note',
+            text: Craft.t('calendar', 'This will release the reserved time. You can restore the booking from Trash.'),
+        }).appendTo($body);
+        const $buttons = $('<div/>', {class: 'buttons right'})
+            .appendTo($('<div/>', {class: 'footer'}).appendTo($container));
+        const $cancel = $('<button/>', {
+            type: 'button', class: 'btn', text: Craft.t('app', 'Cancel'),
+        }).appendTo($buttons);
+        const $confirm = $('<button/>', {
+            type: 'button', class: 'btn submit', text: Craft.t('calendar', 'Move to Trash'),
+        }).appendTo($buttons);
+        const modal = new Garnish.Modal($container, {
+            triggerElement,
+            onFadeIn: () => $cancel.trigger('focus'),
+            onHide: () => resolve(confirmed),
+            onFadeOut: () => modal.destroy(),
+        });
+        $cancel.on('click', () => modal.hide());
+        $confirm.on('click', () => {
+            confirmed = true;
+            modal.hide();
+        });
+    });
+}

@@ -2,9 +2,12 @@
 
 namespace Solspace\Calendar\Controllers;
 
+use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Models\SettingsModel;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
@@ -31,12 +34,17 @@ class SettingsController extends BaseController
      */
     public function actionDefaultView(): Response
     {
-        $defaultView = $this->getSettingsService()->getSettingsModel()->defaultView;
+        $settings = $this->getSettingsService()->getSettingsModel();
+        $defaultView = $settings->defaultView;
 
         // Preserve the CP's selected site (if any) across the redirect.
         $siteParams = [];
         if ($site = \Craft::$app->request->getQueryParam('site')) {
             $siteParams['site'] = $site;
+        }
+
+        if (Calendar::VIEW_BOOKINGS === $defaultView && Calendar::getInstance()->bookings->getManageableCalendars()) {
+            return $this->redirect(UrlHelper::cpUrl($settings->getBookingDefaultPath(), $siteParams));
         }
 
         if (Calendar::VIEW_EVENTS === $defaultView && PermissionHelper::canAccessEvents()) {
@@ -60,7 +68,7 @@ class SettingsController extends BaseController
 
     public function actionOverview(): Response
     {
-        return $this->provideTemplate('overview', ['label' => 'Overview']);
+        return $this->provideTemplate('overview', ['label' => 'Event Views']);
     }
 
     /**
@@ -87,9 +95,51 @@ class SettingsController extends BaseController
         return $this->provideTemplate('field_layout');
     }
 
+    public function actionBookings(): Response
+    {
+        return $this->provideTemplate('bookings', ['label' => 'Booking Settings']);
+    }
+
     /**
-     * Renders the General settings page template.
+     * Renders the Booking Defaults settings page template.
      */
+    public function actionBookingDefaults(): Response
+    {
+        $settings = $this->getSettingsService()->getSettingsModel();
+        $scheduling = $settings->getBookingDefaults();
+        $hours = $scheduling->getHoursForDisplay();
+        $zone = new \DateTimeZone(\Craft::$app->getTimeZone());
+        foreach ($hours as &$row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            foreach (['start', 'end'] as $key) {
+                if (!empty($row[$key]) && \is_string($row[$key])) {
+                    try {
+                        $row[$key] = new \DateTimeImmutable($row[$key], $zone);
+                    } catch (\Throwable) {
+                        $row[$key] = null;
+                    }
+                }
+            }
+        }
+        unset($row);
+        foreach (SettingsModel::BOOKING_DEFAULT_ATTRIBUTES as $attribute) {
+            $scheduling->addErrors([$attribute => $settings->getErrors('bookingDefaults.'.$attribute)]);
+        }
+
+        return $this->provideTemplate('booking_defaults', [
+            'label' => 'Booking Defaults',
+            'scheduling' => $scheduling,
+            'schedulingHours' => $hours,
+        ]);
+    }
+
+    public function actionSpamProtection(): Response
+    {
+        return $this->provideTemplate('spam_protection', ['label' => 'Spam Protection']);
+    }
+
     public function actionGuestAccess(): Response
     {
         $settings = $this->getSettingsService()->getSettingsModel();
@@ -99,7 +149,9 @@ class SettingsController extends BaseController
 
         $calendarOptions = [];
         foreach ($calendars as $calendar) {
-            $calendarOptions[$calendar->id] = $calendar->name;
+            if (!$calendar->getIsScheduling()) {
+                $calendarOptions[$calendar->id] = $calendar->name;
+            }
         }
 
         return $this->provideTemplate(
@@ -130,6 +182,16 @@ class SettingsController extends BaseController
             $postData['guestAccess'] = null;
         }
 
+        if (isset($postData['captchaProvider'], $postData['captchaSiteKey'], $postData['captchaSecretKey'])) {
+            // Retire legacy raw keys once the shared settings have been explicitly saved.
+            $postData['bookingCaptchaProvider'] = 'none';
+            $postData['bookingCaptchaSiteKey'] = $postData['bookingCaptchaSecretKey'] = '';
+        }
+
+        if (isset($postData['bookingDefaults'])) {
+            $postData['bookingDefaults'] = $this->normalizeBookingDefaults((array) $postData['bookingDefaults']);
+        }
+
         $plugin = Calendar::getInstance();
         $plugin->setSettings($postData);
 
@@ -144,6 +206,43 @@ class SettingsController extends BaseController
         \Craft::$app->session->setNotice(Calendar::t('Settings saved successfully.'));
 
         return $this->redirectToPostedUrl();
+    }
+
+    private function normalizeBookingDefaults(array $data): array
+    {
+        $defaults = array_intersect_key($data, array_flip(SettingsModel::BOOKING_DEFAULT_ATTRIBUTES));
+        foreach (['duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance'] as $key) {
+            if (\array_key_exists($key, $defaults)) {
+                $number = filter_var($defaults[$key], \FILTER_VALIDATE_INT);
+                if (false === $number) {
+                    throw new BadRequestHttpException(Calendar::t('Booking rules must use whole numbers.'));
+                }
+                $defaults[$key] = $number;
+            }
+        }
+        foreach (['allowOverlap', 'requireApproval'] as $key) {
+            $defaults[$key] = !empty($defaults[$key]);
+        }
+        $defaults['notificationEmail'] = trim((string) ($defaults['notificationEmail'] ?? ''));
+        // An empty editable table posts an empty string; retain it as all days closed.
+        $defaults['hours'] = array_values((array) (($defaults['hours'] ?? []) ?: []));
+        foreach ($defaults['hours'] as &$row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            foreach (['start', 'end'] as $key) {
+                if (isset($row[$key]) && \is_array($row[$key])) {
+                    try {
+                        $row[$key] = DateTimeHelper::toDateTime($row[$key], true)?->format('H:i') ?? '';
+                    } catch (\Throwable) {
+                        $row[$key] = '';
+                    }
+                }
+            }
+        }
+        unset($row);
+
+        return $defaults;
     }
 
     /**

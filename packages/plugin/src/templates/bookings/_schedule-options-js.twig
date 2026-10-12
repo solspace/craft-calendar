@@ -1,0 +1,37 @@
+let bookingOptionsModal;
+function closeBookingOptions() {
+    bookingOptionsModal?.hide();
+    bookingOptionsModal = null;
+}
+bookingGridScroll.addEventListener('click', event => {
+    const trigger = event.target.closest('[data-booking-options]');
+    const createLink = event.target.closest('.booking-slot-target');
+    if ((trigger || createLink) && (bookingBusy || bookingScheduleLoading)) { event.preventDefault(); return; }
+    if (!trigger) return;
+    const template = document.getElementById(trigger.dataset.bookingOptions);
+    if (!template) return;
+    event.preventDefault();
+    closeBookingOptions();
+    const id = 'booking-options-' + Craft.randomString(10);
+    const $container = $('<div/>', {class:'modal fitted booking-schedule-modal', 'aria-labelledby':id}).appendTo(Garnish.$bod);
+    const $body = $('<div/>', {class:'body'}).appendTo($container);
+    $('<h2/>', {id, text:trigger.dataset.bookingOptionsTitle}).appendTo($body);
+    const $choices = $('<div/>', {class:'booking-choice-list'}).appendTo($body);
+    $choices[0].append(template.content.cloneNode(true));
+    const $footer = $('<div/>', {class:'footer'}).appendTo($container);
+    const $buttons = $('<div/>', {class:'buttons right'}).appendTo($footer);
+    const $close = $('<button/>', {type:'button', class:'btn', text:Craft.t('app', 'Close')}).appendTo($buttons);
+    const modal = new Garnish.Modal($container, {
+        triggerElement:trigger,
+        onFadeIn:() => $choices.find('a').first().trigger('focus'),
+        onHide:() => {
+            if (bookingOptionsModal === modal) bookingOptionsModal = null;
+        },
+        onFadeOut:() => {
+            modal.destroy();
+            $container.remove();
+        },
+    });
+    bookingOptionsModal = modal;
+    $close.on('click', () => modal.hide());
+});

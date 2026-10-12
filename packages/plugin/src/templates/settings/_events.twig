@@ -50,6 +50,25 @@
             value: settings.overlapThreshold,
             errors: settings.getErrors('overlapThreshold')
         }) }}
+
+        {{ forms.lightswitchField({
+            label: "Show Overlap Warnings"|t('calendar'),
+            instructions: "Warn when enabled, non-cancelled events overlap within the same calendar and site. Warnings do not prevent saving."|t('calendar'),
+            id: 'showOverlapWarnings',
+            name: 'settings[showOverlapWarnings]',
+            on: settings.showOverlapWarnings,
+            errors: settings.getErrors('showOverlapWarnings')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Restrict Editing to Own Events"|t('calendar'),
+            instructions: "Limit non-admin users to editing or deleting events they authored. Calendar permissions still apply."|t('calendar'),
+            id: 'authoredEventEditOnly',
+            name: 'settings[authoredEventEditOnly]',
+            on: settings.authoredEventEditOnly,
+            errors: settings.getErrors('authoredEventEditOnly')
+        }) }}
+
     </form>
 
 {% endblock %}

@@ -3,6 +3,7 @@
 namespace Solspace\Calendar\Models;
 
 use craft\base\Model;
+use craft\helpers\App;
 use Solspace\Calendar\Calendar;
 
 class SettingsModel extends Model
@@ -19,6 +20,11 @@ class SettingsModel extends Model
     public const DEFAULT_ALLOW_QUICK_CREATE = true;
     public const DEFAULT_AUTHORED_EVENT_EDIT_ONLY = false;
     public const DEFAULT_FIRST_DAY_OF_WEEK = -1;
+
+    public const BOOKING_DEFAULT_ATTRIBUTES = [
+        'duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance',
+        'allowOverlap', 'requireApproval', 'notificationEmail', 'hours',
+    ];
 
     public const TIME_FORMAT_AUTO = 'auto';
     public const TIME_FORMAT_12_HOUR = '12-hour';
@@ -49,6 +55,27 @@ class SettingsModel extends Model
 
     public array|bool|null $guestAccess = null;
 
+    public array $bookingDefaults = [
+        'duration' => 60,
+        'increment' => 60,
+        'buffer' => 0,
+        'minimumNotice' => 24,
+        'maximumAdvance' => 60,
+        'allowOverlap' => false,
+    ];
+
+    // Legacy booking-only settings remain readable for existing project config.
+    public ?string $captchaProvider = null;
+    public ?string $captchaSiteKey = null;
+    public ?string $captchaSecretKey = null;
+    public bool $captchaProtectBookings = true;
+    public bool $captchaProtectEvents = false;
+    public float|string $recaptchaMinimumScore = 0.5;
+
+    public string $bookingCaptchaProvider = 'none';
+    public string $bookingCaptchaSiteKey = '';
+    public string $bookingCaptchaSecretKey = '';
+
     public ?string $descriptionFieldHandle = null;
 
     public ?string $locationFieldHandle = null;
@@ -56,6 +83,18 @@ class SettingsModel extends Model
     public array|bool|null $authoredEventEditOnly = null;
 
     public ?string $pluginName = null;
+
+    public ?string $bookingPageLabel = null;
+
+    public ?string $bookingResourceLabelSingular = null;
+
+    public ?string $bookingResourceLabelPlural = null;
+
+    public string $defaultBookingView = 'bookings';
+
+    public string $defaultBookingScheduleLayout = 'combined';
+
+    public bool $showBookingRequestBadge = false;
 
     public ?int $firstDayOfWeek = null;
 
@@ -103,6 +142,47 @@ class SettingsModel extends Model
         $this->authoredEventEditOnly = self::DEFAULT_AUTHORED_EVENT_EDIT_ONLY;
         $this->firstDayOfWeek = self::DEFAULT_FIRST_DAY_OF_WEEK;
         $this->timeFormat = self::TIME_FORMAT_AUTO;
+    }
+
+    public function getBookingLabel(): string
+    {
+        $label = trim($this->bookingPageLabel ?? '');
+
+        return '' !== $label ? $label : Calendar::t('Bookings');
+    }
+
+    /** Configured names stay literal; translate only the surrounding UI wording. */
+    public function getBookingResourceLabels(): array
+    {
+        $singular = trim($this->bookingResourceLabelSingular ?? '');
+        $plural = trim($this->bookingResourceLabelPlural ?? '');
+
+        return [
+            'singular' => '' !== $singular ? $singular : Calendar::t('Calendar'),
+            'plural' => '' !== $plural ? $plural : Calendar::t('Calendars'),
+            'all' => '' !== $plural ? Calendar::t('All {label}', ['label' => $plural]) : Calendar::t('All Calendars'),
+            'by' => '' !== $singular ? Calendar::t('By {label}', ['label' => $singular]) : Calendar::t('By Calendar'),
+            'choose' => '' !== $singular ? Calendar::t('Choose {label}', ['label' => $singular]) : Calendar::t('Choose a Calendar'),
+            'count' => '' !== $plural ? '{count} {label}' : '{count} Calendars',
+        ];
+    }
+
+    public function getBookingDefaultPath(): string
+    {
+        return match ($this->defaultBookingView) {
+            'requests' => 'calendar/bookings/requests',
+            'schedule' => 'calendar/bookings/schedule',
+            default => 'calendar/bookings',
+        };
+    }
+
+    public function getBookingScheduleLayout(mixed $requestedLayout = null): string
+    {
+        if (\in_array($requestedLayout, ['combined', 'calendars'], true)) {
+            return $requestedLayout;
+        }
+
+        return 'calendars' === $this->defaultBookingScheduleLayout ? 'calendars' : 'combined';
     }
 
     public static function getOverlapThresholds(): array
@@ -171,9 +251,95 @@ class SettingsModel extends Model
         }
     }
 
+    public function getBookingDefaults(): SchedulingSettings
+    {
+        $attributes = array_intersect_key($this->bookingDefaults, array_flip(self::BOOKING_DEFAULT_ATTRIBUTES));
+        $attributes['timezone'] = \Craft::$app?->getTimeZone() ?? 'UTC';
+
+        return new SchedulingSettings($attributes);
+    }
+
+    public function validateBookingDefaults(): void
+    {
+        foreach (['duration', 'increment', 'buffer', 'minimumNotice', 'maximumAdvance'] as $attribute) {
+            if (\array_key_exists($attribute, $this->bookingDefaults) && false === filter_var($this->bookingDefaults[$attribute], \FILTER_VALIDATE_INT)) {
+                $message = Calendar::t('Booking rules must use whole numbers.');
+                $this->addError('bookingDefaults', $message);
+                $this->addError('bookingDefaults.'.$attribute, $message);
+            }
+        }
+        if ($this->hasErrors('bookingDefaults')) {
+            return;
+        }
+
+        try {
+            $defaults = $this->getBookingDefaults();
+        } catch (\TypeError) {
+            $this->addError('bookingDefaults', Calendar::t('Enter valid booking defaults.'));
+
+            return;
+        }
+        if (!$defaults->validate()) {
+            foreach ($defaults->getErrors() as $attribute => $messages) {
+                foreach ($messages as $message) {
+                    $this->addError('bookingDefaults', $message);
+                    $this->addError('bookingDefaults.'.$attribute, $message);
+                }
+            }
+        }
+    }
+
+    public function getBookingCaptchaSiteKey(): string
+    {
+        return $this->getCaptchaSiteKey();
+    }
+
+    public function getBookingCaptchaSecretKey(): string
+    {
+        return $this->getCaptchaSecretKey();
+    }
+
+    public function getCaptchaProvider(): string
+    {
+        return $this->captchaProvider ?? $this->bookingCaptchaProvider;
+    }
+
+    public function getCaptchaSiteKey(): string
+    {
+        return trim((string) App::parseEnv($this->captchaSiteKey ?? $this->bookingCaptchaSiteKey));
+    }
+
+    public function getCaptchaSecretKey(): string
+    {
+        return trim((string) App::parseEnv($this->captchaSecretKey ?? $this->bookingCaptchaSecretKey));
+    }
+
+    public function validateCaptchaKeys(): void
+    {
+        if ('none' === $this->getCaptchaProvider() || (!$this->captchaProtectBookings && !$this->captchaProtectEvents)) {
+            return;
+        }
+        foreach (['SiteKey', 'SecretKey'] as $key) {
+            $attribute = null !== $this->{'captcha'.$key} ? 'captcha'.$key : 'bookingCaptcha'.$key;
+            if ('' === trim($this->{$attribute}) && !$this->hasErrors($attribute)) {
+                $this->addError($attribute, Calendar::t('Enter both site and secret keys for the selected CAPTCHA provider.'));
+            }
+        }
+    }
+
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
+            [['bookingPageLabel', 'bookingResourceLabelSingular', 'bookingResourceLabelPlural'], 'string', 'max' => 100],
+            [['defaultBookingView'], 'in', 'range' => ['requests', 'bookings', 'schedule'], 'skipOnEmpty' => false],
+            [['defaultBookingScheduleLayout'], 'in', 'range' => ['combined', 'calendars'], 'skipOnEmpty' => false],
+            [['showBookingRequestBadge'], 'boolean'],
+            [['bookingDefaults'], 'validateBookingDefaults', 'skipOnEmpty' => false],
+            [['captchaProvider', 'bookingCaptchaProvider'], 'in', 'range' => ['none', 'turnstile', 'hcaptcha', 'recaptcha', 'recaptcha-v3'], 'skipOnEmpty' => false, 'when' => static fn ($model, $attribute) => null !== $model->{$attribute}],
+            [['captchaSiteKey', 'captchaSecretKey', 'bookingCaptchaSiteKey', 'bookingCaptchaSecretKey'], 'string', 'max' => 8192],
+            [['captchaProvider', 'bookingCaptchaProvider'], 'validateCaptchaKeys', 'skipOnEmpty' => false],
+            [['captchaProtectBookings', 'captchaProtectEvents'], 'boolean'],
+            [['recaptchaMinimumScore'], 'number', 'min' => 0, 'max' => 1, 'skipOnEmpty' => false],
             [['defaultCalendarView'], 'in', 'range' => self::CALENDAR_VIEWS, 'skipOnEmpty' => false],
             [['enabledCalendarViews'], 'validateEnabledCalendarViews', 'skipOnEmpty' => false],
             [['defaultCalendarView'], 'validateDefaultCalendarView', 'skipOnEmpty' => false],

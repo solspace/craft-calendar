@@ -1,0 +1,26 @@
+{% if booking.statusChangedAt %}
+    {% set displayTimezone = craft.app.formatter.timeZone %}
+    {% set localTimestamp = date(booking.statusChangedAt, displayTimezone) %}
+    {% set changedDate = localTimestamp.format('Y-m-d') %}
+    {% set changedTime = localTimestamp.format('g:i a') %}
+    <p class="light booking-status-meta" title="{{ booking.statusChangedAt|datetime('full') }}">
+        {% if booking.statusChangeSource == 'user' %}
+            {% set actor = booking.statusChangedById ? craft.users.id(booking.statusChangedById).status(null).one() : null %}
+            {% set actorUrl = actor ? actor.cpEditUrl : null %}
+            {% set actorName = booking.statusChangedByName ?: 'Deleted user'|t('calendar') %}
+            {% set actorLabel = actorName|e('html') %}
+            {% if actorUrl %}
+                {% set actorLabel = '<a href="' ~ actorUrl|e('html_attr') ~ '">' ~ actorLabel ~ '</a>' %}
+            {% endif %}
+            {{ 'Last changed by {user} on {date} at {time}'|t('calendar', {user: actorLabel, date: changedDate|e('html'), time: changedTime|e('html')})|raw }}
+        {% elseif booking.statusChangeSource == 'automatic' %}
+            {{ 'Automatically confirmed on {date} at {time}'|t('calendar', {date: changedDate, time: changedTime}) }}
+        {% elseif booking.statusChangeSource == 'customer' %}
+            {{ 'Requested by the customer on {date} at {time}'|t('calendar', {date: changedDate, time: changedTime}) }}
+        {% else %}
+            {{ 'Last changed by the system on {date} at {time}'|t('calendar', {date: changedDate, time: changedTime}) }}
+        {% endif %}
+    </p>
+{% elseif booking.id %}
+    <p class="light booking-status-meta">{{ 'No status change details were recorded for this booking.'|t('calendar') }}</p>
+{% endif %}

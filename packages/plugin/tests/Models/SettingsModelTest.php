@@ -12,10 +12,95 @@ use Solspace\Calendar\Models\SettingsModel;
  */
 class SettingsModelTest extends TestCase
 {
+    public function testPendingRequestBadgeIsOptionalAndSurvivesSettingsRoundTrip(): void
+    {
+        $settings = new SettingsModel();
+        self::assertFalse($settings->showBookingRequestBadge);
+        $settings->setAttributes(['showBookingRequestBadge' => '1']);
+        self::assertTrue($settings->validate(['showBookingRequestBadge']));
+        self::assertTrue((new SettingsModel($settings->toArray()))->showBookingRequestBadge);
+        $settings->setAttributes(['showBookingRequestBadge' => '0']);
+        self::assertTrue($settings->validate(['showBookingRequestBadge']));
+        self::assertFalse((new SettingsModel($settings->toArray()))->showBookingRequestBadge);
+    }
+
     public function testCancelledEventsRemainVisibleByDefaultAndCanBeHidden(): void
     {
         self::assertTrue((new SettingsModel())->showCancelledEvents);
         self::assertFalse((new SettingsModel(['showCancelledEvents' => false]))->showCancelledEvents);
+    }
+
+    public function testResourceNamesRoundTripRemainLiteralAndFallBackWhenBlank(): void
+    {
+        $settings = new SettingsModel(['bookingResourceLabelSingular' => '  Dining Hall  ', 'bookingResourceLabelPlural' => 'Dining Halls']);
+        self::assertTrue($settings->validate(['bookingResourceLabelSingular', 'bookingResourceLabelPlural']));
+        $loaded = new SettingsModel($settings->toArray());
+        self::assertSame('Dining Hall', $loaded->getBookingResourceLabels()['singular']);
+        self::assertSame('All Dining Halls', $loaded->getBookingResourceLabels()['all']);
+        self::assertSame('By Dining Hall', $loaded->getBookingResourceLabels()['by']);
+        self::assertSame('Choose Dining Hall', $loaded->getBookingResourceLabels()['choose']);
+        $loaded->bookingResourceLabelSingular = '{{ customer }}';
+        self::assertSame('{{ customer }}', $loaded->getBookingResourceLabels()['singular']);
+        self::assertSame('Choose {{ customer }}', $loaded->getBookingResourceLabels()['choose']);
+        $loaded->bookingResourceLabelSingular = ' ';
+        $loaded->bookingResourceLabelPlural = null;
+        self::assertSame((new SettingsModel())->getBookingResourceLabels(), $loaded->getBookingResourceLabels());
+        $loaded->bookingResourceLabelPlural = str_repeat('x', 101);
+        self::assertFalse($loaded->validate(['bookingResourceLabelPlural']));
+    }
+
+    public function testBookingSubpageDefaultsAndValidation(): void
+    {
+        $settings = new SettingsModel();
+        self::assertSame('bookings', $settings->defaultBookingView);
+        self::assertSame('calendar/bookings', $settings->getBookingDefaultPath());
+        self::assertTrue($settings->validate(['defaultBookingView']));
+        $settings->setAttributes(['defaultBookingView' => 'schedule']);
+        self::assertSame('schedule', $settings->toArray()['defaultBookingView']);
+        self::assertSame('calendar/bookings/schedule', $settings->getBookingDefaultPath());
+        self::assertTrue($settings->validate(['defaultBookingView']));
+        $settings->setAttributes(['defaultBookingView' => 'requests']);
+        self::assertSame('requests', $settings->toArray()['defaultBookingView']);
+        self::assertSame('calendar/bookings/requests', $settings->getBookingDefaultPath());
+        self::assertTrue($settings->validate(['defaultBookingView']));
+        foreach (['invalid', ''] as $value) {
+            $settings->defaultBookingView = $value;
+            self::assertFalse($settings->validate(['defaultBookingView']));
+            self::assertTrue($settings->hasErrors('defaultBookingView'));
+            self::assertSame('calendar/bookings', $settings->getBookingDefaultPath());
+        }
+    }
+
+    public function testBookingScheduleLayoutDefaultsAndConfigurationRoundTrip(): void
+    {
+        $settings = new SettingsModel();
+        self::assertSame('combined', $settings->defaultBookingScheduleLayout);
+        self::assertSame('combined', $settings->getBookingScheduleLayout());
+        self::assertTrue($settings->validate(['defaultBookingScheduleLayout']));
+        $settings->setAttributes(['defaultBookingScheduleLayout' => 'calendars']);
+        self::assertSame('calendars', $settings->toArray()['defaultBookingScheduleLayout']);
+        $loaded = new SettingsModel($settings->toArray());
+        self::assertSame('calendars', $loaded->getBookingScheduleLayout());
+        self::assertTrue($loaded->validate(['defaultBookingScheduleLayout']));
+        foreach (['invalid', ''] as $value) {
+            $loaded->defaultBookingScheduleLayout = $value;
+            self::assertFalse($loaded->validate(['defaultBookingScheduleLayout']));
+            self::assertTrue($loaded->hasErrors('defaultBookingScheduleLayout'));
+            self::assertSame('combined', $loaded->getBookingScheduleLayout());
+        }
+    }
+
+    public function testExplicitScheduleLayoutsOverrideTheDefaultAndInvalidSelectionsFallBack(): void
+    {
+        foreach (['combined', 'calendars'] as $default) {
+            $settings = new SettingsModel(['defaultBookingScheduleLayout' => $default]);
+            foreach (['combined', 'calendars'] as $selection) {
+                self::assertSame($selection, $settings->getBookingScheduleLayout($selection));
+            }
+            foreach ([null, '', 'invalid', ['calendars']] as $selection) {
+                self::assertSame($default, $settings->getBookingScheduleLayout($selection));
+            }
+        }
     }
 
     public function testOverviewDefaultsToMonth(): void

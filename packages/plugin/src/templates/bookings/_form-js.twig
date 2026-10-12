@@ -1,0 +1,157 @@
+(() => {
+    const form = document.getElementById({{ formId|json_encode|raw }});
+    const date = form.querySelector('[name="bookingDate"]');
+    const inputs = form.querySelector('.booking-form-inputs');
+    const times = form.querySelector('.booking-times');
+    const options = form.querySelector('.booking-times-options');
+    const slotMessage = form.querySelector('.booking-times-message');
+    const message = form.querySelector('.booking-form-message');
+    const summary = form.querySelector('.booking-selected-time');
+    const success = form.querySelector('.booking-form-success');
+    const submit = form.querySelector('button[type="submit"]');
+    const spinner = submit.querySelector('.booking-form-spinner');
+    const labels = {{ {loading: 'Loading available times…'|t('calendar'), initial: 'Choose a date to see available times.'|t('calendar'), empty: 'No times are available on this date.'|t('calendar'), error: 'Could not load available times. Please try again.'|t('calendar'), choose: 'Choose an available time.'|t('calendar'), submitError: 'Could not submit your booking. Please try again.'|t('calendar'), confirmed: 'Booking confirmed'|t('calendar'), requested: 'Request received'|t('calendar')}|json_encode|raw }};
+    let selectedStart = {{ (booking.startDate ? booking.startDate|date('c') : '')|json_encode|raw }};
+    let latest = 0;
+    let slotRequest;
+    let submitting = false;
+    let dateTimer;
+    {% include 'calendar/spam-protection/_captcha-js' %}
+
+    function showError(text) {
+        message.textContent = text;
+        message.classList.add('error');
+        message.hidden = false;
+        message.focus();
+    }
+    function updateSelection() {
+        const selected = form.querySelector('[name="start"]:checked');
+        submit.disabled = submitting || !selected || !captchaReady();
+        summary.hidden = !selected;
+        summary.textContent = selected ? date.value + ' · ' + selected.closest('label').textContent : '';
+    }
+    async function loadSlots() {
+        clearTimeout(dateTimer);
+        if (submitting) return;
+        const current = ++latest;
+        slotRequest?.abort();
+        const request = slotRequest = new AbortController();
+        options.replaceChildren();
+        updateSelection();
+        slotMessage.textContent = labels.initial;
+        times.removeAttribute('aria-busy');
+        if (!date.value || !date.checkValidity()) return;
+        slotMessage.textContent = labels.loading;
+        times.setAttribute('aria-busy', 'true');
+        try {
+            const url = new URL({{ actionUrl('calendar/bookings/slots')|json_encode|raw }}, location.href);
+            url.searchParams.set('calendarId', {{ calendar.id }});
+            url.searchParams.set('date', date.value);
+            const response = await fetch(url, {headers: {Accept: 'application/json'}, credentials: 'same-origin', cache: 'no-store', signal: request.signal});
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            if (current !== latest) return;
+            if (!Array.isArray(data.slots)) throw new Error();
+            slotMessage.textContent = data.slots.length ? '' : labels.empty;
+            data.slots.forEach(slot => {
+                const label = document.createElement('label');
+                label.className = 'booking-time-option';
+                const input = document.createElement('input');
+                input.type = 'radio'; input.name = 'start'; input.value = slot.start; input.required = true;
+                input.checked = selectedStart && new Date(selectedStart).getTime() === new Date(slot.start).getTime();
+                label.append(input, document.createTextNode(slot.label));
+                options.append(label);
+            });
+            selectedStart = '';
+            updateSelection();
+        } catch (_) {
+            if (current === latest && !request.signal.aborted) slotMessage.textContent = labels.error;
+        } finally {
+            if (current === latest) times.removeAttribute('aria-busy');
+        }
+    }
+    date.addEventListener('click', () => {
+        if (submitting || date.matches(':disabled') || typeof date.showPicker !== 'function') return;
+        try {
+            date.showPicker();
+        } catch (_) {
+            // Keep native date entry available when the browser restricts opening the picker.
+        }
+    });
+    date.addEventListener('change', () => loadSlots());
+    date.addEventListener('input', () => {
+        // Clear the old selection immediately; a typed date refreshes after a short pause.
+        selectedStart = '';
+        options.replaceChildren();
+        updateSelection();
+        ++latest;
+        slotRequest?.abort();
+        clearTimeout(dateTimer);
+        dateTimer = setTimeout(() => loadSlots(), 300);
+    });
+    options.addEventListener('change', updateSelection);
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (submitting) return;
+        if (!form.querySelector('[name="start"]:checked')) { showError(labels.choose); return; }
+        if (!captchaReady()) { showError(captchaLabels.check); return; }
+        if (!form.reportValidity()) return;
+        const body = new FormData(form);
+        submitting = true;
+        inputs.disabled = true;
+        submit.disabled = true;
+        spinner.hidden = false;
+        form.setAttribute('aria-busy', 'true');
+        message.hidden = true;
+        form.querySelectorAll('[aria-invalid]').forEach(input => input.removeAttribute('aria-invalid'));
+        try {
+            if (captchaConfig) {
+                if (!await prepareCaptcha()) { showError(captchaLabels.unavailable); return; }
+                body.set('bookingCaptchaToken', captchaToken.value);
+            }
+            const response = await fetch({{ actionUrl('calendar/bookings/request')|json_encode|raw }}, {method: 'POST', body, credentials: 'same-origin', headers: {Accept: 'application/json'}});
+            const data = await response.json();
+            if (!response.ok || data.success === false) {
+                const errors = data.errors || {};
+                for (const key of Object.keys(errors)) {
+                    const name = key.startsWith('field:') ? 'fields[' + key.slice(6) + ']' : key;
+                    for (const input of form.elements) {
+                        if (input.name === name || input.name === name + '[]') input.setAttribute('aria-invalid', 'true');
+                    }
+                }
+                showError(Object.values(errors).flat().join(' ') || data.message || labels.submitError);
+                if (errors.startDate) {
+                    // Preserve contact details while replacing a slot that was booked by someone else.
+                    inputs.disabled = false;
+                    submitting = false;
+                    await loadSlots();
+                }
+                return;
+            }
+            success.querySelector('h3').textContent = data.confirmed ? labels.confirmed : labels.requested;
+            success.querySelector('p').textContent = data.message;
+            inputs.hidden = true;
+            success.hidden = false;
+            success.querySelector('h3').focus();
+            form.dispatchEvent(new CustomEvent('calendar:booking-success', {bubbles: true, detail: {confirmed: !!data.confirmed}}));
+        } catch (_) { showError(labels.submitError); }
+        finally {
+            submitting = false;
+            inputs.disabled = false;
+            if (success.hidden) resetCaptcha();
+            spinner.hidden = true;
+            form.removeAttribute('aria-busy');
+            updateSelection();
+        }
+    });
+    success.querySelector('button').addEventListener('click', () => {
+        form.reset();
+        success.hidden = true;
+        inputs.hidden = false;
+        message.hidden = true;
+        resetCaptcha();
+        date.focus();
+        loadSlots();
+    });
+    loadSlots();
+})();

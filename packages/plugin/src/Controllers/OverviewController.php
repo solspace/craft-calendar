@@ -49,7 +49,7 @@ class OverviewController extends BaseController
         ];
 
         $crumbs[] = [
-            'label' => Calendar::t('Overview'),
+            'label' => Calendar::t('Events'),
             'url' => UrlHelper::cpUrl('calendar/overview'),
             'current' => true,
         ];

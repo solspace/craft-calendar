@@ -67,9 +67,12 @@
                 <li class="nav-item">
                     <a class="nav-link px-2 rounded-2{{ page == 'fullcalendar' ? ' active bg-white bg-opacity-10' }}" href="{{ siteUrl }}demo/fullcalendar"{% if page == 'fullcalendar' %} aria-current="page"{% endif %}>FullCalendar</a>
                 </li>
-                <li class="nav-item mt-2 mt-xl-0 ms-xl-1 d-xl-flex align-items-center">
+                <li class="nav-item mt-2 mt-xl-0 ms-xl-1 d-flex flex-wrap gap-2 align-items-center">
                     <a class="btn btn-primary btn-sm{{ page == 'edit' and segment4 == 'new' ? ' active' }}" href="{{ siteUrl }}demo/edit/event/new"{% if page == 'edit' and segment4 == 'new' %} aria-current="page"{% endif %}>
                         <span class="fas fa-plus" aria-hidden="true"></span> Create Event
+                    </a>
+                    <a class="btn btn-success btn-sm{{ page == 'bookings' ? ' active' }}" href="{{ siteUrl }}demo/bookings"{% if page == 'bookings' %} aria-current="page"{% endif %}>
+                        <span class="far fa-calendar-check" aria-hidden="true"></span> {{ 'Book a Time'|t('calendar') }}
                     </a>
                 </li>
             </ul>

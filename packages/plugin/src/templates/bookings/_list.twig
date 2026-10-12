@@ -1,0 +1,133 @@
+{% set resourceLabels = craft.calendar.bookingResourceLabels %}
+{% import '_includes/forms' as forms %}
+{% set statusColors = {requested: 'orange', confirmed: 'green', declined: 'red', cancelled: 'disabled'} %}
+{% set rowStatusOptions = [] %}
+{% for value, label in statusOptions %}{% set rowStatusOptions = rowStatusOptions|merge([{value, label, data: {status: statusColors[value]}}]) %}{% endfor %}
+{% if trashed %}<p class="light booking-trash-note">{{ 'Trashed bookings do not reserve time. They can be restored until Craft permanently deletes them.'|t('calendar') }}</p>{% endif %}
+<div class="booking-list-pane">
+<div class="booking-table-scroll">
+    <table class="data fullwidth big booking-table">
+        <thead><tr>
+            <th scope="col" class="checkbox-cell">{{ forms.checkbox({id: 'booking-select-all', disabled: bookings is empty, inputAttributes: {data: {'booking-select-all': true}, aria: {label: 'Select all bookings on this page'|t('calendar')}}}) }}</th>
+            {% for field, label in {customer: 'Customer', calendar: resourceLabels.singular, date: 'Booking Time', submitted: 'Submitted', updated: 'Last Updated', status: 'Status'} %}
+                {% set active = sort starts with field ~ '-' %}
+                {% set ascending = sort == field ~ '-asc' %}
+                {% set nextSort = field ~ (active ? (ascending ? '-desc' : '-asc') : (field in ['date', 'submitted', 'updated'] ? '-desc' : '-asc')) %}
+                <th scope="col" class="orderable{{ active ? ' ordered' }}{{ active and not ascending ? ' desc' }}" aria-sort="{{ active ? (ascending ? 'ascending' : 'descending') : 'none' }}">
+                    <button type="button" data-booking-sort="{{ nextSort }}">{{ field == 'calendar' ? label : label|t('calendar') }}</button>
+                </th>
+            {% endfor %}
+            <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
+        </tr></thead>
+        <tbody>
+        {% for booking in bookings %}
+            {% set calendar = calendars[booking.calendarId] %}
+            {% set timezone = calendar.schedulingSettings.timezone %}
+            {% set startTimezoneLabel = booking.startDate|calendarTimezoneAbbreviation(timezone) %}
+            {% set endTimezoneLabel = booking.endDate|calendarTimezoneAbbreviation(timezone) %}
+            <tr data-booking-row="{{ booking.id }}" class="{{ not trashed and (unavailableRequestIds[booking.id] ?? false) ? 'booking-request-unavailable' }}">
+                <td class="checkbox-cell">{{ forms.checkbox({id: 'booking-select-' ~ booking.id, value: booking.id, inputAttributes: {data: {'booking-select': true}, aria: {label: 'Select booking for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}</td>
+                <td class="booking-customer">{% if trashed %}<strong>{{ booking.customerName }}</strong>{% else %}<a href="{{ booking.cpEditUrl }}">{{ booking.customerName }}</a>{% endif %}<div class="light booking-secondary">{{ booking.customerEmail }}</div></td>
+                <td><span class="booking-calendar"><span class="color-indicator" style="background:{{ calendar.color }}" aria-hidden="true"></span>{{ calendar.name }}</span></td>
+                <td class="booking-datetime"><span class="booking-date-heading">{{ booking.startDate|date('medium', timezone) }}{% if not trashed %}{% include 'calendar/bookings/_request-warning' with {warningLink: true} %}{% endif %}</span><div>{{ booking.startDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} - {{ booking.endDate|time(bookingTimeFormat, timezone)|calendarTimeLabel }} <span class="light booking-timezone" title="{{ timezone|calendarTimezoneName }} ({{ timezone }})">{{ startTimezoneLabel }}{{ startTimezoneLabel != endTimezoneLabel ? ' → ' ~ endTimezoneLabel }}</span></div></td>
+                {% for field, timestamp in {submitted: booking.dateCreated, updated: booking.dateUpdated} %}
+                    <td class="booking-timestamp"{{ field == 'updated' ? ' data-booking-updated' }}>
+                        {% if timestamp %}
+                            <time datetime="{{ timestamp|atom }}" title="{{ craft.app.formatter.timeZone }}">
+                                <span data-timestamp-date>{{ timestamp|date('medium') }}</span>
+                                <span class="light booking-secondary booking-timestamp-time" data-timestamp-time>{{ timestamp|time(bookingTimeFormat)|calendarTimeLabel }}</span>
+                            </time>
+                        {% else %}<span class="light">—</span>{% endif %}
+                    </td>
+                {% endfor %}
+                <td class="booking-status-cell">
+                    {% if trashed %}<span class="booking-calendar"><span class="status {{ statusColors[booking.bookingStatus] }}" aria-hidden="true"></span>{{ statusOptions[booking.bookingStatus] }}</span>{% else %}
+                    <div class="booking-status-control" data-booking-id="{{ booking.id }}">
+                        {{ forms.selectize({id: 'booking-status-' ~ booking.id, value: booking.bookingStatus, options: rowStatusOptions, selectizeOptions: {dropdownClass: 'selectize-dropdown booking-picker-dropdown', searchField: [], extraPlugins: false}, inputAttributes: {data: {'saved-status': booking.bookingStatus}, aria: {label: 'Status for {customer}'|t('calendar', {customer: booking.customerName})}}}) }}
+                        <span class="spinner hidden" aria-hidden="true"></span>
+                    </div>
+                    {% endif %}
+                </td>
+                <td class="booking-actions-cell"><button type="button" class="btn small{{ trashed ? '' : ' delete icon' }}" data-booking-action="{{ trashed ? 'restore' : 'delete' }}" data-booking-id="{{ booking.id }}" data-customer="{{ booking.customerName }}" aria-label="{{ (trashed ? 'Restore booking for {customer}' : 'Delete booking for {customer}')|t('calendar', {customer: booking.customerName}) }}">{{ trashed ? 'Restore'|t('app') }}</button></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="8" class="booking-empty"><p class="light">{{ 'No bookings found.'|t('calendar') }}</p></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="booking-footer footer">
+    <div class="booking-footer-count flex pagination">
+        <nav class="flex flex-nowrap" aria-label="{{ '{element} pagination'|t('app', {element: craft.calendar.bookingLabel}) }}">
+            {% if page > 1 %}<a class="page-link prev-page" href="{{ cpUrl('calendar/bookings', {calendarIds: calendarSelection, bookingStatus, search, sort, view: bookingListView, page: page - 1}) }}" title="{{ 'Previous Page'|t('app') }}" aria-label="{{ 'Previous Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link prev-page disabled" disabled aria-label="{{ 'Previous Page'|t('app') }}"></button>{% endif %}
+            {% if page * 50 < total %}<a class="page-link next-page" href="{{ cpUrl('calendar/bookings', {calendarIds: calendarSelection, bookingStatus, search, sort, view: bookingListView, page: page + 1}) }}" title="{{ 'Next Page'|t('app') }}" aria-label="{{ 'Next Page'|t('app') }}"></a>{% else %}<button type="button" class="page-link next-page disabled" disabled aria-label="{{ 'Next Page'|t('app') }}"></button>{% endif %}
+        </nav>
+        <span class="light" role="status" aria-live="polite">{{ '{count, plural, =1{1 booking} other{# bookings}}'|t('calendar', {count: total}) }}</span>
+        <span class="visually-hidden" data-booking-selection-count role="status" aria-live="polite"></span>
+    </div>
+    <div class="booking-bulk-actions hidden" role="group" aria-label="{{ 'Selected bookings'|t('calendar') }}">
+        {% if not trashed %}
+        <button type="button" class="btn secondary menubtn" data-booking-status-trigger aria-label="{{ 'Set status'|t('app') }}">{{ 'Set status'|t('app') }}</button>
+        <div class="menu">
+            <ul>
+                {% for value, label in statusOptions %}<li><a data-booking-set-status="{{ value }}"><span class="status {{ statusColors[value] }}" aria-hidden="true"></span> {{ label }}</a></li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <button type="button" class="btn secondary menubtn" data-booking-actions-trigger data-icon="settings" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
+        <div class="menu">
+            <ul>
+                <li><a{{ trashed ? '' : ' class="error"' }} data-booking-bulk-action="{{ trashed ? 'restore' : 'delete' }}">{{ trashed ? 'Restore'|t('app') : 'Move to Trash'|t('calendar') }}</a></li>
+                <li><a data-booking-deselect>{{ 'Deselect all'|t('app') }}</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
+{% js %}
+(() => {
+    document.querySelectorAll('.booking-status-control').forEach(control => {
+        const spinner = control.querySelector('.spinner');
+        $(control).on('change', 'select', async event => {
+            const select = event.currentTarget;
+            const previous = select.dataset.savedStatus;
+            const status = select.value;
+            if (select.disabled || status === previous) return;
+            const picker = select.selectize;
+            const results = document.getElementById('booking-results');
+            if (results.getAttribute('aria-busy') === 'true') { picker.setValue(previous, true); return; }
+            results.dispatchEvent(new CustomEvent('booking-status-save', {detail: 1}));
+            picker.disable();
+            control.setAttribute('aria-busy', 'true');
+            spinner.classList.remove('hidden');
+            try {
+                const response = await Craft.sendActionRequest('POST', 'calendar/bookings/set-status', {
+                    data: {bookingId: control.dataset.bookingId, bookingStatus: status},
+                });
+                if (!response.data.success) throw new Error(response.data.message);
+                picker.setValue(response.data.bookingStatus, true);
+                select.dataset.savedStatus = select.value;
+                const updated = control.closest('tr').querySelector('[data-booking-updated]');
+                if (updated && response.data.updated) {
+                    const time = updated.querySelector('time');
+                    if (time) {
+                        time.dateTime = response.data.updated.iso;
+                        time.querySelector('[data-timestamp-date]').textContent = response.data.updated.date;
+                        time.querySelector('[data-timestamp-time]').textContent = response.data.updated.time;
+                    }
+                }
+                results.dispatchEvent(new CustomEvent('booking-status-changed'));
+                Craft.cp.displayNotice(Craft.t('calendar', 'Booking status saved.'));
+            } catch (error) {
+                picker.setValue(previous, true);
+                Craft.cp.displayError(error.response?.data?.message || error.message || Craft.t('calendar', 'Could not save booking status.'));
+            } finally {
+                picker.enable();
+                control.removeAttribute('aria-busy');
+                spinner.classList.add('hidden');
+                results.dispatchEvent(new CustomEvent('booking-status-save', {detail: -1}));
+            }
+        });
+    });
+})();
+{% endjs %}

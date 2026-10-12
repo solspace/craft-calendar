@@ -7,8 +7,10 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\SiteEvent;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use Solspace\Calendar\Calendar;
+use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Events\DeleteModelEvent;
 use Solspace\Calendar\Events\SaveModelEvent;
@@ -34,6 +36,13 @@ class CalendarsService extends Component
     private ?bool $allCalendarsCached = null;
 
     private ?array $allowedCalendarCache = null;
+
+    public function clearCaches(): void
+    {
+        $this->calendarCache = null;
+        $this->allCalendarsCached = false;
+        $this->allowedCalendarCache = null;
+    }
 
     public function getFirstCalendarId(): int
     {
@@ -68,7 +77,7 @@ class CalendarsService extends Component
     /**
      * @return CalendarModel[]
      */
-    public function getAllAllowedCalendars(): array
+    public function getAllAllowedCalendars(bool $eventsOnly = true): array
     {
         $isAdmin = PermissionHelper::isAdmin();
         $canManageAll = PermissionHelper::checkPermission(Calendar::PERMISSION_EVENTS)
@@ -80,7 +89,9 @@ class CalendarsService extends Component
         $publicCalendarIds = $settings->getSettingsModel()->guestAccess;
 
         if ($isAdmin || $canManageAll || '*' === $publicCalendarIds) {
-            return $this->getAllCalendars();
+            $calendars = $this->getAllCalendars();
+
+            return $eventsOnly ? array_filter($calendars, static fn ($calendar) => !$calendar->getIsScheduling()) : $calendars;
         }
 
         if (null === $this->allowedCalendarCache) {
@@ -121,7 +132,7 @@ class CalendarsService extends Component
             $this->allowedCalendarCache = $models;
         }
 
-        return $this->allowedCalendarCache;
+        return $eventsOnly ? array_filter($this->allowedCalendarCache, static fn ($calendar) => !$calendar->getIsScheduling()) : $this->allowedCalendarCache;
     }
 
     /**
@@ -230,6 +241,13 @@ class CalendarsService extends Component
         return null;
     }
 
+    /** Includes all statuses and trashed records so they remain restorable. */
+    public function hasCalendarContent(int $calendarId): bool
+    {
+        return (new Query())->from(Event::TABLE)->where(['calendarId' => $calendarId])->exists()
+            || (new Query())->from(Booking::TABLE)->where(['calendarId' => $calendarId])->exists();
+    }
+
     /**
      * @throws \Exception
      * @throws \Throwable
@@ -237,6 +255,14 @@ class CalendarsService extends Component
     public function saveCalendar(CalendarModel $calendar, bool $runValidation = true): bool
     {
         $isNew = !$calendar->id;
+        if (!$isNew) {
+            $oldType = (new Query())->select('type')->from(CalendarRecord::TABLE)->where(['id' => $calendar->id])->scalar();
+            if ($oldType !== $calendar->type && $this->hasCalendarContent($calendar->id)) {
+                $calendar->addError('type', Calendar::t('The calendar type cannot be changed while events or bookings exist.'));
+
+                return false;
+            }
+        }
 
         if ($isNew) {
             $calendar->uid = StringHelper::UUID();
@@ -287,6 +313,8 @@ class CalendarsService extends Component
                 $path,
                 [
                     'name' => $calendar->name,
+                    'type' => $calendar->type,
+                    'scheduling' => $calendar->scheduling,
                     'handle' => $calendar->handle,
                     'description' => $calendar->description,
                     'color' => $calendar->color,
@@ -348,6 +376,10 @@ class CalendarsService extends Component
 
         foreach ($eventIds as $eventId) {
             \Craft::$app->elements->deleteElementById($eventId);
+        }
+
+        foreach (Booking::find()->calendarId($calendarId)->status(null)->all() as $booking) {
+            \Craft::$app->elements->deleteElement($booking, true);
         }
 
         foreach ($calendar->getSiteSettings() as $siteSetting) {
@@ -550,6 +582,8 @@ class CalendarsService extends Component
             ->select(
                 [
                     'calendar.[[id]]',
+                    'calendar.[[type]]',
+                    'calendar.[[scheduling]]',
                     'calendar.[[uid]]',
                     'calendar.[[name]]',
                     'calendar.[[handle]]',
@@ -575,6 +609,8 @@ class CalendarsService extends Component
 
     private function createModel(array $data): CalendarModel
     {
+        $data['scheduling'] = Json::decodeIfJson($data['scheduling'] ?? null) ?: [];
+
         return new CalendarModel($data);
     }
 }

@@ -1,0 +1,79 @@
+{% extends "calendar/layouts/_settings" %}
+
+{% import "_includes/forms" as forms %}
+
+{% set title = "Booking Settings"|t("calendar") %}
+
+{% block content %}
+
+    <form action="" method="post" accept-charset="UTF-8">
+        <input type="hidden" name="action" value="calendar/settings/save-settings">
+        {{ redirectInput('calendar/settings/bookings') }}
+        {{ csrfInput() }}
+
+        {{ forms.textField({
+            first: true,
+            label: "Bookings Label"|t('calendar'),
+            instructions: "Set the label for the Bookings page and control-panel navigation. Leave blank to use Bookings."|t('calendar'),
+            placeholder: "Bookings"|t('calendar'),
+            id: 'bookingPageLabel',
+            name: 'settings[bookingPageLabel]',
+            value: settings.bookingPageLabel,
+            maxlength: 100,
+            errors: settings.getErrors('bookingPageLabel'),
+        }) }}
+
+        {{ forms.textField({
+            label: "Resource Label (Singular)"|t('calendar'),
+            instructions: "The name for one booking calendar, such as Massage Therapist or Dining Hall. Leave blank to use Calendar."|t('calendar'),
+            placeholder: "Calendar"|t('calendar'),
+            id: 'bookingResourceLabelSingular',
+            name: 'settings[bookingResourceLabelSingular]',
+            value: settings.bookingResourceLabelSingular,
+            maxlength: 100,
+            errors: settings.getErrors('bookingResourceLabelSingular'),
+        }) }}
+
+        {{ forms.textField({
+            label: "Resource Label (Plural)"|t('calendar'),
+            instructions: "The name for multiple booking calendars, such as Massage Therapists or Dining Halls. For Staff, use Staff in both fields. Leave blank to use Calendars."|t('calendar'),
+            placeholder: "Calendars"|t('calendar'),
+            id: 'bookingResourceLabelPlural',
+            name: 'settings[bookingResourceLabelPlural]',
+            value: settings.bookingResourceLabelPlural,
+            maxlength: 100,
+            errors: settings.getErrors('bookingResourceLabelPlural'),
+        }) }}
+
+        {{ forms.selectField({
+            label: "Default Bookings Subpage"|t('calendar'),
+            instructions: "Choose the page that opens when you click {label} in the control-panel navigation."|t('calendar', {label: settings.bookingLabel}),
+            id: 'defaultBookingView',
+            name: 'settings[defaultBookingView]',
+            value: settings.defaultBookingView,
+            options: {requests: 'Requests'|t('calendar'), bookings: settings.bookingLabel, schedule: 'Schedule'|t('calendar')},
+            errors: settings.getErrors('defaultBookingView'),
+        }) }}
+
+        {{ forms.selectField({
+            label: "Default Schedule Layout"|t('calendar'),
+            instructions: "Choose the layout used when opening the booking schedule. Staff can switch layouts on the Schedule page."|t('calendar'),
+            id: 'defaultBookingScheduleLayout',
+            name: 'settings[defaultBookingScheduleLayout]',
+            value: settings.getBookingScheduleLayout(),
+            options: {combined: 'Combined'|t('calendar'), calendars: settings.bookingResourceLabels.by},
+            errors: settings.getErrors('defaultBookingScheduleLayout'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Show Pending Request Badge'|t('calendar'),
+            instructions: 'Show a count beside the plugin’s main navigation item for booking requests awaiting review. Only requests you can manage are counted.'|t('calendar'),
+            id: 'showBookingRequestBadge',
+            name: 'settings[showBookingRequestBadge]',
+            on: settings.showBookingRequestBadge,
+            errors: settings.getErrors('showBookingRequestBadge'),
+        }) }}
+
+    </form>
+
+{% endblock %}
