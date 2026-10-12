@@ -15,11 +15,16 @@ class EventGenerationService extends Component
 {
     /**
      * @param array<int, array{id: int, handle: string, title: string}> $calendars
+     * @param null|array<string, mixed>                                 $currentEvent existing event when updating in place
      *
      * @return array{success: bool, event?: array<string, mixed>, error?: string}
      */
-    public function generateFromPrompt(string $prompt, array $calendars, ?string $timezone = null): array
-    {
+    public function generateFromPrompt(
+        string $prompt,
+        array $calendars,
+        ?string $timezone = null,
+        ?array $currentEvent = null,
+    ): array {
         $prompt = trim($prompt);
         if ('' === $prompt) {
             return ['success' => false, 'error' => Calendar::t('Please describe the event you want to create.')];
@@ -45,9 +50,27 @@ class EventGenerationService extends Component
         $shortTime = DateFormatHelper::get(DateFormatHelper::TYPE_TIME, Locale::FORMAT_ICU, 'short');
         $eventDuration = $settings->getEventDuration();
         $calendarList = $this->formatCalendarList($calendars);
+        $normalizedCurrent = $this->normalizeCurrentEvent($currentEvent, $calendars);
+        $isUpdate = null !== $normalizedCurrent;
+        $currentEventJson = $isUpdate
+            ? json_encode($normalizedCurrent, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE)
+            : '';
+
+        $updateInstructions = $isUpdate ? <<<UPDATE
+            Mode: UPDATE an existing event (do not create a new one).
+            Current event JSON (source of truth for unchanged fields):
+            {$currentEventJson}
+
+            Update rules:
+            - Only change fields the user explicitly asks to change.
+            - Copy every other field EXACTLY from the current event JSON above.
+            - Include "changedFields": an array of field names you changed (subset of title, description, location, start, end, allDay, repeatType, rrule, calendarHandle).
+            - If the user only changes time/date/repeat, keep title/description/location/calendarHandle as-is.
+            - Relative phrases like "make it tomorrow" or "move to 3pm" are relative to the current event and the user reference now.
+            UPDATE : '';
 
         $systemPrompt = <<<PROMPT
-            You are an assistant that creates calendar events for Craft CMS Calendar.
+            You are an assistant that creates and updates calendar events for Craft CMS Calendar.
             Return ONLY valid JSON with no markdown fences or commentary.
 
             Use this schema:
@@ -60,7 +83,8 @@ class EventGenerationService extends Component
               "allDay": boolean,
               "repeatType": "NEVER|DAILY|WEEKLY|MONTHLY|YEARLY|CUSTOM",
               "rrule": "RFC 5545 RRULE body without RRULE: prefix when repeating; empty when NEVER",
-              "calendarHandle": "handle from the allowed calendars list"
+              "calendarHandle": "handle from the allowed calendars list",
+              "changedFields": ["optional array of changed field names when updating"]
             }
 
             Calendar context (same sources as Calendar Diagnostics):
@@ -87,7 +111,10 @@ class EventGenerationService extends Component
             - Do not include DTSTART, RDATE, or EXDATE in rrule; only the RRULE body (FREQ=...).
             - When the user limits recurrence ("for 4 weeks", "10 times", "until December 1"), include COUNT= or UNTIL= in the rrule body.
               UNTIL must be floating local time: all-day YYYYMMDD, timed YYYYMMDDTHHMMSS (no Z / offsets).
+            - "every Friday for 8 weeks" / "for N weeks" of a weekly event means COUNT=N (N occurrences), not COUNT=2.
             - Prefer calendarHandle from the allowed list; if unsure, use the first calendar.
+            - Single-day all-day events: start at 00:00:00 on that day; end at 00:00:00 on the NEXT day (exclusive).
+            {$updateInstructions}
 
             Allowed calendars:
             {$calendarList}
@@ -110,6 +137,9 @@ class EventGenerationService extends Component
 
         /** @var array<string, mixed> $event */
         $event = $parsed['event'];
+        if ($isUpdate && $normalizedCurrent) {
+            $event = $this->mergeUpdatedEvent($normalizedCurrent, $event, $parsed['changedFields'] ?? []);
+        }
 
         try {
             $start = DateHelper::parseFloatingCarbon((string) $event['start']);
@@ -165,8 +195,147 @@ class EventGenerationService extends Component
         $event['repeatEndType'] = $repeatEndType;
         $event['until'] = $untilTimestamp;
         $event['referenceNow'] = $referenceFloating->format('Y-m-d\TH:i:s');
+        if ($isUpdate) {
+            $event['changedFields'] = array_values(array_unique(array_map(
+                static fn ($field) => (string) $field,
+                $parsed['changedFields'] ?? []
+            )));
+        }
 
         return ['success' => true, 'event' => $event];
+    }
+
+    /**
+     * @param null|array<string, mixed>                                 $current
+     * @param array<int, array{id: int, handle: string, title: string}> $calendars
+     *
+     * @return null|array<string, mixed>
+     */
+    private function normalizeCurrentEvent(?array $current, array $calendars): ?array
+    {
+        if (!\is_array($current) || [] === $current) {
+            return null;
+        }
+
+        $repeatType = strtoupper(trim((string) ($current['repeatType'] ?? Event::REPEAT_NEVER)));
+        $allowedRepeatTypes = [
+            Event::REPEAT_NEVER,
+            Event::REPEAT_DAILY,
+            Event::REPEAT_WEEKLY,
+            Event::REPEAT_MONTHLY,
+            Event::REPEAT_YEARLY,
+            Event::REPEAT_CUSTOM,
+        ];
+        if (!\in_array($repeatType, $allowedRepeatTypes, true)) {
+            $repeatType = Event::REPEAT_NEVER;
+        }
+
+        $calendarHandle = trim((string) ($current['calendarHandle'] ?? ''));
+        if ('' === $calendarHandle && isset($current['calendarId'])) {
+            $calendarId = (int) $current['calendarId'];
+            foreach ($calendars as $calendar) {
+                if ($calendar['id'] === $calendarId) {
+                    $calendarHandle = $calendar['handle'];
+
+                    break;
+                }
+            }
+        }
+
+        $rrule = trim((string) ($current['rrule'] ?? ''));
+        if (str_contains($rrule, "\n") || str_starts_with(strtoupper($rrule), 'RRULE:')) {
+            foreach (preg_split("/\r\n|\n|\r/", $rrule) ?: [] as $line) {
+                $line = trim($line);
+                if (str_starts_with(strtoupper($line), 'RRULE:')) {
+                    $rrule = preg_replace('/^RRULE:/i', '', $line) ?? '';
+
+                    break;
+                }
+                if (str_starts_with(strtoupper($line), 'FREQ=')) {
+                    $rrule = $line;
+
+                    break;
+                }
+            }
+        }
+
+        $start = trim((string) ($current['start'] ?? ''));
+        $end = trim((string) ($current['end'] ?? ''));
+        $title = trim((string) ($current['title'] ?? ''));
+        if ('' === $title || '' === $start || '' === $end) {
+            return null;
+        }
+
+        return [
+            'title' => $title,
+            'description' => trim((string) ($current['description'] ?? '')),
+            'location' => trim((string) ($current['location'] ?? '')),
+            'start' => $start,
+            'end' => $end,
+            'allDay' => (bool) ($current['allDay'] ?? false),
+            'repeatType' => $repeatType,
+            'rrule' => Event::REPEAT_NEVER === $repeatType ? '' : $rrule,
+            'calendarHandle' => $calendarHandle,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $current
+     * @param array<string, mixed> $incoming
+     * @param list<string>         $changedFields
+     *
+     * @return array<string, mixed>
+     */
+    private function mergeUpdatedEvent(array $current, array $incoming, array $changedFields): array
+    {
+        $allowed = [
+            'title',
+            'description',
+            'location',
+            'start',
+            'end',
+            'allDay',
+            'repeatType',
+            'rrule',
+            'calendarHandle',
+        ];
+        $changed = array_values(array_intersect(
+            array_map(static fn ($field) => (string) $field, $changedFields),
+            $allowed
+        ));
+
+        // If the model forgot changedFields, keep its full payload (still instructed to preserve values).
+        if ([] === $changed) {
+            return $incoming;
+        }
+
+        $merged = $current;
+        foreach ($changed as $field) {
+            if (\array_key_exists($field, $incoming)) {
+                $merged[$field] = $incoming[$field];
+            }
+        }
+
+        // Changing start/allDay without end often needs the companion date fields from the model.
+        if (\in_array('start', $changed, true) || \in_array('allDay', $changed, true)) {
+            if (\array_key_exists('end', $incoming)) {
+                $merged['end'] = $incoming['end'];
+            }
+            if (\array_key_exists('allDay', $incoming)) {
+                $merged['allDay'] = $incoming['allDay'];
+            }
+        }
+
+        if (\in_array('repeatType', $changed, true) || \in_array('rrule', $changed, true)) {
+            if (\array_key_exists('repeatType', $incoming)) {
+                $merged['repeatType'] = $incoming['repeatType'];
+            }
+            if (\array_key_exists('rrule', $incoming)) {
+                $merged['rrule'] = $incoming['rrule'];
+            }
+        }
+
+        return $merged;
     }
 
     /**
@@ -245,7 +414,7 @@ class EventGenerationService extends Component
     }
 
     /**
-     * @return array{success: bool, event?: array<string, mixed>, error?: string}
+     * @return array{success: bool, event?: array<string, mixed>, changedFields?: list<string>, error?: string}
      */
     private function parseEventJson(string $content, string $timezone): array
     {
@@ -276,6 +445,15 @@ class EventGenerationService extends Component
             $repeatType = Event::REPEAT_NEVER;
         }
 
+        $changedFields = [];
+        if (isset($data['changedFields']) && \is_array($data['changedFields'])) {
+            foreach ($data['changedFields'] as $field) {
+                if (\is_string($field) && '' !== trim($field)) {
+                    $changedFields[] = trim($field);
+                }
+            }
+        }
+
         $event = [
             'title' => trim((string) ($data['title'] ?? '')),
             'description' => trim((string) ($data['description'] ?? '')),
@@ -297,7 +475,7 @@ class EventGenerationService extends Component
             return ['success' => false, 'error' => Calendar::t('AI did not return valid start and end dates.')];
         }
 
-        return ['success' => true, 'event' => $event];
+        return ['success' => true, 'event' => $event, 'changedFields' => $changedFields];
     }
 
     /**

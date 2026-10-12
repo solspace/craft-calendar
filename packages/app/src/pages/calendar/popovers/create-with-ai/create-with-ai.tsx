@@ -12,17 +12,39 @@ import {
   AiPrompt,
   PopoverCreateWithAiWrapper,
 } from "./create-with-ai.styles";
-import { useGenerateEventAi } from "./use-generate-event-ai";
+import { type AiCurrentEvent, useGenerateEventAi } from "./use-generate-event-ai";
 
 type Props = {
   onApplyDraft: (draft: CalendarCreateDraft) => void;
   onCancel: () => void;
+  /** Defaults to create-new copy; use "edit" on the event editor so it is clear we fill this event. */
+  mode?: "create" | "edit";
+  /** When editing, the current form values so AI only changes what the user asks for. */
+  currentEvent?: AiCurrentEvent | null;
 };
 
-export const PopoverCreateWithAi: FC<Props> = ({ onApplyDraft, onCancel }) => {
+export const PopoverCreateWithAi: FC<Props> = ({
+  onApplyDraft,
+  onCancel,
+  mode = "create",
+  currentEvent = null,
+}) => {
   const [prompt, setPrompt] = useState("");
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const { generateEvent, isGenerating, error } = useGenerateEventAi();
+  const isEdit = mode === "edit";
+  const title = isEdit ? translate("Update with AI") : translate("Create with AI");
+  const hint = isEdit
+    ? translate(
+        "Say what to change (for example, move to next Tuesday or make it weekly). Everything else stays as it is.",
+      )
+    : translate(
+        "Describe your event in plain language. AI will suggest dates, title, and details.",
+      );
+  const submitLabel = isEdit ? translate("Apply Changes") : translate("Generate Event");
+  const placeholder = isEdit
+    ? translate("e.g. Move to next Tuesday at 3pm")
+    : translate("e.g. Team standup every Monday at 9am for 30 minutes");
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -33,7 +55,7 @@ export const PopoverCreateWithAi: FC<Props> = ({ onApplyDraft, onCancel }) => {
   }, []);
 
   const handleGenerate = async () => {
-    const result = await generateEvent(prompt);
+    const result = await generateEvent(prompt, isEdit ? currentEvent : null);
     if (!result.success) {
       return;
     }
@@ -60,23 +82,20 @@ export const PopoverCreateWithAi: FC<Props> = ({ onApplyDraft, onCancel }) => {
       repeatEndType: event.repeatEndType || "NEVER",
       until: event.until ?? undefined,
       rrule: event.rrule || "",
+      changedFields: event.changedFields,
     });
   };
 
   return (
     <PopoverCreateWithAiWrapper>
-      <h3>{translate("Create with AI")}</h3>
-      <AiHint>
-        {translate(
-          "Describe your event in plain language. AI will suggest dates, title, and details.",
-        )}
-      </AiHint>
+      <h3>{title}</h3>
+      <AiHint>{hint}</AiHint>
 
       <AiPrompt
         ref={promptRef}
         value={prompt}
         rows={6}
-        placeholder={translate("e.g. Team standup every Monday at 9am for 30 minutes")}
+        placeholder={placeholder}
         onChange={(event) => setPrompt(event.target.value)}
         onKeyDown={(event) => {
           if (
@@ -104,7 +123,7 @@ export const PopoverCreateWithAi: FC<Props> = ({ onApplyDraft, onCancel }) => {
             onClick={() => void handleGenerate()}
             disabled={isGenerating || !prompt.trim()}
           >
-            {isGenerating ? translate("Generating…") : translate("Generate Event")}
+            {isGenerating ? translate("Generating…") : submitLabel}
           </button>
         </AiActions>
       </Flex>

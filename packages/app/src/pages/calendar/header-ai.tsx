@@ -1,7 +1,7 @@
+import { AiButton } from "@cal/components/ai-button/ai-button";
 import { usePopover } from "@cal/contexts/popover/popover.context";
 import { useAiCreate } from "@cal/pages/calendar/context/ai-create.context";
 import { PopoverCreateWithAi } from "@cal/pages/calendar/popovers/create-with-ai/create-with-ai";
-import translate from "@cal/utils/translations";
 import type { FC, RefObject } from "react";
 
 type Props = {
@@ -49,9 +49,5 @@ export const HeaderAiCreate: FC<Props> = ({ buttonRef, isSolspaceAiConnected, ca
     );
   };
 
-  return (
-    <button ref={buttonRef} type="button" className="btn submit" onClick={openAiPopover}>
-      {translate("Create with AI")}
-    </button>
-  );
+  return <AiButton ref={buttonRef} connected={isSolspaceAiConnected} onClick={openAiPopover} />;
 };

@@ -59,4 +59,25 @@ class EventGenerationServiceTest extends TestCase
         self::assertSame('2026-10-17 00:00:00', $normalizedStart->format('Y-m-d H:i:s'));
         self::assertSame('2026-10-18 00:00:00', $normalizedEnd->format('Y-m-d H:i:s'));
     }
+
+    public function testInferRepeatEndFromRruleUsesCountAndUntil(): void
+    {
+        $service = new EventGenerationService();
+        $method = new \ReflectionMethod($service, 'inferRepeatEndFromRrule');
+        $method->setAccessible(true);
+
+        [$after, $afterUntil] = $method->invoke($service, 'FREQ=WEEKLY;BYDAY=FR;COUNT=8');
+        self::assertSame(Event::REPEAT_END_AFTER, $after);
+        self::assertNull($afterUntil);
+
+        [$onDate, $until] = $method->invoke($service, 'FREQ=DAILY;UNTIL=20261201');
+        self::assertSame(Event::REPEAT_END_ON_DATE, $onDate);
+        self::assertSame(
+            DateHelper::parseFloatingCarbon('2026-12-01T00:00:00')->getTimestamp(),
+            $until
+        );
+
+        [$never] = $method->invoke($service, 'FREQ=WEEKLY;BYDAY=MO');
+        self::assertSame(Event::REPEAT_END_NEVER, $never);
+    }
 }

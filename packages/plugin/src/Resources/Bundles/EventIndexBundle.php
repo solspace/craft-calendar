@@ -11,4 +11,9 @@ class EventIndexBundle extends CalendarAssetBundle
     {
         return [];
     }
+
+    protected function getClientEntry(): ?string
+    {
+        return 'events-ai';
+    }
 }

@@ -2,35 +2,64 @@
 
 {% set title = "Events"|t('calendar') %}
 {% set selectedSubnavItem = 'events' %}
+{% set calendars = calendars ?? craft.calendar.allowedCalendars %}
 
 {% do view.registerTranslations('calendar', [
     'New Event',
     'New {calendar} Event',
+    'Create with AI',
+    'Enable AI',
+    'Generate Event',
+    'Generating…',
+    'Apply Changes',
+    'Cancel',
+    'Couldn’t create event.',
+    'No calendars are available.',
+    'Describe your event in plain language. AI will suggest dates, title, and details.',
+    'e.g. Team standup every Monday at 9am for 30 minutes',
 ]) %}
 
 {% block actionButton %}
-	<div class="buttons">
-		{% set calendars = craft.calendar.allowedCalendars %}
-		{% if calendars|length %}
-			{% if calendars|length > 1 %}
-				<div class="btn submit menubtn add icon">{{ "New Event"|t('calendar') }}</div>
-				<div class="menu">
-					<ul>
-						{% for calendar in calendars %}
-							<li>
-								<a href="{{ url('calendar/events/new/' ~ calendar.handle) }}">
-									<span class="color-indicator" style="background-color: {{ calendar.color }};"></span>
-									{{ calendar.name|t('calendar') }}
-								</a>
-							</li>
-						{% endfor %}
-					</ul>
-				</div>
-			{% else %}
-				<a class="btn submit add icon" href="{{ url('calendar/events/new/' ~ (calendars|first).handle|default) }}">
-					{{ "New Event"|t('calendar') }}
-				</a>
+	<div class="calendar-events-actions">
+		<span data-ai-create-root></span>
+		<script type="application/json" data-events-ai-config>{{ {
+			isSolspaceAiConnected: isSolspaceAiConnected ?? false,
+			siteId: craft.app.sites.currentSite.id,
+			defaultCalendarId: calendars|length ? calendars|first.id : null,
+		}|json_encode|raw }}</script>
+		<div class="buttons">
+			{% if calendars|length %}
+				{% if calendars|length > 1 %}
+					<div class="btn submit menubtn add icon">{{ "New Event"|t('calendar') }}</div>
+					<div class="menu">
+						<ul>
+							{% for calendar in calendars %}
+								<li>
+									<a href="{{ url('calendar/events/new/' ~ calendar.handle) }}">
+										<span class="color-indicator" style="background-color: {{ calendar.color }};"></span>
+										{{ calendar.name|t('calendar') }}
+									</a>
+								</li>
+							{% endfor %}
+						</ul>
+					</div>
+				{% else %}
+					<a class="btn submit add icon" href="{{ url('calendar/events/new/' ~ (calendars|first).handle|default) }}">
+						{{ "New Event"|t('calendar') }}
+					</a>
+				{% endif %}
 			{% endif %}
-		{% endif %}
+		</div>
 	</div>
 {% endblock %}
+
+{% css %}
+	.calendar-events-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--s, 10px);
+	}
+	.calendar-events-actions > .buttons {
+		margin: 0;
+	}
+{% endcss %}

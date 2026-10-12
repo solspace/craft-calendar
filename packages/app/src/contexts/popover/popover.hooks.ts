@@ -14,7 +14,6 @@ type PopoverState = {
 
 type UsePopoverPositionParams = {
   state?: PopoverState;
-  bridgeRef: RefObject<HTMLDivElement | null>;
   popoverRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -39,7 +38,6 @@ const getAnchorRect = (anchor: PopoverAnchor): DOMRect | DOMRectReadOnly => {
 
 export const usePopoverPosition = ({
   state,
-  bridgeRef,
   popoverRef,
 }: UsePopoverPositionParams): PopoverLayout | undefined => {
   const [layout, setLayout] = useState<PopoverLayout>();
@@ -58,32 +56,26 @@ export const usePopoverPosition = ({
       return;
     }
 
-    const bridge = bridgeRef.current;
     const popover = popoverRef.current;
-
-    if (!bridge || !popover) {
+    if (!popover) {
       return;
     }
 
     const anchorRect = getAnchorRect(state.anchor);
     const popoverRect = popover.getBoundingClientRect();
-    const bridgeRect = bridge.getBoundingClientRect();
 
-    const popoverLayout = resolvePopoverLayout({
-      anchorRect,
-      popoverRect,
-      viewportWidth: window.innerWidth,
-      viewportHeight: window.innerHeight,
-      options: normalizedOptions,
-      arrowPadding: ARROW_PADDING,
-    });
-
-    setLayout({
-      ...popoverLayout,
-      top: popoverLayout.top - bridgeRect.top,
-      left: popoverLayout.left - bridgeRect.left,
-    });
-  }, [state, normalizedOptions, bridgeRef, popoverRef]);
+    // Viewport coords + position:fixed so header-anchored buttons (Update with AI) align correctly.
+    setLayout(
+      resolvePopoverLayout({
+        anchorRect,
+        popoverRect,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        options: normalizedOptions,
+        arrowPadding: ARROW_PADDING,
+      }),
+    );
+  }, [state, normalizedOptions, popoverRef]);
 
   useLayoutEffect(() => {
     calculate();

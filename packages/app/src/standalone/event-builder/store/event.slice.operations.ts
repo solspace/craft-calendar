@@ -340,16 +340,17 @@ const inferRepeatEndType = (
   input: GeneratedScheduleInput,
   baseRule: ReturnType<typeof getBaseRRule>,
 ): ReturnType<typeof normalizeRepeatEndType> => {
-  if (input.repeatEndType) {
-    return normalizeRepeatEndType(input.repeatEndType);
-  }
-
+  // COUNT/UNTIL on the rule always wins so AI drafts stay valid even if the client sent NEVER.
   if (baseRule?.options.count) {
     return "AFTER";
   }
 
   if (baseRule?.options.until || input.until) {
     return "ON_DATE";
+  }
+
+  if (input.repeatEndType) {
+    return normalizeRepeatEndType(input.repeatEndType);
   }
 
   return "NEVER";

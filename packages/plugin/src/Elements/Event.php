@@ -779,6 +779,11 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
         $this->repeatType = $values['repeatType'] ?? $this->repeatType;
         $this->repeatEndType = $values['repeatEndType'] ?? $this->repeatEndType;
 
+        // Builder posts exclusive all-day ends; persist end-of-last-day like API creates / FC moves.
+        if ($this->allDay && $this->startDate && $this->endDate) {
+            $this->endDate = DateHelper::allDayEndFromExclusive($this->startDate, $this->endDate);
+        }
+
         $rrule = $values['rrule'] ?? $this->rrule;
         $this->rrule = \is_string($rrule) ? self::normalizeRRule($rrule, $this->allDay) : $rrule;
     }
@@ -939,7 +944,10 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
             ],
             'event' => [
                 'start' => $this->startDate->timestamp,
-                'end' => $this->endDate->timestamp,
+                // Event builder / date pickers use exclusive all-day ends (day after last day).
+                'end' => $this->allDay
+                    ? DateHelper::allDayExclusiveEnd($this->endDate)->timestamp
+                    : $this->endDate->timestamp,
                 'until' => $this->until?->timestamp,
                 'timezone' => $this->timezone ?: DateHelper::UTC,
 

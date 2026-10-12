@@ -217,9 +217,37 @@ class ApiController extends BaseController
         }
 
         $rrule = trim((string) $request->post('rrule', ''));
+        $repeatEndType = strtoupper(trim((string) $request->post('repeatEndType', '')));
+        $allowedRepeatEndTypes = [
+            Event::REPEAT_END_NEVER,
+            Event::REPEAT_END_AFTER,
+            Event::REPEAT_END_ON_DATE,
+        ];
+        if (!\in_array($repeatEndType, $allowedRepeatEndTypes, true)) {
+            $repeatEndType = Event::REPEAT_END_NEVER;
+        }
+        // COUNT/UNTIL on the rule always wins so AI drafts stay valid even if the client sent NEVER.
+        $inferredEndType = $this->inferRepeatEndTypeFromRrule($rrule);
+        if (Event::REPEAT_END_NEVER !== $inferredEndType) {
+            $repeatEndType = $inferredEndType;
+        }
+
         $event->repeatType = $repeatType;
-        $event->repeatEndType = Event::REPEAT_END_NEVER;
+        $event->repeatEndType = Event::REPEAT_NEVER === $repeatType
+            ? Event::REPEAT_END_NEVER
+            : $repeatEndType;
         $event->rrule = Event::REPEAT_NEVER === $repeatType ? null : ($rrule ?: null);
+
+        if (Event::REPEAT_END_ON_DATE === $event->repeatEndType) {
+            $until = $request->post('until');
+            if (null !== $until && '' !== $until && is_numeric($until)) {
+                $event->until = Carbon::createFromTimestampUTC((int) $until);
+            } elseif ($event->rrule && preg_match('/(?:^|;)UNTIL=([0-9T]+)/i', $event->rrule, $untilMatch)) {
+                $event->until = $this->parseFloatingUntil($untilMatch[1]) ?? $event->until;
+            }
+        } else {
+            $event->until = null;
+        }
 
         $details = $request->post('details');
         $validDetails = true;
@@ -272,5 +300,44 @@ class ApiController extends BaseController
         $transformer = new FullCalTransformer();
 
         return $this->asJson($transformer->fromElement($event));
+    }
+
+    private function inferRepeatEndTypeFromRrule(string $rrule): string
+    {
+        if ('' === trim($rrule)) {
+            return Event::REPEAT_END_NEVER;
+        }
+
+        if (preg_match('/(?:^|;)COUNT=\d+/i', $rrule)) {
+            return Event::REPEAT_END_AFTER;
+        }
+
+        if (preg_match('/(?:^|;)UNTIL=/i', $rrule)) {
+            return Event::REPEAT_END_ON_DATE;
+        }
+
+        return Event::REPEAT_END_NEVER;
+    }
+
+    private function parseFloatingUntil(string $raw): ?Carbon
+    {
+        try {
+            if (preg_match('/^\d{8}$/', $raw)) {
+                return DateHelper::parseFloatingCarbon(
+                    substr($raw, 0, 4).'-'.substr($raw, 4, 2).'-'.substr($raw, 6, 2).'T00:00:00'
+                );
+            }
+
+            if (preg_match('/^\d{8}T\d{6}$/', $raw)) {
+                return DateHelper::parseFloatingCarbon(
+                    substr($raw, 0, 4).'-'.substr($raw, 4, 2).'-'.substr($raw, 6, 2).'T'
+                    .substr($raw, 9, 2).':'.substr($raw, 11, 2).':'.substr($raw, 13, 2)
+                );
+            }
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return null;
     }
 }

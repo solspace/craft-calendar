@@ -186,4 +186,24 @@ describe("createEventBuilderStore", () => {
     expect(state.rrule).toBe(rrule);
     expect(state.byweekday).toEqual([0]);
   });
+
+  it("prefers COUNT from the rrule over a mismatched NEVER repeatEndType", () => {
+    const store = createEventBuilderStore(baseConfig());
+    const rrule = ["DTSTART:20261013T090000", "RRULE:FREQ=WEEKLY;BYDAY=FR;COUNT=8"].join("\n");
+
+    store.dispatch(
+      eventActions.applyGeneratedSchedule({
+        start: 1_760_338_800,
+        end: 1_760_342_400,
+        allDay: false,
+        repeatType: "WEEKLY",
+        repeatEndType: "NEVER",
+        rrule,
+      }),
+    );
+
+    const state = store.getState().event;
+    expect(state.repeatEndType).toBe("AFTER");
+    expect(state.count).toBe(8);
+  });
 });

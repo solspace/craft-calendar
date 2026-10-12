@@ -20,6 +20,8 @@ export type CalendarCreateDraft = {
   repeatEndType?: string;
   until?: number | null;
   rrule?: string;
+  /** Fields the AI changed during an in-place update (omit = apply all). */
+  changedFields?: string[];
 };
 
 export type CalendarCreateDraftSettings = {

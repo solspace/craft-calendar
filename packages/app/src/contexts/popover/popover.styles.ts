@@ -6,10 +6,11 @@ export const PopoverBridge = styled.div`
 `;
 
 export const PopoverContainer = styled.div`
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  z-index: 10;
+  /* Above Craft CP header / action buttons when anchored there */
+  z-index: 1000;
 
   border: 1px solid var(--border-hairline-dark);
   border-radius: 5px;

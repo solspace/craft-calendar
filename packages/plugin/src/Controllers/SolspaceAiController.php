@@ -165,6 +165,8 @@ class SolspaceAiController extends BaseController
 
         $prompt = trim((string) ($body['prompt'] ?? $request->getBodyParam('prompt', '')));
         $timezone = $body['timezone'] ?? $request->getBodyParam('timezone');
+        $currentEvent = $body['currentEvent'] ?? $request->getBodyParam('currentEvent');
+        $currentEvent = \is_array($currentEvent) ? $currentEvent : null;
 
         $calendars = [];
         foreach ($this->getCalendarService()->getAllAllowedCalendars() as $calendar) {
@@ -187,7 +189,8 @@ class SolspaceAiController extends BaseController
         $generation = $this->getEventGenerationService()->generateFromPrompt(
             $prompt,
             $calendars,
-            \is_string($timezone) ? $timezone : null
+            \is_string($timezone) ? $timezone : null,
+            $currentEvent
         );
 
         if (!$generation['success']) {
