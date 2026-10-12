@@ -37,6 +37,7 @@ return [
     'POST calendar/api/events/edit-following' => 'calendar/events-api/edit-following',
 
     'POST calendar/api/ai/generate-event' => 'calendar/solspace-ai/generate-event',
+    'POST calendar/api/ai/generate-calendar' => 'calendar/solspace-ai/generate-calendar',
 
     'calendar/events/api/first-occurrence-date' => 'calendar/events-api/first-occurrence-date',
     'calendar/events/api/create' => 'calendar/events-api/create',

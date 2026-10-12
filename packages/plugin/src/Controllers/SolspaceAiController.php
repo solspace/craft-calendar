@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Services\SolspaceAi\CalendarGenerationService;
 use Solspace\Calendar\Services\SolspaceAi\EventGenerationService;
 use Solspace\Calendar\Services\SolspaceAi\SolspaceAiService;
 use yii\web\NotFoundHttpException;
@@ -208,6 +209,66 @@ class SolspaceAiController extends BaseController
         ]);
     }
 
+    public function actionGenerateCalendar(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        Calendar::getInstance()->requirePro();
+        PermissionHelper::requirePermission(Calendar::PERMISSION_CREATE_CALENDARS);
+
+        // Same gate as CalendarsController: calendar creates write project config.
+        if (
+            version_compare(\Craft::$app->getVersion(), '3.1', '>=')
+            && !\Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $this->response->setStatusCode(403);
+
+            return $this->asJson([
+                'success' => false,
+                'error' => Calendar::t('Administrative changes are disallowed in this environment.'),
+            ]);
+        }
+
+        $solspaceAi = $this->getSolspaceAiService();
+        if (!$solspaceAi->isConnected()) {
+            $this->response->setStatusCode(400);
+
+            return $this->asJson([
+                'success' => false,
+                'error' => Calendar::t('SolspaceAI is not connected. Enable it in Calendar Settings.'),
+            ]);
+        }
+
+        $request = \Craft::$app->getRequest();
+        $rawBody = json_decode($request->getRawBody(), true);
+        $body = \is_array($rawBody) ? $rawBody : [];
+        $prompt = trim((string) ($body['prompt'] ?? $request->getBodyParam('prompt', '')));
+
+        $existing = [];
+        foreach ($this->getCalendarService()->getAllCalendars() as $calendar) {
+            $existing[] = [
+                'handle' => (string) $calendar->handle,
+                'name' => (string) $calendar->name,
+            ];
+        }
+
+        $generation = $this->getCalendarGenerationService()->generateAndSave($prompt, $existing);
+        if (!$generation['success']) {
+            $this->response->setStatusCode(400);
+
+            return $this->asJson([
+                'success' => false,
+                'error' => $generation['error'] ?? Calendar::t('Could not generate calendar.'),
+            ]);
+        }
+
+        return $this->asJson([
+            'success' => true,
+            'url' => $generation['url'],
+            'calendar' => $generation['calendar'],
+        ]);
+    }
+
     private function getSolspaceAiService(): SolspaceAiService
     {
         return Calendar::getInstance()->solspaceAi;
@@ -216,6 +277,11 @@ class SolspaceAiController extends BaseController
     private function getEventGenerationService(): EventGenerationService
     {
         return Calendar::getInstance()->eventGeneration;
+    }
+
+    private function getCalendarGenerationService(): CalendarGenerationService
+    {
+        return Calendar::getInstance()->calendarGeneration;
     }
 
     private function proxyJsonGet(string $url, string $errorMessage): Response

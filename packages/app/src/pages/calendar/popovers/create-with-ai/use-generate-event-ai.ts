@@ -1,5 +1,4 @@
 import { craftFetch } from "@cal/utils/http";
-import { generateUrl } from "@cal/utils/urls";
 import { useCallback, useState } from "react";
 
 export type AiGeneratedEvent = {
@@ -60,7 +59,7 @@ export const useGenerateEventAi = () => {
       setError(null);
 
       try {
-        const response = await craftFetch(generateUrl("/api/ai/generate-event"), {
+        const response = await craftFetch(Craft.getCpUrl("calendar/api/ai/generate-event"), {
           method: "POST",
           headers: {
             Accept: "application/json",

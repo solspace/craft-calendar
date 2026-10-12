@@ -5,7 +5,6 @@ import { buildCreateEventPayload } from "@cal/pages/calendar/popovers/create-eve
 import { PopoverCreateWithAi } from "@cal/pages/calendar/popovers/create-with-ai/create-with-ai";
 import { craftFetch } from "@cal/utils/http";
 import translate from "@cal/utils/translations";
-import { generateUrl } from "@cal/utils/urls";
 import { type FC, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 
@@ -56,7 +55,7 @@ const EventsAiCreate: FC<{ config: EventsAiConfig }> = ({ config }) => {
       });
       payload.title = draft.title;
 
-      const response = await craftFetch(generateUrl("/api/events/prepare"), {
+      const response = await craftFetch(Craft.getCpUrl("calendar/api/events/prepare"), {
         method: "POST",
         headers: {
           Accept: "application/json",

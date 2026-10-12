@@ -1,14 +1,41 @@
 {% extends "_layouts/cp" %}
 {% hook "calendar.prepareCpTemplate" %}
 
+{% do view.registerTranslations('calendar', [
+    'Create with AI',
+    'Enable AI',
+    'Generate Calendar',
+    'Generating…',
+    'Cancel',
+    'Could not generate calendar.',
+    'Describe the calendar you want (for example, public holidays or staff meetings). AI will create it so you can finish the field layout.',
+    'e.g. A blue calendar for company holidays, no repeating events needed',
+]) %}
+
 {% block actionButton %}
+    <div class="calendar-calendars-actions">
+        {% if currentUser.can("calendar-createCalendars") %}
+            <span data-ai-create-root></span>
+            <script type="application/json" data-calendars-ai-config>{{ {
+                isSolspaceAiConnected: isSolspaceAiConnected ?? false,
+            }|json_encode|raw }}</script>
 
-    {% if currentUser.can("calendar-createCalendars") %}
-        <div class="buttons">
-            <a class="btn submit add icon" href="{{ url('calendar/calendars/new') }}">
-                {{ "New Calendar"|t('calendar') }}
-            </a>
-        </div>
-    {% endif %}
-
+            <div class="buttons" id="newcalendarcontainer">
+                <a class="btn submit add icon" href="{{ url('calendar/calendars/new') }}">
+                    {{ "New Calendar"|t('calendar') }}
+                </a>
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}
+
+{% css %}
+    .calendar-calendars-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--s, 10px);
+    }
+    .calendar-calendars-actions > .buttons {
+        margin: 0;
+    }
+{% endcss %}

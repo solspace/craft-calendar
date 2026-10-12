@@ -73,6 +73,7 @@ export default defineConfig(({ command, mode }) => {
           "widget-mini": path.resolve(__dirname, "./src/standalone/widgets/mini/index.tsx"),
           solspaceai: path.resolve(__dirname, "./src/standalone/solspaceai/index.js"),
           "events-ai": path.resolve(__dirname, "./src/standalone/events-ai/index.tsx"),
+          "calendars-ai": path.resolve(__dirname, "./src/standalone/calendars-ai/index.tsx"),
         },
       },
     },
