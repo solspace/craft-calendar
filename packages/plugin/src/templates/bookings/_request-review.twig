@@ -189,8 +189,18 @@ form:has(> .request-review-content):focus-visible {
         style.textContent = `
             .calendar-review-footer { display:flex; align-items:center; gap:8px; }
             .calendar-review-footer .request-review-actions { margin-right:auto; flex-shrink:0; }
-            .calendar-review-footer .calendar-confirm-booking { background:#2563eb !important; color:#fff !important; }
-            .calendar-review-footer .calendar-confirm-booking:hover:not(:disabled) { background:#1d4ed8 !important; }
+            .calendar-review-footer .btn.submit.calendar-confirm-booking {
+                --primary-button-bg:#2563eb;
+                --primary-button-bg--hover:#1d4ed8;
+                --primary-button-bg--active:#1e40af;
+                --primary-button-text-color:#fff;
+                background:#2563eb !important;
+                color:#fff !important;
+            }
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading):hover,
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading).hover { background:#1d4ed8 !important; }
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading):active,
+            .calendar-review-footer .btn.submit.calendar-confirm-booking:not(:disabled,.disabled,.inactive,.loading).active { background:#1e40af !important; }
             .calendar-review-footer .calendar-confirm-booking:focus-visible { outline:2px solid #1d4ed8; outline-offset:2px; }
         `;
         document.head.append(style);
