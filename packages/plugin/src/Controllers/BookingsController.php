@@ -623,7 +623,7 @@ class BookingsController extends BaseController
             return $this->asFailure(Calendar::t('Could not preview notification. Check the template variables and Twig syntax.'));
         }
 
-        return $this->asSuccess(data: ['subject' => $message['subject'], 'html' => $message['htmlBody']]);
+        return $this->asSuccess(data: ['success' => true, 'subject' => $message['subject'], 'html' => $message['htmlBody']]);
     }
 
     public function actionSaveFields(): Response

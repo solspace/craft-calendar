@@ -220,7 +220,7 @@ class BookingNotificationsTest extends TestCase
     {
         $this->body = ['audience' => 'requester', 'bookingStatus' => 'confirmed', 'templates' => ['requester' => ['subject' => '{{ calendar.name }}: {{ status }}', 'body' => '{% if statusHandle == "confirmed" %}<p>{{ booking.customerName }}</p>{% endif %}']]];
         $response = $this->createMock(Response::class);
-        $this->controller->expects(self::once())->method('asSuccess')->with(null, ['subject' => 'Example Calendar: Confirmed', 'html' => '<p>Alex Morgan</p>'])->willReturn($response);
+        $this->controller->expects(self::once())->method('asSuccess')->with(null, ['success' => true, 'subject' => 'Example Calendar: Confirmed', 'html' => '<p>Alex Morgan</p>'])->willReturn($response);
         self::assertSame($response, $this->controller->actionPreviewNotification());
         self::assertSame([], \Craft::$app->saved);
     }
