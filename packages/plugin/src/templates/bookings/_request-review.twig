@@ -190,7 +190,7 @@
     const unavailable = {{ unavailable ? 'true' : 'false' }};
     function sync() {
         const expanded = !picker.classList.contains('hidden');
-        const calendarChanged = calendarPicker.value !== {{ booking.calendarId|json_encode|raw }}.toString();
+        const calendarChanged = calendarPicker.value !== String({{ booking.calendarId|json_encode|raw }});
         screen.$saveBtn.prop('disabled', (unavailable || expanded || calendarChanged) && !start.value);
         alternative.classList.toggle('hidden', expanded);
         alternative.setAttribute('aria-expanded', String(expanded));
