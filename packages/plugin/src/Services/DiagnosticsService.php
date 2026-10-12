@@ -213,6 +213,9 @@ class DiagnosticsService extends Component
         try {
             $templates = BookingNotificationSettings::fromProjectConfig();
             foreach (['admin' => 'Admin Notification Template', 'requester' => 'Requester Notification Template'] as $audience => $label) {
+                $sending = $templates->getSendingSettings($audience);
+                $bookingConfiguration[] = $booleanRow(Calendar::t('Notification Emails: {audience}', ['audience' => ('admin' === $audience ? \Craft::t('app', 'Admin') : Calendar::t('Requester'))]), $sending['enabled']);
+                $bookingConfiguration[] = $row(Calendar::t('Notification Triggers: {audience}', ['audience' => ('admin' === $audience ? \Craft::t('app', 'Admin') : Calendar::t('Requester'))]), implode(', ', array_intersect_key(BookingNotificationSettings::eventOptions(), array_flip($sending['events']))) ?: Calendar::t('None'));
                 $custom = false;
                 $overrides = 0;
                 foreach (\is_array($templates->templates[$audience] ?? null) ? $templates->templates[$audience] : [] as $field => $source) {

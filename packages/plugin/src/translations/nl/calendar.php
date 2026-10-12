@@ -2,6 +2,21 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'New booking submitted' => 'Nieuwe boeking ingediend',
+    'Booking declined' => 'Boeking afgewezen',
+    'Booking cancelled' => 'Boeking geannuleerd',
+    'Status changed to Requested' => 'Status gewijzigd naar Aangevraagd',
+    'Booking time or calendar changed' => 'Boekingstijd of kalender gewijzigd',
+    'Booking restored from Trash' => 'Boeking hersteld uit de prullenbak',
+    'Choose whether notification emails are enabled.' => 'Kies of e-mailmeldingen zijn ingeschakeld.',
+    'Choose valid booking notification triggers.' => 'Kies geldige triggers voor boekingsmeldingen.',
+    'Send Email Notifications' => 'E-mailmeldingen verzenden',
+    'Send When' => 'Verzenden bij',
+    'Choose when to email the Staff Notification Email configured for each {label}.' => 'Kies wanneer een e-mail wordt verzonden naar het adres voor medewerkersmeldingen dat voor elke {label} is ingesteld.',
+    'Choose when to email the requester’s email address.' => 'Kies wanneer een e-mail wordt verzonden naar het adres van de aanvrager.',
+    'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.' => 'Selecteer geen triggers om geen e-mails te verzenden. Bevestigd omvat ook boekingen die direct bij indiening worden bevestigd. Elke doelgroep ontvangt één e-mail per opgeslagen wijziging, ook als meerdere triggers overeenkomen.',
+    'Notification Emails: {audience}' => 'E-mailmeldingen: {audience}',
+    'Notification Triggers: {audience}' => 'Meldingstriggers: {audience}',
     'Event Calendar Details ({count})' => 'Details van evenementenkalenders ({count})',
     'Include booked time slots' => 'Geboekte tijdsloten weergeven',
     'Booked' => 'Geboekt',

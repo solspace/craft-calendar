@@ -2,6 +2,21 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'New booking submitted' => 'New booking submitted',
+    'Booking declined' => 'Booking declined',
+    'Booking cancelled' => 'Booking cancelled',
+    'Status changed to Requested' => 'Status changed to Requested',
+    'Booking time or calendar changed' => 'Booking time or calendar changed',
+    'Booking restored from Trash' => 'Booking restored from Trash',
+    'Choose whether notification emails are enabled.' => 'Choose whether notification emails are enabled.',
+    'Choose valid booking notification triggers.' => 'Choose valid booking notification triggers.',
+    'Send Email Notifications' => 'Send Email Notifications',
+    'Send When' => 'Send When',
+    'Choose when to email the Staff Notification Email configured for each {label}.' => 'Choose when to email the Staff Notification Email configured for each {label}.',
+    'Choose when to email the requester’s email address.' => 'Choose when to email the requester’s email address.',
+    'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.' => 'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.',
+    'Notification Emails: {audience}' => 'Notification Emails: {audience}',
+    'Notification Triggers: {audience}' => 'Notification Triggers: {audience}',
     'Event Calendar Details ({count})' => 'Event Calendar Details ({count})',
     'Admin Notification Template' => 'Admin Notification Template',
     'Requester Notification Template' => 'Requester Notification Template',

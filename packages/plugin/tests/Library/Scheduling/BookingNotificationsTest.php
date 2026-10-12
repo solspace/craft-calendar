@@ -9,6 +9,9 @@ use Solspace\Calendar\Library\Scheduling\BookingNotifications;
 use Solspace\Calendar\Models\BookingNotificationSettings;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Tests\Unit\Calendar\Support\BookingNotificationView;
+use Twig\Environment;
+use Twig\Loader\ArrayLoader;
+use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 require_once __DIR__.'/../../_support/BookingNotificationView.php';
@@ -62,6 +65,79 @@ class BookingNotificationsTest extends TestCase
     protected function tearDown(): void
     {
         \Craft::$app = $this->previousApp;
+    }
+
+    public function testAudienceSwitchesAndTriggersKeepLegacyDefaultsAndHonorEmptySelections(): void
+    {
+        $settings = new BookingNotificationSettings();
+        foreach (BookingNotificationSettings::AUDIENCES as $audience) {
+            self::assertSame(['enabled' => true, 'events' => BookingNotificationSettings::EVENTS], $settings->getSendingSettings($audience));
+            foreach (BookingNotificationSettings::EVENTS as $event) {
+                self::assertTrue($settings->shouldSend($audience, [$event]));
+            }
+        }
+        $settings->templates = ['admin' => ['enabled' => '0', 'events' => ['created']], 'requester' => ['enabled' => '1', 'events' => ['confirmed', 'cancelled']]];
+        self::assertTrue($settings->validate());
+        self::assertFalse($settings->shouldSend('admin', ['created']));
+        self::assertFalse($settings->shouldSend('requester', ['created', 'changed']));
+        self::assertTrue($settings->shouldSend('requester', ['created', 'confirmed']));
+        $settings->templates['requester']['events'] = '';
+        self::assertTrue($settings->validate());
+        self::assertSame([], $settings->templates['requester']['events']);
+        self::assertFalse($settings->shouldSend('requester', ['confirmed']));
+    }
+
+    public function testMalformedNotificationControlsAreRejectedAndCannotEnableImportedRules(): void
+    {
+        foreach ([['enabled', 'yes'], ['enabled', []], ['events', 'confirmed'], ['events', null], ['events', ['invalid']], ['events', [['confirmed']]]] as [$field, $value]) {
+            $settings = new BookingNotificationSettings(['templates' => ['admin' => [$field => $value]]]);
+            self::assertFalse($settings->validate());
+            self::assertTrue($settings->hasErrors('templates.admin.'.$field));
+            self::assertFalse($settings->shouldSend('admin', ['created', 'confirmed']));
+        }
+    }
+
+    public function testNotificationEventsDistinguishSubmissionStatusReschedulingAndRestore(): void
+    {
+        $record = ['calendarId' => 1, 'startDate' => '2026-10-13 09:00:00', 'endDate' => '2026-10-13 10:00:00', 'bookingStatus' => Booking::REQUESTED];
+        self::assertSame(['created'], BookingNotifications::events($record, null));
+        $confirmed = array_replace($record, ['bookingStatus' => Booking::CONFIRMED]);
+        self::assertSame(['created', 'confirmed'], BookingNotifications::events($confirmed, null));
+        self::assertSame([], BookingNotifications::events($record, $record));
+        self::assertSame(['restored'], BookingNotifications::events($record, $record, true));
+        foreach ([Booking::CONFIRMED, Booking::DECLINED, Booking::CANCELLED] as $status) {
+            self::assertSame([$status], BookingNotifications::events(array_replace($record, ['bookingStatus' => $status]), $record));
+        }
+        self::assertSame(['requested'], BookingNotifications::events($record, $confirmed));
+        self::assertSame(['changed'], BookingNotifications::events(array_replace($record, ['calendarId' => 2]), $record));
+        self::assertSame(['confirmed', 'changed'], BookingNotifications::events(array_replace($confirmed, ['startDate' => '2026-10-13 10:00:00']), $record));
+    }
+
+    public function testNotificationPageRetainsIndependentSwitchesAndTriggerSelections(): void
+    {
+        $source = file_get_contents(__DIR__.'/../../../src/templates/bookings/notifications.twig');
+        $source = preg_replace('/\{% do view\.registerTranslations.*?%\}/s', '', $source);
+        $source = str_replace(['{% css %}', '{% endcss %}', '{% js %}', '{% endjs %}'], ['{% block styles %}', '{% endblock %}', '{% block scripts %}', '{% endblock %}'], $source);
+        $forms = <<<'TWIG'
+            {% macro lightswitchField(config) %}<input name="{{ config.name }}" value="{{ config.on ? '1' : '0' }}">{% endmacro %}
+            {% macro checkboxGroupField(config) %}<input name="{{ config.name }}" value="">{% for value, label in config.options %}<label><input type="checkbox" name="{{ config.name }}[]" value="{{ value }}"{{ value in config.values ? ' checked' }}>{{ label }}</label>{% endfor %}{% endmacro %}
+            {% macro textField(config) %}{% endmacro %}{% macro textareaField(config) %}{% endmacro %}{% macro select(config) %}{% endmacro %}{% macro errorList(config) %}{% endmacro %}
+            TWIG;
+        $twig = new Environment(new ArrayLoader(['notifications' => $source, '_includes/forms' => $forms, 'calendar/layouts/_bookings' => '{% block content %}{% endblock %}']), ['strict_variables' => true]);
+        $twig->addFilter(new TwigFilter('t', static fn ($text) => $text));
+        foreach (['csrfInput', 'actionInput'] as $function) {
+            $twig->addFunction(new TwigFunction($function, static fn () => ''));
+        }
+        $settings = new BookingNotificationSettings(['templates' => ['admin' => ['enabled' => false, 'events' => []], 'requester' => ['enabled' => true, 'events' => ['confirmed']]]]);
+        $html = $twig->render('notifications', ['notificationSettings' => $settings, 'statusOptions' => Booking::statusOptions(), 'craft' => ['calendar' => ['bookingResourceLabels' => ['singular' => 'Staff Member', 'plural' => 'Staff']]]]);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML('<meta charset="utf-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+        self::assertSame('0', $xpath->query('//input[@name="templates[admin][enabled]"]')->item(0)->getAttribute('value'));
+        self::assertSame('1', $xpath->query('//input[@name="templates[requester][enabled]"]')->item(0)->getAttribute('value'));
+        self::assertSame(0, $xpath->query('//input[@name="templates[admin][events][]"][@checked]')->length);
+        self::assertSame(1, $xpath->query('//input[@name="templates[requester][events][]"][@checked][@value="confirmed"]')->length);
+        self::assertSame(14, $xpath->query('//input[@type="checkbox"]')->length);
     }
 
     public function testIdenticalSubjectAndBodySourcesStillEscapeBookingInputAndNeverEvaluateItAsTwig(): void

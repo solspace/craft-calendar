@@ -148,7 +148,18 @@ Each audience also has separate **From Email**, **From Name**, **Reply-To Email*
 
 **Preview** uses example data without sending mail or reading a real booking. Choose **Preview Status** to review any of the four status messages. Blank fields restore their defaults. The page is available only when Craft allows administrative changes; templates are stored in project config.
 
-The Requester template goes to the booking’s customer email. The Admin template goes to each calendar’s **Staff Notification Email**, when configured. Both run for newly created bookings and committed changes to their time, calendar, or status, including Requested, Confirmed, Declined, and Cancelled. Admin and Requester messages are separate deliveries even when both recipients use the same address. Existing queued jobs retain the template rendered when they were created.
+The Requester template goes to the booking’s customer email. The Admin template goes to each calendar’s **Staff Notification Email**, when configured. Each audience has its own **Send Email Notifications** switch and **Send When** checkboxes:
+
+- **New booking submitted**: a new booking created through the public form, control panel, or Craft’s element API, regardless of its initial status.
+- **Booking confirmed**: approval of an existing booking, or a new booking confirmed immediately because approval is not required.
+- **Booking declined** / **Booking cancelled**: an existing booking changes to that status.
+- **Status changed to Requested**: an existing booking returns to Requested.
+- **Booking time or calendar changed**: an existing booking is rescheduled or moved to another calendar.
+- **Booking restored from Trash**: a successful restoration, preserving its existing status.
+
+All switches and triggers are enabled by default for compatibility with existing setups. Disable an audience or clear all its triggers to send it no emails, including CC/BCC copies. For example, choose only **Booking confirmed** and **Booking cancelled** for requesters, and only **New booking submitted** for admins. Triggers apply to all scheduling calendars. Each audience receives at most one email per committed change, even when several selected triggers match. Several saves inside one database transaction are compared with the original booking and notify only for its final committed state; rolled-back intermediate statuses do not trigger emails. Unrelated edits, such as notes alone, do not send a notification. Previews remain available when sending is disabled and never send email.
+
+Admin and Requester messages are separate deliveries even when both recipients use the same address. Existing queued jobs retain the template rendered when they were created.
 
 Available Twig variables:
 
@@ -185,7 +196,7 @@ Exercise fresh install and upgrade, project-config apply/rebuild, creating both 
 
 ## Diagnostics
 
-**Settings → Diagnostics** includes booking page defaults, CAPTCHA readiness, notification template customization, queue processing, new-calendar booking defaults, and counts for each booking status. Counts include all dates and exclude trashed bookings, drafts, and revisions; only confirmed bookings reserve time.
+**Settings → Diagnostics** includes booking page defaults, CAPTCHA readiness, notification template customization, per-audience email switches and triggers, queue processing, new-calendar booking defaults, and counts for each booking status. Counts include all dates and exclude trashed bookings, drafts, and revisions; only confirmed bookings reserve time.
 
 The **Event Calendar Details** table contains only event calendars. **Booking Calendar Details** opens by default and shows a separate table with one row per scheduling calendar, including each calendar’s timezone, active dates, opening hours, exception count, duration, interval, buffer, notice, advance limit, guest access, overlap and approval rules, notification setup, supported sites, and requested/confirmed counts. The booking table scrolls horizontally with calendar names kept visible; the support report retains counts for every status. Invalid rules, expired active calendars, missing opening hours, and incomplete booking CAPTCHA configuration appear in the diagnostic warning summary.
 

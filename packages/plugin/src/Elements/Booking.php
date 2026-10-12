@@ -164,7 +164,7 @@ class Booking extends Element
         Calendar::getInstance()->bookings->assertSaveAllowed($this, true);
         Db::update(self::TABLE, ['buffer' => $this->buffer], ['id' => $this->id]);
         parent::afterRestore();
-        Calendar::getInstance()->bookings->scheduleNotification($this, null);
+        Calendar::getInstance()->bookings->scheduleNotification($this, $this->getRecordData(), true);
     }
 
     public function getRecordData(): array

@@ -343,6 +343,107 @@ class BookingStorageTest extends TestCase
         self::assertSame('customer@example.test', $this->queue->jobs[1]->recipient);
     }
 
+    public function testAudienceTriggersSelectOneEmailPerCommittedChangeAndSupportDisablingCopies(): void
+    {
+        Calendar::getInstance()->calendars->getCalendarById(1)->scheduling['notificationEmail'] = 'staff@example.test';
+        \Craft::$app->notificationTemplates = [
+            'admin' => ['enabled' => true, 'events' => ['created']],
+            'requester' => ['enabled' => true, 'events' => ['confirmed', 'changed', 'cancelled']],
+        ];
+        $booking = $this->booking(1);
+        $booking->id = 3;
+        $this->db->createCommand()->insert('elements', ['id' => 3])->execute();
+        $transaction = $this->db->beginTransaction();
+        $booking->afterSave(true);
+        self::assertSame([], $this->queue->jobs);
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+        self::assertSame('staff@example.test', $this->queue->jobs[0]->recipient);
+
+        // Confirmation followed by another save retains the original status transition.
+        $transaction = $this->db->beginTransaction();
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $booking->afterSave(false);
+        $booking->startDate = $booking->startDate->modify('+1 hour');
+        $booking->endDate = $booking->endDate->modify('+1 hour');
+        $booking->afterSave(false);
+        $transaction->commit();
+        self::assertCount(2, $this->queue->jobs);
+        self::assertSame('customer@example.test', $this->queue->jobs[1]->recipient);
+        self::assertStringContainsString('10:00', $this->queue->jobs[1]->body);
+
+        \Craft::$app->notificationTemplates['requester'] = ['enabled' => false, 'events' => ['cancelled'], 'cc' => 'copy@example.test', 'bcc' => 'hidden@example.test'];
+        $transaction = $this->db->beginTransaction();
+        $booking->bookingStatus = Booking::CANCELLED;
+        $booking->afterSave(false);
+        $transaction->commit();
+        self::assertCount(2, $this->queue->jobs);
+    }
+
+    public function testNewBookingTriggerSurvivesAnotherSaveInTheCreationTransaction(): void
+    {
+        \Craft::$app->notificationTemplates = ['requester' => ['events' => ['created']]];
+        $booking = $this->booking(1);
+        $booking->id = 3;
+        $this->db->createCommand()->insert('elements', ['id' => 3])->execute();
+        $transaction = $this->db->beginTransaction();
+        $booking->afterSave(true);
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $booking->afterSave(false);
+        self::assertSame([], $this->queue->jobs);
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+        self::assertStringContainsString('Status: Confirmed', $this->queue->jobs[0]->body);
+    }
+
+    public function testAutoConfirmationAndRestoreUseTheirOwnTriggersWithoutDuplicateMail(): void
+    {
+        \Craft::$app->notificationTemplates = ['requester' => ['events' => ['confirmed']]];
+        $booking = $this->booking(1);
+        $booking->id = 3;
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $this->db->createCommand()->insert('elements', ['id' => 3])->execute();
+        $transaction = $this->db->beginTransaction();
+        $booking->afterSave(true);
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+        $transaction = $this->db->beginTransaction();
+        $booking->afterRestore();
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+        \Craft::$app->notificationTemplates['requester']['events'] = ['restored'];
+        $transaction = $this->db->beginTransaction();
+        $booking->afterRestore();
+        $transaction->commit();
+        self::assertCount(2, $this->queue->jobs);
+    }
+
+    public function testSelectedStatusTriggerSurvivesLaterTimeEditsButNotRolledBackTransitions(): void
+    {
+        \Craft::$app->notificationTemplates = ['requester' => ['events' => ['confirmed']]];
+        $booking = $this->booking(1);
+        $transaction = $this->db->beginTransaction();
+        $booking->bookingStatus = Booking::CONFIRMED;
+        $booking->afterSave(false);
+        $booking->startDate = $booking->startDate->modify('+1 hour');
+        $booking->endDate = $booking->endDate->modify('+1 hour');
+        $booking->afterSave(false);
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+
+        $transaction = $this->db->beginTransaction();
+        $booking->startDate = $booking->startDate->modify('+1 hour');
+        $booking->endDate = $booking->endDate->modify('+1 hour');
+        $booking->afterSave(false);
+        $inner = $this->db->beginTransaction();
+        $booking->bookingStatus = Booking::CANCELLED;
+        $booking->afterSave(false);
+        $inner->rollBack();
+        $transaction->commit();
+        self::assertCount(1, $this->queue->jobs);
+        self::assertSame([], (new \ReflectionProperty(BookingsService::class, 'notificationChanges'))->getValue($this->service));
+    }
+
     public function testAtomicRateCounterHasIndependentIpsHourlyResetAndExpiryCleanup(): void
     {
         $limit = new BookingRateLimit();

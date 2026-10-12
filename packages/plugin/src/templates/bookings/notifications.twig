@@ -7,8 +7,8 @@
 {% do view.registerTranslations('calendar', ['Could not preview notification.']) %}
 {% set templates = notificationSettings.getTemplates() %}
 {% set tabs = {
-    'notification-admin': {label: 'Admin'|t('app'), url: '#notification-admin', class: notificationSettings.getErrors('templates.admin.subject') or notificationSettings.getErrors('templates.admin.body') or notificationSettings.getErrors('templates.admin.fromEmail') or notificationSettings.getErrors('templates.admin.fromName') or notificationSettings.getErrors('templates.admin.replyTo') or notificationSettings.getErrors('templates.admin.cc') or notificationSettings.getErrors('templates.admin.bcc') ? 'error' : ''},
-    'notification-requester': {label: 'Requester'|t('calendar'), url: '#notification-requester', class: notificationSettings.getErrors('templates.requester.subject') or notificationSettings.getErrors('templates.requester.body') or notificationSettings.getErrors('templates.requester.fromEmail') or notificationSettings.getErrors('templates.requester.fromName') or notificationSettings.getErrors('templates.requester.replyTo') or notificationSettings.getErrors('templates.requester.cc') or notificationSettings.getErrors('templates.requester.bcc') ? 'error' : ''},
+    'notification-admin': {label: 'Admin'|t('app'), url: '#notification-admin', class: notificationSettings.getErrors('templates.admin.enabled') or notificationSettings.getErrors('templates.admin.events') or notificationSettings.getErrors('templates.admin.subject') or notificationSettings.getErrors('templates.admin.body') or notificationSettings.getErrors('templates.admin.fromEmail') or notificationSettings.getErrors('templates.admin.fromName') or notificationSettings.getErrors('templates.admin.replyTo') or notificationSettings.getErrors('templates.admin.cc') or notificationSettings.getErrors('templates.admin.bcc') ? 'error' : ''},
+    'notification-requester': {label: 'Requester'|t('calendar'), url: '#notification-requester', class: notificationSettings.getErrors('templates.requester.enabled') or notificationSettings.getErrors('templates.requester.events') or notificationSettings.getErrors('templates.requester.subject') or notificationSettings.getErrors('templates.requester.body') or notificationSettings.getErrors('templates.requester.fromEmail') or notificationSettings.getErrors('templates.requester.fromName') or notificationSettings.getErrors('templates.requester.replyTo') or notificationSettings.getErrors('templates.requester.cc') or notificationSettings.getErrors('templates.requester.bcc') ? 'error' : ''},
 } %}
 {% block actionButton %}<button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>{% endblock %}
 {% block content %}
@@ -16,7 +16,30 @@
     {{ forms.errorList(notificationSettings.getErrors('templates')) }}
     {% for audience in ['admin', 'requester'] %}
         <div id="notification-{{ audience }}" class="booking-notification-tab{{ audience == 'requester' ? ' hidden' }}" data-notification-audience="{{ audience }}">
-            <p class="booking-notification-intro light">{{ (audience == 'admin' ? 'Sent to the Staff Notification Email configured for each scheduling calendar when a booking is created or its time or status changes.' : 'Sent to the requester’s email address when a booking is created or its time or status changes.')|t('calendar') }}</p>
+            <p class="booking-notification-intro light">{{ (audience == 'admin' ? 'Choose when to email the Staff Notification Email configured for each {label}.' : 'Choose when to email the requester’s email address.')|t('calendar', {label: resourceLabels.singular}) }}</p>
+            {% set sending = notificationSettings.getSendingSettings(audience) %}
+            <section class="booking-notification-delivery-panel">
+                {{ forms.lightswitchField({
+                    first: true,
+                    label: 'Send Email Notifications'|t('calendar'),
+                    id: 'notification-' ~ audience ~ '-enabled',
+                    name: 'templates[' ~ audience ~ '][enabled]',
+                    on: sending.enabled,
+                    toggle: 'notification-' ~ audience ~ '-triggers',
+                    errors: notificationSettings.getErrors('templates.' ~ audience ~ '.enabled'),
+                }) }}
+                <div id="notification-{{ audience }}-triggers"{{ not sending.enabled ? ' class="hidden"' }}>
+                    {{ forms.checkboxGroupField({
+                        label: 'Send When'|t('calendar'),
+                        id: 'notification-' ~ audience ~ '-events',
+                        name: 'templates[' ~ audience ~ '][events]',
+                        options: notificationSettings.eventOptions(),
+                        values: sending.events,
+                        errors: notificationSettings.getErrors('templates.' ~ audience ~ '.events'),
+                    }) }}
+                    <p class="light">{{ 'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.'|t('calendar') }}</p>
+                </div>
+            </section>
             <section class="booking-notification-delivery-panel" aria-labelledby="notification-{{ audience }}-delivery-heading" aria-describedby="notification-{{ audience }}-delivery-help">
                 <h3 id="notification-{{ audience }}-delivery-heading">{{ 'Delivery Settings'|t('calendar') }}</h3>
                 <p id="notification-{{ audience }}-delivery-help" class="light">{{ 'Leave blank to use Craft’s sender and reply-to settings. Use plain text for names and addresses.'|t('calendar') }}</p>

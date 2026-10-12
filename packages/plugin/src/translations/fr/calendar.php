@@ -2,6 +2,21 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'New booking submitted' => 'Nouvelle réservation envoyée',
+    'Booking declined' => 'Réservation refusée',
+    'Booking cancelled' => 'Réservation annulée',
+    'Status changed to Requested' => 'Statut passé à Demandé',
+    'Booking time or calendar changed' => 'Horaire ou calendrier de réservation modifié',
+    'Booking restored from Trash' => 'Réservation restaurée depuis la corbeille',
+    'Choose whether notification emails are enabled.' => 'Choisissez si les notifications par e-mail sont activées.',
+    'Choose valid booking notification triggers.' => 'Choisissez des déclencheurs de notification de réservation valides.',
+    'Send Email Notifications' => 'Envoyer des notifications par e-mail',
+    'Send When' => 'Envoyer lors de',
+    'Choose when to email the Staff Notification Email configured for each {label}.' => 'Choisissez quand envoyer un e-mail à l’adresse de notification du personnel configurée pour chaque {label}.',
+    'Choose when to email the requester’s email address.' => 'Choisissez quand envoyer un e-mail à l’adresse du demandeur.',
+    'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.' => 'Ne sélectionnez aucun déclencheur pour ne pas envoyer d’e-mails. Confirmé inclut les réservations confirmées immédiatement lors de l’envoi. Chaque destinataire reçoit un e-mail par modification enregistrée, même si plusieurs déclencheurs correspondent.',
+    'Notification Emails: {audience}' => 'Notifications par e-mail : {audience}',
+    'Notification Triggers: {audience}' => 'Déclencheurs de notification : {audience}',
     'Event Calendar Details ({count})' => 'Détails des calendriers d’événements ({count})',
     'Include booked time slots' => 'Inclure les créneaux réservés',
     'Booked' => 'Réservé',

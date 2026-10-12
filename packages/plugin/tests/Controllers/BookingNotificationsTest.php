@@ -209,7 +209,7 @@ class BookingNotificationsTest extends TestCase
 
     public function testValidTemplatesSaveOnlyToTheNotificationProjectConfigPath(): void
     {
-        $this->body = ['templates' => ['admin' => ['fromEmail' => 'bookings@example.com', 'fromName' => 'Reservations', 'replyTo' => 'help@example.com', 'cc' => 'manager@example.com', 'bcc' => 'archive@example.com', 'subject' => '{{ calendar.name }}', 'body' => '<p>{{ status }}</p>']]];
+        $this->body = ['templates' => ['admin' => ['enabled' => true, 'events' => ['created', 'confirmed'], 'fromEmail' => 'bookings@example.com', 'fromName' => 'Reservations', 'replyTo' => 'help@example.com', 'cc' => 'manager@example.com', 'bcc' => 'archive@example.com', 'subject' => '{{ calendar.name }}', 'body' => '<p>{{ status }}</p>']]];
         $response = $this->createMock(Response::class);
         $this->controller->expects(self::once())->method('redirect')->with('https://example.test/admin/calendar/bookings/notifications')->willReturn($response);
         self::assertSame($response, $this->controller->actionSaveNotifications());
@@ -218,7 +218,7 @@ class BookingNotificationsTest extends TestCase
 
     public function testPreviewReturnsRenderedSampleContentWithoutSavingAnything(): void
     {
-        $this->body = ['audience' => 'requester', 'bookingStatus' => 'confirmed', 'templates' => ['requester' => ['subject' => '{{ calendar.name }}: {{ status }}', 'body' => '{% if statusHandle == "confirmed" %}<p>{{ booking.customerName }}</p>{% endif %}']]];
+        $this->body = ['audience' => 'requester', 'bookingStatus' => 'confirmed', 'templates' => ['requester' => ['enabled' => false, 'events' => [], 'subject' => '{{ calendar.name }}: {{ status }}', 'body' => '{% if statusHandle == "confirmed" %}<p>{{ booking.customerName }}</p>{% endif %}']]];
         $response = $this->createMock(Response::class);
         $this->controller->expects(self::once())->method('asSuccess')->with(null, ['success' => true, 'subject' => 'Example Calendar: Confirmed', 'html' => '<p>Alex Morgan</p>'])->willReturn($response);
         self::assertSame($response, $this->controller->actionPreviewNotification());
@@ -250,9 +250,9 @@ class BookingNotificationsTest extends TestCase
         $plugin = (new \ReflectionClass(Calendar::class))->newInstanceWithoutConstructor();
         $plugin->setComponents(['bookings' => $bookings, 'settings' => SettingsService::class]);
         Calendar::setInstance($plugin);
-        $this->body = ['templates' => ['admin' => ['body' => '{% if %}', 'fromEmail' => 'invalid sender']]];
+        $this->body = ['templates' => ['admin' => ['enabled' => 'bad', 'events' => ['bad'], 'body' => '{% if %}', 'fromEmail' => 'invalid sender']]];
         $response = $this->createMock(Response::class);
-        $this->controller->expects(self::once())->method('renderTemplate')->with('calendar/bookings/notifications', self::callback(static fn ($variables) => $variables['notificationSettings']->hasErrors('templates.admin.body') && $variables['notificationSettings']->hasErrors('templates.admin.fromEmail') && 'invalid sender' === $variables['notificationSettings']->getTemplates()['admin']['fromEmail'] && '{% if %}' === $variables['notificationSettings']->templates['admin']['body']))->willReturn($response);
+        $this->controller->expects(self::once())->method('renderTemplate')->with('calendar/bookings/notifications', self::callback(static fn ($variables) => $variables['notificationSettings']->hasErrors('templates.admin.enabled') && $variables['notificationSettings']->hasErrors('templates.admin.events') && $variables['notificationSettings']->hasErrors('templates.admin.body') && $variables['notificationSettings']->hasErrors('templates.admin.fromEmail') && 'invalid sender' === $variables['notificationSettings']->getTemplates()['admin']['fromEmail'] && '{% if %}' === $variables['notificationSettings']->templates['admin']['body']))->willReturn($response);
         self::assertSame($response, $this->controller->actionSaveNotifications());
         self::assertSame([], \Craft::$app->saved);
     }

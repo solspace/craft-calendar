@@ -31,6 +31,8 @@ use yii\db\Expression;
 
 class BookingsService extends Component
 {
+    private array $notificationChanges = [];
+
     public function canManage(?CalendarModel $calendar, ?User $user = null): bool
     {
         $user ??= \Craft::$app->getUser()->getIdentity();
@@ -302,28 +304,34 @@ class BookingsService extends Component
     }
 
     /** Called from the element lifecycle, including native Craft saves and restores. */
-    public function scheduleNotification(Booking $booking, ?array $previous): void
+    public function scheduleNotification(Booking $booking, ?array $previous, bool $restored = false): void
     {
         $record = $booking->getRecordData();
-        if ($previous && !array_diff_assoc(array_intersect_key($record, array_flip(['calendarId', 'startDate', 'endDate', 'bookingStatus'])), $previous)) {
+        if (!$restored && $previous && !array_diff_assoc(array_intersect_key($record, array_flip(['calendarId', 'startDate', 'endDate', 'bookingStatus'])), $previous)) {
             return;
         }
         // A persisted marker distinguishes committed changes from rolled-back savepoints.
         // Multiple changes within one transaction only notify about its final state.
+        $previousToken = (new Query())->select('notificationUid')->from(Booking::TABLE)->where(['id' => $booking->id])->scalar();
+        $context = $this->notificationChanges[$previousToken] ?? ['previous' => $previous, 'restored' => $restored];
         $token = StringHelper::randomString(40);
         Db::update(Booking::TABLE, ['notificationUid' => $token], ['id' => $booking->id]);
+        $this->notificationChanges[$token] = $context;
         $snapshot = clone $booking;
-        \Craft::$app->getDb()->onAfterTransaction(function () use ($snapshot, $token): void {
+        \Craft::$app->getDb()->onAfterTransaction(function () use ($snapshot, $token, $context): void {
             try {
                 $persisted = (new Query())->from(Booking::TABLE)->where(['id' => $snapshot->id, 'notificationUid' => $token])
                     ->andWhere(['exists', (new Query())->select(new Expression('1'))->from(Table::ELEMENTS)->where(['id' => $snapshot->id, 'dateDeleted' => null])])->exists()
                 ;
                 if ($persisted) {
-                    $this->notify($snapshot);
+                    $events = BookingNotifications::events($snapshot->getRecordData(), $context['previous'], $context['restored']);
+                    $this->notify($snapshot, $events);
                 }
             } catch (\Throwable $exception) {
                 // A notification failure must not report a committed booking as a failed save.
                 \Craft::error('Could not queue booking notification: '.$exception->getMessage(), __METHOD__);
+            } finally {
+                unset($this->notificationChanges[$token]);
             }
         });
     }
@@ -355,8 +363,11 @@ class BookingsService extends Component
         return $command->queryAll();
     }
 
-    private function notify(Booking $booking): void
+    private function notify(Booking $booking, array $events): void
     {
+        if (!$events) {
+            return;
+        }
         $calendar = $booking->getCalendar();
         $settings = $calendar->getSchedulingSettings();
         $templates = BookingNotificationSettings::fromProjectConfig();
@@ -365,6 +376,10 @@ class BookingsService extends Component
             $recipients['admin'] = $settings->notificationEmail;
         }
         foreach ($recipients as $audience => $recipient) {
+            if (!$templates->shouldSend($audience, $events)) {
+                continue;
+            }
+
             try {
                 $message = BookingNotifications::renderForBooking($booking, $calendar, $audience, $templates);
                 Queue::push(new SendBookingNotification(['recipient' => $recipient] + $templates->getDeliverySettings($audience) + $message));

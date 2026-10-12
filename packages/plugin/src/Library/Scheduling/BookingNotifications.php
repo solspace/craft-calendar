@@ -10,6 +10,27 @@ use Solspace\Calendar\Models\CalendarModel;
 
 class BookingNotifications
 {
+    /** Describe the committed change, independently of an audience's email preferences. */
+    public static function events(array $record, ?array $previous, bool $restored = false): array
+    {
+        $events = $restored ? ['restored'] : [];
+        if (null === $previous) {
+            $events[] = 'created';
+            if (Booking::CONFIRMED === $record['bookingStatus']) {
+                $events[] = 'confirmed';
+            }
+        } else {
+            if ($record['bookingStatus'] !== $previous['bookingStatus']) {
+                $events[] = $record['bookingStatus'];
+            }
+            if (array_diff_assoc(array_intersect_key($record, array_flip(['calendarId', 'startDate', 'endDate'])), $previous)) {
+                $events[] = 'changed';
+            }
+        }
+
+        return $events;
+    }
+
     public static function defaults(string $audience): array
     {
         if (!\in_array($audience, BookingNotificationSettings::AUDIENCES, true)) {

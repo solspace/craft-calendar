@@ -2,6 +2,21 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'New booking submitted' => 'Nuova prenotazione inviata',
+    'Booking declined' => 'Prenotazione rifiutata',
+    'Booking cancelled' => 'Prenotazione annullata',
+    'Status changed to Requested' => 'Stato cambiato in Richiesta',
+    'Booking time or calendar changed' => 'Orario o calendario della prenotazione modificato',
+    'Booking restored from Trash' => 'Prenotazione ripristinata dal cestino',
+    'Choose whether notification emails are enabled.' => 'Scegli se abilitare le notifiche email.',
+    'Choose valid booking notification triggers.' => 'Scegli eventi validi per le notifiche di prenotazione.',
+    'Send Email Notifications' => 'Invia notifiche email',
+    'Send When' => 'Invia quando',
+    'Choose when to email the Staff Notification Email configured for each {label}.' => 'Scegli quando inviare un’email all’indirizzo di notifica del personale configurato per ogni {label}.',
+    'Choose when to email the requester’s email address.' => 'Scegli quando inviare un’email all’indirizzo del richiedente.',
+    'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.' => 'Non selezionare alcun evento per non inviare email. Confermata include le prenotazioni confermate immediatamente all’invio. Ogni gruppo di destinatari riceve una sola email per modifica salvata, anche se corrispondono più eventi.',
+    'Notification Emails: {audience}' => 'Notifiche email: {audience}',
+    'Notification Triggers: {audience}' => 'Eventi di notifica: {audience}',
     'Event Calendar Details ({count})' => 'Dettagli calendari eventi ({count})',
     'Include booked time slots' => 'Includi le fasce orarie prenotate',
     'Booked' => 'Prenotato',

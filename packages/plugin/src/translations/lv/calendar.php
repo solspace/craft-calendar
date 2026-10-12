@@ -2,6 +2,21 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'New booking submitted' => 'Iesniegta jauna rezervācija',
+    'Booking declined' => 'Rezervācija noraidīta',
+    'Booking cancelled' => 'Rezervācija atcelta',
+    'Status changed to Requested' => 'Statuss mainīts uz Pieprasīta',
+    'Booking time or calendar changed' => 'Mainīts rezervācijas laiks vai kalendārs',
+    'Booking restored from Trash' => 'Rezervācija atjaunota no atkritnes',
+    'Choose whether notification emails are enabled.' => 'Izvēlieties, vai e-pasta paziņojumi ir iespējoti.',
+    'Choose valid booking notification triggers.' => 'Izvēlieties derīgus rezervāciju paziņojumu nosūtīšanas notikumus.',
+    'Send Email Notifications' => 'Sūtīt e-pasta paziņojumus',
+    'Send When' => 'Sūtīt, kad',
+    'Choose when to email the Staff Notification Email configured for each {label}.' => 'Izvēlieties, kad sūtīt e-pastu uz personāla paziņojumu adresi, kas konfigurēta katram {label}.',
+    'Choose when to email the requester’s email address.' => 'Izvēlieties, kad sūtīt e-pastu uz pieprasītāja e-pasta adresi.',
+    'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.' => 'Ja nav izvēlēts neviens notikums, e-pasti netiek sūtīti. Apstiprināta ietver arī rezervācijas, kas tiek apstiprinātas uzreiz pēc iesniegšanas. Katra saņēmēju grupa saņem vienu e-pastu par saglabāto izmaiņu, pat ja atbilst vairāki notikumi.',
+    'Notification Emails: {audience}' => 'E-pasta paziņojumi: {audience}',
+    'Notification Triggers: {audience}' => 'Paziņojumu notikumi: {audience}',
     'Event Calendar Details ({count})' => 'Notikumu kalendāru informācija ({count})',
     'Include booked time slots' => 'Rādīt rezervētos laika intervālus',
     'Booked' => 'Rezervēts',

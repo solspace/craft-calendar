@@ -2,6 +2,21 @@
 
 // Keep these message keys in sync across the supported control-panel languages.
 return [
+    'New booking submitted' => 'Neue Buchung eingereicht',
+    'Booking declined' => 'Buchung abgelehnt',
+    'Booking cancelled' => 'Buchung storniert',
+    'Status changed to Requested' => 'Status auf Angefragt geändert',
+    'Booking time or calendar changed' => 'Buchungszeit oder Kalender geändert',
+    'Booking restored from Trash' => 'Buchung aus dem Papierkorb wiederhergestellt',
+    'Choose whether notification emails are enabled.' => 'Wählen Sie, ob E-Mail-Benachrichtigungen aktiviert sind.',
+    'Choose valid booking notification triggers.' => 'Wählen Sie gültige Auslöser für Buchungsbenachrichtigungen.',
+    'Send Email Notifications' => 'E-Mail-Benachrichtigungen senden',
+    'Send When' => 'Senden bei',
+    'Choose when to email the Staff Notification Email configured for each {label}.' => 'Wählen Sie, wann eine E-Mail an die für jede {label} konfigurierte Mitarbeiteradresse gesendet wird.',
+    'Choose when to email the requester’s email address.' => 'Wählen Sie, wann eine E-Mail an die Adresse des Anfragenden gesendet wird.',
+    'Choose no triggers to send no emails. Confirmed includes bookings confirmed immediately on submission. Each audience receives one email per saved change, even when multiple triggers match.' => 'Wenn Sie keine Auslöser auswählen, werden keine E-Mails gesendet. Bestätigt umfasst auch Buchungen, die sofort beim Einreichen bestätigt werden. Jede Empfängergruppe erhält eine E-Mail pro gespeicherter Änderung, auch wenn mehrere Auslöser zutreffen.',
+    'Notification Emails: {audience}' => 'E-Mail-Benachrichtigungen: {audience}',
+    'Notification Triggers: {audience}' => 'Benachrichtigungsauslöser: {audience}',
     'Event Calendar Details ({count})' => 'Details der Veranstaltungskalender ({count})',
     'Include booked time slots' => 'Gebuchte Zeitfenster anzeigen',
     'Booked' => 'Gebucht',

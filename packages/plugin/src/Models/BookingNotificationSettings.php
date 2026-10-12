@@ -13,6 +13,7 @@ class BookingNotificationSettings extends Model
 {
     public const PATH = 'solspace.calendar.bookingNotificationTemplates';
     public const AUDIENCES = ['admin', 'requester'];
+    public const EVENTS = ['created', 'confirmed', 'declined', 'cancelled', 'requested', 'changed', 'restored'];
     public const DELIVERY_FIELDS = ['fromEmail', 'fromName', 'replyTo', 'cc', 'bcc'];
 
     public array $templates = [];
@@ -22,6 +23,40 @@ class BookingNotificationSettings extends Model
         $templates = \Craft::$app->getProjectConfig()->get(self::PATH);
 
         return new self(['templates' => \is_array($templates) ? $templates : []]);
+    }
+
+    public static function eventOptions(): array
+    {
+        return array_map(static fn ($label) => Calendar::t($label), [
+            'created' => 'New booking submitted',
+            'confirmed' => 'Booking confirmed',
+            'declined' => 'Booking declined',
+            'cancelled' => 'Booking cancelled',
+            'requested' => 'Status changed to Requested',
+            'changed' => 'Booking time or calendar changed',
+            'restored' => 'Booking restored from Trash',
+        ]);
+    }
+
+    /** Missing controls keep the existing notification behavior; explicit empty triggers send nothing. */
+    public function getSendingSettings(string $audience): array
+    {
+        if (!\in_array($audience, self::AUDIENCES, true)) {
+            throw new \InvalidArgumentException('Invalid notification audience.');
+        }
+        $template = $this->templates[$audience] ?? [];
+        $template = \is_array($template) ? $template : [];
+        $enabled = !\array_key_exists('enabled', $template) || \in_array($template['enabled'], [true, 1, '1'], true);
+        $events = \array_key_exists('events', $template) ? $template['events'] : self::EVENTS;
+
+        return ['enabled' => $enabled, 'events' => \is_array($events) ? array_values(array_intersect(self::EVENTS, array_filter($events, 'is_string'))) : []];
+    }
+
+    public function shouldSend(string $audience, array $events): bool
+    {
+        $settings = $this->getSendingSettings($audience);
+
+        return $settings['enabled'] && (bool) array_intersect($settings['events'], $events);
     }
 
     public function getTemplates(): array
@@ -50,6 +85,28 @@ class BookingNotificationSettings extends Model
             }
             foreach ($template as $field => $source) {
                 $attribute = 'templates.'.$audience.'.'.$field;
+                if ('enabled' === $field) {
+                    if (!\is_bool($source) && !\in_array($source, [0, 1, '0', '1'], true)) {
+                        $this->addError($attribute, Calendar::t('Choose whether notification emails are enabled.'));
+                    } else {
+                        $this->templates[$audience][$field] = (bool) $source;
+                    }
+
+                    continue;
+                }
+                if ('events' === $field) {
+                    // Craft's checkbox group posts an empty string when all boxes are unchecked.
+                    if ('' === $source) {
+                        $source = [];
+                    }
+                    if (!\is_array($source) || array_filter($source, static fn ($event) => !\is_string($event) || !\in_array($event, self::EVENTS, true))) {
+                        $this->addError($attribute, Calendar::t('Choose valid booking notification triggers.'));
+                    } else {
+                        $this->templates[$audience][$field] = array_values(array_unique($source));
+                    }
+
+                    continue;
+                }
                 if (!\in_array($field, array_merge(['subject', 'body'], self::DELIVERY_FIELDS), true) || !\is_string($source)) {
                     $this->addError($attribute, Calendar::t('Enter valid notification templates.'));
 
