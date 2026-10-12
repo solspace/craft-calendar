@@ -17,6 +17,8 @@ export type CalendarCreateDraft = {
   description?: string;
   location?: string;
   repeatType?: string;
+  repeatEndType?: string;
+  until?: number | null;
   rrule?: string;
 };
 

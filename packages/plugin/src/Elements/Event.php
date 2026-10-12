@@ -935,6 +935,7 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
                 'allDayDefault' => $plugin->settings->isAllDayDefault(),
                 'showOverlapWarnings' => $plugin->settings->showOverlapWarnings(),
                 'overlapThreshold' => $plugin->settings->getOverlapThreshold(),
+                'isSolspaceAiConnected' => $plugin->isPro() && $plugin->solspaceAi->isConnected(),
             ],
             'event' => [
                 'start' => $this->startDate->timestamp,
@@ -952,6 +953,8 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
                 'eventId' => $this->id,
                 'calendarId' => (int) $this->calendarId,
                 'siteId' => $this->siteId,
+                'descriptionFieldHandle' => $this->getCalendar()?->descriptionFieldHandle ?: null,
+                'locationFieldHandle' => $this->getCalendar()?->locationFieldHandle ?: null,
                 'splitAt' => $plugin->series->getSplitAt($this)?->timestamp,
                 'series' => array_map(
                     static fn (?self $part) => $part ? [
@@ -1233,6 +1236,18 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
             ],
             ...$existingCrumbs,
         ]);
+
+        $existingButtons = $screen->additionalButtonsHtml;
+        $screen->additionalButtonsHtml(static function () use ($existingButtons) {
+            $html = Html::tag('span', '', ['data' => ['event-ai-create-root' => true]]);
+            if (\is_callable($existingButtons)) {
+                $html .= $existingButtons();
+            } elseif (\is_string($existingButtons)) {
+                $html .= $existingButtons;
+            }
+
+            return $html;
+        });
     }
 
     /**

@@ -12,6 +12,8 @@ export type AiGeneratedEvent = {
   calendarId?: number;
   calendarHandle?: string;
   repeatType?: string;
+  repeatEndType?: string;
+  until?: number | null;
   rrule?: string;
   timezone?: string;
 };

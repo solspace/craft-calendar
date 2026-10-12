@@ -119,13 +119,14 @@ class SettingsController extends BaseController
      */
     public function actionSolspaceai(): Response
     {
-        Calendar::getInstance()->requirePro();
-
+        $plugin = Calendar::getInstance();
         $settings = $this->getSettingsService()->getSettingsModel();
-        $solspaceAi = Calendar::getInstance()->solspaceAi;
-        $connected = $solspaceAi->isConnected();
+        $solspaceAi = $plugin->solspaceAi;
+        $connected = $plugin->isPro() && $solspaceAi->isConnected();
 
-        \Craft::$app->getView()->registerAssetBundle(SolspaceAiAssetBundle::class);
+        if ($plugin->isPro()) {
+            \Craft::$app->getView()->registerAssetBundle(SolspaceAiAssetBundle::class);
+        }
 
         return $this->provideTemplate(
             'solspaceai',

@@ -24,6 +24,7 @@ export type AppConfig = {
   allDayDefault?: boolean;
   overlapThreshold?: number;
   showOverlapWarnings?: boolean;
+  isSolspaceAiConnected?: boolean;
 };
 
 export type SeriesPart = {
@@ -35,6 +36,8 @@ export type BuilderContext = {
   eventId: number | null;
   siteId: number;
   calendarId?: number;
+  descriptionFieldHandle?: string | null;
+  locationFieldHandle?: string | null;
   // Set on a draft made with "Edit this and following": the occurrence the draft continues the event from
   splitAt?: number | null;
   // The events before and after this one in its series

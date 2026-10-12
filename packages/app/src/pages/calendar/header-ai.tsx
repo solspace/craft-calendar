@@ -10,15 +10,24 @@ type Props = {
   canEditEvents: boolean;
 };
 
+const openSolspaceAiSettings = () => {
+  window.location.href = Craft.getCpUrl("calendar/settings/solspaceai");
+};
+
 export const HeaderAiCreate: FC<Props> = ({ buttonRef, isSolspaceAiConnected, canEditEvents }) => {
   const { showPopover, hidePopover } = usePopover();
   const aiCreate = useAiCreate();
 
-  if (!isSolspaceAiConnected || !canEditEvents || !aiCreate) {
+  if (!canEditEvents) {
     return null;
   }
 
   const openAiPopover = () => {
+    if (!isSolspaceAiConnected || !aiCreate) {
+      openSolspaceAiSettings();
+      return;
+    }
+
     const anchor = buttonRef.current;
     if (!anchor) {
       return;

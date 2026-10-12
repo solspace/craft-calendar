@@ -13,7 +13,9 @@
 
     {% if not craft.calendar.pro %}
         <div class="pane">
+            <h2>{{ "SolspaceAI"|t('calendar') }}</h2>
             <p>{{ "SolspaceAI requires Calendar Pro."|t('calendar') }}</p>
+            <p>{{ "Upgrade to Calendar Pro to enable Create with AI, then authorize SolspaceAI on this page."|t('calendar') }}</p>
         </div>
     {% else %}
 

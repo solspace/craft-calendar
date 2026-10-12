@@ -57,6 +57,8 @@ export const PopoverCreateWithAi: FC<Props> = ({ onApplyDraft, onCancel }) => {
       description: event.description,
       location: event.location,
       repeatType: event.repeatType || "NEVER",
+      repeatEndType: event.repeatEndType || "NEVER",
+      until: event.until ?? undefined,
       rrule: event.rrule || "",
     });
   };

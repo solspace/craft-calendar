@@ -890,6 +890,7 @@ return [
     'Force a new connection to SolspaceAI (e.g. after changing site URL).' => 'Force a new connection to SolspaceAI (e.g. after changing site URL).',
     'Every Calendar Pro license includes 1,000 free SolspaceAI credits to get started.' => 'Every Calendar Pro license includes 1,000 free SolspaceAI credits to get started.',
     'SolspaceAI requires Calendar Pro.' => 'SolspaceAI requires Calendar Pro.',
+    'Upgrade to Calendar Pro to enable Create with AI, then authorize SolspaceAI on this page.' => 'Upgrade to Calendar Pro to enable Create with AI, then authorize SolspaceAI on this page.',
     'SolspaceAI is not connected.' => 'SolspaceAI is not connected.',
     'Enable SolspaceAI in Calendar Settings to view usage.' => 'Enable SolspaceAI in Calendar Settings to view usage.',
     'Go to Settings' => 'Go to Settings',

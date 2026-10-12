@@ -5,7 +5,9 @@ import { Frequency } from "rrule";
 import type { RepeatEndType, RepeatType } from "../types";
 import {
   alignUntilForState,
+  buildEventStateFromSchedule,
   type EventState,
+  type GeneratedScheduleInput,
   normalizeDays,
   rebuildRRule,
   removeRDates,
@@ -171,6 +173,9 @@ const eventBuilderSlice = createSlice({
     },
     setRRule: (state, action: PayloadAction<string | undefined>) => {
       state.rrule = action.payload || undefined;
+    },
+    applyGeneratedSchedule: (state, action: PayloadAction<GeneratedScheduleInput>) => {
+      Object.assign(state, buildEventStateFromSchedule(action.payload));
     },
   },
 });

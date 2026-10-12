@@ -84,7 +84,9 @@ class EventGenerationService extends Component
             - When repeatType is WEEKLY and the user names a weekday, set rrule like FREQ=WEEKLY;BYDAY=MO (use that weekday).
             - When repeatType is DAILY/MONTHLY/YEARLY and rrule is empty, you may omit rrule (server will fill a simple rule).
             - For CUSTOM, rrule is required (e.g. FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE).
-            - Do not include DTSTART in rrule; only the RRULE body (FREQ=...).
+            - Do not include DTSTART, RDATE, or EXDATE in rrule; only the RRULE body (FREQ=...).
+            - When the user limits recurrence ("for 4 weeks", "10 times", "until December 1"), include COUNT= or UNTIL= in the rrule body.
+              UNTIL must be floating local time: all-day YYYYMMDD, timed YYYYMMDDTHHMMSS (no Z / offsets).
             - Prefer calendarHandle from the allowed list; if unsure, use the first calendar.
 
             Allowed calendars:
@@ -159,10 +161,49 @@ class EventGenerationService extends Component
         if (Event::REPEAT_NEVER === $event['repeatType']) {
             $event['rrule'] = '';
         }
-        $event['repeatEndType'] = Event::REPEAT_END_NEVER;
+        [$repeatEndType, $untilTimestamp] = $this->inferRepeatEndFromRrule((string) $event['rrule']);
+        $event['repeatEndType'] = $repeatEndType;
+        $event['until'] = $untilTimestamp;
         $event['referenceNow'] = $referenceFloating->format('Y-m-d\TH:i:s');
 
         return ['success' => true, 'event' => $event];
+    }
+
+    /**
+     * @return array{0: string, 1: null|int}
+     */
+    private function inferRepeatEndFromRrule(string $rrule): array
+    {
+        if ('' === trim($rrule)) {
+            return [Event::REPEAT_END_NEVER, null];
+        }
+
+        if (preg_match('/(?:^|;)COUNT=(\d+)/i', $rrule, $countMatch) && (int) $countMatch[1] > 0) {
+            return [Event::REPEAT_END_AFTER, null];
+        }
+
+        if (preg_match('/(?:^|;)UNTIL=([0-9T]+)/i', $rrule, $untilMatch)) {
+            $raw = $untilMatch[1];
+
+            try {
+                if (preg_match('/^\d{8}$/', $raw)) {
+                    $until = DateHelper::parseFloatingCarbon(substr($raw, 0, 4).'-'.substr($raw, 4, 2).'-'.substr($raw, 6, 2).'T00:00:00');
+                } elseif (preg_match('/^\d{8}T\d{6}$/', $raw)) {
+                    $until = DateHelper::parseFloatingCarbon(
+                        substr($raw, 0, 4).'-'.substr($raw, 4, 2).'-'.substr($raw, 6, 2).'T'
+                        .substr($raw, 9, 2).':'.substr($raw, 11, 2).':'.substr($raw, 13, 2)
+                    );
+                } else {
+                    return [Event::REPEAT_END_NEVER, null];
+                }
+
+                return [Event::REPEAT_END_ON_DATE, $until->getTimestamp()];
+            } catch (\Throwable) {
+                return [Event::REPEAT_END_NEVER, null];
+            }
+        }
+
+        return [Event::REPEAT_END_NEVER, null];
     }
 
     private function resolveTimezone(?string $timezone): string

@@ -162,4 +162,28 @@ describe("createEventBuilderStore", () => {
     expect(store.getState().event.rrule).toContain("RRULE:FREQ=DAILY");
     expect(store.getState().event.rrule).not.toContain("RDATE");
   });
+
+  it("applies an AI-generated schedule without wiping the provided rrule", () => {
+    const store = createEventBuilderStore(baseConfig());
+    const rrule = ["DTSTART:20261013T090000", "RRULE:FREQ=WEEKLY;BYDAY=MO;COUNT=4"].join("\n");
+
+    store.dispatch(
+      eventActions.applyGeneratedSchedule({
+        start: 1_760_338_800,
+        end: 1_760_342_400,
+        allDay: false,
+        repeatType: "WEEKLY",
+        rrule,
+      }),
+    );
+
+    const state = store.getState().event;
+    expect(state.start).toBe(1_760_338_800);
+    expect(state.end).toBe(1_760_342_400);
+    expect(state.repeatType).toBe("WEEKLY");
+    expect(state.repeatEndType).toBe("AFTER");
+    expect(state.count).toBe(4);
+    expect(state.rrule).toBe(rrule);
+    expect(state.byweekday).toEqual([0]);
+  });
 });
