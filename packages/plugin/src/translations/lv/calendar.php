@@ -1116,4 +1116,7 @@ return [
     'All {label} share this booking field layout. Customer name, email, times, status, and notes are included automatically.' => 'Visi {label} izmanto šo rezervācijas lauku izkārtojumu. Klienta vārds, e-pasts, laiki, statuss un piezīmes tiek iekļauti automātiski.',
     'These templates apply to all {label}. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.' => 'Šīs veidnes attiecas uz visiem {label}. Tukši piegādes iestatījumi izmanto Craft noklusējumus. E-pasti izmanto Craft pasta un rindas iestatījumus.',
     'statusHandle is requested, confirmed, declined, or cancelled. Times use the booking timezone.' => 'statusHandle ir requested, confirmed, declined vai cancelled. Laiki izmanto rezervācijas laika joslu.',
+    'Times shown in {timezone}' => 'Laiki zonā {timezone}',
+    'All bookings and available times are converted to this display timezone.' => 'Visas rezervācijas un pieejamie laiki tiek pārrēķināti šajā attēlošanas laika joslā.',
+    'Configured timezones: {timezones}' => 'Konfigurētās laika joslas: {timezones}',
 ];

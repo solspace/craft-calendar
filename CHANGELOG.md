@@ -99,6 +99,7 @@
 
 ### Fixed
 - Fixed notification template previews showing an error after rendering successfully because the response was missing its success flag.
+- Clarified the booking Schedule display timezone and listed configured resource timezones in its tooltip. Selected resources sharing a timezone now use it automatically; mixed zones use the staff display timezone. Hour labels retain the correct local clock.
 - Fixed the request review Confirm Booking button reverting to Craft’s red primary color, with distinct darker blue hover and pressed states.
 - Fixed stale selected calendar indicators in request review menus, using native Craft menu rows and keeping selection, labels, colors, and resets in sync after the menu moves outside the form.
 - Fixed booking schedules starting on Monday instead of respecting Calendar’s first day of week setting and Craft user preferences.

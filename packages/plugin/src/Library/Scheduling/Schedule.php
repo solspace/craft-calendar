@@ -24,6 +24,14 @@ class Schedule
         return array_values(array_intersect(array_keys($calendars), $ids));
     }
 
+    /** A shared resource zone wins; mixed resources use the staff display timezone. */
+    public static function displayTimezone(array $calendars, string $fallback): string
+    {
+        $zones = array_unique(array_map(static fn (CalendarModel $calendar) => $calendar->getSchedulingSettings()->timezone, $calendars));
+
+        return 1 === \count($zones) ? reset($zones) : $fallback;
+    }
+
     /** Align a displayed week with Calendar's effective first day (Sunday = 0). */
     public static function weekStart(\DateTimeImmutable $day, int $firstDay): \DateTimeImmutable
     {

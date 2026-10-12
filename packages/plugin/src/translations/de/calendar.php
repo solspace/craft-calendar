@@ -1156,4 +1156,7 @@ return [
     'All {label} share this booking field layout. Customer name, email, times, status, and notes are included automatically.' => 'Alle {label} verwenden dieses Buchungsfeldlayout. Kundenname, E-Mail, Zeiten, Status und Notizen sind automatisch enthalten.',
     'These templates apply to all {label}. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.' => 'Diese Vorlagen gelten für alle {label}. Leere Zustelleinstellungen verwenden die Craft-Standardwerte. E-Mails verwenden die E-Mail- und Warteschlangeneinstellungen von Craft.',
     'statusHandle is requested, confirmed, declined, or cancelled. Times use the booking timezone.' => 'statusHandle ist requested, confirmed, declined oder cancelled. Zeiten verwenden die Buchungszeitzone.',
+    'Times shown in {timezone}' => 'Zeiten in {timezone}',
+    'All bookings and available times are converted to this display timezone.' => 'Alle Buchungen und verfügbaren Zeiträume werden in diese Anzeigezeitzone umgerechnet.',
+    'Configured timezones: {timezones}' => 'Konfigurierte Zeitzonen: {timezones}',
 ];

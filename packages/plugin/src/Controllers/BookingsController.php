@@ -659,7 +659,7 @@ class BookingsController extends BaseController
         $calendarId = $calendarIds[0];
         $calendar = $calendars[$calendarId];
         $calendarSelection = \count($calendarIds) === \count($calendars) ? 'all' : implode(',', $calendarIds);
-        $zone = new \DateTimeZone(\count($calendarIds) === 1 ? $calendar->getSchedulingSettings()->timezone : \Craft::$app->getFormatter()->timeZone);
+        $zone = new \DateTimeZone(Schedule::displayTimezone(array_intersect_key($calendars, array_flip($calendarIds)), \Craft::$app->getFormatter()->timeZone));
         $date = (string) \Craft::$app->request->getQueryParam('date', (new \DateTimeImmutable('now', $zone))->format('Y-m-d'));
         if (!Availability::validDate($date)) {
             throw new BadRequestHttpException();

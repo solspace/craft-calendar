@@ -53,6 +53,18 @@ class ScheduleTest extends TestCase
         Calendar::setInstance($this->previousPlugin);
     }
 
+    public function testSelectedResourcesShareTheirZoneOrUseStaffTimezoneWhenMixed(): void
+    {
+        $tahiti = new CalendarModel(['id' => 7, 'scheduling' => ['timezone' => 'Pacific/Tahiti']]);
+        $otherTahiti = new CalendarModel(['id' => 8, 'scheduling' => ['timezone' => 'Pacific/Tahiti']]);
+        $central = new CalendarModel(['id' => 9, 'scheduling' => ['timezone' => 'America/Winnipeg']]);
+        self::assertSame('Pacific/Tahiti', Schedule::displayTimezone([$tahiti], 'America/Winnipeg'));
+        self::assertSame('Pacific/Tahiti', Schedule::displayTimezone([$tahiti, $otherTahiti], 'America/Winnipeg'));
+        self::assertSame('America/Winnipeg', Schedule::displayTimezone([$tahiti, $central], 'America/Winnipeg'));
+        self::assertSame('Europe/Paris', Schedule::displayTimezone([$central, $tahiti], 'Europe/Paris'));
+        self::assertSame('Europe/Paris', Schedule::displayTimezone([$tahiti, $central], 'Europe/Paris'));
+    }
+
     public function testWeekStartsFollowSettingsAndPreserveLocalDatesAcrossDstAndYearBoundaries(): void
     {
         foreach ([
@@ -162,6 +174,21 @@ class ScheduleTest extends TestCase
         self::assertArrayNotHasKey(480, $remoteColumn['slots']);
         self::assertSame('2026-10-13T08:00:00+09:00', $remoteColumn['slots'][1080][0]['start']);
         self::assertStringContainsString('6', $remoteColumn['slots'][1080][0]['label']);
+    }
+
+    public function testTahitiBookingsAndSlotsUseTheSameCentralDisplayClock(): void
+    {
+        $calendar = new CalendarModel(['id' => 8, 'scheduling' => ['timezone' => 'Pacific/Tahiti', 'duration' => 30, 'increment' => 30, 'hours' => [['day' => 7, 'start' => '09:00', 'end' => '11:00']]]]);
+        $booking = (object) ['id' => 88, 'calendarId' => 8, 'startDate' => new \DateTimeImmutable('2026-11-08T09:00:00-10:00'), 'endDate' => new \DateTimeImmutable('2026-11-08T09:30:00-10:00')];
+        $slots = static fn ($resource, $date) => Availability::slots($resource->getSchedulingSettings()->toArray(), $date, [], null, false);
+        foreach (['America/Winnipeg' => 780, 'Pacific/Tahiti' => 540] as $timezone => $minute) {
+            $column = Schedule::column($calendar, new \DateTimeImmutable('2026-11-08', new \DateTimeZone($timezone)), [$booking], $slots);
+            self::assertSame($minute, $column['bookings'][0]['minute']);
+            self::assertSame(30, $column['bookings'][0]['length']);
+            self::assertArrayHasKey($minute, $column['slots']);
+            self::assertSame('2026-11-08T09:00:00-10:00', $column['slots'][$minute][0]['start']);
+        }
+        self::assertSame('2026-11-08T09:00:00-10:00', $booking->startDate->format('c'));
     }
 
     public function testOvernightBookingsAreClippedAndDoNotConsumeOtherCalendarLanes(): void

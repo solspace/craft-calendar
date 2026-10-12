@@ -1269,4 +1269,7 @@ return [
     'All {label} share this booking field layout. Customer name, email, times, status, and notes are included automatically.' => 'All {label} share this booking field layout. Customer name, email, times, status, and notes are included automatically.',
     'These templates apply to all {label}. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.' => 'These templates apply to all {label}. Blank delivery settings use Craft’s defaults. Emails use Craft’s mailer and queue settings.',
     'statusHandle is requested, confirmed, declined, or cancelled. Times use the booking timezone.' => 'statusHandle is requested, confirmed, declined, or cancelled. Times use the booking timezone.',
+    'Times shown in {timezone}' => 'Times shown in {timezone}',
+    'All bookings and available times are converted to this display timezone.' => 'All bookings and available times are converted to this display timezone.',
+    'Configured timezones: {timezones}' => 'Configured timezones: {timezones}',
 ];

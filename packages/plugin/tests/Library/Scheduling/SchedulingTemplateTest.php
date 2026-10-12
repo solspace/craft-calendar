@@ -22,7 +22,7 @@ class SchedulingTemplateTest extends TestCase
             'picker' => file_get_contents(__DIR__.'/../../../src/templates/calendars/_type-picker.twig'),
             '_includes/forms' => '{% macro errorList(errors) %}{% endmacro %}',
         ]), ['strict_variables' => true]);
-        $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
 
         foreach ([CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING] as $type) {
             foreach ([[null, false], [1, false], [1, true]] as [$id, $locked]) {
@@ -78,7 +78,7 @@ class SchedulingTemplateTest extends TestCase
         foreach ((new CalendarGlobalExtension())->getFilters() as $filter) {
             $twig->addFilter($filter);
         }
-        $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
         $twig->addFilter(new TwigFilter('time', static fn ($date) => ($date instanceof \DateTimeInterface ? $date : new \DateTimeImmutable($date))->format('H:i')));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path, $params = []) => $path.'?'.http_build_query($params)));
         $view = new class {
@@ -116,6 +116,11 @@ class SchedulingTemplateTest extends TestCase
                         'craft' => ['calendar' => ['bookingLabel' => 'Bookings', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['language' => 'en-US']],
                     ]);
 
+                    self::assertStringContainsString('Times shown in ', $output);
+                    self::assertStringContainsString('All bookings and available times are converted to this display timezone.', $output);
+                    self::assertStringContainsString('Configured timezones: ', $output);
+                    self::assertStringContainsString('(America/Winnipeg)', $output);
+                    self::assertSame(\count($calendarIds) > 1, str_contains($output, '(Asia/Tokyo)'));
                     self::assertStringContainsString('delta-active', $output);
                     self::assertStringNotContainsString('window.confirm(', $output);
                     self::assertStringContainsString('<option value="'.$scheduleView.'" selected>', $output);
@@ -123,6 +128,8 @@ class SchedulingTemplateTest extends TestCase
                     self::assertStringContainsString('calendarIds='.$calendarSelection.'&amp;view='.$scheduleView.'&amp;layout='.$scheduleLayout.'&amp;date=2026-10-19', $output);
                     self::assertStringContainsString('calendar/bookings/new?calendarId=7&amp;start=2026-10-12T08%3A00%3A00-05%3A00', $output);
                     self::assertStringContainsString('top:384px;--slot-height:24px;height:12px;', $output);
+                    self::assertStringContainsString('class="booking-hour-label">00:00</div>', $output);
+                    self::assertStringContainsString('class="booking-hour-label">23:00</div>', $output);
                     self::assertStringContainsString('class="sel" aria-current="page">Schedule', $output);
                     self::assertStringNotContainsString('start=2026-10-12T07', $output);
                     self::assertStringContainsString('data-booking-history="undo" disabled', $output);
@@ -194,7 +201,7 @@ class SchedulingTemplateTest extends TestCase
     public function testBookingSidebarRestrictsFieldConfigurationAndMarksTheCurrentPage(): void
     {
         $twig = new Environment(new ArrayLoader(['nav' => file_get_contents(__DIR__.'/../../../src/templates/bookings/_nav.twig')]), ['strict_variables' => true]);
-        $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path) => $path));
         foreach ([[false, true], [true, false], [true, true]] as [$admin, $allowAdminChanges]) {
             $output = $twig->render('nav', ['bookingView' => 'fields', 'currentUser' => ['admin' => $admin], 'craft' => ['calendar' => ['bookingLabel' => 'Appointments', 'bookingResourceLabels' => (new SettingsModel())->getBookingResourceLabels()], 'app' => ['config' => ['general' => ['allowAdminChanges' => $allowAdminChanges]]]]]);
@@ -233,7 +240,7 @@ class SchedulingTemplateTest extends TestCase
                 {% macro dateField(config) %}{% endmacro %}
                 TWIG,
         ]), ['strict_variables' => true]);
-        $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
+        $twig->addFilter(new TwigFilter('t', static fn ($message, $category, $params = []) => strtr($message, array_combine(array_map(static fn ($key) => '{'.$key.'}', array_keys($params)), $params))));
 
         foreach ([CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING] as $type) {
             $calendar = new CalendarModel(['id' => 1, 'type' => $type]);

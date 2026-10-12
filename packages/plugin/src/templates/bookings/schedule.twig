@@ -27,10 +27,17 @@
         <a class="btn" href="{{ cpUrl('calendar/bookings/schedule', {calendarIds: calendarSelection, view: scheduleView, layout: scheduleLayout, date: next}) }}">{{ 'Next'|t('app') }}</a>
     </div>
     <span class="spinner hidden" aria-hidden="true"></span>
-    <span class="light booking-toolbar-timezone" title="{{ displayTimezone }}">{{ displayTimezone|calendarTimezoneName }}</span>
+    {% set resourceTimezones = [] %}
+    {% for id in calendarIds %}
+        {% set resourceTimezone = calendars[id].schedulingSettings.timezone %}
+        {% if resourceTimezone not in resourceTimezones %}{% set resourceTimezones = resourceTimezones|merge([resourceTimezone]) %}{% endif %}
+    {% endfor %}
+    {% set resourceTimezoneNames = [] %}
+    {% for resourceTimezone in resourceTimezones %}{% set resourceTimezoneNames = resourceTimezoneNames|merge([resourceTimezone|calendarTimezoneName ~ ' (' ~ resourceTimezone ~ ')']) %}{% endfor %}
+    <span class="light booking-toolbar-timezone" title="{{ displayTimezone }}&#10;{{ 'All bookings and available times are converted to this display timezone.'|t('calendar') }}&#10;{{ 'Configured timezones: {timezones}'|t('calendar', {timezones: resourceTimezoneNames|join(', ')}) }}">{{ 'Times shown in {timezone}'|t('calendar', {timezone: displayTimezone|calendarTimezoneName}) }}</span>
 </form>
 <div class="booking-grid-scroll"><div class="booking-grid{{ scheduleLayout == 'combined' ? ' booking-grid-combined' : (calendarIds|length > 1 ? ' booking-grid-multiple' : '') }}" data-calendar-ids="{{ calendarIds|join(',') }}" data-timezone="{{ displayTimezone }}" style="--days:{{ days|length }};--calendars:{{ calendarIds|length }};--columns:{{ days|length * calendarIds|length }}">
-<div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ ('2000-01-01 ' ~ '%02d:00'|format(hour))|time(bookingTimeFormat, displayTimezone)|calendarTimeLabel }}</div>{% endfor %}</div>
+<div class="booking-grid-times"><div class="booking-day-heading"></div>{% for hour in 0..23 %}<div class="booking-hour-label">{{ date('2000-01-01 ' ~ '%02d:00'|format(hour), displayTimezone)|time(bookingTimeFormat, displayTimezone)|calendarTimeLabel }}</div>{% endfor %}</div>
 {% for day in days %}<div class="booking-day"><div class="booking-day-heading">{{ day.date|date('icu:EEE', displayTimezone) }} {{ day.date|date('short', displayTimezone) }}</div>
 {% if scheduleLayout == 'combined' %}
     {% include 'calendar/bookings/_combined-day' %}
