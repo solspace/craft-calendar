@@ -102,6 +102,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed the booking move confirmation timezone sentence to use the grid’s resolved timezone name instead of duplicated dropdown text.
 - Fixed notification template previews showing an error after rendering successfully because the response was missing its success flag.
 - Clarified the booking Schedule display timezone and listed configured resource timezones in its tooltip. Selected resources sharing a timezone now use it automatically; mixed zones use the staff display timezone. Hour labels retain the correct local clock.
 - Fixed the request review Confirm Booking button reverting to Craft’s red primary color, with distinct darker blue hover and pressed states.

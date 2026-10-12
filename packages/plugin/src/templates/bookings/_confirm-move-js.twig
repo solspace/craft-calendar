@@ -21,7 +21,7 @@ function confirmBookingMove(booking, destination) {
         }
         $('<p/>', {
             id: id + '-timezone', class: 'light booking-move-timezone',
-            text: Craft.t('calendar', 'Times shown in {timezone}.', {timezone: bookingToolbar.querySelector('.booking-toolbar-timezone').textContent}),
+            text: Craft.t('calendar', 'Times shown in {timezone}.', {timezone: bookingGridScroll.querySelector('.booking-grid').dataset.timezoneLabel}),
         }).appendTo($body);
         const $buttons = $('<div/>', {class: 'buttons right'})
             .appendTo($('<div/>', {class: 'footer'}).appendTo($container));
