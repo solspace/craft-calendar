@@ -110,7 +110,7 @@ class BookingDiagnosticsTest extends TestCase
         $xpath = new \DOMXPath($dom);
         self::assertSame(1, $xpath->query('//div[contains(@class,"calendar-diag-booking-table")]/table/tbody/tr')->length);
         self::assertSame(1, $xpath->query('//div[contains(@class,"calendar-diag-booking-table")]//td[normalize-space(.)="7"]')->length);
-        self::assertSame(1, $xpath->query('//details[@open]/div[contains(@class,"calendar-diag-booking-table")]')->length);
+        self::assertSame(1, $xpath->query('//details[not(@open)]/div[contains(@class,"calendar-diag-booking-table")]')->length);
         self::assertSame(0, $xpath->query('//details[contains(@class,"calendar-diag-calendars")]//strong[text()="<Room>"]')->length);
         self::assertSame(0, $xpath->query('//div[contains(@class,"calendar-diag-booking-table")]//td[text()="Floating"]')->length);
     }

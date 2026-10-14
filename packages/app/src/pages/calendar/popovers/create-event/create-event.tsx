@@ -12,6 +12,7 @@ import {
   setCreateDraftTitle,
 } from "@cal/pages/calendar/calendar.create-session";
 import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
+import { getRRuleText } from "@cal/utils/rrule";
 import translate from "@cal/utils/translations";
 import clsx from "clsx";
 import type { FC } from "react";
@@ -20,10 +21,8 @@ import { useEventListener } from "usehooks-ts";
 import { useConfig } from "../../context/config.context";
 import { CalendarDropdown } from "./create-event.calendar-dropdown";
 import { useCreateEvent } from "./create-event.mutation";
-import {
-  buildQuickCreateRecurrence,
-  isQuickCreateRecurrenceValid,
-} from "./create-event.recurrence";
+import { buildCreateEventRecurrence } from "./create-event.operations";
+import { isQuickCreateRecurrenceValid } from "./create-event.recurrence";
 import { QuickCreateRepeatControls } from "./create-event.repeat-controls";
 import {
   AllDayLabel,
@@ -75,18 +74,57 @@ export const PopoverCreateEvent: FC<Props> = ({
       })),
     [calendars, calendarColors],
   );
-  const [calendarId, setCalendarId] = useState(calendarOptions[0]?.value ?? 0);
+  const initialCalendarId =
+    draft.calendarId && calendarOptions.some((option) => option.value === draft.calendarId)
+      ? draft.calendarId
+      : (calendarOptions[0]?.value ?? 0);
+  const [calendarId, setCalendarId] = useState(initialCalendarId);
+  const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>(() => {
+    if (!draft.calendarId) {
+      return {};
+    }
+
+    const mapped = quickCreateFields?.[draft.calendarId];
+    if (!mapped) {
+      return {};
+    }
+
+    const seeded: Record<string, string> = {};
+    if (mapped.location && draft.location) {
+      seeded[mapped.location] = draft.location;
+    }
+    if (mapped.description && draft.description) {
+      seeded[mapped.description] = draft.description;
+    }
+
+    return Object.keys(seeded).length ? { [draft.calendarId]: seeded } : {};
+  });
   const allowRepeating = calendarAllowRepeating?.[calendarId] ?? false;
   const effectiveDraft =
-    allowRepeating || !draft.recurrence ? draft : { ...draft, recurrence: undefined };
+    allowRepeating || (!draft.recurrence && !draft.rrule)
+      ? draft
+      : {
+          ...draft,
+          recurrence: undefined,
+          repeatType: "NEVER",
+          repeatEndType: "NEVER",
+          rrule: undefined,
+          until: undefined,
+        };
   const validRecurrence = isQuickCreateRecurrenceValid(effectiveDraft);
-  const recurrenceSchedule = buildQuickCreateRecurrence(effectiveDraft);
-  const [fieldValues, setFieldValues] = useState<Record<number, Record<string, string>>>({});
+  const recurrenceSchedule = buildCreateEventRecurrence(effectiveDraft);
   const mappedFields = quickCreateFields?.[calendarId];
   const locationHandle = mappedFields?.location;
   const descriptionHandle = mappedFields?.description;
   const requiredFields = quickCreateRequiredFields?.[calendarId];
   const values = fieldValues[calendarId] ?? {};
+  const repeatsText = useMemo(() => {
+    if (!allowRepeating || draft.recurrence || !draft.rrule || draft.repeatType === "NEVER") {
+      return null;
+    }
+
+    return getRRuleText(draft.rrule);
+  }, [allowRepeating, draft.recurrence, draft.repeatType, draft.rrule]);
   const details =
     locationHandle || descriptionHandle
       ? {
@@ -142,8 +180,15 @@ export const PopoverCreateEvent: FC<Props> = ({
             options={calendarOptions}
             onChange={(value) => {
               setCalendarId(value);
-              if (!calendarAllowRepeating?.[value] && draft.recurrence)
-                onChange({ ...draft, recurrence: undefined });
+              if (!calendarAllowRepeating?.[value] && (draft.recurrence || draft.rrule))
+                onChange({
+                  ...draft,
+                  recurrence: undefined,
+                  repeatType: "NEVER",
+                  repeatEndType: "NEVER",
+                  rrule: undefined,
+                  until: undefined,
+                });
             }}
           />
 
@@ -225,7 +270,13 @@ export const PopoverCreateEvent: FC<Props> = ({
             }}
           />
 
-          {allowRepeating && (
+          {repeatsText && (
+            <p>
+              <b>{translate("Repeats")}:</b> {repeatsText}
+            </p>
+          )}
+
+          {allowRepeating && !repeatsText && (
             <QuickCreateRepeatControls
               draft={draft}
               onChange={onChange}

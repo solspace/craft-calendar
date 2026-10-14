@@ -24,4 +24,5 @@ export const appSelectors = {
   eventDuration: (state: RootState) => state.app.eventDuration ?? 60,
   allDayDefault: (state: RootState) => state.app.allDayDefault ?? false,
   overlapThreshold: (state: RootState) => state.app.overlapThreshold ?? 0,
+  isSolspaceAiConnected: (state: RootState) => Boolean(state.app.isSolspaceAiConnected),
 };

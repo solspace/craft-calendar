@@ -136,6 +136,28 @@ class QuickCreateRecurrenceTest extends TestCase
         self::assertNull($event->rrule);
     }
 
+    public function testAiRulesInferTheirEndMetadataThroughTheSharedQuickCreateParser(): void
+    {
+        $event = $this->event();
+        $this->apply($event, [
+            'repeatType' => 'WEEKLY', 'repeatEndType' => 'NEVER',
+            'rrule' => "DTSTART:20261009T143000\nRRULE:FREQ=WEEKLY;BYDAY=FR;COUNT=8",
+        ]);
+        self::assertSame('AFTER', $event->repeatEndType);
+        $event->validateRecurrence();
+        self::assertSame([], $event->getErrors());
+
+        $event = $this->event();
+        $this->apply($event, [
+            'repeatType' => 'DAILY', 'repeatEndType' => 'NEVER',
+            'rrule' => "DTSTART:20261009T143000\nRRULE:FREQ=DAILY;UNTIL=20261109T143000",
+        ]);
+        self::assertSame('ON_DATE', $event->repeatEndType);
+        self::assertSame('2026-11-09 14:30:00', $event->until->format('Y-m-d H:i:s'));
+        $event->validateRecurrence();
+        self::assertSame([], $event->getErrors());
+    }
+
     /**
      * @dataProvider invalidSettings
      */

@@ -60,6 +60,7 @@ class CalendarsController extends BaseController
     {
         \Craft::$app->view->registerAssetBundle(CalendarIndexBundle::class);
 
+        $plugin = Calendar::getInstance();
         $calendarType = \Craft::$app->request->getQueryParam('type', 'all');
         if (!\in_array($calendarType, ['all', CalendarModel::TYPE_EVENTS, CalendarModel::TYPE_SCHEDULING], true)) {
             $calendarType = 'all';
@@ -76,7 +77,7 @@ class CalendarsController extends BaseController
 
         $crumbs = [
             [
-                'label' => Calendar::t(Calendar::getInstance()->name),
+                'label' => Calendar::t($plugin->name),
                 'url' => UrlHelper::cpUrl('calendar'),
             ],
             [
@@ -94,6 +95,7 @@ class CalendarsController extends BaseController
                 'calendars' => $calendars,
                 'calendarType' => $calendarType,
                 'sort' => $sort,
+                'isSolspaceAiConnected' => $plugin->isPro() && $plugin->solspaceAi->isConnected(),
             ]
         );
     }

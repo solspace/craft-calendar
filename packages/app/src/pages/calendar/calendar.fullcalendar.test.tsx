@@ -163,6 +163,7 @@ describe("control panel Agenda", () => {
     const calendar = (
       <CalendarFullcalendar
         hiddenCalendarIds={[]}
+        registerApplyAiDraft={vi.fn()}
         selectedDate={new Date("2026-10-09T00:00:00Z")}
         onDateChange={vi.fn()}
         miniDateSelection={null}
@@ -198,10 +199,10 @@ describe("control panel Agenda", () => {
   };
 
   const field = (label: string) => {
-    const id = Array.from(container.querySelectorAll("label")).find(
+    const id = Array.from(document.body.querySelectorAll("label")).find(
       (item) => item.textContent === label,
     )?.htmlFor;
-    return container.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[id="${id}"]`);
+    return document.body.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[id="${id}"]`);
   };
 
   const typeField = (label: string, value: string) => {
@@ -242,7 +243,7 @@ describe("control panel Agenda", () => {
     expect(field("Location")?.value).toBe("Studio three");
     expect(field("Description")?.value).toBe("Bring a notebook.");
     expect(field("Starts")?.value).toBe(start);
-    expect(container.querySelector(".event-title")).toBeNull();
+    expect(document.body.querySelector(".event-title")).toBeNull();
 
     act(() => existing?.dispatchEvent(new MouseEvent("mouseleave")));
     if (action === "cancel") {
@@ -250,7 +251,7 @@ describe("control panel Agenda", () => {
     } else {
       vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ id: 3 })));
       act(() => {
-        Array.from(container.querySelectorAll("button"))
+        Array.from(document.body.querySelectorAll("button"))
           .find((button) => button.textContent === "Create Event")
           ?.click();
       });
@@ -265,11 +266,11 @@ describe("control panel Agenda", () => {
       });
     }
     expect(field("Title")).toBeNull();
-    expect(container.textContent).not.toContain("My unfinished event");
+    expect(document.body.textContent).not.toContain("My unfinished event");
     const savedEvent = container.querySelector<HTMLElement>(".fc-event");
     act(() => savedEvent?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
     await settle();
-    expect(container.querySelector(".event-title")?.textContent).toBe("Custom workshop");
+    expect(document.body.querySelector(".event-title")?.textContent).toBe("Custom workshop");
   });
 
   it("cancels a queued hover preview when starting creation", async () => {
@@ -280,7 +281,7 @@ describe("control panel Agenda", () => {
     act(() => existing?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
     await newDraft();
     expect(field("Title")?.value).toBe("New Event");
-    expect(container.querySelector(".event-title")).toBeNull();
+    expect(document.body.querySelector(".event-title")).toBeNull();
   });
 
   it.each([
@@ -517,6 +518,7 @@ describe("control panel Agenda", () => {
         <PopoverProvider>
           <CalendarFullcalendar
             hiddenCalendarIds={[1]}
+            registerApplyAiDraft={vi.fn()}
             selectedDate={new Date("2026-10-09T00:00:00Z")}
             onDateChange={vi.fn()}
             miniDateSelection={null}
@@ -613,20 +615,22 @@ describe("control panel Agenda", () => {
     const day = container.querySelector<HTMLButtonElement>('[data-date="2026-10-10"]');
     act(() => day?.focus());
     await settle();
-    const preview = container.querySelector("[data-calendar-year-preview]");
+    const preview = document.body.querySelector("[data-calendar-year-preview]");
     expect(preview?.textContent).toContain("Cancelled all-day event");
     expect(preview?.textContent).toContain("All Day");
     expect(preview?.querySelector(".year-preview-cancelled")?.textContent).toBe("Cancelled");
     expect(container.querySelector('[data-date="2026-10-10"]')).toBe(day);
     act(() => preview?.querySelector<HTMLButtonElement>("li button")?.click());
     await settle();
-    expect(container.querySelector(".event-title")?.textContent).toBe("Cancelled all-day event");
-    expect(container.querySelector("[data-calendar-year-preview]")).toBeNull();
+    expect(document.body.querySelector(".event-title")?.textContent).toBe(
+      "Cancelled all-day event",
+    );
+    expect(document.body.querySelector("[data-calendar-year-preview]")).toBeNull();
     expect(container.querySelector('[data-date="2026-10-10"]')).toBe(day);
     act(() => container.querySelector<HTMLButtonElement>(".fc-dayGridMonth-button")?.click());
     await settle();
-    expect(container.querySelector("[data-calendar-year-preview]")).toBeNull();
-    expect(container.querySelector(".event-title")).toBeNull();
+    expect(document.body.querySelector("[data-calendar-year-preview]")).toBeNull();
+    expect(document.body.querySelector(".event-title")).toBeNull();
     expect(container.querySelector(".fc-dayGridMonth-view")).not.toBeNull();
   });
 

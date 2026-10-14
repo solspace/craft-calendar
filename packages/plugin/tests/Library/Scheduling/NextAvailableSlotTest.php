@@ -24,6 +24,16 @@ class NextAvailableSlotTest extends TestCase
             public array $loadedModules = [];
             public string $timeZone = 'UTC';
 
+            public function getI18n(): object
+            {
+                return new class {
+                    public function translate($category, $message, $params = [], $language = null): string
+                    {
+                        return $message;
+                    }
+                };
+            }
+
             public function getFormattingLocale()
             {
                 return new Locale('en-US');

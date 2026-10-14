@@ -4,8 +4,9 @@ import { utcTimestampToLocalDisplayDate } from "@cal/utils/date";
 import translate from "@cal/utils/translations";
 import { eventActions, eventSelectors } from "@event-builder/store/event.slice";
 import type { AppDispatch } from "@event-builder/store/store";
-import { type FC, useId, useMemo, useState } from "react";
+import { type FC, useEffect, useId, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { OCCURRENCES_CHANGED_EVENT } from "../create-with-ai/apply-occurrence-edits";
 import { type EditedOccurrence, EditedOccurrences } from "../edited-occurrences/edited-occurrences";
 import { appSelectors } from "../store/app.slice";
 import type { BuilderContext } from "../types";
@@ -34,6 +35,12 @@ export const Editor: FC<Props> = ({ context, onOccurrenceSaved }) => {
   const endId = useId();
   const [occurrencesRevision, setOccurrencesRevision] = useState(0);
   const [editedOccurrences, setEditedOccurrences] = useState<EditedOccurrence[]>([]);
+
+  useEffect(() => {
+    const refresh = () => setOccurrencesRevision((revision) => revision + 1);
+    window.addEventListener(OCCURRENCES_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(OCCURRENCES_CHANGED_EVENT, refresh);
+  }, []);
 
   const dispatch = useDispatch<AppDispatch>();
   const { start, end, allDay } = useSelector(eventSelectors.state);

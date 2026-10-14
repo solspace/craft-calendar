@@ -125,7 +125,7 @@ describe("event popup actions", () => {
     );
   const openMenu = () =>
     act(async () =>
-      container
+      document.body
         .querySelector('[aria-label="More actions"]')!
         .dispatchEvent(new MouseEvent("mousedown", { bubbles: true })),
     );
@@ -141,58 +141,60 @@ describe("event popup actions", () => {
     fcEvent.event.extendedProps.description = "Bring <strong>comfortable shoes</strong>.";
     await show();
 
-    expect(container.querySelector(".event-location")?.textContent).toBe("Custom venue");
-    expect(container.querySelector(".event-description")?.textContent).toBe(
+    expect(document.body.querySelector(".event-location")?.textContent).toBe("Custom venue");
+    expect(document.body.querySelector(".event-description")?.textContent).toBe(
       "Bring <strong>comfortable shoes</strong>.",
     );
-    expect(container.querySelector(".event-description strong")).toBeNull();
+    expect(document.body.querySelector(".event-description strong")).toBeNull();
     expect(
-      Array.from(container.querySelectorAll(".event-details dt"), (label) => label.textContent),
+      Array.from(document.body.querySelectorAll(".event-details dt"), (label) => label.textContent),
     ).toEqual(["Location", "Description"]);
   });
 
   it("omits missing or empty details and can show either field on its own", async () => {
     await show();
-    expect(container.querySelector(".event-details")).toBeNull();
+    expect(document.body.querySelector(".event-details")).toBeNull();
 
     fcEvent.event.extendedProps.location = " \n ";
     fcEvent.event.extendedProps.description = "Only a description";
     await show();
-    expect(container.querySelector(".event-location")).toBeNull();
-    expect(container.querySelector(".event-description")?.textContent).toBe("Only a description");
+    expect(document.body.querySelector(".event-location")).toBeNull();
+    expect(document.body.querySelector(".event-description")?.textContent).toBe(
+      "Only a description",
+    );
 
     fcEvent.event.extendedProps.location = "Only a location";
     fcEvent.event.extendedProps.description = null;
     await show();
-    expect(container.querySelector(".event-location")?.textContent).toBe("Only a location");
-    expect(container.querySelector(".event-description")).toBeNull();
+    expect(document.body.querySelector(".event-location")?.textContent).toBe("Only a location");
+    expect(document.body.querySelector(".event-description")).toBeNull();
   });
 
   it("shows the disabled notice alongside occurrence status only for disabled events", async () => {
     await show();
-    expect(container.textContent).not.toContain("This event is disabled.");
+    expect(document.body.textContent).not.toContain("This event is disabled.");
 
     fcEvent.event.extendedProps.enabled = true;
     await show();
-    expect(container.textContent).not.toContain("This event is disabled.");
+    expect(document.body.textContent).not.toContain("This event is disabled.");
 
     fcEvent.event.extendedProps.enabled = false;
     fcEvent.event.extendedProps.cancelled = true;
     await show();
-    expect(container.querySelector(".occurrence-status.is-disabled")?.textContent).toBe(
+    expect(document.body.querySelector(".occurrence-status.is-disabled")?.textContent).toBe(
       "This event is disabled.",
     );
-    expect(container.querySelector(".occurrence-status.is-cancelled")?.textContent).toBe(
+    expect(document.body.querySelector(".occurrence-status.is-cancelled")?.textContent).toBe(
       "This occurrence is cancelled.",
     );
   });
 
   it("keeps Edit visible and routes occurrence actions from the native menu", async () => {
     await show();
-    const edit = container.querySelector<HTMLAnchorElement>("a.submit")!;
+    const edit = document.body.querySelector<HTMLAnchorElement>("a.submit")!;
     expect(edit.textContent).toBe("Edit Event");
     expect(edit.getAttribute("href")).toBe(fcEvent.event.url);
-    expect(container.textContent).not.toContain("Edit occurrence");
+    expect(document.body.textContent).not.toContain("Edit occurrence");
 
     await openMenu();
     expect(
@@ -261,18 +263,18 @@ describe("event popup actions", () => {
     await act(async () => window.dispatchEvent(new Event("resize")));
     expect(document.querySelector(".menu")).toBe(menu);
     await act(async () => vi.advanceTimersByTime(400));
-    expect(container.textContent).toContain("Sample event");
+    expect(document.body.textContent).toContain("Sample event");
 
     await act(async () =>
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })),
     );
     expect(document.querySelector(".menu")).toBeNull();
-    expect(container.textContent).toContain("Sample event");
+    expect(document.body.textContent).toContain("Sample event");
     expect(document.activeElement?.getAttribute("aria-label")).toBe("More actions");
     await act(async () =>
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })),
     );
-    expect(container.textContent).not.toContain("Sample event");
+    expect(document.body.textContent).not.toContain("Sample event");
   });
 
   it("duplicates the event from the menu and allows retry after failure", async () => {
@@ -281,7 +283,7 @@ describe("event popup actions", () => {
     await select("Duplicate Event");
     expect(duplicateEvent).toHaveBeenCalledWith(fcEvent.event, 2);
     expect(
-      container.querySelector<HTMLButtonElement>('[aria-label="More actions"]')?.disabled,
+      document.body.querySelector<HTMLButtonElement>('[aria-label="More actions"]')?.disabled,
     ).toBe(false);
     await openMenu();
     await select("Duplicate Event");
@@ -300,7 +302,7 @@ describe("event popup actions", () => {
     await show();
     await openMenu();
     await select("Delete");
-    expect(container.textContent).toContain("Which occurrences do you want to delete?");
+    expect(document.body.textContent).toContain("Which occurrences do you want to delete?");
     expect(deleteEvent).not.toHaveBeenCalled();
     expect(document.querySelector(".menu")).toBeNull();
   });
@@ -326,8 +328,8 @@ describe("event popup actions", () => {
 
     await show();
     await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="Close"]')!.click(),
+      document.body.querySelector<HTMLButtonElement>('[aria-label="Close"]')!.click(),
     );
-    expect(container.textContent).not.toContain("Sample event");
+    expect(document.body.textContent).not.toContain("Sample event");
   });
 });

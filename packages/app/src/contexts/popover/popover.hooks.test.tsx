@@ -17,11 +17,10 @@ describe("popover viewport and content resizing", () => {
   const anchor = document.createElement("button");
   const state = { anchor };
   const Harness = () => {
-    const bridgeRef = useRef<HTMLDivElement>(null);
     const popoverRef = useRef<HTMLDivElement>(null);
-    layout = usePopoverPosition({ state, bridgeRef, popoverRef });
+    layout = usePopoverPosition({ state, popoverRef });
     return (
-      <div ref={bridgeRef} data-bridge>
+      <div data-bridge>
         <div ref={popoverRef} data-popover />
       </div>
     );
@@ -66,21 +65,20 @@ describe("popover viewport and content resizing", () => {
     vi.unstubAllGlobals();
   });
 
-  it("limits form height to Craft's visible content area beneath the page header", async () => {
-    expect(layout?.maxHeight).toBe(522);
-    expect(layout?.top).toBe(218);
+  it("limits the body-portal form height to the viewport and repositions as its content grows", async () => {
+    expect(layout?.maxHeight).toBe(622);
+    expect(layout?.top).toBe(338);
     height = 480;
     await act(async () => notifyResize());
-    // Window position is 152px, below the pane's top plus its 8px margin.
-    expect(layout?.top).toBe(32);
+    expect(layout?.top).toBe(152);
     expect(observe).toHaveBeenCalledWith(container.querySelector("[data-popover]"));
   });
 
   it("repositions on window resize and disconnects when the popup closes", async () => {
     vi.spyOn(window, "innerHeight", "get").mockReturnValue(420);
     await act(async () => window.dispatchEvent(new Event("resize")));
-    expect(layout?.maxHeight).toBe(302);
-    expect(layout?.top).toBe(12);
+    expect(layout?.maxHeight).toBe(402);
+    expect(layout?.top).toBe(132);
     await act(async () => root.render(null));
     expect(disconnect).toHaveBeenCalledOnce();
   });

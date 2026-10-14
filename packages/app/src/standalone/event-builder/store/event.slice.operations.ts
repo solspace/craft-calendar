@@ -4,9 +4,15 @@ import {
   UTCifyDateOnly,
   utcTimestampToLocalDisplayDate,
 } from "@cal/utils/date";
-import { getRRuleSetFromString, normalizeRfcLine } from "@cal/utils/rrule";
+import { getBaseRRule, getRRuleSetFromString, normalizeRfcLine } from "@cal/utils/rrule";
 import { Frequency, type Options, RRule, RRuleSet } from "rrule";
 import type { Event } from "../types";
+import {
+  normalizeByWeekday,
+  normalizeRepeatCount,
+  normalizeRepeatEndType,
+  normalizeRepeatType,
+} from "./store.normalizers";
 
 export type EventState = Event & {
   freq?: Frequency;
@@ -317,4 +323,69 @@ export const alignUntilForState = (state: EventState, untilSeconds: number) => {
   }
 
   return localDisplayDateToUtcTimestamp(untilDate);
+};
+
+export type GeneratedScheduleInput = {
+  start: number;
+  end: number;
+  allDay: boolean;
+  repeatType?: string | null;
+  repeatEndType?: string | null;
+  rrule?: string | null;
+  until?: number | null;
+  timezone?: string | null;
+};
+
+const inferRepeatEndType = (
+  input: GeneratedScheduleInput,
+  baseRule: ReturnType<typeof getBaseRRule>,
+): ReturnType<typeof normalizeRepeatEndType> => {
+  // COUNT/UNTIL on the rule always wins so AI drafts stay valid even if the client sent NEVER.
+  if (baseRule?.options.count) {
+    return "AFTER";
+  }
+
+  if (baseRule?.options.until || input.until) {
+    return "ON_DATE";
+  }
+
+  if (input.repeatEndType) {
+    return normalizeRepeatEndType(input.repeatEndType);
+  }
+
+  return "NEVER";
+};
+
+/** Hydrate event-builder state from AI / API schedule without rebuilding a fresh rrule. */
+export const buildEventStateFromSchedule = (input: GeneratedScheduleInput): EventState => {
+  const baseRule = getBaseRRule(input.rrule || undefined);
+  const { byweekday, bysetpos } = normalizeByWeekday(baseRule?.options.byweekday);
+  const repeatType = normalizeRepeatType(input.repeatType);
+  const repeatEndType = inferRepeatEndType(input, baseRule);
+  const untilFromRule =
+    baseRule?.options.until instanceof Date
+      ? Math.floor(baseRule.options.until.getTime() / 1000)
+      : undefined;
+
+  return {
+    start: input.start,
+    end: input.end,
+    until: input.until ?? untilFromRule,
+    timezone: input.timezone || undefined,
+    allDay: input.allDay,
+    repeatType,
+    repeatEndType,
+    rrule: input.rrule || undefined,
+    freq: baseRule?.options.freq || Frequency.DAILY,
+    interval: baseRule?.options.interval || 1,
+    count:
+      repeatEndType === "AFTER"
+        ? normalizeRepeatCount(baseRule?.options.count)
+        : baseRule?.options.count || null,
+    byweekday,
+    bymonth: baseRule?.options.bymonth,
+    bymonthday: baseRule?.options.bymonthday,
+    byyearday: baseRule?.options.byyearday,
+    bysetpos: baseRule?.options.bysetpos ?? bysetpos,
+  };
 };

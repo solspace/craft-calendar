@@ -43,13 +43,24 @@ class EventsController extends BaseController
             ],
         ];
 
+        $plugin = Calendar::getInstance();
+        $calendars = $plugin->calendars->getAllAllowedCalendars();
+
         return $this->renderTemplate(
             'calendar/events',
             [
                 'isCraft5' => $isCraft5,
                 'crumbs' => $crumbs,
-                'calendars' => Calendar::getInstance()->calendars->getAllAllowedCalendars(),
+                'calendars' => $calendars,
                 'elementType' => Event::class,
+                'isSolspaceAiConnected' => $plugin->isPro() && $plugin->solspaceAi->isConnected(),
+                'eventsAiCalendars' => array_values(array_map(
+                    static fn ($calendar) => [
+                        'id' => (int) $calendar->id,
+                        'handle' => (string) $calendar->handle,
+                    ],
+                    $calendars
+                )),
             ]
         );
     }

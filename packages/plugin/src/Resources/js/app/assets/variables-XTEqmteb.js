@@ -1,4 +1,4 @@
-import{D as e,N as t,j as n,k as r}from"./localization-DftVQMPp.js";import{c as i,o as a}from"./components-BmnYJ2zx.js";var o=t(n()),s=r(),c=({value:e,placeholder:t,autofocus:n,className:r,onChange:c,...l})=>{let u=(0,o.useRef)(null);return(0,o.useEffect)(()=>{n&&setTimeout(()=>{u.current?.focus()},10)},[n]),(0,s.jsx)(a,{...l,children:(0,s.jsx)(`input`,{ref:u,id:l.id,"aria-required":l.required||void 0,type:`text`,className:i(`text`,r),placeholder:t,value:e??``,onChange:e=>c?.(e.target.value)})})};e.div`
+import{c as e,i as t,o as n,u as r}from"./translations-CPvEMAbD.js";import{a as i,s as a}from"./lightswitch-C4sgii-l.js";var o=r(e()),s=n(),c=({value:e,placeholder:t,autofocus:n,className:r,onChange:c,...l})=>{let u=(0,o.useRef)(null);return(0,o.useEffect)(()=>{n&&setTimeout(()=>{u.current?.focus()},10)},[n]),(0,s.jsx)(i,{...l,children:(0,s.jsx)(`input`,{ref:u,id:l.id,"aria-required":l.required||void 0,type:`text`,className:a(`text`,r),placeholder:t,value:e??``,onChange:e=>c?.(e.target.value)})})};t.div`
   box-shadow:
     0 0 0 1px #cdd8e4,
     0 2px 12px rgb(205 216 228 / 50%);

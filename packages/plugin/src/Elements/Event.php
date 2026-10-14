@@ -791,6 +791,13 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
         $this->repeatType = $values['repeatType'] ?? $this->repeatType;
         $this->repeatEndType = $values['repeatEndType'] ?? $this->repeatEndType;
 
+        // Builder posts exclusive all-day ends; persist end-of-last-day like API creates / FC moves.
+        if ($this->allDay && $this->startDate && $this->endDate
+            && (\array_key_exists('end', $values) || \array_key_exists('endDate', $values))
+        ) {
+            $this->endDate = DateHelper::allDayEndFromExclusive($this->startDate, $this->endDate);
+        }
+
         $rrule = $values['rrule'] ?? $this->rrule;
         $this->rrule = \is_string($rrule) ? self::normalizeRRule($rrule, $this->allDay) : $rrule;
     }
@@ -947,10 +954,14 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
                 'allDayDefault' => $plugin->settings->isAllDayDefault(),
                 'showOverlapWarnings' => $plugin->settings->showOverlapWarnings(),
                 'overlapThreshold' => $plugin->settings->getOverlapThreshold(),
+                'isSolspaceAiConnected' => $plugin->isPro() && $plugin->solspaceAi->isConnected(),
             ],
             'event' => [
                 'start' => $this->startDate->timestamp,
-                'end' => $this->endDate->timestamp,
+                // Event builder / date pickers use exclusive all-day ends (day after last day).
+                'end' => $this->allDay
+                    ? DateHelper::allDayExclusiveEnd($this->endDate)->timestamp
+                    : $this->endDate->timestamp,
                 'until' => $this->until?->timestamp,
                 'timezone' => $this->timezone ?: DateHelper::UTC,
 
@@ -964,6 +975,8 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
                 'eventId' => $this->id,
                 'calendarId' => (int) $this->calendarId,
                 'siteId' => $this->siteId,
+                'descriptionFieldHandle' => $this->getCalendar()?->descriptionFieldHandle ?: null,
+                'locationFieldHandle' => $this->getCalendar()?->locationFieldHandle ?: null,
                 'splitAt' => $plugin->series->getSplitAt($this)?->timestamp,
                 'series' => array_map(
                     static fn (?self $part) => $part ? [
@@ -1245,6 +1258,18 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
             ],
             ...$existingCrumbs,
         ]);
+
+        $existingButtons = $screen->additionalButtonsHtml;
+        $screen->additionalButtonsHtml(static function () use ($existingButtons) {
+            $html = Html::tag('span', '', ['data' => ['event-ai-create-root' => true]]);
+            if (\is_callable($existingButtons)) {
+                $html .= $existingButtons();
+            } elseif (\is_string($existingButtons)) {
+                $html .= $existingButtons;
+            }
+
+            return $html;
+        });
     }
 
     /**

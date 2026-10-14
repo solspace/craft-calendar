@@ -8,4 +8,9 @@ class CalendarIndexBundle extends CalendarAssetBundle
     {
         return ['js/scripts/calendars/index.js'];
     }
+
+    protected function getClientEntry(): ?string
+    {
+        return 'calendars-ai';
+    }
 }

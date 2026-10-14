@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { usePopoverPosition } from "./popover.hooks";
 import { PopoverArrow, PopoverBridge, PopoverContainer } from "./popover.styles";
 import type { PopoverAnchor, ShowPopoverOptions } from "./popover.types";
@@ -39,7 +40,6 @@ export const usePopover = () => {
 
 export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, setState] = useState<PopoverState>();
-  const bridgeRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const autoClosePaused = useRef(false);
@@ -66,7 +66,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
     [showPopover, hidePopover, keepPopoverOpen],
   );
 
-  const layout = usePopoverPosition({ state, bridgeRef, popoverRef });
+  const layout = usePopoverPosition({ state, popoverRef });
   const closeDelayMs = state?.options?.closeDelayMs;
 
   const cancelClose = useCallback(() => clearTimeout(closeTimer.current), []);
@@ -93,7 +93,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
-  const PopoverElement = state?.content && (
+  const PopoverElement = state?.content ? (
     <PopoverContainer
       $maxHeight={layout?.maxHeight}
       ref={popoverRef}
@@ -110,13 +110,13 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
       )}
       {state.content}
     </PopoverContainer>
-  );
+  ) : null;
 
   return (
     <PopoverContext.Provider value={controls}>
-      <PopoverBridge ref={bridgeRef}>
-        {PopoverElement}
+      <PopoverBridge>
         {children}
+        {PopoverElement && createPortal(PopoverElement, document.body)}
       </PopoverBridge>
     </PopoverContext.Provider>
   );

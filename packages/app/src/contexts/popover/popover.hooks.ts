@@ -14,7 +14,6 @@ type PopoverState = {
 
 type UsePopoverPositionParams = {
   state?: PopoverState;
-  bridgeRef: RefObject<HTMLDivElement | null>;
   popoverRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -39,7 +38,6 @@ const getAnchorRect = (anchor: PopoverAnchor): DOMRect | DOMRectReadOnly => {
 
 export const usePopoverPosition = ({
   state,
-  bridgeRef,
   popoverRef,
 }: UsePopoverPositionParams): PopoverLayout | undefined => {
   const [layout, setLayout] = useState<PopoverLayout>();
@@ -58,45 +56,27 @@ export const usePopoverPosition = ({
       return;
     }
 
-    const bridge = bridgeRef.current;
     const popover = popoverRef.current;
-
-    if (!bridge || !popover) {
+    if (!popover) {
       return;
     }
 
     const anchorRect = getAnchorRect(state.anchor);
     const popoverRect = popover.getBoundingClientRect();
-    const bridgeRect = bridge.getBoundingClientRect();
-    // Craft's content pane can clip anything positioned behind the page header.
-    const contentRect = bridge.closest("#content")?.getBoundingClientRect();
-    const viewportTop = Math.max(0, contentRect?.top ?? 0);
-    const viewportBottom = Math.min(window.innerHeight, contentRect?.bottom ?? window.innerHeight);
-    const viewportHeight = Math.max(0, viewportBottom - viewportTop);
 
-    const popoverLayout = resolvePopoverLayout({
-      anchorRect: {
-        left: anchorRect.left,
-        right: anchorRect.right,
-        width: anchorRect.width,
-        height: anchorRect.height,
-        top: anchorRect.top - viewportTop,
-        bottom: anchorRect.bottom - viewportTop,
-      },
-      popoverRect,
-      viewportWidth: window.innerWidth,
-      viewportHeight,
-      options: normalizedOptions,
-      arrowPadding: ARROW_PADDING,
-    });
-
+    // Viewport coords + position:fixed so header-anchored buttons (Update with AI) align correctly.
     setLayout({
-      ...popoverLayout,
-      top: popoverLayout.top + viewportTop - bridgeRect.top,
-      left: popoverLayout.left - bridgeRect.left,
-      maxHeight: Math.max(0, viewportHeight - normalizedOptions.padding * 2 - 2),
+      ...resolvePopoverLayout({
+        anchorRect,
+        popoverRect,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        options: normalizedOptions,
+        arrowPadding: ARROW_PADDING,
+      }),
+      maxHeight: Math.max(0, window.innerHeight - normalizedOptions.padding * 2 - 2),
     });
-  }, [state, normalizedOptions, bridgeRef, popoverRef]);
+  }, [state, normalizedOptions, popoverRef]);
 
   useLayoutEffect(() => {
     calculate();

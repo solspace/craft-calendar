@@ -31,7 +31,7 @@ describe("modify event prompt", () => {
 
   const clickButton = (label: string) =>
     act(async () =>
-      Array.from(container.querySelectorAll("button"))
+      Array.from(document.body.querySelectorAll("button"))
         .find((button) => button.textContent === label)!
         .click(),
     );
@@ -73,7 +73,7 @@ describe("modify event prompt", () => {
     await clickButton("Cancel");
 
     expect(onCancel).toHaveBeenCalledOnce();
-    expect(container.textContent).not.toContain("You are moving an event.");
+    expect(document.body.textContent).not.toContain("You are moving an event.");
   });
 
   it("closes without cancelling once the change is made", async () => {
@@ -84,7 +84,7 @@ describe("modify event prompt", () => {
     await clickButton("This and following");
 
     expect(onSelect).toHaveBeenCalledWith("following");
-    expect(container.textContent).not.toContain("You are moving an event.");
+    expect(document.body.textContent).not.toContain("You are moving an event.");
     expect(onCancel).not.toHaveBeenCalled();
   });
 
@@ -94,7 +94,7 @@ describe("modify event prompt", () => {
 
     await clickButton("All occurrences");
 
-    expect(container.textContent).toContain("You are moving an event.");
+    expect(document.body.textContent).toContain("You are moving an event.");
     expect(onCancel).not.toHaveBeenCalled();
   });
 });

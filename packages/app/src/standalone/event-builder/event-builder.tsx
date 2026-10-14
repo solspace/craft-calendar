@@ -1,9 +1,11 @@
+import { PopoverProvider } from "@cal/contexts/popover/popover.context";
 import { utcToLocalDisplayDate } from "@cal/utils/date";
 import { isDebugMode } from "@cal/utils/debug";
 import { format, formatISO } from "date-fns";
 import { type FC, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { rrulestr } from "rrule";
+import { CreateWithAiToolbar } from "./create-with-ai/create-with-ai-toolbar";
 import { Editor } from "./editor/editor";
 import { EventBuilderWrapper } from "./event-builder.styles";
 import { Series } from "./series/series";
@@ -29,17 +31,20 @@ export const EventBuilder: FC<Props> = ({ context }) => {
     : [];
 
   return (
-    <EventBuilderWrapper>
-      {context && <Series context={context} />}
+    <PopoverProvider>
+      <EventBuilderWrapper>
+        {context && <Series context={context} />}
 
-      <Editor context={context} />
+        <CreateWithAiToolbar context={context} />
+        <Editor context={context} />
 
-      {isDebug && (
-        <code>
-          <pre>{rrule}</pre>
-          <pre>{JSON.stringify(occurrences, null, 2)}</pre>
-        </code>
-      )}
-    </EventBuilderWrapper>
+        {isDebug && (
+          <code>
+            <pre>{rrule}</pre>
+            <pre>{JSON.stringify(occurrences, null, 2)}</pre>
+          </code>
+        )}
+      </EventBuilderWrapper>
+    </PopoverProvider>
   );
 };

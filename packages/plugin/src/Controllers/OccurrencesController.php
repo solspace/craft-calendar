@@ -18,6 +18,7 @@ use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Resources\Bundles\OccurrenceEditorBundle;
 use Solspace\Calendar\Services\OccurrencesService;
 use Solspace\Calendar\Services\OverlapService;
+use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -136,6 +137,38 @@ class OccurrencesController extends BaseController
         $changed->setScheduleFromRequest(\Craft::$app->getRequest()->getBodyParams());
 
         return $this->asJson($this->getOccurrencesService()->previewSchedule($changed));
+    }
+
+    /**
+     * Applies AI occurrence customizations (title/location/times) onto the event or draft.
+     * The schedule (including any new Additional Dates) must already be saved on the event.
+     */
+    public function actionApplyEdits(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $event = $this->requireEvent();
+        $request = \Craft::$app->getRequest();
+        $rawBody = json_decode($request->getRawBody(), true);
+        $body = \is_array($rawBody) ? $rawBody : [];
+        $edits = $body['occurrenceEdits'] ?? $request->getBodyParam('occurrenceEdits', []);
+        if (!\is_array($edits) || [] === $edits) {
+            throw new BadRequestHttpException('occurrenceEdits is required.');
+        }
+
+        try {
+            $updated = $this->getOccurrencesService()->applyAiOccurrenceEdits($event, $edits);
+        } catch (InvalidArgumentException) {
+            return $this->asFailure(Calendar::t('Occurrence could not be found'));
+        } catch (InvalidElementException $exception) {
+            return $this->asFailure($exception->getMessage() ?: Calendar::t('Couldn’t save the occurrence.'));
+        }
+
+        return $this->asJson([
+            'success' => true,
+            'updated' => $updated,
+        ]);
     }
 
     /**

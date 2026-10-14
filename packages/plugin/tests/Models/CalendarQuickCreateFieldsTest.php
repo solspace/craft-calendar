@@ -2,9 +2,9 @@
 
 namespace Solspace\Tests\Unit\Calendar\Models;
 
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\Number;
 use craft\fields\PlainText;
-use craft\fieldlayoutelements\CustomField;
 use craft\models\FieldLayout;
 use PHPUnit\Framework\TestCase;
 use Solspace\Calendar\Models\CalendarModel;

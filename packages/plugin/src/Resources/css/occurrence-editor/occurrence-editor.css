@@ -197,7 +197,7 @@
   line-height: 1.5;
   overflow-wrap: anywhere;
   background: var(--warning-bg-color, #fff8e6);
-  border: 1px solid rgb(184 115 0);
+  border: 1px solid rgb(184, 115, 0);
   border-radius: 5px;
 }
 
@@ -205,7 +205,7 @@
   display: flex;
   gap: 6px;
   align-items: center;
-  color: rgb(184 115 0);
+  color: rgb(184, 115, 0);
 }
 
 .calendar-occurrence-editor .calendar-occurrence-overlap-panel ul {
@@ -285,17 +285,14 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
   }
-
   .calendar-occurrence-details {
     grid-template-columns: minmax(180px, 0.65fr) minmax(0, 1fr);
   }
 }
-
 @container (max-width: 520px) {
   .calendar-occurrence-meta-row {
     column-gap: 20px;
   }
-
   .calendar-occurrence-identity {
     grid-template-columns: minmax(0, 1fr);
   }

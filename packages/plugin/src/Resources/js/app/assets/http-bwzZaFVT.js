@@ -1,0 +1,1 @@
+var e=()=>{let e=window.Craft;return e?.csrfTokenValue?e.csrfTokenValue:null},t=e=>{if(!e)return!1;let t=e.toUpperCase();return![`GET`,`HEAD`,`OPTIONS`].includes(t)},n=(n,r={})=>{let i=new Headers(r.headers);if(t(r.method)){let t=e();t&&i.set(`X-CSRF-Token`,t)}return fetch(n,{...r,credentials:r.credentials??`same-origin`,headers:i})};export{n as t};

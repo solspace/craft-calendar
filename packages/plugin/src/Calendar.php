@@ -42,6 +42,9 @@ use Solspace\Calendar\Services\OccurrencesService;
 use Solspace\Calendar\Services\SelectDatesService;
 use Solspace\Calendar\Services\SeriesService;
 use Solspace\Calendar\Services\SettingsService;
+use Solspace\Calendar\Services\SolspaceAi\CalendarGenerationService;
+use Solspace\Calendar\Services\SolspaceAi\EventGenerationService;
+use Solspace\Calendar\Services\SolspaceAi\SolspaceAiService;
 use Solspace\Calendar\Services\ViewDataService;
 use Solspace\Calendar\Twig\Extensions\CalendarGlobalExtension;
 use Solspace\Calendar\Twig\Extensions\CalendarTwigExtension;
@@ -56,18 +59,21 @@ use yii\web\ForbiddenHttpException;
 /**
  * Class Calendar.
  *
- * @property CalendarsService     $calendars
- * @property BookingsService      $bookings
- * @property CalendarSitesService $calendarSites
- * @property ClientAssetsService  $clientAssets
- * @property DiagnosticsService   $diagnostics
- * @property EventsService        $events
- * @property ExceptionsService    $exceptions
- * @property OccurrencesService   $occurrences
- * @property SelectDatesService   $selectDates
- * @property SeriesService        $series
- * @property SettingsService      $settings
- * @property ViewDataService      $viewData
+ * @property CalendarsService                     $calendars
+ * @property CalendarSitesService                 $calendarSites
+ * @property ClientAssetsService                  $clientAssets
+ * @property DiagnosticsService                   $diagnostics
+ * @property EventsService                        $events
+ * @property ExceptionsService                    $exceptions
+ * @property OccurrencesService                   $occurrences
+ * @property SelectDatesService                   $selectDates
+ * @property SeriesService                        $series
+ * @property SettingsService                      $settings
+ * @property ViewDataService                      $viewData
+ * @property SolspaceAi\SolspaceAiService         $solspaceAi
+ * @property SolspaceAi\EventGenerationService    $eventGeneration
+ * @property SolspaceAi\CalendarGenerationService $calendarGeneration
+ * @property BookingsService                      $bookings
  */
 class Calendar extends Plugin
 {
@@ -377,6 +383,9 @@ class Calendar extends Plugin
                 'series' => SeriesService::class,
                 'settings' => SettingsService::class,
                 'viewData' => ViewDataService::class,
+                'solspaceAi' => SolspaceAiService::class,
+                'eventGeneration' => EventGenerationService::class,
+                'calendarGeneration' => CalendarGenerationService::class,
             ]
         );
     }
