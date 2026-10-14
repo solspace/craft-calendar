@@ -10,6 +10,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Services\SettingsService;
+use yii\i18n\I18N;
 
 /**
  * @internal
@@ -22,12 +23,25 @@ class DateFormatHelperTest extends TestCase
     public function testTimeRangesUseTheFormattingLocaleAndCalendarTimeSetting(string $localeId, string $timeFormat, string $expected): void
     {
         $previousApp = \Craft::$app;
+        $previousYiiApp = \Yii::$app;
         $previousPlugin = Calendar::getInstance();
         $locale = new Locale($localeId);
-        $app = $this->createMock(Application::class);
+        $i18n = $this->createMock(I18N::class);
+        $i18n->method('translate')->willReturnCallback(
+            static fn (string $category, string $message, array $params, string $language): string => $message
+        );
+        $app = $this->getMockBuilder(Application::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getFormattingLocale', 'getLocale', 'getI18n'])
+            ->getMock()
+        ;
         $app->method('getFormattingLocale')->willReturn($locale);
         $app->expects(self::never())->method('getLocale');
+        $app->method('getI18n')->willReturn($i18n);
+        $app->timeZone = 'UTC';
+        $app->language = $localeId;
         \Craft::$app = $app;
+        \Yii::$app = $app;
         $settings = $this->createMock(SettingsService::class);
         $model = new SettingsModel();
         $model->timeFormat = $timeFormat;
@@ -47,6 +61,7 @@ class DateFormatHelperTest extends TestCase
             self::assertSame('2026-10-12T18:00:00+00:00', $start->format(\DATE_ATOM));
         } finally {
             \Craft::$app = $previousApp;
+            \Yii::$app = $previousYiiApp;
             Calendar::setInstance($previousPlugin);
         }
     }
