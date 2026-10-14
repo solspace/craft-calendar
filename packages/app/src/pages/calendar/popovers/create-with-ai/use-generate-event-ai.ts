@@ -1,5 +1,8 @@
+import type { AiOccurrenceEdit } from "@cal/pages/calendar/calendar.create-session";
 import { craftFetch } from "@cal/utils/http";
 import { useCallback, useState } from "react";
+
+export type { AiOccurrenceEdit };
 
 export type AiGeneratedEvent = {
   title: string;
@@ -16,6 +19,7 @@ export type AiGeneratedEvent = {
   rrule?: string;
   timezone?: string;
   changedFields?: string[];
+  occurrenceEdits?: AiOccurrenceEdit[];
 };
 
 /** Snapshot of the event currently on the form, used for partial AI updates. */

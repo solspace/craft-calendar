@@ -15,7 +15,7 @@ import {
 import { type AiCurrentEvent, useGenerateEventAi } from "./use-generate-event-ai";
 
 type Props = {
-  onApplyDraft: (draft: CalendarCreateDraft) => void;
+  onApplyDraft: (draft: CalendarCreateDraft) => void | Promise<void>;
   onCancel: () => void;
   /** Defaults to create-new copy; use "edit" on the event editor so it is clear we fill this event. */
   mode?: "create" | "edit";
@@ -81,7 +81,7 @@ export const PopoverCreateWithAi: FC<Props> = ({
       return;
     }
 
-    onApplyDraft({
+    await onApplyDraft({
       id: DEFAULT_CREATE_DRAFT_ID,
       title: event.title,
       allDay: Boolean(event.allDay),
@@ -96,6 +96,7 @@ export const PopoverCreateWithAi: FC<Props> = ({
       until: event.until ?? undefined,
       rrule: event.rrule || "",
       changedFields: event.changedFields,
+      occurrenceEdits: event.occurrenceEdits,
     });
   };
 

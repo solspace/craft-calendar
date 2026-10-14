@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { type FC, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { applyOccurrenceEdits } from "./apply-occurrence-edits";
 
 type Props = {
   context?: BuilderContext;
@@ -81,21 +82,42 @@ export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
   const { showPopover, hidePopover } = usePopover();
   const mount = document.querySelector<HTMLElement>("[data-event-ai-create-root]");
 
-  const buildCurrentEvent = (): AiCurrentEvent => ({
-    title: readCraftInputValue("#title, input[name='title']") || "Untitled",
-    description: readCraftFieldValue(context?.descriptionFieldHandle),
-    location: readCraftFieldValue(context?.locationFieldHandle),
-    start: toFloatingDateTime(eventState.start),
-    end: toFloatingDateTime(eventState.end),
-    allDay: eventState.allDay,
-    repeatType: eventState.repeatType,
-    // Full ICS (DTSTART/RRULE/RDATE/EXDATE) so updates keep Additional / Excluded Dates.
-    rrule: eventState.rrule || "",
-    calendarId: context?.calendarId,
-  });
+  const buildCurrentEvent = (): AiCurrentEvent => {
+    // Prefer the schedule string that still carries RDATE/EXDATE (Redux and the hidden
+    // input can briefly disagree after apply/reload).
+    const builder = document.querySelector<HTMLElement>("[data-event-builder]");
+    const inputRrule =
+      builder?.querySelector<HTMLInputElement>('input[name="rrule"]')?.value?.trim() || "";
+    const stateRrule = eventState.rrule?.trim() || "";
+    const fixedDateScore = (value: string): number =>
+      (value.includes("RDATE") ? 2 : 0) + (value.includes("EXDATE") ? 2 : 0) + value.length / 1000;
+    const rrule =
+      fixedDateScore(inputRrule) >= fixedDateScore(stateRrule)
+        ? inputRrule || stateRrule
+        : stateRrule;
 
-  const applyDraft = (draft: CalendarCreateDraft) => {
+    return {
+      title: readCraftInputValue("#title, input[name='title']") || "Untitled",
+      description: readCraftFieldValue(context?.descriptionFieldHandle),
+      location: readCraftFieldValue(context?.locationFieldHandle),
+      start: toFloatingDateTime(eventState.start),
+      end: toFloatingDateTime(eventState.end),
+      allDay: eventState.allDay,
+      repeatType: eventState.repeatType,
+      // Full ICS (DTSTART/RRULE/RDATE/EXDATE) so updates keep Additional / Excluded Dates.
+      rrule,
+      calendarId: context?.calendarId,
+    };
+  };
+
+  const applyDraft = async (draft: CalendarCreateDraft) => {
     const changed = draft.changedFields;
+    const occurrenceEdits = draft.occurrenceEdits ?? [];
+    const hasOccurrenceEdits =
+      occurrenceEdits.length > 0 &&
+      (!changed?.length ||
+        changed.includes("occurrenceEdits") ||
+        changed.includes("additionalDates"));
 
     if (shouldApplyField(changed, "title")) {
       setCraftTitle(draft.title);
@@ -115,15 +137,18 @@ export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
       "rrule",
       "additionalDates",
       "excludedDates",
+      "occurrenceEdits",
     ];
     const scheduleChanged =
       !changed?.length || scheduleFields.some((field) => changed.includes(field));
 
     if (scheduleChanged) {
-      // Prefer setRRule when only extra/excluded dates changed so we don't rebuild the series.
+      // Prefer setRRule when only extra/excluded/customized dates changed so we don't rebuild the series.
       const onlyFixedDates =
         !!changed?.length &&
-        changed.every((field) => ["additionalDates", "excludedDates", "rrule"].includes(field));
+        changed.every((field) =>
+          ["additionalDates", "excludedDates", "rrule", "occurrenceEdits"].includes(field),
+        );
 
       if (onlyFixedDates && draft.rrule) {
         dispatch(eventActions.setRRule(draft.rrule));
@@ -144,6 +169,20 @@ export const CreateWithAiToolbar: FC<Props> = ({ context }) => {
     }
 
     hidePopover();
+
+    if (!hasOccurrenceEdits || !context) {
+      return;
+    }
+
+    try {
+      // AI button lives in the CP header; the draft editor is under [data-event-builder].
+      const builder = document.querySelector<HTMLElement>("[data-event-builder]");
+      await applyOccurrenceEdits(builder, context.siteId, occurrenceEdits);
+    } catch (error) {
+      Craft.cp.displayError(
+        error instanceof Error ? error.message : translate("Couldn’t save the occurrence."),
+      );
+    }
   };
 
   // Event editor is always "Update with AI" — Create with AI lives on Overview only.

@@ -37,7 +37,21 @@ export type CalendarCreateDraft = {
   rrule?: string;
   /** Fields the AI changed during an in-place update (omit = apply all). */
   changedFields?: string[];
+<<<<<<< HEAD
   recurrence?: QuickCreateRecurrence;
+=======
+  /** Per-occurrence customizations (Edited occurrences), applied after the schedule is saved. */
+  occurrenceEdits?: AiOccurrenceEdit[];
+};
+
+export type AiOccurrenceEdit = {
+  start: string;
+  end: string;
+  allDay?: boolean;
+  title?: string;
+  location?: string;
+  description?: string;
+>>>>>>> f327041 (feat: implement per-occurrence AI customizations for event scheduling)
 };
 
 export type CalendarCreateDraftSettings = {

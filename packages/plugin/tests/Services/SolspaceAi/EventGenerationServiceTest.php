@@ -101,4 +101,98 @@ class EventGenerationServiceTest extends TestCase
         self::assertStringContainsString('RDATE:20261020T090000,20261024T090000', $result);
         self::assertStringContainsString('EXDATE:20261027T090000', $result);
     }
+
+    public function testNormalizeOccurrenceEditsKeepsCustomTitleLocationAndTimes(): void
+    {
+        $service = new EventGenerationService();
+        $method = new \ReflectionMethod($service, 'normalizeOccurrenceEdits');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($service, [
+            [
+                'start' => '2026-09-24T18:00:00',
+                'end' => '2026-09-24T22:00:00',
+                'allDay' => false,
+                'title' => 'Birthday Party for Jahid',
+                'location' => 'Le Timme Horton',
+            ],
+            [
+                'start' => 'not-a-date',
+                'end' => '2026-09-24T22:00:00',
+            ],
+        ]);
+
+        self::assertCount(1, $result);
+        self::assertSame('2026-09-24T18:00:00', $result[0]['start']);
+        self::assertSame('2026-09-24T22:00:00', $result[0]['end']);
+        self::assertFalse($result[0]['allDay']);
+        self::assertSame('Birthday Party for Jahid', $result[0]['title']);
+        self::assertSame('Le Timme Horton', $result[0]['location']);
+    }
+
+    public function testExtractFixedDateValuesReadsRdateAndExdateFromFullIcs(): void
+    {
+        $service = new EventGenerationService();
+        $method = new \ReflectionMethod($service, 'extractFixedDateValues');
+        $method->setAccessible(true);
+
+        [$rdates, $exdates] = $method->invoke(
+            $service,
+            "DTSTART:20261020T090000\nRRULE:FREQ=WEEKLY;COUNT=8;BYDAY=MO,TH\nRDATE:20261024T090000\nEXDATE:20261102T090000"
+        );
+
+        self::assertSame(['2026-10-24'], $rdates);
+        self::assertSame(['2026-11-02'], $exdates);
+    }
+
+    public function testNormalizeCurrentEventKeepsOnlyRruleBody(): void
+    {
+        $service = new EventGenerationService();
+        $method = new \ReflectionMethod($service, 'normalizeCurrentEvent');
+        $method->setAccessible(true);
+
+        $normalized = $method->invoke($service, [
+            'title' => 'Team Standup',
+            'start' => '2026-10-20T09:00:00',
+            'end' => '2026-10-20T10:00:00',
+            'allDay' => false,
+            'repeatType' => Event::REPEAT_WEEKLY,
+            'rrule' => "DTSTART:20261020T090000\nRRULE:FREQ=WEEKLY;COUNT=8;BYDAY=MO,TH\nRDATE:20261024T090000\nEXDATE:20261102T090000",
+            'calendarId' => 1,
+        ], [['id' => 1, 'handle' => 'staffMeetings', 'title' => 'Staff Meetings']]);
+
+        self::assertSame('FREQ=WEEKLY;COUNT=8;BYDAY=MO,TH', $normalized['rrule']);
+        self::assertStringNotContainsString('RDATE', $normalized['rrule']);
+        self::assertStringNotContainsString('EXDATE', $normalized['rrule']);
+    }
+
+    public function testPreserveRepeatBoundsKeepsCountWhenModelOmitsIt(): void
+    {
+        $service = new EventGenerationService();
+        $method = new \ReflectionMethod($service, 'preserveRepeatBounds');
+        $method->setAccessible(true);
+
+        $result = $method->invoke(
+            $service,
+            'FREQ=WEEKLY;BYDAY=MO,WE',
+            "DTSTART:20261020T093000\nRRULE:FREQ=WEEKLY;COUNT=10;BYDAY=MO,TH"
+        );
+
+        self::assertSame('FREQ=WEEKLY;BYDAY=MO,WE;COUNT=10', $result);
+    }
+
+    public function testPreserveRepeatBoundsDoesNotOverrideExplicitCount(): void
+    {
+        $service = new EventGenerationService();
+        $method = new \ReflectionMethod($service, 'preserveRepeatBounds');
+        $method->setAccessible(true);
+
+        $result = $method->invoke(
+            $service,
+            'FREQ=WEEKLY;BYDAY=MO;COUNT=4',
+            'FREQ=WEEKLY;COUNT=10;BYDAY=MO,TH'
+        );
+
+        self::assertSame('FREQ=WEEKLY;BYDAY=MO;COUNT=4', $result);
+    }
 }

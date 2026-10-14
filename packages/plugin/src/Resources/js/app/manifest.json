@@ -29,8 +29,13 @@
       "_translations-CPvEMAbD.js"
     ]
   },
+<<<<<<< HEAD
   "_create-with-ai-C8YxjJes.js": {
     "file": "assets/create-with-ai-C8YxjJes.js",
+=======
+  "_create-with-ai-APU_ZbyJ.js": {
+    "file": "assets/create-with-ai-APU_ZbyJ.js",
+>>>>>>> f327041 (feat: implement per-occurrence AI customizations for event scheduling)
     "name": "create-with-ai",
     "imports": [
       "_translations-CPvEMAbD.js",
@@ -125,12 +130,17 @@
     ]
   },
   "src/index.tsx": {
+<<<<<<< HEAD
     "file": "assets/overview-DkXo9hT5.js",
+=======
+    "file": "assets/overview-BR0QoFEp.js",
+>>>>>>> f327041 (feat: implement per-occurrence AI customizations for event scheduling)
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
+<<<<<<< HEAD
       "_create-with-ai.styles-B3GlnHSg.js",
       "_localization-BHnAK9Na.js",
       "_calendar.events-CgSVi6Oj.js",
@@ -138,6 +148,15 @@
       "_timegrid-DkP0uxp5.js",
       "_lightswitch-C4sgii-l.js",
       "_create-with-ai-C8YxjJes.js",
+=======
+      "_create-with-ai.styles-dAY_Ede8.js",
+      "_localization-Mf36Vfg7.js",
+      "_calendar.events-B0-G7rS_.js",
+      "_interaction-DqG35pqf.js",
+      "_timegrid-dPK_ini7.js",
+      "_lightswitch-Bj0mJjdb.js",
+      "_create-with-ai-APU_ZbyJ.js",
+>>>>>>> f327041 (feat: implement per-occurrence AI customizations for event scheduling)
       "_http-bwzZaFVT.js",
       "_calendar.styles-CIEulExP.js",
       "_variables-XTEqmteb.js",
@@ -159,18 +178,31 @@
     ]
   },
   "src/standalone/event-builder/index.tsx": {
+<<<<<<< HEAD
     "file": "assets/event-builder-0q9SDZQ_.js",
+=======
+    "file": "assets/event-builder-DA8VI4lD.js",
+>>>>>>> f327041 (feat: implement per-occurrence AI customizations for event scheduling)
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
       "_translations-CPvEMAbD.js",
+<<<<<<< HEAD
       "_create-with-ai.styles-B3GlnHSg.js",
       "_localization-BHnAK9Na.js",
       "_calendar.events-CgSVi6Oj.js",
       "_interaction-DkjMMopr.js",
       "_lightswitch-C4sgii-l.js",
       "_create-with-ai-C8YxjJes.js",
+=======
+      "_create-with-ai.styles-dAY_Ede8.js",
+      "_localization-Mf36Vfg7.js",
+      "_calendar.events-B0-G7rS_.js",
+      "_interaction-DqG35pqf.js",
+      "_lightswitch-Bj0mJjdb.js",
+      "_create-with-ai-APU_ZbyJ.js",
+>>>>>>> f327041 (feat: implement per-occurrence AI customizations for event scheduling)
       "_http-bwzZaFVT.js",
       "_components-DAVK9kbC.js",
       "_ai-button-DEEwQsMT.js",

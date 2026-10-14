@@ -64,12 +64,19 @@ class EventGenerationService extends Component
             Update rules:
             - Only change fields the user explicitly asks to change.
             - Copy every other field EXACTLY from the current event JSON above.
-            - Include "changedFields": an array of field names you changed (subset of title, description, location, start, end, allDay, repeatType, rrule, calendarHandle, additionalDates, excludedDates).
+            - Include "changedFields": an array of field names you changed (subset of title, description, location, start, end, allDay, repeatType, rrule, calendarHandle, additionalDates, excludedDates, occurrenceEdits).
             - If the user only changes time/date/repeat/extra dates, keep title/description/location/calendarHandle as-is.
+            - When changing weekdays/frequency only, keep existing COUNT= or UNTIL= unless the user asks to change how the series ends.
             - Relative phrases like "make it tomorrow" or "move to 3pm" are relative to the current event and the user reference now.
             - "add an additional date Oct 24" / "also on Oct 24" → additionalDates: ["YYYY-MM-DD"] and changedFields includes "additionalDates".
             - "exclude Oct 24" / "skip Thanksgiving" / "off for …" → excludedDates: ["YYYY-MM-DD"] and changedFields includes "excludedDates".
-            - Only list dates the user asked to add/exclude in this turn (server merges them into the existing set).
+            - Customized / special single occurrence (different title, location, and/or times) → occurrenceEdits (NOT series title/location/start/end).
+              Example: "add an occurrence for Sept 24 at 6pm-10pm that is a Birthday Party at Tim Hortons"
+              → occurrenceEdits: [{ "start": "YYYY-MM-DDT18:00:00", "end": "YYYY-MM-DDT22:00:00", "allDay": false, "title": "Birthday Party for …", "location": "…" }],
+                additionalDates: ["YYYY-MM-DD"] when that date is outside the recurring pattern,
+                changedFields: ["occurrenceEdits", "additionalDates"] (omit additionalDates if the date is already on the pattern).
+              Keep the series title/location/start/end unchanged for occurrence-only edits.
+            - Only list dates / occurrence edits the user asked for in this turn (server merges them).
             UPDATE : '';
 
         $systemPrompt = <<<PROMPT
@@ -88,6 +95,16 @@ class EventGenerationService extends Component
               "rrule": "RFC 5545 RRULE body without RRULE: prefix when repeating; empty when NEVER",
               "additionalDates": ["YYYY-MM-DD dates outside the recurring pattern (Additional Dates / RDATE)"],
               "excludedDates": ["YYYY-MM-DD dates removed from the recurring pattern (Excluded Dates / EXDATE)"],
+              "occurrenceEdits": [
+                {
+                  "start": "YYYY-MM-DDTHH:mm:ss customized occurrence start",
+                  "end": "YYYY-MM-DDTHH:mm:ss customized occurrence end",
+                  "allDay": false,
+                  "title": "optional per-occurrence title",
+                  "location": "optional per-occurrence location",
+                  "description": "optional per-occurrence description"
+                }
+              ],
               "calendarHandle": "handle from the allowed calendars list",
               "changedFields": ["optional array of changed field names when updating"]
             }
@@ -114,8 +131,10 @@ class EventGenerationService extends Component
             - When repeatType is DAILY/MONTHLY/YEARLY and rrule is empty, you may omit rrule (server will fill a simple rule).
             - For CUSTOM, rrule is required (e.g. FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE).
             - Do not put DTSTART, RDATE, or EXDATE in rrule; only the RRULE body (FREQ=...). Use additionalDates / excludedDates instead.
-            - additionalDates = Calendar "Additional Dates" (extra occurrences outside the pattern).
+            - additionalDates = Calendar "Additional Dates" (extra occurrences outside the pattern; inherits series title/location/times).
             - excludedDates = Calendar "Excluded Dates" (skip occurrences from the pattern).
+            - occurrenceEdits = Calendar "Edited occurrences" (one instance with its own title/location/times). Use when the user asks for a special/customized occurrence.
+              If that date is outside the pattern, also list it in additionalDates so the instance exists, then customize it via occurrenceEdits.
             - When the user limits recurrence ("for 4 weeks", "10 times", "until December 1"), include COUNT= or UNTIL= in the rrule body.
               UNTIL must be floating local time: all-day YYYYMMDD, timed YYYYMMDDTHHMMSS (no Z / offsets).
             - "every Friday for 8 weeks" / "for N weeks" of a weekly event means COUNT=N (N occurrences), not COUNT=2.
@@ -144,8 +163,13 @@ class EventGenerationService extends Component
 
         /** @var array<string, mixed> $event */
         $event = $parsed['event'];
+        $parsedOccurrenceEdits = $this->normalizeOccurrenceEdits($event['occurrenceEdits'] ?? []);
         if ($isUpdate && $normalizedCurrent) {
             $event = $this->mergeUpdatedEvent($normalizedCurrent, $event, $parsed['changedFields'] ?? []);
+        }
+        // Keep customized occurrences even if the model omitted them from changedFields.
+        if ([] !== $parsedOccurrenceEdits) {
+            $event['occurrenceEdits'] = $parsedOccurrenceEdits;
         }
 
         try {
@@ -197,30 +221,61 @@ class EventGenerationService extends Component
             )))
             : [];
 
+        $rruleForNormalize = (string) $event['rrule'];
+        if ($isUpdate && \is_array($currentEvent)) {
+            // Keep COUNT/UNTIL when the model rewrites FREQ/BYDAY but omits the series end.
+            $rruleForNormalize = $this->preserveRepeatBounds(
+                $rruleForNormalize,
+                (string) ($currentEvent['rrule'] ?? ''),
+            );
+        }
+
         $baseRrule = $this->normalizeGeneratedRrule(
             (string) $event['repeatType'],
-            (string) $event['rrule'],
+            $rruleForNormalize,
             $start,
             (bool) $event['allDay'],
         );
 
         // Preserve existing RDATE/EXDATE from the current event unless this update replaces them.
+        // Use the raw currentEvent rrule — normalizeCurrentEvent keeps only the RRULE body.
         $existingRdates = [];
         $existingExdates = [];
-        if ($isUpdate && $normalizedCurrent) {
-            [$existingRdates, $existingExdates] = $this->extractFixedDateValues((string) ($normalizedCurrent['rrule'] ?? ''));
+        if ($isUpdate && \is_array($currentEvent)) {
+            [$existingRdates, $existingExdates] = $this->extractFixedDateValues((string) ($currentEvent['rrule'] ?? ''));
         }
 
+        $occurrenceEdits = $this->normalizeOccurrenceEdits($event['occurrenceEdits'] ?? []);
         $addRdates = $this->normalizeDateList($event['additionalDates'] ?? []);
         $addExdates = $this->normalizeDateList($event['excludedDates'] ?? []);
 
+        // Off-pattern customized occurrences need an Additional Date so the instance exists.
+        if ([] !== $occurrenceEdits) {
+            foreach ($occurrenceEdits as $edit) {
+                $addRdates[] = substr((string) $edit['start'], 0, 10);
+            }
+            if ($isUpdate && !\in_array('additionalDates', $changedFields, true)) {
+                $changedFields[] = 'additionalDates';
+            }
+        }
+
+        // On update, only merge the fixed-date lists the user asked to change.
+        // Never wipe existing RDATE/EXDATE just because the model returned empty arrays.
         $rdates = $existingRdates;
         $exdates = $existingExdates;
-        if (!$isUpdate || \in_array('additionalDates', $changedFields, true) || [] === $changedFields) {
-            $rdates = $this->mergeUniqueDates($existingRdates, $addRdates);
-        }
-        if (!$isUpdate || \in_array('excludedDates', $changedFields, true) || [] === $changedFields) {
-            $exdates = $this->mergeUniqueDates($existingExdates, $addExdates);
+        if (!$isUpdate) {
+            $rdates = $addRdates;
+            $exdates = $addExdates;
+        } else {
+            if (
+                \in_array('additionalDates', $changedFields, true)
+                || \in_array('occurrenceEdits', $changedFields, true)
+            ) {
+                $rdates = $this->mergeUniqueDates($existingRdates, $addRdates);
+            }
+            if (\in_array('excludedDates', $changedFields, true)) {
+                $exdates = $this->mergeUniqueDates($existingExdates, $addExdates);
+            }
         }
 
         if (
@@ -244,10 +299,16 @@ class EventGenerationService extends Component
             && (
                 \in_array('additionalDates', $changedFields, true)
                 || \in_array('excludedDates', $changedFields, true)
+                || \in_array('occurrenceEdits', $changedFields, true)
+                || [] !== $occurrenceEdits
             )
             && !\in_array('rrule', $changedFields, true)
         ) {
             $changedFields[] = 'rrule';
+        }
+
+        if ($isUpdate && [] !== $occurrenceEdits && !\in_array('occurrenceEdits', $changedFields, true)) {
+            $changedFields[] = 'occurrenceEdits';
         }
 
         [$repeatEndType, $untilTimestamp] = $this->inferRepeatEndFromRrule((string) $event['rrule']);
@@ -255,6 +316,7 @@ class EventGenerationService extends Component
         $event['until'] = $untilTimestamp;
         $event['additionalDates'] = $rdates;
         $event['excludedDates'] = $exdates;
+        $event['occurrenceEdits'] = $occurrenceEdits;
         $event['referenceNow'] = $referenceFloating->format('Y-m-d\TH:i:s');
         if ($isUpdate) {
             $event['changedFields'] = $changedFields;
@@ -358,15 +420,24 @@ class EventGenerationService extends Component
             'calendarHandle',
             'additionalDates',
             'excludedDates',
+            'occurrenceEdits',
         ];
         $changed = array_values(array_intersect(
             array_map(static fn ($field) => (string) $field, $changedFields),
             $allowed
         ));
 
-        // If the model forgot changedFields, keep its full payload (still instructed to preserve values).
+        // If the model forgot changedFields, fail closed: keep current scalars and only
+        // take list fields the model actually populated (extra/excluded dates, occurrence edits).
         if ([] === $changed) {
-            return $incoming;
+            $merged = $current;
+            foreach (['additionalDates', 'excludedDates', 'occurrenceEdits'] as $listField) {
+                if (!empty($incoming[$listField])) {
+                    $merged[$listField] = $incoming[$listField];
+                }
+            }
+
+            return $merged;
         }
 
         $merged = $current;
@@ -374,6 +445,26 @@ class EventGenerationService extends Component
             if (\array_key_exists($field, $incoming)) {
                 $merged[$field] = $incoming[$field];
             }
+        }
+
+        // Occurrence-only edits must not rewrite the series title/location.
+        if (
+            \in_array('occurrenceEdits', $changed, true)
+            && !\in_array('title', $changed, true)
+        ) {
+            $merged['title'] = $current['title'] ?? $merged['title'] ?? '';
+        }
+        if (
+            \in_array('occurrenceEdits', $changed, true)
+            && !\in_array('location', $changed, true)
+        ) {
+            $merged['location'] = $current['location'] ?? $merged['location'] ?? '';
+        }
+        if (
+            \in_array('occurrenceEdits', $changed, true)
+            && !\in_array('description', $changed, true)
+        ) {
+            $merged['description'] = $current['description'] ?? $merged['description'] ?? '';
         }
 
         // Changing start/allDay without end often needs the companion date fields from the model.
@@ -527,6 +618,7 @@ class EventGenerationService extends Component
             'calendarHandle' => trim((string) ($data['calendarHandle'] ?? '')),
             'additionalDates' => $this->normalizeDateList($data['additionalDates'] ?? []),
             'excludedDates' => $this->normalizeDateList($data['excludedDates'] ?? []),
+            'occurrenceEdits' => $this->normalizeOccurrenceEdits($data['occurrenceEdits'] ?? []),
         ];
 
         if ('' === $event['title']) {
@@ -728,6 +820,66 @@ class EventGenerationService extends Component
     }
 
     /**
+     * @return list<array{start: string, end: string, allDay: bool, title?: string, location?: string, description?: string}>
+     */
+    private function normalizeOccurrenceEdits(mixed $value): array
+    {
+        if (!\is_array($value)) {
+            return [];
+        }
+
+        $edits = [];
+        foreach ($value as $item) {
+            if (!\is_array($item)) {
+                continue;
+            }
+
+            $startRaw = trim((string) ($item['start'] ?? ''));
+            $endRaw = trim((string) ($item['end'] ?? ''));
+            if ('' === $startRaw || '' === $endRaw) {
+                continue;
+            }
+
+            try {
+                $start = DateHelper::parseFloatingCarbon($startRaw);
+                $end = DateHelper::parseFloatingCarbon($endRaw);
+            } catch (\Throwable) {
+                continue;
+            }
+
+            $allDay = (bool) ($item['allDay'] ?? false);
+            if ($allDay) {
+                [$start, $end] = $this->normalizeAllDayRange($start, $end);
+            } elseif ($end->lte($start)) {
+                continue;
+            }
+
+            $edit = [
+                'start' => $start->format('Y-m-d\TH:i:s'),
+                'end' => $end->format('Y-m-d\TH:i:s'),
+                'allDay' => $allDay,
+            ];
+
+            $title = trim((string) ($item['title'] ?? ''));
+            if ('' !== $title) {
+                $edit['title'] = $title;
+            }
+            $location = trim((string) ($item['location'] ?? ''));
+            if ('' !== $location) {
+                $edit['location'] = $location;
+            }
+            $description = trim((string) ($item['description'] ?? ''));
+            if ('' !== $description) {
+                $edit['description'] = $description;
+            }
+
+            $edits[] = $edit;
+        }
+
+        return $edits;
+    }
+
+    /**
      * @return list<string> Y-m-d
      */
     private function normalizeDateList(mixed $value): array
@@ -760,6 +912,58 @@ class EventGenerationService extends Component
         }
 
         return array_values(array_unique($dates));
+    }
+
+    /**
+     * When an update rewrites FREQ/BYDAY but omits COUNT/UNTIL, keep the current series end.
+     */
+    private function preserveRepeatBounds(string $incomingRrule, string $currentRrule): string
+    {
+        $incomingBody = $this->extractRruleBody($incomingRrule);
+        $currentBody = $this->extractRruleBody($currentRrule);
+        if ('' === $incomingBody) {
+            return $incomingRrule;
+        }
+
+        $incomingHasCount = (bool) preg_match('/(?:^|;)COUNT=/i', $incomingBody);
+        $incomingHasUntil = (bool) preg_match('/(?:^|;)UNTIL=/i', $incomingBody);
+        if ($incomingHasCount || $incomingHasUntil) {
+            return $incomingBody;
+        }
+
+        if (preg_match('/(?:^|;)COUNT=(\d+)/i', $currentBody, $countMatch) && (int) $countMatch[1] > 0) {
+            return rtrim($incomingBody, ';').';COUNT='.$countMatch[1];
+        }
+
+        if (preg_match('/(?:^|;)UNTIL=([0-9T]+)/i', $currentBody, $untilMatch)) {
+            return rtrim($incomingBody, ';').';UNTIL='.$untilMatch[1];
+        }
+
+        return $incomingBody;
+    }
+
+    private function extractRruleBody(string $rrule): string
+    {
+        $rrule = trim(str_replace(["\r\n", "\r"], "\n", $rrule));
+        if ('' === $rrule) {
+            return '';
+        }
+
+        foreach (explode("\n", $rrule) as $line) {
+            $line = trim($line);
+            if (str_starts_with(strtoupper($line), 'RRULE:')) {
+                return preg_replace('/^RRULE:/i', '', $line) ?? '';
+            }
+            if (str_starts_with(strtoupper($line), 'FREQ=')) {
+                return $line;
+            }
+        }
+
+        if (str_contains(strtoupper($rrule), 'FREQ=')) {
+            return preg_replace('/^RRULE:/i', '', $rrule) ?? $rrule;
+        }
+
+        return '';
     }
 
     /**
