@@ -1,4 +1,4 @@
-import{D as e,N as t,j as n,k as r,t as i}from"./localization-DftVQMPp.js";import{h as a,m as o,n as s}from"./calendar.events-C1TErcLg.js";import{t as c}from"./timegrid-Bv1Oi8IQ.js";import{r as l}from"./calendar.styles-CFmp118v.js";import{t as u}from"./loader-DezNzhGi.js";var d=e(l)`
+import{D as e,N as t,j as n,k as r,t as i}from"./localization-DftVQMPp.js";import{h as a,m as o,n as s}from"./calendar.events-C1TErcLg.js";import{t as c}from"./timegrid-Bv1Oi8IQ.js";import{r as l}from"./calendar.styles-OAg62T4m.js";import{t as u}from"./loader-DezNzhGi.js";var d=e(l)`
   .fc {
     min-height: 500px;
   }

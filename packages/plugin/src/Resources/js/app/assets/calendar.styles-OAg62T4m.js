@@ -31,6 +31,106 @@ import{D as e}from"./localization-DftVQMPp.js";var t=`data:image/svg+xml;base64,
     --fc-more-link-bg-color: transparent;
     --fc-more-link-text-color: #606060;
     --fc-event-selected-overlay-color: rgb(0 0 0 / 15%);
+    --fc-now-indicator-color: #e53935;
+  }
+
+  .calendar-now-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--fc-now-indicator-color);
+    pointer-events: none;
+
+    &::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      flex: 0 0 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    &::after {
+      content: "";
+      height: 2px;
+      flex: 1 1 auto;
+      background: currentColor;
+    }
+
+    span {
+      flex: 0 0 auto;
+      font-size: 12px;
+      line-height: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .calendar-now-month {
+    position: absolute;
+    inset-inline: 6px;
+    z-index: 7;
+    height: 8px;
+    transform: translateY(-50%);
+  }
+
+  .fc-timegrid-now-indicator-line {
+    border-top-width: 2px;
+    pointer-events: none;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      top: -1px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--fc-now-indicator-color);
+      transform: translateY(-50%);
+    }
+  }
+
+  .fc-timegrid-now-indicator-arrow {
+    display: none;
+  }
+
+  && .calendar-now-agenda-row td {
+    padding: 8px 16px;
+    border: 0;
+    background: white;
+  }
+
+  .calendar-now-table + .fc-list-empty {
+    height: auto;
+  }
+
+  .calendar-now-day .fc-list-day-cushion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 32px;
+  }
+
+  .calendar-agenda-today {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background: var(--fc-now-indicator-color);
+    color: white;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  @media print {
+    .calendar-now-indicator,
+    .calendar-now-agenda-row,
+    .calendar-now-day,
+    .fc-timegrid-now-indicator-container {
+      display: none;
+    }
   }
 
   .fc .fc-button:not(.fc-button-group > .fc-button) {
@@ -141,7 +241,7 @@ import{D as e}from"./localization-DftVQMPp.js";var t=`data:image/svg+xml;base64,
     .fc-daygrid-day {
       background: #ffffff;
     }
-
+    
     .fc-daygrid-day.fc-day-sat:not(.fc-day-other):not(.fc-day-today),
     .fc-daygrid-day.fc-day-sun:not(.fc-day-other):not(.fc-day-today) {
       background-color: #fcfdff;

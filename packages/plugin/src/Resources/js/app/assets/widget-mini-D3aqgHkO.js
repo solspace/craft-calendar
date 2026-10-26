@@ -1,4 +1,4 @@
-import{D as e,N as t,j as n,k as r,t as i,x as a}from"./localization-DftVQMPp.js";import{h as o,m as s,n as c}from"./calendar.events-C1TErcLg.js";import{t as l}from"./interaction-Cv-mzU5H.js";import{t as u}from"./calendar.styles-CFmp118v.js";import{t as d}from"./loader-DezNzhGi.js";var f=t(n()),p=e(u)`
+import{D as e,N as t,j as n,k as r,t as i,x as a}from"./localization-DftVQMPp.js";import{h as o,m as s,n as c}from"./calendar.events-C1TErcLg.js";import{t as l}from"./interaction-Cv-mzU5H.js";import{t as u}from"./calendar.styles-OAg62T4m.js";import{t as d}from"./loader-DezNzhGi.js";var f=t(n()),p=e(u)`
   && .fc {
     &-header-toolbar {
       margin-bottom: 0.5em;
