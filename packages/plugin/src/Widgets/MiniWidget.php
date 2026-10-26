@@ -57,6 +57,7 @@ class MiniWidget extends AbstractWidget
                 'settings' => $this,
                 'configuration' => [
                     'currentSiteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
+                    'siteHandle' => \Craft::$app->sites->getSiteById($this->siteId ?: \Craft::$app->sites->currentSite->id)?->handle,
                     'calendars' => $this->calendars,
                     'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
                     'formats' => DateFormatHelper::toConfig(),

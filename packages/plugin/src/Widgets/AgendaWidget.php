@@ -9,9 +9,13 @@ use Solspace\Calendar\Resources\Bundles\WidgetAgendaBundle;
 
 class AgendaWidget extends AbstractWidget
 {
+    public const VIEWS = ['day', 'week', 'month', 'agenda'];
+
     public ?string $title = null;
 
     public ?string $view = null;
+
+    public array|string $enabledViews = self::VIEWS;
 
     public array|string $calendars = '*';
 
@@ -56,10 +60,12 @@ class AgendaWidget extends AbstractWidget
                 'settings' => $this,
                 'configuration' => [
                     'currentSiteId' => $this->siteId ?: \Craft::$app->sites->currentSite->id,
+                    'siteHandle' => \Craft::$app->sites->getSiteById($this->siteId ?: \Craft::$app->sites->currentSite->id)?->handle,
                     'calendars' => $this->calendars,
                     'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
                     'formats' => DateFormatHelper::toConfig(),
-                    'view' => $this->view,
+                    'view' => $this->getDefaultView(),
+                    'enabledViews' => $this->getEnabledViews(),
                     'language' => $calendarLocale,
                     'weekStartDay' => Calendar::getInstance()->settings->getFirstDayOfWeek(),
                     'overlapThreshold' => Calendar::getInstance()->settings->getOverlapThreshold(),
@@ -89,6 +95,34 @@ class AgendaWidget extends AbstractWidget
     {
         return [
             [['view', 'calendars'], 'required'],
+            [['enabledViews'], 'validateEnabledViews', 'skipOnEmpty' => false],
+            [['view'], 'in', 'range' => $this->getEnabledViews()],
         ];
+    }
+
+    public function getEnabledViews(): array
+    {
+        $enabled = \is_array($this->enabledViews)
+            ? array_values(array_filter(self::VIEWS, fn (string $view) => \in_array($view, $this->enabledViews, true)))
+            : [];
+
+        return $enabled ?: self::VIEWS;
+    }
+
+    public function getDefaultView(): string
+    {
+        $enabled = $this->getEnabledViews();
+        if (\in_array($this->view, $enabled, true)) {
+            return $this->view;
+        }
+
+        return \in_array('month', $enabled, true) ? 'month' : $enabled[0];
+    }
+
+    public function validateEnabledViews(string $attribute): void
+    {
+        if (!\is_array($this->enabledViews) || !$this->enabledViews || array_diff($this->enabledViews, self::VIEWS)) {
+            $this->addError($attribute, Calendar::t('Select at least one valid calendar view.'));
+        }
     }
 }

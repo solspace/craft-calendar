@@ -13,6 +13,7 @@ export const LightSwitch: FC<Props> = ({ enabled, errors, onClick, ...controlPro
   return (
     <Control {...controlProps}>
       <button
+        id={controlProps.id}
         type="button"
         role="switch"
         aria-checked={enabled ?? false}

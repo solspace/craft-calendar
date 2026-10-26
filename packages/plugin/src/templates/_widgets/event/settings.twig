@@ -1,0 +1,50 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.textField({
+    label: 'Title'|t('calendar'),
+    instructions: 'Customise the widget title. Leave blank for default.'|t('calendar'),
+    id: 'title', name: 'title', value: settings.title, errors: settings.getErrors('title')
+}) }}
+
+{{ forms.checkboxSelectField({
+    label: 'Calendars'|t('calendar'),
+    instructions: 'Choose which calendars events can be created in. Only calendars you can edit are available.'|t('calendar'),
+    id: 'calendars', name: 'calendars', showAllOption: true,
+    options: calendars, values: settings.calendars, errors: settings.getErrors('calendars')
+}) }}
+
+{% if craft.app.isMultisite %}
+    {{ forms.selectField({
+        label: 'Site'|t('calendar'),
+        id: 'siteId', name: 'siteId', options: siteOptions, value: settings.siteId,
+        errors: settings.getErrors('siteId')
+    }) }}
+{% endif %}
+
+{{ forms.lightswitchField({
+    label: 'Show repeating controls'|t('calendar'),
+    instructions: 'Available only for calendars that allow repeating events.'|t('calendar'),
+    id: 'showRepeating', name: 'showRepeating', on: settings.showRepeating,
+    errors: settings.getErrors('showRepeating')
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Show event details'|t('calendar'),
+    instructions: 'Show mapped location and description fields. Required fields are always shown.'|t('calendar'),
+    id: 'showDetails', name: 'showDetails', on: settings.showDetails,
+    errors: settings.getErrors('showDetails')
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Show overlap warnings'|t('calendar'),
+    instructions: 'Check for schedule conflicts when overlap warnings are enabled in Calendar settings.'|t('calendar'),
+    id: 'showOverlapWarnings', name: 'showOverlapWarnings', on: settings.showOverlapWarnings,
+    errors: settings.getErrors('showOverlapWarnings')
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Show More details link'|t('calendar'),
+    instructions: 'Allow opening the full event editor with the entered values.'|t('calendar'),
+    id: 'showMoreDetails', name: 'showMoreDetails', on: settings.showMoreDetails,
+    errors: settings.getErrors('showMoreDetails')
+}) }}

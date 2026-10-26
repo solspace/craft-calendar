@@ -1,6 +1,13 @@
-import type { DateFormats, WeekStartDay } from "@cal/types/config";
+import type { CalendarConfig, DateFormats, WeekStartDay } from "@cal/types/config";
 
 export type EventWidgetConfig = {
+  language?: string;
+  calendarColors?: CalendarConfig["calendarColors"];
+  calendarAllowRepeating?: CalendarConfig["calendarAllowRepeating"];
+  quickCreateFields?: CalendarConfig["quickCreateFields"];
+  quickCreateRequiredFields?: CalendarConfig["quickCreateRequiredFields"];
+  showOverlapWarnings?: boolean;
+  showMoreDetails?: boolean;
   formats: DateFormats;
   weekStartDay: WeekStartDay;
   timeInterval: number;
@@ -8,6 +15,7 @@ export type EventWidgetConfig = {
   allDayDefault: boolean;
   overlapThreshold: number;
   currentSiteId: number;
+  siteHandle?: string;
   currentDay: Date;
 
   calendars: Record<number, string>;

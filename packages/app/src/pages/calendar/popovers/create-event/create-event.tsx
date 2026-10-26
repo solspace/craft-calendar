@@ -19,7 +19,7 @@ import { useId, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { useConfig } from "../../context/config.context";
 import { CalendarDropdown } from "./create-event.calendar-dropdown";
-import { useCreateEvent } from "./create-event.mutation";
+import { type CreatedQuickEvent, useCreateEvent } from "./create-event.mutation";
 import {
   buildQuickCreateRecurrence,
   isQuickCreateRecurrenceValid,
@@ -41,16 +41,22 @@ type Props = {
   draft: CalendarCreateDraft;
   onChange: (draft: CalendarCreateDraft) => void;
   refetchEvents: () => void;
-  onConfirm: () => void;
+  onConfirm: (event?: CreatedQuickEvent) => void;
   onCancel: () => void;
+  variant?: "popover" | "widget";
+  showMoreDetails?: boolean;
 };
 
-export const PopoverCreateEvent: FC<Props> = ({
+const widgetEventUrl = (path: string) => Craft.getCpUrl(`calendar${path}`);
+
+export const QuickCreateEventForm: FC<Props> = ({
   draft,
   onChange,
   refetchEvents,
   onConfirm,
   onCancel,
+  variant = "popover",
+  showMoreDetails = true,
 }) => {
   const {
     currentSiteId,
@@ -103,6 +109,7 @@ export const PopoverCreateEvent: FC<Props> = ({
   const { createEvent, prepareEvent, error, isFetching, isOpeningEditor } = useCreateEvent({
     refetchEvents,
     onSuccess: onConfirm,
+    getUrl: variant === "widget" ? widgetEventUrl : undefined,
   });
 
   const format = useMemo(() => {
@@ -116,20 +123,20 @@ export const PopoverCreateEvent: FC<Props> = ({
   const displayEnd = useMemo(() => getCreateDraftDisplayEnd(draft), [draft]);
 
   useEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !isFetching) {
+    if (variant === "popover" && event.key === "Escape" && !isFetching) {
       onCancel();
     }
   });
 
   return (
-    <PopoverCreateEventWrapper>
+    <PopoverCreateEventWrapper data-quick-create-variant={variant}>
       <CreateFormBody>
         <FlexTitle>
           <TextInput
             label={translate("Title")}
             id={`${id}-title`}
             required
-            autofocus
+            autofocus={variant === "popover"}
             value={draft.title}
             placeholder={translate("Event Title")}
             onChange={(value) => onChange(setCreateDraftTitle(draft, value))}
@@ -287,34 +294,42 @@ export const PopoverCreateEvent: FC<Props> = ({
           )}
         </Fields>
 
-        {error && <p className="error">{error}</p>}
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
       </CreateFormBody>
 
       <CreateActions $justifyContent="flex-end" $gap={8}>
-        <MoreDetailsButton
-          type="button"
-          disabled={!calendarId || isFetching || !validRecurrence}
-          onClick={async () => {
-            const url = await prepareEvent(effectiveDraft, calendarId, details);
-            if (url) window.location.href = url;
-          }}
-        >
-          {translate(isOpeningEditor ? "Processing..." : "More details…")}
-        </MoreDetailsButton>
-        <CreateActionButtons>
-          <button
+        {showMoreDetails && (
+          <MoreDetailsButton
             type="button"
-            className={clsx("btn", isFetching && "disabled")}
-            disabled={isFetching}
-            onClick={onCancel}
+            disabled={!calendarId || isFetching || !validRecurrence}
+            onClick={async () => {
+              const url = await prepareEvent(effectiveDraft, calendarId, details);
+              if (url) window.location.href = url;
+            }}
           >
-            {translate("Cancel")}
-          </button>
+            {translate(isOpeningEditor ? "Processing..." : "More details…")}
+          </MoreDetailsButton>
+        )}
+        <CreateActionButtons>
+          {variant === "popover" && (
+            <button
+              type="button"
+              className={clsx("btn", isFetching && "disabled")}
+              disabled={isFetching}
+              onClick={onCancel}
+            >
+              {translate("Cancel")}
+            </button>
+          )}
 
           <button
             type="button"
             className={clsx("btn submit", isFetching && "disabled")}
-            disabled={!draft.title || !calendarId || isFetching || !validRecurrence}
+            disabled={!draft.title.trim() || !calendarId || isFetching || !validRecurrence}
             onClick={() => createEvent(effectiveDraft, calendarId, details)}
           >
             {translate(isFetching && !isOpeningEditor ? "Creating Event..." : "Create Event")}
@@ -324,3 +339,5 @@ export const PopoverCreateEvent: FC<Props> = ({
     </PopoverCreateEventWrapper>
   );
 };
+
+export const PopoverCreateEvent = QuickCreateEventForm;

@@ -167,13 +167,25 @@ export const YearCalendarWrapper = styled.div`
   }
 `;
 
-export const YearDayPreviewWrapper = styled.div`
-  width: min(340px, calc(100vw - 40px));
+export const YearDayPreviewWrapper = styled.div<{ $compact?: boolean }>`
+  width: min(${({ $compact }) => ($compact ? "280px" : "340px")}, calc(100vw - 40px));
   padding: 14px 0 6px;
   box-sizing: border-box;
 
+  .day-preview-empty { margin: 0; padding: 0 14px 10px; color: var(--gray-600); font-size: 12px; }
+  .day-preview-heading { display: flex; align-items: flex-start; gap: 8px; margin: 0 14px 10px; }
+  .day-preview-close {
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 24px; width: 24px; height: 24px; margin: -2px -4px 0 0; padding: 0;
+    border: 0; border-radius: 4px; background: transparent; color: var(--gray-500); cursor: pointer;
+    &:hover { background: var(--gray-100); color: var(--gray-700); }
+    &:focus-visible { outline: 2px solid var(--link-color); outline-offset: 1px; }
+  }
+
   h3 {
-    margin: 0 14px 10px;
+    flex: 1;
+    min-width: 0;
+    margin: 0;
     color: var(--gray-800);
     font-size: 14px;
     font-weight: 600;
@@ -188,7 +200,7 @@ export const YearDayPreviewWrapper = styled.div`
     list-style: none;
   }
 
-  li button {
+  li :is(button, a) {
     display: flex;
     align-items: start;
     gap: 9px;
@@ -199,6 +211,8 @@ export const YearDayPreviewWrapper = styled.div`
     background: transparent;
     text-align: start;
     cursor: pointer;
+    box-sizing: border-box;
+    text-decoration: none;
 
     &:hover,
     &:focus-visible {

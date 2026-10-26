@@ -6,6 +6,7 @@ export type MiniWidgetConfig = {
   overlapThreshold: number;
   weekStartDay: WeekStartDay;
   currentSiteId: number;
+  siteHandle?: string;
   currentDay: Date;
 
   calendars: string | string[];

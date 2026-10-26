@@ -1,27 +1,68 @@
-.upcoming-events {
-  width: 100%;
-  border-collapse: collapse;
+.calendar-upcoming {
+  min-width: 0;
+  color: var(--text-color, #33404d);
 
-  tbody {
-    td {
-      padding: 7px 0;
-      border: {
-        top: 1px dotted #e3e5e8;
-        bottom: 1px dotted #e3e5e8;
-      }
+  .calendar-upcoming-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 
-      span {
-        color: #8f98a3 !important;
-        font-weight: normal;
-      }
-    }
+    &.is-scrollable {
+      max-height: 440px;
+      padding-inline-end: 8px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
 
-    tr:first-child td {
-      border-top: 1px solid transparent;
-    }
-
-    tr:last-child td {
-      border-bottom: 1px solid transparent;
+      &:focus-visible { outline: 2px solid var(--link-color); outline-offset: 2px; }
     }
   }
+  .calendar-upcoming-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hairline-color, #e5e9ef);
+    &:first-child { padding-top: 0; }
+    &:last-child { border-bottom: 0; padding-bottom: 0; }
+  }
+  .calendar-upcoming-date {
+    display: flex;
+    flex: 0 0 42px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    box-sizing: border-box;
+    border: 1px solid var(--gray-150, #e5e9ef);
+    border-radius: 7px;
+    background: var(--gray-050, #f8fafc);
+    span { color: var(--light-text-color, #596673); font-size: 10px; line-height: 16px; }
+    strong { color: var(--gray-700, #33404d); font-size: 19px; font-weight: 500; line-height: 22px; }
+  }
+  .calendar-upcoming-content { flex: 1; min-width: 0; }
+  .calendar-upcoming-title {
+    display: block;
+    color: var(--text-color, #33404d);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+    &:hover { color: var(--link-color); }
+  }
+  .is-cancelled .calendar-upcoming-title { text-decoration: line-through; color: var(--light-text-color, #596673); }
+  .calendar-upcoming-time { display: flex; flex-wrap: wrap; gap: 2px 6px; margin-top: 2px; color: var(--light-text-color, #596673); font-size: 11px; line-height: 18px; font-variant-numeric: tabular-nums; }
+  .calendar-upcoming-cancelled { color: var(--amber-800, #8d5900); }
+  .calendar-upcoming-calendar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 3px;
+    color: var(--light-text-color, #596673);
+    font-size: 11px;
+    line-height: 18px;
+    span { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; }
+  }
+  .calendar-upcoming-empty { padding: 24px 8px; color: var(--light-text-color, #596673); font-size: 12px; text-align: center; }
+  .calendar-upcoming-footer { display: flex; align-items: center; margin-top: 12px; font-size: 12px; line-height: 20px; a { display: inline-flex; align-items: center; gap: 6px; } }
 }

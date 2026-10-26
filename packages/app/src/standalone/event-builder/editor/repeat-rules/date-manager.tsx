@@ -1,3 +1,4 @@
+import { DatePickerHeader } from "@cal/components/controls/date-picker/date-picker.header";
 import type { WeekStartDay } from "@cal/types/config";
 import { localDisplayDateToUtcTimestamp } from "@cal/utils/date";
 import { getDatePickerTranslations } from "@cal/utils/localization";
@@ -142,6 +143,7 @@ export const DateManager: FC<FixedDateManagerProps> = ({
             showMonthDropdown
             showYearDropdown
             dropdownMode="select"
+            renderCustomHeader={(header) => <DatePickerHeader {...header} />}
             todayButton={translate("Today")}
             openToDate={openToDate}
             calendarStartDay={weekStartDay}

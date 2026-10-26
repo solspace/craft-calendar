@@ -10,15 +10,51 @@
     errors: settings.getErrors('title')
 }) }}
 
+{% set viewOptions = {day: 'Day'|t('calendar'), week: 'Week'|t('calendar'), month: 'Month'|t('calendar'), agenda: 'Agenda'|t('calendar')} %}
+{% set viewSettingsId = 'calendar-widget-views-' ~ random() %}
+<div id="{{ viewSettingsId }}" data-calendar-widget-views>
+{{ forms.checkboxGroupField({
+    label: 'Available views'|t('calendar'),
+    instructions: 'Choose the views available in this widget. Select at least one.'|t('calendar'),
+    id: 'enabledViews',
+    name: 'enabledViews',
+    options: viewOptions,
+    values: settings.enabledViews is iterable ? settings.enabledViews : [],
+    errors: settings.getErrors('enabledViews')
+}) }}
+<div data-default-view-field{{ settings.getEnabledViews()|length < 2 ? ' hidden' }}>
 {{ forms.selectField({
-    label: "Calendar View"|t('calendar'),
-    instructions: "Choose which type of calendar view to assign to this widget"|t('calendar'),
+    label: 'Default view'|t('calendar'),
+    instructions: 'Choose which available view opens when the widget loads.'|t('calendar'),
     id: 'view',
     name: 'view',
-    options: {month: "Month"|t("calendar"), week: "Week"|t("calendar"), day: "Day"|t("calendar")},
-    value: settings.view,
+    options: viewOptions,
+    value: settings.getDefaultView(),
     errors: settings.getErrors('view')
 }) }}
+</div>
+</div>
+{% js %}
+(() => {
+    const root = document.getElementById('{{ viewSettingsId|namespaceInputId }}');
+    if (!root) return;
+    const select = root.querySelector('select');
+    const field = root.querySelector('[data-default-view-field]');
+    const updateViews = () => {
+        const enabled = Array.from(root.querySelectorAll('input[type="checkbox"]:checked'), input => input.value);
+        for (const option of select.options) {
+            option.disabled = !enabled.includes(option.value);
+            option.hidden = option.disabled;
+        }
+        if (enabled.length && !enabled.includes(select.value)) {
+            select.value = enabled.includes('month') ? 'month' : enabled[0];
+        }
+        field.hidden = enabled.length < 2;
+    };
+    root.addEventListener('change', updateViews);
+    updateViews();
+})();
+{% endjs %}
 
 {{ forms.checkboxSelectField({
     label: "Calendars"|t('calendar'),

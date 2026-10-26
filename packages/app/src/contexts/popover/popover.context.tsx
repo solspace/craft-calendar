@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { usePopoverPosition } from "./popover.hooks";
 import { PopoverArrow, PopoverBridge, PopoverContainer } from "./popover.styles";
 import type { PopoverAnchor, ShowPopoverOptions } from "./popover.types";
@@ -37,7 +38,10 @@ export const usePopover = () => {
   return context;
 };
 
-export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
+export const PopoverProvider: FC<PropsWithChildren<{ portal?: boolean }>> = ({
+  children,
+  portal = false,
+}) => {
   const [state, setState] = useState<PopoverState>();
   const bridgeRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -103,6 +107,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
         top: layout?.top ?? 0,
         left: layout?.left ?? 0,
         visibility: layout ? "visible" : "hidden",
+        pointerEvents: "auto",
       }}
     >
       {layout && (
@@ -114,10 +119,25 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
 
   return (
     <PopoverContext.Provider value={controls}>
-      <PopoverBridge ref={bridgeRef}>
-        {PopoverElement}
-        {children}
-      </PopoverBridge>
+      {portal ? (
+        <>
+          {createPortal(
+            <PopoverBridge
+              ref={bridgeRef}
+              style={{ position: "fixed", top: 0, left: 0, zIndex: 100, pointerEvents: "none" }}
+            >
+              {PopoverElement}
+            </PopoverBridge>,
+            document.body,
+          )}
+          {children}
+        </>
+      ) : (
+        <PopoverBridge ref={bridgeRef}>
+          {PopoverElement}
+          {children}
+        </PopoverBridge>
+      )}
     </PopoverContext.Provider>
   );
 };

@@ -1,43 +1,41 @@
+{% set selectedSite = craft.app.sites.getSiteById(settings.siteId ?: currentSite.id) %}
 {% set dateFormat = craft.app.locale.getDateFormat('short', 'php') %}
 {% set timeFormat = craft.app.locale.getTimeFormat('short', 'php') %}
-{% set dateTimeFormat = craft.app.locale.getDateTimeFormat("short", "php") %}
-
 {% set occurrences = craft.calendar.occurrences({
     rangeStart: now,
     limit: settings.limit,
     calendarId: settings.calendars,
     siteId: settings.siteId ?: currentSite.id,
-}) %}
+}).all %}
 
-<table class="upcoming-events table bordered">
-    <tbody>
-        {% for occurrence in occurrences.all %}
+<div class="calendar-upcoming">
+    <ol class="calendar-upcoming-list{{ occurrences|length > 5 ? ' is-scrollable' }}"{% if occurrences|length > 5 %} tabindex="0" aria-label="{{ 'Calendar Upcoming Events'|t('calendar') }}"{% endif %}>
+        {% for occurrence in occurrences %}
             {% set event = occurrence.event %}
-            <tr>
-                <td>
-                    {% if settings.calendars|length > 1 or settings.calendars == "*" %}
-                        <span class="color-indicator"
-                              title="{{ event.calendar.name }}"
-                              style="background-color: {{ event.calendar.color }}">
-                        </span>
-                    {% endif %}
-
-                    <a href="{{ url('calendar/events/'~event.id) }}">{{ event.title }}</a>
-
-                    <span>
-                        {% if event.allDay %}
-                            {{ occurrence.startDate.format(dateFormat) }}
-                            {% if event.multiDay %}
-                                 - {{ occurrence.endDate.format(dateFormat) }}
-                            {% else %}
-                                ({{ "All Day"|t('calendar') }})
-                            {% endif %}
+            <li class="calendar-upcoming-row{{ occurrence.cancelled ? ' is-cancelled' }}">
+                <time class="calendar-upcoming-date" datetime="{{ occurrence.startDate.format('Y-m-d') }}">
+                    <span>{{ occurrence.startDate|date('M', timezone=false) }}</span>
+                    <strong>{{ occurrence.startDate.format('j') }}</strong>
+                </time>
+                <div class="calendar-upcoming-content">
+                    <a class="calendar-upcoming-title" href="{{ event.cpEditUrl }}">{{ occurrence.content.title }}</a>
+                    <div class="calendar-upcoming-time">
+                        {% if occurrence.allDay %}
+                            {{ 'All Day'|t('calendar') }}
                         {% else %}
-                            {{ occurrence.startDate.format(dateTimeFormat) }}
+                            {{ occurrence.startDate.format(timeFormat) }} – {{ occurrence.endDate.format(timeFormat) }}
                         {% endif %}
-                    </span>
-                </td>
-            </tr>
+                        {% if occurrence.multiDay %}
+                            <span>· {{ occurrence.endDate.format(dateFormat) }}</span>
+                        {% endif %}
+                        {% if occurrence.cancelled %}<span class="calendar-upcoming-cancelled">{{ 'Cancelled'|t('calendar') }}</span>{% endif %}
+                    </div>
+                    <div class="calendar-upcoming-calendar"><span style="background-color: {{ event.calendar.color }}" aria-hidden="true"></span>{{ event.calendar.name }}</div>
+                </div>
+            </li>
+        {% else %}
+            <li class="calendar-upcoming-empty">{{ 'No upcoming events.'|t('calendar') }}</li>
         {% endfor %}
-    </tbody>
-</table>
+    </ol>
+    <div class="calendar-upcoming-footer"><a href="{{ cpUrl('calendar', {site: selectedSite.handle ?? currentSite.handle}) }}">{{ 'View calendar'|t('calendar') }} <span aria-hidden="true">→</span></a></div>
+</div>
