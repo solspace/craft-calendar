@@ -13,4 +13,9 @@ class OccurrenceEditorBundle extends CalendarAssetBundle
     {
         return ['js/occurrence-editor.js'];
     }
+
+    protected function getClientEntry(): ?string
+    {
+        return 'occurrence-editor';
+    }
 }

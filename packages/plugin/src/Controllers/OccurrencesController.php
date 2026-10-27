@@ -14,6 +14,7 @@ use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Elements\OccurrenceOverride;
+use Solspace\Calendar\Library\Helpers\DateFormatHelper;
 use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Resources\Bundles\OccurrenceEditorBundle;
 use Solspace\Calendar\Services\OccurrencesService;
@@ -374,6 +375,9 @@ class OccurrencesController extends BaseController
 
         return [
             'ownTimes' => (bool) $override?->hasOwnTimes(),
+            'pickerFormats' => DateFormatHelper::toConfig(),
+            'pickerWeekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
+            'pickerTimeInterval' => $this->getSettingsService()->getTimeInterval(),
             'startDate' => DateHelper::floatingToLocal($occurrence['startDate']),
             'endDate' => DateHelper::floatingToLocal($occurrence['endDate']),
             'allDay' => $occurrence['allDay'],

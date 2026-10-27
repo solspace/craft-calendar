@@ -25,6 +25,7 @@ export const Dropdown: FC<Props> = ({
     <Control {...controlProps}>
       <div className="select fullwidth">
         <select
+          id={controlProps.id}
           className="fullwidth"
           value={value}
           onChange={(event) => onChange?.(event.target.value)}

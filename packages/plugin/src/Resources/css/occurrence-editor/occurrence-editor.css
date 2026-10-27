@@ -2,8 +2,29 @@
   container-type: inline-size;
 }
 
-.calendar-occurrence-slideout:not(.so-mobile, .so-lp) {
-  max-width: 880px;
+.calendar-occurrence-slideout > .so-body > .so-content:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.calendar-occurrence-slideout > .so-footer {
+  gap: 8px;
+  padding-block: 10px;
+}
+
+[data-calendar-occurrence-picker] > .input > [hidden] {
+  display: none !important;
+}
+
+[data-picker-root] {
+  width: 100%;
+  min-width: 0;
+}
+
+[data-picker-root] input.text {
+  width: 100%;
+  min-height: 34px;
+  box-sizing: border-box;
 }
 
 .calendar-occurrence-editor-heading {
@@ -131,6 +152,12 @@
 
 .calendar-occurrence-all-day {
   min-width: 72px;
+}
+
+.calendar-occurrence-all-day > .input {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
 }
 
 .calendar-occurrence-identity {
@@ -271,9 +298,15 @@
 }
 
 .calendar-occurrence-field-inherited > .field > .input :is(input.text, textarea) {
-  background-color: transparent;
-  border-style: dashed;
+  background-color: var(--gray-050);
+  border-style: solid;
+  border-color: transparent;
   box-shadow: none;
+}
+
+.calendar-occurrence-field-inherited textarea {
+  min-height: 64px;
+  max-height: 160px;
 }
 
 .calendar-occurrence-field[data-calendar-copied-on-save] > .calendar-occurrence-field-own .notice {

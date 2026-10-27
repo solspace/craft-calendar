@@ -10,10 +10,17 @@ import { buildCreateEventPayload, type QuickCreateDetails } from "./create-event
 
 type UseCreateEventOptions = {
   refetchEvents?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (event: CreatedQuickEvent) => void;
+  getUrl?: (path: string) => string;
 };
 
-export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptions) => {
+export type CreatedQuickEvent = { id?: number | string; title?: string; url?: string };
+
+export const useCreateEvent = ({
+  refetchEvents,
+  onSuccess,
+  getUrl = generateUrl,
+}: UseCreateEventOptions) => {
   const { hidePopover } = usePopover();
   const { currentSiteId } = useConfig();
   const [pendingAction, setPendingAction] = useState<"create" | "prepare" | null>(null);
@@ -32,16 +39,13 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
       try {
         const payload = buildCreateEventPayload(event, calendarId, currentSiteId, details);
         if (prepare) payload.title = event.title;
-        const response = await craftFetch(
-          generateUrl(prepare ? "/api/events/prepare" : "/api/events"),
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
+        const response = await craftFetch(getUrl(prepare ? "/api/events/prepare" : "/api/events"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify(payload),
+        });
 
         if (!response.ok) {
           let payload = null;
@@ -70,7 +74,7 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
         clearCalendarEventsCache();
         window.dispatchEvent(new Event("calendar:schedule-history-reset"));
         refetchEvents?.();
-        onSuccess?.();
+        onSuccess?.(result);
         hidePopover();
         return null;
       } catch (error) {
@@ -84,7 +88,7 @@ export const useCreateEvent = ({ refetchEvents, onSuccess }: UseCreateEventOptio
         setPendingAction(null);
       }
     },
-    [hidePopover, onSuccess, refetchEvents, currentSiteId],
+    [hidePopover, onSuccess, refetchEvents, currentSiteId, getUrl],
   );
 
   return {

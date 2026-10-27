@@ -6,9 +6,11 @@ export type AgendaWidgetConfig = {
   overlapThreshold: number;
   weekStartDay: WeekStartDay;
   currentSiteId: number;
+  siteHandle?: string;
   currentDay: Date;
   isMultiSite: boolean;
 
   calendars: string | string[];
-  view: "month" | "week" | "day";
+  view: "month" | "week" | "day" | "agenda" | null;
+  enabledViews?: Array<"month" | "week" | "day" | "agenda">;
 };

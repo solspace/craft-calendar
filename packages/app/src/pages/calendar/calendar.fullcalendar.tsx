@@ -60,6 +60,11 @@ import {
   resizeEvent,
 } from "./calendar.events";
 import { CalendarHistory, useCalendarHistory } from "./calendar.history";
+import {
+  markCalendarEventTime,
+  useCalendarClock,
+  useCalendarNowIndicator,
+} from "./calendar.now-indicator";
 import { getViewUrlSuffix, useViewSettings, type View } from "./calendar.persistence";
 import { CalendarSearch, getCalendarSearch } from "./calendar.search";
 import { CalendarWrapper } from "./calendar.styles";
@@ -193,6 +198,24 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   );
 
   const { datePickerButton, dateSelector } = useDateSelector(api, view, agendaRange);
+  const now = useCalendarClock();
+  const nowLabel = `${Craft.t("calendar", "Now")} · ${new Intl.DateTimeFormat(language, {
+    ...formats.time.short.js,
+    timeZone: "UTC",
+  }).format(now)}`;
+  useCalendarNowIndicator(
+    calendarWrapper,
+    getApi,
+    now,
+    nowLabel,
+    new Intl.DateTimeFormat(language, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
+    }).format(now),
+    isReady,
+  );
 
   useEffect(() => {
     if (lastAgendaRange.current === agendaRange) {
@@ -504,6 +527,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
   }, []);
 
   const handleEventDidMount = useCallback((arg: EventMountArg) => {
+    markCalendarEventTime(arg);
     if (isCreateDraftEvent(arg.event)) {
       setDraftAnchorEl(arg.el);
     }
@@ -606,9 +630,9 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         return [];
       }
 
-      return utcDateKey(arg.date) === utcDateKey(currentDay) ? ["fc-title-today"] : [];
+      return utcDateKey(arg.date) === utcDateKey(now) ? ["fc-title-today"] : [];
     },
-    [currentDay],
+    [now],
   );
 
   const renderDayHeaderContent = useCallback(
@@ -638,6 +662,9 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
                 {agendaMonthFormatter.format(arg.date)}
               </span>
             </span>
+            {utcDateKey(arg.date) === utcDateKey(now) && (
+              <span className="calendar-agenda-today">{Craft.t("calendar", "Today")}</span>
+            )}
           </a>
         );
       }
@@ -655,7 +682,7 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         </>
       );
     },
-    [resolveView],
+    [resolveView, now],
   );
 
   if (!isReady) {
@@ -712,6 +739,8 @@ export const CalendarFullcalendar: FC<CalendarFullcalendarProps> = ({
         locale={language}
         views={viewOptions}
         timeZone="UTC"
+        now={now}
+        nowIndicator
         firstDay={weekStartDay}
         nextDayThreshold={overlapThresholdString}
         fixedWeekCount

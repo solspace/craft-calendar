@@ -106,6 +106,8 @@ describe("control panel Agenda", () => {
   let root: Root;
 
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 9, 11, 0));
     Object.assign(controlPanelSettings, {
       language: "en-US",
       weekStartDay: 0,
@@ -153,6 +155,7 @@ describe("control panel Agenda", () => {
     vi.unstubAllGlobals();
     showPopover.mockClear();
     hidePopover.mockClear();
+    vi.useRealTimers();
   });
 
   const settle = () =>
@@ -217,6 +220,76 @@ describe("control panel Agenda", () => {
       input?.dispatchEvent(new Event("input", { bubbles: true }));
     });
   };
+
+  it("positions Now among Agenda events without adding a synthetic event", async () => {
+    vi.setSystemTime(new Date(2026, 9, 9, 9, 30));
+    await mount();
+    const marker = container.querySelector(".calendar-now-agenda-row");
+    expect(marker?.textContent).toBe("Now · 9:30 AM");
+    expect(marker?.nextElementSibling?.textContent).toContain("Custom workshop");
+    expect(calendarRef.current?.getEvents()).toHaveLength(2);
+
+    vi.setSystemTime(new Date(2026, 9, 9, 11, 30));
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    await settle();
+    const updated = container.querySelector(".calendar-now-agenda-row");
+    expect(updated?.textContent).toBe("Now · 11:30 AM");
+    expect(updated?.previousElementSibling?.textContent).toContain("Custom workshop");
+    expect(container.querySelectorAll(".calendar-now-agenda-row")).toHaveLength(1);
+  });
+
+  it("keeps Now visible on empty Agenda days and removes it outside the range", async () => {
+    vi.setSystemTime(new Date(2026, 9, 12, 11, 0));
+    await mount();
+    const marker = container.querySelector(".calendar-now-agenda-row");
+    expect(marker?.previousElementSibling?.textContent).toBe("Monday, October 12Today");
+    expect(container.querySelectorAll(".fc-list-event")).toHaveLength(2);
+
+    act(() => calendarRef.current?.next());
+    await settle();
+    expect(container.querySelector(".calendar-now-agenda-row")).toBeNull();
+  });
+
+  it("shows Now with no Agenda results while keeping the empty message", async () => {
+    history.replaceState(null, "", "/admin/calendar/2026/10/09/agenda?search=missing");
+    await mount();
+    expect(container.querySelector(".calendar-now-agenda-row")?.textContent).toBe("Now · 11:00 AM");
+    expect(container.querySelector(".fc-list-empty")?.textContent).toContain("No matching events");
+    expect(calendarRef.current?.getEvents()).toHaveLength(0);
+  });
+
+  it("moves the month marker to the new day at midnight without changing event counts", async () => {
+    history.replaceState(null, "", "/admin/calendar/2026/10/09/month");
+    vi.setSystemTime(new Date(2026, 9, 9, 23, 59));
+    await mount();
+    expect(
+      container.querySelector('.fc-daygrid-day[data-date="2026-10-09"] .calendar-now-month'),
+    ).not.toBeNull();
+    vi.setSystemTime(new Date(2026, 9, 10, 0, 0));
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    await settle();
+    expect(
+      container.querySelector('.fc-daygrid-day[data-date="2026-10-09"] .calendar-now-month'),
+    ).toBeNull();
+    expect(
+      container.querySelector('.fc-daygrid-day[data-date="2026-10-10"] .calendar-now-month'),
+    ).not.toBeNull();
+    expect(container.querySelectorAll(".calendar-now-month")).toHaveLength(1);
+    expect(calendarRef.current?.getEvents()).toHaveLength(2);
+  });
+
+  it.each([
+    "day",
+    "week",
+  ])("enables the native time indicator in %s view using local wall time", async (view) => {
+    history.replaceState(null, "", `/admin/calendar/2026/10/09/${view}`);
+    await mount();
+    expect(calendarRef.current?.getOption("nowIndicator")).toBe(true);
+    expect((calendarRef.current?.getOption("now") as Date).toISOString()).toBe(
+      "2026-10-09T11:00:00.000Z",
+    );
+    expect(container.querySelector(".calendar-now-indicator")).toBeNull();
+  });
 
   it.each([
     "cancel",

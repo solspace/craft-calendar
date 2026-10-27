@@ -24,6 +24,9 @@
             startDate: startDate,
             endDate: endDate,
             allDay: allDay,
+            formats: pickerFormats,
+            weekStartDay: pickerWeekStartDay,
+            timeInterval: pickerTimeInterval,
         } only %}
         {% include 'calendar/occurrences/_times' with {
             readOnly: true,
@@ -31,6 +34,9 @@
             startDate: seriesStartDate,
             endDate: seriesEndDate,
             allDay: seriesAllDay,
+            formats: pickerFormats,
+            weekStartDay: pickerWeekStartDay,
+            timeInterval: pickerTimeInterval,
         } only %}
     </section>
 

@@ -103,6 +103,7 @@ export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
         top: layout?.top ?? 0,
         left: layout?.left ?? 0,
         visibility: layout ? "visible" : "hidden",
+        pointerEvents: "auto",
       }}
     >
       {layout && (
