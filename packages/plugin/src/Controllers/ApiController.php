@@ -184,7 +184,6 @@ class ApiController extends BaseController
 
         $siteId = $this->resolveEventSiteId($request->post('siteId'));
         $calendar = $this->resolveEventCalendar($request->post('calendarId'), $siteId);
-        $refDate = new Carbon('now');
 
         $this->getEventsService()->requireEventCreatePermissions($calendar);
 
@@ -196,7 +195,7 @@ class ApiController extends BaseController
 
         $event->startDate = Carbon::createFromTimestampUTC((int) $start);
         $event->endDate = Carbon::createFromTimestampUTC((int) $end);
-        $event->timezone = $refDate?->timezone?->getName() ?? DateHelper::UTC;
+        $event->timezone = \Craft::$app->getTimeZone() ?: DateHelper::UTC;
         $event->title = $request->post('title');
         $event->allDay = (bool) $request->post('allDay');
 
@@ -261,6 +260,45 @@ class ApiController extends BaseController
         return $this->asJson($transformer->fromElement($event));
     }
 
+    private function inferRepeatEndTypeFromRrule(string $rrule): string
+    {
+        if ('' === trim($rrule)) {
+            return Event::REPEAT_END_NEVER;
+        }
+
+        if (preg_match('/(?:^|;)COUNT=\d+/i', $rrule)) {
+            return Event::REPEAT_END_AFTER;
+        }
+
+        if (preg_match('/(?:^|;)UNTIL=/i', $rrule)) {
+            return Event::REPEAT_END_ON_DATE;
+        }
+
+        return Event::REPEAT_END_NEVER;
+    }
+
+    private function parseFloatingUntil(string $raw): ?Carbon
+    {
+        try {
+            if (preg_match('/^\d{8}$/', $raw)) {
+                return DateHelper::parseFloatingCarbon(
+                    substr($raw, 0, 4).'-'.substr($raw, 4, 2).'-'.substr($raw, 6, 2).'T00:00:00'
+                );
+            }
+
+            if (preg_match('/^\d{8}T\d{6}$/', $raw)) {
+                return DateHelper::parseFloatingCarbon(
+                    substr($raw, 0, 4).'-'.substr($raw, 4, 2).'-'.substr($raw, 6, 2).'T'
+                    .substr($raw, 9, 2).':'.substr($raw, 11, 2).':'.substr($raw, 13, 2)
+                );
+            }
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return null;
+    }
+
     private function applyQuickCreateRecurrence(Event $event, array $values): void
     {
         $schedule = array_intersect_key($values, array_flip(['repeatType', 'repeatEndType', 'rrule', 'until']));
@@ -272,6 +310,22 @@ class ApiController extends BaseController
 
         if (isset($schedule['until']) && !is_numeric($schedule['until'])) {
             throw new BadRequestHttpException(Calendar::t('Invalid repeating event settings.'));
+        }
+
+        // Preserve AI rules' COUNT/UNTIL while using the normal schedule parsing and validation.
+        $rrule = trim($schedule['rrule'] ?? '');
+        $inferredEndType = $this->inferRepeatEndTypeFromRrule($rrule);
+        if (Event::REPEAT_END_NEVER !== $inferredEndType) {
+            $schedule['repeatEndType'] = $inferredEndType;
+        }
+        if (Event::REPEAT_END_ON_DATE === ($schedule['repeatEndType'] ?? null)
+            && !isset($schedule['until'])
+            && preg_match('/(?:^|;)UNTIL=([0-9T]+)/i', $rrule, $untilMatch)
+        ) {
+            $until = $this->parseFloatingUntil($untilMatch[1]);
+            if ($until) {
+                $schedule['until'] = $until->getTimestamp();
+            }
         }
 
         $event->setScheduleFromRequest($schedule);

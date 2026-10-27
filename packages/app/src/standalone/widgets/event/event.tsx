@@ -45,6 +45,8 @@ export const EventWidget: FC<{ config: EventWidgetConfig }> = ({ config }) => {
       config={{
         ...config,
         language: config.language || "en-US",
+        timezone: config.timezone || "UTC",
+        isSolspaceAiConnected: false,
         isMultiSite: false,
         isDragAndDropEnabled: false,
         isQuickCreateEnabled: true,

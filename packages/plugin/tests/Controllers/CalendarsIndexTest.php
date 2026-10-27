@@ -125,10 +125,13 @@ class CalendarsIndexTest extends TestCase
         $source = str_replace(['{% js %}', '{% endjs %}', '{% css %}', '{% endcss %}'], ['{% block scripts %}', '{% endblock %}', '{% block styles %}', '{% endblock %}'], file_get_contents($root.'calendars/index.twig'));
         $twig = new Environment(new ArrayLoader([
             'index' => $source,
-            'calendar/layouts/_calendarsLayout' => str_replace('{% hook "calendar.prepareCpTemplate" %}', '', file_get_contents($root.'layouts/_calendarsLayout.twig')),
+            'calendar/layouts/_calendarsLayout' => preg_replace('/{% css %}.*?{% endcss %}/s', '', str_replace('{% hook "calendar.prepareCpTemplate" %}', '', file_get_contents($root.'layouts/_calendarsLayout.twig'))),
             '_layouts/cp' => '<header><div id="toolbar">{% block toolbar %}{% endblock %}</div>{% block actionButton %}{% endblock %}</header>{% block main %}{% block content %}{% endblock %}{% endblock %}{% block scripts %}{% endblock %}{% block styles %}{% endblock %}',
             '_includes/forms' => '{% macro selectize(config) %}<select id="{{ config.id }}" name="{{ config.name }}">{% for option in config.options %}<option value="{{ option.value }}">{{ option.label }}</option>{% endfor %}</select>{% endmacro %}',
         ]), ['strict_variables' => true]);
+        $twig->addGlobal('view', new class {
+            public function registerTranslations(string $category, array $messages): void {}
+        });
         $twig->addFilter(new TwigFilter('t', static fn ($message) => $message));
         $twig->addFunction(new TwigFunction('cpUrl', static fn ($path) => $path));
         $twig->addFunction(new TwigFunction('url', static fn ($path) => $path));

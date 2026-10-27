@@ -2,6 +2,7 @@ import type { CalendarConfig, DateFormats, WeekStartDay } from "@cal/types/confi
 
 export type EventWidgetConfig = {
   language?: string;
+  timezone?: string;
   calendarColors?: CalendarConfig["calendarColors"];
   calendarAllowRepeating?: CalendarConfig["calendarAllowRepeating"];
   quickCreateFields?: CalendarConfig["quickCreateFields"];

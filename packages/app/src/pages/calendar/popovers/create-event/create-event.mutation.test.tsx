@@ -68,6 +68,8 @@ describe("quick-create full editor handoff", () => {
       allDay: false,
       calendarId: 12,
       siteId: 4,
+      repeatType: "NEVER",
+      repeatEndType: "NEVER",
       details,
     });
     expect(onSuccess).not.toHaveBeenCalled();

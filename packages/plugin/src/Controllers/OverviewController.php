@@ -78,12 +78,14 @@ class OverviewController extends BaseController
 
         $calendarOptions = $this->getCalendarService()->getAllAllowedCalendarTitles($selectedSiteId);
         $calendarColors = [];
+        $calendarHandles = [];
         $calendarAllowRepeating = [];
         $quickCreateFields = [];
         $quickCreateRequiredFields = [];
         foreach ($this->getCalendarService()->getAllAllowedCalendars() as $calendar) {
             if (isset($calendarOptions[$calendar->id])) {
                 $calendarColors[$calendar->id] = $calendar->color;
+                $calendarHandles[$calendar->id] = $calendar->handle;
                 $calendarAllowRepeating[$calendar->id] = Calendar::getInstance()->isPro() && (bool) $calendar->allowRepeatingEvents;
                 $quickCreateFields[$calendar->id] = $calendar->getQuickCreateFieldHandles();
                 $quickCreateRequiredFields[$calendar->id] = $calendar->getQuickCreateRequiredFields();
@@ -94,6 +96,7 @@ class OverviewController extends BaseController
         $configuration = [
             'calendars' => $calendarOptions,
             'calendarColors' => $calendarColors,
+            'calendarHandles' => $calendarHandles,
             'calendarAllowRepeating' => $calendarAllowRepeating,
             'quickCreateFields' => $quickCreateFields,
             'quickCreateRequiredFields' => $quickCreateRequiredFields,
@@ -102,6 +105,7 @@ class OverviewController extends BaseController
                 array_map(static fn (string $icon) => Cp::iconSvg($icon), $actionIcons),
             ),
             'formats' => DateFormatHelper::toConfig(),
+            'timezone' => \Craft::$app->getTimeZone() ?: 'UTC',
             'language' => $language,
             'currentDay' => $currentDay->toDateString(),
             'defaultCalendarView' => $this->getSettingsService()->getSettingsModel()->getDefaultCalendarView(),
@@ -116,6 +120,8 @@ class OverviewController extends BaseController
             'isMultiSite' => \Craft::$app->getIsMultiSite(),
             'isQuickCreateEnabled' => $this->getSettingsService()->isQuickCreateEnabled(),
             'isDragAndDropEnabled' => $this->getSettingsService()->isDragAndDropEnabled(),
+            'isSolspaceAiConnected' => Calendar::getInstance()->isPro()
+                && Calendar::getInstance()->solspaceAi->isConnected(),
             'weekStartDay' => $this->getSettingsService()->getFirstDayOfWeek(),
             'showOverlapWarnings' => $this->getSettingsService()->showOverlapWarnings(),
             'overlapThreshold' => $this->getSettingsService()->getOverlapThreshold(),

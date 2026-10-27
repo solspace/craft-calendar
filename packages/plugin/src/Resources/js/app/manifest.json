@@ -1,187 +1,303 @@
 {
-  "_calendar.create-session-pjL2bsU7.js": {
-    "file": "assets/calendar.create-session-pjL2bsU7.js",
+  "_ai-button-DwRNKti0.js": {
+    "file": "assets/ai-button-DwRNKti0.js",
+    "name": "ai-button",
+    "imports": [
+      "_translations-BT7AJKOt.js"
+    ]
+  },
+  "_calendar-preview.operations-BVVfoGKI.js": {
+    "file": "assets/calendar-preview.operations-BVVfoGKI.js",
+    "name": "calendar-preview.operations",
+    "imports": [
+      "_translations-BT7AJKOt.js",
+      "_clsx-DI7HwU81.js",
+      "_date-picker-DQGXkhFQ.js"
+    ]
+  },
+  "_calendar.create-session-BTPY824N.js": {
+    "file": "assets/calendar.create-session-BTPY824N.js",
     "name": "calendar.create-session",
     "imports": [
-      "_clsx-i4RjRRj2.js"
+      "_translations-BT7AJKOt.js"
     ]
   },
-  "_calendar.day-preview-D_nbKuIi.js": {
-    "file": "assets/calendar.day-preview-D_nbKuIi.js",
+  "_calendar.day-preview-BAF5DJwp.js": {
+    "file": "assets/calendar.day-preview-BAF5DJwp.js",
     "name": "calendar.day-preview",
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js",
-      "_calendar.now-indicator-BKaW0uu6.js"
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_clsx-DI7HwU81.js",
+      "_overlap-warning-Bvuu2odu.js"
     ]
   },
-  "_calendar.event-content-BygYZYQJ.js": {
-    "file": "assets/calendar.event-content-BygYZYQJ.js",
+  "_calendar.event-content-WbooYZf0.js": {
+    "file": "assets/calendar.event-content-WbooYZf0.js",
     "name": "calendar.event-content",
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js",
-      "_dist-Co6xHCO2.js",
-      "_calendar.create-session-pjL2bsU7.js"
+      "_translations-BT7AJKOt.js",
+      "_clsx-DI7HwU81.js",
+      "_dist-D9JxHDLW.js",
+      "_dist-D-CrGMuv.js",
+      "_calendar.create-session-BTPY824N.js",
+      "_overlap-warning-Bvuu2odu.js"
     ]
   },
-  "_calendar.now-indicator-BKaW0uu6.js": {
-    "file": "assets/calendar.now-indicator-BKaW0uu6.js",
+  "_calendar.now-indicator-yvTSfd9O.js": {
+    "file": "assets/calendar.now-indicator-yvTSfd9O.js",
     "name": "calendar.now-indicator",
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js"
+      "_translations-BT7AJKOt.js",
+      "_clsx-DI7HwU81.js"
     ]
   },
-  "_clsx-i4RjRRj2.js": {
-    "file": "assets/clsx-i4RjRRj2.js",
-    "name": "clsx"
+  "_clsx-DI7HwU81.js": {
+    "file": "assets/clsx-DI7HwU81.js",
+    "name": "clsx",
+    "imports": [
+      "_translations-BT7AJKOt.js"
+    ]
   },
-  "_components-gAeKq-bt.js": {
-    "file": "assets/components-gAeKq-bt.js",
+  "_components-BB-HKS5a.js": {
+    "file": "assets/components-BB-HKS5a.js",
     "name": "components",
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_date-picker-Bjh6aDMF.js"
+      "_translations-BT7AJKOt.js"
     ]
   },
-  "_create-event-CZVwy69O.js": {
-    "file": "assets/create-event-CZVwy69O.js",
+  "_create-event-CUry2Hn8.js": {
+    "file": "assets/create-event-CUry2Hn8.js",
     "name": "create-event",
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js",
-      "_calendar.now-indicator-BKaW0uu6.js",
-      "_date-picker-Bjh6aDMF.js",
-      "_calendar.create-session-pjL2bsU7.js",
-      "_components-gAeKq-bt.js"
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_clsx-DI7HwU81.js",
+      "_date-picker-DQGXkhFQ.js",
+      "_dist-D-CrGMuv.js",
+      "_calendar.create-session-BTPY824N.js",
+      "_overlap-warning-Bvuu2odu.js",
+      "_calendar-preview.operations-BVVfoGKI.js",
+      "_components-BB-HKS5a.js"
+    ]
+  },
+  "_create-with-ai-j1btLKuz.js": {
+    "file": "assets/create-with-ai-j1btLKuz.js",
+    "name": "create-with-ai",
+    "imports": [
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_dist-D9JxHDLW.js",
+      "_calendar.create-session-BTPY824N.js",
+      "_components-BB-HKS5a.js",
+      "_create-with-ai.styles-xjz23oEy.js"
+    ]
+  },
+  "_create-with-ai.styles-xjz23oEy.js": {
+    "file": "assets/create-with-ai.styles-xjz23oEy.js",
+    "name": "create-with-ai.styles",
+    "imports": [
+      "_translations-BT7AJKOt.js"
     ]
   },
   "_date-picker-BMkzam91.css": {
     "file": "assets/date-picker-BMkzam91.css",
     "src": "_date-picker-BMkzam91.css"
   },
-  "_date-picker-Bjh6aDMF.js": {
-    "file": "assets/date-picker-Bjh6aDMF.js",
+  "_date-picker-DQGXkhFQ.js": {
+    "file": "assets/date-picker-DQGXkhFQ.js",
     "name": "date-picker",
     "imports": [
-      "_clsx-i4RjRRj2.js"
+      "_translations-BT7AJKOt.js",
+      "_clsx-DI7HwU81.js",
+      "_defineProperty-BbfpZ9Tg.js"
     ],
     "css": [
       "assets/date-picker-BMkzam91.css"
     ]
   },
-  "_dist-Co6xHCO2.js": {
-    "file": "assets/dist-Co6xHCO2.js",
+  "_defineProperty-BbfpZ9Tg.js": {
+    "file": "assets/defineProperty-BbfpZ9Tg.js",
+    "name": "defineProperty"
+  },
+  "_dist-D-CrGMuv.js": {
+    "file": "assets/dist-D-CrGMuv.js",
     "name": "dist",
     "imports": [
-      "_clsx-i4RjRRj2.js"
+      "_translations-BT7AJKOt.js"
     ]
   },
-  "_interaction-BmeFE1t9.js": {
-    "file": "assets/interaction-BmeFE1t9.js",
-    "name": "interaction",
+  "_dist-D9JxHDLW.js": {
+    "file": "assets/dist-D9JxHDLW.js",
+    "name": "dist",
     "imports": [
-      "_dist-Co6xHCO2.js"
+      "_translations-BT7AJKOt.js"
     ]
   },
-  "_loader-DFcjaYBE.js": {
-    "file": "assets/loader-DFcjaYBE.js",
+  "_http-CmK6H-J6.js": {
+    "file": "assets/http-CmK6H-J6.js",
+    "name": "http",
+    "imports": [
+      "_translations-BT7AJKOt.js"
+    ]
+  },
+  "_loader-BOhj6sYn.js": {
+    "file": "assets/loader-BOhj6sYn.js",
     "name": "loader",
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js"
+      "_translations-BT7AJKOt.js",
+      "_clsx-DI7HwU81.js",
+      "_overlap-warning-Bvuu2odu.js"
     ]
   },
-  "_overlap-warning-DAofkiem.js": {
-    "file": "assets/overlap-warning-DAofkiem.js",
+  "_open-event-create-with-ai-AyWFumb6.js": {
+    "file": "assets/open-event-create-with-ai-AyWFumb6.js",
+    "name": "open-event-create-with-ai"
+  },
+  "_overlap-warning-Bvuu2odu.js": {
+    "file": "assets/overlap-warning-Bvuu2odu.js",
     "name": "overlap-warning",
     "imports": [
-      "_clsx-i4RjRRj2.js"
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_clsx-DI7HwU81.js"
     ]
   },
+  "_translations-BT7AJKOt.js": {
+    "file": "assets/translations-BT7AJKOt.js",
+    "name": "translations"
+  },
   "src/index.tsx": {
-    "file": "assets/overview-D6HaJdVx.js",
+    "file": "assets/overview-BnoP0OXf.js",
     "name": "overview",
     "src": "src/index.tsx",
     "isEntry": true,
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_create-event-CZVwy69O.js",
-      "_overlap-warning-DAofkiem.js",
-      "_calendar.now-indicator-BKaW0uu6.js",
-      "_dist-Co6xHCO2.js",
-      "_interaction-BmeFE1t9.js",
-      "_calendar.event-content-BygYZYQJ.js",
-      "_date-picker-Bjh6aDMF.js",
-      "_calendar.create-session-pjL2bsU7.js",
-      "_calendar.day-preview-D_nbKuIi.js",
-      "_components-gAeKq-bt.js"
+      "_translations-BT7AJKOt.js",
+      "_create-event-CUry2Hn8.js",
+      "_http-CmK6H-J6.js",
+      "_clsx-DI7HwU81.js",
+      "_dist-D9JxHDLW.js",
+      "_create-with-ai-j1btLKuz.js",
+      "_calendar.event-content-WbooYZf0.js",
+      "_date-picker-DQGXkhFQ.js",
+      "_dist-D-CrGMuv.js",
+      "_calendar.create-session-BTPY824N.js",
+      "_overlap-warning-Bvuu2odu.js",
+      "_calendar.now-indicator-yvTSfd9O.js",
+      "_calendar.day-preview-BAF5DJwp.js",
+      "_calendar-preview.operations-BVVfoGKI.js",
+      "_components-BB-HKS5a.js",
+      "_ai-button-DwRNKti0.js"
+    ]
+  },
+  "src/standalone/calendars-ai/index.tsx": {
+    "file": "assets/calendars-ai-B0kvXddt.js",
+    "name": "calendars-ai",
+    "src": "src/standalone/calendars-ai/index.tsx",
+    "isEntry": true,
+    "imports": [
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_components-BB-HKS5a.js",
+      "_ai-button-DwRNKti0.js",
+      "_create-with-ai.styles-xjz23oEy.js"
     ]
   },
   "src/standalone/event-builder/index.tsx": {
-    "file": "assets/event-builder-BQnljvhg.js",
+    "file": "assets/event-builder-B1y1Xnta.js",
     "name": "event-builder",
     "src": "src/standalone/event-builder/index.tsx",
     "isEntry": true,
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js",
-      "_dist-Co6xHCO2.js",
-      "_interaction-BmeFE1t9.js",
-      "_date-picker-Bjh6aDMF.js",
-      "_components-gAeKq-bt.js"
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_clsx-DI7HwU81.js",
+      "_dist-D9JxHDLW.js",
+      "_create-with-ai-j1btLKuz.js",
+      "_date-picker-DQGXkhFQ.js",
+      "_overlap-warning-Bvuu2odu.js",
+      "_calendar-preview.operations-BVVfoGKI.js",
+      "_components-BB-HKS5a.js",
+      "_ai-button-DwRNKti0.js",
+      "_open-event-create-with-ai-AyWFumb6.js"
+    ]
+  },
+  "src/standalone/events-ai/index.tsx": {
+    "file": "assets/events-ai-n0vZBoZe.js",
+    "name": "events-ai",
+    "src": "src/standalone/events-ai/index.tsx",
+    "isEntry": true,
+    "imports": [
+      "_translations-BT7AJKOt.js",
+      "_ai-button-DwRNKti0.js",
+      "_open-event-create-with-ai-AyWFumb6.js"
     ]
   },
   "src/standalone/occurrence-picker/index.tsx": {
-    "file": "assets/occurrence-editor-D5vVYpht.js",
+    "file": "assets/occurrence-editor-DVzM2M-2.js",
     "name": "occurrence-editor",
     "src": "src/standalone/occurrence-picker/index.tsx",
     "isEntry": true,
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_date-picker-Bjh6aDMF.js"
+      "_translations-BT7AJKOt.js",
+      "_clsx-DI7HwU81.js",
+      "_date-picker-DQGXkhFQ.js"
+    ]
+  },
+  "src/standalone/solspaceai/index.js": {
+    "file": "assets/solspaceai-DhlQIjcV.js",
+    "name": "solspaceai",
+    "src": "src/standalone/solspaceai/index.js",
+    "isEntry": true,
+    "imports": [
+      "_defineProperty-BbfpZ9Tg.js"
     ]
   },
   "src/standalone/widgets/agenda/index.tsx": {
-    "file": "assets/widget-agenda-DfnSGUja.js",
+    "file": "assets/widget-agenda-Dsv4cZDc.js",
     "name": "widget-agenda",
     "src": "src/standalone/widgets/agenda/index.tsx",
     "isEntry": true,
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js",
-      "_calendar.now-indicator-BKaW0uu6.js",
-      "_dist-Co6xHCO2.js",
-      "_calendar.event-content-BygYZYQJ.js",
-      "_calendar.day-preview-D_nbKuIi.js",
-      "_loader-DFcjaYBE.js"
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_clsx-DI7HwU81.js",
+      "_dist-D9JxHDLW.js",
+      "_calendar.event-content-WbooYZf0.js",
+      "_overlap-warning-Bvuu2odu.js",
+      "_calendar.now-indicator-yvTSfd9O.js",
+      "_calendar.day-preview-BAF5DJwp.js",
+      "_loader-BOhj6sYn.js"
     ]
   },
   "src/standalone/widgets/event/index.tsx": {
-    "file": "assets/widget-event-B4cjE9-b.js",
+    "file": "assets/widget-event-vKJF5nGN.js",
     "name": "widget-event",
     "src": "src/standalone/widgets/event/index.tsx",
     "isEntry": true,
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_create-event-CZVwy69O.js",
-      "_calendar.now-indicator-BKaW0uu6.js",
-      "_loader-DFcjaYBE.js"
+      "_translations-BT7AJKOt.js",
+      "_create-event-CUry2Hn8.js",
+      "_http-CmK6H-J6.js",
+      "_calendar.now-indicator-yvTSfd9O.js",
+      "_loader-BOhj6sYn.js"
     ]
   },
   "src/standalone/widgets/mini/index.tsx": {
-    "file": "assets/widget-mini-C0-GS3hI.js",
+    "file": "assets/widget-mini-DOXVjN0e.js",
     "name": "widget-mini",
     "src": "src/standalone/widgets/mini/index.tsx",
     "isEntry": true,
     "imports": [
-      "_clsx-i4RjRRj2.js",
-      "_overlap-warning-DAofkiem.js",
-      "_calendar.now-indicator-BKaW0uu6.js",
-      "_dist-Co6xHCO2.js",
-      "_calendar.day-preview-D_nbKuIi.js",
-      "_loader-DFcjaYBE.js"
+      "_translations-BT7AJKOt.js",
+      "_http-CmK6H-J6.js",
+      "_clsx-DI7HwU81.js",
+      "_dist-D9JxHDLW.js",
+      "_overlap-warning-Bvuu2odu.js",
+      "_calendar.now-indicator-yvTSfd9O.js",
+      "_calendar.day-preview-BAF5DJwp.js",
+      "_loader-BOhj6sYn.js"
     ]
   }
 }

@@ -185,10 +185,6 @@
   font-family: monospace;
   overflow-wrap: anywhere;
 }
-#calendar-diagnostics .calendar-diag-report textarea {
-  font-family: monospace;
-  resize: vertical;
-}
 #calendar-diagnostics .calendar-diag-booking-table thead th {
   min-width: 100px;
   max-width: 180px;
@@ -206,4 +202,8 @@
 }
 #calendar-diagnostics .calendar-diag-booking-table .calendar-diag-opening-hours {
   min-width: 280px;
+}
+#calendar-diagnostics .calendar-diag-report textarea {
+  font-family: monospace;
+  resize: vertical;
 }

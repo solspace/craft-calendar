@@ -29,11 +29,13 @@ export type CalendarConfig = {
   enabledCalendarViews?: CalendarTab[];
   eventActionIcons?: Partial<Record<EventActionIcon, string>>;
   calendars: Record<number, string>;
+  calendarHandles?: Record<number, string>;
   calendarColors?: Record<number, string | null>;
   calendarAllowRepeating?: Record<number, boolean>;
   quickCreateFields?: Record<number, { location?: string; description?: string }>;
   quickCreateRequiredFields?: Record<number, { location?: boolean; description?: boolean }>;
   formats: DateFormats;
+  timezone: string;
   language: string;
   overlapThreshold: number;
   showOverlapWarnings?: boolean;
@@ -45,6 +47,7 @@ export type CalendarConfig = {
   currentDay: Date;
   isDragAndDropEnabled: boolean;
   isQuickCreateEnabled: boolean;
+  isSolspaceAiConnected: boolean;
   isMultiSite: boolean;
   canEditEvents: boolean;
 };

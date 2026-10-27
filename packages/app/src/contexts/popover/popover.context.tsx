@@ -38,12 +38,8 @@ export const usePopover = () => {
   return context;
 };
 
-export const PopoverProvider: FC<PropsWithChildren<{ portal?: boolean }>> = ({
-  children,
-  portal = false,
-}) => {
+export const PopoverProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, setState] = useState<PopoverState>();
-  const bridgeRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const autoClosePaused = useRef(false);
@@ -70,7 +66,7 @@ export const PopoverProvider: FC<PropsWithChildren<{ portal?: boolean }>> = ({
     [showPopover, hidePopover, keepPopoverOpen],
   );
 
-  const layout = usePopoverPosition({ state, bridgeRef, popoverRef });
+  const layout = usePopoverPosition({ state, popoverRef });
   const closeDelayMs = state?.options?.closeDelayMs;
 
   const cancelClose = useCallback(() => clearTimeout(closeTimer.current), []);
@@ -97,7 +93,7 @@ export const PopoverProvider: FC<PropsWithChildren<{ portal?: boolean }>> = ({
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
-  const PopoverElement = state?.content && (
+  const PopoverElement = state?.content ? (
     <PopoverContainer
       $maxHeight={layout?.maxHeight}
       ref={popoverRef}
@@ -115,29 +111,14 @@ export const PopoverProvider: FC<PropsWithChildren<{ portal?: boolean }>> = ({
       )}
       {state.content}
     </PopoverContainer>
-  );
+  ) : null;
 
   return (
     <PopoverContext.Provider value={controls}>
-      {portal ? (
-        <>
-          {createPortal(
-            <PopoverBridge
-              ref={bridgeRef}
-              style={{ position: "fixed", top: 0, left: 0, zIndex: 100, pointerEvents: "none" }}
-            >
-              {PopoverElement}
-            </PopoverBridge>,
-            document.body,
-          )}
-          {children}
-        </>
-      ) : (
-        <PopoverBridge ref={bridgeRef}>
-          {PopoverElement}
-          {children}
-        </PopoverBridge>
-      )}
+      <PopoverBridge>
+        {children}
+        {PopoverElement && createPortal(PopoverElement, document.body)}
+      </PopoverBridge>
     </PopoverContext.Provider>
   );
 };

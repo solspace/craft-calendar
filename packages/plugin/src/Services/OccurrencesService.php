@@ -17,6 +17,7 @@ use Solspace\Calendar\Bundles\Occurrences\RecurrenceId;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Elements\OccurrenceOverride;
+use Solspace\Calendar\Library\Helpers\DateHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
 use Solspace\Calendar\Records\OccurrenceOverrideRecord;
 use yii\base\InvalidArgumentException;
@@ -348,6 +349,76 @@ class OccurrencesService extends Component
     }
 
     /**
+     * Applies AI-generated per-occurrence customizations (title, location, description, times).
+     * The event schedule must already produce each occurrence (Additional Date saved if off-pattern).
+     *
+     * @param list<array{start: string, end: string, allDay?: bool, title?: string, location?: string, description?: string}> $edits
+     *
+     * @return list<string> recurrence IDs that were updated
+     *
+     * @throws InvalidArgumentException when an occurrence is not on the schedule
+     * @throws InvalidElementException  when an override can't be saved
+     */
+    public function applyAiOccurrenceEdits(Event $event, array $edits): array
+    {
+        $calendar = $event->getCalendar();
+        $locationHandle = $calendar?->locationFieldHandle;
+        $descriptionHandle = $calendar?->descriptionFieldHandle;
+        $seriesStart = $event->getStartDate();
+        $updated = [];
+
+        foreach ($edits as $edit) {
+            if (!\is_array($edit)) {
+                continue;
+            }
+
+            $startRaw = trim((string) ($edit['start'] ?? ''));
+            $endRaw = trim((string) ($edit['end'] ?? ''));
+            if ('' === $startRaw || '' === $endRaw) {
+                continue;
+            }
+
+            $customStart = DateHelper::parseFloatingCarbon($startRaw);
+            $customEnd = DateHelper::parseFloatingCarbon($endRaw);
+            $allDay = (bool) ($edit['allDay'] ?? false);
+
+            // Recurrence ID is the series-produced start on that date (Additional Dates use series time).
+            $recurrenceId = $event->isAllDay()
+                ? DateHelper::parseFloatingCarbon($customStart->format('Y-m-d').' 00:00:00')
+                : DateHelper::parseFloatingCarbon(
+                    $customStart->format('Y-m-d').' '.$seriesStart->format('H:i:s')
+                );
+
+            if (!$this->hasOccurrence($event, $recurrenceId)) {
+                $this->ensureAdditionalDate($event, $recurrenceId);
+            }
+
+            $override = $this->getOrCreateOverride($event, $recurrenceId);
+
+            $title = trim((string) ($edit['title'] ?? ''));
+            if ('' !== $title) {
+                $override->overrideField(OccurrenceOverride::TITLE, $title);
+            }
+
+            $location = trim((string) ($edit['location'] ?? ''));
+            if ('' !== $location && $locationHandle) {
+                $override->overrideField($locationHandle, $location);
+            }
+
+            $description = trim((string) ($edit['description'] ?? ''));
+            if ('' !== $description && $descriptionHandle) {
+                $override->overrideField($descriptionHandle, $description);
+            }
+
+            $override->reschedule($customStart, $customEnd, $allDay);
+            $this->saveOrRemoveOverride($override);
+            $updated[] = $recurrenceId->format(RecurrenceId::FORMAT);
+        }
+
+        return $updated;
+    }
+
+    /**
      * Saves an override, or removes it once nothing about its occurrence differs from the event anymore.
      *
      * @return null|OccurrenceOverride the override, or null when it was removed
@@ -367,6 +438,47 @@ class OccurrencesService extends Component
         }
 
         return null;
+    }
+
+    /**
+     * Adds an RDATE for an off-pattern date so a customized occurrence can be attached.
+     */
+    private function ensureAdditionalDate(Event $event, Carbon $recurrenceId): void
+    {
+        $rrule = trim((string) $event->rrule);
+        if ('' === $rrule) {
+            throw new InvalidArgumentException("Event {$event->id} has no schedule to add an occurrence to.");
+        }
+
+        $stamp = $event->isAllDay()
+            ? $recurrenceId->format('Ymd')
+            : $recurrenceId->format('Ymd\THis');
+        $needle = $event->isAllDay() ? 'RDATE;VALUE=DATE:' : 'RDATE:';
+
+        if (str_contains($rrule, $stamp)) {
+            // Stamp already present but materializer still misses it — surface a clear error.
+            throw new InvalidArgumentException("Event {$event->id} has no occurrence at {$recurrenceId->format(RecurrenceId::FORMAT)}.");
+        }
+
+        $lines = preg_split('/\r\n|\n|\r/', $rrule) ?: [];
+        $merged = false;
+        foreach ($lines as $index => $line) {
+            if (!str_starts_with(strtoupper(trim($line)), 'RDATE')) {
+                continue;
+            }
+            $lines[$index] = rtrim($line).','.$stamp;
+            $merged = true;
+
+            break;
+        }
+        if (!$merged) {
+            $lines[] = $needle.$stamp;
+        }
+
+        $event->rrule = implode("\n", $lines);
+        if (!\Craft::$app->getElements()->saveElement($event)) {
+            throw new InvalidElementException($event, 'Couldn’t add the additional date for the occurrence.');
+        }
     }
 
     private function setCancelled(Event $event, mixed $recurrenceId, bool $cancelled): ?OccurrenceOverride

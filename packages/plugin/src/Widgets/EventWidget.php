@@ -62,6 +62,7 @@ class EventWidget extends AbstractWidget
             'currentSiteId' => $currentSiteId,
             'siteHandle' => \Craft::$app->sites->getSiteById($currentSiteId)?->handle,
             'language' => str_replace('_', '-', \Craft::$app->language),
+            'timezone' => \Craft::$app->getTimeZone() ?: 'UTC',
             'currentDay' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d'),
             'formats' => DateFormatHelper::toConfig(),
             'weekStartDay' => $plugin->settings->getFirstDayOfWeek(),

@@ -43,7 +43,7 @@ const viewLabels = { day: "Day", week: "Week", month: "Month", agenda: "Agenda" 
 type WidgetView = keyof typeof views;
 
 export const AgendaWidget: FC<{ config: AgendaWidgetConfig }> = ({ config }) => (
-  <PopoverProvider portal>
+  <PopoverProvider>
     <AgendaCalendar config={config} />
   </PopoverProvider>
 );

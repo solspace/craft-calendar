@@ -23,7 +23,7 @@ const NO_HIDDEN_CALENDARS = new Set<number>();
 export { getWidgetDayEvents as getMiniDayEvents } from "../widget.shared";
 
 export const Mini: FC<{ config: MiniWidgetConfig }> = ({ config }) => (
-  <PopoverProvider portal>
+  <PopoverProvider>
     <MiniCalendarWidget config={config} />
   </PopoverProvider>
 );

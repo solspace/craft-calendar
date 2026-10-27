@@ -47,7 +47,7 @@ vi.mock("../../context/config.context", () => ({
       2: { location: false },
       4: { description: true },
     },
-    calendarAllowRepeating: { 1: true, 2: false, 5: true },
+    calendarAllowRepeating: { 1: true, 2: false, 4: true, 5: true },
     formats: {
       date: { short: { icu: "yyyy-MM-dd" } },
       datetime: { short: { icu: "yyyy-MM-dd h:mm a" } },
@@ -107,8 +107,8 @@ vi.mock("@cal/components/controls/date-picker/date-picker", () => ({
 }));
 
 const draft = { id: "draft-create-event", title: "Yoga", start: 100, end: 3700, allDay: false };
-const Editor = () => {
-  const [value, setValue] = useState<CalendarCreateDraft>(draft);
+const Editor = ({ initialDraft = draft }: { initialDraft?: CalendarCreateDraft }) => {
+  const [value, setValue] = useState<CalendarCreateDraft>(initialDraft);
   return (
     <PopoverCreateEvent
       draft={value}
@@ -316,6 +316,37 @@ describe("quick-create mapped fields", () => {
     expect(createEvent).toHaveBeenLastCalledWith(draft, 5, {
       location: "Updated details",
       description: "Updated details",
+    });
+  });
+
+  it("preserves the AI-selected calendar, mapped details, and recurrence through the merged form", async () => {
+    const aiDraft: CalendarCreateDraft = {
+      ...draft,
+      calendarId: 4,
+      description: "Bring a notebook.",
+      repeatType: "WEEKLY",
+      repeatEndType: "NEVER",
+      rrule: "DTSTART:20261013T090000\nRRULE:FREQ=WEEKLY;BYDAY=TU;COUNT=8",
+    };
+    await act(async () => root.render(<Editor key="ai" initialDraft={aiDraft} />));
+    expect(container.querySelector<HTMLSelectElement>('[aria-label="Calendar"]')?.value).toBe("4");
+    expect(field("Description")?.value).toBe("Bring a notebook.");
+    expect(field("Location")).toBeNull();
+    expect(field("Repeat")).toBeNull();
+    expect(container.textContent).toContain("Repeats:");
+    expect(overlap.mock.lastCall?.[0].schedule).toMatchObject({
+      rrule: aiDraft.rrule,
+      repeatEndType: "AFTER",
+    });
+    await save();
+    expect(createEvent).toHaveBeenLastCalledWith(aiDraft, 4, { description: "Bring a notebook." });
+    await chooseCalendar(2);
+    expect(container.textContent).not.toContain("Repeats:");
+    await save();
+    expect(createEvent.mock.lastCall?.[0]).toMatchObject({
+      repeatType: "NEVER",
+      repeatEndType: "NEVER",
+      rrule: undefined,
     });
   });
 });

@@ -28,7 +28,27 @@ export type CalendarCreateDraft = {
   start: number;
   end: number;
   preserveDuration?: boolean;
+  calendarId?: number;
+  description?: string;
+  location?: string;
+  repeatType?: string;
+  repeatEndType?: string;
+  until?: number | null;
+  rrule?: string;
+  /** Fields the AI changed during an in-place update (omit = apply all). */
+  changedFields?: string[];
   recurrence?: QuickCreateRecurrence;
+  /** Per-occurrence customizations (Edited occurrences), applied after the schedule is saved. */
+  occurrenceEdits?: AiOccurrenceEdit[];
+};
+
+export type AiOccurrenceEdit = {
+  start: string;
+  end: string;
+  allDay?: boolean;
+  title?: string;
+  location?: string;
+  description?: string;
 };
 
 export type CalendarCreateDraftSettings = {

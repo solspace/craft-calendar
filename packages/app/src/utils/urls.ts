@@ -1,6 +1,12 @@
 import parse from "url-parse";
 
-export const baseUrl = window.location.href.replace(/(.*\/calendar).*/i, "$1");
+/**
+ * CP base for Calendar routes (`…/admin/calendar`).
+ * Must match `/calendar` as a full segment so `/calendars` does not become `/calendar/calendar`.
+ */
+const calendarBaseMatch = window.location.href.match(/^(.*?\/calendar)(?=\/|$)/i);
+export const baseUrl = calendarBaseMatch?.[1] ?? window.location.href.replace(/\/[^/]*$/, "");
+
 export const generateUrl = (url?: string, absolute = true): string => {
   url = (url ?? "")
     .replace(/\/+/g, "/")
