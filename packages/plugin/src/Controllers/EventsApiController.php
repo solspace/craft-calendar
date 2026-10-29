@@ -10,6 +10,7 @@ use Solspace\Calendar\Bundles\Occurrences\ScheduleHistory;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\RRule\RecurringEventMutationHelper;
 use Solspace\Calendar\Library\SpamProtection\Captcha;
 use Solspace\Calendar\Services\OccurrencesService;
@@ -17,6 +18,7 @@ use Solspace\Calendar\Services\SeriesService;
 use Solspace\Calendar\Transformers\FullCalTransformer;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -29,6 +31,42 @@ class EventsApiController extends BaseController
     private const SCOPE_SERIES = 'series';
 
     public array|bool|int $allowAnonymous = true;
+
+    public function actionAttributes(): Response
+    {
+        $this->requireLogin();
+        $this->requireCpRequest();
+
+        return $this->asJson(array_map(
+            static fn (string $attribute, string $label) => ['id' => $attribute, 'label' => Calendar::t($label), 'required' => false],
+            ['title', 'siteId', 'slug', 'authorId', 'allDay', 'startDate', 'endDate', 'postDate', 'dateCreated', 'dateUpdated'],
+            ['Title', 'Site ID', 'Slug', 'Author ID', 'All Day', 'Start Date', 'End Date', 'Post Date', 'Date Created', 'Date Updated'],
+        ));
+    }
+
+    public function actionCustomFields(): Response
+    {
+        $this->requireLogin();
+        $this->requireCpRequest();
+        $calendarId = $this->request->get('calendarId');
+        if (!$calendarId) {
+            return $this->asJson([]);
+        }
+
+        $calendar = $this->getCalendarService()->getCalendarById((int) $calendarId);
+        if (!$calendar) {
+            throw new NotFoundHttpException(Calendar::t('Calendar with ID "{id}" could not be found', ['id' => $calendarId]));
+        }
+
+        if ($calendar->getIsScheduling() || !PermissionHelper::canAccessEvents($calendar)) {
+            throw new ForbiddenHttpException();
+        }
+
+        return $this->asJson(array_map(
+            static fn ($field) => ['id' => $field->handle, 'label' => $field->name],
+            $calendar->getFieldLayout()?->getCustomFields() ?? [],
+        ));
+    }
 
     public function actionSave(): ?Response
     {

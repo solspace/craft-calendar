@@ -1498,6 +1498,10 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
 
+            case 'startDate':
+            case 'endDate':
+                return $this->scheduleDateHtml($this->{$attribute});
+
             default:
                 return parent::tableAttributeHtml($attribute);
         }
@@ -1526,6 +1530,10 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
             case 'status':
                 return Calendar::t(ucfirst($this->getStatus()));
+
+            case 'startDate':
+            case 'endDate':
+                return $this->scheduleDateHtml($this->{$attribute});
 
             default:
                 return parent::attributeHtml($attribute);
@@ -1622,6 +1630,22 @@ class Event extends Element implements ExpirableElementInterface, \JsonSerializa
 
         return $destructiveItems;
         */
+    }
+
+    private function scheduleDateHtml(?Carbon $date): string
+    {
+        if (!$date) {
+            return '';
+        }
+
+        // Event dates are floating wall-clock values; formatting must not shift their time or day.
+        $formatter = clone \Craft::$app->getFormattingLocale()->getFormatter();
+        $formatter->timeZone = 'UTC';
+        $type = $this->allDay ? DateFormatHelper::TYPE_DATE : DateFormatHelper::TYPE_DATETIME;
+        $format = DateFormatHelper::get($type, length: 'short');
+        $value = DateHelper::parseFloatingCarbon($date);
+
+        return $this->allDay ? $formatter->asDate($value, $format) : $formatter->asDatetime($value, $format);
     }
 
     private function setDefaultPostDate(): void

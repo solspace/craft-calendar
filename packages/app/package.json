@@ -38,7 +38,7 @@
     "react-datepicker": "9.1.0",
     "react-dom": "^19.2.7",
     "react-redux": "^9.3.0",
-    "react-router-dom": "^7.18.1",
+    "react-router-dom": "^7.18.5",
     "react-tiny-popover": "^8.1.6",
     "redux": "^5.0.1",
     "rrule": "^2.8.1",
@@ -57,7 +57,7 @@
     "@types/url-parse": "^1.4.11",
     "@vitejs/plugin-react": "^6.0.3",
     "jsdom": "^26.1.0",
-    "vite": "^8.1.0",
-    "vitest": "^4.1.10"
+    "vite": "^8.3.5",
+    "vitest": "^4.1.12"
   }
 }

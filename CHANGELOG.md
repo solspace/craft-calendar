@@ -50,6 +50,7 @@
 - Added `OccurrencesService` and `SeriesService` for editing occurrences and series from PHP.
 
 ### Changed
+- Raised the minimum Craft CMS version to 5.9.18, matching the APIs and mailer exception handling used by Calendar 6. PHP 8.2 remains required.
 - Collapsed Booking Calendar Details by default on the Diagnostics page, matching Event Calendar Details.
 - Clarified global, calendar-specific, and full-access booking permissions with native help notes in Craft's permission settings.
 - Aligned alternate time slots in booking request reviews into an equal-width, responsive grid with consistent spacing and centered time labels.
@@ -128,6 +129,9 @@
 - Fixed dragging a repeating event in the control panel calendar on multi-site installs moving the whole event to the dropped date.
 - Fixed all-day events created in the control panel calendar ending a day late.
 - Fixed resizing a repeating event from its start leaving its excluded and additional dates where they were.
+
+### Security
+- Updated Vite, Vitest, React Router, and vulnerable transitive JavaScript dependencies.
 
 ## 5.0.31 - 2026-08-31
 

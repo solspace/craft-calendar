@@ -1,4 +1,4 @@
-import{a as e}from"./translations-BT7AJKOt.js";var t=e.div`
+import{a as e}from"./translations-CL8ZheTP.js";var t=e.div`
   padding: 20px;
   min-width: 480px;
   max-width: 560px;

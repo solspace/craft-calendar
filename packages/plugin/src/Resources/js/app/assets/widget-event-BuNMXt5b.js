@@ -1,4 +1,4 @@
-import{a as e,d as t,l as n,s as r,t as i}from"./translations-BT7AJKOt.js";import{a,c as o,i as s,n as c,o as l,r as u,s as d}from"./create-event-CUry2Hn8.js";import{n as f}from"./http-CmK6H-J6.js";import{t as p}from"./calendar.now-indicator-yvTSfd9O.js";import{s as m,t as h}from"./loader-BOhj6sYn.js";var g=t(n()),_=e.div`
+import{a as e,d as t,l as n,s as r,t as i}from"./translations-CL8ZheTP.js";import{a,c as o,i as s,n as c,o as l,r as u,s as d}from"./create-event-D0wc3fc4.js";import{n as f}from"./http-CR9t7coc.js";import{t as p}from"./calendar.now-indicator-BzpgMqmV.js";import{s as m,t as h}from"./loader-CuAD3aSH.js";var g=t(n()),_=e.div`
   ${m}
   container-type: inline-size;
 

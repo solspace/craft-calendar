@@ -109,6 +109,18 @@ class OccurrenceMaterializerTest extends TestCase
         }
     }
 
+    public function testSelectedDateDuplicatesDoNotConsumeTheOccurrenceLimitOrChangeStartTime(): void
+    {
+        $event = $this->makeEvent("DTSTART:20261102T100000\nRDATE:20261102T100000,20261102T100000,20261109T100000,20261116T100000");
+
+        self::assertSame(
+            ['2026-11-02 10:00:00', '2026-11-09 10:00:00', '2026-11-16 10:00:00'],
+            (new OccurrenceMaterializer())->recurrenceIds($event, 3),
+        );
+        self::assertCount(3, $event->getOccurrenceDatesBetween());
+        self::assertSame('2026-11-02 10:00:00', $event->startDate->toDateTimeString());
+    }
+
     public function testProducesRecurrenceIdChecksTheRule(): void
     {
         $materializer = new OccurrenceMaterializer();

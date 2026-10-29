@@ -10,7 +10,6 @@ use craft\feedme\base\Element;
 use craft\feedme\events\FeedProcessEvent;
 use craft\feedme\Plugin;
 use craft\feedme\services\Process;
-use RRule\RfcParser;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event as EventElement;
 use Solspace\Calendar\Library\Helpers\DateHelper;
@@ -36,9 +35,13 @@ if (class_exists('craft\feedme\base\Element')) {
 
         public $element;
 
-        private ?array $rruleInfo = [];
+        private bool $ruleMapped = false;
 
-        private ?array $selectDates = [];
+        private ?string $rule = null;
+
+        private array $recurrenceAttributes = [];
+
+        private ?array $selectDates = null;
 
         public function getGroupsTemplate(): string
         {
@@ -96,6 +99,7 @@ if (class_exists('craft\feedme\base\Element')) {
             $siteId = (int) Hash::get($settings, 'siteId');
             $calendarId = $settings['elementGroup'][EventElement::class];
 
+            $this->resetRecurrenceData();
             $this->element = EventElement::create($siteId, $calendarId);
 
             return $this->element;
@@ -113,7 +117,9 @@ if (class_exists('craft\feedme\base\Element')) {
 
         protected function parseUntil($feedData, $fieldInfo): ?Carbon
         {
-            return $this->_parseDate($feedData, $fieldInfo);
+            $this->recurrenceAttributes['UNTIL'] = $this->_parseDate($feedData, $fieldInfo);
+
+            return null;
         }
 
         protected function parseAuthorId($feedData, $fieldInfo): ?int
@@ -164,37 +170,104 @@ if (class_exists('craft\feedme\base\Element')) {
 
         protected function parseRrule($feedData, $fieldInfo)
         {
+            $this->ruleMapped = true;
             $value = $this->fetchSimpleValue($feedData, $fieldInfo);
-            if (empty($value)) {
-                $this->rruleInfo = null;
+            $this->rule = $value ? trim((string) $value) : null;
 
-                return null;
-            }
-
-            try {
-                $rules = RfcParser::parseRRule($value);
-
-                foreach ($rules as $ruleKey => $ruleValue) {
-                    if (!\array_key_exists($ruleKey, self::RRULE_MAP)) {
-                        continue;
-                    }
-
-                    $attribute = self::RRULE_MAP[$ruleKey];
-                    if ('UNTIL' === $ruleKey) {
-                        $ruleValue = new Carbon($ruleValue->format('Y-m-d H:i:s'), DateHelper::UTC);
-                    }
-
-                    // We can't modify other attributes here, so store them until we can
-                    $this->rruleInfo[$attribute] = $ruleValue;
-                }
-            } catch (\Throwable $e) {
-                Plugin::error($e->getMessage());
-            }
+            return null;
         }
 
         protected function parseSelectDates($feedData, $fieldInfo)
         {
-            return $this->fetchArrayValue($feedData, $fieldInfo);
+            $formatting = Hash::get($fieldInfo, 'options.match') ?? 'auto';
+            $this->selectDates = [];
+
+            foreach ($this->fetchArrayValue($feedData, $fieldInfo) ?? [] as $value) {
+                $date = $this->parseDateAttribute($value, $formatting);
+                if ($date) {
+                    $this->selectDates[] = DateHelper::parseFloatingCarbon($date);
+                }
+            }
+
+            return null;
+        }
+
+        protected function parseFreq($feedData, $fieldInfo)
+        {
+            $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            $this->recurrenceAttributes['FREQ'] = '' === $value ? null : $value;
+
+            return null;
+        }
+
+        protected function parseInterval($feedData, $fieldInfo)
+        {
+            $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            $this->recurrenceAttributes['INTERVAL'] = '' === $value ? null : $value;
+
+            return null;
+        }
+
+        protected function parseCount($feedData, $fieldInfo)
+        {
+            $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            $this->recurrenceAttributes['COUNT'] = '' === $value ? null : $value;
+
+            return null;
+        }
+
+        protected function parseByMonth($feedData, $fieldInfo)
+        {
+            $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            $this->recurrenceAttributes['BYMONTH'] = '' === $value ? null : $value;
+
+            return null;
+        }
+
+        protected function parseByYearDay($feedData, $fieldInfo)
+        {
+            $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            $this->recurrenceAttributes['BYYEARDAY'] = '' === $value ? null : $value;
+
+            return null;
+        }
+
+        protected function parseByMonthDay($feedData, $fieldInfo)
+        {
+            $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            $this->recurrenceAttributes['BYMONTHDAY'] = '' === $value ? null : $value;
+
+            return null;
+        }
+
+        protected function parseByDay($feedData, $fieldInfo)
+        {
+            $value = $this->fetchSimpleValue($feedData, $fieldInfo);
+            $this->recurrenceAttributes['BYDAY'] = '' === $value ? null : $value;
+
+            return null;
+        }
+
+        private function _onBeforeElementSave(FeedProcessEvent $event): void
+        {
+            $attributes = $this->recurrenceAttributes;
+            $ruleMapped = $this->ruleMapped;
+            $rule = $this->rule;
+            $dates = $this->selectDates;
+            $this->resetRecurrenceData();
+
+            (new RecurrenceImporter())->apply($event->element, $attributes, $ruleMapped, $rule, $dates);
+            foreach (['rrule', 'repeatType', 'repeatEndType', 'until'] as $attribute) {
+                $event->contentData[$attribute] = $event->element->{$attribute};
+            }
+        }
+
+        private function resetRecurrenceData(): void
+        {
+            $this->recurrenceAttributes = [];
+            $this->ruleMapped = false;
+            $this->rule = null;
+            $this->selectDates = null;
         }
 
         private function _parseDate($feedData, $fieldInfo): ?Carbon

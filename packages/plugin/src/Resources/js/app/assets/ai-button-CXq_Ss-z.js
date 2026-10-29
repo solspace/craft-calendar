@@ -1,4 +1,4 @@
-import{a as e,d as t,l as n,s as r,t as i}from"./translations-BT7AJKOt.js";var a=t(n()),o=e.button`
+import{a as e,d as t,l as n,s as r,t as i}from"./translations-CL8ZheTP.js";var a=t(n()),o=e.button`
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
   color: #fff;
   border: none;
