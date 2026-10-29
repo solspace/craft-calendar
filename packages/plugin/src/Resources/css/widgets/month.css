@@ -67,7 +67,7 @@
   border-radius: 1px;
 }
 .calendar-mini-cal .fc-content-skeleton td:hover {
-  background-color: #5f656f;
+  background-color: rgb(37.3587537782%, 39.5938928931%, 43.4255599473%);
   color: #fff;
 }
 .calendar-mini-cal .fc-content-skeleton td.fc-today {
@@ -75,7 +75,7 @@
   background-color: #e5422b;
 }
 .calendar-mini-cal .fc-content-skeleton td.fc-today:hover {
-  background-color: #c52e18;
+  background-color: rgb(77.1988795518%, 17.8431372549%, 9.4677871148%);
   color: #ffffff;
 }
 .calendar-mini-cal .fc-content-skeleton td:hover {

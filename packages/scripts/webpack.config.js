@@ -5,7 +5,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
   mode: isProd ? 'production' : 'development',
-  target: 'web',
+  target: ['web', 'es5'],
 
   entry: () =>
     glob.sync('./src/**/*.js').reduce((obj, el) => {

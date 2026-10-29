@@ -8,6 +8,15 @@ The most powerful event management and calendaring plugin for Craft!
 
 Calendar is an effective event management and calendaring plugin. Its user-friendly interface simplifies the creation of events with complex recurring rules and exclusions.
 
+## Development
+
+Use Node.js 20.19 or newer and npm 10 or newer. Install all JavaScript dependencies from the repository root with `npm ci`. The event builder, control panel scripts, and styles use npm workspaces and share the root `package-lock.json`.
+
+- `npm run dev` watches all three packages in parallel.
+- `npm run build` builds the production assets for all three packages.
+- `npm run lint` checks the JavaScript packages.
+- `npm audit` checks all workspace dependencies for known vulnerabilities.
+
 ## Resaving events
 
 Resave all Calendar events with `php craft calendar/events/resave`, or limit the operation to one calendar by handle or ID:

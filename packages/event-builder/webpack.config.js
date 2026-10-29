@@ -36,7 +36,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpg|jpeg|gif)$/i,
-        use: [{ loader: 'url-loader' }],
+        type: 'asset/inline',
       },
     ],
   },
@@ -54,8 +54,6 @@ module.exports = {
     usedExports: true,
     minimizer: [
       new TerserPlugin({
-        cache: true,
-        sourceMap: !isProd,
         parallel: true,
         terserOptions: {
           compress: true,

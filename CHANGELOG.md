@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Security
+- Updated vulnerable JavaScript dependencies and replaced Lerna with npm workspaces for development builds, which now require Node.js 20.19+ and npm 10+.
+- Updated the minimum supported Carbon versions to 2.72.6 and 3.8.4 to address a security vulnerability.
+
 ### Added
 - Added a `--calendar` option to `calendar/events/resave` to resave events from a single calendar by handle or ID.
 

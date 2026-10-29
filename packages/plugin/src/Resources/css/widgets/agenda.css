@@ -50,10 +50,10 @@
   background: #dff0d8;
 }
 .alert-success hr {
-  border-top-color: #d0e9c6;
+  border-top-color: rgb(81.5250544662%, 91.339869281%, 77.4836601307%);
 }
 .alert-success .alert-link {
-  color: #336534;
+  color: rgb(20.1586252479%, 39.6452963208%, 20.4946023353%);
 }
 
 .alert-info {
@@ -62,10 +62,10 @@
   background: #e4edf6;
 }
 .alert-info hr {
-  border-top-color: #d1e0f0;
+  border-top-color: rgb(81.9117647059%, 87.9411764706%, 93.9705882353%);
 }
 .alert-info .alert-link {
-  color: #0f70a8;
+  color: rgb(5.8493589744%, 44.0422322775%, 65.7192684766%);
 }
 
 .alert-warning {
@@ -74,10 +74,10 @@
   background: #fcf8e3;
 }
 .alert-warning hr {
-  border-top-color: #faf2cc;
+  border-top-color: rgb(97.8557874763%, 94.9968374447%, 79.9873497786%);
 }
 .alert-warning .alert-link {
-  color: #785f33;
+  color: rgb(47.1125709167%, 37.2121031154%, 20.1423310441%);
 }
 
 .alert-danger {
@@ -86,10 +86,10 @@
   background: #f2dede;
 }
 .alert-danger hr {
-  border-top-color: #ebcccc;
+  border-top-color: rgb(92.0758738278%, 79.8849104859%, 79.8849104859%);
 }
 .alert-danger .alert-link {
-  color: #973d3b;
+  color: rgb(59.0830204422%, 23.7730496454%, 23.0738423029%);
 }
 
 /* MINI CALENDAR */
@@ -160,7 +160,7 @@
   border-radius: 1px;
 }
 .calendar-mini-cal .fc-content-skeleton td:hover {
-  background-color: #5f656f;
+  background-color: rgb(37.3587537782%, 39.5938928931%, 43.4255599473%);
   color: #fff;
 }
 .calendar-mini-cal .fc-content-skeleton td.fc-today {
@@ -168,7 +168,7 @@
   background-color: #e5422b;
 }
 .calendar-mini-cal .fc-content-skeleton td.fc-today:hover {
-  background-color: #c52e18;
+  background-color: rgb(77.1988795518%, 17.8431372549%, 9.4677871148%);
   color: #ffffff;
 }
 .calendar-mini-cal .fc-content-skeleton td:hover {
@@ -240,16 +240,11 @@
   position: relative;
   padding-left: 20px;
   cursor: pointer;
-  -webkit-touch-callout: none;
-  /* iOS Safari */
-  -webkit-user-select: none;
-  /* Chrome/Safari/Opera */
-  -khtml-user-select: none;
-  /* Konqueror */
-  -moz-user-select: none;
-  /* Firefox */
-  -ms-user-select: none;
-  /* Internet Explorer/Edge */
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
   user-select: none;
 }
 #sidebar ul.calendar-list li.item > label > span {
@@ -325,27 +320,10 @@
   border-radius: 24px;
 }
 #mini-cal-wrapper .s-mini-calendar > table td.today div a:hover {
-  background-color: #c53c2e;
+  background-color: rgb(77.2058823529%, 23.3823529412%, 18.0882352941%);
   color: #fff;
 }
 
-.calendar-agenda.fc.fc-unthemed {
-  /* ========== */
-  /* Month view */
-  /* ========== */
-  /* ========= */
-  /* Week view */
-  /* ========= */
-  /* ======== */
-  /* Day view */
-  /* ======== */
-  /* ================ */
-  /* Common for views */
-  /* ================ */
-  /* ====== */
-  /* Events */
-  /* ====== */
-}
 .calendar-agenda.fc.fc-unthemed td {
   padding: 0 !important;
 }
@@ -392,6 +370,11 @@
 }
 .calendar-agenda.fc.fc-unthemed .fc-toolbar .fc-button .fc-icon.fc-icon-calendar:after {
   content: "date";
+}
+.calendar-agenda.fc.fc-unthemed {
+  /* ========== */
+  /* Month view */
+  /* ========== */
 }
 .calendar-agenda.fc.fc-unthemed .fc-left h2 {
   font-size: 28px;
@@ -459,6 +442,11 @@
 .calendar-agenda.fc.fc-unthemed .fc-day-top .fc-day-number {
   float: none;
 }
+.calendar-agenda.fc.fc-unthemed {
+  /* ========= */
+  /* Week view */
+  /* ========= */
+}
 .calendar-agenda.fc.fc-unthemed .fc-day-header.fc-widget-header > a {
   position: relative;
   display: block;
@@ -489,8 +477,18 @@
   color: #ffffff;
   background: #e5422b;
 }
+.calendar-agenda.fc.fc-unthemed {
+  /* ======== */
+  /* Day view */
+  /* ======== */
+}
 .calendar-agenda.fc.fc-unthemed .fc-agendaDay-view .fc-widget-content {
   border-left: none;
+}
+.calendar-agenda.fc.fc-unthemed {
+  /* ================ */
+  /* Common for views */
+  /* ================ */
 }
 .calendar-agenda.fc.fc-unthemed .fc-month-view .fc-bg .fc-day,
 .calendar-agenda.fc.fc-unthemed .fc-agendaWeek-view .fc-bg .fc-day {
@@ -538,6 +536,11 @@
 }
 .calendar-agenda.fc.fc-unthemed .fc-month-view.fc-event-single-day .fc-time {
   color: #929292;
+}
+.calendar-agenda.fc.fc-unthemed {
+  /* ====== */
+  /* Events */
+  /* ====== */
 }
 .calendar-agenda.fc.fc-unthemed td.fc-event-container {
   padding: 0 !important;

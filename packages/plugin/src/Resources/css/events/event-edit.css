@@ -192,13 +192,13 @@ body.rtl #locales li .status {
   width: 91.6666666667%;
 }
 
-ul.cal-group {
-  margin: auto -10px;
-}
 ul.cal-group:after {
   content: "";
   display: table;
   clear: both;
+}
+ul.cal-group {
+  margin: auto -10px;
 }
 ul.cal-group > li {
   display: block;
@@ -306,13 +306,13 @@ ul.cal-group > li.side-label.radio-group .field .input > div:first-child {
   -o-transition: all 0.2s ease-out;
   transition: all 0.2s ease-out;
 }
-.until-switch .cal-group li.until-count {
-  display: none;
-}
 .until-switch .cal-group li.until-count:after {
   content: "";
   display: table;
   clear: both;
+}
+.until-switch .cal-group li.until-count {
+  display: none;
 }
 .until-switch .cal-group li.until-count > * {
   float: left;
@@ -388,24 +388,26 @@ ul.cal-group > li.side-label.radio-group .field .input > div:first-child {
   padding: 4px 0 0 !important;
   background: #ffffff;
   text-align: center;
+}
+.recurrence-block div.checkbox-group > div input[type=checkbox] + label:before {
+  display: none;
+}
+.recurrence-block div.checkbox-group > div input[type=checkbox] + label:hover {
+  background-color: rgb(90%, 90%, 90%);
+}
+.recurrence-block div.checkbox-group > div input[type=checkbox] + label {
   -webkit-transition: all 0.3s ease-out;
   -moz-transition: all 0.3s ease-out;
   -ms-transition: all 0.3s ease-out;
   -o-transition: all 0.3s ease-out;
   transition: all 0.3s ease-out;
 }
-.recurrence-block div.checkbox-group > div input[type=checkbox] + label:before {
-  display: none;
-}
-.recurrence-block div.checkbox-group > div input[type=checkbox] + label:hover {
-  background-color: #e6e6e6;
-}
 .recurrence-block div.checkbox-group > div input[type=checkbox]:checked + label {
   color: #ffffff;
   background-color: #727f8b;
 }
 .recurrence-block div.checkbox-group > div input[type=checkbox]:checked + label:hover {
-  background-color: #5b656f;
+  background-color: rgb(35.6940246454%, 39.7643958769%, 43.5216616291%);
 }
 .recurrence-block div.checkbox-group.month-days {
   max-width: 530px;
