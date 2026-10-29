@@ -1,17 +1,21 @@
 # Solspace Calendar Changelog
 
-## Unreleased
-
-### Security
-- Updated vulnerable JavaScript dependencies and replaced Lerna with npm workspaces for development builds, which now require Node.js 20.19+ and npm 10+.
-- Updated the minimum supported Carbon versions to 2.72.6 and 3.8.4 to address a security vulnerability.
+## 5.0.33 - 2026-10-29
 
 ### Added
 - Added a `--calendar` option to `calendar/events/resave` to resave events from a single calendar by handle or ID.
 
 ### Fixed
+- Fixed **Select Dates** events imported through Feed Me losing their selected dates or failing to update.
+- Fixed recurrence rules carrying over between events imported through Feed Me.
+- Fixed outdated recurrence settings being retained when updating an event through Feed Me with a new recurrence rule.
 - Fixed recurring event dates being overwritten by multi-site saves through the events service outside the control panel.
 - Fixed duplicate occurrences when an event's start date was also selected under **Select Dates**.
+- Fixed an event's start time being changed when retrieving **Select Dates** occurrences.
+
+### Security
+- Updated vulnerable JavaScript dependencies and replaced Lerna with npm workspaces for development builds, which now require Node.js 20.19+ and npm 10+.
+- Updated the minimum supported Carbon versions to 2.72.6 and 3.8.4 to address a security vulnerability.
 
 ## 5.0.32 - 2026-10-11
 
