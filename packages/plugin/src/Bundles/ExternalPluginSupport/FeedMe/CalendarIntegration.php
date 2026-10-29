@@ -15,6 +15,7 @@ use RRule\RRule as RRuleObject;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Event as EventElement;
 use Solspace\Calendar\Library\Helpers\DateHelper;
+use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use yii\base\Event;
 
 if (class_exists('craft\feedme\base\Element')) {
@@ -39,7 +40,7 @@ if (class_exists('craft\feedme\base\Element')) {
 
         private ?array $rruleInfo = [];
 
-        private ?array $selectDates = [];
+        private ?array $selectDates = null;
 
         public function getGroupsTemplate(): string
         {
@@ -198,7 +199,19 @@ if (class_exists('craft\feedme\base\Element')) {
 
         protected function parseSelectDates($feedData, $fieldInfo)
         {
-            return $this->fetchArrayValue($feedData, $fieldInfo);
+            $formatting = Hash::get($fieldInfo, 'options.match') ?? 'auto';
+            $this->selectDates = [];
+
+            foreach ($this->fetchArrayValue($feedData, $fieldInfo) as $value) {
+                $date = $this->parseDateAttribute($value, $formatting);
+
+                if ($date) {
+                    $this->selectDates[] = new Carbon($date->format('Y-m-d H:i:s'), DateHelper::UTC);
+                }
+            }
+
+            // Select dates aren't a settable attribute, so they're set on the element before it's saved
+            return null;
         }
 
         private function _parseDate($feedData, $fieldInfo): ?Carbon
@@ -227,6 +240,14 @@ if (class_exists('craft\feedme\base\Element')) {
                 }
             }
 
+            // Only this item's select dates apply, and only if they were mapped
+            if (null !== $this->selectDates && RecurrenceHelper::SELECT_DATES === $element->freq) {
+                $element->setSelectDates($this->selectDates);
+                $event->contentData['selectDates'] = array_map(fn (Carbon $date) => $date->toDateString(), $this->selectDates);
+            }
+
+            $this->selectDates = null;
+
             if (null === $this->rruleInfo) {
                 $element->rrule = null;
 
@@ -249,8 +270,9 @@ if (class_exists('craft\feedme\base\Element')) {
                 $event->contentData[$key] = $value;
             }
 
+            // Select dates have no RRULE
             $freq = $element->getFrequency();
-            if ($freq) {
+            if ($freq && RecurrenceHelper::SELECT_DATES !== $freq) {
                 $rrule = new RRuleObject(
                     [
                         'FREQ' => $element->getFrequency(),
