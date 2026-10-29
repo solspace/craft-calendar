@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## Unreleased
+
+### Added
+- Added a `--calendar` option to `calendar/events/resave` to resave events from a single calendar by handle or ID.
+
 ## 5.0.32 - 2026-10-11
 
 ### Fixed
