@@ -66,7 +66,7 @@ class Manifest
     /**
      * @throws ManifestException
      */
-    private function parseManifestFile(string $manifestPath)
+    private function parseManifestFile(string $manifestPath): void
     {
         if (!file_exists($manifestPath)) {
             throw new ManifestNotPresentException(\sprintf('Manifest file is not present in %s', $manifestPath));

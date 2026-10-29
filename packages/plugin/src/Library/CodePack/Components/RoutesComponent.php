@@ -29,7 +29,7 @@ class RoutesComponent extends AbstractJsonComponent
             if (isset($route->urlParts, $route->template) && \is_array($route->urlParts)) {
                 $urlParts = $route->urlParts;
 
-                array_walk_recursive($urlParts, function (&$value) {
+                array_walk_recursive($urlParts, static function (&$value) {
                     $value = stripslashes($value);
                 });
 
@@ -95,7 +95,7 @@ class RoutesComponent extends AbstractJsonComponent
         $this->fileName = 'routes.json';
     }
 
-    private function findExistingRoute(array $uriParts, ?array $existingRoutes = null): null|int|string
+    private function findExistingRoute(array $uriParts, ?array $existingRoutes = null): int|string|null
     {
         if (!$existingRoutes) {
             return null;

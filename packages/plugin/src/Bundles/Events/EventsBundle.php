@@ -14,7 +14,7 @@ class EventsBundle implements BundleInterface
         Event::on(
             CalendarEvent::class,
             CalendarEvent::EVENT_AFTER_SAVE,
-            function (ModelEvent $event) {
+            static function (ModelEvent $event) {
                 \Craft::$app->getElements()->invalidateCachesForElement($event->sender);
             }
         );
@@ -22,7 +22,7 @@ class EventsBundle implements BundleInterface
         Event::on(
             CalendarEvent::class,
             CalendarEvent::EVENT_AFTER_DELETE,
-            function (Event $event) {
+            static function (Event $event) {
                 $element = $event->sender;
 
                 if ($element instanceof CalendarEvent) {

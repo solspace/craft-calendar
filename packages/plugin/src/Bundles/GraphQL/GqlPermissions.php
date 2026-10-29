@@ -19,7 +19,7 @@ class GqlPermissions extends Gql
 
         return array_filter(
             $calendarUids,
-            function ($item) {
+            static function ($item) {
                 return 'all' !== $item;
             }
         );

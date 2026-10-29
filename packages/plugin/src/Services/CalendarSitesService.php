@@ -60,7 +60,7 @@ class CalendarSitesService extends Component
         return $models;
     }
 
-    public function delete(CalendarSiteSettingsModel $model)
+    public function delete(CalendarSiteSettingsModel $model): void
     {
         $path = Calendar::CONFIG_CALENDAR_SITES_PATH.'.'.$model->uid;
         \Craft::$app->projectConfig->remove($path);

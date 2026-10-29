@@ -99,7 +99,7 @@ class EventToUiDataTransformer
             return [DateHelper::getCurrentWeekDay($this->event->getStartDate())];
         }
 
-        return array_map(function ($value) {
+        return array_map(static function ($value) {
             return preg_replace('/.*(\w{2})$/', '$1', $value);
         }, $byDay);
     }
@@ -119,7 +119,7 @@ class EventToUiDataTransformer
      */
     private function getSelectDateTimestamps(): array
     {
-        return array_map(function (\DateTime $date) {
+        return array_map(static function (\DateTime $date) {
             return $date->getTimestamp();
         }, $this->event->getSelectDatesAsDates());
     }
@@ -129,14 +129,14 @@ class EventToUiDataTransformer
      */
     private function getExceptionTimestamps(): array
     {
-        return array_map(function (ExceptionModel $exception) {
+        return array_map(static function (ExceptionModel $exception) {
             return $exception->date->getTimestamp();
         }, $this->event->getExceptions());
     }
 
     private function castArrayValuesToInt(array $array): array
     {
-        return array_map(function ($value) {
+        return array_map(static function ($value) {
             return (int) $value;
         }, $array);
     }

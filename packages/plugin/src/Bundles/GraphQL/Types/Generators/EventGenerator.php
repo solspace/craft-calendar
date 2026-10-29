@@ -68,7 +68,7 @@ class EventGenerator extends AbstractGenerator
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new EventType([
             'name' => $typeName,
-            'fields' => function () use ($eventFields) {
+            'fields' => static function () use ($eventFields) {
                 return $eventFields;
             },
         ]));

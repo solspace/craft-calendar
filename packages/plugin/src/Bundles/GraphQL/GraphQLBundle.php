@@ -26,7 +26,7 @@ class GraphQLBundle implements BundleInterface
         Event::on(
             Gql::class,
             Gql::EVENT_REGISTER_GQL_TYPES,
-            function (RegisterGqlTypesEvent $event) {
+            static function (RegisterGqlTypesEvent $event) {
                 $event->types[] = DurationInterface::class;
                 $event->types[] = SolspaceCalendarInterface::class;
                 $event->types[] = CalendarInterface::class;
@@ -37,7 +37,7 @@ class GraphQLBundle implements BundleInterface
         Event::on(
             Gql::class,
             Gql::EVENT_REGISTER_GQL_QUERIES,
-            function (RegisterGqlQueriesEvent $event) {
+            static function (RegisterGqlQueriesEvent $event) {
                 $event->queries = array_merge(
                     $event->queries,
                     SolspaceCalendarQuery::getQueries()
@@ -48,7 +48,7 @@ class GraphQLBundle implements BundleInterface
         Event::on(
             Gql::class,
             Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS,
-            function (RegisterGqlSchemaComponentsEvent $event) {
+            static function (RegisterGqlSchemaComponentsEvent $event) {
                 $calendarInstance = Calendar::getInstance();
                 $calendarCategory = GqlPermissions::CATEGORY_CALENDARS;
 

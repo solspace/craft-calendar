@@ -215,7 +215,7 @@ class LegacyEventsController extends EventsController
      *
      * @since 3.4.0
      */
-    protected function enabledForSiteValue(): null|array|bool
+    protected function enabledForSiteValue(): array|bool|null
     {
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (\is_array($enabledForSite)) {
@@ -348,7 +348,7 @@ class LegacyEventsController extends EventsController
     /**
      * Populates an Entry with post data.
      */
-    private function populateEventModel(Event $event)
+    private function populateEventModel(Event $event): void
     {
         $request = \Craft::$app->request;
 
@@ -616,7 +616,7 @@ class LegacyEventsController extends EventsController
                     $repeatsByDayInterval = (int) $postedValues['monthly']['repeatsByDayInterval'];
 
                     $repeatsByWeekDay = array_map(
-                        function ($value) use ($repeatsByDayInterval) {
+                        static function ($value) use ($repeatsByDayInterval) {
                             return \sprintf('%d%s', $repeatsByDayInterval, $value);
                         },
                         $repeatsByWeekDay
@@ -646,7 +646,7 @@ class LegacyEventsController extends EventsController
 
                     if (\is_array($repeatsByWeekDay)) {
                         $repeatsByWeekDay = array_map(
-                            function ($value) use ($repeatsByDayInterval) {
+                            static function ($value) use ($repeatsByDayInterval) {
                                 return \sprintf('%d%s', $repeatsByDayInterval, $value);
                             },
                             $repeatsByWeekDay

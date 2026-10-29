@@ -29,7 +29,7 @@ class RRuleTest extends TestCase
             'weekly, starting from 2015-06-01 00:00:00, 6 times',
             $rrule->humanReadable(
                 [
-                    'date_formatter' => function ($date) {
+                    'date_formatter' => static function ($date) {
                         return $date->format('Y-m-d H:i:s');
                     },
                 ]

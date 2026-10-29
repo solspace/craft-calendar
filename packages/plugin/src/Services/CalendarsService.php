@@ -83,7 +83,7 @@ class CalendarsService extends Component
 
         if (null === $this->allowedCalendarCache) {
             $allowedUids = PermissionHelper::getNestedPermissionIds(Calendar::PERMISSION_EVENTS_FOR);
-            $allowedCalendarIds = array_map(function ($uid) {
+            $allowedCalendarIds = array_map(static function ($uid) {
                 return Db::idByUid(CalendarRecord::TABLE, $uid);
             }, $allowedUids);
 

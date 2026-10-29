@@ -17,7 +17,7 @@ use Solspace\Calendar\Library\Exceptions\DurationException;
  */
 class EventDayTest extends TestCase
 {
-    public function testTimezones()
+    public function testTimezones(): void
     {
         $config = $this->createMock(DurationConfiguration::class);
         $targetDayDate = new Carbon('2016-01-01', 'America/Winnipeg');

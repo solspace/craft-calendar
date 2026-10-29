@@ -61,25 +61,25 @@ class Event extends Element implements \JsonSerializable
 
     public const EVENT_TRANSFORM_JSON_VALUE = 'transform-json-value';
 
-    public null|Carbon|\DateTime|string $postDate = null;
+    public Carbon|\DateTime|string|null $postDate = null;
 
     public ?int $calendarId = null;
 
     public ?string $name = null;
 
-    public null|array|int|string $authorId = null;
+    public array|int|string|null $authorId = null;
 
-    public null|Carbon|\DateTime|string $startDate = null;
+    public Carbon|\DateTime|string|null $startDate = null;
 
-    public null|Carbon|\DateTime|string $initialStartDate = null;
+    public Carbon|\DateTime|string|null $initialStartDate = null;
 
-    public null|Carbon|\DateTime|string $startDateLocalized = null;
+    public Carbon|\DateTime|string|null $startDateLocalized = null;
 
-    public null|Carbon|\DateTime|string $endDate = null;
+    public Carbon|\DateTime|string|null $endDate = null;
 
-    public null|Carbon|\DateTime|string $initialEndDate = null;
+    public Carbon|\DateTime|string|null $initialEndDate = null;
 
-    public null|Carbon|\DateTime|string $endDateLocalized = null;
+    public Carbon|\DateTime|string|null $endDateLocalized = null;
 
     public ?bool $allDay = null;
 
@@ -91,9 +91,9 @@ class Event extends Element implements \JsonSerializable
 
     public ?int $count = null;
 
-    public null|Carbon|\DateTime|string $until = null;
+    public Carbon|\DateTime|string|null $until = null;
 
-    public null|Carbon|\DateTime|string $untilLocalized = null;
+    public Carbon|\DateTime|string|null $untilLocalized = null;
 
     public ?string $byMonth = null;
 
@@ -498,7 +498,7 @@ class Event extends Element implements \JsonSerializable
             $hasTitle = !empty(
                 array_filter(
                     $tabs,
-                    function (FieldLayoutTab $tab) {
+                    static function (FieldLayoutTab $tab) {
                         foreach ($tab->getElements() as $element) {
                             if ($element instanceof TitleField) {
                                 return true;
@@ -645,7 +645,7 @@ class Event extends Element implements \JsonSerializable
         if (!isset($this->selectDatesCache[$cacheHash])) {
             $this->selectDatesCache[$cacheHash] = array_filter(
                 $this->selectDates,
-                function (SelectDateModel $selectDate) use ($rangeStart, $rangeEnd) {
+                static function (SelectDateModel $selectDate) use ($rangeStart, $rangeEnd) {
                     $isAfterRangeStart = null === $rangeStart || $selectDate->date >= $rangeStart;
                     $isBeforeRangeEnd = null === $rangeEnd || $selectDate->date <= $rangeEnd;
 
@@ -867,32 +867,32 @@ class Event extends Element implements \JsonSerializable
         return $rrule->occursAt($date);
     }
 
-    public function getStartDate(): null|Carbon|\DateTime|string
+    public function getStartDate(): Carbon|\DateTime|string|null
     {
         return $this->startDate;
     }
 
-    public function getStartDateLocalized(): null|Carbon|\DateTime|string
+    public function getStartDateLocalized(): Carbon|\DateTime|string|null
     {
         return $this->startDateLocalized;
     }
 
-    public function getEndDate(): null|Carbon|\DateTime|string
+    public function getEndDate(): Carbon|\DateTime|string|null
     {
         return $this->endDate;
     }
 
-    public function getEndDateLocalized(): null|Carbon|\DateTime|string
+    public function getEndDateLocalized(): Carbon|\DateTime|string|null
     {
         return $this->endDateLocalized;
     }
 
-    public function getUntil(): null|Carbon|\DateTime|string
+    public function getUntil(): Carbon|\DateTime|string|null
     {
         return $this->until;
     }
 
-    public function getUntilLocalized(): null|Carbon|\DateTime|string
+    public function getUntilLocalized(): Carbon|\DateTime|string|null
     {
         return $this->untilLocalized;
     }
@@ -900,7 +900,7 @@ class Event extends Element implements \JsonSerializable
     /**
      * An alias for getUntil().
      */
-    public function getUntilDate(): null|Carbon|\DateTime|string
+    public function getUntilDate(): Carbon|\DateTime|string|null
     {
         return $this->getUntil();
     }
@@ -955,7 +955,7 @@ class Event extends Element implements \JsonSerializable
         }
 
         return array_map(
-            function ($value) {
+            static function ($value) {
                 return preg_replace('/^-?\d/', '', $value);
             },
             $weekDays
@@ -1013,7 +1013,7 @@ class Event extends Element implements \JsonSerializable
         if ($rruleObject) {
             $string = $rruleObject->humanReadable([
                 'locale' => $locale,
-                'date_formatter' => function (\DateTime $date) use ($format) {
+                'date_formatter' => static function (\DateTime $date) use ($format) {
                     return $date->format($format);
                 },
             ]);
@@ -1047,12 +1047,12 @@ class Event extends Element implements \JsonSerializable
         return !$this->isInfinite();
     }
 
-    public function getDateCreated(): null|Carbon|\DateTime|string
+    public function getDateCreated(): Carbon|\DateTime|string|null
     {
         return $this->dateCreated;
     }
 
-    public function getPostDate(): null|Carbon|\DateTime|string
+    public function getPostDate(): Carbon|\DateTime|string|null
     {
         return $this->postDate;
     }
@@ -1829,7 +1829,7 @@ class Event extends Element implements \JsonSerializable
         return parent::attributeHtml($attribute);
     }
 
-    protected function route(): null|array|string
+    protected function route(): array|string|null
     {
         if (!$this->enabled) {
             return null;
@@ -1921,7 +1921,7 @@ class Event extends Element implements \JsonSerializable
         */
     }
 
-    private function attributeDate(null|\DateTimeInterface|string $date): string
+    private function attributeDate(\DateTimeInterface|string|null $date): string
     {
         $dt = $this->normalizeLocalizedDate($date);
         if (!$dt) {
@@ -1937,7 +1937,7 @@ class Event extends Element implements \JsonSerializable
         return \Craft::$app->getFormatter()->asDatetime($dt, 'short');
     }
 
-    private function normalizeLocalizedDate(null|\DateTimeInterface|string $date): ?\DateTimeInterface
+    private function normalizeLocalizedDate(\DateTimeInterface|string|null $date): ?\DateTimeInterface
     {
         if (!$date) {
             return null;
@@ -1996,7 +1996,7 @@ class Event extends Element implements \JsonSerializable
             $sortedByDay = explode(',', $sortedByDay);
             usort(
                 $sortedByDay,
-                fn ($a, $b) => ($weekDays[$a] ?? 0) <=> ($weekDays[$b] ?? 0)
+                static fn ($a, $b) => ($weekDays[$a] ?? 0) <=> ($weekDays[$b] ?? 0)
             );
 
             $sortedByDay = implode(',', $sortedByDay);

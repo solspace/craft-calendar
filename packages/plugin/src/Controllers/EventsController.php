@@ -423,7 +423,7 @@ class EventsController extends BaseController
      *
      * @since 3.4.0
      */
-    protected function enabledForSiteValue(): null|array|bool
+    protected function enabledForSiteValue(): array|bool|null
     {
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (\is_array($enabledForSite)) {
@@ -555,7 +555,7 @@ class EventsController extends BaseController
 
         if ($isCraft5 && $site && \Craft::$app->getIsMultiSite()) {
             $allowedCalendarSites = Calendar::getInstance()->calendarSites->getAllowedCalendarSites($calendar);
-            $allowedCalendarSiteNames = array_map(fn ($item) => $item['name'], $allowedCalendarSites);
+            $allowedCalendarSiteNames = array_map(static fn ($item) => $item['name'], $allowedCalendarSites);
 
             $allSiteItems = CpHelper::siteMenuItems($sites, $site);
             $filteredItems = [];

@@ -49,7 +49,7 @@ abstract class CalendarConfiguration
         return sha1(serialize($this));
     }
 
-    protected function castToCarbon(null|Carbon|\DateTime|string $value): ?Carbon
+    protected function castToCarbon(Carbon|\DateTime|string|null $value): ?Carbon
     {
         if (null === $value) {
             return null;

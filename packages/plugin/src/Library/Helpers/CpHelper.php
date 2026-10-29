@@ -39,8 +39,8 @@ class CpHelper extends Cp
         // Normalize and index the sites
         /** @var array<int,array{site:Site,status?:string}> $sites */
         $sites = Collection::make($sites)
-            ->map(fn (array|Site $site) => $site instanceof Site ? ['site' => $site] : $site)
-            ->keyBy(fn (array $site) => $site['site']->id)
+            ->map(static fn (array|Site $site) => $site instanceof Site ? ['site' => $site] : $site)
+            ->keyBy(static fn (array $site) => $site['site']->id)
             ->all()
         ;
 
@@ -55,14 +55,14 @@ class CpHelper extends Cp
         foreach ($siteGroups as $siteGroup) {
             $groupSites = $siteGroup->getSites();
             if (!$config['includeOmittedSites']) {
-                $groupSites = array_filter($groupSites, fn (Site $site) => isset($sites[$site->id]));
+                $groupSites = array_filter($groupSites, static fn (Site $site) => isset($sites[$site->id]));
             }
 
             if (empty($groupSites)) {
                 continue;
             }
 
-            $groupSiteItems = array_map(fn (Site $site) => [
+            $groupSiteItems = array_map(static fn (Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
                 'label' => \Craft::t('site', $site->name),
                 // Use the selected site handle
@@ -80,7 +80,7 @@ class CpHelper extends Cp
                 $items[] = [
                     'heading' => \Craft::t('site', $siteGroup->name),
                     'items' => $groupSiteItems,
-                    'hidden' => !ArrayHelper::contains($groupSiteItems, fn (array $item) => !$item['hidden']),
+                    'hidden' => !ArrayHelper::contains($groupSiteItems, static fn (array $item) => !$item['hidden']),
                 ];
             } else {
                 array_push($items, ...$groupSiteItems);
