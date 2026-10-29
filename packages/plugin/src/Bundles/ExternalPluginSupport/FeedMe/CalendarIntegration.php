@@ -100,8 +100,9 @@ if (class_exists('craft\feedme\base\Element')) {
 
             $this->element = EventElement::create($siteId, $calendarId);
 
-            // Feed Me calls this at the start of every item, so start each one without the previous item's rule
+            // Reset pending data even if the previous item never reached the save event.
             $this->rruleInfo = [];
+            $this->selectDates = null;
 
             return $this->element;
         }
@@ -179,6 +180,10 @@ if (class_exists('craft\feedme\base\Element')) {
             try {
                 $rules = RfcParser::parseRRule($value);
 
+                // An imported RRULE replaces the whole rule, including on existing events.
+                $this->rruleInfo = array_fill_keys(array_values(self::RRULE_MAP), null);
+                $this->rruleInfo['interval'] = 1;
+
                 foreach ($rules as $ruleKey => $ruleValue) {
                     if (!\array_key_exists($ruleKey, self::RRULE_MAP)) {
                         continue;
@@ -202,7 +207,7 @@ if (class_exists('craft\feedme\base\Element')) {
             $formatting = Hash::get($fieldInfo, 'options.match') ?? 'auto';
             $this->selectDates = [];
 
-            foreach ($this->fetchArrayValue($feedData, $fieldInfo) as $value) {
+            foreach ($this->fetchArrayValue($feedData, $fieldInfo) ?? [] as $value) {
                 $date = $this->parseDateAttribute($value, $formatting);
 
                 if ($date) {
@@ -243,7 +248,7 @@ if (class_exists('craft\feedme\base\Element')) {
             // Only this item's select dates apply, and only if they were mapped
             if (null !== $this->selectDates && RecurrenceHelper::SELECT_DATES === $element->freq) {
                 $element->setSelectDates($this->selectDates);
-                $event->contentData['selectDates'] = array_map(fn (Carbon $date) => $date->toDateString(), $this->selectDates);
+                $event->contentData['selectDates'] = array_map(static fn (Carbon $date) => $date->toDateString(), $this->selectDates);
             }
 
             $this->selectDates = null;
