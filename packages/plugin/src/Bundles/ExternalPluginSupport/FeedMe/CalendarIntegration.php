@@ -267,8 +267,9 @@ if (class_exists('craft\feedme\base\Element')) {
                 $event->contentData[$key] = $value;
             }
 
+            // Select dates have no RRULE
             $freq = $element->getFrequency();
-            if ($freq) {
+            if ($freq && RecurrenceHelper::SELECT_DATES !== $freq) {
                 $rrule = new RRuleObject(
                     [
                         'FREQ' => $element->getFrequency(),
