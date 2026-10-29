@@ -817,10 +817,10 @@ class Event extends Element implements \JsonSerializable
             if ($this->repeatsOnSelectDates()) {
                 $startDate = $this->getStartDate();
                 if ((!$rangeStart || $startDate >= $rangeStart) && (!$rangeEnd || $startDate <= $rangeEnd)) {
-                    $occurrences[] = $startDate->setTime(0, 0, 0);
+                    $occurrences[] = (clone $startDate)->setTime(0, 0, 0);
                 }
 
-                $occurrences = array_merge($occurrences, $this->getSelectDatesAsDates($rangeStart, $rangeEnd));
+                $occurrences = DateHelper::getUniqueDates(array_merge($occurrences, $this->getSelectDatesAsDates($rangeStart, $rangeEnd)));
             } else {
                 $rrule = $this->getRRuleObject();
                 if (null !== $rrule) {
@@ -1146,7 +1146,7 @@ class Event extends Element implements \JsonSerializable
             if ($this->getRRuleObject()) {
                 $occurrenceDates = $this->getOccurrenceDatesBetween($rangeStart, $rangeEnd);
             } elseif ($this->getSelectDates()) {
-                $occurrenceDates = $this->getSelectDatesAsDates($rangeStart, $rangeEnd);
+                $occurrenceDates = DateHelper::getUniqueDates($this->getSelectDatesAsDates($rangeStart, $rangeEnd));
             }
 
             $occurrences = [];

@@ -1,5 +1,11 @@
 # Solspace Calendar Changelog
 
+## Unreleased
+
+### Fixed
+- Fixed recurring event dates being overwritten by multi-site saves through the events service outside the control panel.
+- Fixed duplicate occurrences when an event's start date was also selected under **Select Dates**.
+
 ## 5.0.32 - 2026-10-11
 
 ### Fixed

@@ -16,7 +16,7 @@ const selectDates = createSlice({
 
       eventStartDate = resetTimestampToDayStart(eventStartDate);
 
-      return state.filter((date) => date >= eventStartDate);
+      return state.filter((date) => date > eventStartDate);
     },
   },
 });

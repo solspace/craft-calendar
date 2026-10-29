@@ -39,6 +39,16 @@ class EventsService extends Component
     public const EVENT_BEFORE_DELETE = 'beforeDelete';
     public const EVENT_AFTER_DELETE = 'afterDelete';
 
+    private int $saveDepth = 0;
+
+    /**
+     * Whether an event save (including any nested saves) is in progress.
+     */
+    public function getIsSavingEvent(): bool
+    {
+        return $this->saveDepth > 0;
+    }
+
     /**
      * Returns an event by its ID.
      */
@@ -296,6 +306,7 @@ class EventsService extends Component
 
         if ($saveEvent->isValid) {
             $transaction = \Craft::$app->db->beginTransaction();
+            ++$this->saveDepth;
 
             try {
                 $isSaved = \Craft::$app->elements->saveElement($event, $validateContent);
@@ -323,6 +334,8 @@ class EventsService extends Component
                 }
 
                 throw $e;
+            } finally {
+                --$this->saveDepth;
             }
         }
 
@@ -616,7 +629,7 @@ class EventsService extends Component
 
             if (!empty($otherSiteIds)) {
                 foreach ($otherSiteIds as $otherSiteId) {
-                    $otherSiteEvent = $this->getEventById($event->id, $otherSiteId);
+                    $otherSiteEvent = $this->getEventById($event->id, $otherSiteId, false, false);
 
                     if ($otherSiteEvent) {
                         $otherSiteEvents[] = $otherSiteEvent;
