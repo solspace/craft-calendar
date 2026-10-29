@@ -99,6 +99,9 @@ if (class_exists('craft\feedme\base\Element')) {
 
             $this->element = EventElement::create($siteId, $calendarId);
 
+            // Feed Me calls this at the start of every item, so start each one without the previous item's rule
+            $this->rruleInfo = [];
+
             return $this->element;
         }
 
