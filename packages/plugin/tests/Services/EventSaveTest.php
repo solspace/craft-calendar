@@ -15,6 +15,7 @@ use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Db\EventQuery;
 use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Services\EventsService;
+use yii\base\Component;
 use yii\db\Transaction;
 
 /**
@@ -32,6 +33,14 @@ class EventSaveTest extends TestCase
 
     protected function setUp(): void
     {
+        if (!class_exists(\Yii::class)) {
+            require \dirname((new \ReflectionClass(Component::class))->getFileName()).'/../Yii.php';
+        }
+
+        if (!class_exists(\Craft::class)) {
+            require \dirname((new \ReflectionClass(\craft\base\Component::class))->getFileName()).'/../Craft.php';
+        }
+
         $this->originalApp = \Craft::$app;
         $this->service = new EventsService();
         $this->elements = $this->createMock(Elements::class);
@@ -177,7 +186,9 @@ class EventSaveTest extends TestCase
         ;
 
         $method = new \ReflectionMethod(EventsService::class, '_respectNonTranslatableFields');
-        $method->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
         $this->assertTrue($method->invoke($service, $event));
     }
 
@@ -195,7 +206,9 @@ class EventSaveTest extends TestCase
         $this->assertFalse($this->service->getIsSavingEvent());
         $query = (new \ReflectionClass(EventQuery::class))->newInstanceWithoutConstructor();
         $method = new \ReflectionMethod(EventQuery::class, 'shouldBypassCachedQuery');
-        $method->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
         $this->assertFalse($method->invoke($query));
     }
 }

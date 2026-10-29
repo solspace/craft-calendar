@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added a `--calendar` option to `calendar/events/resave` to resave events from a single calendar by handle or ID.
+
 ### Fixed
 - Fixed recurring event dates being overwritten by multi-site saves through the events service outside the control panel.
 - Fixed duplicate occurrences when an event's start date was also selected under **Select Dates**.

@@ -11,6 +11,7 @@ use Solspace\Calendar\Elements\Event;
 use Solspace\Calendar\Library\Helpers\RecurrenceHelper;
 use Solspace\Calendar\Services\EventsService;
 use Solspace\Calendar\Services\SelectDatesService;
+use yii\base\Component;
 
 /**
  * @internal
@@ -19,6 +20,17 @@ use Solspace\Calendar\Services\SelectDatesService;
  */
 class SelectDatesTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        if (!class_exists(\Yii::class)) {
+            require \dirname((new \ReflectionClass(Component::class))->getFileName()).'/../Yii.php';
+        }
+
+        if (!class_exists(\Craft::class)) {
+            require \dirname((new \ReflectionClass(\craft\base\Component::class))->getFileName()).'/../Craft.php';
+        }
+    }
+
     /** @dataProvider occurrenceLimits */
     public function testQueryCachesEachDayOncePerSite(bool|int|string $loadOccurrences, array $expectedDays): void
     {
@@ -53,11 +65,15 @@ class SelectDatesTest extends TestCase
             $query = (new \ReflectionClass(EventQuery::class))->newInstanceWithoutConstructor();
             $query->siteId([1, 2])->setLoadOccurrences($loadOccurrences);
             $method = new \ReflectionMethod(EventQuery::class, 'cacheRecurringEvents');
-            $method->setAccessible(true);
+            if (\PHP_VERSION_ID < 80100) {
+                $method->setAccessible(true);
+            }
             $method->invoke($query, [467]);
 
             $cache = new \ReflectionProperty(EventQuery::class, 'eventCache');
-            $cache->setAccessible(true);
+            if (\PHP_VERSION_ID < 80100) {
+                $cache->setAccessible(true);
+            }
             $dates = [];
             foreach ($cache->getValue($query) as [$date, $id, $siteId]) {
                 $dates[$siteId][] = $date->format('Y-m-d H:i:s');
