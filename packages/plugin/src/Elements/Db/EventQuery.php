@@ -403,7 +403,7 @@ class EventQuery extends ElementQuery
             return parent::count($q, $db);
         }
 
-        // If we save an event via the events edit page or via the slide out panel, dont use the cached events
+        // During event saves, fetch stored elements rather than occurrence clones.
         if ($this->shouldBypassCachedQuery()) {
             return parent::count($q, $db);
         }
@@ -461,7 +461,7 @@ class EventQuery extends ElementQuery
             return parent::all($db);
         }
 
-        // If we save an event via the events edit page or via the slide out panel, dont use the cached events
+        // During event saves, fetch stored elements rather than occurrence clones.
         if ($this->shouldBypassCachedQuery()) {
             return parent::all($db);
         }
@@ -1107,6 +1107,7 @@ class EventQuery extends ElementQuery
 
                 // Adds original event date as an occurrence
                 array_unshift($selectDates, new Carbon($metadata['startDate'], DateHelper::UTC));
+                $selectDates = DateHelper::getUniqueDates($selectDates);
 
                 foreach ($selectDates as $date) {
                     if (\is_int($loadOccurrences) && $loadOccurrences <= $occurrencesLoaded) {
@@ -1826,6 +1827,10 @@ class EventQuery extends ElementQuery
 
     private function shouldBypassCachedQuery(): bool
     {
+        if ($this->getEventService()->getIsSavingEvent()) {
+            return true;
+        }
+
         if (\Craft::$app->request->isConsoleRequest) {
             return false;
         }

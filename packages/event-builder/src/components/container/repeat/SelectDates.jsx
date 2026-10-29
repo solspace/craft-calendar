@@ -29,7 +29,11 @@ class SelectDates extends React.Component {
 
     return (
       <Block show={show} label="On" width={width}>
-        <DatePicker excludeDates={selectDates} minDateTimestamp={startDate} onChangeHandler={add} />
+        <DatePicker
+          excludeDates={[startDate, ...selectDates]}
+          minDateTimestamp={startDate}
+          onChangeHandler={add}
+        />
       </Block>
     );
   }

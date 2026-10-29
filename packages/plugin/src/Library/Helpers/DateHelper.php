@@ -295,6 +295,24 @@ class DateHelper
     }
 
     /**
+     * Keeps the first occurrence of each calendar date, preserving its time.
+     *
+     * @param \DateTime[] $dates
+     *
+     * @return \DateTime[]
+     */
+    public static function getUniqueDates(array $dates): array
+    {
+        $uniqueDates = [];
+        foreach ($dates as $date) {
+            $key = $date->format('Y-m-d');
+            $uniqueDates[$key] ??= $date;
+        }
+
+        return array_values($uniqueDates);
+    }
+
+    /**
      * Sorts an array of dates ASC-endingly.
      */
     public static function sortArrayOfDates(array &$dateArray): void
