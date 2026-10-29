@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
 use craft\events\MultiElementActionEvent;
 use craft\services\Elements;
+use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Console\Controllers\Fix\ContentFixMigration;
 use Solspace\Calendar\Console\Controllers\Fix\TitleFixMigration;
 use Solspace\Calendar\Elements\Db\EventQuery;
@@ -22,7 +23,7 @@ class EventsController extends Controller
     /**
      * @var null|int|string the ID(s) of the elements to resave
      */
-    public null|int|string $elementId = null;
+    public int|string|null $elementId = null;
 
     /**
      * @var null|string the UUID(s) of the elements to resave
@@ -33,6 +34,11 @@ class EventsController extends Controller
      * @var null|string the site handle to save elements from
      */
     public ?string $site = null;
+
+    /**
+     * @var null|int|string the calendar handle or ID to resave events from
+     */
+    public int|string|null $calendar = null;
 
     /**
      * @var string The status(es) of elements to resave. Can be set to multiple comma-separated statuses.
@@ -75,6 +81,10 @@ class EventsController extends Controller
         $options[] = 'propagate';
         $options[] = 'updateSearchIndex';
 
+        if ('resave' === $actionID) {
+            $options[] = 'calendar';
+        }
+
         return $options;
     }
 
@@ -102,6 +112,9 @@ class EventsController extends Controller
         return ExitCode::OK;
     }
 
+    /**
+     * Resaves events, optionally limited to a calendar with --calendar=handle or --calendar=ID.
+     */
     public function actionResave(): int
     {
         return $this->saveElements(Event::find());
@@ -115,6 +128,22 @@ class EventsController extends Controller
         /** @var ElementQuery|EventQuery $query */
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
+
+        if (null !== $this->calendar) {
+            $value = (string) $this->calendar;
+            $calendars = Calendar::getInstance()->calendars;
+            $calendar = ctype_digit($value)
+                ? $calendars->getCalendarById((int) $value)
+                : $calendars->getCalendarByHandle($value);
+
+            if (!$calendar) {
+                $this->stderr('Calendar "'.$value.'" was not found. Use a calendar handle or ID.'.\PHP_EOL, Console::FG_RED);
+
+                return ExitCode::USAGE;
+            }
+
+            $query->setCalendarId($calendar->id);
+        }
 
         $query->setLoadOccurrences(false);
 
