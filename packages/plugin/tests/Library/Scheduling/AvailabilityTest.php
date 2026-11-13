@@ -117,18 +117,19 @@ class AvailabilityTest extends TestCase
 
     public function testSpringDaylightSavingSkipsNonexistentLocalTimes(): void
     {
-        $slots = $this->slots(['hours' => [['day' => 7, 'start' => '01:00', 'end' => '04:00']], 'duration' => 30, 'increment' => 30], [], '2027-03-14');
+        // Use a historical transition: Winnipeg stopped changing clocks in late 2026.
+        $slots = $this->slots(['hours' => [['day' => 7, 'start' => '01:00', 'end' => '04:00']], 'duration' => 30, 'increment' => 30], [], '2025-03-09');
         self::assertSame(['01:00–01:30', '01:30–03:00', '03:00–03:30', '03:30–04:00'], array_column($slots, 'label'));
-        self::assertSame([], $this->slots(['hours' => [['day' => 7, 'start' => '02:00', 'end' => '04:00']]], [], '2027-03-14'));
+        self::assertSame([], $this->slots(['hours' => [['day' => 7, 'start' => '02:00', 'end' => '04:00']]], [], '2025-03-09'));
     }
 
     public function testFallDaylightSavingSlotsCarryDistinctOffsets(): void
     {
-        $slots = $this->slots(['hours' => [['day' => 7, 'start' => '00:30', 'end' => '03:00']], 'duration' => 30, 'increment' => 30], [], '2026-11-01');
+        $slots = $this->slots(['hours' => [['day' => 7, 'start' => '00:30', 'end' => '03:00']], 'duration' => 30, 'increment' => 30], [], '2025-11-02');
         $timestamps = array_map(static fn ($slot) => (new \DateTimeImmutable($slot['start']))->getTimestamp(), $slots);
         self::assertCount(\count($slots), array_unique($timestamps));
-        self::assertContains('2026-11-01T01:00:00-05:00', array_column($slots, 'start'));
-        self::assertContains('2026-11-01T01:00:00-06:00', array_column($slots, 'start'));
+        self::assertContains('2025-11-02T01:00:00-05:00', array_column($slots, 'start'));
+        self::assertContains('2025-11-02T01:00:00-06:00', array_column($slots, 'start'));
     }
 
     public function testOverlappingOpeningPeriodsDoNotDuplicateSlots(): void

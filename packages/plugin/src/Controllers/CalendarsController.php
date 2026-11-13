@@ -21,6 +21,7 @@ use Solspace\Calendar\Library\Helpers\PermissionHelper;
 use Solspace\Calendar\Library\Helpers\SitesHelper;
 use Solspace\Calendar\Library\Helpers\StringHelper as FreeformStringHelper;
 use Solspace\Calendar\Library\Scheduling\Availability;
+use Solspace\Calendar\Library\Scheduling\TimeInput;
 use Solspace\Calendar\Models\CalendarModel;
 use Solspace\Calendar\Models\CalendarSiteSettingsModel;
 use Solspace\Calendar\Records\CalendarRecord;
@@ -296,8 +297,12 @@ class CalendarsController extends BaseController
                     foreach (['start' => 'H:i', 'end' => 'H:i', 'dateFrom' => 'Y-m-d', 'dateTo' => 'Y-m-d'] as $key => $format) {
                         if (isset($row[$key]) && \is_array($row[$key])) {
                             try {
-                                $parsed = DateTimeHelper::toDateTime($row[$key], true);
-                                $row[$key] = $parsed ? $parsed->format($format) : '';
+                                if ('H:i' === $format) {
+                                    $row[$key] = TimeInput::normalize($row[$key]);
+                                } else {
+                                    $parsed = DateTimeHelper::toDateTime($row[$key], true);
+                                    $row[$key] = $parsed ? $parsed->format($format) : '';
+                                }
                             } catch (\Throwable) {
                                 $row[$key] = '';
                             }

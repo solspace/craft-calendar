@@ -134,6 +134,7 @@ class BookingDefaultsTest extends TestCase
     public function testPostedNativeTimesAndEmptyHoursAreNormalized(): void
     {
         $previousApp = \Craft::$app;
+        $previousTimezone = date_default_timezone_get();
 
         try {
             \Craft::$app = new class(['id' => 'booking-defaults-test', 'basePath' => __DIR__, 'timeZone' => 'America/Winnipeg']) extends Application {
@@ -161,6 +162,7 @@ class BookingDefaultsTest extends TestCase
             self::assertSame('America/Winnipeg', (new SettingsModel())->getBookingDefaults()->timezone);
         } finally {
             \Craft::$app = $previousApp;
+            date_default_timezone_set($previousTimezone);
         }
     }
 

@@ -107,6 +107,7 @@
 - Occurrence queries can only be ordered by occurrence columns and field handles.
 
 ### Fixed
+- Fixed booking opening hours and exception times reversing AM and PM when PHP and ICU use different timezone data.
 - Fixed event read access leaking beyond per-calendar grants through the parent Access Events permission, public calendar settings, and native control-panel queries.
 - Fixed settings-save requests bypassing the control-panel and `allowAdminChanges` restrictions.
 - Fixed the booking move confirmation timezone sentence to use the grid’s resolved timezone name instead of duplicated dropdown text.

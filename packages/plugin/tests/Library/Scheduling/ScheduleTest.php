@@ -199,16 +199,16 @@ class ScheduleTest extends TestCase
     public function testTahitiBookingsAndSlotsUseTheSameCentralDisplayClock(): void
     {
         $calendar = new CalendarModel(['id' => 8, 'scheduling' => ['timezone' => 'Pacific/Tahiti', 'duration' => 30, 'increment' => 30, 'hours' => [['day' => 7, 'start' => '09:00', 'end' => '11:00']]]]);
-        $booking = (object) ['id' => 88, 'calendarId' => 8, 'startDate' => new \DateTimeImmutable('2026-11-08T09:00:00-10:00'), 'endDate' => new \DateTimeImmutable('2026-11-08T09:30:00-10:00')];
+        $booking = (object) ['id' => 88, 'calendarId' => 8, 'startDate' => new \DateTimeImmutable('2025-11-09T09:00:00-10:00'), 'endDate' => new \DateTimeImmutable('2025-11-09T09:30:00-10:00')];
         $slots = static fn ($resource, $date) => Availability::slots($resource->getSchedulingSettings()->toArray(), $date, [], null, false);
         foreach (['America/Winnipeg' => 780, 'Pacific/Tahiti' => 540] as $timezone => $minute) {
-            $column = Schedule::column($calendar, new \DateTimeImmutable('2026-11-08', new \DateTimeZone($timezone)), [$booking], $slots);
+            $column = Schedule::column($calendar, new \DateTimeImmutable('2025-11-09', new \DateTimeZone($timezone)), [$booking], $slots);
             self::assertSame($minute, $column['bookings'][0]['minute']);
             self::assertSame(30, $column['bookings'][0]['length']);
             self::assertArrayHasKey($minute, $column['slots']);
-            self::assertSame('2026-11-08T09:00:00-10:00', $column['slots'][$minute][0]['start']);
+            self::assertSame('2025-11-09T09:00:00-10:00', $column['slots'][$minute][0]['start']);
         }
-        self::assertSame('2026-11-08T09:00:00-10:00', $booking->startDate->format('c'));
+        self::assertSame('2025-11-09T09:00:00-10:00', $booking->startDate->format('c'));
     }
 
     public function testOvernightBookingsAreClippedAndDoNotConsumeOtherCalendarLanes(): void

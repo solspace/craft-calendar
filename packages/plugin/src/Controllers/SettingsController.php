@@ -2,10 +2,10 @@
 
 namespace Solspace\Calendar\Controllers;
 
-use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Library\Helpers\PermissionHelper;
+use Solspace\Calendar\Library\Scheduling\TimeInput;
 use Solspace\Calendar\Models\SettingsModel;
 use Solspace\Calendar\Resources\Bundles\SolspaceAiAssetBundle;
 use Solspace\Calendar\Services\SolspaceAi\SolspaceAiService;
@@ -336,7 +336,7 @@ class SettingsController extends BaseController
             foreach (['start', 'end'] as $key) {
                 if (isset($row[$key]) && \is_array($row[$key])) {
                     try {
-                        $row[$key] = DateTimeHelper::toDateTime($row[$key], true)?->format('H:i') ?? '';
+                        $row[$key] = TimeInput::normalize($row[$key]);
                     } catch (\Throwable) {
                         $row[$key] = '';
                     }
