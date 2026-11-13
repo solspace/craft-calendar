@@ -131,6 +131,7 @@
 - Fixed resizing a repeating event from its start leaving its excluded and additional dates where they were.
 
 ### Security
+- Fixed a SQL injection vulnerability in GraphQL calendar ordering.
 - Updated Vite, Vitest, React Router, and vulnerable transitive JavaScript dependencies.
 
 ## 5.0.31 - 2026-08-31

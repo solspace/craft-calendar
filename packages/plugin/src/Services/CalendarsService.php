@@ -9,6 +9,7 @@ use craft\events\SiteEvent;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use GraphQL\Error\UserError;
 use Solspace\Calendar\Calendar;
 use Solspace\Calendar\Elements\Booking;
 use Solspace\Calendar\Elements\Event;
@@ -29,6 +30,30 @@ class CalendarsService extends Component
     public const EVENT_AFTER_SAVE = 'afterSave';
     public const EVENT_BEFORE_DELETE = 'beforeDelete';
     public const EVENT_AFTER_DELETE = 'afterDelete';
+
+    private const ORDER_COLUMNS = [
+        'id',
+        'uid',
+        'type',
+        'scheduling',
+        'name',
+        'handle',
+        'description',
+        'color',
+        'fieldLayoutId',
+        'titleFormat',
+        'titleLabel',
+        'hasTitleField',
+        'titleTranslationMethod',
+        'titleTranslationKeyFormat',
+        'descriptionFieldHandle',
+        'locationFieldHandle',
+        'icsHash',
+        'icsTimezone',
+        'allowRepeatingEvents',
+        'dateCreated',
+        'dateUpdated',
+    ];
 
     /** @var CalendarModel[] */
     private ?array $calendarCache = null;
@@ -556,7 +581,16 @@ class CalendarsService extends Component
         $sort = 'desc' === $sort ? \SORT_DESC : \SORT_ASC;
 
         $orderBy = $arguments['orderBy'] ?? 'id';
-        $orderBy = [$orderBy => $sort];
+        if (\is_string($orderBy) && str_starts_with($orderBy, 'calendar.')) {
+            $orderBy = substr($orderBy, \strlen('calendar.'));
+        }
+
+        // Yii treats column names containing parentheses as raw SQL expressions.
+        if (!\in_array($orderBy, self::ORDER_COLUMNS, true)) {
+            throw new UserError('Invalid calendar orderBy property.');
+        }
+
+        $orderBy = ['calendar.'.$orderBy => $sort];
 
         $offset = $arguments['offset'] ?? null;
 
