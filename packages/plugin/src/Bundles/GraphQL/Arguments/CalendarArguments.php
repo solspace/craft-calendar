@@ -38,7 +38,7 @@ class CalendarArguments extends Arguments
             'orderBy' => [
                 'name' => 'orderBy',
                 'type' => Type::string(),
-                'description' => 'Order calendars by a specific property',
+                'description' => 'Order calendars by a calendar column name, such as id, name, handle or uid. SQL expressions are not supported.',
             ],
             'sort' => [
                 'name' => 'sort',

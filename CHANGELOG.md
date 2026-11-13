@@ -1,5 +1,10 @@
 # Solspace Calendar Changelog
 
+## 5.0.34 - Unreleased
+
+### Security
+- Fixed a SQL injection vulnerability in the GraphQL `calendar` and `calendars` queries by restricting `orderBy` to supported calendar columns.
+
 ## 5.0.33 - 2026-10-29
 
 ### Added
